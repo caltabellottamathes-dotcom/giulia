@@ -39,7 +39,7 @@ export default function ModulePanel() {
                 <p className="text-[10px] uppercase tracking-[0.28em] text-olive/80 font-medium mb-2.5">
                   Onderdeel
                 </p>
-                <h2 className="text-[26px] lg:text-[30px] font-heading font-medium tracking-tight leading-none text-foreground">
+                <h2 className="text-[26px] lg:text-[30px] font-display font-semibold tracking-tight leading-none text-foreground">
                   {mod.label}
                 </h2>
               </div>
