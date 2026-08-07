@@ -10,11 +10,10 @@ import ApprovalsWidget from "@/components/widgets/ApprovalsWidget";
 /**
  * Home — the GIULIA OS widget center.
  *
- * A large editorial image sits as a rounded, fully-opaque card filling the
- * dashboard (the "background" anchor). The widget bento floats on top in
- * highly-transparent glass. When a module panel opens, the entire content
- * layer slides right out of view, revealing the image in full while the
- * sliding glass panel overlaps its right half.
+ * A large editorial photo fills the dashboard as a fully-opaque rounded card.
+ * The widget bento floats IN FRONT of it in an asymmetric composition.
+ * When a module panel opens, the content layer slides right out of view,
+ * revealing the photo in full while the glass panel overlaps its right half.
  */
 export default function Home() {
   const { activeModule, openModule } = usePanel();
@@ -24,9 +23,7 @@ export default function Home() {
 
   return (
     <div className="relative overflow-hidden rounded-[32px] min-h-[calc(100vh-7rem)]">
-      {/* ── Large editorial image card ──
-          The dashboard's background anchor: full, unfaded, rounded.
-          Revealed completely once the widgets slide away. */}
+      {/* ── Large editorial photo — fully opaque, no wash ── */}
       <div className="absolute inset-0 rounded-[32px] overflow-hidden">
         <img
           src={IMAGES.feetChair}
@@ -34,13 +31,9 @@ export default function Home() {
           className="h-full w-full object-cover"
           draggable={false}
         />
-        {/* soft ivory wash top → bottom keeps the greeting legible */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background/55" />
       </div>
 
-      {/* ── Content layer ──
-          Greeting + widget bento + module rail. Slides right out of view
-          when a module panel opens, exposing the image beneath. */}
+      {/* ── Content layer — slides right when a panel opens ── */}
       <div
         className={cn(
           "relative transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
@@ -49,41 +42,42 @@ export default function Home() {
             : "translate-x-0 opacity-100"
         )}
       >
-        {/* Compact editorial greeting */}
-        <header className="px-1 lg:px-2 pt-2 pb-7 lg:pb-9">
-          <p className="text-[11px] uppercase tracking-[0.22em] text-foreground/70 mb-2">
+        {/* Bold editorial greeting — sits over the photo */}
+        <header className="px-1 lg:px-3 pt-3 pb-8 lg:pb-10">
+          <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/75 mb-3 text-shadow-soft font-medium">
             {new Date().toLocaleDateString("nl-NL", {
               weekday: "long",
               day: "numeric",
               month: "long",
             })}
           </p>
-          <h1 className="text-3xl lg:text-5xl font-heading font-light tracking-tight text-foreground leading-[1.05] text-balance">
+          <h1 className="text-4xl lg:text-6xl font-display font-semibold tracking-[-0.02em] leading-[1.0] text-foreground text-shadow-soft text-balance">
             {greeting}.
           </h1>
         </header>
 
-        {/* Widget bento grid — asymmetric, Concierge as large anchor */}
+        {/* Asymmetric bento — Concierge anchored left (7 col, 2 rows),
+            Agenda + Tasks stacked right (5 col), Approvals inset offset */}
         <div
-          className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5"
+          className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 px-1 lg:px-3"
           style={{ gridAutoRows: "minmax(180px, auto)" }}
         >
-          <div className="lg:col-span-8 lg:row-span-2">
+          <div className="lg:col-span-7 lg:row-span-2">
             <ConciergeWidget />
           </div>
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-5">
             <AgendaWidget />
           </div>
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-5">
             <TasksWidget />
           </div>
-          <div className="lg:col-span-12">
+          <div className="lg:col-span-10 lg:col-start-2">
             <ApprovalsWidget />
           </div>
         </div>
 
-        {/* Quiet module rail — text links, not cards */}
-        <nav className="mt-8 lg:mt-10 flex flex-wrap gap-x-6 gap-y-2 px-1">
+        {/* Quiet module rail */}
+        <nav className="mt-8 lg:mt-10 flex flex-wrap gap-x-6 gap-y-2 px-1 lg:px-3">
           {[
             { label: "Projecten", key: "projects" },
             { label: "Email", key: "email" },
@@ -95,7 +89,7 @@ export default function Home() {
             <button
               key={m.key}
               onClick={() => openModule(m.key)}
-              className="text-[12px] text-foreground/70 hover:text-foreground transition-colors tracking-wide"
+              className="text-[12px] text-foreground/75 hover:text-foreground transition-colors tracking-wide text-shadow-soft font-medium"
             >
               {m.label}
             </button>

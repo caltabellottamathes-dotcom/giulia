@@ -4,7 +4,7 @@ import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
 import { IMAGES } from "@/lib/images";
 import {
-  Mic, Phone, PhoneOff, Sparkles, Calendar, Mail,
+  Mic, Phone, PhoneOff, Calendar, Mail,
   CheckSquare, FileText, Bell,
 } from "lucide-react";
 
@@ -61,7 +61,7 @@ export default function Voice() {
                   <div className="absolute inset-0 rounded-full bg-olive/20 animate-ping" />
                   <div className="absolute inset-0 rounded-full bg-olive/10 animate-pulse-soft" style={{ transform: "scale(1.3)" }} />
                   <div className="relative h-32 w-32 rounded-full bg-gradient-to-br from-olive/40 to-blue-grey/30 backdrop-blur-xl border border-white/20 flex items-center justify-center">
-                    <Sparkles className="h-10 w-10 text-white/80" />
+                    <span className="h-3 w-3 rounded-full bg-white/70 animate-pulse-soft" />
                   </div>
                 </div>
               ) : (
@@ -118,7 +118,7 @@ export default function Voice() {
         {/* Live actions panel */}
         <GlassPanel level={3} className="p-6 overflow-y-auto">
           <div className="flex items-center gap-2 mb-5">
-            <Sparkles className="h-4 w-4 text-olive" />
+            <Mic className="h-4 w-4 text-olive" />
             <h2 className="text-sm font-heading font-medium">Profiel: Focus en Geschiedenis</h2>
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed mb-6">

@@ -5,7 +5,7 @@ import GlassButton from "@/components/glass/GlassButton";
 import { IMAGES } from "@/lib/images";
 import { mockChatMessages, mockProjects, mockTasks, mockEvents } from "@/lib/mockData";
 import {
-  Sparkles, Send, Calendar, CheckSquare, FileText, Users,
+  Send, Calendar, CheckSquare, FileText, Users,
   Briefcase, Mic,
 } from "lucide-react";
 
@@ -61,7 +61,7 @@ export default function Chat() {
               <div key={msg.id} className={cn("flex gap-3", msg.role === "user" && "flex-row-reverse")}>
                 {msg.role === "giulia" && (
                   <div className="h-8 w-8 rounded-full bg-gradient-to-br from-olive/30 to-blue-grey/20 flex items-center justify-center shrink-0">
-                    <Sparkles className="h-4 w-4 text-foreground/70" />
+                    <span className="text-[11px] font-semibold text-foreground/70">G</span>
                   </div>
                 )}
                 <div className={cn(
@@ -78,7 +78,7 @@ export default function Chat() {
             {isTyping && (
               <div className="flex gap-3">
                 <div className="h-8 w-8 rounded-full bg-gradient-to-br from-olive/30 to-blue-grey/20 flex items-center justify-center shrink-0">
-                  <Sparkles className="h-4 w-4 text-foreground/70" />
+                  <span className="text-[11px] font-semibold text-foreground/70">G</span>
                 </div>
                 <div className="glass-1 rounded-2xl px-4 py-3 flex gap-1">
                   <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-pulse-soft" />

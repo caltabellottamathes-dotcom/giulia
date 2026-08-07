@@ -3,7 +3,7 @@ import FloatingPanel from "@/components/glass/FloatingPanel";
 import { usePanel } from "@/lib/PanelContext";
 import {
   Plus, CheckSquare, Briefcase, Calendar, Mail, MessageCircle,
-  FileText, Sparkles, Phone,
+  FileText, MessageSquare, Phone,
 } from "lucide-react";
 
 const actions = [
@@ -13,7 +13,7 @@ const actions = [
   { label: "Email opstellen", icon: Mail, key: "email" },
   { label: "Bericht sturen", icon: MessageCircle, key: "whatsapp" },
   { label: "Document uploaden", icon: FileText, key: "documents" },
-  { label: "Vraag Giulia", icon: Sparkles, key: "chat" },
+  { label: "Vraag Giulia", icon: MessageSquare, key: "chat" },
   { label: "Bel Giulia", icon: Phone, key: "voice" },
 ];
 

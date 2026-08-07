@@ -80,7 +80,7 @@ export default function FloatingPanel({
       {showOverlay && (
         <div
           className={cn(
-            "fixed inset-0 z-40 bg-charcoal/8 backdrop-blur-[3px] animate-fade-in",
+            "fixed inset-0 z-40 bg-charcoal/10 animate-fade-in",
             !closeOnOverlay && "pointer-events-none"
           )}
           onClick={closeOnOverlay ? onClose : undefined}
