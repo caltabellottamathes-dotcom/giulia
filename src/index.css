@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400&family=Space+Grotesk:wght@500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -31,9 +29,6 @@
     --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
     --font-display: 'Inter', ui-sans-serif, system-ui, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    /* Graphic register — bold, tight-tracking display; Editorial register — oversized serif for calm prose */
-    --font-graphic: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
-    --font-editorial: 'Fraunces', ui-serif, Georgia, serif;
 
     /* GIULIA editorial palette — Metal / Clay Creek / Dark Sand / Blue Ridge Sky / Ancient Marble / Storm */
     --ivory: 60 7% 95%;
@@ -47,13 +42,8 @@
     --charcoal: 60 12% 16%;
     --smoke: 58 10% 52%;
 
-    /* Natural Modernism — material-per-object-type */
-    --ochre: 35 49% 57%;
-    --indigo: 228 16% 57%;
-
-    /* True neutral grey glass — not warm-tinted */
-    --glass-bg: 220 4% 88%;
-    --glass-border: 0 0% 100%;
+    --glass-bg: 51 14% 88%;
+    --glass-border: 60 12% 97%;
   }
 }
 
@@ -73,111 +63,91 @@
 }
 
 @layer components {
-  /* Glass system — true grey glass. Heavy blur + saturation, high transparency,
-     thin light edge top/left, deep night shadow below, subtle primary glow ring. */
+  /* Glass system — smoked translucent panels */
   .glass {
-    background: hsl(var(--glass-bg) / 0.16);
-    backdrop-filter: blur(40px) saturate(1.6);
-    -webkit-backdrop-filter: blur(40px) saturate(1.6);
-    border-top: 1px solid rgba(255, 255, 255, 0.16);
-    border-left: 1px solid rgba(255, 255, 255, 0.16);
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: hsl(var(--glass-bg) / 0.46);
+    backdrop-filter: blur(32px) saturate(1.1);
+    -webkit-backdrop-filter: blur(32px) saturate(1.1);
+    border: 1px solid hsl(var(--glass-border) / 0.65);
     box-shadow:
-      0 -30px 90px rgba(0, 0, 0, 0.55),
-      0 0 0 1px hsl(var(--primary) / 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      inset 0 1px 0 0 hsl(40 20% 100% / 0.55),
+      inset 0 0 0 1px hsl(40 20% 100% / 0.06),
+      0 18px 44px -16px hsl(30 10% 20% / 0.2),
+      0 6px 16px -8px hsl(30 10% 20% / 0.1);
   }
 
   .glass-1 {
-    background: hsl(var(--glass-bg) / 0.1);
-    backdrop-filter: blur(40px) saturate(1.6);
-    -webkit-backdrop-filter: blur(40px) saturate(1.6);
-    border-top: 1px solid rgba(255, 255, 255, 0.16);
-    border-left: 1px solid rgba(255, 255, 255, 0.16);
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow:
-      0 -20px 60px rgba(0, 0, 0, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    background: hsl(var(--glass-bg) / 0.34);
+    backdrop-filter: blur(20px) saturate(1.05);
+    -webkit-backdrop-filter: blur(20px) saturate(1.05);
+    border: 1px solid hsl(var(--glass-border) / 0.45);
+    box-shadow: inset 0 1px 0 0 hsl(40 20% 100% / 0.4);
   }
 
   .glass-2 {
-    background: hsl(var(--glass-bg) / 0.18);
-    backdrop-filter: blur(40px) saturate(1.6);
-    -webkit-backdrop-filter: blur(40px) saturate(1.6);
-    border-top: 1px solid rgba(255, 255, 255, 0.16);
-    border-left: 1px solid rgba(255, 255, 255, 0.16);
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: hsl(var(--glass-bg) / 0.5);
+    backdrop-filter: blur(40px) saturate(1.15);
+    -webkit-backdrop-filter: blur(40px) saturate(1.15);
+    border: 1px solid hsl(var(--glass-border) / 0.7);
     box-shadow:
-      0 -30px 90px rgba(0, 0, 0, 0.5),
-      0 0 0 1px hsl(var(--primary) / 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      inset 0 1px 0 0 hsl(40 20% 100% / 0.7),
+      inset 0 0 0 1px hsl(40 20% 100% / 0.08),
+      0 24px 56px -18px hsl(30 10% 20% / 0.24),
+      0 8px 22px -10px hsl(30 10% 20% / 0.12);
   }
 
   .glass-3 {
-    background: hsl(var(--glass-bg) / 0.22);
-    backdrop-filter: blur(40px) saturate(1.6);
-    -webkit-backdrop-filter: blur(40px) saturate(1.6);
-    border-top: 1px solid rgba(255, 255, 255, 0.16);
-    border-left: 1px solid rgba(255, 255, 255, 0.16);
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: hsl(var(--glass-bg) / 0.58);
+    backdrop-filter: blur(48px) saturate(1.2);
+    -webkit-backdrop-filter: blur(48px) saturate(1.2);
+    border: 1px solid hsl(var(--glass-border) / 0.8);
     box-shadow:
-      0 -30px 90px rgba(0, 0, 0, 0.55),
-      0 0 0 1px hsl(var(--primary) / 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      inset 0 1px 0 0 hsl(40 20% 100% / 0.8),
+      inset 0 0 0 1px hsl(40 20% 100% / 0.1),
+      0 32px 72px -22px hsl(30 10% 20% / 0.28),
+      0 12px 28px -10px hsl(30 10% 20% / 0.14);
   }
 
   .glass-4 {
-    background: hsl(var(--glass-bg) / 0.28);
-    backdrop-filter: blur(40px) saturate(1.6);
-    -webkit-backdrop-filter: blur(40px) saturate(1.6);
-    border-top: 1px solid rgba(255, 255, 255, 0.16);
-    border-left: 1px solid rgba(255, 255, 255, 0.16);
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: hsl(var(--glass-bg) / 0.72);
+    backdrop-filter: blur(60px) saturate(1.25);
+    -webkit-backdrop-filter: blur(60px) saturate(1.25);
+    border: 1px solid hsl(var(--glass-border) / 0.9);
     box-shadow:
-      0 -30px 90px rgba(0, 0, 0, 0.6),
-      0 0 0 1px hsl(var(--primary) / 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      inset 0 1px 0 0 hsl(40 20% 100% / 0.9),
+      inset 0 0 0 1px hsl(40 20% 100% / 0.12),
+      0 44px 100px -32px hsl(30 10% 20% / 0.34),
+      0 16px 40px -12px hsl(30 10% 20% / 0.18);
   }
 
-  /* Floating shadow for detached panels — deep night shadow, reads as physically hovering */
+  /* Floating shadow for detached panels — reads as physically floating with ambient glow */
   .float-shadow {
     box-shadow:
-      0 -30px 90px rgba(0, 0, 0, 0.55),
-      0 0 0 1px hsl(var(--primary) / 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      inset 0 1px 0 0 hsl(40 20% 100% / 0.75),
+      inset 0 0 0 1px hsl(40 20% 100% / 0.09),
+      0 28px 64px -20px hsl(30 10% 20% / 0.26),
+      0 10px 26px -10px hsl(30 10% 20% / 0.13);
   }
 
   .glass-dark {
-    background: rgba(20, 20, 20, 0.42);
-    backdrop-filter: blur(40px) saturate(1.6);
-    -webkit-backdrop-filter: blur(40px) saturate(1.6);
-    border-top: 1px solid rgba(255, 255, 255, 0.14);
-    border-left: 1px solid rgba(255, 255, 255, 0.14);
-    border-right: 1px solid rgba(255, 255, 255, 0.04);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    box-shadow: 0 -30px 90px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    background: hsl(30 8% 14% / 0.5);
+    backdrop-filter: blur(24px) saturate(1.1);
+    -webkit-backdrop-filter: blur(24px) saturate(1.1);
+    border: 1px solid hsl(40 10% 30% / 0.4);
+    box-shadow: 0 1px 0 0 hsl(40 10% 40% / 0.3) inset;
   }
 
   .glass-button {
-    background: hsl(var(--glass-bg) / 0.14);
-    backdrop-filter: blur(40px) saturate(1.6);
-    -webkit-backdrop-filter: blur(40px) saturate(1.6);
-    border-top: 1px solid rgba(255, 255, 255, 0.16);
-    border-left: 1px solid rgba(255, 255, 255, 0.16);
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: hsl(var(--glass-bg) / 0.5);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--glass-border) / 0.7);
     transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .glass-button:hover {
-    background: hsl(var(--glass-bg) / 0.24);
-    border-top-color: rgba(255, 255, 255, 0.24);
-    border-left-color: rgba(255, 255, 255, 0.24);
+    background: hsl(var(--glass-bg) / 0.75);
+    border-color: hsl(var(--olive) / 0.4);
   }
 
   .editorial-bg {
@@ -194,36 +164,6 @@
   .text-balance {
     text-wrap: balance;
   }
-
-  /* Tiny wide-tracking kicker label — paired with graphic headlines */
-  .text-kicker {
-    @apply text-[10px] uppercase tracking-[0.22em] text-muted-foreground/60 font-medium;
-  }
-
-  /* Liquid Glass — real SVG refraction layer, applied behind an unfiltered content wrapper.
-     True grey, heavily transparent — background shows through, not a tinted panel. */
-  .liquid-glass-surface {
-    background: hsl(var(--glass-bg) / 0.14);
-    backdrop-filter: blur(40px) saturate(1.6);
-    -webkit-backdrop-filter: blur(40px) saturate(1.6);
-    filter: url(#liquid-glass);
-    border-top: 1px solid rgba(255, 255, 255, 0.16);
-    border-left: 1px solid rgba(255, 255, 255, 0.16);
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow:
-      0 -30px 90px rgba(0, 0, 0, 0.55),
-      0 0 0 1px hsl(var(--primary) / 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  }
-}
-
-@keyframes breathe {
-  0%, 100% { opacity: 0.55; transform: scale(0.9); }
-  50% { opacity: 1; transform: scale(1.1); }
-}
-.animate-breathe {
-  animation: breathe 3.2s ease-in-out infinite;
 }
 
 @keyframes shimmer {
