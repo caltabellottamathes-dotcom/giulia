@@ -1,0 +1,61 @@
+{
+  "name": "CalendarEvent",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "start": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Start"
+    },
+    "end": {
+      "type": "string",
+      "format": "date-time",
+      "title": "End"
+    },
+    "location": {
+      "type": "string",
+      "title": "Location"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "confirmed",
+        "tentative",
+        "cancelled"
+      ],
+      "default": "tentative",
+      "title": "Status"
+    },
+    "participants": {
+      "type": "string",
+      "title": "Participants"
+    },
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

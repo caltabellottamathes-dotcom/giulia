@@ -20,7 +20,7 @@ const SUGGESTIONS = [
 export default function ChatWindow() {
   const { chatOpen, closeChat, openModule } = usePanel();
   const [conversation, setConversation] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const [mesolives, setMesolives] = useState([]);
   const [input, setInput] = useState("");
   const scrollRef = useRef(null);
 
@@ -39,7 +39,7 @@ export default function ChatWindow() {
         }
         if (!active) return;
         setConversation(conv);
-        setMessages(conv.messages || []);
+        setMesolives(conv.mesolives || []);
       } catch (e) {
         /* agent not yet configured — empty state will show */
       }
@@ -52,7 +52,7 @@ export default function ChatWindow() {
   useEffect(() => {
     if (!conversation?.id) return;
     const unsub = base44.agents.subscribeToConversation(conversation.id, (data) => {
-      setMessages(data.messages || []);
+      setMesolives(data.mesolives || []);
     });
     return unsub;
   }, [conversation?.id]);
@@ -62,9 +62,9 @@ export default function ChatWindow() {
       top: scrollRef.current.scrollHeight,
       behavior: "smooth",
     });
-  }, [messages]);
+  }, [mesolives]);
 
-  const last = messages[messages.length - 1];
+  const last = mesolives[mesolives.length - 1];
   const thinking =
     !!last &&
     (last.role === "user" ||
@@ -79,7 +79,7 @@ export default function ChatWindow() {
     if (!content || !conversation || thinking) return;
     setInput("");
     try {
-      await base44.agents.addMessage(conversation, { role: "user", content });
+      await base44.agents.addMesolive(conversation, { role: "user", content });
     } catch (e) {
       /* ignore */
     }
@@ -118,13 +118,13 @@ export default function ChatWindow() {
             <div>
               <p className="text-ivory text-sm font-medium leading-none">Je assistent</p>
               <div className="flex items-center gap-1.5 mt-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-sage animate-pulse-soft" />
+                <span className="h-1.5 w-1.5 rounded-full bg-olive animate-pulse-soft" />
                 <span className="text-[11px] text-ivory/60">Actief · vraag me anything</span>
               </div>
             </div>
             <button
               onClick={() => openModule("voice")}
-              className="flex items-center gap-2 rounded-full pl-3 pr-4 py-2 bg-sage/20 border border-sage/40 text-sage text-[12px] font-medium hover:bg-sage/30 transition-all"
+              className="flex items-center gap-2 rounded-full pl-3 pr-4 py-2 bg-olive/20 border border-olive/40 text-olive text-[12px] font-medium hover:bg-olive/30 transition-all"
             >
               <Phone className="h-3.5 w-3.5" /> Bel
             </button>
@@ -132,9 +132,9 @@ export default function ChatWindow() {
         </div>
       </div>
 
-      {/* Messages */}
+      {/* Mesolives */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-5 space-y-3.5">
-        {messages.length === 0 && !thinking && (
+        {mesolives.length === 0 && !thinking && (
           <div className="flex flex-col items-center text-center py-10">
             <p className="font-display font-semibold text-xl text-foreground mb-2">
               Hier is Giulia.
@@ -145,8 +145,8 @@ export default function ChatWindow() {
             </p>
           </div>
         )}
-        {messages.map((m) => (
-          <MessageBubble key={m.id} message={m} />
+        {mesolives.map((m) => (
+          <MesoliveBubble key={m.id} mesolive={m} />
         ))}
         {thinking && last?.role === "user" && (
           <div className="flex items-center gap-2 text-foreground/50 text-xs ml-1">
@@ -156,7 +156,7 @@ export default function ChatWindow() {
       </div>
 
       {/* Suggestions */}
-      {messages.length <= 1 && (
+      {mesolives.length <= 1 && (
         <div className="px-5 pb-2 flex flex-wrap gap-2">
           {SUGGESTIONS.map((s) => (
             <button
@@ -196,13 +196,13 @@ export default function ChatWindow() {
   );
 }
 
-function MessageBubble({ message }) {
-  const isUser = message.role === "user";
+function MesoliveBubble({ mesolive }) {
+  const isUser = mesolive.role === "user";
   if (isUser) {
     return (
       <div className="flex justify-end">
         <div className="max-w-[80%] rounded-2xl rounded-br-md bg-charcoal text-ivory px-3.5 py-2.5 text-sm leading-relaxed">
-          {message.content}
+          {mesolive.content}
         </div>
       </div>
     );
@@ -210,12 +210,12 @@ function MessageBubble({ message }) {
   return (
     <div className="flex justify-start">
       <div className="max-w-[85%] space-y-2">
-        {message.content && (
+        {mesolive.content && (
           <div className="rounded-2xl rounded-bl-md glass-1 px-3.5 py-2.5 text-sm text-foreground leading-relaxed">
-            <ReactMarkdown>{message.content}</ReactMarkdown>
+            <ReactMarkdown>{mesolive.content}</ReactMarkdown>
           </div>
         )}
-        {(message.tool_calls || []).map((tc, i) => (
+        {(mesolive.tool_calls || []).map((tc, i) => (
           <ToolCall key={i} toolCall={tc} />
         ))}
       </div>
@@ -233,7 +233,7 @@ function ToolCall({ toolCall }) {
     <div className="flex items-center gap-2 text-[11px] text-foreground/55">
       <span
         className={`h-1.5 w-1.5 rounded-full ${
-          failed ? "bg-red-500" : running ? "bg-olive animate-pulse-soft" : "bg-sage"
+          failed ? "bg-red-500" : running ? "bg-olive animate-pulse-soft" : "bg-olive"
         }`}
       />
       <span className="font-medium">{label}</span>

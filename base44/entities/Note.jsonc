@@ -1,0 +1,44 @@
+{
+  "name": "Note",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "content": {
+      "type": "string",
+      "title": "Content"
+    },
+    "tags": {
+      "type": "string",
+      "title": "Tags"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "note",
+        "idea",
+        "commitment",
+        "thinking"
+      ],
+      "default": "note",
+      "title": "Kind"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

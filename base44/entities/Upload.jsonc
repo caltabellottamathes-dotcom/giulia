@@ -1,0 +1,48 @@
+{
+  "name": "Upload",
+  "type": "object",
+  "properties": {
+    "file_url": {
+      "type": "string",
+      "format": "uri",
+      "title": "File URL"
+    },
+    "filename": {
+      "type": "string",
+      "title": "Filename"
+    },
+    "note": {
+      "type": "string",
+      "title": "Note"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "processed",
+        "archived"
+      ],
+      "default": "new",
+      "title": "Status"
+    },
+    "uploaded_for": {
+      "type": "string",
+      "title": "Uploaded For"
+    }
+  },
+  "required": [
+    "file_url"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

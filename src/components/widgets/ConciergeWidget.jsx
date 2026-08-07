@@ -13,7 +13,7 @@ const suggestions = [
 /**
  * GiuliaWidget — the visual anchor (formerly "concierge").
  * Solid Metal panel + the Giulia portrait as an opaque, integrated element.
- * Transparent sage-green accent drawn from the portrait. Direct call button.
+ * Transparent olive-green accent drawn from the portrait. Direct call button.
  */
 export default function ConciergeWidget() {
   const { openModule } = usePanel();
@@ -37,7 +37,7 @@ export default function ConciergeWidget() {
             Giulia · Assistent
           </p>
           <div className="flex items-center gap-1.5 text-[11px] text-[#F2F2F0]/55">
-            <span className="h-1.5 w-1.5 rounded-full bg-sage/60 animate-pulse-soft" />
+            <span className="h-1.5 w-1.5 rounded-full bg-olive/60 animate-pulse-soft" />
             Actief
           </div>
         </div>
@@ -85,11 +85,11 @@ export default function ConciergeWidget() {
         {/* Call Giulia — immediately, from the dashboard */}
         <button
           onClick={() => openModule("voice")}
-          className="mt-auto w-full rounded-2xl py-3.5 flex items-center justify-center gap-2.5 bg-sage/15 border border-sage/35 text-sage hover:bg-sage/25 transition-all font-medium text-sm"
+          className="mt-auto w-full rounded-2xl py-3.5 flex items-center justify-center gap-2.5 bg-olive/15 border border-olive/35 text-olive hover:bg-olive/25 transition-all font-medium text-sm"
         >
           <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-sage/60 animate-ping" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-sage" />
+            <span className="absolute inline-flex h-full w-full rounded-full bg-olive/60 animate-ping" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-olive" />
           </span>
           <Phone className="h-4 w-4" />
           Bel Giulia meteen

@@ -16,6 +16,7 @@ export const IMAGES = {
   knowledgeRef: "https://media.base44.com/images/public/user_6a75ebb321ffb278a0cb7c6a/2ce5fccde_4.png",
   // Giulia concierge portrait — anchor image for the concierge widget
   giuliaConcierge: "https://media.base44.com/images/public/6a6cc0011ab9e3b32cfc1057/a408b643e_Gemini_Generated_Image_2gi5oq2gi5oq2gi51.png",
+  giuliaFace2: "https://media.base44.com/images/public/6a6cc0011ab9e3b32cfc1057/7340e6dfa_Gemini_Generated_Image_aur0c9aur0c9aur0.png",
 };
 
 export const editorialImages = [

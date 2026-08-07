@@ -1,0 +1,66 @@
+{
+  "name": "Meeting",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "date": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Date"
+    },
+    "audio_file": {
+      "type": "string",
+      "format": "uri",
+      "title": "Audio File"
+    },
+    "transcript": {
+      "type": "string",
+      "title": "Transcript"
+    },
+    "summary": {
+      "type": "string",
+      "title": "Summary"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "recording",
+        "transcribed",
+        "processed"
+      ],
+      "default": "scheduled",
+      "title": "Status"
+    },
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    },
+    "attendees": {
+      "type": "string",
+      "title": "Attendees"
+    },
+    "task_ids": {
+      "type": "string",
+      "title": "Task IDs"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

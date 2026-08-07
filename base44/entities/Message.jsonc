@@ -1,0 +1,72 @@
+{
+  "name": "Message",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "user",
+        "giulia",
+        "incoming"
+      ],
+      "title": "Role"
+    },
+    "content": {
+      "type": "string",
+      "title": "Content"
+    },
+    "thread_id": {
+      "type": "string",
+      "title": "Thread ID"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "sent",
+        "draft",
+        "pending",
+        "archived"
+      ],
+      "default": "draft",
+      "title": "Status"
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "email",
+        "whatsapp",
+        "in-app",
+        "voice"
+      ],
+      "title": "Channel"
+    },
+    "is_draft": {
+      "type": "boolean",
+      "default": false,
+      "title": "Is Draft"
+    },
+    "gmail_message_id": {
+      "type": "string",
+      "title": "Gmail Message ID"
+    },
+    "gmail_thread_id": {
+      "type": "string",
+      "title": "Gmail Thread ID"
+    }
+  },
+  "required": [
+    "content"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}
