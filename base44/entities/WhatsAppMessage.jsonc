@@ -1,0 +1,65 @@
+{
+  "name": "WhatsAppMessage",
+  "type": "object",
+  "properties": {
+    "contact_id": {
+      "type": "string",
+      "title": "Contact ID"
+    },
+    "conversation_id": {
+      "type": "string",
+      "title": "Conversation ID"
+    },
+    "message": {
+      "type": "string",
+      "title": "Message"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Timestamp"
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "sent",
+        "received"
+      ],
+      "title": "Direction"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "read",
+        "unread",
+        "delivered"
+      ],
+      "default": "delivered",
+      "title": "Status"
+    },
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    },
+    "giulia_suggested": {
+      "type": "boolean",
+      "default": false,
+      "title": "Giulia Suggested"
+    }
+  },
+  "required": [
+    "message"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

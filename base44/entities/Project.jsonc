@@ -1,0 +1,69 @@
+{
+  "name": "Project",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planning",
+        "in_progress",
+        "waiting",
+        "completed",
+        "archived"
+      ],
+      "default": "planning",
+      "title": "Status"
+    },
+    "progress": {
+      "type": "number",
+      "default": 0,
+      "title": "Progress"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Start Date"
+    },
+    "deadline": {
+      "type": "string",
+      "format": "date",
+      "title": "Deadline"
+    },
+    "image": {
+      "type": "string",
+      "format": "uri",
+      "title": "Image"
+    },
+    "category": {
+      "type": "string",
+      "title": "Category"
+    },
+    "next_milestone": {
+      "type": "string",
+      "title": "Next Milestone"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

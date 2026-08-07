@@ -1,0 +1,100 @@
+{
+  "name": "Email",
+  "type": "object",
+  "properties": {
+    "sender": {
+      "type": "string",
+      "title": "Sender"
+    },
+    "sender_email": {
+      "type": "string",
+      "title": "Sender Email"
+    },
+    "recipients": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Recipients"
+    },
+    "subject": {
+      "type": "string",
+      "title": "Subject"
+    },
+    "body": {
+      "type": "string",
+      "title": "Body"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Timestamp"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "unread",
+        "read",
+        "draft",
+        "sent",
+        "archived"
+      ],
+      "default": "unread",
+      "title": "Status"
+    },
+    "folder": {
+      "type": "string",
+      "enum": [
+        "inbox",
+        "important",
+        "sent",
+        "drafts",
+        "archived",
+        "giulia_drafts"
+      ],
+      "default": "inbox",
+      "title": "Folder"
+    },
+    "thread_id": {
+      "type": "string",
+      "title": "Thread ID"
+    },
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    },
+    "contact_id": {
+      "type": "string",
+      "title": "Contact ID"
+    },
+    "important": {
+      "type": "boolean",
+      "default": false,
+      "title": "Important"
+    },
+    "giulia_draft": {
+      "type": "boolean",
+      "default": false,
+      "title": "Giulia Draft"
+    },
+    "context": {
+      "type": "string",
+      "title": "Context"
+    }
+  },
+  "required": [
+    "subject"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

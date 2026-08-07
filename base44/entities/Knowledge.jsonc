@@ -1,0 +1,51 @@
+{
+  "name": "Knowledge",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "content": {
+      "type": "string",
+      "title": "Content"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Research",
+        "Notes",
+        "Insights",
+        "References",
+        "Decisions",
+        "Conversations",
+        "Saved"
+      ],
+      "default": "Notes",
+      "title": "Category"
+    },
+    "source": {
+      "type": "string",
+      "title": "Source"
+    },
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

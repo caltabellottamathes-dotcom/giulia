@@ -1,0 +1,71 @@
+{
+  "name": "Approval",
+  "type": "object",
+  "properties": {
+    "action_type": {
+      "type": "string",
+      "title": "Action Type"
+    },
+    "target": {
+      "type": "string",
+      "title": "Target"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "proposed_action": {
+      "type": "string",
+      "title": "Proposed Action"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "executed"
+      ],
+      "default": "pending",
+      "title": "Status"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "email",
+        "whatsapp",
+        "calendar",
+        "tasks",
+        "projects",
+        "documents",
+        "other"
+      ],
+      "default": "other",
+      "title": "Category"
+    },
+    "context": {
+      "type": "string",
+      "title": "Context"
+    },
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    }
+  },
+  "required": [
+    "action_type",
+    "description"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}
