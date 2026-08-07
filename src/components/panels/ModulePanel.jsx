@@ -28,12 +28,12 @@ export default function ModulePanel() {
               className="absolute inset-0 opacity-[0.06] pointer-events-none"
               style={{
                 backgroundImage:
-                  "linear-gradient(135deg, hsl(var(--olive)) 0%, transparent 55%)",
+                  "linear-gradient(135deg, hsl(var(--sienna)) 0%, transparent 55%)",
               }}
             />
             <div className="relative flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-[0.28em] text-olive/80 font-medium mb-2.5">
+                <p className="text-[10px] uppercase tracking-[0.28em] text-sienna/90 font-medium mb-2.5">
                   Onderdeel
                 </p>
                 <h2 className="text-[26px] lg:text-[30px] font-heading font-light tracking-tight leading-none text-foreground">
