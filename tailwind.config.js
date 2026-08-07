@@ -70,6 +70,8 @@ module.exports = {
   			'slide-right': { from: { transform: 'translateX(100%)' }, to: { transform: 'translateX(0)' } },
   			'slide-left': { from: { transform: 'translateX(-100%)' }, to: { transform: 'translateX(0)' } },
   			'slide-up': { from: { transform: 'translateY(100%)' }, to: { transform: 'translateY(0)' } },
+  			'slide-down': { from: { transform: 'translateY(-100%)' }, to: { transform: 'translateY(0)' } },
+  			'scale-in': { from: { opacity: '0', transform: 'scale(0.96)' }, to: { opacity: '1', transform: 'scale(1)' } },
   			'pulse-soft': { '0%, 100%': { opacity: '0.6' }, '50%': { opacity: '1' } },
   		},
   		animation: {
@@ -79,7 +81,9 @@ module.exports = {
   			'fade-up': 'fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
   			'slide-right': 'slide-right 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
   			'slide-left': 'slide-left 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
-  			'slide-up': 'slide-up 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
+  			'slide-up': 'slide-up 0.45s cubic-bezier(0.22, 1, 0.36, 1)',
+  			'slide-down': 'slide-down 0.45s cubic-bezier(0.22, 1, 0.36, 1)',
+  			'scale-in': 'scale-in 0.35s cubic-bezier(0.22, 1, 0.36, 1)',
   			'pulse-soft': 'pulse-soft 2s ease-in-out infinite',
   		}
   	}
