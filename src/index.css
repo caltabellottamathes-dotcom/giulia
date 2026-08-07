@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,400&family=Space+Grotesk:wght@500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -29,6 +31,9 @@
     --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
     --font-display: 'Inter', ui-sans-serif, system-ui, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    /* Graphic register — bold, tight-tracking display; Editorial register — oversized serif for calm prose */
+    --font-graphic: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+    --font-editorial: 'Fraunces', ui-serif, Georgia, serif;
 
     /* GIULIA editorial palette — Metal / Clay Creek / Dark Sand / Blue Ridge Sky / Ancient Marble / Storm */
     --ivory: 60 7% 95%;
@@ -41,6 +46,10 @@
     --blue-grey: 203 16% 74%;
     --charcoal: 60 12% 16%;
     --smoke: 58 10% 52%;
+
+    /* Natural Modernism — material-per-object-type */
+    --ochre: 35 49% 57%;
+    --indigo: 228 16% 57%;
 
     --glass-bg: 51 14% 88%;
     --glass-border: 60 12% 97%;
@@ -164,6 +173,29 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Tiny wide-tracking kicker label — paired with graphic headlines */
+  .text-kicker {
+    @apply text-[10px] uppercase tracking-[0.22em] text-muted-foreground/60 font-medium;
+  }
+
+  /* Liquid Glass — real SVG refraction layer, applied behind an unfiltered content wrapper */
+  .liquid-glass-surface {
+    background: hsl(var(--glass-bg) / 0.4);
+    backdrop-filter: blur(20px) saturate(1.5);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+    filter: url(#liquid-glass);
+    border: 1px solid transparent;
+    border-image: linear-gradient(135deg, rgba(255,255,255,0.55), rgba(255,255,255,0.05) 40%, rgba(255,255,255,0.28)) 1;
+  }
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.55; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+.animate-breathe {
+  animation: breathe 3.2s ease-in-out infinite;
 }
 
 @keyframes shimmer {

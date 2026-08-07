@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { IMAGES } from "@/lib/images";
 import QuickAction from "@/components/glass/QuickAction";
 import ModulePanel from "@/components/panels/ModulePanel";
+import LiquidGlassFilter from "@/components/glass/LiquidGlassFilter";
+import AmbientPresence from "@/components/giulia/AmbientPresence";
+import CommandLayer from "@/components/giulia/CommandLayer";
 import { PanelProvider, usePanel } from "@/lib/PanelContext";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -169,13 +172,26 @@ export default function Layout() {
 
 function LayoutInner() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const { openModule } = usePanel();
   const { logout } = useAuth();
 
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setCommandOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
   return (
     <div className="min-h-screen relative">
+      <LiquidGlassFilter />
       {/* Editorial photographic backdrop — visible through glass */}
       <div
         className="fixed inset-0 pointer-events-none"
@@ -298,6 +314,10 @@ function LayoutInner() {
 
       {/* Universal quick action — floating, detached */}
       <QuickAction />
+
+      {/* Giulia's ambient presence + global command layer — invocable from anywhere */}
+      <AmbientPresence onClick={() => setCommandOpen(true)} />
+      <CommandLayer open={commandOpen} onClose={() => setCommandOpen(false)} />
 
       {/* The single sliding glass panel that hosts every module */}
       <ModulePanel />

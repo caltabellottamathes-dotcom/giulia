@@ -55,12 +55,16 @@ module.exports = {
   			'blue-grey': 'hsl(var(--blue-grey))',
   			charcoal: 'hsl(var(--charcoal))',
   			smoke: 'hsl(var(--smoke))',
+  			ochre: 'hsl(var(--ochre))',
+  			indigo: 'hsl(var(--indigo))',
   		},
   		fontFamily: {
   			heading: ['var(--font-heading)'],
   			body: ['var(--font-body)'],
   			display: ['var(--font-display)'],
-  			mono: ['var(--font-mono)']
+  			mono: ['var(--font-mono)'],
+  			graphic: ['var(--font-graphic)'],
+  			editorial: ['var(--font-editorial)'],
   		},
   		keyframes: {
   			'accordion-down': { from: { height: '0' }, to: { height: 'var(--radix-accordion-content-height)' } },
