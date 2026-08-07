@@ -3,6 +3,8 @@ import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { IMAGES } from "@/lib/images";
 import QuickAction from "@/components/glass/QuickAction";
+import ModulePanel from "@/components/panels/ModulePanel";
+import { PanelProvider, usePanel } from "@/lib/PanelContext";
 import {
   Home, Calendar, Briefcase, CheckSquare, Mail, MessageCircle,
   BookOpen, FileText, Users, MessageSquare, Mic, ClipboardCheck,
@@ -14,43 +16,45 @@ const navSections = [
   {
     label: null,
     items: [
-      { to: "/", icon: Home, label: "Home", end: true },
-      { to: "/agenda", icon: Calendar, label: "Agenda" },
-      { to: "/projects", icon: Briefcase, label: "Projects" },
-      { to: "/tasks", icon: CheckSquare, label: "Tasks" },
-      { to: "/email", icon: Mail, label: "Email" },
-      { to: "/whatsapp", icon: MessageCircle, label: "WhatsApp" },
-      { to: "/knowledge", icon: BookOpen, label: "Knowledge" },
-      { to: "/documents", icon: FileText, label: "Documents" },
-      { to: "/people", icon: Users, label: "People" },
+      { key: "home", to: "/", icon: Home, label: "Home" },
+      { key: "agenda", icon: Calendar, label: "Agenda" },
+      { key: "projects", icon: Briefcase, label: "Projects" },
+      { key: "tasks", icon: CheckSquare, label: "Tasks" },
+      { key: "email", icon: Mail, label: "Email" },
+      { key: "whatsapp", icon: MessageCircle, label: "WhatsApp" },
+      { key: "knowledge", icon: BookOpen, label: "Knowledge" },
+      { key: "documents", icon: FileText, label: "Documents" },
+      { key: "people", icon: Users, label: "People" },
     ],
   },
   {
     label: "Giulia",
     items: [
-      { to: "/chat", icon: MessageSquare, label: "Chat" },
-      { to: "/voice", icon: Mic, label: "Voice" },
+      { key: "chat", icon: MessageSquare, label: "Chat" },
+      { key: "voice", icon: Mic, label: "Voice" },
     ],
   },
   {
     label: "Intelligence",
     items: [
-      { to: "/approvals", icon: ClipboardCheck, label: "Approvals" },
-      { to: "/activity", icon: Activity, label: "Activity" },
-      { to: "/memory", icon: Brain, label: "Memory" },
+      { key: "approvals", icon: ClipboardCheck, label: "Approvals" },
+      { key: "activity", icon: Activity, label: "Activity" },
+      { key: "memory", icon: Brain, label: "Memory" },
     ],
   },
   {
     label: "System",
     items: [
-      { to: "/integrations", icon: Plug, label: "Integrations" },
-      { to: "/settings", icon: Settings, label: "Settings" },
-      { to: "/profile", icon: User, label: "Profile" },
+      { key: "integrations", icon: Plug, label: "Integrations" },
+      { key: "settings", icon: Settings, label: "Settings" },
+      { key: "profile", icon: User, label: "Profile" },
     ],
   },
 ];
 
 function SidebarContent({ onNavigate }) {
+  const { activeModule, openModule } = usePanel();
+
   return (
     <div className="flex flex-col h-full py-7 px-4">
       {/* Logo */}
@@ -63,7 +67,8 @@ function SidebarContent({ onNavigate }) {
         </span>
       </div>
 
-      {/* Navigation — visually subordinate, quiet */}
+      {/* Navigation — visually subordinate, quiet. Every item except Home
+          opens the single sliding module panel instead of routing away. */}
       <nav className="flex-1 space-y-5 overflow-y-auto">
         {navSections.map((section, si) => (
           <div key={si} className="space-y-0.5">
@@ -72,32 +77,54 @@ function SidebarContent({ onNavigate }) {
                 {section.label}
               </p>
             )}
-            {section.items.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                onClick={onNavigate}
-                className={({ isActive }) =>
-                  cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] transition-all duration-300 relative group",
-                    isActive
+            {section.items.map((item) =>
+              item.to ? (
+                <NavLink
+                  key={item.key}
+                  to={item.to}
+                  end
+                  onClick={onNavigate}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] transition-all duration-300 relative group",
+                      isActive
+                        ? "glass-1 text-foreground font-medium"
+                        : "text-muted-foreground hover:text-foreground hover:bg-foreground/[0.02]"
+                    )
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-0.5 rounded-full bg-olive" />
+                      )}
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      <span className="truncate">{item.label}</span>
+                    </>
+                  )}
+                </NavLink>
+              ) : (
+                <button
+                  key={item.key}
+                  onClick={() => {
+                    openModule(item.key);
+                    onNavigate?.();
+                  }}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] transition-all duration-300 relative group",
+                    activeModule === item.key
                       ? "glass-1 text-foreground font-medium"
                       : "text-muted-foreground hover:text-foreground hover:bg-foreground/[0.02]"
-                  )
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    {isActive && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-0.5 rounded-full bg-olive" />
-                    )}
-                    <item.icon className="h-4 w-4 shrink-0" />
-                    <span className="truncate">{item.label}</span>
-                  </>
-                )}
-              </NavLink>
-            ))}
+                  )}
+                >
+                  {activeModule === item.key && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-0.5 rounded-full bg-olive" />
+                  )}
+                  <item.icon className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{item.label}</span>
+                </button>
+              )
+            )}
           </div>
         ))}
       </nav>
@@ -122,9 +149,18 @@ function SidebarContent({ onNavigate }) {
 }
 
 export default function Layout() {
+  return (
+    <PanelProvider>
+      <LayoutInner />
+    </PanelProvider>
+  );
+}
+
+function LayoutInner() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const { openModule } = usePanel();
 
   return (
     <div className="min-h-screen relative">
@@ -202,14 +238,14 @@ export default function Layout() {
               Giulia actief
             </div>
             <button
-              onClick={() => navigate("/approvals")}
+              onClick={() => openModule("approvals")}
               className="h-9 w-9 rounded-full glass-1 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors relative"
             >
               <Bell className="h-4 w-4" />
               <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-olive" />
             </button>
             <button
-              onClick={() => navigate("/profile")}
+              onClick={() => openModule("profile")}
               className="h-9 w-9 rounded-full overflow-hidden border border-border/40 hover:ring-2 hover:ring-ring/20 transition-all"
             >
               <img
@@ -229,6 +265,9 @@ export default function Layout() {
 
       {/* Universal quick action — floating, detached */}
       <QuickAction />
+
+      {/* The single sliding glass panel that hosts every module */}
+      <ModulePanel />
     </div>
   );
 }

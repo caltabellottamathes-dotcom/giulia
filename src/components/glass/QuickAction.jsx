@@ -1,29 +1,29 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import FloatingPanel from "@/components/glass/FloatingPanel";
+import { usePanel } from "@/lib/PanelContext";
 import {
   Plus, CheckSquare, Briefcase, Calendar, Mail, MessageCircle,
   FileText, Sparkles, Phone,
 } from "lucide-react";
 
 const actions = [
-  { label: "Nieuwe taak", icon: CheckSquare, path: "/tasks" },
-  { label: "Nieuw project", icon: Briefcase, path: "/projects" },
-  { label: "Nieuw event", icon: Calendar, path: "/agenda" },
-  { label: "Email opstellen", icon: Mail, path: "/email" },
-  { label: "Bericht sturen", icon: MessageCircle, path: "/whatsapp" },
-  { label: "Document uploaden", icon: FileText, path: "/documents" },
-  { label: "Vraag Giulia", icon: Sparkles, path: "/chat" },
-  { label: "Bel Giulia", icon: Phone, path: "/voice" },
+  { label: "Nieuwe taak", icon: CheckSquare, key: "tasks" },
+  { label: "Nieuw project", icon: Briefcase, key: "projects" },
+  { label: "Nieuw event", icon: Calendar, key: "agenda" },
+  { label: "Email opstellen", icon: Mail, key: "email" },
+  { label: "Bericht sturen", icon: MessageCircle, key: "whatsapp" },
+  { label: "Document uploaden", icon: FileText, key: "documents" },
+  { label: "Vraag Giulia", icon: Sparkles, key: "chat" },
+  { label: "Bel Giulia", icon: Phone, key: "voice" },
 ];
 
 export default function QuickAction() {
   const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
+  const { openModule } = usePanel();
 
-  const handleAction = (path) => {
+  const handleAction = (key) => {
     setOpen(false);
-    navigate(path);
+    openModule(key);
   };
 
   return (
@@ -56,7 +56,7 @@ export default function QuickAction() {
             {actions.map((action) => (
               <button
                 key={action.label}
-                onClick={() => handleAction(action.path)}
+                onClick={() => handleAction(action.key)}
                 className="glass-1 rounded-2xl p-4 flex flex-col items-center gap-3 hover:scale-[1.03] transition-all duration-300 group"
               >
                 <div className="h-11 w-11 rounded-full glass-1 flex items-center justify-center">

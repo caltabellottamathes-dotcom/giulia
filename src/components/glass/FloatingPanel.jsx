@@ -19,7 +19,7 @@ import { X } from "lucide-react";
 
 const positions = {
   right:
-    "fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 w-[calc(100%-2rem)] lg:w-[440px] z-50",
+    "fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 w-[calc(100%-2rem)] lg:w-[720px] z-50",
   left:
     "fixed left-4 lg:left-6 top-4 lg:top-6 bottom-4 lg:bottom-6 w-[calc(100%-2rem)] lg:w-[380px] z-50",
   bottom:

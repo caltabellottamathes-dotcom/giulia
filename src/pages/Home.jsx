@@ -1,8 +1,8 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import { IMAGES } from "@/lib/images";
 import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
+import { usePanel } from "@/lib/PanelContext";
 import {
   mockProjects, mockTasks, mockEvents, mockApprovals,
 } from "@/lib/mockData";
@@ -21,17 +21,17 @@ import {
  */
 
 const quickActions = [
-  { label: "Projecten", icon: Briefcase, path: "/projects" },
-  { label: "Email", icon: Mail, path: "/email" },
-  { label: "WhatsApp", icon: MessageCircle, path: "/whatsapp" },
-  { label: "Nieuwe taak", icon: CheckSquare, path: "/tasks" },
-  { label: "Agenda", icon: Calendar, path: "/agenda" },
-  { label: "Vraag Giulia", icon: Sparkles, path: "/chat" },
-  { label: "Bel Giulia", icon: Phone, path: "/voice" },
+  { label: "Projecten", icon: Briefcase, key: "projects" },
+  { label: "Email", icon: Mail, key: "email" },
+  { label: "WhatsApp", icon: MessageCircle, key: "whatsapp" },
+  { label: "Nieuwe taak", icon: CheckSquare, key: "tasks" },
+  { label: "Agenda", icon: Calendar, key: "agenda" },
+  { label: "Vraag Giulia", icon: Sparkles, key: "chat" },
+  { label: "Bel Giulia", icon: Phone, key: "voice" },
 ];
 
 export default function Home() {
-  const navigate = useNavigate();
+  const { openModule } = usePanel();
 
   const todayEvents = mockEvents.filter((e) => e.start.startsWith("2026-08-07"));
   const todayTasks = mockTasks.filter((t) => t.status === "today");
@@ -80,7 +80,7 @@ export default function Home() {
           <div className="flex items-baseline justify-between mb-7">
             <h2 className="text-2xl font-heading font-light tracking-tight">Vandaag</h2>
             <button
-              onClick={() => navigate("/agenda")}
+              onClick={() => openModule("agenda")}
               className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
             >
               Volledige agenda <ArrowRight className="h-3 w-3" />
@@ -95,7 +95,7 @@ export default function Home() {
                 <div
                   key={event.id}
                   className="flex items-start gap-5 py-3.5 -mx-2 px-2 rounded-xl hover:bg-foreground/[0.02] transition-colors cursor-pointer group"
-                  onClick={() => navigate("/agenda")}
+                  onClick={() => openModule("agenda")}
                 >
                   <div className="text-right shrink-0 w-16">
                     <p className="text-sm font-medium tabular-nums">
@@ -180,12 +180,12 @@ export default function Home() {
               variant="primary"
               size="md"
               className="w-full"
-              onClick={() => navigate("/approvals")}
+              onClick={() => openModule("approvals")}
             >
               Bekijk voorstel
             </GlassButton>
             <button
-              onClick={() => navigate("/chat")}
+              onClick={() => openModule("chat")}
               className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors py-1.5"
             >
               Negeer — vraag Giulia iets anders
@@ -204,7 +204,7 @@ export default function Home() {
             {attentionItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => navigate("/approvals")}
+                onClick={() => openModule("approvals")}
                 className="glass-1 rounded-2xl p-5 text-left hover:scale-[1.01] transition-transform group flex items-start gap-3"
               >
                 <AlertCircle className="h-4 w-4 text-olive shrink-0 mt-0.5" />
@@ -226,7 +226,7 @@ export default function Home() {
         {quickActions.map((action) => (
           <button
             key={action.label}
-            onClick={() => navigate(action.path)}
+            onClick={() => openModule(action.key)}
             className="glass-1 rounded-full px-4 py-2.5 text-xs font-medium flex items-center gap-2 hover:scale-[1.02] hover:text-foreground transition-all duration-300 group"
           >
             <action.icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
