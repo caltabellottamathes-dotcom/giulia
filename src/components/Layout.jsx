@@ -207,15 +207,18 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-background relative">
-      {/* Subtle editorial texture background */}
+      {/* Editorial photographic backdrop — visible through glass */}
       <div
-        className="fixed inset-0 pointer-events-none opacity-[0.025]"
+        className="fixed inset-0 pointer-events-none"
         style={{
           backgroundImage: `url(${IMAGES.feetChair})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
+          opacity: 0.22,
+          filter: "blur(7px) saturate(0.85)",
         }}
       />
+      <div className="fixed inset-0 pointer-events-none bg-gradient-to-br from-warm-white/50 via-transparent to-warm-white/40" />
 
       <Sidebar
         collapsed={collapsed}
