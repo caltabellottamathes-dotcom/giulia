@@ -5,19 +5,29 @@ import Widget from "@/components/widgets/Widget";
 import { ProgressBar } from "@/components/widgets/WidgetVisuals";
 import { usePanel } from "@/lib/PanelContext";
 import { mockProjects, mockTasks, mockEvents, mockApprovals } from "@/lib/mockData";
-import { Calendar, Sparkles, ClipboardCheck, Briefcase } from "lucide-react";
+import {
+  Calendar, Sparkles, ClipboardCheck, Briefcase, Search, Mail,
+  CheckSquare, MessageCircle,
+} from "lucide-react";
+
+const consoleActions = [
+  { key: "chat", icon: Search, label: "Vraag" },
+  { key: "email", icon: Mail, label: "Email" },
+  { key: "tasks", icon: CheckSquare, label: "Taken" },
+  { key: "agenda", icon: Calendar, label: "Agenda" },
+  { key: "whatsapp", icon: MessageCircle, label: "WhatsApp" },
+  { key: "projects", icon: Briefcase, label: "Projecten" },
+];
 
 /**
- * Today — the entry point, not a home screen. A living briefing answering
- * "what deserves attention right now": short prose fragments, calm and
- * fixed (not a manipulable canvas). Below it, exactly the items that need
- * attention are surfaced as designed widgets — never a dashboard of counts.
+ * Today — the entry point, not a home screen. A console panel, not a
+ * marketing hero: system status on the left, active profiles on the right.
+ * Below it, only what needs attention — as designed widgets.
  */
 export default function Home() {
   const { openModule } = usePanel();
 
   const todayEvents = mockEvents.filter((e) => e.start.startsWith("2026-08-07"));
-  const todayTasks = mockTasks.filter((t) => t.status === "today");
   const overdueTask = mockTasks.find((t) => t.status === "overdue");
   const pendingApproval = mockApprovals.find((a) => a.status === "pending");
   const overdueProject = mockProjects.find((p) => p.id === overdueTask?.project_id);
@@ -26,38 +36,39 @@ export default function Home() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Goedemorgen" : hour < 18 ? "Goedemiddag" : "Goedenavond";
 
-  const fragments = [
-    overdueProject && `${overdueProject.title} vraagt je aandacht.`,
-    pendingApproval && `${pendingApproval.target} wacht op een antwoord.`,
-    todayEvents.length > 0 &&
-      `Je hebt ${todayEvents.length} ${todayEvents.length === 1 ? "afspraak" : "afspraken"} vandaag.`,
-    todayTasks.length > 0 && `${todayTasks.length} taken staan open voor vandaag.`,
-  ].filter(Boolean);
+  const status = overdueProject
+    ? `${overdueProject.title} vraagt aandacht.`
+    : pendingApproval
+    ? `${pendingApproval.target} wacht op een antwoord.`
+    : "Niets vraagt om aandacht.";
 
   return (
     <div className="space-y-14 animate-fade-up">
-      {/* Hero — graphic register: huge tight headline + tiny wide-tracking kicker,
-          set over real photography so the liquid glass has something to refract. */}
-      <LiquidPanel bgImage={IMAGES.sittingChairs} className="float-shadow" contentClassName="px-8 lg:px-14 py-14 lg:py-20">
-        <p className="text-kicker mb-4">
-          {new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}
-        </p>
-        <h1 className="font-graphic font-bold text-5xl lg:text-7xl tracking-[-0.04em] leading-[0.95] mb-8 text-balance">
-          {greeting}.
-        </h1>
-        <div className="space-y-2.5 max-w-xl">
-          <p className="font-editorial text-lg lg:text-xl text-foreground/85 leading-relaxed">Vandaag</p>
-          {fragments.length > 0 ? (
-            fragments.map((line, i) => (
-              <p key={i} className="font-editorial text-lg lg:text-xl text-foreground/70 leading-relaxed">
-                — {line}
-              </p>
-            ))
-          ) : (
-            <p className="font-editorial text-lg lg:text-xl text-foreground/70 leading-relaxed">
-              — Niets vraagt om aandacht. Rustige dag.
-            </p>
-          )}
+      {/* Console panel — system status + active profiles, not a photo hero */}
+      <LiquidPanel bgImage={IMAGES.sittingChairs} className="float-shadow" contentClassName="p-0">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr]">
+          <div className="px-8 lg:px-12 py-10 lg:py-12">
+            <p className="text-kicker mb-3">Privé-besturingssysteem</p>
+            <h1 className="font-graphic font-bold text-4xl lg:text-6xl tracking-[-0.04em] leading-[0.95] mb-4 text-balance">
+              {greeting}.
+            </h1>
+            <p className="text-sm text-foreground/70 leading-relaxed max-w-md">{status}</p>
+          </div>
+          <div className="px-8 lg:px-12 py-10 lg:py-12 lg:border-l border-white/10">
+            <p className="text-kicker mb-4">Actieve profielen</p>
+            <div className="grid grid-cols-3 gap-3 max-w-xs">
+              {consoleActions.map((action) => (
+                <button
+                  key={action.key}
+                  onClick={() => openModule(action.key)}
+                  className="glass-1 rounded-xl aspect-square flex flex-col items-center justify-center gap-1.5 hover:scale-[1.04] transition-transform duration-300"
+                >
+                  <action.icon className="h-4 w-4 text-foreground/80" />
+                  <span className="text-[9px] text-foreground/60 tracking-wide">{action.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </LiquidPanel>
 
