@@ -4,25 +4,25 @@
 
 @layer base {
   :root {
-    --background: 40 20% 96%;
-    --foreground: 30 8% 12%;
-    --card: 40 16% 99%;
-    --card-foreground: 30 8% 12%;
-    --popover: 40 16% 99%;
-    --popover-foreground: 30 8% 12%;
-    --primary: 30 8% 14%;
-    --primary-foreground: 40 20% 96%;
-    --secondary: 40 14% 92%;
-    --secondary-foreground: 30 8% 14%;
-    --muted: 40 12% 90%;
-    --muted-foreground: 30 6% 42%;
-    --accent: 75 12% 55%;
-    --accent-foreground: 30 8% 14%;
+    --background: 60 7% 95%;
+    --foreground: 60 12% 16%;
+    --card: 60 10% 97%;
+    --card-foreground: 60 12% 16%;
+    --popover: 60 10% 97%;
+    --popover-foreground: 60 12% 16%;
+    --primary: 60 12% 16%;
+    --primary-foreground: 60 7% 95%;
+    --secondary: 51 17% 87%;
+    --secondary-foreground: 60 12% 16%;
+    --muted: 51 15% 90%;
+    --muted-foreground: 58 12% 38%;
+    --accent: 58 23% 47%;
+    --accent-foreground: 60 7% 95%;
     --destructive: 10 30% 50%;
-    --destructive-foreground: 40 20% 96%;
-    --border: 40 10% 88%;
-    --input: 40 10% 86%;
-    --ring: 30 8% 20%;
+    --destructive-foreground: 60 7% 95%;
+    --border: 51 14% 82%;
+    --input: 51 14% 80%;
+    --ring: 60 12% 20%;
     --radius: 0.75rem;
 
     --font-heading: 'Inter', ui-sans-serif, system-ui, sans-serif;
@@ -30,20 +30,20 @@
     --font-display: 'Inter', ui-sans-serif, system-ui, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-    /* GIULIA editorial palette */
-    --ivory: 40 22% 97%;
-    --warm-white: 40 18% 99%;
-    --stone: 40 8% 82%;
-    --beige: 38 14% 88%;
-    --sand: 40 10% 84%;
-    --olive: 75 14% 48%;
-    --olive-muted: 75 10% 58%;
-    --blue-grey: 210 12% 62%;
-    --charcoal: 30 8% 16%;
-    --smoke: 40 6% 55%;
+    /* GIULIA editorial palette — Metal / Clay Creek / Dark Sand / Blue Ridge Sky / Ancient Marble / Storm */
+    --ivory: 60 7% 95%;
+    --warm-white: 60 10% 97%;
+    --stone: 51 17% 85%;
+    --beige: 51 15% 88%;
+    --sand: 58 23% 47%;
+    --olive: 58 23% 47%;
+    --olive-muted: 58 15% 46%;
+    --blue-grey: 203 16% 74%;
+    --charcoal: 60 12% 16%;
+    --smoke: 58 10% 52%;
 
-    --glass-bg: 36 6% 86%;
-    --glass-border: 40 12% 94%;
+    --glass-bg: 51 14% 88%;
+    --glass-border: 60 12% 97%;
   }
 }
 

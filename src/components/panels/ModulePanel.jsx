@@ -22,16 +22,31 @@ export default function ModulePanel() {
     >
       {mod && (
         <div className="flex flex-col h-full">
-          <div className="px-6 lg:px-8 pt-6 pb-4 border-b border-border/30 shrink-0">
-            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">
-              Onderdeel
-            </p>
-            <h2 className="text-lg font-heading font-light flex items-center gap-2.5">
-              <mod.icon className="h-4 w-4 text-muted-foreground" />
-              {mod.label}
-            </h2>
+          <div className="relative px-7 lg:px-9 pt-8 pb-6 shrink-0 overflow-hidden">
+            {/* Editorial accent field behind the title */}
+            <div
+              className="absolute inset-0 opacity-[0.06] pointer-events-none"
+              style={{
+                backgroundImage:
+                  "linear-gradient(135deg, hsl(var(--olive)) 0%, transparent 55%)",
+              }}
+            />
+            <div className="relative flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-[10px] uppercase tracking-[0.28em] text-olive/80 font-medium mb-2.5">
+                  Onderdeel
+                </p>
+                <h2 className="text-[26px] lg:text-[30px] font-heading font-light tracking-tight leading-none text-foreground">
+                  {mod.label}
+                </h2>
+              </div>
+              <div className="h-11 w-11 rounded-full glass-1 flex items-center justify-center shrink-0 mt-0.5">
+                <mod.icon className="h-4 w-4 text-foreground/70" strokeWidth={1.5} />
+              </div>
+            </div>
+            <div className="relative mt-6 h-px w-full bg-gradient-to-r from-border/70 via-border/30 to-transparent" />
           </div>
-          <div className="flex-1 overflow-y-auto px-6 lg:px-8 py-6">
+          <div className="flex-1 overflow-y-auto px-7 lg:px-9 py-7">
             <ActiveComponent />
           </div>
         </div>

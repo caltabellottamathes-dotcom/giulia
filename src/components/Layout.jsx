@@ -6,11 +6,22 @@ import QuickAction from "@/components/glass/QuickAction";
 import ModulePanel from "@/components/panels/ModulePanel";
 import { PanelProvider, usePanel } from "@/lib/PanelContext";
 import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/lib/AuthContext";
+import {
   Home, Calendar, Briefcase, CheckSquare, Mail, MessageCircle,
   BookOpen, FileText, Users, MessageSquare, Mic, ClipboardCheck,
   Activity, Brain, Plug, Settings, User, Search, Bell, Sparkles,
-  Menu, X,
+  Menu, X, LogOut, ChevronDown,
 } from "lucide-react";
+
+const userMenuItems = [
+  { key: "profile", icon: User, label: "Profile" },
+  { key: "settings", icon: Settings, label: "Settings" },
+  { key: "integrations", icon: Plug, label: "Integrations" },
+];
 
 const navSections = [
   {
@@ -161,6 +172,7 @@ function LayoutInner() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const { openModule } = usePanel();
+  const { logout } = useAuth();
 
   return (
     <div className="min-h-screen relative">
@@ -244,16 +256,37 @@ function LayoutInner() {
               <Bell className="h-4 w-4" />
               <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-olive" />
             </button>
-            <button
-              onClick={() => openModule("profile")}
-              className="h-9 w-9 rounded-full overflow-hidden border border-border/40 hover:ring-2 hover:ring-ring/20 transition-all"
-            >
-              <img
-                src={IMAGES.portraitThinking}
-                alt="Profile"
-                className="h-full w-full object-cover"
-              />
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-1.5 pl-0.5 pr-1 h-9 rounded-full border border-border/40 hover:ring-2 hover:ring-ring/20 transition-all glass-1">
+                  <span className="h-8 w-8 rounded-full overflow-hidden shrink-0">
+                    <img
+                      src={IMAGES.portraitThinking}
+                      alt="Profile"
+                      className="h-full w-full object-cover"
+                    />
+                  </span>
+                  <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52 glass-2 border-border/40">
+                {userMenuItems.map((item) => (
+                  <DropdownMenuItem
+                    key={item.key}
+                    onClick={() => openModule(item.key)}
+                    className="gap-2.5 text-[13px]"
+                  >
+                    <item.icon className="h-3.5 w-3.5 text-muted-foreground" />
+                    {item.label}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => logout()} className="gap-2.5 text-[13px] text-destructive">
+                  <LogOut className="h-3.5 w-3.5" />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 
