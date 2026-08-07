@@ -1,17 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 
 /**
  * useEntityList — fetch real entity records (user-scoped via RLS).
- * Replaces mock data across the dashboard + screens.
+ * `reload()` re-fetches after create/update/delete.
  */
 export function useEntityList(name, { filter, sort, limit } = {}) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [tick, setTick] = useState(0);
   const key = JSON.stringify(filter || {});
+
+  const reload = useCallback(() => setTick((t) => t + 1), []);
 
   useEffect(() => {
     let active = true;
+    setLoading(true);
     (async () => {
       try {
         const res =
@@ -32,7 +36,7 @@ export function useEntityList(name, { filter, sort, limit } = {}) {
     return () => {
       active = false;
     };
-  }, [name, key, sort, limit]);
+  }, [name, key, sort, limit, tick]);
 
-  return { data, loading };
+  return { data, loading, reload };
 }

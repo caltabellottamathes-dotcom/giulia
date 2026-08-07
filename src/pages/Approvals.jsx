@@ -4,13 +4,15 @@ import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
 import StatusBadge from "@/components/glass/StatusBadge";
 import FloatingPanel from "@/components/glass/FloatingPanel";
-import { mockApprovals, mockProjects } from "@/lib/mockData";
+import { useEntityList } from "@/hooks/useEntity";
+import { base44 } from "@/api/base44Client";
 import {
   Check, X, Edit3, Mail, MessageCircle, Calendar, CheckSquare,
   FileText, Sparkles, ClipboardCheck, AlertCircle,
 } from "lucide-react";
 
-const categories = ["All", "Email", "WhatsApp", "Calendar", "Tasks", "Projects", "Documents", "Other"];
+const categories = ["All", "email", "whatsapp", "calendar", "tasks", "projects", "documents", "other"];
+const categoryLabel = { email: "Email", whatsapp: "WhatsApp", calendar: "Calendar", tasks: "Tasks", projects: "Projects", documents: "Documents", other: "Other" };
 
 const categoryIcons = {
   email: Mail, whatsapp: MessageCircle, calendar: Calendar,
@@ -19,44 +21,43 @@ const categoryIcons = {
 
 export default function Approvals() {
   const [category, setCategory] = useState("All");
-  const [selectedApproval, setSelectedApproval] = useState(null);
-  const [approvals, setApprovals] = useState(mockApprovals);
+  const [selected, setSelected] = useState(null);
+  const [editText, setEditText] = useState("");
 
-  const filtered = approvals.filter((a) => category === "All" || a.category === category.toLowerCase());
+  const { data: approvals, loading, reload } = useEntityList("Approval");
+  const { data: projects } = useEntityList("Project");
+  const projTitle = (id) => projects.find((p) => p.id === id)?.title;
 
-  const handleApprove = (id) => {
-    setApprovals(approvals.map((a) => (a.id === id ? { ...a, status: "approved" } : a)));
-    setSelectedApproval(null);
-  };
+  const filtered = approvals.filter((a) => category === "All" || a.category === category);
+  const pending = filtered.filter((a) => a.status === "pending");
 
-  const handleReject = (id) => {
-    setApprovals(approvals.map((a) => (a.id === id ? { ...a, status: "rejected" } : a)));
-    setSelectedApproval(null);
+  const setStatus = async (id, status) => {
+    await base44.entities.Approval.update(id, { status });
+    setSelected(null);
+    reload();
   };
 
   return (
     <div className="space-y-6 animate-fade-up">
       <div>
-        <h1 className="text-2xl font-heading font-light tracking-tight">Needs your approval</h1>
+        <h1 className="text-2xl font-display font-semibold tracking-tight">Ter goedkeuring</h1>
         <p className="text-sm text-muted-foreground mt-1">Centrale AI-controlekamer</p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "Wachtend", count: approvals.filter((a) => a.status === "pending").length, variant: "urgent" },
-          { label: "Goedgekeurd", count: approvals.filter((a) => a.status === "approved").length, variant: "completed" },
-          { label: "Afgewezen", count: approvals.filter((a) => a.status === "rejected").length, variant: "muted" },
-          { label: "Uitgevoerd", count: approvals.filter((a) => a.status === "executed").length, variant: "active" },
+          { label: "Wachtend", count: approvals.filter((a) => a.status === "pending").length },
+          { label: "Goedgekeurd", count: approvals.filter((a) => a.status === "approved").length },
+          { label: "Afgewezen", count: approvals.filter((a) => a.status === "rejected").length },
+          { label: "Uitgevoerd", count: approvals.filter((a) => a.status === "executed").length },
         ].map((stat) => (
           <GlassPanel key={stat.label} level={1} className="p-4">
-            <p className="text-2xl font-heading font-light">{stat.count}</p>
+            <p className="text-2xl font-display font-semibold">{stat.count}</p>
             <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
           </GlassPanel>
         ))}
       </div>
 
-      {/* Category filters */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
         {categories.map((cat) => (
           <button
@@ -67,16 +68,15 @@ export default function Approvals() {
               category === cat ? "bg-foreground text-background font-medium" : "glass-1 text-muted-foreground hover:text-foreground"
             )}
           >
-            {cat}
+            {cat === "All" ? "Alles" : categoryLabel[cat] || cat}
           </button>
         ))}
       </div>
 
-      {/* Approval list */}
       <div className="space-y-3">
-        {filtered.filter((a) => a.status === "pending").map((approval) => {
+        {loading && [0, 1].map((i) => <div key={i} className="h-32 rounded-2xl shimmer" />)}
+        {!loading && pending.map((approval) => {
           const Icon = categoryIcons[approval.category] || AlertCircle;
-          const project = mockProjects.find((p) => p.id === approval.project_id);
           return (
             <GlassPanel key={approval.id} level={2} className="p-5">
               <div className="flex items-start gap-4">
@@ -86,10 +86,10 @@ export default function Approvals() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <StatusBadge variant="urgent">{approval.category}</StatusBadge>
-                    <StatusBadge variant="muted">{approval.action_type.replace("_", " ")}</StatusBadge>
+                    {approval.action_type && <StatusBadge variant="muted">{approval.action_type.replace(/_/g, " ")}</StatusBadge>}
                   </div>
-                  <h3 className="text-sm font-heading font-medium">{approval.description}</h3>
-                  <p className="text-xs text-muted-foreground mt-1">{approval.proposed_action}</p>
+                  <h3 className="text-sm font-display font-semibold">{approval.description}</h3>
+                  {approval.proposed_action && <p className="text-xs text-muted-foreground mt-1">{approval.proposed_action}</p>}
                   {approval.context && (
                     <div className="glass-1 rounded-lg p-3 mt-3">
                       <div className="flex items-center gap-1.5 mb-1">
@@ -99,27 +99,21 @@ export default function Approvals() {
                       <p className="text-xs text-muted-foreground">{approval.context}</p>
                     </div>
                   )}
-                  {project && (
-                    <p className="text-[10px] text-olive mt-2">Gekoppeld: {project.title}</p>
+                  {approval.project_id && projTitle(approval.project_id) && (
+                    <p className="text-[10px] text-olive mt-2">Gekoppeld: {projTitle(approval.project_id)}</p>
                   )}
                 </div>
               </div>
               <div className="flex gap-2 mt-4 pt-4 border-t border-border/40">
-                <GlassButton variant="primary" size="sm" onClick={() => handleApprove(approval.id)}>
-                  <Check className="h-4 w-4" /> Goedkeuren
-                </GlassButton>
-                <GlassButton variant="outline" size="sm" onClick={() => setSelectedApproval(approval)}>
-                  <Edit3 className="h-4 w-4" /> Bewerk
-                </GlassButton>
-                <GlassButton variant="ghost" size="sm" onClick={() => handleReject(approval.id)}>
-                  <X className="h-4 w-4" /> Afwijzen
-                </GlassButton>
+                <GlassButton variant="primary" size="sm" onClick={() => setStatus(approval.id, "approved")}><Check className="h-4 w-4" /> Goedkeuren</GlassButton>
+                <GlassButton variant="outline" size="sm" onClick={() => { setSelected(approval); setEditText(approval.proposed_action || ""); }}><Edit3 className="h-4 w-4" /> Bewerk</GlassButton>
+                <GlassButton variant="ghost" size="sm" onClick={() => setStatus(approval.id, "rejected")}><X className="h-4 w-4" /> Afwijzen</GlassButton>
               </div>
             </GlassPanel>
           );
         })}
 
-        {filtered.filter((a) => a.status === "pending").length === 0 && (
+        {!loading && pending.length === 0 && (
           <GlassPanel level={2} className="p-12 text-center">
             <ClipboardCheck className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
             <p className="text-sm text-muted-foreground">Geen acties wachten op goedkeuring</p>
@@ -128,27 +122,27 @@ export default function Approvals() {
         )}
       </div>
 
-      {/* Edit floating panel */}
-      <FloatingPanel open={!!selectedApproval} onClose={() => setSelectedApproval(null)} position="right">
-        {selectedApproval && (
+      <FloatingPanel open={!!selected} onClose={() => setSelected(null)} position="right">
+        {selected && (
           <div className="space-y-5">
             <div>
-              <StatusBadge variant="urgent">{selectedApproval.category}</StatusBadge>
-              <h2 className="text-xl font-heading font-medium mt-3">Actie bewerken</h2>
-              <p className="text-sm text-muted-foreground mt-1">{selectedApproval.description}</p>
+              <StatusBadge variant="urgent">{selected.category}</StatusBadge>
+              <h2 className="text-xl font-display font-semibold mt-3">Actie bewerken</h2>
+              <p className="text-sm text-muted-foreground mt-1">{selected.description}</p>
             </div>
             <div>
               <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Voorgestelde actie</label>
               <textarea
-                defaultValue={selectedApproval.proposed_action}
+                value={editText}
+                onChange={(e) => setEditText(e.target.value)}
                 className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none min-h-[100px] resize-none"
               />
             </div>
             <div className="flex gap-2">
-              <GlassButton variant="primary" size="md" className="flex-1" onClick={() => handleApprove(selectedApproval.id)}>
+              <GlassButton variant="primary" size="md" className="flex-1" onClick={async () => { await base44.entities.Approval.update(selected.id, { proposed_action: editText }); setStatus(selected.id, "executed"); }}>
                 <Check className="h-4 w-4" /> Goedkeuren & Uitvoeren
               </GlassButton>
-              <GlassButton variant="outline" size="md" onClick={() => setSelectedApproval(null)}>Annuleer</GlassButton>
+              <GlassButton variant="outline" size="md" onClick={() => setSelected(null)}>Annuleer</GlassButton>
             </div>
           </div>
         )}

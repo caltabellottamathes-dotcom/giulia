@@ -9,8 +9,8 @@ import ApprovalsWidget from "@/components/widgets/ApprovalsWidget";
 
 /**
  * Home — the GIULIA OS widget center, mobile-first.
- * Full-bleed editorial photo to the viewport edges; an asymmetric but
- * ALIGNED bento (no staggering); content slides away when a panel opens.
+ * Full-bleed editorial photo to the viewport edges; a floating, shifted,
+ * asymmetric bento where the glass widgets overlap each other over the photo.
  */
 export default function Home() {
   const { activeModule, openModule } = usePanel();
@@ -51,21 +51,28 @@ export default function Home() {
           </h1>
         </header>
 
-        {/* Asymmetric, aligned bento — no offsets, just varied spans */}
+        {/* Floating, overlapping, asymmetric bento over the photo */}
         <div
-          className="px-5 lg:px-10 pb-8 lg:pb-10 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5"
-          style={{ gridAutoRows: "minmax(160px, auto)" }}
+          className="px-5 lg:px-10 pb-10 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5"
+          style={{ gridAutoRows: "minmax(150px, auto)" }}
         >
-          <div className="lg:col-span-7 lg:row-span-2 relative z-10">
+          {/* Concierge — the large anchor, base layer */}
+          <div className="lg:col-start-1 lg:col-span-7 lg:row-start-1 lg:row-span-2 relative z-10">
             <ConciergeWidget />
           </div>
-          <div className="lg:col-span-5 relative z-20">
+
+          {/* Agenda — floats above, shifted left into the Concierge */}
+          <div className="lg:col-start-8 lg:col-span-5 lg:row-start-1 relative z-20 lg:-ml-4">
             <AgendaWidget />
           </div>
-          <div className="lg:col-span-5 relative z-20">
+
+          {/* Tasks — floats below Agenda, shifted */}
+          <div className="lg:col-start-8 lg:col-span-5 lg:row-start-2 relative z-20 lg:-mt-6">
             <TasksWidget />
           </div>
-          <div className="lg:col-span-12 relative z-20">
+
+          {/* Approvals — wide, to the edge, overlaps the stack */}
+          <div className="lg:col-start-1 lg:col-span-12 lg:row-start-3 relative z-30 lg:-mt-8">
             <ApprovalsWidget />
           </div>
         </div>
