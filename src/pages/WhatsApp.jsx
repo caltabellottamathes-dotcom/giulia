@@ -21,7 +21,7 @@ export default function WhatsApp() {
   const project = mockProjects.find((p) => p.id === messages[0]?.project_id);
 
   return (
-    <div className="h-[calc(100vh-7rem)] flex flex-col animate-fade-up">
+    <div className="h-full min-h-0 flex flex-col animate-fade-up">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-heading font-light tracking-tight">WhatsApp</h1>

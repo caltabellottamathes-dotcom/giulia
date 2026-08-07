@@ -64,98 +64,100 @@
 }
 
 @layer components {
-  /* Glass system — smoked translucent panels */
+  /* Glass system — living-canvas translucent panels (approved GIULIA palette).
+     Spec: backdrop blur 24px+ saturate 160%; warm tint; thin top/left highlight;
+     deep soft multi-layer shadow; radii 16–32px; spring easing. */
   .glass {
-    background: hsl(var(--glass-bg) / 0.16);
-    backdrop-filter: blur(32px) saturate(1.1);
-    -webkit-backdrop-filter: blur(32px) saturate(1.1);
-    border: 1px solid hsl(var(--glass-border) / 0.65);
+    background: hsl(var(--warm-white) / 0.08);
+    backdrop-filter: blur(24px) saturate(1.6);
+    -webkit-backdrop-filter: blur(24px) saturate(1.6);
+    border: 1px solid hsl(var(--warm-white) / 0.20);
     box-shadow:
-      inset 0 1px 0 0 hsl(40 20% 100% / 0.55),
-      inset 0 0 0 1px hsl(40 20% 100% / 0.06),
-      0 18px 44px -16px hsl(30 10% 20% / 0.2),
-      0 6px 16px -8px hsl(30 10% 20% / 0.1);
+      inset 0 1px 0 0 hsl(40 20% 100% / 0.22),
+      inset 1px 0 0 0 hsl(40 20% 100% / 0.10),
+      0 18px 44px -16px hsl(30 10% 20% / 0.22),
+      0 6px 16px -8px hsl(30 10% 20% / 0.12);
   }
 
   .glass-1 {
-    background: hsl(var(--glass-bg) / 0.10);
-    backdrop-filter: blur(20px) saturate(1.05);
-    -webkit-backdrop-filter: blur(20px) saturate(1.05);
-    border: 1px solid hsl(var(--glass-border) / 0.45);
-    box-shadow: inset 0 1px 0 0 hsl(40 20% 100% / 0.4);
+    background: hsl(var(--warm-white) / 0.06);
+    backdrop-filter: blur(20px) saturate(1.6);
+    -webkit-backdrop-filter: blur(20px) saturate(1.6);
+    border: 1px solid hsl(var(--warm-white) / 0.16);
+    box-shadow: inset 0 1px 0 0 hsl(40 20% 100% / 0.18);
   }
 
   .glass-2 {
-    background: hsl(var(--glass-bg) / 0.18);
-    backdrop-filter: blur(40px) saturate(1.15);
-    -webkit-backdrop-filter: blur(40px) saturate(1.15);
-    border: 1px solid hsl(var(--glass-border) / 0.7);
+    background: hsl(var(--warm-white) / 0.12);
+    backdrop-filter: blur(28px) saturate(1.6);
+    -webkit-backdrop-filter: blur(28px) saturate(1.6);
+    border: 1px solid hsl(var(--warm-white) / 0.26);
     box-shadow:
-      inset 0 1px 0 0 hsl(40 20% 100% / 0.7),
-      inset 0 0 0 1px hsl(40 20% 100% / 0.08),
-      0 24px 56px -18px hsl(30 10% 20% / 0.24),
+      inset 0 1px 0 0 hsl(40 20% 100% / 0.28),
+      inset 1px 0 0 0 hsl(40 20% 100% / 0.12),
+      0 22px 52px -18px hsl(30 10% 20% / 0.22),
       0 8px 22px -10px hsl(30 10% 20% / 0.12);
   }
 
   .glass-3 {
-    background: hsl(var(--glass-bg) / 0.22);
-    backdrop-filter: blur(48px) saturate(1.2);
-    -webkit-backdrop-filter: blur(48px) saturate(1.2);
-    border: 1px solid hsl(var(--glass-border) / 0.8);
+    background: hsl(var(--warm-white) / 0.18);
+    backdrop-filter: blur(32px) saturate(1.6);
+    -webkit-backdrop-filter: blur(32px) saturate(1.6);
+    border: 1px solid hsl(var(--warm-white) / 0.34);
     box-shadow:
-      inset 0 1px 0 0 hsl(40 20% 100% / 0.8),
-      inset 0 0 0 1px hsl(40 20% 100% / 0.1),
-      0 32px 72px -22px hsl(30 10% 20% / 0.28),
+      inset 0 1px 0 0 hsl(40 20% 100% / 0.36),
+      inset 1px 0 0 0 hsl(40 20% 100% / 0.14),
+      0 30px 68px -22px hsl(30 10% 20% / 0.26),
       0 12px 28px -10px hsl(30 10% 20% / 0.14);
   }
 
   .glass-4 {
-    background: hsl(var(--glass-bg) / 0.30);
-    backdrop-filter: blur(60px) saturate(1.25);
-    -webkit-backdrop-filter: blur(60px) saturate(1.25);
-    border: 1px solid hsl(var(--glass-border) / 0.9);
+    background: hsl(var(--warm-white) / 0.24);
+    backdrop-filter: blur(40px) saturate(1.6);
+    -webkit-backdrop-filter: blur(40px) saturate(1.6);
+    border: 1px solid hsl(var(--warm-white) / 0.42);
     box-shadow:
-      inset 0 1px 0 0 hsl(40 20% 100% / 0.9),
-      inset 0 0 0 1px hsl(40 20% 100% / 0.12),
-      0 44px 100px -32px hsl(30 10% 20% / 0.34),
-      0 16px 40px -12px hsl(30 10% 20% / 0.18);
+      inset 0 1px 0 0 hsl(40 20% 100% / 0.46),
+      inset 1px 0 0 0 hsl(40 20% 100% / 0.16),
+      0 40px 92px -30px hsl(30 10% 20% / 0.30),
+      0 16px 40px -12px hsl(30 10% 20% / 0.16);
   }
 
-  /* Readable content-card glass — more opaque so text reads over the photo */
+  /* Readable content-card glass — Ancient Marble tint, opaque enough for text over photo */
   .glass-card {
-    background: hsl(var(--glass-bg) / 0.62);
-    backdrop-filter: blur(28px) saturate(1.15);
-    -webkit-backdrop-filter: blur(28px) saturate(1.15);
-    border: 1px solid hsl(var(--glass-border) / 0.75);
+    background: hsl(52 18% 85% / 0.58);
+    backdrop-filter: blur(28px) saturate(1.6);
+    -webkit-backdrop-filter: blur(28px) saturate(1.6);
+    border: 1px solid hsl(var(--warm-white) / 0.55);
     box-shadow:
-      inset 0 1px 0 0 hsl(40 20% 100% / 0.6),
-      0 18px 44px -16px hsl(30 10% 20% / 0.16);
+      inset 0 1px 0 0 hsl(40 20% 100% / 0.5),
+      0 20px 48px -18px hsl(30 10% 20% / 0.18);
   }
 
-  /* Lighter layer glass — for overlapping, more transparent cards */
+  /* Lighter overlapping content card */
   .glass-card-2 {
-    background: hsl(var(--glass-bg) / 0.40);
-    backdrop-filter: blur(22px) saturate(1.1);
-    -webkit-backdrop-filter: blur(22px) saturate(1.1);
-    border: 1px solid hsl(var(--glass-border) / 0.55);
-    box-shadow: inset 0 1px 0 0 hsl(40 20% 100% / 0.5);
+    background: hsl(52 18% 85% / 0.38);
+    backdrop-filter: blur(24px) saturate(1.6);
+    -webkit-backdrop-filter: blur(24px) saturate(1.6);
+    border: 1px solid hsl(var(--warm-white) / 0.4);
+    box-shadow: inset 0 1px 0 0 hsl(40 20% 100% / 0.4);
   }
 
-  /* Floating shadow for detached panels — reads as physically floating with ambient glow */
+  /* Floating shadow for detached panels */
   .float-shadow {
     box-shadow:
-      inset 0 1px 0 0 hsl(40 20% 100% / 0.75),
-      inset 0 0 0 1px hsl(40 20% 100% / 0.09),
-      0 28px 64px -20px hsl(30 10% 20% / 0.26),
-      0 10px 26px -10px hsl(30 10% 20% / 0.13);
+      inset 0 1px 0 0 hsl(40 20% 100% / 0.4),
+      inset 1px 0 0 0 hsl(40 20% 100% / 0.12),
+      0 32px 72px -24px hsl(30 10% 20% / 0.3),
+      0 12px 30px -12px hsl(30 10% 20% / 0.15);
   }
 
   .glass-dark {
     background: hsl(30 8% 14% / 0.5);
-    backdrop-filter: blur(24px) saturate(1.1);
-    -webkit-backdrop-filter: blur(24px) saturate(1.1);
+    backdrop-filter: blur(24px) saturate(1.6);
+    -webkit-backdrop-filter: blur(24px) saturate(1.6);
     border: 1px solid hsl(40 10% 30% / 0.4);
-    box-shadow: 0 1px 0 0 hsl(40 10% 40% / 0.3) inset;
+    box-shadow: inset 0 1px 0 0 hsl(40 10% 40% / 0.3);
   }
 
   .glass-button {

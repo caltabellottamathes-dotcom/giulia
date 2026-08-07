@@ -80,7 +80,7 @@ export default function FloatingPanel({
       {showOverlay && (
         <div
           className={cn(
-            "fixed inset-0 z-40 bg-charcoal/10 animate-fade-in",
+            "fixed inset-0 z-40 bg-charcoal/15 animate-fade-in",
             !closeOnOverlay && "pointer-events-none"
           )}
           onClick={closeOnOverlay ? onClose : undefined}
@@ -96,7 +96,7 @@ export default function FloatingPanel({
         <div
           className={cn(
             glassLevels[level] || "glass-3",
-            "float-shadow rounded-2xl overflow-hidden relative flex flex-col",
+            "float-shadow rounded-[28px] overflow-hidden relative flex flex-col",
             isCenter ? "w-full max-w-lg max-h-[85vh]" : "h-full"
           )}
         >

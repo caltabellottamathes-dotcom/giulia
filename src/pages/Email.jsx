@@ -28,7 +28,7 @@ export default function Email() {
   const giuliaDrafts = mockEmails.filter((m) => m.folder === "giulia_drafts");
 
   return (
-    <div className="h-[calc(100vh-7rem)] flex flex-col animate-fade-up">
+    <div className="h-full min-h-0 flex flex-col animate-fade-up">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>

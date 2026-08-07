@@ -78,12 +78,12 @@ module.exports = {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out',
   			'fade-in': 'fade-in 0.5s ease-out',
-  			'fade-up': 'fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
-  			'slide-right': 'slide-right 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
-  			'slide-left': 'slide-left 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
-  			'slide-up': 'slide-up 0.45s cubic-bezier(0.22, 1, 0.36, 1)',
-  			'slide-down': 'slide-down 0.45s cubic-bezier(0.22, 1, 0.36, 1)',
-  			'scale-in': 'scale-in 0.35s cubic-bezier(0.22, 1, 0.36, 1)',
+  			'fade-up': 'fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+  			'slide-right': 'slide-right 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+  			'slide-left': 'slide-left 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+  			'slide-up': 'slide-up 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
+  			'slide-down': 'slide-down 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
+  			'scale-in': 'scale-in 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
   			'pulse-soft': 'pulse-soft 2s ease-in-out infinite',
   		}
   	}
