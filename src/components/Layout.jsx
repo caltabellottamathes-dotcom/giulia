@@ -16,7 +16,7 @@ import {
   Home, Calendar, Briefcase, CheckSquare, Mail, MessageCircle,
   BookOpen, FileText, Users, MessageSquare, Mic, ClipboardCheck,
   Activity, Brain, Plug, Settings, User, Search, Bell,
-  Menu, LogOut, ChevronDown,
+  Menu, LogOut, ChevronDown, Phone,
 } from "lucide-react";
 
 const userMenuItems = [
@@ -76,7 +76,7 @@ function SidebarContent({ onNavigate }) {
           Giulia
         </p>
         <p className="text-[10px] uppercase tracking-[0.3em] text-foreground/45 mt-1.5 font-medium">
-          Concierge OS
+          Assistent
         </p>
       </div>
 
@@ -208,6 +208,13 @@ function LayoutInner() {
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse-soft" />
               Giulia actief
             </div>
+            <button
+              onClick={() => openModule("voice")}
+              className="h-9 w-9 rounded-full glass-1 flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors"
+              aria-label="Bel Giulia"
+            >
+              <Phone className="h-4 w-4" />
+            </button>
             <button
               onClick={() => openModule("approvals")}
               className="h-9 w-9 rounded-full glass-1 flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors relative"

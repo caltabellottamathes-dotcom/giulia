@@ -10,10 +10,9 @@ import ApprovalsWidget from "@/components/widgets/ApprovalsWidget";
 /**
  * Home — the GIULIA OS widget center.
  *
- * The editorial photo is inset from the left on desktop, so the widget bento
- * (starting at the content's left edge) overhangs the photo's left edge —
- * an asymmetric, editorial composition. When a module panel opens, the
- * content layer slides right out of view, revealing the photo in full.
+ * Editorial photo inset from the left so the bento overhangs its left edge;
+ * cards also overlap each other (layered transparency + blur) for an
+ * editorial, spatial composition. Content slides away when a panel opens.
  */
 export default function Home() {
   const { activeModule, openModule } = usePanel();
@@ -53,20 +52,21 @@ export default function Home() {
           </h1>
         </header>
 
+        {/* Asymmetric, overlapping bento */}
         <div
           className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 px-1 lg:px-3"
           style={{ gridAutoRows: "minmax(180px, auto)" }}
         >
-          <div className="lg:col-span-7 lg:row-span-2">
+          <div className="lg:col-span-7 lg:row-span-2 relative z-10">
             <ConciergeWidget />
           </div>
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-5 relative z-30 lg:-ml-10">
             <AgendaWidget />
           </div>
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-5 relative z-20">
             <TasksWidget />
           </div>
-          <div className="lg:col-span-10 lg:col-start-2">
+          <div className="lg:col-span-10 lg:col-start-2 relative z-30 lg:-mt-10">
             <ApprovalsWidget />
           </div>
         </div>

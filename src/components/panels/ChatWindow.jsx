@@ -2,14 +2,13 @@ import React, { useEffect, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePanel } from "@/lib/PanelContext";
 import { IMAGES } from "@/lib/images";
-import { X, Send, Loader2 } from "lucide-react";
+import { X, ArrowUp, Loader2, Phone } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 /**
- * ChatWindow — a dedicated, floating chat window for the Giulia agent.
- * Distinct from the module panels: it floats bottom-right, coexists with
- * other panels, and runs the in-app "giulia" agent (with entity tools) via
- * the Base44 agents SDK. Giulia can read & update the app on the user's behalf.
+ * ChatWindow — a dedicated, refined floating window for the Giulia agent.
+ * Distinct from the module panels: floats bottom-right, coexists with other
+ * panels, and runs the in-app "giulia" agent via the Base44 agents SDK.
  */
 const SUGGESTIONS = [
   "Wat staat er vandaag op de agenda?",
@@ -19,13 +18,12 @@ const SUGGESTIONS = [
 ];
 
 export default function ChatWindow() {
-  const { chatOpen, closeChat } = usePanel();
+  const { chatOpen, closeChat, openModule } = usePanel();
   const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const scrollRef = useRef(null);
 
-  // Load or create a conversation with the giulia agent when the window opens
   useEffect(() => {
     if (!chatOpen) return;
     let active = true;
@@ -51,7 +49,6 @@ export default function ChatWindow() {
     };
   }, [chatOpen]);
 
-  // Stream updates from the agent
   useEffect(() => {
     if (!conversation?.id) return;
     const unsub = base44.agents.subscribeToConversation(conversation.id, (data) => {
@@ -61,7 +58,10 @@ export default function ChatWindow() {
   }, [conversation?.id]);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: "smooth",
+    });
   }, [messages]);
 
   const last = messages[messages.length - 1];
@@ -88,46 +88,60 @@ export default function ChatWindow() {
   if (!chatOpen) return null;
 
   return (
-    <div className="fixed bottom-5 right-5 lg:bottom-7 lg:right-7 z-[60] w-[calc(100%-2.5rem)] sm:w-[400px] h-[min(620px,calc(100vh-3rem))] flex flex-col glass-3 float-shadow rounded-2xl overflow-hidden animate-scale-in">
+    <div className="fixed right-4 bottom-4 lg:right-7 lg:bottom-7 z-[60] w-[calc(100%-2rem)] sm:w-[440px] h-[min(680px,calc(100vh-3rem))] flex flex-col glass-4 float-shadow rounded-[28px] overflow-hidden animate-scale-in">
       {/* Header with editorial fashion image */}
-      <div className="relative shrink-0 h-20 overflow-hidden">
+      <div className="relative shrink-0 h-28 overflow-hidden">
         <img
           src={IMAGES.sittingChairs}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover opacity-55"
+          className="absolute inset-0 h-full w-full object-cover opacity-50"
           draggable={false}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-charcoal/85 via-charcoal/55 to-charcoal/30" />
-        <div className="relative h-full flex items-center justify-between px-5">
-          <div className="flex items-center gap-2.5 text-ivory">
-            <span className="h-2.5 w-2.5 rounded-sm bg-ivory" />
-            <span className="font-display font-semibold tracking-[0.22em] text-[13px] uppercase">
-              Giulia
-            </span>
-            <span className="text-[11px] text-ivory/60 font-medium ml-1 hidden sm:inline">
-              Concierge
-            </span>
+        <div className="absolute inset-0 bg-gradient-to-tr from-charcoal/90 via-charcoal/60 to-charcoal/30" />
+        <div className="relative h-full flex flex-col justify-between p-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5 text-ivory">
+              <span className="h-2.5 w-2.5 rounded-sm bg-ivory" />
+              <span className="font-display font-semibold tracking-[0.22em] text-[13px] uppercase">
+                Giulia
+              </span>
+            </div>
+            <button
+              onClick={closeChat}
+              className="h-8 w-8 rounded-lg bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/80 hover:text-ivory transition-colors"
+              aria-label="Sluiten"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
-          <button
-            onClick={closeChat}
-            className="h-8 w-8 rounded-lg bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/80 hover:text-ivory transition-colors"
-            aria-label="Sluiten"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="text-ivory text-sm font-medium leading-none">Je assistent</p>
+              <div className="flex items-center gap-1.5 mt-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-sage animate-pulse-soft" />
+                <span className="text-[11px] text-ivory/60">Actief · vraag me anything</span>
+              </div>
+            </div>
+            <button
+              onClick={() => openModule("voice")}
+              className="flex items-center gap-2 rounded-full pl-3 pr-4 py-2 bg-sage/20 border border-sage/40 text-sage text-[12px] font-medium hover:bg-sage/30 transition-all"
+            >
+              <Phone className="h-3.5 w-3.5" /> Bel
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-5 space-y-3.5">
         {messages.length === 0 && !thinking && (
           <div className="flex flex-col items-center text-center py-10">
-            <p className="font-display font-semibold text-lg text-foreground mb-2">
+            <p className="font-display font-semibold text-xl text-foreground mb-2">
               Hier is Giulia.
             </p>
-            <p className="text-[13px] text-foreground/55 max-w-[15rem]">
-              Je persoonlijke concierge. Vraag me anything — ik beheer je agenda,
-              taken, mail en meer.
+            <p className="text-[13px] text-foreground/55 max-w-[16rem]">
+              Je digitale assistent. Ik beheer je agenda, taken, mail en meer —
+              vraag me anything.
             </p>
           </div>
         )}
@@ -143,7 +157,7 @@ export default function ChatWindow() {
 
       {/* Suggestions */}
       {messages.length <= 1 && (
-        <div className="px-5 pb-3 flex flex-wrap gap-2">
+        <div className="px-5 pb-2 flex flex-wrap gap-2">
           {SUGGESTIONS.map((s) => (
             <button
               key={s}
@@ -166,15 +180,15 @@ export default function ChatWindow() {
               if (e.key === "Enter") send();
             }}
             placeholder="Vraag Giulia anything…"
-            className="flex-1 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-olive/30"
+            className="flex-1 glass-1 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-olive/30"
           />
           <button
             onClick={() => send()}
             disabled={!input.trim() || thinking}
-            className="h-10 w-10 rounded-xl bg-charcoal text-ivory flex items-center justify-center hover:scale-105 transition-transform disabled:opacity-40 disabled:hover:scale-100"
+            className="h-11 w-11 rounded-2xl bg-charcoal text-ivory flex items-center justify-center hover:scale-105 transition-transform disabled:opacity-40 disabled:hover:scale-100"
             aria-label="Verstuur"
           >
-            <Send className="h-4 w-4" />
+            <ArrowUp className="h-4 w-4" />
           </button>
         </div>
       </div>
@@ -187,7 +201,7 @@ function MessageBubble({ message }) {
   if (isUser) {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[80%] rounded-2xl rounded-br-md bg-foreground/8 px-3.5 py-2.5 text-sm text-foreground">
+        <div className="max-w-[80%] rounded-2xl rounded-br-md bg-charcoal text-ivory px-3.5 py-2.5 text-sm leading-relaxed">
           {message.content}
         </div>
       </div>
@@ -219,7 +233,7 @@ function ToolCall({ toolCall }) {
     <div className="flex items-center gap-2 text-[11px] text-foreground/55">
       <span
         className={`h-1.5 w-1.5 rounded-full ${
-          failed ? "bg-red-500" : running ? "bg-olive animate-pulse-soft" : "bg-emerald-500"
+          failed ? "bg-red-500" : running ? "bg-olive animate-pulse-soft" : "bg-sage"
         }`}
       />
       <span className="font-medium">{label}</span>
