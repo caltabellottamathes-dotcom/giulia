@@ -9,8 +9,9 @@ import ApprovalsWidget from "@/components/widgets/ApprovalsWidget";
 
 /**
  * Home — the GIULIA OS widget center, mobile-first.
- * Full-bleed editorial photo to the viewport edges; a floating, shifted,
- * asymmetric bento where the glass widgets overlap each other over the photo.
+ * The editorial photo is a large, wide card anchored to the RIGHT edge;
+ * the glass widgets float on the left, overlapping the photo's left edge
+ * in an asymmetric composition.
  */
 export default function Home() {
   const { activeModule, openModule } = usePanel();
@@ -20,59 +21,56 @@ export default function Home() {
 
   return (
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-my-8 min-h-[calc(100svh-3.5rem)] overflow-hidden">
-      {/* Full-bleed editorial photo — edge to edge */}
-      <div className="absolute inset-0">
-        <img
-          src={IMAGES.feetChair}
-          alt=""
-          className="h-full w-full object-cover"
-          draggable={false}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-storm/35 via-storm/10 to-charcoal/25" />
+      {/* Mobile: editorial photo banner at the top */}
+      <div className="lg:hidden relative h-[30vh] overflow-hidden rounded-b-[28px] z-0">
+        <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
+        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/20 via-transparent to-background/30" />
+      </div>
+
+      {/* Desktop: large wide photo card anchored to the right edge */}
+      <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[58%] overflow-hidden z-0 lg:rounded-l-[32px]">
+        <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
+        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-storm/25" />
       </div>
 
       {/* Content layer — slides right when a module panel opens */}
       <div
         className={cn(
-          "relative transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform",
+          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform",
           panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100"
         )}
       >
         <header className="px-5 lg:px-10 pt-8 lg:pt-10 pb-6 lg:pb-8">
-          <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/80 mb-3 text-shadow-soft font-semibold">
-            {new Date().toLocaleDateString("nl-NL", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-            })}
+          <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/80 mb-3 font-semibold">
+            {new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}
           </p>
-          <h1 className="text-[40px] sm:text-5xl lg:text-6xl font-display font-semibold tracking-[-0.02em] leading-[1.0] text-foreground text-shadow-soft text-balance">
+          <h1 className="text-[40px] sm:text-5xl lg:text-6xl font-display font-semibold tracking-[-0.02em] leading-[1.0] text-foreground text-balance">
             {greeting}.
           </h1>
         </header>
 
-        {/* Floating, overlapping, asymmetric bento over the photo */}
+        {/* Widgets — float on the left, overlapping the photo's left edge */}
         <div
           className="px-5 lg:px-10 pb-10 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5"
           style={{ gridAutoRows: "minmax(150px, auto)" }}
         >
-          {/* Concierge — the large anchor, base layer */}
-          <div className="lg:col-start-1 lg:col-span-7 lg:row-start-1 lg:row-span-2 relative z-10">
+          {/* Concierge — large anchor, top-left; right edge floats over the photo */}
+          <div className="lg:col-start-1 lg:col-span-7 lg:row-start-1 lg:row-span-2 relative z-30">
             <ConciergeWidget />
           </div>
 
-          {/* Agenda — floats above, shifted left into the Concierge */}
-          <div className="lg:col-start-8 lg:col-span-5 lg:row-start-1 relative z-20 lg:-ml-4">
+          {/* Agenda — narrower, floats over the photo */}
+          <div className="lg:col-start-1 lg:col-span-6 lg:row-start-3 relative z-30">
             <AgendaWidget />
           </div>
 
-          {/* Tasks — floats below Agenda, shifted */}
-          <div className="lg:col-start-8 lg:col-span-5 lg:row-start-2 relative z-20 lg:-mt-6">
+          {/* Tasks — right-aligned, fully over the photo */}
+          <div className="lg:col-start-7 lg:col-span-6 lg:row-start-3 relative z-30">
             <TasksWidget />
           </div>
 
-          {/* Approvals — wide, to the edge, overlaps the stack */}
-          <div className="lg:col-start-1 lg:col-span-12 lg:row-start-3 relative z-30 lg:-mt-8">
+          {/* Approvals — wide, overlaps deep into the photo */}
+          <div className="lg:col-start-1 lg:col-span-9 lg:row-start-4 relative z-30">
             <ApprovalsWidget />
           </div>
         </div>
@@ -86,11 +84,7 @@ export default function Home() {
             { label: "Documenten", key: "documents" },
             { label: "Mensen", key: "people" },
           ].map((m) => (
-            <button
-              key={m.key}
-              onClick={() => openModule(m.key)}
-              className="text-[12px] text-foreground/75 hover:text-foreground transition-colors tracking-wide text-shadow-soft font-medium"
-            >
+            <button key={m.key} onClick={() => openModule(m.key)} className="text-[12px] text-foreground/75 hover:text-foreground transition-colors tracking-wide font-medium">
               {m.label}
             </button>
           ))}
