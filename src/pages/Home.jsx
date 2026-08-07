@@ -10,10 +10,10 @@ import ApprovalsWidget from "@/components/widgets/ApprovalsWidget";
 /**
  * Home — the GIULIA OS widget center.
  *
- * A large editorial photo fills the dashboard as a fully-opaque rounded card.
- * The widget bento floats IN FRONT of it in an asymmetric composition.
- * When a module panel opens, the content layer slides right out of view,
- * revealing the photo in full while the glass panel overlaps its right half.
+ * The editorial photo is inset from the left on desktop, so the widget bento
+ * (starting at the content's left edge) overhangs the photo's left edge —
+ * an asymmetric, editorial composition. When a module panel opens, the
+ * content layer slides right out of view, revealing the photo in full.
  */
 export default function Home() {
   const { activeModule, openModule } = usePanel();
@@ -23,8 +23,8 @@ export default function Home() {
 
   return (
     <div className="relative overflow-hidden rounded-[32px] min-h-[calc(100vh-7rem)]">
-      {/* ── Large editorial photo — fully opaque, no wash ── */}
-      <div className="absolute inset-0 rounded-[32px] overflow-hidden">
+      {/* Large editorial photo — inset on desktop so cards overhang its left edge */}
+      <div className="absolute top-0 bottom-0 right-0 left-0 lg:left-[14%] rounded-[24px] lg:rounded-[32px] overflow-hidden">
         <img
           src={IMAGES.feetChair}
           alt=""
@@ -33,16 +33,13 @@ export default function Home() {
         />
       </div>
 
-      {/* ── Content layer — slides right when a panel opens ── */}
+      {/* Content layer — slides right when a module panel opens */}
       <div
         className={cn(
           "relative transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
-          panelOpen
-            ? "translate-x-[100vw] opacity-0"
-            : "translate-x-0 opacity-100"
+          panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100"
         )}
       >
-        {/* Bold editorial greeting — sits over the photo */}
         <header className="px-1 lg:px-3 pt-3 pb-8 lg:pb-10">
           <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/75 mb-3 text-shadow-soft font-medium">
             {new Date().toLocaleDateString("nl-NL", {
@@ -56,8 +53,6 @@ export default function Home() {
           </h1>
         </header>
 
-        {/* Asymmetric bento — Concierge anchored left (7 col, 2 rows),
-            Agenda + Tasks stacked right (5 col), Approvals inset offset */}
         <div
           className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 px-1 lg:px-3"
           style={{ gridAutoRows: "minmax(180px, auto)" }}
@@ -76,7 +71,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Quiet module rail */}
         <nav className="mt-8 lg:mt-10 flex flex-wrap gap-x-6 gap-y-2 px-1 lg:px-3">
           {[
             { label: "Projecten", key: "projects" },

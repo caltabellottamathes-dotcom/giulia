@@ -2,6 +2,7 @@ import React from "react";
 import FloatingPanel from "@/components/glass/FloatingPanel";
 import { usePanel } from "@/lib/PanelContext";
 import { MODULES } from "@/lib/moduleRegistry";
+import { IMAGES } from "@/lib/images";
 
 /**
  * The ONE sliding glass panel used for every module in the app.
@@ -23,20 +24,22 @@ export default function ModulePanel() {
       {mod && (
         <div className="flex flex-col h-full">
           <div className="relative px-7 lg:px-9 pt-8 pb-6 shrink-0 overflow-hidden">
-            {/* Editorial accent field behind the title */}
-            <div
-              className="absolute inset-0 opacity-[0.06] pointer-events-none"
-              style={{
-                backgroundImage:
-                  "linear-gradient(135deg, hsl(var(--olive)) 0%, transparent 55%)",
-              }}
-            />
+            {/* Editorial fashion image behind the title */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img
+                src={IMAGES.walkingChairs}
+                alt=""
+                className="h-full w-full object-cover opacity-40"
+                draggable={false}
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-warm-white/90 via-warm-white/65 to-warm-white/25" />
+            </div>
             <div className="relative flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-[10px] uppercase tracking-[0.28em] text-olive/80 font-medium mb-2.5">
                   Onderdeel
                 </p>
-                <h2 className="text-[26px] lg:text-[30px] font-heading font-light tracking-tight leading-none text-foreground">
+                <h2 className="text-[26px] lg:text-[30px] font-heading font-medium tracking-tight leading-none text-foreground">
                   {mod.label}
                 </h2>
               </div>

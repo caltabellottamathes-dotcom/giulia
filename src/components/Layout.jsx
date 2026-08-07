@@ -5,6 +5,7 @@ import { IMAGES } from "@/lib/images";
 import QuickAction from "@/components/glass/QuickAction";
 import FloatingPanel from "@/components/glass/FloatingPanel";
 import ModulePanel from "@/components/panels/ModulePanel";
+import ChatWindow from "@/components/panels/ChatWindow";
 import { PanelProvider, usePanel } from "@/lib/PanelContext";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -176,15 +177,21 @@ function LayoutInner() {
       <div className="flex flex-col min-h-screen relative">
         {/* Header */}
         <header className="sticky top-0 z-20 h-14 flex items-center justify-between px-5 lg:px-10">
-          <div className="flex items-center gap-3 flex-1 max-w-md">
+          <div className="flex items-center gap-3 flex-1">
             <button
               onClick={() => setNavOpen(true)}
-              className="p-1.5 -ml-1.5 rounded-lg glass-1 text-foreground hover:text-foreground transition-colors"
+              className="p-1.5 -ml-1.5 rounded-lg glass-1 text-foreground transition-colors shrink-0"
               aria-label="Menu openen"
             >
               <Menu className="h-5 w-5" />
             </button>
-            <div className="flex items-center gap-2 glass-1 rounded-full px-4 py-1.5 flex-1 max-w-sm">
+            <div className="flex items-center gap-2 shrink-0 pr-1">
+              <span className="h-2.5 w-2.5 rounded-sm bg-charcoal" />
+              <span className="font-display font-semibold tracking-[0.22em] text-[13px] uppercase">
+                Giulia
+              </span>
+            </div>
+            <div className="hidden sm:flex items-center gap-2 glass-1 rounded-full px-4 py-1.5 flex-1 max-w-sm">
               <Search className="h-3.5 w-3.5 text-foreground/55 shrink-0" />
               <input
                 value={search}
@@ -264,6 +271,9 @@ function LayoutInner() {
 
       {/* The single sliding glass panel that hosts every module */}
       <ModulePanel />
+
+      {/* Dedicated chat window — the Giulia agent */}
+      <ChatWindow />
     </div>
   );
 }
