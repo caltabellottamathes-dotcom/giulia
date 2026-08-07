@@ -1,24 +1,20 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import GlassInput from "@/components/glass/GlassInput";
-import GlassButton from "@/components/glass/GlassButton";
-import GlassPanel from "@/components/glass/GlassPanel";
 import GoogleIcon from "@/components/GoogleIcon";
 import { IMAGES } from "@/lib/images";
 import { safeReturnTo } from "@/lib/authReturnTo";
 import {
-  Mail, Lock, Loader2, Shield, Search, Edit3, User,
-  LayoutGrid, Sparkles,
+  Mail, Lock, Loader2, Search, Edit3, User, Eye, EyeOff,
+  ArrowRight,
 } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  // Post-login destination (e.g. the MCP OAuth consent page sends users here
-  // with returnTo so the grant flow can resume). Same-origin paths only.
   const returnTo = safeReturnTo();
 
   const handleSubmit = async (e) => {
@@ -39,177 +35,187 @@ export default function Login() {
     base44.auth.loginWithProvider("google", returnTo);
   };
 
+  const topIcons = [Search, Edit3, User];
+
   return (
-    <div className="min-h-screen flex bg-background">
-      {/* Left — full-bleed editorial photography */}
-      <div className="hidden lg:block w-[38%] relative shrink-0">
+    <div className="min-h-screen relative overflow-hidden bg-background">
+      {/* Full-bleed editorial photography */}
+      <div className="absolute inset-0">
         <img
           src={IMAGES.portraitBootHands}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover"
+          className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-background/70" />
+      </div>
+      {/* Asymmetric fade — photo visible left/center, off-white right */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-background/15 to-background/85" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-background/20" />
+
+      {/* Top navigation — logo left, glass icon cluster right */}
+      <div className="relative flex items-center justify-between px-6 sm:px-10 lg:px-14 py-7">
+        <span className="text-sm font-semibold tracking-[0.28em] uppercase text-foreground">
+          Giulia
+        </span>
+        <div className="flex gap-2.5">
+          {topIcons.map((Icon, i) => (
+            <button
+              key={i}
+              type="button"
+              className="h-10 w-10 rounded-full glass-2 flex items-center justify-center text-foreground hover:scale-105 transition-transform duration-300"
+            >
+              <Icon className="h-4 w-4" />
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Center — floating glass brand panel */}
-      <div className="hidden lg:flex w-[300px] shrink-0 items-center px-6">
-        <GlassPanel level={3} className="p-8 w-full text-center">
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <Sparkles className="h-4 w-4 text-olive" />
-            <span className="text-xs tracking-[0.25em] uppercase">Giulia</span>
-          </div>
-          <h2 className="text-xl font-heading font-light leading-snug">
+      {/* Center floating glass panel — the hero element */}
+      <div
+        className="relative flex items-center justify-center px-6"
+        style={{ minHeight: "calc(100vh - 96px)" }}
+      >
+        <div className="glass-3 float-shadow rounded-[28px] w-full max-w-[460px] p-9 lg:p-11 relative animate-scale-in">
+          {/* Brand — strong editorial typography */}
+          <h1 className="text-3xl lg:text-4xl font-heading font-bold tracking-tight leading-none mb-1">
+            Giulia:
+          </h1>
+          <h2 className="text-xl lg:text-2xl font-heading font-light tracking-tight mb-3">
             Uw Persoonlijke Assistent
           </h2>
-          <p className="text-sm text-muted-foreground mt-3">
-            Eenvoudig, slim en altijd voor u klaar.
+          <p className="text-sm text-muted-foreground leading-relaxed mb-7 max-w-sm">
+            Eenvoudig, slim en altijd voor u klaar. Log in om door te gaan.
           </p>
-          <div className="flex items-center justify-center gap-3 mt-10">
-            <span className="text-xs font-medium">01</span>
-            <span className="text-xs text-muted-foreground/60">02</span>
-            <span className="text-xs text-muted-foreground/60">03</span>
-          </div>
-          <div className="h-px bg-border/60 mt-2" />
-        </GlassPanel>
-      </div>
 
-      {/* Right — functional form column */}
-      <div className="flex-1 flex flex-col min-h-screen relative">
-        {/* Mobile background */}
-        <div className="lg:hidden absolute inset-0 opacity-20 pointer-events-none">
-          <img src={IMAGES.portraitBootHands} alt="" className="w-full h-full object-cover" />
-        </div>
+          {/* Google */}
+          <button
+            type="button"
+            onClick={handleGoogle}
+            className="glass-1 w-full h-11 rounded-xl text-sm font-medium mb-4 flex items-center justify-center gap-2 hover:bg-foreground/[0.03] transition-colors"
+          >
+            <GoogleIcon className="w-4 h-4" />
+            Doorgaan met Google
+          </button>
 
-        <div className="relative flex flex-col flex-1 px-6 sm:px-10 lg:px-14 py-6">
-          {/* Top navigation */}
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              className="h-10 w-10 rounded-xl glass-1 flex items-center justify-center text-foreground"
-              aria-label="Menu"
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </button>
-            <div className="flex gap-2">
-              <button type="button" className="h-10 w-10 rounded-xl glass-1 flex items-center justify-center text-foreground" aria-label="Zoeken">
-                <Search className="h-4 w-4" />
-              </button>
-              <button type="button" className="h-10 w-10 rounded-xl glass-1 flex items-center justify-center text-foreground" aria-label="Bewerken">
-                <Edit3 className="h-4 w-4" />
-              </button>
-              <button type="button" className="h-10 w-10 rounded-xl glass-1 flex items-center justify-center text-foreground" aria-label="Profiel">
-                <User className="h-4 w-4" />
-              </button>
+          {/* Divider */}
+          <div className="relative mb-5">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border/40" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="glass-4 px-3 py-0.5 text-[11px] text-muted-foreground rounded-full">
+                of
+              </span>
             </div>
           </div>
 
-          {/* Form */}
-          <div className="flex-1 flex items-center">
-            <div className="w-full max-w-sm">
-              <h1 className="text-2xl font-heading font-light tracking-tight">
-                Inloggen bij Giulia
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1.5 mb-8">
-                Welkom terug. Log in om door te gaan.
-              </p>
+          {error && (
+            <div className="mb-4 p-3 rounded-xl bg-destructive/10 text-destructive text-sm">
+              {error}
+            </div>
+          )}
 
-              <button
-                type="button"
-                onClick={handleGoogle}
-                className="glass-button w-full h-11 rounded-xl text-sm font-medium mb-5 flex items-center justify-center gap-2"
-              >
-                <GoogleIcon className="w-4 h-4" />
-                Doorgaan met Google
-              </button>
-
-              <div className="relative mb-5">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border/60" />
-                </div>
-                <div className="relative flex justify-center">
-                  <span className="bg-background px-3 text-xs text-muted-foreground">of</span>
-                </div>
-              </div>
-
-              {error && (
-                <div className="mb-4 p-3 rounded-xl bg-destructive/10 text-destructive text-sm">
-                  {error}
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <GlassInput
-                  label="E-mail of Gebruikersnaam"
-                  icon={Mail}
+          {/* Login form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-1.5 block">
+                E-mail
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <input
                   type="email"
-                  placeholder="Voer uw e-mail..."
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Voer uw e-mail..."
                   required
                   autoFocus
+                  className="w-full glass-1 rounded-xl pl-11 pr-4 py-3 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-olive/30 transition-all"
                 />
-                <GlassInput
-                  label="Wachtwoord"
-                  icon={Lock}
-                  type="password"
-                  placeholder="Voer uw wachtwoord..."
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-1.5 block">
+                Wachtwoord
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <input
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Voer uw wachtwoord..."
                   required
+                  className="w-full glass-1 rounded-xl pl-11 pr-11 py-3 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-olive/30 transition-all"
                 />
-
-                <GlassButton
-                  type="submit"
-                  variant="primary"
-                  size="lg"
-                  className="w-full"
-                  disabled={loading}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {loading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Inloggen...
-                    </>
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
                   ) : (
-                    "Log In"
+                    <Eye className="h-4 w-4" />
                   )}
-                </GlassButton>
-              </form>
-
-              <div className="flex items-center justify-between mt-5 text-xs">
-                <Link
-                  to={"/register" + (returnTo !== "/" ? "?returnTo=" + encodeURIComponent(returnTo) : "")}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Account aanmaken
-                </Link>
-                <Link to="/forgot-password" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Wachtwoord vergeten?
-                </Link>
+                </button>
               </div>
             </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full h-12 rounded-xl bg-charcoal text-ivory text-sm font-medium hover:bg-charcoal/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Inloggen...
+                </>
+              ) : (
+                <>
+                  Log In <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="flex items-center justify-between mt-5 text-xs">
+            <Link
+              to={
+                "/register" +
+                (returnTo !== "/"
+                  ? "?returnTo=" + encodeURIComponent(returnTo)
+                  : "")
+              }
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Account aanmaken
+            </Link>
+            <Link
+              to="/forgot-password"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Wachtwoord vergeten?
+            </Link>
           </div>
 
-          {/* Footer */}
-          <div className="flex items-end justify-between gap-4">
-            <div className="flex items-start gap-2.5 max-w-xs">
-              <Shield className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-medium">Uw gegevens zijn beveiligd</p>
-                <p className="text-[11px] text-muted-foreground">
-                  Giulia beschermt uw privacy.{" "}
-                  <span className="underline cursor-pointer">Meer informatie ›</span>
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-xs font-medium">01</span>
-              <span className="text-xs text-muted-foreground/60">02</span>
-              <span className="text-xs text-muted-foreground/60">03</span>
-              <div className="w-12 h-px bg-border/60 ml-1" />
-            </div>
+          {/* Pagination inside panel — bottom right */}
+          <div className="flex items-center gap-2 mt-8 justify-end">
+            <span className="text-xs font-medium">01</span>
+            <span className="text-xs text-muted-foreground/50">02</span>
+            <span className="text-xs text-muted-foreground/50">03</span>
+            <div className="w-10 h-px bg-border/60 ml-1" />
           </div>
         </div>
+      </div>
+
+      {/* Bottom right pagination with progress line */}
+      <div className="absolute bottom-6 right-6 sm:right-10 lg:right-14 flex items-center gap-2">
+        <span className="text-xs font-medium">01</span>
+        <span className="text-xs text-muted-foreground/50">02</span>
+        <span className="text-xs text-muted-foreground/50">03</span>
+        <div className="w-12 h-px bg-foreground/30 ml-1" />
       </div>
     </div>
   );

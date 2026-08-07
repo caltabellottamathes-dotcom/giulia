@@ -42,8 +42,8 @@
     --charcoal: 30 8% 16%;
     --smoke: 40 6% 55%;
 
-    --glass-bg: 40 8% 95%;
-    --glass-border: 40 10% 90%;
+    --glass-bg: 36 6% 86%;
+    --glass-border: 40 12% 94%;
   }
 }
 
@@ -65,42 +65,42 @@
 @layer components {
   /* Glass system — smoked translucent panels */
   .glass {
-    background: hsl(var(--glass-bg) / 0.7);
-    backdrop-filter: blur(28px) saturate(1.1);
-    -webkit-backdrop-filter: blur(28px) saturate(1.1);
-    border: 1px solid hsl(var(--glass-border) / 0.75);
-    box-shadow: 0 1px 0 0 hsl(40 20% 100% / 0.6) inset, 0 20px 50px -20px hsl(30 10% 20% / 0.18);
+    background: hsl(var(--glass-bg) / 0.5);
+    backdrop-filter: blur(32px) saturate(1.1);
+    -webkit-backdrop-filter: blur(32px) saturate(1.1);
+    border: 1px solid hsl(var(--glass-border) / 0.7);
+    box-shadow: 0 1px 0 0 hsl(40 20% 100% / 0.5) inset, 0 20px 50px -20px hsl(30 10% 20% / 0.18);
   }
 
   .glass-1 {
-    background: hsl(var(--glass-bg) / 0.55);
-    backdrop-filter: blur(20px) saturate(1.05);
-    -webkit-backdrop-filter: blur(20px) saturate(1.05);
-    border: 1px solid hsl(var(--glass-border) / 0.6);
+    background: hsl(var(--glass-bg) / 0.38);
+    backdrop-filter: blur(18px) saturate(1.05);
+    -webkit-backdrop-filter: blur(18px) saturate(1.05);
+    border: 1px solid hsl(var(--glass-border) / 0.5);
   }
 
   .glass-2 {
-    background: hsl(var(--glass-bg) / 0.78);
-    backdrop-filter: blur(32px) saturate(1.15);
-    -webkit-backdrop-filter: blur(32px) saturate(1.15);
-    border: 1px solid hsl(var(--glass-border) / 0.85);
-    box-shadow: 0 1px 0 0 hsl(40 20% 100% / 0.7) inset, 0 24px 60px -24px hsl(30 10% 20% / 0.22);
+    background: hsl(var(--glass-bg) / 0.58);
+    backdrop-filter: blur(36px) saturate(1.15);
+    -webkit-backdrop-filter: blur(36px) saturate(1.15);
+    border: 1px solid hsl(var(--glass-border) / 0.75);
+    box-shadow: 0 1px 0 0 hsl(40 20% 100% / 0.6) inset, 0 24px 60px -24px hsl(30 10% 20% / 0.22);
   }
 
   .glass-3 {
-    background: hsl(var(--glass-bg) / 0.86);
-    backdrop-filter: blur(40px) saturate(1.2);
-    -webkit-backdrop-filter: blur(40px) saturate(1.2);
-    border: 1px solid hsl(var(--glass-border) / 0.92);
-    box-shadow: 0 1px 0 0 hsl(40 20% 100% / 0.8) inset, 0 30px 80px -30px hsl(30 10% 20% / 0.28);
+    background: hsl(var(--glass-bg) / 0.68);
+    backdrop-filter: blur(44px) saturate(1.2);
+    -webkit-backdrop-filter: blur(44px) saturate(1.2);
+    border: 1px solid hsl(var(--glass-border) / 0.85);
+    box-shadow: 0 1px 0 0 hsl(40 20% 100% / 0.7) inset, 0 30px 80px -30px hsl(30 10% 20% / 0.28);
   }
 
   .glass-4 {
-    background: hsl(var(--glass-bg) / 0.94);
-    backdrop-filter: blur(52px) saturate(1.25);
-    -webkit-backdrop-filter: blur(52px) saturate(1.25);
-    border: 1px solid hsl(var(--glass-border) / 0.98);
-    box-shadow: 0 1px 0 0 hsl(40 20% 100% / 0.9) inset, 0 40px 100px -40px hsl(30 10% 20% / 0.35), 0 12px 32px -12px hsl(30 10% 20% / 0.15);
+    background: hsl(var(--glass-bg) / 0.82);
+    backdrop-filter: blur(56px) saturate(1.25);
+    -webkit-backdrop-filter: blur(56px) saturate(1.25);
+    border: 1px solid hsl(var(--glass-border) / 0.95);
+    box-shadow: 0 1px 0 0 hsl(40 20% 100% / 0.8) inset, 0 40px 100px -40px hsl(30 10% 20% / 0.35), 0 12px 32px -12px hsl(30 10% 20% / 0.15);
   }
 
   /* Floating shadow for detached panels — reads as physically floating */

@@ -135,11 +135,11 @@ export default function Layout() {
           backgroundImage: `url(${IMAGES.feetChair})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          opacity: 0.16,
-          filter: "blur(8px) saturate(0.85)",
+          opacity: 0.38,
+          filter: "blur(3px) saturate(0.9)",
         }}
       />
-      <div className="fixed inset-0 pointer-events-none bg-gradient-to-br from-warm-white/60 via-transparent to-warm-white/50" />
+      <div className="fixed inset-0 pointer-events-none bg-gradient-to-br from-warm-white/30 via-warm-white/10 to-warm-white/50" />
 
       {/* Mobile overlay */}
       {mobileOpen && (
