@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
@@ -8,7 +8,7 @@ import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import {
   ChevronLeft, ChevronRight, Clock, MapPin, Sparkles,
-  AlertCircle, Plus,
+  AlertCircle, Plus, RefreshCw,
 } from "lucide-react";
 
 const weekDays = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
@@ -22,7 +22,25 @@ export default function Agenda() {
   const { data: events, loading, reload } = useEntityList("Event", { sort: "start" });
   const { data: projects } = useEntityList("Project");
   const { data: tasks } = useEntityList("Task");
+  const [syncing, setSyncing] = useState(false);
   const projTitle = (id) => projects.find((p) => p.id === id)?.title;
+
+  const sync = async () => {
+    setSyncing(true);
+    try {
+      await base44.functions.invoke("syncCalendar", {});
+      reload();
+    } catch (e) {
+      /* ignore */
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  useEffect(() => {
+    sync();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const weekStart = new Date(currentDate);
   weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
@@ -57,9 +75,14 @@ export default function Agenda() {
           <h1 className="text-2xl font-display font-semibold tracking-tight">Agenda</h1>
           <p className="text-sm text-muted-foreground mt-1">Jouw tijd, georganiseerd door Giulia</p>
         </div>
-        <GlassButton variant="primary" size="sm" onClick={() => setShowNewEvent(true)}>
-          <Plus className="h-4 w-4" /> Nieuw event
-        </GlassButton>
+        <div className="flex items-center gap-2">
+          <GlassButton variant="outline" size="sm" onClick={sync} disabled={syncing}>
+            <RefreshCw className={cn("h-4 w-4", syncing && "animate-spin")} /> {syncing ? "Sync" : "Sync"}
+          </GlassButton>
+          <GlassButton variant="primary" size="sm" onClick={() => setShowNewEvent(true)}>
+            <Plus className="h-4 w-4" /> Nieuw event
+          </GlassButton>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

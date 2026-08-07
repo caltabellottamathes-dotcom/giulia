@@ -10,8 +10,9 @@ import ApprovalsWidget from "@/components/widgets/ApprovalsWidget";
 /**
  * Home — the GIULIA OS widget center, mobile-first.
  * The editorial photo is a large, wide card anchored to the RIGHT edge;
- * the glass widgets float on the left, overlapping the photo's left edge
- * in an asymmetric composition.
+ * glass widgets float on the left and overlap each other in a layered,
+ * asymmetric composition. When a module panel opens, the dashboard slides
+ * away and the photo shrinks into an oblong card in the bottom-left corner.
  */
 export default function Home() {
   const { activeModule, openModule } = usePanel();
@@ -21,16 +22,23 @@ export default function Home() {
 
   return (
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-my-8 min-h-[calc(100svh-3.5rem)] overflow-hidden">
-      {/* Mobile: editorial photo banner at the top */}
-      <div className="lg:hidden relative h-[30vh] overflow-hidden rounded-b-[28px] z-0">
+      {/* Editorial photo card — wide, to the right edge when closed;
+          shrinks to an oblong card in the bottom-left when a panel opens */}
+      <div
+        className={cn(
+          "absolute overflow-hidden z-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[left,top,width,height,border-radius]",
+          panelOpen
+            ? "left-[4%] top-[66%] w-[68%] h-[26vh] rounded-[24px] lg:left-[3%] lg:top-[66%] lg:w-[44%] lg:h-[30%]"
+            : "left-[0%] top-[0%] w-full h-[30vh] rounded-b-[28px] lg:left-[42%] lg:top-[0%] lg:w-[58%] lg:h-[100%] lg:rounded-l-[32px]"
+        )}
+      >
         <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
-        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/20 via-transparent to-background/30" />
-      </div>
-
-      {/* Desktop: large wide photo card anchored to the right edge */}
-      <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[58%] overflow-hidden z-0 lg:rounded-l-[32px]">
-        <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
-        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-storm/25" />
+        <div
+          className={cn(
+            "absolute inset-0 transition-opacity duration-700",
+            panelOpen ? "bg-gradient-to-tr from-charcoal/40 to-transparent opacity-100" : "bg-gradient-to-l from-transparent via-transparent to-storm/25 opacity-100"
+          )}
+        />
       </div>
 
       {/* Content layer — slides right when a module panel opens */}
@@ -49,28 +57,28 @@ export default function Home() {
           </h1>
         </header>
 
-        {/* Widgets — float on the left, overlapping the photo's left edge */}
+        {/* Widgets — float on the left, overlap each other in a layered composition */}
         <div
           className="px-5 lg:px-10 pb-10 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5"
           style={{ gridAutoRows: "minmax(150px, auto)" }}
         >
-          {/* Concierge — large anchor, top-left; right edge floats over the photo */}
+          {/* Concierge — large anchor, base layer */}
           <div className="lg:col-start-1 lg:col-span-7 lg:row-start-1 lg:row-span-2 relative z-30">
             <ConciergeWidget />
           </div>
 
-          {/* Agenda — narrower, floats over the photo */}
-          <div className="lg:col-start-1 lg:col-span-6 lg:row-start-3 relative z-30">
+          {/* Agenda — pulled up, overlaps Concierge's bottom */}
+          <div className="lg:col-start-1 lg:col-span-5 lg:row-start-3 relative z-40 lg:-mt-10">
             <AgendaWidget />
           </div>
 
-          {/* Tasks — right-aligned, fully over the photo */}
-          <div className="lg:col-start-7 lg:col-span-6 lg:row-start-3 relative z-30">
+          {/* Tasks — shifted left, overlaps Agenda's right edge */}
+          <div className="lg:col-start-6 lg:col-span-7 lg:row-start-3 relative z-40 lg:-mt-4 lg:-ml-6">
             <TasksWidget />
           </div>
 
-          {/* Approvals — wide, overlaps deep into the photo */}
-          <div className="lg:col-start-1 lg:col-span-9 lg:row-start-4 relative z-30">
+          {/* Approvals — wide, pulled up, overlaps the row above */}
+          <div className="lg:col-start-1 lg:col-span-9 lg:row-start-4 relative z-50 lg:-mt-12">
             <ApprovalsWidget />
           </div>
         </div>

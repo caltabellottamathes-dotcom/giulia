@@ -12,8 +12,8 @@ const suggestions = [
 
 /**
  * ConciergeWidget — Giulia, the visual anchor. A SOLID editorial card
- * (portrait as backdrop with a dark overlay), not glass — the original
- * treatment from before the assistant was meant to be glass.
+ * (portrait as backdrop with a dark overlay), not glass. Clear, prominent
+ * buttons.
  */
 export default function ConciergeWidget() {
   const { openModule } = usePanel();
@@ -37,7 +37,7 @@ export default function ConciergeWidget() {
         draggable={false}
       />
       <div className="absolute inset-0 bg-gradient-to-r from-charcoal/93 via-charcoal/74 to-charcoal/40" />
-      <div className="absolute inset-0 bg-gradient-to-t from-charcoal/50 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-charcoal/55 via-transparent to-transparent" />
 
       {/* Content */}
       <div className="relative p-6 lg:p-7 flex flex-col w-full text-ivory">
@@ -63,38 +63,39 @@ export default function ConciergeWidget() {
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder="Vraag Giulia anything..."
-            className="w-full rounded-2xl pl-5 pr-12 py-3.5 text-sm bg-ivory/10 border border-ivory/20 text-ivory placeholder:text-ivory/45 focus:outline-none focus:ring-1 focus:ring-olive/50 transition-all"
+            className="w-full rounded-2xl pl-5 pr-14 py-4 text-sm bg-ivory/12 border border-ivory/25 text-ivory placeholder:text-ivory/45 focus:outline-none focus:ring-2 focus:ring-olive/60 transition-all"
           />
           <button
             type="submit"
-            className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-xl bg-ivory text-charcoal flex items-center justify-center hover:scale-105 transition-transform"
+            className="absolute right-2 top-1/2 -translate-y-1/2 h-11 w-11 rounded-xl bg-olive text-ivory flex items-center justify-center hover:bg-olive/90 hover:scale-105 transition-all shadow-lg shadow-olive/30"
             aria-label="Verstuur"
           >
-            <ArrowUp className="h-4 w-4" />
+            <ArrowUp className="h-5 w-5" strokeWidth={2.5} />
           </button>
         </form>
 
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-2 mb-5">
           {suggestions.map((s) => (
             <button
               key={s}
               onClick={() => openModule("chat")}
-              className="rounded-full px-3.5 py-2 text-[12px] bg-ivory/10 border border-ivory/15 text-ivory/80 hover:bg-ivory/15 hover:text-ivory transition-all max-w-full truncate"
+              className="rounded-full px-4 py-2 text-[12px] font-medium bg-ivory/15 border border-ivory/30 text-ivory hover:bg-ivory/25 hover:border-ivory/50 transition-all max-w-full truncate"
             >
               {s}
             </button>
           ))}
         </div>
 
+        {/* Call button — clear, solid, prominent */}
         <button
           onClick={() => openModule("voice")}
-          className="mt-auto w-full rounded-2xl py-3.5 flex items-center justify-center gap-2.5 bg-olive/25 border border-olive/50 text-ivory hover:bg-olive/35 transition-all font-semibold text-sm"
+          className="mt-auto w-full rounded-2xl py-4 flex items-center justify-center gap-3 bg-olive text-ivory hover:bg-olive/90 transition-all font-semibold text-[15px] shadow-lg shadow-olive/40"
         >
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full rounded-full bg-olive/60 animate-ping" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-olive" />
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-ivory/50 animate-ping" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-ivory" />
           </span>
-          <Phone className="h-4 w-4" />
+          <Phone className="h-5 w-5" strokeWidth={2.5} />
           Bel Giulia meteen
         </button>
       </div>
