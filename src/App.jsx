@@ -1,12 +1,34 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import Layout from '@/components/Layout';
 // Add page imports here
+import Home from '@/pages/Home';
+import Agenda from '@/pages/Agenda';
+import Projects from '@/pages/Projects';
+import ProjectDetail from '@/pages/ProjectDetail';
+import Tasks from '@/pages/Tasks';
+import Email from '@/pages/Email';
+import WhatsApp from '@/pages/WhatsApp';
+import Chat from '@/pages/Chat';
+import Voice from '@/pages/Voice';
+import Knowledge from '@/pages/Knowledge';
+import Documents from '@/pages/Documents';
+import People from '@/pages/People';
+import PersonDetail from '@/pages/PersonDetail';
+import Approvals from '@/pages/Approvals';
+import Activity from '@/pages/Activity';
+import Memory from '@/pages/Memory';
+import Integrations from '@/pages/Integrations';
+import Settings from '@/pages/Settings';
+import Profile from '@/pages/Profile';
+import SearchPage from '@/pages/Search';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -34,7 +56,30 @@ const AuthenticatedApp = () => {
   // Render the main app
   return (
     <Routes>
-      {/* Add your page Route elements here */}
+      <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
+        <Route element={<Layout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/agenda" element={<Agenda />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/projects/:id" element={<ProjectDetail />} />
+          <Route path="/tasks" element={<Tasks />} />
+          <Route path="/email" element={<Email />} />
+          <Route path="/whatsapp" element={<WhatsApp />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/voice" element={<Voice />} />
+          <Route path="/knowledge" element={<Knowledge />} />
+          <Route path="/documents" element={<Documents />} />
+          <Route path="/people" element={<People />} />
+          <Route path="/people/:id" element={<PersonDetail />} />
+          <Route path="/approvals" element={<Approvals />} />
+          <Route path="/activity" element={<Activity />} />
+          <Route path="/memory" element={<Memory />} />
+          <Route path="/integrations" element={<Integrations />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/search" element={<SearchPage />} />
+        </Route>
+      </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
