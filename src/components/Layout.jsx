@@ -258,7 +258,7 @@ function LayoutInner() {
         </header>
 
         {/* Workspace content */}
-        <main className="flex-1 px-5 lg:px-10 py-6 lg:py-8 max-w-[1440px] mx-auto w-full">
+        <main className="flex-1 px-5 lg:px-10 py-6 lg:py-8 pb-24 lg:pb-8 max-w-[1440px] mx-auto w-full">
           <Outlet />
         </main>
       </div>
@@ -281,6 +281,32 @@ function LayoutInner() {
 
       {/* Dedicated chat window — the Giulia agent */}
       <ChatWindow />
+
+      {/* Mobile bottom nav — primary destinations */}
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 glass-2 border-t border-border/40 flex items-center justify-around px-2 py-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom))]">
+        {[
+          { to: "/", icon: Home, label: "Dashboard" },
+          { to: "/chat", icon: MessageSquare, label: "Chat" },
+          { to: "/email", icon: Mail, label: "Inbox" },
+          { to: "/agenda", icon: Calendar, label: "Agenda" },
+          { to: "/settings", icon: Settings, label: "Backdesk" },
+        ].map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.to === "/"}
+            className={({ isActive }) =>
+              cn(
+                "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-[10px] font-medium transition-colors",
+                isActive ? "text-olive" : "text-foreground/55"
+              )
+            }
+          >
+            <item.icon className="h-5 w-5" strokeWidth={1.75} />
+            {item.label}
+          </NavLink>
+        ))}
+      </nav>
     </div>
   );
 }
