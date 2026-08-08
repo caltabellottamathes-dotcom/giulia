@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePanel } from "@/lib/PanelContext";
 import { WIDGETS } from "@/lib/widgetRegistry";
@@ -7,14 +7,23 @@ import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import AddWidgetPicker from "@/components/panels/AddWidgetPicker";
-import WidgetTile from "@/components/widgets/WidgetTile";
+import WidgetCell from "@/components/widgets/WidgetCell";
 
 const DEFAULT_WIDGETS = ["giulia", "agenda", "tasks", "approvals", "email", "projects"];
 
+const SPAN_COL = {
+  3: "lg:col-span-3",
+  4: "lg:col-span-4",
+  5: "lg:col-span-5",
+  6: "lg:col-span-6",
+  8: "lg:col-span-8",
+};
+
 /**
- * Home — a spatial widget canvas. Every widget is freely draggable and can
- * overlap others; positions persist per user. The editorial photo reaches the
- * right edge and shrinks to the bottom-left when a module panel opens.
+ * Home — a tidy, sorted bento grid. The user's chosen widgets persist and are
+ * laid out cleanly on open; widgets that need attention right now (unread
+ * messages, pending approvals, overdue tasks, new insights…) are surfaced
+ * automatically. Giulia always leads.
  */
 export default function Home() {
   const { activeModule, openModule } = usePanel();
@@ -22,30 +31,49 @@ export default function Home() {
   const [widgets, setWidgets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [focusedId, setFocusedId] = useState(null);
   const [userName, setUserName] = useState("");
   const { toast } = useToast();
-  const canvasRef = useRef(null);
-
-  const cols = useMemo(() => {
-    if (typeof window === "undefined") return 3;
-    return window.innerWidth < 640 ? 1 : window.innerWidth < 1024 ? 2 : 3;
-  }, []);
-  const cardW = 300;
-  const cardH = 270;
-  const defaultPos = (i) => ({ x: 12 + (i % cols) * (cardW + 14), y: 12 + Math.floor(i / cols) * (cardH + 14) });
 
   const load = async () => {
     try {
-      const recs = await base44.entities.DashboardWidget.list("position");
+      const [recs, events, tasks, approvals, emails, waMsgs, insights] = await Promise.all([
+        base44.entities.DashboardWidget.list("position").catch(() => []),
+        base44.entities.Event.list().catch(() => []),
+        base44.entities.Task.list().catch(() => []),
+        base44.entities.Approval.filter({ status: "pending" }).catch(() => []),
+        base44.entities.Email.filter({ status: "unread" }).catch(() => []),
+        base44.entities.WhatsAppMessage.filter({ direction: "received", status: "unread" }).catch(() => []),
+        base44.entities.Insight.list("-created_date", 1).catch(() => []),
+      ]);
+
+      const todayStr = new Date().toLocaleDateString("sv-SE");
+      const attention = {
+        agenda: events.some((e) => (e.start || "").slice(0, 10) === todayStr),
+        tasks: tasks.some((t) => t.status === "overdue" || t.status === "today"),
+        approvals: approvals.length > 0,
+        email: emails.length > 0,
+        whatsapp: waMsgs.length > 0,
+        insights: insights.length > 0,
+      };
+
+      let saved = recs && recs.length ? recs.filter((r) => r.visible !== false) : [];
       if (!recs || recs.length === 0) {
-        const created = await base44.entities.DashboardWidget.bulkCreate(
-          DEFAULT_WIDGETS.map((t, i) => ({ widget_type: t, position: i, visible: true, ...defaultPos(i) }))
+        saved = await base44.entities.DashboardWidget.bulkCreate(
+          DEFAULT_WIDGETS.map((t, i) => ({ widget_type: t, position: i, visible: true }))
         );
-        setWidgets(created || []);
-      } else {
-        setWidgets(recs.filter((r) => r.visible !== false));
       }
+
+      // Surface attention widgets the user hasn't pinned yet
+      const existingTypes = new Set(saved.map((w) => w.widget_type));
+      const toAdd = Object.keys(attention).filter((k) => attention[k] && !existingTypes.has(k));
+      if (toAdd.length) {
+        const created = await base44.entities.DashboardWidget.bulkCreate(
+          toAdd.map((t, i) => ({ widget_type: t, position: saved.length + i, visible: true }))
+        );
+        saved = [...saved, ...created];
+      }
+
+      setWidgets(saved);
     } catch (e) {
       setWidgets([]);
     } finally {
@@ -57,15 +85,6 @@ export default function Home() {
     load();
     base44.auth.me().then((u) => setUserName(u?.full_name || "")).catch(() => {});
   }, []);
-
-  const onMove = async (id, x, y) => {
-    setWidgets((ws) => ws.map((w) => (w.id === id ? { ...w, x, y } : w)));
-    try {
-      await base44.entities.DashboardWidget.update(id, { x, y });
-    } catch (e) {
-      /* ignore */
-    }
-  };
 
   const removeWidget = async (id) => {
     setWidgets((w) => w.filter((x) => x.id !== id));
@@ -82,14 +101,11 @@ export default function Home() {
       toast({ title: "Staat al op je dashboard" });
       return;
     }
-    const pos = defaultPos(widgets.length);
     try {
       const rec = await base44.entities.DashboardWidget.create({
         widget_type: type,
         position: widgets.length,
         visible: true,
-        x: pos.x,
-        y: pos.y,
       });
       setWidgets([...widgets, rec]);
       setPickerOpen(false);
@@ -102,8 +118,10 @@ export default function Home() {
   const hour = new Date().getHours();
   const greetWord = hour < 12 ? "Goedemorgen" : hour < 18 ? "Goedemiddag" : "Goedenavond";
   const rawFirst = userName ? userName.split(" ")[0] : "";
-  const displayName = rawFirst === "Salvatore" ? "Salvo" : (rawFirst || "Salvo");
+  const displayName = rawFirst === "Salvatore" ? "Salvo" : rawFirst || "Salvo";
   const greeting = `${greetWord}, ${displayName}`;
+
+  const sorted = [...widgets].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
 
   return (
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-my-8 min-h-[calc(100svh-3.5rem)] overflow-hidden">
@@ -121,7 +139,7 @@ export default function Home() {
       {/* Photo — mobile banner */}
       <div
         className={cn(
-          "lg:hidden fixed top-14 left-0 right-0 h-[30vh] overflow-hidden z-0 rounded-b-[28px] transition-all duration-700",
+          "lg:hidden fixed top-14 left-0 right-0 h-[26vh] overflow-hidden z-0 rounded-b-[28px] transition-all duration-700",
           panelOpen ? "opacity-0 -translate-y-4 pointer-events-none" : "opacity-100"
         )}
       >
@@ -132,7 +150,7 @@ export default function Home() {
       {/* Photo — small oblong card bottom-left when a panel opens */}
       <div
         className={cn(
-          "fixed left-4 bottom-4 z-0 w-[52%] h-[26vh] lg:w-[30%] lg:h-[30vh] overflow-hidden rounded-[24px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+          "fixed left-4 bottom-4 z-0 w-[52%] h-[24vh] lg:w-[30%] lg:h-[28vh] overflow-hidden rounded-[24px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
           panelOpen ? "opacity-100 scale-100" : "opacity-0 scale-90 pointer-events-none"
         )}
       >
@@ -140,10 +158,10 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-tr from-charcoal/45 to-transparent" />
       </div>
 
-      {/* Content — slides right when a module panel opens */}
+      {/* Content */}
       <div
         className={cn(
-          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[30vh] lg:pt-0",
+          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[26vh] lg:pt-0",
           panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100"
         )}
       >
@@ -164,46 +182,36 @@ export default function Home() {
           </button>
         </header>
 
-        {/* Spatial widget canvas */}
+        {/* Tidy sorted bento grid */}
         <div className="px-5 lg:px-10 pb-10">
           {loading ? (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div className="grid grid-cols-12 gap-4">
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="lg:col-span-4 h-[240px] rounded-[24px] shimmer" />
+                <div key={i} className="col-span-12 md:col-span-6 lg:col-span-4 h-[240px] rounded-[24px] shimmer" />
               ))}
             </div>
-          ) : (
-            <div ref={canvasRef} className="relative h-[82vh] min-h-[680px]">
-              {widgets.map((w, index) => {
+          ) : sorted.length > 0 ? (
+            <div className="grid grid-cols-12 gap-4 lg:gap-5 auto-rows-auto">
+              {sorted.map((w) => {
                 const def = WIDGETS[w.widget_type];
                 if (!def) return null;
-                const hasPos = w.x != null && w.y != null && (w.x !== 0 || w.y !== 0);
-                const pos = hasPos ? { x: w.x, y: w.y } : defaultPos(index);
                 return (
-                  <WidgetTile
-                    key={w.id}
-                    widget={{ ...w, x: pos.x, y: pos.y }}
-                    def={def}
-                    canvasRef={canvasRef}
-                    zIndex={focusedId === w.id ? 60 : 10 + index}
-                    onMove={onMove}
-                    onRemove={removeWidget}
-                    onFocus={setFocusedId}
-                  />
+                  <div key={w.id} className={cn("col-span-12 md:col-span-6", SPAN_COL[def.span] || "lg:col-span-4")}>
+                    <WidgetCell def={def} onRemove={() => removeWidget(w.id)} />
+                  </div>
                 );
               })}
-              {widgets.length === 0 && (
-                <div className="glass-card rounded-[28px] p-12 flex flex-col items-center text-center max-w-md mx-auto">
-                  <p className="text-lg font-display font-semibold mb-2">Je dashboard is leeg</p>
-                  <p className="text-sm text-foreground/55 mb-5">Voeg widgets toe om je dag te organiseren.</p>
-                  <button
-                    onClick={() => setPickerOpen(true)}
-                    className="inline-flex items-center gap-2 rounded-full bg-olive text-ivory px-5 py-2.5 text-sm font-semibold hover:bg-olive/90 transition"
-                  >
-                    <Plus className="h-4 w-4" /> Widget toevoegen
-                  </button>
-                </div>
-              )}
+            </div>
+          ) : (
+            <div className="glass-card rounded-[28px] p-12 flex flex-col items-center text-center max-w-md mx-auto">
+              <p className="text-lg font-display font-semibold mb-2">Je dashboard is leeg</p>
+              <p className="text-sm text-foreground/55 mb-5">Voeg widgets toe om je dag te organiseren.</p>
+              <button
+                onClick={() => setPickerOpen(true)}
+                className="inline-flex items-center gap-2 rounded-full bg-olive text-ivory px-5 py-2.5 text-sm font-semibold hover:bg-olive/90 transition"
+              >
+                <Plus className="h-4 w-4" /> Widget toevoegen
+              </button>
             </div>
           )}
         </div>

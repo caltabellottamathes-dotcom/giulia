@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import WidgetShell from "./WidgetShell";
 import WidgetHeader from "./WidgetHeader";
 import FloatingPanel from "@/components/glass/FloatingPanel";
@@ -33,6 +33,7 @@ export default function GiuliaWidget() {
   const [current, setCurrent] = useState(0);
   const [done, setDone] = useState({});
   const [userName, setUserName] = useState("");
+  const introRef = useRef(null);
 
   useEffect(() => {
     base44.auth.me().then((u) => setUserName(u?.full_name || "")).catch(() => {});
@@ -42,6 +43,17 @@ export default function GiuliaWidget() {
     const t = setTimeout(() => setShowIntro(false), 8000);
     return () => clearTimeout(t);
   }, []);
+
+  // Play the intro unmuted; fall back to muted if the browser blocks autoplay
+  useEffect(() => {
+    const v = introRef.current;
+    if (!v || !showIntro) return;
+    v.muted = false;
+    const p = v.play();
+    if (p && typeof p.catch === "function") {
+      p.catch(() => { v.muted = true; v.play().catch(() => {}); });
+    }
+  }, [showIntro]);
 
   const steps = useMemo(() => {
     const todayStr = new Date().toLocaleDateString("sv-SE");
@@ -97,12 +109,9 @@ export default function GiuliaWidget() {
           {/* INTRO — the video appears first, before the widget content */}
           {showIntro && (
             <div className="absolute inset-0 z-20 overflow-hidden rounded-[28px] bg-charcoal">
-              <video src={INTRO_VIDEO} muted loop autoPlay playsInline preload="metadata" className="h-full w-full object-cover opacity-80" />
+              <video ref={introRef} src={INTRO_VIDEO} loop autoPlay playsInline preload="metadata" className="h-full w-full object-cover opacity-80" />
               <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/40 to-charcoal/20" />
               <div className="absolute inset-0 flex flex-col items-center justify-end pb-7 px-6 text-center">
-                <span className="h-10 w-10 rounded-full bg-ivory/90 text-charcoal flex items-center justify-center mb-3 shadow-lg">
-                  <Play className="h-4 w-4 ml-0.5 fill-current" />
-                </span>
                 <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/70 font-semibold mb-1.5">Giulia · video</p>
                 <p className="text-xl font-display font-semibold text-ivory leading-tight mb-4">Je dagoverzicht</p>
                 <button onClick={() => setShowIntro(false)} className="rounded-full bg-sand text-charcoal px-5 py-2.5 text-xs font-semibold hover:bg-ivory transition">

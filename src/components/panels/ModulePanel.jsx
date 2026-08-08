@@ -21,6 +21,23 @@ const MODULE_ACCENT = {
   chat: "hsl(var(--olive))", voice: "hsl(var(--charcoal))",
 };
 
+const MODULE_IMAGE = {
+  agenda: IMAGES.sittingChairs,
+  projects: IMAGES.feetChair,
+  tasks: IMAGES.topDownWalk,
+  email: IMAGES.walkingChairs,
+  whatsapp: IMAGES.walkingChairs,
+  knowledge: IMAGES.portraitThinking,
+  documents: IMAGES.topDownWalk,
+  people: IMAGES.sittingChairs,
+  approvals: IMAGES.feetChair,
+  activity: IMAGES.walkingChairs,
+  memory: IMAGES.portraitThinking,
+  insights: IMAGES.portraitBootHands,
+  chat: IMAGES.portraitBootFace,
+  voice: IMAGES.portraitBootFace,
+};
+
 export default function ModulePanel() {
   const { activeModule, closeModule } = usePanel();
   const mod = activeModule ? MODULES[activeModule] : null;
@@ -55,7 +72,7 @@ export default function ModulePanel() {
           {/* Cleaner header — lighter image, clearer title, dashboard action */}
           <div className="relative px-7 lg:px-9 pt-7 pb-5 shrink-0 overflow-hidden">
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              <img src={IMAGES.walkingChairs} alt="" className="h-full w-full object-cover opacity-25" draggable={false} />
+              <img src={MODULE_IMAGE[activeModule] || IMAGES.walkingChairs} alt="" className="h-full w-full object-cover opacity-25" draggable={false} />
               <div className="absolute inset-0 bg-gradient-to-r from-warm-white/95 via-warm-white/85 to-warm-white/55" />
             </div>
             <div className="relative flex items-start justify-between gap-4">
