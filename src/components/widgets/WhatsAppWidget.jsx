@@ -4,7 +4,7 @@ import WidgetHeader from "./WidgetHeader";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
-import { MessageCircle, Send } from "lucide-react";
+import { MessageCircle, Send, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -14,7 +14,11 @@ export default function WhatsAppWidget() {
   const { openModule } = usePanel();
   const { data: contacts, loading } = useEntityList("Contact");
   const { data: messages, reload } = useEntityList("WhatsAppMessage", { sort: "-created_date" });
+  const { data: drafts } = useEntityList("GiuliaDraft", { filter: { type: "whatsapp" } });
   const [reply, setReply] = useState("");
+
+  const draftsReady = useMemo(() => drafts.filter((d) => d.status === "awaiting_approval"), [drafts]);
+  const draftFor = (id) => draftsReady.some((d) => d.contact_id === id);
 
   const convos = useMemo(() => {
     const byContact = new Map();
@@ -47,7 +51,7 @@ export default function WhatsAppWidget() {
   return (
     <WidgetShell size="2x2" radius="medium" glass="translucent" interactive onClick={() => openModule("whatsapp")} className="min-h-[280px]">
       <div className="p-5 flex flex-col h-full">
-        <WidgetHeader icon={MessageCircle} label="WhatsApp" count={convos.length ? `${convos.length} chats` : "leeg"} />
+        <WidgetHeader icon={MessageCircle} label="WhatsApp" count={draftsReady.length ? `${draftsReady.length} klaar` : convos.length ? `${convos.length} chats` : "leeg"} />
 
         {loading ? (
           <div className="flex-1 space-y-2.5">
@@ -63,6 +67,7 @@ export default function WhatsAppWidget() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-sm font-semibold text-foreground truncate">{nameOf(c.contact_id)}</p>
+                    {draftFor(c.contact_id) && <Sparkles className="h-3 w-3 text-sand shrink-0" />}
                     {c.unread > 0 && <span className="text-[10px] font-semibold text-ivory bg-olive rounded-full px-1.5 py-0.5 shrink-0">{c.unread}</span>}
                   </div>
                   <p className="text-[11px] text-foreground/55 truncate">{c.last.message}</p>

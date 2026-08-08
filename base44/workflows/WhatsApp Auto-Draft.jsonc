@@ -1,0 +1,40 @@
+{
+  "name": "WhatsApp Auto-Draft",
+  "description": "Giulia prepares a reply automatically when a new incoming WhatsApp message arrives",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "WhatsAppMessage",
+      "events": [
+        "create"
+      ]
+    },
+    "condition": "${ .trigger.data.direction == \"received\" }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "whatsapp_auto_draft",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "draft_reply": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "autoDraftWhatsApp",
+            "args": {
+              "message_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Giulia bereidt antwoord voor",
+            "description": "Concept voor inkomend bericht"
+          }
+        }
+      }
+    ]
+  }
+}
