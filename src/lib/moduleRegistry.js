@@ -23,23 +23,24 @@ import Profile from "@/pages/Profile";
 
 /**
  * Single source of truth for every module that opens as a sliding glass
- * panel. Key = the identifier used across nav, quick actions and the panel.
+ * panel. `panelWidth` lets the content determine the panel size — panels
+ * don't all share the same ratio.
  */
 export const MODULES = {
-  agenda: { label: "Agenda", icon: Calendar, Component: Agenda },
-  projects: { label: "Projects", icon: Briefcase, Component: Projects },
-  tasks: { label: "Tasks", icon: CheckSquare, Component: Tasks },
-  email: { label: "Email", icon: Mail, Component: Email },
-  whatsapp: { label: "WhatsApp", icon: MessageCircle, Component: WhatsApp },
-  knowledge: { label: "Knowledge", icon: BookOpen, Component: Knowledge },
-  documents: { label: "Documents", icon: FileText, Component: Documents },
-  people: { label: "People", icon: Users, Component: People },
-  chat: { label: "Chat", icon: MessageSquare, Component: Chat },
-  voice: { label: "Voice", icon: Mic, Component: Voice },
-  approvals: { label: "Approvals", icon: ClipboardCheck, Component: Approvals },
-  activity: { label: "Activity", icon: ActivityIcon, Component: ActivityPage },
-  memory: { label: "Memory", icon: Brain, Component: Memory },
-  integrations: { label: "Integrations", icon: Plug, Component: Integrations },
-  settings: { label: "Settings", icon: SettingsIcon, Component: SettingsPage },
-  profile: { label: "Profile", icon: User, Component: Profile },
+  agenda:      { label: "Agenda",       icon: Calendar,     Component: Agenda,      panelWidth: 720 },
+  projects:    { label: "Projects",     icon: Briefcase,    Component: Projects,    panelWidth: 860 },
+  tasks:       { label: "Tasks",        icon: CheckSquare,  Component: Tasks,       panelWidth: 720 },
+  email:       { label: "Email",        icon: Mail,          Component: Email,       panelWidth: 1000 },
+  whatsapp:    { label: "WhatsApp",      icon: MessageCircle, Component: WhatsApp,    panelWidth: 1100 },
+  knowledge:   { label: "Knowledge",     icon: BookOpen,      Component: Knowledge,    panelWidth: 860 },
+  documents:   { label: "Documents",    icon: FileText,      Component: Documents,    panelWidth: 860 },
+  people:      { label: "People",        icon: Users,         Component: People,       panelWidth: 720 },
+  chat:        { label: "Chat",         icon: MessageSquare, Component: Chat,         panelWidth: 720 },
+  voice:       { label: "Voice",        icon: Mic,           Component: Voice,        panelWidth: 720 },
+  approvals:   { label: "Approvals",     icon: ClipboardCheck, Component: Approvals,   panelWidth: 720 },
+  activity:    { label: "Activity",      icon: ActivityIcon,  Component: ActivityPage, panelWidth: 720 },
+  memory:      { label: "Memory",        icon: Brain,         Component: Memory,      panelWidth: 720 },
+  integrations:{ label: "Integrations",  icon: Plug,           Component: Integrations, panelWidth: 720 },
+  settings:    { label: "Settings",      icon: SettingsIcon,   Component: SettingsPage, panelWidth: 720 },
+  profile:     { label: "Profile",       icon: User,           Component: Profile,     panelWidth: 560 },
 };

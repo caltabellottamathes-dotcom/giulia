@@ -4,30 +4,28 @@ import { X } from "lucide-react";
 
 /**
  * FloatingPanel — spatial glass overlay that slides in from the sides.
- * Panels are DETACHED from the viewport edges (margin on all sides),
- * floating with shadow — like a translucent card hovering above the workspace.
+ * `width` (px) scales the right-positioned panel so the content determines
+ * the size — not every panel needs the same ratio.
  *
- * Positions:
- *   right  → approvals, actions, contextual info, AI suggestions
- *   left   → navigation, filters, context, collections
- *   bottom → Giulia, chat previews, voice
- *   top    → notifications, urgent information
- *   center → modal / focus panel (glass-4)
- *
+ * Positions: right · left · bottom · top · center
  * Glass levels: 2 (subtle), 3 (feature), 4 (modal/focus)
  */
 
+const widthClass = {
+  380: "lg:w-[380px]",
+  460: "lg:w-[460px]",
+  560: "lg:w-[560px]",
+  720: "lg:w-[720px]",
+  860: "lg:w-[860px]",
+  1000: "lg:w-[1000px]",
+  1100: "lg:w-[1100px]",
+};
+
 const positions = {
-  right:
-    "fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 w-[calc(100%-2rem)] lg:w-[720px] z-50",
-  left:
-    "fixed left-4 lg:left-6 top-4 lg:top-6 bottom-4 lg:bottom-6 w-[calc(100%-2rem)] lg:w-[380px] z-50",
-  bottom:
-    "fixed left-4 lg:left-6 right-4 lg:right-6 bottom-4 lg:bottom-6 z-50",
-  top:
-    "fixed left-4 lg:left-6 right-4 lg:right-6 top-4 lg:top-6 z-50",
-  center:
-    "fixed inset-0 z-50 flex items-center justify-center p-6",
+  left: "fixed left-4 lg:left-6 top-4 lg:top-6 bottom-4 lg:bottom-6 w-[calc(100%-2rem)] lg:w-[380px] z-50",
+  bottom: "fixed left-4 lg:left-6 right-4 lg:right-6 bottom-4 lg:bottom-6 z-50",
+  top: "fixed left-4 lg:left-6 right-4 lg:right-6 top-4 lg:top-6 z-50",
+  center: "fixed inset-0 z-50 flex items-center justify-center p-6",
 };
 
 const animations = {
@@ -38,17 +36,14 @@ const animations = {
   center: "animate-scale-in",
 };
 
-const glassLevels = {
-  2: "glass-2",
-  3: "glass-3",
-  4: "glass-4",
-};
+const glassLevels = { 2: "glass-2", 3: "glass-3", 4: "glass-4" };
 
 export default function FloatingPanel({
   open,
   onClose,
   position = "right",
   level = 3,
+  width = 720,
   children,
   className,
   showOverlay = true,
@@ -74,6 +69,10 @@ export default function FloatingPanel({
   if (!open) return null;
 
   const isCenter = position === "center";
+  const posClass =
+    position === "right"
+      ? `fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 w-[calc(100%-2rem)] ${widthClass[width] || widthClass[720]} z-50`
+      : positions[position];
 
   return (
     <>
@@ -86,13 +85,7 @@ export default function FloatingPanel({
           onClick={closeOnOverlay ? onClose : undefined}
         />
       )}
-      <div
-        className={cn(
-          positions[position],
-          animations[position],
-          className
-        )}
-      >
+      <div className={cn(posClass, animations[position], className)}>
         <div
           className={cn(
             glassLevels[level] || "glass-3",

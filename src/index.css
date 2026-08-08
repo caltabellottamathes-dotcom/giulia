@@ -125,22 +125,22 @@
 
   /* Readable content-card glass — Ancient Marble tint, opaque enough for text over photo */
   .glass-card {
-    background: hsl(40 8% 70% / 0.28);
-    backdrop-filter: blur(42px) saturate(1.25);
-    -webkit-backdrop-filter: blur(42px) saturate(1.25);
-    border: 1px solid hsl(40 14% 92% / 0.4);
+    background: hsl(40 6% 66% / 0.20);
+    backdrop-filter: blur(48px) saturate(1.2);
+    -webkit-backdrop-filter: blur(48px) saturate(1.2);
+    border: 1px solid hsl(40 14% 94% / 0.36);
     box-shadow:
-      inset 0 1px 0 0 hsl(40 20% 100% / 0.45),
-      0 24px 52px -20px hsl(30 10% 20% / 0.2);
+      inset 0 1px 0 0 hsl(40 20% 100% / 0.42),
+      0 24px 56px -22px hsl(30 10% 20% / 0.18);
   }
 
   /* Lighter overlapping content card */
   .glass-card-2 {
-    background: hsl(40 8% 70% / 0.18);
-    backdrop-filter: blur(38px) saturate(1.25);
-    -webkit-backdrop-filter: blur(38px) saturate(1.25);
-    border: 1px solid hsl(40 14% 92% / 0.3);
-    box-shadow: inset 0 1px 0 0 hsl(40 20% 100% / 0.32);
+    background: hsl(40 6% 66% / 0.12);
+    backdrop-filter: blur(44px) saturate(1.2);
+    -webkit-backdrop-filter: blur(44px) saturate(1.2);
+    border: 1px solid hsl(40 14% 94% / 0.26);
+    box-shadow: inset 0 1px 0 0 hsl(40 20% 100% / 0.28);
   }
 
   /* Floating shadow for detached panels */
