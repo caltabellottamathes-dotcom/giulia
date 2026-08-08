@@ -88,7 +88,7 @@ export default function GiuliaWidget() {
                   <button
                     key={st.id}
                     onClick={() => setCurrent(i)}
-                    className={cn("h-1.5 flex-1 rounded-full transition-all", i === current ? "bg-olive" : done[st.id] ? "bg-olive/40" : "bg-foreground/15")}
+                    className={cn("h-1.5 flex-1 rounded-full transition-all", i === current ? "bg-olive" : done[st.id] ? "bg-olive/50" : "bg-ivory/20")}
                     aria-label={`Stap ${i + 1}`}
                   />
                 ))}
@@ -97,15 +97,15 @@ export default function GiuliaWidget() {
               <div className="flex-1 flex flex-col">
                 <div className="flex items-center gap-3 mb-2.5">
                   <span className="h-9 w-9 rounded-xl bg-olive text-ivory flex items-center justify-center font-semibold text-sm shrink-0">{current + 1}</span>
-                  <span className="text-[10px] uppercase tracking-[0.2em] text-olive font-semibold">{step.kind}</span>
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-sand font-semibold">{step.kind}</span>
                 </div>
-                <p className="text-base font-semibold text-foreground leading-tight">{step.title}</p>
-                {step.sub && <p className="text-xs text-foreground/55 mt-1.5">{step.sub}</p>}
+                <p className="text-base font-semibold text-ivory leading-tight">{step.title}</p>
+                {step.sub && <p className="text-xs text-ivory/60 mt-1.5">{step.sub}</p>}
               </div>
 
               <div className="flex items-center gap-2 mt-4">
-                <button onClick={() => openModule(step.module)} className="flex-1 rounded-xl bg-olive/15 border border-olive/30 text-olive py-2.5 text-xs font-semibold hover:bg-olive/25 transition">Openen</button>
-                <button onClick={prev} disabled={current === 0} className="h-10 w-10 rounded-xl glass-1 flex items-center justify-center disabled:opacity-30 transition" aria-label="Vorige">
+                <button onClick={() => openModule(step.module)} className="flex-1 rounded-xl bg-olive text-ivory py-2.5 text-xs font-semibold hover:bg-olive/90 transition">Openen</button>
+                <button onClick={prev} disabled={current === 0} className="h-10 w-10 rounded-xl bg-ivory/10 border border-ivory/15 text-ivory flex items-center justify-center disabled:opacity-30 transition" aria-label="Vorige">
                   <ArrowRight className="h-4 w-4 rotate-180" />
                 </button>
                 <button onClick={next} className="h-10 w-10 rounded-xl bg-olive text-ivory flex items-center justify-center hover:bg-olive/90 transition" aria-label="Volgende">
@@ -115,14 +115,14 @@ export default function GiuliaWidget() {
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-center">
-              <span className="h-12 w-12 rounded-full bg-olive/15 flex items-center justify-center mb-3"><Check className="h-6 w-6 text-olive" /></span>
-              <p className="text-sm font-semibold text-foreground">Alles is geregeld</p>
-              <p className="text-xs text-foreground/50 mt-1">Geen open punten voor vandaag</p>
+              <span className="h-12 w-12 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center mb-3"><Check className="h-6 w-6 text-sand" /></span>
+              <p className="text-sm font-semibold text-ivory">Alles is geregeld</p>
+              <p className="text-xs text-ivory/55 mt-1">Geen open punten voor vandaag</p>
             </div>
           )}
 
-          <div className="flex gap-2 mt-4 pt-4 border-t border-foreground/10">
-            <button onClick={() => openModule("chat")} className="flex-1 rounded-xl glass-1 py-2.5 text-xs font-semibold hover:bg-foreground/5 transition">Chat</button>
+          <div className="flex gap-2 mt-4 pt-4 border-t border-ivory/15">
+            <button onClick={() => openModule("chat")} className="flex-1 rounded-xl bg-ivory/10 border border-ivory/15 text-ivory py-2.5 text-xs font-semibold hover:bg-ivory/15 transition">Chat</button>
             <button onClick={() => openModule("voice")} className="flex-1 rounded-xl bg-olive text-ivory py-2.5 text-xs font-semibold flex items-center justify-center gap-2 hover:bg-olive/90 transition">
               <Phone className="h-3.5 w-3.5" /> Bel Giulia
             </button>

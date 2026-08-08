@@ -32,16 +32,16 @@ export default function WidgetTile({ widget, def, zIndex, canvasRef, onMove, onR
         <div
           onPointerDown={(e) => controls.start(e)}
           style={{ touchAction: "none" }}
-          className="absolute -top-3 left-1/2 -translate-x-1/2 z-30 h-6 w-20 rounded-full glass-2 flex items-center justify-center cursor-grab active:cursor-grabbing shadow-sm opacity-100 lg:opacity-50 lg:group-hover:opacity-100 transition-opacity"
+          className="absolute -top-3 left-1/2 -translate-x-1/2 z-30 h-6 w-20 rounded-full bg-sand flex items-center justify-center cursor-grab active:cursor-grabbing shadow-sm opacity-100 lg:opacity-50 lg:group-hover:opacity-100 transition-opacity"
           aria-label="Slepen"
         >
-          <span className="block h-1 w-8 rounded-full bg-foreground/35" />
+          <span className="block h-1 w-8 rounded-full bg-ivory/55" />
         </div>
 
         {/* Remove */}
         <button
           onClick={(e) => { e.stopPropagation(); onRemove?.(widget.id); }}
-          className="absolute top-1.5 right-1.5 z-30 h-7 w-7 rounded-full glass-1 flex items-center justify-center text-foreground/60 hover:text-destructive opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"
+          className="absolute top-1.5 right-1.5 z-30 h-7 w-7 rounded-full bg-ivory text-charcoal shadow-sm flex items-center justify-center hover:text-destructive opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"
           aria-label="Verwijderen"
         >
           <X className="h-3.5 w-3.5" />

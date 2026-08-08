@@ -22,7 +22,7 @@ export default function ProjectsWidget() {
   };
 
   return (
-    <WidgetShell size="2x2" radius="medium" glass="opaque" interactive onClick={() => openModule("projects")} className="min-h-[300px]">
+    <WidgetShell size="2x2" radius="medium" glass="card" interactive onClick={() => openModule("projects")} className="min-h-[300px]">
       <div className="p-5 flex flex-col h-full">
         <WidgetHeader icon={Briefcase} label="Projecten" count={`${active.length} actief`} />
 

@@ -2,9 +2,12 @@ import React from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * WidgetShell — the modular glass tile that hosts every dashboard widget.
- * `glass`: "card" (readable, default), "translucent" (lighter layer), "solid".
- * `zIndex` lets cards stack for overlapping, layered compositions.
+ * WidgetShell — a SOLID editorial tile hosting every dashboard widget.
+ * Full-opacity GIULIA palette: Metal / Clay Creek / Dark Sand / Blue Ridge Sky /
+ * Ancient Marble / Storm. No translucency — solid color blocks with a solid
+ * palette accent strip along the top edge. The tile sets a base text color so
+ * widget internals inherit readable contrast; `--tile-accent` /
+ * `--tile-on-accent` drive the header chip + strip.
  */
 const sizeMap = {
   "1x1": "min-h-[168px]",
@@ -23,11 +26,19 @@ const radiusMap = {
   xl: "rounded-[32px]",
 };
 
-const glassMap = {
-  card: "glass-card",
-  translucent: "glass-card-2",
-  solid: "glass-4",
-  opaque: "bg-card border border-foreground/10",
+const tileMap = {
+  // light tiles — dark text
+  card:        { cls: "bg-stone text-charcoal border border-charcoal/10",     accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
+  translucent: { cls: "bg-blue-grey text-charcoal border border-charcoal/10",  accent: "hsl(var(--charcoal))", on: "hsl(var(--ivory))" },
+  marble:      { cls: "bg-stone text-charcoal border border-charcoal/10",     accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
+  sky:         { cls: "bg-blue-grey text-charcoal border border-charcoal/10", accent: "hsl(var(--charcoal))", on: "hsl(var(--ivory))" },
+  storm:       { cls: "bg-ivory text-charcoal border border-charcoal/10",     accent: "hsl(var(--charcoal))", on: "hsl(var(--ivory))" },
+  // dark tiles — light text
+  opaque:      { cls: "bg-charcoal text-ivory border border-white/10",        accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
+  metal:       { cls: "bg-charcoal text-ivory border border-white/10",        accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
+  solid:       { cls: "bg-olive text-ivory border border-white/10",           accent: "hsl(var(--ivory))",    on: "hsl(var(--charcoal))" },
+  clay:        { cls: "bg-olive text-ivory border border-white/10",           accent: "hsl(var(--ivory))",    on: "hsl(var(--charcoal))" },
+  sand:        { cls: "bg-sand text-ivory border border-white/10",            accent: "hsl(var(--ivory))",    on: "hsl(var(--charcoal))" },
 };
 
 export default function WidgetShell({
@@ -41,28 +52,22 @@ export default function WidgetShell({
   style,
   zIndex,
 }) {
+  const tile = tileMap[glass] || tileMap.card;
   return (
     <div
       onClick={onClick}
-      style={{ ...style, zIndex }}
+      style={{ "--tile-accent": tile.accent, "--tile-on-accent": tile.on, ...style, zIndex }}
       className={cn(
-        "relative overflow-hidden flex flex-col h-full animate-fade-up",
-        glassMap[glass] || glassMap.card,
+        "relative overflow-hidden flex flex-col h-full animate-fade-up shadow-[0_18px_44px_-16px_hsl(30_10%_20%/0.16)]",
+        tile.cls,
         sizeMap[size] || sizeMap["1x1"],
         radiusMap[radius] || radiusMap.medium,
-        interactive &&
-          "cursor-pointer transition-transform duration-500 hover:-translate-y-1",
+        interactive && "cursor-pointer transition-transform duration-500 hover:-translate-y-1",
         className
       )}
     >
-      {/* Top inner highlight — the editorial glass edge */}
-      <span
-        className="pointer-events-none absolute inset-x-0 top-0 h-px"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent, hsl(40 20% 100% / 0.7) 30%, hsl(40 20% 100% / 0.5) 70%, transparent)",
-        }}
-      />
+      {/* Solid palette accent strip — the editorial top edge */}
+      <span className="pointer-events-none absolute inset-x-0 top-0 h-[3px]" style={{ background: "var(--tile-accent)" }} />
       {children}
     </div>
   );

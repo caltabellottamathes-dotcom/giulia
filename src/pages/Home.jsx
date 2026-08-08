@@ -101,7 +101,9 @@ export default function Home() {
 
   const hour = new Date().getHours();
   const greetWord = hour < 12 ? "Goedemorgen" : hour < 18 ? "Goedemiddag" : "Goedenavond";
-  const greeting = userName ? `${greetWord}, ${userName.split(" ")[0]}` : greetWord;
+  const rawFirst = userName ? userName.split(" ")[0] : "";
+  const displayName = rawFirst === "Salvatore" ? "Salvo" : (rawFirst || "Salvo");
+  const greeting = `${greetWord}, ${displayName}`;
 
   return (
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-my-8 min-h-[calc(100svh-3.5rem)] overflow-hidden">
