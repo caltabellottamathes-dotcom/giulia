@@ -1,6 +1,11 @@
 // Giulia push service worker — handles incoming push + notification clicks.
 self.addEventListener("push", (event) => {
-  let data = { title: "Giulia", body: "", url: "/" };
+  let data = {
+    title: "Giulia",
+    body: "",
+    url: "/",
+    icon: "https://media.base44.com/images/public/6a6cc0011ab9e3b32cfc1057/a408b643e_Gemini_Generated_Image_2gi5oq2gi5oq2gi51.png",
+  };
   try {
     data = { ...data, ...JSON.parse(event.data ? event.data.text() : "{}") };
   } catch {
@@ -9,6 +14,7 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
+      icon: data.icon,
       data: { url: data.url || "/" },
       tag: "giulia-push",
       renotify: true,

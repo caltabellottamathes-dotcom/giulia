@@ -2,21 +2,16 @@ import { base44 } from "@/api/base44Client";
 
 const SW_PATH = "/sw.js";
 
+// VAPID public key — embedded per spec; pairs with VAPID_PRIVATE_KEY (secret)
+// used by the sendPush backend function to sign push messages.
+export const VAPID_PUBLIC_KEY =
+  "BDCdfbYfMNevtsXxoRQOAOa9esUu7aw350rCS6NrESRddmxQDpjcpvscwH9t_3fUaeS7QaFVnLARyQ784dEj0DU";
+
 /** Register the push service worker (idempotent). */
 export async function registerPushSW() {
   if (!("serviceWorker" in navigator)) return null;
   try {
     return await navigator.serviceWorker.register(SW_PATH, { scope: "/" });
-  } catch {
-    return null;
-  }
-}
-
-/** Fetch the VAPID public key from the backend. */
-export async function getVapidPublicKey() {
-  try {
-    const res = await base44.functions.invoke("getVapidPublicKey", {});
-    return res?.data?.publicKey || null;
   } catch {
     return null;
   }
@@ -40,9 +35,6 @@ export async function subscribePush() {
   const reg = await registerPushSW();
   if (!reg) throw new Error("Service worker kon niet registreren.");
 
-  const publicKey = await getVapidPublicKey();
-  if (!publicKey) throw new Error("VAPID-sleutel niet geconfigureerd.");
-
   const permission = await Notification.requestPermission();
   if (permission !== "granted") throw new Error("Notificaties niet toegestaan.");
 
@@ -50,7 +42,7 @@ export async function subscribePush() {
   if (!subscription) {
     subscription = await reg.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(publicKey),
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
     });
   }
 
