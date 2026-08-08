@@ -18,7 +18,7 @@ export default function ActivityWidget() {
   };
 
   return (
-    <WidgetShell size="2x1" radius="medium" glass="card" interactive onClick={() => openModule("activity")} className="min-h-[220px]">
+    <WidgetShell size="2x1" radius="medium" glass="translucent" interactive onClick={() => openModule("activity")} className="min-h-[240px]">
       <div className="p-5 flex flex-col h-full">
         <WidgetHeader icon={ActivityIcon} label="Activiteit" count={`${items.length}`} />
 

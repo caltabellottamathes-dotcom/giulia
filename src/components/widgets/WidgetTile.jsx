@@ -12,7 +12,7 @@ export default function WidgetTile({ widget, def, zIndex, canvasRef, onMove, onR
   const y = useMotionValue(widget.y || 0);
   const controls = useDragControls();
   const Comp = def.Component;
-  const width = def.span >= 8 ? 350 : 300;
+  const width = def.w || (def.span >= 8 ? 350 : 300);
 
   return (
     <motion.div

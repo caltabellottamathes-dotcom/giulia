@@ -3,15 +3,19 @@ import WidgetShell from "./WidgetShell";
 import WidgetHeader from "./WidgetHeader";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
-import { Users, ArrowRight } from "lucide-react";
+import { Users, Phone } from "lucide-react";
+import { cn } from "@/lib/utils";
 
+/**
+ * PeopleWidget — tap-to-call a contact inline via a tel: link.
+ */
 export default function PeopleWidget() {
   const { openModule } = usePanel();
   const { data: contacts, loading } = useEntityList("Contact");
   const visible = contacts.slice(0, 4);
 
   return (
-    <WidgetShell size="2x1" radius="medium" glass="card" interactive onClick={() => openModule("people")} className="min-h-[220px]">
+    <WidgetShell size="2x1" radius="medium" glass="card" interactive onClick={() => openModule("people")} className="min-h-[240px]">
       <div className="p-5 flex flex-col h-full">
         <WidgetHeader icon={Users} label="Mensen" count={`${contacts.length}`} />
 
@@ -30,6 +34,14 @@ export default function PeopleWidget() {
                   <p className="text-sm font-semibold text-foreground truncate">{c.name}</p>
                   <p className="text-[10px] text-foreground/50 truncate">{c.role ? `${c.role}${c.company ? " · " + c.company : ""}` : c.company || ""}</p>
                 </div>
+                <a
+                  href={c.phone ? `tel:${c.phone}` : undefined}
+                  onClick={(e) => e.stopPropagation()}
+                  className={cn("h-7 w-7 rounded-lg flex items-center justify-center transition shrink-0", c.phone ? "bg-olive/15 text-olive hover:bg-olive/25" : "bg-foreground/5 text-foreground/25 pointer-events-none")}
+                  aria-label="Bellen"
+                >
+                  <Phone className="h-3.5 w-3.5" />
+                </a>
               </div>
             ))}
           </div>
@@ -38,10 +50,6 @@ export default function PeopleWidget() {
             <p className="text-xs text-foreground/45">Geen contacten</p>
           </div>
         )}
-
-        <button onClick={(ev) => { ev.stopPropagation(); openModule("people"); }} className="mt-3 pt-3 border-t border-foreground/10 flex items-center justify-end gap-1 text-[11px] font-semibold text-foreground hover:text-olive transition">
-          Openen <ArrowRight className="h-3 w-3" />
-        </button>
       </div>
     </WidgetShell>
   );

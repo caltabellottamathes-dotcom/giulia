@@ -3,17 +3,27 @@ import WidgetShell from "./WidgetShell";
 import WidgetHeader from "./WidgetHeader";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
-import { FileText, ArrowRight } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { FileText, Star } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const typeLabel = { pdf: "PDF", image: "IMG", doc: "DOC", sheet: "XLS", figma: "FIG", other: "FILE" };
 
+/**
+ * DocumentsWidget — star / unstar a file inline (favorite ↔ recent).
+ */
 export default function DocumentsWidget() {
   const { openModule } = usePanel();
-  const { data: docs, loading } = useEntityList("Document", { sort: "-created_date" });
+  const { data: docs, loading, reload } = useEntityList("Document", { sort: "-created_date" });
   const visible = docs.slice(0, 4);
 
+  const toggleFav = async (e, d) => {
+    e.stopPropagation();
+    try { await base44.entities.Document.update(d.id, { status: d.status === "favorite" ? "recent" : "favorite" }); reload(); } catch {}
+  };
+
   return (
-    <WidgetShell size="2x1" radius="medium" glass="card" interactive onClick={() => openModule("documents")} className="min-h-[220px]">
+    <WidgetShell size="2x1" radius="medium" glass="translucent" interactive onClick={() => openModule("documents")} className="min-h-[240px]">
       <div className="p-5 flex flex-col h-full">
         <WidgetHeader icon={FileText} label="Documenten" count={`${docs.length}`} />
 
@@ -32,6 +42,9 @@ export default function DocumentsWidget() {
                   <p className="text-sm font-semibold text-foreground truncate">{d.name}</p>
                   {d.owner && <p className="text-[10px] text-foreground/45 truncate">{d.owner}</p>}
                 </div>
+                <button onClick={(e) => toggleFav(e, d)} className="shrink-0 h-7 w-7 rounded-lg flex items-center justify-center hover:bg-foreground/5 transition" aria-label="Favoriet">
+                  <Star className={cn("h-3.5 w-3.5", d.status === "favorite" ? "fill-olive text-olive" : "text-foreground/30")} />
+                </button>
               </div>
             ))}
           </div>
@@ -40,10 +53,6 @@ export default function DocumentsWidget() {
             <p className="text-xs text-foreground/45">Geen bestanden</p>
           </div>
         )}
-
-        <button onClick={(ev) => { ev.stopPropagation(); openModule("documents"); }} className="mt-3 pt-3 border-t border-foreground/10 flex items-center justify-end gap-1 text-[11px] font-semibold text-foreground hover:text-olive transition">
-          Openen <ArrowRight className="h-3 w-3" />
-        </button>
       </div>
     </WidgetShell>
   );

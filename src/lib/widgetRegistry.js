@@ -17,31 +17,23 @@ import MemoryWidget from "@/components/widgets/MemoryWidget";
 import ActivityWidget from "@/components/widgets/ActivityWidget";
 
 /**
- * Single source of truth for every dashboard widget. `span` = lg grid columns
- * (out of 12). The widget itself decides how clearly its content reads.
+ * Single source of truth for every dashboard widget.
+ * `w` = tile width on the spatial canvas (px). `glass` = suggested treatment
+ * ("opaque" | "card" | "translucent") so tiles vary between solid and airy.
  */
 export const WIDGETS = {
-  giulia:     { type: "giulia",     label: "Giulia · je dag", icon: Sparkles,       Component: GiuliaWidget,    span: 8, category: "core" },
-  agenda:     { type: "agenda",    label: "Agenda",           icon: Calendar,       Component: AgendaWidget,    span: 4, category: "core" },
-  tasks:      { type: "tasks",     label: "Taken",            icon: CheckSquare,    Component: TasksWidget,     span: 4, category: "work" },
-  approvals:  { type: "approvals",  label: "Goedkeuringen",    icon: ClipboardCheck, Component: ApprovalsWidget, span: 4, category: "work" },
-  email:      { type: "email",      label: "Email",           icon: Mail,           Component: EmailWidget,      span: 4, category: "comms" },
-  whatsapp:   { type: "whatsapp",   label: "WhatsApp",        icon: MessageCircle,  Component: WhatsAppWidget,  span: 4, category: "comms" },
-  projects:   { type: "projects",   label: "Projecten",       icon: Briefcase,      Component: ProjectsWidget,   span: 5, category: "work" },
-  knowledge:  { type: "knowledge",  label: "Kennisbank",       icon: BookOpen,       Component: KnowledgeWidget,  span: 4, category: "work" },
-  people:     { type: "people",     label: "Mensen",          icon: Users,          Component: PeopleWidget,     span: 3, category: "work" },
-  documents:  { type: "documents",  label: "Documenten",       icon: FileText,       Component: DocumentsWidget,  span: 4, category: "work" },
-  memory:     { type: "memory",     label: "Geheugen",         icon: Brain,          Component: MemoryWidget,     span: 4, category: "intelligence" },
-  activity:   { type: "activity",   label: "Activiteit",       icon: ActivityIcon,   Component: ActivityWidget,   span: 6, category: "intelligence" },
+  giulia:     { type: "giulia",     label: "Giulia · je dag", icon: Sparkles,       Component: GiuliaWidget,    w: 360, span: 8, category: "core" },
+  agenda:     { type: "agenda",    label: "Agenda",           icon: Calendar,       Component: AgendaWidget,    w: 300, span: 4, category: "core" },
+  tasks:      { type: "tasks",     label: "Taken",            icon: CheckSquare,    Component: TasksWidget,     w: 320, span: 4, category: "work" },
+  approvals:  { type: "approvals",  label: "Goedkeuringen",    icon: ClipboardCheck, Component: ApprovalsWidget, w: 300, span: 4, category: "work" },
+  email:      { type: "email",      label: "Email",           icon: Mail,           Component: EmailWidget,      w: 340, span: 4, category: "comms" },
+  whatsapp:   { type: "whatsapp",   label: "WhatsApp",        icon: MessageCircle,  Component: WhatsAppWidget,  w: 310, span: 4, category: "comms" },
+  projects:   { type: "projects",   label: "Projecten",       icon: Briefcase,      Component: ProjectsWidget,   w: 380, span: 5, category: "work" },
+  knowledge:  { type: "knowledge",  label: "Kennisbank",       icon: BookOpen,       Component: KnowledgeWidget,  w: 310, span: 4, category: "work" },
+  people:     { type: "people",     label: "Mensen",          icon: Users,          Component: PeopleWidget,     w: 280, span: 3, category: "work" },
+  documents:  { type: "documents",  label: "Documenten",       icon: FileText,       Component: DocumentsWidget,  w: 300, span: 4, category: "work" },
+  memory:     { type: "memory",     label: "Geheugen",         icon: Brain,          Component: MemoryWidget,     w: 300, span: 4, category: "intelligence" },
+  activity:   { type: "activity",   label: "Activiteit",       icon: ActivityIcon,   Component: ActivityWidget,   w: 350, span: 6, category: "intelligence" },
 };
 
 export const WIDGET_LIST = Object.values(WIDGETS);
-
-// literal class map so Tailwind generates the spans
-export const SPAN_CLASS = {
-  3: "lg:col-span-3",
-  4: "lg:col-span-4",
-  5: "lg:col-span-5",
-  6: "lg:col-span-6",
-  8: "lg:col-span-8",
-};

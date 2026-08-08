@@ -23,6 +23,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [focusedId, setFocusedId] = useState(null);
+  const [userName, setUserName] = useState("");
   const { toast } = useToast();
   const canvasRef = useRef(null);
 
@@ -54,6 +55,7 @@ export default function Home() {
 
   useEffect(() => {
     load();
+    base44.auth.me().then((u) => setUserName(u?.full_name || "")).catch(() => {});
   }, []);
 
   const onMove = async (id, x, y) => {
@@ -98,7 +100,8 @@ export default function Home() {
   };
 
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Goedemorgen" : hour < 18 ? "Goedemiddag" : "Goedenavond";
+  const greetWord = hour < 12 ? "Goedemorgen" : hour < 18 ? "Goedemiddag" : "Goedenavond";
+  const greeting = userName ? `${greetWord}, ${userName.split(" ")[0]}` : greetWord;
 
   return (
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-my-8 min-h-[calc(100svh-3.5rem)] overflow-hidden">

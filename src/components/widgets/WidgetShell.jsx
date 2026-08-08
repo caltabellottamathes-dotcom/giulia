@@ -27,6 +27,7 @@ const glassMap = {
   card: "glass-card",
   translucent: "glass-card-2",
   solid: "glass-4",
+  opaque: "bg-card border border-foreground/10",
 };
 
 export default function WidgetShell({

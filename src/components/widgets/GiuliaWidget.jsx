@@ -59,25 +59,25 @@ export default function GiuliaWidget() {
 
   return (
     <>
-      <WidgetShell size="2x2" radius="large" glass="card" className="min-h-[460px]">
+      <WidgetShell size="2x2" radius="large" glass="opaque" className="min-h-[460px]">
         <div className="p-5 lg:p-6 flex flex-col h-full">
           <WidgetHeader icon={Sparkles} label="Giulia · je dag" count={total ? `${doneCount}/${total} klaar` : "leeg"} />
 
           {/* Day overview — click to play the vertical intro video */}
           <button
             onClick={() => setShowVideo(true)}
-            className="relative rounded-2xl overflow-hidden mb-4 h-[110px] bg-charcoal group text-left"
+            className="relative rounded-2xl overflow-hidden mb-4 aspect-video bg-charcoal group text-left w-full"
           >
             <video src={INTRO_VIDEO} muted loop playsInline preload="metadata" className="h-full w-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/15 to-charcoal/10" />
+            <div className="absolute inset-0 bg-gradient-to-t from-charcoal/55 via-transparent to-transparent" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="h-10 w-10 rounded-full bg-ivory/90 text-charcoal flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
+              <span className="h-11 w-11 rounded-full bg-ivory/90 text-charcoal flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
                 <Play className="h-4 w-4 ml-0.5 fill-current" />
               </span>
             </div>
             <div className="absolute bottom-2.5 left-3 text-ivory">
-              <p className="text-[9px] uppercase tracking-[0.24em] opacity-75 font-semibold">Dagoverzicht</p>
-              <p className="text-[13px] font-semibold leading-tight">Bekijk je dag in beeld</p>
+              <p className="text-[9px] uppercase tracking-[0.24em] opacity-75 font-semibold">Giulia · video</p>
+              <p className="text-[13px] font-semibold leading-tight">Je dagoverzicht</p>
             </div>
           </button>
 
@@ -132,7 +132,7 @@ export default function GiuliaWidget() {
 
       {/* Vertical intro video popup */}
       <FloatingPanel open={showVideo} onClose={() => setShowVideo(false)} position="center" level={4} showOverlay>
-        <div className="relative aspect-[9/16] h-[82vh] max-h-[82vh] rounded-[24px] overflow-hidden bg-charcoal">
+        <div className="relative aspect-video w-[min(86vw,820px)] rounded-[24px] overflow-hidden bg-charcoal">
           <video src={INTRO_VIDEO} autoPlay controls playsInline loop className="h-full w-full object-cover" />
         </div>
       </FloatingPanel>
