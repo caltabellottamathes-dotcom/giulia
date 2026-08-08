@@ -1,23 +1,20 @@
-import React, { useEffect, useState } from "react";
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePanel } from "@/lib/PanelContext";
-import { WIDGETS, SPAN_CLASS } from "@/lib/widgetRegistry";
+import { WIDGETS } from "@/lib/widgetRegistry";
 import { IMAGES } from "@/lib/images";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
-import { Plus, X } from "lucide-react";
+import { Plus } from "lucide-react";
 import AddWidgetPicker from "@/components/panels/AddWidgetPicker";
+import WidgetTile from "@/components/widgets/WidgetTile";
 
 const DEFAULT_WIDGETS = ["giulia", "agenda", "tasks", "approvals", "email", "projects"];
 
 /**
- * Home — the GIULIA OS widget center.
- * The editorial photo is a wide card reaching the RIGHT edge of the screen;
- * the glass widgets float on top in a clean, draggable grid. Every widget
- * can be dragged to reorder or removed; new widgets come from the picker.
- * Opening a module panel slides the dashboard away and shrinks the photo
- * into an oblong card in the bottom-left corner.
+ * Home — a spatial widget canvas. Every widget is freely draggable and can
+ * overlap others; positions persist per user. The editorial photo reaches the
+ * right edge and shrinks to the bottom-left when a module panel opens.
  */
 export default function Home() {
   const { activeModule, openModule } = usePanel();
@@ -25,14 +22,24 @@ export default function Home() {
   const [widgets, setWidgets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [focusedId, setFocusedId] = useState(null);
   const { toast } = useToast();
+  const canvasRef = useRef(null);
+
+  const cols = useMemo(() => {
+    if (typeof window === "undefined") return 3;
+    return window.innerWidth < 640 ? 1 : window.innerWidth < 1024 ? 2 : 3;
+  }, []);
+  const cardW = 300;
+  const cardH = 270;
+  const defaultPos = (i) => ({ x: 12 + (i % cols) * (cardW + 14), y: 12 + Math.floor(i / cols) * (cardH + 14) });
 
   const load = async () => {
     try {
       const recs = await base44.entities.DashboardWidget.list("position");
       if (!recs || recs.length === 0) {
         const created = await base44.entities.DashboardWidget.bulkCreate(
-          DEFAULT_WIDGETS.map((t, i) => ({ widget_type: t, position: i, visible: true }))
+          DEFAULT_WIDGETS.map((t, i) => ({ widget_type: t, position: i, visible: true, ...defaultPos(i) }))
         );
         setWidgets(created || []);
       } else {
@@ -49,18 +56,12 @@ export default function Home() {
     load();
   }, []);
 
-  const onDragEnd = async (res) => {
-    if (!res.destination || res.destination.index === res.source.index) return;
-    const reordered = Array.from(widgets);
-    const [moved] = reordered.splice(res.source.index, 1);
-    reordered.splice(res.destination.index, 0, moved);
-    setWidgets(reordered);
+  const onMove = async (id, x, y) => {
+    setWidgets((ws) => ws.map((w) => (w.id === id ? { ...w, x, y } : w)));
     try {
-      await base44.entities.DashboardWidget.bulkUpdate(
-        reordered.map((w, i) => ({ id: w.id, position: i }))
-      );
+      await base44.entities.DashboardWidget.update(id, { x, y });
     } catch (e) {
-      /* ignore persist error */
+      /* ignore */
     }
   };
 
@@ -79,11 +80,14 @@ export default function Home() {
       toast({ title: "Staat al op je dashboard" });
       return;
     }
+    const pos = defaultPos(widgets.length);
     try {
       const rec = await base44.entities.DashboardWidget.create({
         widget_type: type,
         position: widgets.length,
         visible: true,
+        x: pos.x,
+        y: pos.y,
       });
       setWidgets([...widgets, rec]);
       setPickerOpen(false);
@@ -109,7 +113,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-storm/25" />
       </div>
 
-      {/* Photo — mobile banner reaching both edges */}
+      {/* Photo — mobile banner */}
       <div
         className={cn(
           "lg:hidden fixed top-14 left-0 right-0 h-[30vh] overflow-hidden z-0 rounded-b-[28px] transition-all duration-700",
@@ -120,7 +124,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-b from-charcoal/10 to-background/25" />
       </div>
 
-      {/* Photo — small oblong card in the bottom-left when a panel opens */}
+      {/* Photo — small oblong card bottom-left when a panel opens */}
       <div
         className={cn(
           "fixed left-4 bottom-4 z-0 w-[52%] h-[26vh] lg:w-[30%] lg:h-[30vh] overflow-hidden rounded-[24px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
@@ -138,7 +142,6 @@ export default function Home() {
           panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100"
         )}
       >
-        {/* Greeting + add widget */}
         <header className="px-5 lg:px-10 pt-8 lg:pt-10 pb-6 lg:pb-8 flex items-end justify-between gap-4">
           <div>
             <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/80 mb-3 font-semibold">
@@ -156,83 +159,50 @@ export default function Home() {
           </button>
         </header>
 
-        {/* Draggable widget grid */}
+        {/* Spatial widget canvas */}
         <div className="px-5 lg:px-10 pb-10">
           {loading ? (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-              {[0, 1, 2, 3, 4].map((i) => (
-                <div key={i} className="lg:col-span-4 h-[220px] rounded-[24px] shimmer" />
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="lg:col-span-4 h-[240px] rounded-[24px] shimmer" />
               ))}
             </div>
-          ) : widgets.length === 0 ? (
-            <div className="glass-card rounded-[28px] p-12 flex flex-col items-center text-center max-w-md mx-auto">
-              <p className="text-lg font-display font-semibold mb-2">Je dashboard is leeg</p>
-              <p className="text-sm text-foreground/55 mb-5">Voeg widgets toe om je dag te organiseren.</p>
-              <button
-                onClick={() => setPickerOpen(true)}
-                className="inline-flex items-center gap-2 rounded-full bg-olive text-ivory px-5 py-2.5 text-sm font-semibold hover:bg-olive/90 transition"
-              >
-                <Plus className="h-4 w-4" /> Widget toevoegen
-              </button>
-            </div>
           ) : (
-            <DragDropContext onDragEnd={onDragEnd}>
-              <Droppable droppableId="dashboard" direction="horizontal">
-                {(provided) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start"
+            <div ref={canvasRef} className="relative h-[82vh] min-h-[680px]">
+              {widgets.map((w, index) => {
+                const def = WIDGETS[w.widget_type];
+                if (!def) return null;
+                const hasPos = w.x != null && w.y != null && (w.x !== 0 || w.y !== 0);
+                const pos = hasPos ? { x: w.x, y: w.y } : defaultPos(index);
+                return (
+                  <WidgetTile
+                    key={w.id}
+                    widget={{ ...w, x: pos.x, y: pos.y }}
+                    def={def}
+                    canvasRef={canvasRef}
+                    zIndex={focusedId === w.id ? 60 : 10 + index}
+                    onMove={onMove}
+                    onRemove={removeWidget}
+                    onFocus={setFocusedId}
+                  />
+                );
+              })}
+              {widgets.length === 0 && (
+                <div className="glass-card rounded-[28px] p-12 flex flex-col items-center text-center max-w-md mx-auto">
+                  <p className="text-lg font-display font-semibold mb-2">Je dashboard is leeg</p>
+                  <p className="text-sm text-foreground/55 mb-5">Voeg widgets toe om je dag te organiseren.</p>
+                  <button
+                    onClick={() => setPickerOpen(true)}
+                    className="inline-flex items-center gap-2 rounded-full bg-olive text-ivory px-5 py-2.5 text-sm font-semibold hover:bg-olive/90 transition"
                   >
-                    {widgets.map((w, index) => {
-                      const def = WIDGETS[w.widget_type];
-                      if (!def) return null;
-                      const WidgetComp = def.Component;
-                      return (
-                        <Draggable key={w.id} draggableId={w.id} index={index}>
-                          {(p) => (
-                            <div
-                              ref={p.innerRef}
-                              {...p.draggableProps}
-                              className={cn("w-full", SPAN_CLASS[def.span] || "lg:col-span-4")}
-                            >
-                              <div className="relative group h-full">
-                                {/* drag handle */}
-                                <div
-                                  {...p.dragHandleProps}
-                                  className="absolute top-2 left-2 z-20 h-7 w-7 rounded-lg glass-1 flex items-center justify-center cursor-grab active:cursor-grabbing opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
-                                  aria-label="Slepen"
-                                >
-                                  <span className="flex flex-col gap-[3px]">
-                                    <span className="block h-[1.5px] w-3 bg-foreground/60 rounded" />
-                                    <span className="block h-[1.5px] w-3 bg-foreground/60 rounded" />
-                                    <span className="block h-[1.5px] w-3 bg-foreground/60 rounded" />
-                                  </span>
-                                </div>
-                                {/* remove */}
-                                <button
-                                  onClick={() => removeWidget(w.id)}
-                                  className="absolute top-2 right-2 z-20 h-7 w-7 rounded-lg glass-1 flex items-center justify-center text-foreground/60 hover:text-destructive opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"
-                                  aria-label="Verwijderen"
-                                >
-                                  <X className="h-3.5 w-3.5" />
-                                </button>
-                                <WidgetComp />
-                              </div>
-                            </div>
-                          )}
-                        </Draggable>
-                      );
-                    })}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </DragDropContext>
+                    <Plus className="h-4 w-4" /> Widget toevoegen
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
-        {/* Quick nav */}
         <nav className="px-5 lg:px-10 pb-8 flex flex-wrap gap-x-6 gap-y-2">
           {[
             { label: "Projecten", key: "projects" },
@@ -254,7 +224,6 @@ export default function Home() {
         </nav>
       </div>
 
-      {/* Add widget picker */}
       <AddWidgetPicker
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}

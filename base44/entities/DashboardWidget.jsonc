@@ -15,6 +15,16 @@
       "type": "boolean",
       "default": true,
       "title": "Visible"
+    },
+    "x": {
+      "type": "number",
+      "default": 0,
+      "title": "X"
+    },
+    "y": {
+      "type": "number",
+      "default": 0,
+      "title": "Y"
     }
   },
   "required": [

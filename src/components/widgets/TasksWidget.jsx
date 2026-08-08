@@ -1,90 +1,86 @@
 import React, { useState } from "react";
 import WidgetShell from "./WidgetShell";
+import WidgetHeader from "./WidgetHeader";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
-import { ChevronDown } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { CheckSquare, Check, ChevronDown, ArrowRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-const priorityDot = {
-  high: "bg-foreground",
-  medium: "bg-olive",
-  low: "bg-blue-grey",
-};
+const priorityDot = { high: "bg-foreground", medium: "bg-olive", low: "bg-blue-grey" };
+
+function Stat({ label, value, tone }) {
+  const tones = { olive: "text-olive", warn: "text-amber-600", ok: "text-emerald-600" };
+  return (
+    <div className="rounded-xl bg-foreground/[0.04] border border-foreground/10 px-3 py-2 text-center">
+      <p className={cn("text-lg font-semibold tabular-nums leading-none", tones[tone])}>{value}</p>
+      <p className="text-[9px] uppercase tracking-wider text-foreground/45 mt-1">{label}</p>
+    </div>
+  );
+}
 
 /**
- * TasksWidget — active + overdue tasks from real Task records.
+ * TasksWidget — interactive: tick a task complete inline. Stat row instead of
+ * prose.
  */
 export default function TasksWidget() {
   const { openModule } = usePanel();
   const [expanded, setExpanded] = useState(false);
-  const { data: tasks, loading } = useEntityList("Task");
+  const { data: tasks, loading, reload } = useEntityList("Task");
   const { data: projects } = useEntityList("Project");
 
-  const active = tasks.filter((t) =>
-    ["today", "overdue", "upcoming"].includes(t.status)
-  );
+  const active = tasks.filter((t) => ["today", "overdue", "upcoming"].includes(t.status));
   const overdue = tasks.filter((t) => t.status === "overdue");
+  const done = tasks.filter((t) => t.status === "completed");
   const visible = expanded ? active.slice(0, 6) : active.slice(0, 3);
   const projTitle = (id) => projects.find((p) => p.id === id)?.title;
 
+  const complete = async (e, task) => {
+    e.stopPropagation();
+    try {
+      await base44.entities.Task.update(task.id, { status: "completed" });
+      reload();
+    } catch (err) {
+      /* ignore */
+    }
+  };
+
   return (
-    <WidgetShell
-      size="2x1"
-      radius="medium"
-      glass="translucent"
-      interactive
-      onClick={() => openModule("tasks")}
-      style={{ animationDelay: "140ms" }}
-    >
-      <div className="p-5 lg:p-6 flex flex-col h-full">
-        <div className="flex items-baseline justify-between mb-5">
-          <h3 className="text-[11px] uppercase tracking-[0.22em] text-foreground/60 font-semibold">
-            Taken
-          </h3>
-          {overdue.length > 0 && (
-            <span className="flex items-center gap-1.5 text-[11px] text-foreground font-semibold">
-              <span className="h-1.5 w-1.5 rounded-full bg-olive" />
-              {overdue.length} te laat
-            </span>
-          )}
+    <WidgetShell size="2x1" radius="medium" glass="translucent" interactive onClick={() => openModule("tasks")} className="min-h-[240px]">
+      <div className="p-5 flex flex-col h-full">
+        <WidgetHeader icon={CheckSquare} label="Taken" count={active.length ? `${active.length} open` : "alles klaar"} />
+
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          <Stat label="Open" value={active.length} tone="olive" />
+          <Stat label="Te laat" value={overdue.length} tone="warn" />
+          <Stat label="Klaar" value={done.length} tone="ok" />
         </div>
 
         {loading ? (
-          <div className="flex-1 space-y-3">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="h-8 rounded-lg shimmer" />
-            ))}
+          <div className="flex-1 space-y-2.5">
+            {[0, 1, 2].map((i) => <div key={i} className="h-8 rounded-lg shimmer" />)}
           </div>
         ) : visible.length > 0 ? (
-          <div className="flex-1 space-y-3 overflow-hidden">
-            {visible.map((task) => {
-              const isOverdue = task.status === "overdue";
-              return (
-                <div key={task.id} className="flex items-start gap-3">
-                  <div className="h-4 w-4 rounded-md border border-foreground/25 shrink-0 mt-0.5 flex items-center justify-center">
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full ${
-                        priorityDot[task.priority] || priorityDot.medium
-                      } ${isOverdue ? "animate-pulse-soft" : ""}`}
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground leading-tight truncate">
-                      {task.title}
-                    </p>
-                    <p className="text-[11px] text-foreground/55 truncate">
-                      {task.project_id && projTitle(task.project_id)
-                        ? projTitle(task.project_id)
-                        : "Algemeen"}
-                      {task.deadline &&
-                        ` · ${new Date(task.deadline).toLocaleDateString("nl-NL", {
-                          day: "numeric",
-                          month: "short",
-                        })}`}
-                    </p>
-                  </div>
+          <div className="flex-1 space-y-2.5 overflow-hidden">
+            {visible.map((task) => (
+              <div key={task.id} className="flex items-start gap-2.5">
+                <button
+                  onClick={(e) => complete(e, task)}
+                  className="h-5 w-5 rounded-md border border-foreground/25 shrink-0 mt-0.5 flex items-center justify-center hover:border-olive hover:bg-olive/10 transition group"
+                  aria-label="Afvinken"
+                >
+                  <Check className="h-3 w-3 text-olive opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground leading-tight truncate">{task.title}</p>
+                  <p className="text-[11px] text-foreground/55 truncate">
+                    {task.project_id && projTitle(task.project_id) ? projTitle(task.project_id) : "Algemeen"}
+                    {task.deadline ? ` · ${new Date(task.deadline).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}` : ""}
+                  </p>
                 </div>
-              );
-            })}
+                <span className={cn("mt-1 h-1.5 w-1.5 rounded-full shrink-0", priorityDot[task.priority] || priorityDot.medium, task.status === "overdue" && "animate-pulse-soft")} />
+              </div>
+            ))}
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center">
@@ -93,27 +89,12 @@ export default function TasksWidget() {
           </div>
         )}
 
-        <div className="mt-4 pt-3 border-t border-foreground/10 flex items-center justify-between">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setExpanded((v) => !v);
-            }}
-            className="flex items-center gap-1 text-[11px] font-semibold text-foreground/70 hover:text-foreground transition-colors"
-          >
-            {active.length} open
-            <ChevronDown
-              className={`h-3 w-3 transition-transform ${expanded ? "rotate-180" : ""}`}
-            />
+        <div className="mt-3 pt-3 border-t border-foreground/10 flex items-center justify-between">
+          <button onClick={(e) => { e.stopPropagation(); setExpanded((v) => !v); }} className="flex items-center gap-1 text-[11px] font-semibold text-foreground/70 hover:text-foreground transition">
+            {active.length} open <ChevronDown className={cn("h-3 w-3 transition-transform", expanded && "rotate-180")} />
           </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              openModule("tasks");
-            }}
-            className="text-[11px] font-semibold text-foreground hover:text-olive transition-colors"
-          >
-            Openen →
+          <button onClick={(e) => { e.stopPropagation(); openModule("tasks"); }} className="flex items-center gap-1 text-[11px] font-semibold text-foreground hover:text-olive transition">
+            Openen <ArrowRight className="h-3 w-3" />
           </button>
         </div>
       </div>
