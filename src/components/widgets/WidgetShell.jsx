@@ -29,7 +29,7 @@ const radiusMap = {
 const tileMap = {
   // light tiles — dark text
   card:        { cls: "bg-stone text-charcoal border border-charcoal/10",     accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
-  translucent: { cls: "bg-blue-grey text-charcoal border border-charcoal/10",  accent: "hsl(var(--charcoal))", on: "hsl(var(--ivory))" },
+  translucent: { cls: "glass-card text-charcoal",                           accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
   marble:      { cls: "bg-stone text-charcoal border border-charcoal/10",     accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
   sky:         { cls: "bg-blue-grey text-charcoal border border-charcoal/10", accent: "hsl(var(--charcoal))", on: "hsl(var(--ivory))" },
   storm:       { cls: "bg-ivory text-charcoal border border-charcoal/10",     accent: "hsl(var(--charcoal))", on: "hsl(var(--ivory))" },

@@ -1,7 +1,7 @@
 import {
   Calendar, Briefcase, CheckSquare, Mail, MessageCircle,
   BookOpen, FileText, Users, MessageSquare, Mic, ClipboardCheck,
-  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User,
+  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope,
 } from "lucide-react";
 
 import Agenda from "@/pages/Agenda";
@@ -20,6 +20,7 @@ import Memory from "@/pages/Memory";
 import Integrations from "@/pages/Integrations";
 import SettingsPage from "@/pages/Settings";
 import Profile from "@/pages/Profile";
+import Insights from "@/pages/Insights";
 
 /**
  * Single source of truth for every module that opens as a sliding glass
@@ -43,4 +44,5 @@ export const MODULES = {
   integrations:{ label: "Integrations",  icon: Plug,           Component: Integrations, panelWidth: 720 },
   settings:    { label: "Settings",      icon: SettingsIcon,   Component: SettingsPage, panelWidth: 720 },
   profile:     { label: "Profile",       icon: User,           Component: Profile,     panelWidth: 560 },
+  insights:    { label: "Insights",      icon: Telescope,      Component: Insights,    panelWidth: 720 },
 };

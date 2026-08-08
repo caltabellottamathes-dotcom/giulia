@@ -217,6 +217,7 @@ export default function Home() {
             { label: "Documenten", key: "documents" },
             { label: "Mensen", key: "people" },
             { label: "Activiteit", key: "activity" },
+            { label: "Inzichten", key: "insights" },
           ].map((m) => (
             <button
               key={m.key}

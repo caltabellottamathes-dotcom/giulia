@@ -13,6 +13,14 @@ import { Plus, LayoutGrid } from "lucide-react";
  * the width (panelWidth per module). The header carries a clear
  * "Add widget to dashboard" action when a widget exists for this module.
  */
+const MODULE_ACCENT = {
+  agenda: "hsl(var(--sand))", projects: "hsl(var(--olive))", tasks: "hsl(var(--charcoal))",
+  email: "hsl(var(--blue-grey))", whatsapp: "hsl(var(--sand))", knowledge: "hsl(var(--olive))",
+  documents: "hsl(var(--charcoal))", people: "hsl(var(--blue-grey))", approvals: "hsl(var(--olive))",
+  activity: "hsl(var(--sand))", memory: "hsl(var(--charcoal))", insights: "hsl(var(--sand))",
+  chat: "hsl(var(--olive))", voice: "hsl(var(--charcoal))",
+};
+
 export default function ModulePanel() {
   const { activeModule, closeModule } = usePanel();
   const mod = activeModule ? MODULES[activeModule] : null;
@@ -43,6 +51,7 @@ export default function ModulePanel() {
     <FloatingPanel open={!!mod} onClose={closeModule} position="right" level={3} width={mod?.panelWidth || 720}>
       {mod && (
         <div className="flex flex-col h-full">
+          <div className="h-[3px] w-full shrink-0" style={{ background: MODULE_ACCENT[activeModule] || "hsl(var(--sand))" }} />
           {/* Cleaner header — lighter image, clearer title, dashboard action */}
           <div className="relative px-7 lg:px-9 pt-7 pb-5 shrink-0 overflow-hidden">
             <div className="absolute inset-0 overflow-hidden pointer-events-none">

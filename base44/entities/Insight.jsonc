@@ -1,0 +1,71 @@
+{
+  "name": "Insight",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "content": {
+      "type": "string",
+      "title": "Content"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Opportunity",
+        "Risk",
+        "Research",
+        "Suggestion",
+        "Follow-up",
+        "Trend"
+      ],
+      "default": "Suggestion",
+      "title": "Category"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "reviewed",
+        "actioned",
+        "archived"
+      ],
+      "default": "new",
+      "title": "Status"
+    },
+    "confidence": {
+      "type": "number",
+      "default": 0.5,
+      "title": "Confidence"
+    },
+    "source": {
+      "type": "string",
+      "title": "Source"
+    },
+    "topic": {
+      "type": "string",
+      "title": "Topic"
+    },
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    }
+  },
+  "required": [
+    "title",
+    "content"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

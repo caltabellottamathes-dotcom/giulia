@@ -1,6 +1,6 @@
 import {
   Sparkles, Calendar, CheckSquare, ClipboardCheck, Mail, MessageCircle,
-  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon,
+  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope,
 } from "lucide-react";
 
 import GiuliaWidget from "@/components/widgets/GiuliaWidget";
@@ -14,6 +14,7 @@ import KnowledgeWidget from "@/components/widgets/KnowledgeWidget";
 import PeopleWidget from "@/components/widgets/PeopleWidget";
 import DocumentsWidget from "@/components/widgets/DocumentsWidget";
 import MemoryWidget from "@/components/widgets/MemoryWidget";
+import InsightsWidget from "@/components/widgets/InsightsWidget";
 import ActivityWidget from "@/components/widgets/ActivityWidget";
 
 /**
@@ -34,6 +35,7 @@ export const WIDGETS = {
   documents:  { type: "documents",  label: "Documenten",       icon: FileText,       Component: DocumentsWidget,  w: 300, span: 4, category: "work" },
   memory:     { type: "memory",     label: "Geheugen",         icon: Brain,          Component: MemoryWidget,     w: 300, span: 4, category: "intelligence" },
   activity:   { type: "activity",   label: "Activiteit",       icon: ActivityIcon,   Component: ActivityWidget,   w: 350, span: 6, category: "intelligence" },
+  insights:   { type: "insights",   label: "Giulia · Inzichten", icon: Telescope,      Component: InsightsWidget,   w: 320, span: 4, category: "intelligence" },
 };
 
 export const WIDGET_LIST = Object.values(WIDGETS);
