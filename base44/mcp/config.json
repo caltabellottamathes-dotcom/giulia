@@ -1,0 +1,77 @@
+{
+  "auth": "oauth",
+  "consent_path": "/oauth-consent",
+  "tools": {
+    "functions": [
+      {
+        "name": "chat_with_giulia",
+        "title": "Chat with Giulia",
+        "description": "Send a message to Giulia, the personal AI assistant for this app, and get her response. Use this to ask Giulia to plan the day, summarize, research, or handle a task — she has the app's context. Omit conversation_id to use the default conversation.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "message": { "type": "string", "description": "The message to send to Giulia." },
+            "conversation_id": { "type": "string", "description": "Optional Giulia conversation ID." }
+          },
+          "required": ["message"]
+        },
+        "handler": "chatWithGiulia",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": false }
+      },
+      {
+        "name": "draft_whatsapp_reply",
+        "title": "Draft WhatsApp reply",
+        "description": "Have Giulia draft a short reply to an incoming WhatsApp message and store it for approval. Pass the incoming WhatsAppMessage id. Nothing is sent until the owner approves the draft.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "message_id": { "type": "string", "description": "The id of the incoming WhatsAppMessage record to draft a reply for." }
+          },
+          "required": ["message_id"]
+        },
+        "handler": "autoDraftWhatsApp",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "send_gmail",
+        "title": "Send Gmail",
+        "description": "Send an email from the connected Gmail account; the signed-in user is the sender. Provide recipient, subject, and body.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "to": { "type": "string", "description": "Recipient email address." },
+            "subject": { "type": "string", "description": "Email subject line." },
+            "message": { "type": "string", "description": "Plain-text email body." }
+          },
+          "required": ["to", "subject"]
+        },
+        "handler": "sendGmail",
+        "annotations": { "read_only_hint": false, "destructive_hint": true, "idempotent_hint": false }
+      },
+      {
+        "name": "sync_gmail",
+        "title": "Sync Gmail inbox",
+        "description": "Pull recent messages from the connected Gmail inbox into the app's Email records (deduped). Call this to refresh the inbox before reading emails.",
+        "input_schema": { "type": "object", "properties": {} },
+        "handler": "syncGmail",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "sync_calendar",
+        "title": "Sync Google Calendar",
+        "description": "Pull upcoming Google Calendar events (past week + next 30 days) into the app's Event records (deduped). Call this to refresh the agenda before querying events.",
+        "input_schema": { "type": "object", "properties": {} },
+        "handler": "syncCalendar",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "sync_drive",
+        "title": "Sync Google Drive",
+        "description": "List recent files from the connected Google Drive into the app's Document records (deduped). Call this to refresh the documents view.",
+        "input_schema": { "type": "object", "properties": {} },
+        "handler": "syncDrive",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": true }
+      }
+    ]
+  }
+}
