@@ -54,12 +54,13 @@ export function tool(def) { return def; }
  * state, injected into every agent run so each agent starts with full knowledge.
  */
 async function buildDossier(sr) {
-  const [memories, knowledge, projects, contacts, msgs] = await Promise.all([
+  const [memories, knowledge, projects, contacts, msgs, agentMsgs] = await Promise.all([
     sr.entities.Memory.list("-created_date", 20).catch(() => []),
     sr.entities.Knowledge.list("-created_date", 8).catch(() => []),
     sr.entities.Project.list().catch(() => []),
     sr.entities.Contact.list().catch(() => []),
     sr.entities.Message.filter({ direction: "incoming" }, "-created_date", 8).catch(() => []),
+    sr.entities.Message.filter({ role: "giulia" }, "-created_date", 8).catch(() => []),
   ]);
   const lines = [];
   if (memories.length) { lines.push("Wat je over Salvo weet:"); memories.forEach(m => lines.push(`- [${m.category || "info"}] ${String(m.content).slice(0, 160)}`)); }
@@ -67,6 +68,7 @@ async function buildDossier(sr) {
   if (projects.length) { lines.push("Projecten:"); projects.forEach(p => lines.push(`- ${p.title} [${p.status || "?"}]${p.next_milestone ? ` — next: ${p.next_milestone}` : ""}`)); }
   if (contacts.length) { lines.push("Personen:"); contacts.forEach(c => lines.push(`- ${c.name}${c.company ? ` (${c.company})` : ""}`)); }
   if (msgs.length) { lines.push("Recente inkomende berichten:"); msgs.slice(-8).forEach(m => lines.push(`- [${m.channel}] ${String(m.content).slice(0, 100)}`)); }
+  if (agentMsgs.length) { lines.push("Recente acties door andere agents (samenwerk):"); agentMsgs.forEach(m => lines.push(`- [${m.agent_source || "giulia"}] ${String(m.content).slice(0, 120)}`)); }
   return lines.join("\n");
 }
 
