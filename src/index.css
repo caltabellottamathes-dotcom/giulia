@@ -220,7 +220,28 @@
   animation: float-slow 6s ease-in-out infinite;
 }
 
-/* Ambient Bloom token — used by the floating press-to-talk Giulia button */
+/* Ambient Bloom — small floating, drifting #b2bfc7 element, bottom-left */
+.ambient-bloom {
+  position: fixed;
+  left: 3%;
+  bottom: 3%;
+  width: 16vw;
+  height: 16vw;
+  max-width: 200px;
+  max-height: 200px;
+  background: #b2bfc7;
+  filter: blur(70px);
+  opacity: 0.55;
+  animation: drift 14s ease-in-out infinite alternate;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+@keyframes drift {
+  0% { transform: translate(-8%, 8%) scale(1); }
+  100% { transform: translate(8%, -8%) scale(1.15); }
+}
 
 
 /* Scrollbar */

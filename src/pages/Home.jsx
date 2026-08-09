@@ -111,6 +111,10 @@ export default function Home() {
     toast({ title: "Widget verwijderd" });
   };
 
+  const setWidgetTheme = (id, patch) => {
+    setWidgets((ws) => ws.map((w) => (w.id === id ? { ...w, ...patch } : w)));
+  };
+
   const addWidget = async (type) => {
     if (widgets.find((w) => w.widget_type === type)) {
       toast({ title: "Staat al op je dashboard" });
@@ -213,7 +217,7 @@ export default function Home() {
                 if (!def) return null;
                 return (
                   <div key={w.id} className={cn("col-span-12 md:col-span-6", SPAN_COL[def.span] || "lg:col-span-4")}>
-                    <WidgetCell def={def} onRemove={() => removeWidget(w.id)} />
+                    <WidgetCell def={def} widget={w} onRemove={() => removeWidget(w.id)} onThemeChange={setWidgetTheme} />
                   </div>
                 );
               })}

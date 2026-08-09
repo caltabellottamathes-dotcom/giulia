@@ -144,17 +144,7 @@ function SidebarContent({ onNavigate }) {
         ))}
       </nav>
 
-      {/* Giulia status — no icon */}
-      <div className="glass-1 rounded-2xl p-3.5 flex items-center gap-3 mt-5">
-        <div className="relative shrink-0">
-          <span className="block h-8 w-8 rounded-full bg-emerald-500/15 border border-emerald-500/30" />
-          <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-background" />
-        </div>
-        <div className="min-w-0">
-          <p className="text-[13px] font-semibold truncate">Giulia actief</p>
-          <p className="text-[11px] text-ivory/50 truncate">3 acties klaar</p>
-        </div>
-      </div>
+
     </div>
   );
 }

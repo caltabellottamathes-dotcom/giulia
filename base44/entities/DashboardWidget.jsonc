@@ -16,6 +16,25 @@
       "default": true,
       "title": "Visible"
     },
+    "theme": {
+      "type": "string",
+      "enum": [
+        "glass",
+        "solid"
+      ],
+      "default": "glass",
+      "title": "Theme"
+    },
+    "color": {
+      "type": "string",
+      "enum": [
+        "charcoal",
+        "olive",
+        "sand"
+      ],
+      "default": "charcoal",
+      "title": "Color"
+    },
     "x": {
       "type": "number",
       "default": 0,

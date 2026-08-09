@@ -1,5 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
+import { useWidgetTheme } from "@/lib/WidgetThemeContext";
 
 /**
  * WidgetShell — a SOLID editorial tile hosting every dashboard widget.
@@ -27,17 +28,10 @@ const radiusMap = {
 };
 
 const tileMap = {
-  // Uniform gray glass + light text/icons across every widget tile
-  card:        { cls: "glass-card text-ivory", accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
-  translucent: { cls: "glass-card text-ivory", accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
-  marble:      { cls: "glass-card text-ivory", accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
-  sky:         { cls: "glass-card text-ivory", accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
-  storm:       { cls: "glass-card text-ivory", accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
-  opaque:      { cls: "glass-card text-ivory", accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
-  metal:       { cls: "glass-card text-ivory", accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
-  solid:       { cls: "glass-card text-ivory", accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
-  clay:        { cls: "glass-card text-ivory", accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
-  sand:        { cls: "glass-card text-ivory", accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
+  glass:    { cls: "glass-card text-ivory",                          accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
+  charcoal: { cls: "bg-charcoal text-ivory border border-white/10", accent: "hsl(var(--sand))",      on: "hsl(var(--ivory))" },
+  olive:    { cls: "bg-olive text-ivory border border-white/10",     accent: "hsl(var(--ivory))",     on: "hsl(var(--charcoal))" },
+  sand:     { cls: "bg-sand text-ivory border border-white/10",      accent: "hsl(var(--ivory))",     on: "hsl(var(--charcoal))" },
 };
 
 export default function WidgetShell({
@@ -51,7 +45,9 @@ export default function WidgetShell({
   style,
   zIndex,
 }) {
-  const tile = tileMap[glass] || tileMap.card;
+  const ctxTheme = useWidgetTheme();
+  const resolved = ctxTheme.theme === "solid" ? (ctxTheme.color || "charcoal") : "glass";
+  const tile = tileMap[resolved] || tileMap.glass;
   return (
     <div
       onClick={onClick}
