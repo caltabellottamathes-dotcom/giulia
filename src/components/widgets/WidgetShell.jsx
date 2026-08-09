@@ -68,6 +68,8 @@ export default function WidgetShell({
     >
       {/* Solid palette accent strip — the editorial top edge */}
       <span className="pointer-events-none absolute inset-x-0 top-0 h-[3px]" style={{ background: "var(--tile-accent)" }} />
+      {/* Graphic corner tab — editorial signature */}
+      <span className="pointer-events-none absolute top-0 left-0 h-[16px] w-[16px] rounded-br-[12px]" style={{ background: "var(--tile-accent)" }} />
       {children}
     </div>
   );

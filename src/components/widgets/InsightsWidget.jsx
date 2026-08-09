@@ -4,7 +4,7 @@ import WidgetHeader from "./WidgetHeader";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
-import { Telescope, Sparkles, ArrowRight, RefreshCw } from "lucide-react";
+import { Telescope, Search, ArrowRight, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const CAT_STYLE = {
@@ -93,7 +93,7 @@ export default function InsightsWidget() {
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center">
             <span className="h-10 w-10 rounded-full bg-sand/20 flex items-center justify-center mb-2">
-              <Sparkles className="h-5 w-5 text-sand" />
+              <Search className="h-5 w-5 text-sand" />
             </span>
             <p className="text-sm font-semibold text-foreground">Giulia denkt na</p>
             <p className="text-xs text-foreground/55 mt-1">Laat Giulia proactief onderzoek doen.</p>
@@ -106,7 +106,7 @@ export default function InsightsWidget() {
           className="mt-4 pt-3 border-t border-foreground/10 flex items-center justify-between text-[11px] font-semibold text-foreground hover:text-olive transition disabled:opacity-50"
         >
           <span className="flex items-center gap-1.5">
-            {busy ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+            {busy ? <RefreshCw className="h-3 w-3 animate-spin" /> : <Search className="h-3 w-3" />}
             {busy ? "Onderzoeken…" : "Giulia laat onderzoek doen"}
             <ArrowRight className="h-3 w-3" />
           </span>

@@ -4,7 +4,7 @@ import WidgetHeader from "./WidgetHeader";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
-import { MessageCircle, Send, Sparkles } from "lucide-react";
+import { MessageCircle, Send, PenLine } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -67,7 +67,7 @@ export default function WhatsAppWidget() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-sm font-semibold text-foreground truncate">{nameOf(c.contact_id)}</p>
-                    {draftFor(c.contact_id) && <Sparkles className="h-3 w-3 text-sand shrink-0" />}
+                    {draftFor(c.contact_id) && <PenLine className="h-3 w-3 text-sand shrink-0" />}
                     {c.unread > 0 && <span className="text-[10px] font-semibold text-ivory bg-olive rounded-full px-1.5 py-0.5 shrink-0">{c.unread}</span>}
                   </div>
                   <p className="text-[11px] text-foreground/55 truncate">{c.last.message}</p>
