@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import AddWidgetPicker from "@/components/panels/AddWidgetPicker";
 import WidgetCell from "@/components/widgets/WidgetCell";
+import GiuliaIntroOverlay from "@/components/widgets/GiuliaIntroOverlay";
 import { Link } from "react-router-dom";
 
 const PAGE_LINKS = [
@@ -139,6 +140,7 @@ export default function Home() {
 
   return (
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-my-8 min-h-[calc(100svh-3.5rem)] overflow-hidden">
+      <GiuliaIntroOverlay />
       {/* Photo — wide card reaching the viewport RIGHT edge (desktop) */}
       <div
         className={cn(

@@ -1,3 +1,4 @@
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { secrets } from "base44:runtime";
 
 /**
@@ -11,6 +12,9 @@ const BASE_URL = "https://app.base44.com/api/agents";
 
 export default async function (req) {
   try {
+    const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me().catch(() => null);
+
     const body = await req.json();
     const message = body.message || body.content || "";
     const conversationId = body.conversation_id || DEFAULT_CONVERSATION;
@@ -18,6 +22,9 @@ export default async function (req) {
     if (!message) {
       return Response.json({ error: "No message provided" }, { status: 400 });
     }
+
+    const today = new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    const context = `Context: vandaag is ${today}.${user?.full_name ? ` Je spreekt met ${user.full_name}.` : ""}\n\n`;
 
     const apiKey = secrets.get("BASE44_SERVICE_TOKEN");
     if (!apiKey) {
@@ -35,7 +42,7 @@ export default async function (req) {
           api_key: apiKey,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ content: message }),
+        body: JSON.stringify({ content: context + message }),
       }
     );
 

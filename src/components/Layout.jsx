@@ -7,6 +7,8 @@ import FloatingPanel from "@/components/glass/FloatingPanel";
 import ModulePanel from "@/components/panels/ModulePanel";
 import ChatWindow from "@/components/panels/ChatWindow";
 import { PanelProvider, usePanel } from "@/lib/PanelContext";
+import { GiuliaVoiceProvider } from "@/lib/GiuliaVoiceContext";
+import ConciergeWidget from "@/components/concierge/ConciergeWidget";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
@@ -159,7 +161,9 @@ function SidebarContent({ onNavigate }) {
 export default function Layout() {
   return (
     <PanelProvider>
-      <LayoutInner />
+      <GiuliaVoiceProvider>
+        <LayoutInner />
+      </GiuliaVoiceProvider>
     </PanelProvider>
   );
 }
@@ -275,6 +279,9 @@ function LayoutInner() {
 
       {/* Universal quick action — floating, detached */}
       <QuickAction />
+
+      {/* Giulia concierge — fixed anchor, tap-to-talk voice + text */}
+      <ConciergeWidget />
 
       {/* The single sliding glass panel that hosts every module */}
       <ModulePanel />
