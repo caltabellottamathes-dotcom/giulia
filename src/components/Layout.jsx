@@ -73,8 +73,6 @@ function SidebarContent({ onNavigate }) {
 
   return (
     <div className="relative flex flex-col h-full">
-      <img src={IMAGES.bootPhone} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
-      <div className="absolute inset-0 bg-gradient-to-b from-charcoal/90 via-charcoal/80 to-charcoal/55" />
       <div className="relative flex flex-col h-full py-8 px-5">
 
       {/* Navigation — bold, editorial */}
