@@ -5,10 +5,6 @@ import { useEntityList } from "@/hooks/useEntity";
 import { IMAGES } from "@/lib/images";
 import { ArrowUpRight, MessageSquare } from "lucide-react";
 
-// Plak hier de URL van de Giulia-video (9:16). Zolang deze leeg is, tonen we
-// de Giulia-portretfoto als fallback.
-const GIULIA_VIDEO_URL = "";
-
 /**
  * GiuliaHeroWidget — a tall 9:16 feature tile starring Giulia. Full-bleed
  * portrait with a glass footer: live status, big display wordmark, the latest
@@ -24,13 +20,9 @@ export default function GiuliaHeroWidget() {
     <WidgetShell size="tall" radius="large" glass="liquid" className="!min-h-0">
       <div className="relative h-full flex flex-col">
         {/* Portrait */}
-        <div className="relative flex-1 min-h-0 overflow-hidden bg-charcoal">
-          {GIULIA_VIDEO_URL ? (
-            <video src={GIULIA_VIDEO_URL} autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover" />
-          ) : (
-            <img src={IMAGES.giuliaConcierge} alt="Giulia" className="absolute inset-0 h-full w-full object-cover" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/15 to-transparent" />
+        <div className="relative flex-1 min-h-0 overflow-hidden">
+          <img src={IMAGES.giuliaConcierge} alt="Giulia" className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/15 to-charcoal/10" />
           <div className="absolute top-3 left-3 flex items-center gap-1.5 rounded-full bg-charcoal/40 backdrop-blur px-2.5 py-1">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse-soft" />
             <span className="text-[9px] uppercase tracking-[0.2em] text-ivory/85 font-semibold">Actief</span>
