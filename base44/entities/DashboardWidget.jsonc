@@ -30,10 +30,22 @@
       "enum": [
         "charcoal",
         "olive",
-        "sand"
+        "sand",
+        "ridge",
+        "storm"
       ],
       "default": "charcoal",
       "title": "Color"
+    },
+    "opacity": {
+      "type": "number",
+      "default": 1,
+      "title": "Opacity"
+    },
+    "blur": {
+      "type": "number",
+      "default": 0,
+      "title": "Blur"
     },
     "x": {
       "type": "number",

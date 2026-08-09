@@ -17,6 +17,17 @@ export const IMAGES = {
   // Giulia concierge portrait — anchor image for the concierge widget
   giuliaConcierge: "https://media.base44.com/images/public/6a6cc0011ab9e3b32cfc1057/a408b643e_Gemini_Generated_Image_2gi5oq2gi5oq2gi51.png",
   giuliaFace2: "https://media.base44.com/images/public/6a6cc0011ab9e3b32cfc1057/7340e6dfa_Gemini_Generated_Image_aur0c9aur0c9aur0.png",
+  // Branding series — surreal editorial chairs / boot motifs
+  bootPhone: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/549fa0148_1000077472png_202607210017.jpg",
+  leanChair: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/a6ecb27a9_1000077473png_202607210017.jpg",
+  stilettoHead: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/28a265134_1000077475png_202607210017.jpg",
+  portraitBoot: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/14de4df2f_1000077499png_202607210016.jpg",
+  walkChairsBeach: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/e306d1733_Crop_this_first_image_so_202606301544.jpg",
+  loungeChairs: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/3a5643e93_Crop_this_last_image_so_202606301539.jpg",
+  feetChairs: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/7cdf1a1ae_Crop_this_last_image_so_202606301540.jpg",
+  walkChairsHigh: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/456fa7c2c_Crop_this_last_image_so_202606301550.jpg",
+  chairsScattered: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/67a83c915_Make_a_photograph_that_belong_202606301549.jpg",
+  chairWater: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/38ab5187a_remake_the_first_image_But_202606301559.jpg",
 };
 
 export const editorialImages = [
@@ -27,4 +38,17 @@ export const editorialImages = [
   IMAGES.sittingChairs,
   IMAGES.feetChair,
   IMAGES.topDownWalk,
+];
+
+export const brandGallery = [
+  IMAGES.bootPhone,
+  IMAGES.leanChair,
+  IMAGES.stilettoHead,
+  IMAGES.portraitBoot,
+  IMAGES.walkChairsBeach,
+  IMAGES.loungeChairs,
+  IMAGES.feetChairs,
+  IMAGES.walkChairsHigh,
+  IMAGES.chairsScattered,
+  IMAGES.chairWater,
 ];

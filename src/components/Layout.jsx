@@ -72,16 +72,10 @@ function SidebarContent({ onNavigate }) {
   const { activeModule, openModule } = usePanel();
 
   return (
-    <div className="flex flex-col h-full py-8 px-5">
-      {/* Wordmark — bold editorial type, no icon */}
-      <div className="px-2 mb-10">
-        <p className="font-display font-semibold tracking-[-0.01em] text-2xl text-ivory leading-none">
-          Giulia
-        </p>
-        <p className="text-[10px] uppercase tracking-[0.3em] text-ivory/45 mt-1.5 font-medium">
-          Assistent
-        </p>
-      </div>
+    <div className="relative flex flex-col h-full">
+      <img src={IMAGES.bootPhone} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
+      <div className="absolute inset-0 bg-gradient-to-b from-charcoal/90 via-charcoal/80 to-charcoal/55" />
+      <div className="relative flex flex-col h-full py-8 px-5">
 
       {/* Navigation — bold, editorial */}
       <nav className="flex-1 space-y-6 overflow-y-auto">
@@ -144,7 +138,15 @@ function SidebarContent({ onNavigate }) {
         ))}
       </nav>
 
-
+      <div className="mt-auto px-1 pt-6 pb-1">
+        <p className="font-display font-semibold tracking-[0.32em] text-[40px] leading-none text-ivory [text-shadow:0_2px_16px_rgba(0,0,0,0.5)]">
+          GIULIA
+        </p>
+        <p className="text-[10px] uppercase tracking-[0.3em] text-ivory/55 mt-2 font-medium">
+          Persoonlijk besturingssysteem
+        </p>
+      </div>
+      </div>
     </div>
   );
 }
@@ -265,6 +267,7 @@ function LayoutInner() {
         onClose={() => setNavOpen(false)}
         position="left"
         level={3}
+        dim={false}
       >
         <SidebarContent onNavigate={() => setNavOpen(false)} />
       </FloatingPanel>

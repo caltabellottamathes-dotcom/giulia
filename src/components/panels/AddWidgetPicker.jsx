@@ -1,12 +1,11 @@
 import React from "react";
 import FloatingPanel from "@/components/glass/FloatingPanel";
 import { WIDGET_LIST } from "@/lib/widgetRegistry";
-import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * AddWidgetPicker — gray glass panel listing widgets not yet on the dashboard.
- * Light text/icons throughout (sits over the photo).
+ * AddWidgetPicker — every available widget, presented as a branded photo card
+ * (no icons). Light text over each photo.
  */
 export default function AddWidgetPicker({ open, onClose, onAdd, addedTypes = [] }) {
   const available = WIDGET_LIST.filter((w) => !addedTypes.includes(w.type));
@@ -24,21 +23,22 @@ export default function AddWidgetPicker({ open, onClose, onAdd, addedTypes = [] 
               <button
                 key={w.type}
                 onClick={() => onAdd(w.type)}
-                className="glass-card-2 rounded-2xl p-4 flex flex-col items-start gap-3 text-left hover:-translate-y-0.5 hover:border-ivory/30 transition-all"
+                className="glass-card-2 rounded-2xl overflow-hidden text-left hover:-translate-y-0.5 transition-all group"
               >
-                <span className="h-9 w-9 rounded-xl bg-ivory/10 border border-ivory/15 flex items-center justify-center">
-                  <w.icon className="h-4 w-4 text-ivory" strokeWidth={1.75} />
-                </span>
-                <span className="text-sm font-semibold text-ivory">{w.label}</span>
-                <span className="text-[10px] uppercase tracking-wider text-ivory/40">{w.category}</span>
+                <div className="relative h-20 overflow-hidden">
+                  <img src={w.image} alt="" className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" draggable={false} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-charcoal/20 to-transparent" />
+                  <span className="absolute bottom-2 left-2.5 text-[9px] uppercase tracking-wider text-ivory/70 font-semibold">{w.category}</span>
+                </div>
+                <div className="p-3">
+                  <span className="text-sm font-semibold text-ivory">{w.label}</span>
+                </div>
               </button>
             ))}
           </div>
         ) : (
           <div className={cn("glass-1 rounded-2xl p-8 flex flex-col items-center text-center")}>
-            <span className="h-10 w-10 rounded-full bg-ivory/10 flex items-center justify-center mb-3">
-              <Check className="h-5 w-5 text-ivory" />
-            </span>
+            <p className="text-3xl font-display font-semibold text-ivory mb-1">✓</p>
             <p className="text-sm font-semibold text-ivory">Alle widgets staan op je dashboard</p>
           </div>
         )}

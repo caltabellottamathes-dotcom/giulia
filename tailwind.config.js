@@ -55,6 +55,8 @@ module.exports = {
   			'blue-grey': 'hsl(var(--blue-grey))',
   			charcoal: 'hsl(var(--charcoal))',
   			smoke: 'hsl(var(--smoke))',
+  			ridge: 'hsl(var(--ridge))',
+  			storm: 'hsl(var(--storm))',
   		},
   		fontFamily: {
   			heading: ['var(--font-heading)'],

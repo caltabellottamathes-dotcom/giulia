@@ -48,6 +48,7 @@ export default function FloatingPanel({
   className,
   showOverlay = true,
   closeOnOverlay = true,
+  dim = true,
 }) {
   useEffect(() => {
     if (open) {
@@ -79,7 +80,8 @@ export default function FloatingPanel({
       {showOverlay && (
         <div
           className={cn(
-            "fixed inset-0 z-40 bg-charcoal/15 animate-fade-in",
+            "fixed inset-0 z-40 animate-fade-in",
+            dim ? "bg-charcoal/15" : "bg-transparent",
             !closeOnOverlay && "pointer-events-none"
           )}
           onClick={closeOnOverlay ? onClose : undefined}

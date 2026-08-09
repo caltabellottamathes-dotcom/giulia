@@ -2,6 +2,7 @@ import {
   Sparkles, Calendar, CheckSquare, ClipboardCheck, Mail, MessageCircle,
   Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope,
 } from "lucide-react";
+import { IMAGES } from "@/lib/images";
 
 import GiuliaWidget from "@/components/widgets/GiuliaWidget";
 import AgendaWidget from "@/components/widgets/AgendaWidget";
@@ -18,24 +19,23 @@ import InsightsWidget from "@/components/widgets/InsightsWidget";
 import ActivityWidget from "@/components/widgets/ActivityWidget";
 
 /**
- * Single source of truth for every dashboard widget.
- * `w` = tile width on the spatial canvas (px). `glass` = suggested treatment
- * ("opaque" | "card" | "translucent") so tiles vary between solid and airy.
+ * Single source of truth for every dashboard widget. `image` is a branding
+ * photo used as a designed element inside the widget and in the add-picker.
  */
 export const WIDGETS = {
-  giulia:     { type: "giulia",     label: "Giulia · je dag", icon: Sparkles,       Component: GiuliaWidget,    w: 360, span: 8, category: "core" },
-  agenda:     { type: "agenda",    label: "Agenda",           icon: Calendar,       Component: AgendaWidget,    w: 300, span: 4, category: "core" },
-  tasks:      { type: "tasks",     label: "Taken",            icon: CheckSquare,    Component: TasksWidget,     w: 320, span: 4, category: "work" },
-  approvals:  { type: "approvals",  label: "Goedkeuringen",    icon: ClipboardCheck, Component: ApprovalsWidget, w: 300, span: 4, category: "work" },
-  email:      { type: "email",      label: "Email",           icon: Mail,           Component: EmailWidget,      w: 340, span: 4, category: "comms" },
-  whatsapp:   { type: "whatsapp",   label: "WhatsApp",        icon: MessageCircle,  Component: WhatsAppWidget,  w: 310, span: 4, category: "comms" },
-  projects:   { type: "projects",   label: "Projecten",       icon: Briefcase,      Component: ProjectsWidget,   w: 380, span: 5, category: "work" },
-  knowledge:  { type: "knowledge",  label: "Kennisbank",       icon: BookOpen,       Component: KnowledgeWidget,  w: 310, span: 4, category: "work" },
-  people:     { type: "people",     label: "Mensen",          icon: Users,          Component: PeopleWidget,     w: 280, span: 3, category: "work" },
-  documents:  { type: "documents",  label: "Documenten",       icon: FileText,       Component: DocumentsWidget,  w: 300, span: 4, category: "work" },
-  memory:     { type: "memory",     label: "Geheugen",         icon: Brain,          Component: MemoryWidget,     w: 300, span: 4, category: "intelligence" },
-  activity:   { type: "activity",   label: "Activiteit",       icon: ActivityIcon,   Component: ActivityWidget,   w: 350, span: 6, category: "intelligence" },
-  insights:   { type: "insights",   label: "Giulia · Inzichten", icon: Telescope,      Component: InsightsWidget,   w: 320, span: 4, category: "intelligence" },
+  giulia:     { type: "giulia",     label: "Giulia · je dag",     icon: Sparkles,       Component: GiuliaWidget,    image: IMAGES.bootPhone,        span: 8, category: "core" },
+  agenda:     { type: "agenda",    label: "Agenda",              icon: Calendar,       Component: AgendaWidget,    image: IMAGES.walkChairsBeach,  span: 4, category: "core" },
+  tasks:      { type: "tasks",     label: "Taken",               icon: CheckSquare,    Component: TasksWidget,     image: IMAGES.feetChairs,       span: 4, category: "work" },
+  approvals:  { type: "approvals",  label: "Goedkeuringen",       icon: ClipboardCheck, Component: ApprovalsWidget, image: IMAGES.leanChair,        span: 4, category: "work" },
+  email:      { type: "email",      label: "Email",              icon: Mail,           Component: EmailWidget,      image: IMAGES.portraitBoot,     span: 4, category: "comms" },
+  whatsapp:   { type: "whatsapp",   label: "WhatsApp",          icon: MessageCircle,  Component: WhatsAppWidget,  image: IMAGES.stilettoHead,     span: 4, category: "comms" },
+  projects:   { type: "projects",   label: "Projecten",          icon: Briefcase,      Component: ProjectsWidget,   image: IMAGES.walkChairsHigh,   span: 5, category: "work" },
+  knowledge:  { type: "knowledge",  label: "Kennisbank",          icon: BookOpen,       Component: KnowledgeWidget,  image: IMAGES.chairWater,       span: 4, category: "work" },
+  people:     { type: "people",     label: "Mensen",             icon: Users,          Component: PeopleWidget,     image: IMAGES.portraitThinking, span: 3, category: "work" },
+  documents:  { type: "documents",  label: "Documenten",          icon: FileText,       Component: DocumentsWidget,  image: IMAGES.chairsScattered,  span: 4, category: "work" },
+  memory:     { type: "memory",     label: "Geheugen",           icon: Brain,          Component: MemoryWidget,     image: IMAGES.loungeChairs,     span: 4, category: "intelligence" },
+  activity:   { type: "activity",   label: "Activiteit",          icon: ActivityIcon,   Component: ActivityWidget,   image: IMAGES.topDownWalk,     span: 6, category: "intelligence" },
+  insights:   { type: "insights",   label: "Giulia · Inzichten",  icon: Telescope,      Component: InsightsWidget,   image: IMAGES.feetChair,        span: 4, category: "intelligence" },
 };
 
 export const WIDGET_LIST = Object.values(WIDGETS);
