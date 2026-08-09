@@ -35,17 +35,17 @@ export default function ProjectsWidget() {
             {visible.map((p) => (
               <div key={p.id}>
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-foreground truncate">{p.title}</p>
-                  <span className="text-[10px] text-foreground/50 tabular-nums">{p.progress || 0}%</span>
+                  <p className="text-sm font-semibold text-ivory truncate">{p.title}</p>
+                  <span className="text-[10px] text-ivory/50 tabular-nums">{p.progress || 0}%</span>
                 </div>
                 <div className="mt-2 flex items-center gap-2">
-                  <button onClick={(e) => nudge(e, p, -10)} className="h-6 w-6 rounded-md bg-foreground/5 border border-foreground/10 flex items-center justify-center text-foreground/60 hover:text-foreground hover:bg-foreground/10 transition" aria-label="Minder">
+                  <button onClick={(e) => nudge(e, p, -10)} className="h-6 w-6 rounded-md bg-ivory/5 border border-ivory/10 flex items-center justify-center text-ivory/60 hover:text-ivory hover:bg-ivory/10 transition" aria-label="Minder">
                     <Minus className="h-3 w-3" />
                   </button>
-                  <div className="flex-1 h-2 rounded-full bg-foreground/10 overflow-hidden">
+                  <div className="flex-1 h-2 rounded-full bg-ivory/10 overflow-hidden">
                     <div className="h-full bg-olive rounded-full transition-all duration-300" style={{ width: `${Math.min(p.progress || 0, 100)}%` }} />
                   </div>
-                  <button onClick={(e) => nudge(e, p, 10)} className="h-6 w-6 rounded-md bg-foreground/5 border border-foreground/10 flex items-center justify-center text-foreground/60 hover:text-foreground hover:bg-foreground/10 transition" aria-label="Meer">
+                  <button onClick={(e) => nudge(e, p, 10)} className="h-6 w-6 rounded-md bg-ivory/5 border border-ivory/10 flex items-center justify-center text-ivory/60 hover:text-ivory hover:bg-ivory/10 transition" aria-label="Meer">
                     <Plus className="h-3 w-3" />
                   </button>
                 </div>
@@ -54,7 +54,7 @@ export default function ProjectsWidget() {
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-xs text-foreground/45">Geen actieve projecten</p>
+            <p className="text-xs text-ivory/45">Geen actieve projecten</p>
           </div>
         )}
       </div>

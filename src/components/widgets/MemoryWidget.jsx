@@ -35,16 +35,16 @@ export default function MemoryWidget() {
               <div key={m.id} className="flex items-start gap-2.5">
                 <span className="mt-1 h-1.5 w-1.5 rounded-full bg-olive/60 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] uppercase tracking-wider text-foreground/45">{m.category}</p>
-                  <p className="text-sm text-foreground/85 line-clamp-2 leading-snug">{m.content}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-ivory/45">{m.category}</p>
+                  <p className="text-sm text-ivory/85 line-clamp-2 leading-snug">{m.content}</p>
                   <div className="mt-1.5 flex items-center gap-2">
-                    <button onClick={(e) => setConf(e, m, -0.1)} className="h-5 w-5 rounded-md bg-foreground/5 border border-foreground/10 flex items-center justify-center text-foreground/60 hover:text-foreground transition" aria-label="Minder zeker">
+                    <button onClick={(e) => setConf(e, m, -0.1)} className="h-5 w-5 rounded-md bg-ivory/5 border border-ivory/10 flex items-center justify-center text-ivory/60 hover:text-ivory transition" aria-label="Minder zeker">
                       <Minus className="h-2.5 w-2.5" />
                     </button>
-                    <div className="flex-1 h-1.5 rounded-full bg-foreground/10 overflow-hidden">
+                    <div className="flex-1 h-1.5 rounded-full bg-ivory/10 overflow-hidden">
                       <div className="h-full bg-olive rounded-full transition-all" style={{ width: `${Math.round((m.confidence || 0.5) * 100)}%` }} />
                     </div>
-                    <button onClick={(e) => setConf(e, m, 0.1)} className="h-5 w-5 rounded-md bg-foreground/5 border border-foreground/10 flex items-center justify-center text-foreground/60 hover:text-foreground transition" aria-label="Meer zeker">
+                    <button onClick={(e) => setConf(e, m, 0.1)} className="h-5 w-5 rounded-md bg-ivory/5 border border-ivory/10 flex items-center justify-center text-ivory/60 hover:text-ivory transition" aria-label="Meer zeker">
                       <Plus className="h-2.5 w-2.5" />
                     </button>
                   </div>
@@ -54,7 +54,7 @@ export default function MemoryWidget() {
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-xs text-foreground/45">Nog niets onthouden</p>
+            <p className="text-xs text-ivory/45">Nog niets onthouden</p>
           </div>
         )}
       </div>

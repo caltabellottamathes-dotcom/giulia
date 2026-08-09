@@ -28,27 +28,20 @@ export default function QuickAction() {
 
   return (
     <>
-      {/* Subtle floating button — bottom right, detached from edge */}
+      {/* Floating button — bottom right */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-5 right-5 lg:bottom-7 lg:right-7 z-30 h-12 w-12 lg:h-14 lg:w-14 rounded-full glass-2 float-shadow flex items-center justify-center transition-all duration-300 hover:scale-105 group"
+        className="fixed bottom-5 right-5 lg:bottom-7 lg:right-7 z-30 h-12 w-12 lg:h-14 lg:w-14 rounded-full glass-2 float-shadow flex items-center justify-center text-ivory transition-all duration-300 hover:scale-105 group"
         aria-label="Snelle actie"
       >
         <Plus className="h-5 w-5 lg:h-6 lg:w-6 group-hover:rotate-90 transition-transform duration-500" />
       </button>
 
-      <FloatingPanel
-        open={open}
-        onClose={() => setOpen(false)}
-        position="bottom"
-        level={3}
-      >
-        <div className="p-6 lg:p-8">
+      <FloatingPanel open={open} onClose={() => setOpen(false)} position="bottom" level={3}>
+        <div className="p-6 lg:p-8 text-ivory">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">
-                Snelle actie
-              </p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-ivory/60 mb-1">Snelle actie</p>
               <h2 className="text-lg font-heading font-light">Wat wil je doen?</h2>
             </div>
           </div>
@@ -60,11 +53,9 @@ export default function QuickAction() {
                 className="glass-1 rounded-2xl p-4 flex flex-col items-center gap-3 hover:scale-[1.03] transition-all duration-300 group"
               >
                 <div className="h-11 w-11 rounded-full glass-1 flex items-center justify-center">
-                  <action.icon className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <action.icon className="h-4 w-4 text-ivory/70 group-hover:text-ivory transition-colors" />
                 </div>
-                <p className="text-xs font-medium text-center leading-tight">
-                  {action.label}
-                </p>
+                <p className="text-xs font-medium text-center leading-tight">{action.label}</p>
               </button>
             ))}
           </div>

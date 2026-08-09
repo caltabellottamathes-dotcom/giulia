@@ -39,14 +39,14 @@ export default function ApprovalsWidget() {
               <div key={item.id} className="flex items-start gap-2.5">
                 <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-olive shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground leading-tight truncate">{item.description}</p>
-                  <p className="text-[11px] text-foreground/55 truncate">{item.target}{item.proposed_action ? ` · ${item.proposed_action}` : ""}</p>
+                  <p className="text-sm font-semibold text-ivory leading-tight truncate">{item.description}</p>
+                  <p className="text-[11px] text-ivory/55 truncate">{item.target}{item.proposed_action ? ` · ${item.proposed_action}` : ""}</p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <button onClick={(e) => decide(e, item.id, "approved")} className="h-7 w-7 rounded-lg bg-olive/15 border border-olive/25 flex items-center justify-center text-olive hover:bg-olive/25 transition" aria-label="Goedkeuren">
                     <Check className="h-3.5 w-3.5" />
                   </button>
-                  <button onClick={(e) => decide(e, item.id, "rejected")} className="h-7 w-7 rounded-lg bg-foreground/5 border border-foreground/15 flex items-center justify-center text-foreground/60 hover:text-destructive hover:border-destructive/30 transition" aria-label="Afwijzen">
+                  <button onClick={(e) => decide(e, item.id, "rejected")} className="h-7 w-7 rounded-lg bg-ivory/5 border border-ivory/15 flex items-center justify-center text-ivory/60 hover:text-destructive hover:border-destructive/30 transition" aria-label="Afwijzen">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -55,13 +55,13 @@ export default function ApprovalsWidget() {
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center">
-            <p className="text-sm text-foreground/50 font-medium">Niets staat open</p>
-            <p className="text-[11px] text-foreground/35 mt-1">Alles is afgehandeld</p>
+            <p className="text-sm text-ivory/50 font-medium">Niets staat open</p>
+            <p className="text-[11px] text-ivory/35 mt-1">Alles is afgehandeld</p>
           </div>
         )}
 
-        <div className="mt-3 pt-3 border-t border-foreground/10 flex items-center justify-end">
-          <button onClick={(e) => { e.stopPropagation(); openModule("approvals"); }} className="flex items-center gap-1 text-[11px] font-semibold text-foreground hover:text-olive transition">
+        <div className="mt-3 pt-3 border-t border-ivory/10 flex items-center justify-end">
+          <button onClick={(e) => { e.stopPropagation(); openModule("approvals"); }} className="flex items-center gap-1 text-[11px] font-semibold text-ivory hover:text-olive transition">
             Openen <ArrowRight className="h-3 w-3" />
           </button>
         </div>

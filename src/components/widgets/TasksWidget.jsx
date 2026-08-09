@@ -7,14 +7,14 @@ import { base44 } from "@/api/base44Client";
 import { CheckSquare, Check, ChevronDown, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const priorityDot = { high: "bg-foreground", medium: "bg-olive", low: "bg-blue-grey" };
+const priorityDot = { high: "bg-ivory", medium: "bg-olive", low: "bg-blue-grey" };
 
 function Stat({ label, value, tone }) {
   const tones = { olive: "text-olive", warn: "text-amber-600", ok: "text-emerald-600" };
   return (
-    <div className="rounded-xl bg-foreground/[0.04] border border-foreground/10 px-3 py-2 text-center">
+    <div className="rounded-xl bg-ivory/[0.04] border border-ivory/10 px-3 py-2 text-center">
       <p className={cn("text-lg font-semibold tabular-nums leading-none", tones[tone])}>{value}</p>
-      <p className="text-[9px] uppercase tracking-wider text-foreground/45 mt-1">{label}</p>
+      <p className="text-[9px] uppercase tracking-wider text-ivory/45 mt-1">{label}</p>
     </div>
   );
 }
@@ -66,14 +66,14 @@ export default function TasksWidget() {
               <div key={task.id} className="flex items-start gap-2.5">
                 <button
                   onClick={(e) => complete(e, task)}
-                  className="h-5 w-5 rounded-md border border-foreground/25 shrink-0 mt-0.5 flex items-center justify-center hover:border-olive hover:bg-olive/10 transition group"
+                  className="h-5 w-5 rounded-md border border-ivory/25 shrink-0 mt-0.5 flex items-center justify-center hover:border-olive hover:bg-olive/10 transition group"
                   aria-label="Afvinken"
                 >
                   <Check className="h-3 w-3 text-olive opacity-0 group-hover:opacity-100 transition-opacity" />
                 </button>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground leading-tight truncate">{task.title}</p>
-                  <p className="text-[11px] text-foreground/55 truncate">
+                  <p className="text-sm font-semibold text-ivory leading-tight truncate">{task.title}</p>
+                  <p className="text-[11px] text-ivory/55 truncate">
                     {task.project_id && projTitle(task.project_id) ? projTitle(task.project_id) : "Algemeen"}
                     {task.deadline ? ` · ${new Date(task.deadline).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}` : ""}
                   </p>
@@ -84,16 +84,16 @@ export default function TasksWidget() {
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center">
-            <p className="text-sm text-foreground/50 font-medium">Geen open taken</p>
-            <p className="text-[11px] text-foreground/35 mt-1">Alles is afgehandeld</p>
+            <p className="text-sm text-ivory/50 font-medium">Geen open taken</p>
+            <p className="text-[11px] text-ivory/35 mt-1">Alles is afgehandeld</p>
           </div>
         )}
 
-        <div className="mt-3 pt-3 border-t border-foreground/10 flex items-center justify-between">
-          <button onClick={(e) => { e.stopPropagation(); setExpanded((v) => !v); }} className="flex items-center gap-1 text-[11px] font-semibold text-foreground/70 hover:text-foreground transition">
+        <div className="mt-3 pt-3 border-t border-ivory/10 flex items-center justify-between">
+          <button onClick={(e) => { e.stopPropagation(); setExpanded((v) => !v); }} className="flex items-center gap-1 text-[11px] font-semibold text-ivory/70 hover:text-ivory transition">
             {active.length} open <ChevronDown className={cn("h-3 w-3 transition-transform", expanded && "rotate-180")} />
           </button>
-          <button onClick={(e) => { e.stopPropagation(); openModule("tasks"); }} className="flex items-center gap-1 text-[11px] font-semibold text-foreground hover:text-olive transition">
+          <button onClick={(e) => { e.stopPropagation(); openModule("tasks"); }} className="flex items-center gap-1 text-[11px] font-semibold text-ivory hover:text-olive transition">
             Openen <ArrowRight className="h-3 w-3" />
           </button>
         </div>

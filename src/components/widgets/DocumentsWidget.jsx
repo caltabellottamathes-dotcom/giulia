@@ -35,22 +35,22 @@ export default function DocumentsWidget() {
           <div className="flex-1 space-y-2 overflow-hidden">
             {visible.map((d) => (
               <div key={d.id} className="flex items-center gap-2.5">
-                <span className="h-8 w-8 rounded-lg bg-foreground/5 border border-foreground/10 flex items-center justify-center text-[8px] font-bold text-foreground/60 shrink-0">
+                <span className="h-8 w-8 rounded-lg bg-ivory/5 border border-ivory/10 flex items-center justify-center text-[8px] font-bold text-ivory/60 shrink-0">
                   {typeLabel[d.type] || "FILE"}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">{d.name}</p>
-                  {d.owner && <p className="text-[10px] text-foreground/45 truncate">{d.owner}</p>}
+                  <p className="text-sm font-semibold text-ivory truncate">{d.name}</p>
+                  {d.owner && <p className="text-[10px] text-ivory/45 truncate">{d.owner}</p>}
                 </div>
-                <button onClick={(e) => toggleFav(e, d)} className="shrink-0 h-7 w-7 rounded-lg flex items-center justify-center hover:bg-foreground/5 transition" aria-label="Favoriet">
-                  <Star className={cn("h-3.5 w-3.5", d.status === "favorite" ? "fill-olive text-olive" : "text-foreground/30")} />
+                <button onClick={(e) => toggleFav(e, d)} className="shrink-0 h-7 w-7 rounded-lg flex items-center justify-center hover:bg-ivory/5 transition" aria-label="Favoriet">
+                  <Star className={cn("h-3.5 w-3.5", d.status === "favorite" ? "fill-olive text-olive" : "text-ivory/30")} />
                 </button>
               </div>
             ))}
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-xs text-foreground/45">Geen bestanden</p>
+            <p className="text-xs text-ivory/45">Geen bestanden</p>
           </div>
         )}
       </div>

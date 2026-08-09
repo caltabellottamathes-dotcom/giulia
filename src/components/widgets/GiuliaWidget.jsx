@@ -76,7 +76,7 @@ export default function GiuliaWidget() {
   const next = () => setIndex((i) => (i + 1 < steps.length ? i + 1 : 0));
 
   return (
-    <WidgetShell size="2x2" radius="large" glass="opaque" className="min-h-[440px]">
+    <WidgetShell size="2x2" radius="large" glass="card" className="min-h-[440px]">
       <div className="relative p-5 lg:p-6 flex flex-col h-full">
         <WidgetHeader icon={Sparkles} label="Giulia · je dag" count={steps.length ? `${index + 1}/${steps.length}` : ""} />
 

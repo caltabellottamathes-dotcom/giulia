@@ -27,18 +27,17 @@ const radiusMap = {
 };
 
 const tileMap = {
-  // light tiles — dark text
-  card:        { cls: "bg-stone text-charcoal border border-charcoal/10",     accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
-  translucent: { cls: "glass-card text-charcoal",                           accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
-  marble:      { cls: "bg-stone text-charcoal border border-charcoal/10",     accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
-  sky:         { cls: "bg-blue-grey text-charcoal border border-charcoal/10", accent: "hsl(var(--charcoal))", on: "hsl(var(--ivory))" },
-  storm:       { cls: "bg-ivory text-charcoal border border-charcoal/10",     accent: "hsl(var(--charcoal))", on: "hsl(var(--ivory))" },
-  // dark tiles — light text
-  opaque:      { cls: "bg-charcoal text-ivory border border-white/10",        accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
-  metal:       { cls: "bg-charcoal text-ivory border border-white/10",        accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
-  solid:       { cls: "bg-olive text-ivory border border-white/10",           accent: "hsl(var(--ivory))",    on: "hsl(var(--charcoal))" },
-  clay:        { cls: "bg-olive text-ivory border border-white/10",           accent: "hsl(var(--ivory))",    on: "hsl(var(--charcoal))" },
-  sand:        { cls: "bg-sand text-ivory border border-white/10",            accent: "hsl(var(--ivory))",    on: "hsl(var(--charcoal))" },
+  // Uniform gray glass + light text/icons across every widget tile
+  card:        { cls: "glass-card text-ivory", accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
+  translucent: { cls: "glass-card text-ivory", accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
+  marble:      { cls: "glass-card text-ivory", accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
+  sky:         { cls: "glass-card text-ivory", accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
+  storm:       { cls: "glass-card text-ivory", accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
+  opaque:      { cls: "glass-card text-ivory", accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
+  metal:       { cls: "glass-card text-ivory", accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
+  solid:       { cls: "glass-card text-ivory", accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
+  clay:        { cls: "glass-card text-ivory", accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
+  sand:        { cls: "glass-card text-ivory", accent: "rgba(255,255,255,0.14)", on: "rgba(255,255,255,0.92)" },
 };
 
 export default function WidgetShell({

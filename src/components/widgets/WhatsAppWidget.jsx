@@ -66,28 +66,28 @@ export default function WhatsAppWidget() {
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-semibold text-foreground truncate">{nameOf(c.contact_id)}</p>
+                    <p className="text-sm font-semibold text-ivory truncate">{nameOf(c.contact_id)}</p>
                     {draftFor(c.contact_id) && <Sparkles className="h-3 w-3 text-sand shrink-0" />}
                     {c.unread > 0 && <span className="text-[10px] font-semibold text-ivory bg-olive rounded-full px-1.5 py-0.5 shrink-0">{c.unread}</span>}
                   </div>
-                  <p className="text-[11px] text-foreground/55 truncate">{c.last.message}</p>
+                  <p className="text-[11px] text-ivory/55 truncate">{c.last.message}</p>
                 </div>
               </div>
             ))}
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-xs text-foreground/45">Geen berichten</p>
+            <p className="text-xs text-ivory/45">Geen berichten</p>
           </div>
         )}
 
         {top && (
-          <form onSubmit={(e) => { e.preventDefault(); send(e); }} onClick={(e) => e.stopPropagation()} className="mt-3 pt-3 border-t border-foreground/10 flex items-center gap-2">
+          <form onSubmit={(e) => { e.preventDefault(); send(e); }} onClick={(e) => e.stopPropagation()} className="mt-3 pt-3 border-t border-ivory/10 flex items-center gap-2">
             <input
               value={reply}
               onChange={(e) => setReply(e.target.value)}
               placeholder={`Antwoord aan ${nameOf(top.contact_id)}…`}
-              className="flex-1 min-w-0 bg-foreground/5 border border-foreground/10 rounded-full px-3 py-2 text-xs text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-olive/40"
+              className="flex-1 min-w-0 bg-ivory/5 border border-ivory/10 rounded-full px-3 py-2 text-xs text-ivory placeholder:text-ivory/40 focus:outline-none focus:border-olive/40"
             />
             <button type="submit" className="h-8 w-8 rounded-full bg-olive text-ivory flex items-center justify-center shrink-0 hover:bg-olive/90 transition" aria-label="Verstuur">
               <Send className="h-3.5 w-3.5" />

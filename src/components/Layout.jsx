@@ -9,7 +9,7 @@ import ModulePanel from "@/components/panels/ModulePanel";
 import ChatWindow from "@/components/panels/ChatWindow";
 import { PanelProvider, usePanel } from "@/lib/PanelContext";
 import { GiuliaVoiceProvider } from "@/lib/GiuliaVoiceContext";
-import ConciergeWidget from "@/components/concierge/ConciergeWidget";
+import AmbientBloom from "@/components/glass/AmbientBloom";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
@@ -75,10 +75,10 @@ function SidebarContent({ onNavigate }) {
     <div className="flex flex-col h-full py-8 px-5">
       {/* Wordmark — bold editorial type, no icon */}
       <div className="px-2 mb-10">
-        <p className="font-display font-semibold tracking-[-0.01em] text-2xl text-foreground leading-none">
+        <p className="font-display font-semibold tracking-[-0.01em] text-2xl text-ivory leading-none">
           Giulia
         </p>
-        <p className="text-[10px] uppercase tracking-[0.3em] text-foreground/45 mt-1.5 font-medium">
+        <p className="text-[10px] uppercase tracking-[0.3em] text-ivory/45 mt-1.5 font-medium">
           Assistent
         </p>
       </div>
@@ -88,7 +88,7 @@ function SidebarContent({ onNavigate }) {
         {navSections.map((section, si) => (
           <div key={si} className="space-y-1">
             {section.label && (
-              <p className="px-2 mb-2 text-[10px] uppercase tracking-[0.24em] text-foreground/40 font-semibold">
+              <p className="px-2 mb-2 text-[10px] uppercase tracking-[0.24em] text-ivory/40 font-semibold">
                 {section.label}
               </p>
             )}
@@ -103,8 +103,8 @@ function SidebarContent({ onNavigate }) {
                     cn(
                       "flex items-center gap-3 px-2.5 py-2.5 rounded-xl text-[15px] transition-all duration-300 relative font-medium",
                       isActive
-                        ? "glass-1 text-foreground"
-                        : "text-foreground/60 hover:text-foreground hover:bg-foreground/[0.03]"
+                        ? "glass-1 text-ivory"
+                        : "text-ivory/60 hover:text-ivory hover:bg-ivory/[0.03]"
                     )
                   }
                 >
@@ -128,8 +128,8 @@ function SidebarContent({ onNavigate }) {
                   className={cn(
                     "w-full flex items-center gap-3 px-2.5 py-2.5 rounded-xl text-[15px] transition-all duration-300 relative font-medium",
                     activeModule === item.key
-                      ? "glass-1 text-foreground"
-                      : "text-foreground/60 hover:text-foreground hover:bg-foreground/[0.03]"
+                      ? "glass-1 text-ivory"
+                      : "text-ivory/60 hover:text-ivory hover:bg-ivory/[0.03]"
                   )}
                 >
                   {activeModule === item.key && (
@@ -152,7 +152,7 @@ function SidebarContent({ onNavigate }) {
         </div>
         <div className="min-w-0">
           <p className="text-[13px] font-semibold truncate">Giulia actief</p>
-          <p className="text-[11px] text-foreground/50 truncate">3 acties klaar</p>
+          <p className="text-[11px] text-ivory/50 truncate">3 acties klaar</p>
         </div>
       </div>
     </div>
@@ -178,6 +178,7 @@ function LayoutInner() {
 
   return (
     <div className="min-h-screen relative">
+      <AmbientBloom />
       {/* Full-width workspace — the nav now lives in a sliding panel */}
       <div className="flex flex-col min-h-screen relative">
         {/* Header */}
@@ -284,8 +285,7 @@ function LayoutInner() {
       {/* Dedicated button to open the Giulia chat window */}
       <OpenChatButton />
 
-      {/* Giulia concierge — fixed anchor, tap-to-talk voice + text */}
-      <ConciergeWidget />
+
 
       {/* The single sliding glass panel that hosts every module */}
       <ModulePanel />

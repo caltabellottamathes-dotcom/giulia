@@ -40,30 +40,30 @@ export default function EmailWidget() {
               <div key={em.id} className="flex items-center gap-2.5 py-1">
                 <button
                   onClick={(e) => toggleRead(e, em)}
-                  className="h-4 w-4 rounded-full border border-foreground/25 shrink-0 flex items-center justify-center hover:border-olive transition"
+                  className="h-4 w-4 rounded-full border border-ivory/25 shrink-0 flex items-center justify-center hover:border-olive transition"
                   aria-label="Gelezen markeren"
                 >
                   {em.status === "unread" && <span className="h-2 w-2 rounded-full bg-olive" />}
                 </button>
                 <div className="flex-1 min-w-0">
-                  <p className={cn("text-sm leading-tight truncate", em.status === "unread" ? "font-semibold text-foreground" : "font-medium text-foreground/70")}>
+                  <p className={cn("text-sm leading-tight truncate", em.status === "unread" ? "font-semibold text-ivory" : "font-medium text-ivory/70")}>
                     {em.sender || "Onbekend"}
                   </p>
-                  <p className="text-[11px] text-foreground/55 truncate">{em.subject}</p>
+                  <p className="text-[11px] text-ivory/55 truncate">{em.subject}</p>
                 </div>
                 <button
                   onClick={(e) => toggleStar(e, em)}
-                  className="shrink-0 h-7 w-7 rounded-lg flex items-center justify-center hover:bg-foreground/5 transition"
+                  className="shrink-0 h-7 w-7 rounded-lg flex items-center justify-center hover:bg-ivory/5 transition"
                   aria-label="Belangrijk"
                 >
-                  <Star className={cn("h-3.5 w-3.5", em.important ? "fill-olive text-olive" : "text-foreground/30")} />
+                  <Star className={cn("h-3.5 w-3.5", em.important ? "fill-olive text-olive" : "text-ivory/30")} />
                 </button>
               </div>
             ))}
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-xs text-foreground/45">Inbox is leeg</p>
+            <p className="text-xs text-ivory/45">Inbox is leeg</p>
           </div>
         )}
       </div>

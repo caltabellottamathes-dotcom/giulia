@@ -28,7 +28,7 @@ export default function KnowledgeWidget() {
             <button
               key={c}
               onClick={() => setCat(c)}
-              className={cn("px-2 py-0.5 text-[10px] font-semibold rounded-full border transition", cat === c ? "bg-olive text-ivory border-olive" : "bg-foreground/5 text-foreground/60 border-foreground/10 hover:text-foreground")}
+              className={cn("px-2 py-0.5 text-[10px] font-semibold rounded-full border transition", cat === c ? "bg-olive text-ivory border-olive" : "bg-ivory/5 text-ivory/60 border-ivory/10 hover:text-ivory")}
             >
               {c === "all" ? "Alles" : c}
             </button>
@@ -45,15 +45,15 @@ export default function KnowledgeWidget() {
               <div key={k.id} className="flex items-start gap-2.5">
                 <span className="mt-1 h-1.5 w-1.5 rounded-full bg-olive/60 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">{k.title}</p>
-                  <p className="text-[10px] uppercase tracking-wider text-foreground/45">{k.category}</p>
+                  <p className="text-sm font-semibold text-ivory truncate">{k.title}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-ivory/45">{k.category}</p>
                 </div>
               </div>
             ))}
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-xs text-foreground/45">Niets in deze categorie</p>
+            <p className="text-xs text-ivory/45">Niets in deze categorie</p>
           </div>
         )}
       </div>

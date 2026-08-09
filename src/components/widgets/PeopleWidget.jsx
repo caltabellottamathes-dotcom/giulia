@@ -31,13 +31,13 @@ export default function PeopleWidget() {
                   {c.name?.slice(0, 1).toUpperCase()}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">{c.name}</p>
-                  <p className="text-[10px] text-foreground/50 truncate">{c.role ? `${c.role}${c.company ? " · " + c.company : ""}` : c.company || ""}</p>
+                  <p className="text-sm font-semibold text-ivory truncate">{c.name}</p>
+                  <p className="text-[10px] text-ivory/50 truncate">{c.role ? `${c.role}${c.company ? " · " + c.company : ""}` : c.company || ""}</p>
                 </div>
                 <a
                   href={c.phone ? `tel:${c.phone}` : undefined}
                   onClick={(e) => e.stopPropagation()}
-                  className={cn("h-7 w-7 rounded-lg flex items-center justify-center transition shrink-0", c.phone ? "bg-olive/15 text-olive hover:bg-olive/25" : "bg-foreground/5 text-foreground/25 pointer-events-none")}
+                  className={cn("h-7 w-7 rounded-lg flex items-center justify-center transition shrink-0", c.phone ? "bg-olive/15 text-olive hover:bg-olive/25" : "bg-ivory/5 text-ivory/25 pointer-events-none")}
                   aria-label="Bellen"
                 >
                   <Phone className="h-3.5 w-3.5" />
@@ -47,7 +47,7 @@ export default function PeopleWidget() {
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-xs text-foreground/45">Geen contacten</p>
+            <p className="text-xs text-ivory/45">Geen contacten</p>
           </div>
         )}
       </div>

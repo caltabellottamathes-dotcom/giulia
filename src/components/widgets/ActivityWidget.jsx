@@ -30,21 +30,21 @@ export default function ActivityWidget() {
           <div className="flex-1 space-y-2.5 overflow-hidden">
             {visible.map((a) => (
               <div key={a.id} className="flex items-start gap-2.5">
-                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-foreground/30 shrink-0" />
+                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-ivory/30 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{a.description}</p>
-                  <p className="text-[10px] text-foreground/45">{when(a)}</p>
+                  <p className="text-sm font-medium text-ivory truncate">{a.description}</p>
+                  <p className="text-[10px] text-ivory/45">{when(a)}</p>
                 </div>
               </div>
             ))}
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-xs text-foreground/45">Nog geen activiteit</p>
+            <p className="text-xs text-ivory/45">Nog geen activiteit</p>
           </div>
         )}
 
-        <button onClick={(ev) => { ev.stopPropagation(); openModule("activity"); }} className="mt-3 pt-3 border-t border-foreground/10 flex items-center justify-end gap-1 text-[11px] font-semibold text-foreground hover:text-olive transition">
+        <button onClick={(ev) => { ev.stopPropagation(); openModule("activity"); }} className="mt-3 pt-3 border-t border-ivory/10 flex items-center justify-end gap-1 text-[11px] font-semibold text-ivory hover:text-olive transition">
           Openen <ArrowRight className="h-3 w-3" />
         </button>
       </div>

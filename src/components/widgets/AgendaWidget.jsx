@@ -34,11 +34,11 @@ export default function AgendaWidget() {
             <span className="h-7 w-7 rounded-lg bg-olive/15 border border-olive/20 flex items-center justify-center">
               <Calendar className="h-3.5 w-3.5 text-olive" />
             </span>
-            <h3 className="text-[11px] uppercase tracking-[0.22em] text-foreground/60 font-semibold">Agenda</h3>
+            <h3 className="text-[11px] uppercase tracking-[0.22em] text-ivory/60 font-semibold">Agenda</h3>
           </div>
-          <div className="flex gap-0.5 p-0.5 rounded-full bg-foreground/5 border border-foreground/10">
-            <button onClick={(e) => { e.stopPropagation(); setDay("today"); }} className={cn("px-2.5 py-1 text-[10px] font-semibold rounded-full transition", day === "today" ? "bg-olive text-ivory" : "text-foreground/60")}>Vandaag</button>
-            <button onClick={(e) => { e.stopPropagation(); setDay("tomorrow"); }} className={cn("px-2.5 py-1 text-[10px] font-semibold rounded-full transition", day === "tomorrow" ? "bg-olive text-ivory" : "text-foreground/60")}>Morgen</button>
+          <div className="flex gap-0.5 p-0.5 rounded-full bg-ivory/5 border border-ivory/10">
+            <button onClick={(e) => { e.stopPropagation(); setDay("today"); }} className={cn("px-2.5 py-1 text-[10px] font-semibold rounded-full transition", day === "today" ? "bg-olive text-ivory" : "text-ivory/60")}>Vandaag</button>
+            <button onClick={(e) => { e.stopPropagation(); setDay("tomorrow"); }} className={cn("px-2.5 py-1 text-[10px] font-semibold rounded-full transition", day === "tomorrow" ? "bg-olive text-ivory" : "text-ivory/60")}>Morgen</button>
           </div>
         </div>
 
@@ -51,14 +51,14 @@ export default function AgendaWidget() {
             {visible.map((event) => (
               <div key={event.id} className="flex items-stretch gap-3">
                 <div className="flex flex-col items-center pt-1 shrink-0">
-                  <span className="text-[12px] font-semibold tabular-nums text-foreground leading-none">
+                  <span className="text-[12px] font-semibold tabular-nums text-ivory leading-none">
                     {new Date(event.start).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}
                   </span>
-                  <div className="flex-1 w-px bg-foreground/15 my-1" />
+                  <div className="flex-1 w-px bg-ivory/15 my-1" />
                 </div>
                 <div className="flex-1 min-w-0 pb-1">
-                  <p className="text-sm font-semibold text-foreground leading-tight truncate">{event.title}</p>
-                  <p className="text-[11px] text-foreground/55 truncate mt-0.5">
+                  <p className="text-sm font-semibold text-ivory leading-tight truncate">{event.title}</p>
+                  <p className="text-[11px] text-ivory/55 truncate mt-0.5">
                     {event.location}{event.project_id && projTitle(event.project_id) ? ` · ${projTitle(event.project_id)}` : ""}
                   </p>
                 </div>
@@ -67,18 +67,18 @@ export default function AgendaWidget() {
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center">
-            <p className="text-sm text-foreground/50 font-medium">{day === "today" ? "Vandaag is leeg" : "Morgen is leeg"}</p>
-            <p className="text-[11px] text-foreground/35 mt-1">Giulia houdt de ruimte vrij</p>
+            <p className="text-sm text-ivory/50 font-medium">{day === "today" ? "Vandaag is leeg" : "Morgen is leeg"}</p>
+            <p className="text-[11px] text-ivory/35 mt-1">Giulia houdt de ruimte vrij</p>
           </div>
         )}
 
-        <div className="mt-4 pt-3 border-t border-foreground/10 flex items-center justify-between">
+        <div className="mt-4 pt-3 border-t border-ivory/10 flex items-center justify-between">
           {overflow > 0 ? (
-            <span className="text-[11px] text-foreground/55">+{overflow} meer</span>
+            <span className="text-[11px] text-ivory/55">+{overflow} meer</span>
           ) : (
-            <span className="text-[11px] text-foreground/40">{todays.length} afspraak{todays.length !== 1 ? "en" : ""}</span>
+            <span className="text-[11px] text-ivory/40">{todays.length} afspraak{todays.length !== 1 ? "en" : ""}</span>
           )}
-          <button onClick={(e) => { e.stopPropagation(); openModule("agenda"); }} className="flex items-center gap-1 text-[11px] font-semibold text-foreground hover:text-olive transition-colors">
+          <button onClick={(e) => { e.stopPropagation(); openModule("agenda"); }} className="flex items-center gap-1 text-[11px] font-semibold text-ivory hover:text-olive transition-colors">
             Openen <ArrowRight className="h-3 w-3" />
           </button>
         </div>
