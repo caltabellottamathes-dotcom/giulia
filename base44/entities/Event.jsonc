@@ -43,9 +43,7 @@
   ],
   "rls": {
     "create": true,
-    "read": {
-      "created_by_id": "{{user.id}}"
-    },
+    "read": true,
     "update": {
       "created_by_id": "{{user.id}}"
     },
