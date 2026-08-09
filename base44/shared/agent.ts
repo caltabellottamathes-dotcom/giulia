@@ -3,7 +3,7 @@
  *
  * Every agent follows the same loop:
  *   1. Read relevant entities (current state)
- *   2. Decide via InvokeLLM (integration credits, NOT agent/message credits)
+ *   2. Decide via chatWithGiulia (integration credits, NOT agent/message credits)
  *   3. Execute: read/write entities
  *   4. Report: write a proactive in-app Message (channel: in-app, agent_source set)
  *   5. Notify: push via sendPushNotifications when Salvo's attention is needed
@@ -40,14 +40,15 @@ export async function agentDecide(base44, agentName, task, context, schema) {
     required: ["message"],
   };
   try {
-    const res = await base44.integrations.Core.InvokeLLM({
-      prompt,
-      response_json_schema: schema || fallbackSchema,
-    });
-    if (typeof res === "string") {
-      try { return JSON.parse(res); } catch { return { message: res }; }
+    const res = await base44.functions.invoke("chatWithGiulia", { message: prompt, persist: false });
+    const text = (res && (res.response || res.content)) || "";
+    if (!text) return null;
+    const m = text.match(/\{[\s\S]*\}/);
+    if (m) {
+      try { return JSON.parse(m[0]); } catch {}
     }
-    return res || null;
+    try { return JSON.parse(text); } catch {}
+    return { message: text };
   } catch (e) {
     return null;
   }

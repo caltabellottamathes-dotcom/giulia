@@ -19,13 +19,14 @@ export default async function (req) {
     const body = await req.json();
     const message = body.message || body.content || "";
     const conversationId = body.conversation_id || DEFAULT_CONVERSATION;
+    const persist = body.persist !== false;
 
     if (!message) {
       return Response.json({ error: "No message provided" }, { status: 400 });
     }
 
     // Persist the user's message (best-effort)
-    try {
+    if (persist) try {
       await base44.entities.Message.create({
         role: "user",
         content: message,
@@ -69,7 +70,7 @@ export default async function (req) {
     const reply = data.content || "";
 
     // Persist Giulia's reply (best-effort)
-    try {
+    if (persist) try {
       await base44.entities.Message.create({
         role: "giulia",
         content: reply,
