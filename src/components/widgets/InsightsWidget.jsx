@@ -4,7 +4,7 @@ import WidgetHeader from "./WidgetHeader";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
-import { Telescope, Search, ArrowRight, RefreshCw } from "lucide-react";
+import { Telescope, Search, ArrowRight, RefreshCw, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const CAT_STYLE = {
@@ -18,13 +18,15 @@ const CAT_STYLE = {
 const CATS = ["Opportunity", "Risk", "Research", "Suggestion", "Follow-up", "Trend"];
 
 /**
- * InsightsWidget — Giulia proactively surfaces research & suggestions.
- * Transparent glass tile with solid palette category chips.
+ * InsightsWidget — Giulia proactively surfaces research + a "what now?" next
+ * step when you're stuck. Transparent glass tile with solid palette chips.
  */
 export default function InsightsWidget() {
   const { openModule } = usePanel();
   const { data: insights, loading, reload } = useEntityList("Insight", { sort: "-created_date" });
   const [busy, setBusy] = useState(false);
+  const [step, setStep] = useState(null);
+  const [thinking, setThinking] = useState(false);
   const visible = insights.slice(0, 3);
 
   const research = async (e) => {
@@ -60,10 +62,44 @@ export default function InsightsWidget() {
     setBusy(false);
   };
 
+  const nextStep = async (e) => {
+    e.stopPropagation();
+    setThinking(true);
+    try {
+      const res = await base44.functions.invoke("giuliaNextSteps", {});
+      const s = res?.data?.steps?.[0];
+      if (s) setStep(s);
+    } catch {
+      /* ignore */
+    }
+    setThinking(false);
+  };
+
   return (
     <WidgetShell size="2x2" radius="medium" glass="translucent" interactive onClick={() => openModule("insights")} className="min-h-[300px]">
       <div className="p-5 flex flex-col h-full">
         <WidgetHeader icon={Telescope} label="Giulia · Inzichten" count={insights.length ? `${insights.length}` : ""} />
+
+        {/* Proactive next step */}
+        {step ? (
+          <button onClick={(e) => { e.stopPropagation(); openModule("insights"); }} className="mb-3 relative overflow-hidden text-left rounded-2xl bg-charcoal text-ivory p-4">
+            <span className="absolute -inset-1 blur-lg opacity-30 bg-sand" />
+            <div className="relative">
+              <p className="text-[9px] uppercase tracking-[0.24em] text-sand font-semibold mb-1.5 flex items-center gap-1">
+                <Lightbulb className="h-3 w-3" /> Vervolgstap
+              </p>
+              <p className="text-sm font-semibold leading-tight">{step.title}</p>
+              <p className="text-[11px] text-ivory/60 mt-1 line-clamp-2">{step.why}</p>
+            </div>
+          </button>
+        ) : (
+          <button onClick={nextStep} disabled={thinking} className="mb-3 text-left rounded-2xl bg-foreground/[0.04] border border-foreground/10 p-3.5 hover:border-olive/30 transition disabled:opacity-50">
+            <p className="text-[9px] uppercase tracking-[0.24em] text-foreground/50 font-semibold mb-1 flex items-center gap-1">
+              <Lightbulb className="h-3 w-3" /> {thinking ? "Giulia denkt na…" : "Wat moet ik nu doen?"}
+            </p>
+            <p className="text-xs text-foreground/60">Laat Giulia proactief je volgende stap bepalen.</p>
+          </button>
+        )}
 
         {loading ? (
           <div className="flex-1 space-y-3">
@@ -75,12 +111,7 @@ export default function InsightsWidget() {
           <div className="flex-1 space-y-3 overflow-hidden">
             {visible.map((ins) => (
               <div key={ins.id} className="flex items-start gap-2.5">
-                <span
-                  className={cn(
-                    "mt-0.5 h-6 px-1.5 rounded-md text-[8px] font-bold flex items-center justify-center shrink-0 uppercase tracking-wide",
-                    CAT_STYLE[ins.category] || CAT_STYLE.Suggestion
-                  )}
-                >
+                <span className={cn("mt-0.5 h-6 px-1.5 rounded-md text-[8px] font-bold flex items-center justify-center shrink-0 uppercase tracking-wide", CAT_STYLE[ins.category] || CAT_STYLE.Suggestion)}>
                   {(ins.category || "Sugg").slice(0, 4)}
                 </span>
                 <div className="flex-1 min-w-0">
