@@ -1,6 +1,6 @@
 import {
   Sparkles, Calendar, CheckSquare, ClipboardCheck, Mail, MessageCircle,
-  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope,
+  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu,
 } from "lucide-react";
 import { IMAGES } from "@/lib/images";
 
@@ -17,6 +17,7 @@ import DocumentsWidget from "@/components/widgets/DocumentsWidget";
 import MemoryWidget from "@/components/widgets/MemoryWidget";
 import InsightsWidget from "@/components/widgets/InsightsWidget";
 import ActivityWidget from "@/components/widgets/ActivityWidget";
+import AgentActivityWidget from "@/components/widgets/AgentActivityWidget";
 
 /**
  * Single source of truth for every dashboard widget. `image` is a branding
@@ -35,6 +36,7 @@ export const WIDGETS = {
   documents:  { type: "documents",  label: "Documenten",          icon: FileText,       Component: DocumentsWidget,  image: IMAGES.chairsScattered,  span: 4, category: "work" },
   memory:     { type: "memory",     label: "Geheugen",           icon: Brain,          Component: MemoryWidget,     image: IMAGES.loungeChairs,     span: 4, category: "intelligence" },
   activity:   { type: "activity",   label: "Activiteit",          icon: ActivityIcon,   Component: ActivityWidget,   image: IMAGES.topDownWalk,     span: 6, category: "intelligence" },
+  agentactivity: { type: "agentactivity", label: "Giulia · Agenten", icon: Cpu,             Component: AgentActivityWidget, image: IMAGES.feetChair,        span: 4, category: "intelligence" },
   insights:   { type: "insights",   label: "Giulia · Inzichten",  icon: Telescope,      Component: InsightsWidget,   image: IMAGES.feetChair,        span: 4, category: "intelligence" },
 };
 

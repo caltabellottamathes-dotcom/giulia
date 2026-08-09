@@ -49,8 +49,30 @@ export async function createApproval(base44, type, title, content, context) {
 /** tool() — passthrough; a tool is { description, inputSchema (JSON schema), execute }. */
 export function tool(def) { return def; }
 
+/**
+ * buildDossier — compiles everything GIULIA knows about Salvo & the current
+ * state, injected into every agent run so each agent starts with full knowledge.
+ */
+async function buildDossier(sr) {
+  const [memories, knowledge, projects, contacts, msgs] = await Promise.all([
+    sr.entities.Memory.list("-created_date", 20).catch(() => []),
+    sr.entities.Knowledge.list("-created_date", 8).catch(() => []),
+    sr.entities.Project.list().catch(() => []),
+    sr.entities.Contact.list().catch(() => []),
+    sr.entities.Message.filter({ direction: "incoming" }, "-created_date", 8).catch(() => []),
+  ]);
+  const lines = [];
+  if (memories.length) { lines.push("Wat je over Salvo weet:"); memories.forEach(m => lines.push(`- [${m.category || "info"}] ${String(m.content).slice(0, 160)}`)); }
+  if (knowledge.length) { lines.push("Kennisbank:"); knowledge.forEach(k => lines.push(`- ${k.title}: ${String(k.content || "").slice(0, 120)}`)); }
+  if (projects.length) { lines.push("Projecten:"); projects.forEach(p => lines.push(`- ${p.title} [${p.status || "?"}]${p.next_milestone ? ` — next: ${p.next_milestone}` : ""}`)); }
+  if (contacts.length) { lines.push("Personen:"); contacts.forEach(c => lines.push(`- ${c.name}${c.company ? ` (${c.company})` : ""}`)); }
+  if (msgs.length) { lines.push("Recente inkomende berichten:"); msgs.slice(-8).forEach(m => lines.push(`- [${m.channel}] ${String(m.content).slice(0, 100)}`)); }
+  return lines.join("\n");
+}
+
 export async function runGiuliaAgent(base44, agentName, task, tools, stopAfter = 6) {
-  const { baseURL, token } = base44.asServiceRole.aiGateway.connection();
+  const sr = base44.asServiceRole;
+  const { baseURL, token } = sr.aiGateway.connection();
   const url = baseURL.replace(/\/$/, "") + "/chat/completions";
   const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
 
@@ -83,8 +105,11 @@ export async function runGiuliaAgent(base44, agentName, task, tools, stopAfter =
     function: { name, description: t.description || "", parameters: t.inputSchema || { type: "object", properties: {} } },
   }));
 
+  const dossier = await buildDossier(sr).catch(() => "");
+  const sys = `${PERSONA}\n\nJe werkt nu als de "${agentName}" agent binnen GIULIA OS.` +
+    (dossier ? `\n\n=== WAT JE WEET OVER SALVO & GIULIA ===\n${dossier}` : "");
   const messages = [
-    { role: "system", content: `${PERSONA}\n\nJe werkt nu als de "${agentName}" agent binnen GIULIA OS.` },
+    { role: "system", content: sys },
     { role: "user", content: task },
   ];
 

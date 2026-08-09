@@ -52,7 +52,7 @@ export default function Home() {
 
   const load = async () => {
     try {
-      const [recs, events, tasks, approvals, emails, waMsgs, insights] = await Promise.all([
+      const [recs, events, tasks, approvals, emails, waMsgs, insights, agentMsgs] = await Promise.all([
         base44.entities.DashboardWidget.list("position").catch(() => []),
         base44.entities.Event.list().catch(() => []),
         base44.entities.Task.list().catch(() => []),
@@ -60,9 +60,11 @@ export default function Home() {
         base44.entities.Email.filter({ status: "unread" }).catch(() => []),
         base44.entities.WhatsAppMessage.filter({ direction: "received", status: "unread" }).catch(() => []),
         base44.entities.Insight.list("-created_date", 1).catch(() => []),
+        base44.entities.Message.filter({ role: "giulia" }, "-created_date", 50).catch(() => []),
       ]);
 
       const todayStr = new Date().toLocaleDateString("sv-SE");
+      const agentToday = agentMsgs.filter((m) => (m.created_date || "").slice(0, 10) === todayStr);
       const attention = {
         agenda: events.some((e) => (e.start || "").slice(0, 10) === todayStr),
         tasks: tasks.some((t) => t.status === "overdue" || t.status === "today"),
@@ -70,6 +72,7 @@ export default function Home() {
         email: emails.length > 0,
         whatsapp: waMsgs.length > 0,
         insights: insights.length > 0,
+        agentactivity: agentToday.length > 0,
       };
 
       let saved = recs && recs.length ? recs.filter((r) => r.visible !== false) : [];
