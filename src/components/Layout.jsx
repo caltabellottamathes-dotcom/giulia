@@ -5,7 +5,8 @@ import { IMAGES } from "@/lib/images";
 import QuickAction from "@/components/glass/QuickAction";
 import FloatingPanel from "@/components/glass/FloatingPanel";
 import ChatWindow from "@/components/panels/ChatWindow";
-import GlowButton from "@/components/glass/GlowButton";
+import GiuliaOrb from "@/components/glass/GiuliaOrb";
+import SwipeBack from "@/components/glass/SwipeBack";
 import { PanelProvider, usePanel } from "@/lib/PanelContext";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -111,10 +112,23 @@ function SidebarContent({ onNavigate }) {
         ))}
       </nav>
 
-      {/* Cool glowing Chat + Call buttons — with light */}
+      {/* Giulia presence — chat + call */}
       <div className="mt-5 space-y-2.5">
-        <GlowButton block icon={MessageSquare} tone="sand" label="Chat met Giulia" sublabel="Stel een vraag" onClick={() => { openChat(); onNavigate?.(); }} />
-        <GlowButton block icon={Phone} tone="olive" label="Bel Giulia" sublabel="Meteen bellen" onClick={() => { navigate("/voice"); onNavigate?.(); }} />
+        <GiuliaOrb block label="Chat met Giulia" sublabel="Stel een vraag" onClick={() => { openChat(); onNavigate?.(); }} />
+        <button
+          onClick={() => { navigate("/voice"); onNavigate?.(); }}
+          className="group relative w-full rounded-2xl glass-1 specular-edge px-3 py-2.5 flex items-center gap-3 hover:scale-[1.02] transition"
+          aria-label="Bel Giulia"
+        >
+          <span className="relative h-9 w-9 rounded-full glass-2 flex items-center justify-center shrink-0">
+            <span className="absolute -inset-1 rounded-full blur-md opacity-40 bg-sand" />
+            <Phone className="relative h-4 w-4 text-foreground/70" strokeWidth={1.75} />
+          </span>
+          <span className="text-left min-w-0">
+            <span className="block text-sm font-semibold leading-none">Bel Giulia</span>
+            <span className="block text-[10px] text-foreground/50 mt-1">Meteen bellen</span>
+          </span>
+        </button>
       </div>
     </div>
   );
@@ -163,9 +177,16 @@ function LayoutInner() {
           </div>
 
           <div className="flex items-center gap-2.5">
-            {/* Cool glowing Chat + Call — with light */}
-            <GlowButton icon={MessageSquare} tone="sand" label="Chat met Giulia" onClick={openChat} />
-            <GlowButton icon={Phone} tone="olive" label="Bel Giulia" onClick={() => navigate("/voice")} />
+            {/* Giulia presence — chat (avatar orb) + call */}
+            <GiuliaOrb onClick={openChat} label="Chat met Giulia" />
+            <button
+              onClick={() => navigate("/voice")}
+              className="relative h-9 w-9 rounded-full glass-1 specular-edge flex items-center justify-center hover:scale-110 transition"
+              aria-label="Bel Giulia"
+            >
+              <span className="absolute -inset-1 rounded-full blur-md opacity-40 bg-sand" />
+              <Phone className="relative h-4 w-4 text-foreground/70" strokeWidth={1.75} />
+            </button>
             <button
               onClick={() => navigate("/approvals")}
               className="h-9 w-9 rounded-full glass-1 flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors relative"
@@ -215,6 +236,9 @@ function LayoutInner() {
 
       {/* Universal quick action — glowing orb */}
       <QuickAction />
+
+      {/* Mobile swipe-back gesture */}
+      <SwipeBack />
 
       {/* Dedicated chat window — the Giulia agent */}
       <ChatWindow />

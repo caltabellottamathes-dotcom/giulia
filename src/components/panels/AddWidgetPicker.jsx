@@ -1,6 +1,7 @@
 import React from "react";
 import FloatingPanel from "@/components/glass/FloatingPanel";
 import { WIDGET_LIST } from "@/lib/widgetRegistry";
+import { IMAGES } from "@/lib/images";
 import { Check, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -12,19 +13,26 @@ const CAT_TONE = {
 };
 
 /**
- * AddWidgetPicker — bold, graphic widget gallery. Each available widget is a
- * strong palette tile (accent strip, colored icon chip, label + category),
- * with a clear "Toevoegen" affordance. Far from a quiet list.
+ * AddWidgetPicker — a premium, editorial widget gallery. Full-bleed photo
+ * header, bold display title, and strong palette tiles per category.
  */
 export default function AddWidgetPicker({ open, onClose, onAdd, addedTypes = [] }) {
   const available = WIDGET_LIST.filter((w) => !addedTypes.includes(w.type));
 
   return (
     <FloatingPanel open={open} onClose={onClose} position="right" level={3} width={560}>
-      <div className="p-6 lg:p-8">
-        <p className="text-[10px] uppercase tracking-[0.3em] text-olive font-semibold mb-2">Dashboard</p>
-        <h3 className="text-[30px] font-display font-semibold tracking-[-0.02em] leading-none">Widget toevoegen</h3>
-        <p className="text-sm text-foreground/55 mt-2 mb-6">Til je dashboard naar een hoger niveau — kies een module.</p>
+      {/* Editorial photo header */}
+      <div className="relative h-32 overflow-hidden">
+        <img src={IMAGES.portraitBootHands} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/55 to-charcoal/25" />
+        <div className="relative h-full flex flex-col justify-end p-6">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-sand font-semibold mb-1.5">Dashboard</p>
+          <h3 className="text-[28px] font-display font-semibold tracking-[-0.02em] text-ivory leading-none">Widget toevoegen</h3>
+        </div>
+      </div>
+
+      <div className="p-6 lg:p-7">
+        <p className="text-sm text-foreground/55 mb-5">Til je dashboard naar een hoger niveau — kies een module om toe te voegen.</p>
 
         {available.length > 0 ? (
           <div className="grid grid-cols-2 gap-3">
@@ -37,7 +45,7 @@ export default function AddWidgetPicker({ open, onClose, onAdd, addedTypes = [] 
                   className="group relative overflow-hidden rounded-2xl bg-stone border border-charcoal/10 p-4 flex flex-col items-start gap-3 text-left hover:-translate-y-1 transition-all duration-300 shadow-[0_18px_44px_-16px_hsl(30_10%_20%/0.16)]"
                 >
                   <span className="absolute inset-x-0 top-0 h-[3px]" style={{ background: tone.bar }} />
-                  <span className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0", tone.chip)}>
+                  <span className={cn("h-11 w-11 rounded-2xl flex items-center justify-center shrink-0", tone.chip)}>
                     <w.icon className="h-5 w-5" strokeWidth={1.75} />
                   </span>
                   <div className="min-w-0">

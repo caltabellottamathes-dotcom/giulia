@@ -142,7 +142,7 @@ export default function Home() {
       {/* Desktop photo backdrop */}
       <div
         className={cn(
-          "hidden lg:block fixed top-14 right-0 bottom-0 w-[58%] overflow-hidden z-0 lg:rounded-l-[32px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+          "hidden lg:block absolute top-0 right-0 bottom-0 w-[58%] overflow-hidden z-0 lg:rounded-l-[32px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
           panelOpen ? "opacity-0 scale-95 pointer-events-none" : "opacity-100 scale-100"
         )}
       >
@@ -151,12 +151,12 @@ export default function Home() {
       </div>
 
       {/* Mobile soft gradient backdrop (fixed screen, no photo banner) */}
-      <div className="lg:hidden fixed inset-0 -z-10 bg-gradient-to-b from-stone via-background to-stone" />
+      <div className="lg:hidden absolute inset-0 -z-10 bg-gradient-to-b from-stone via-background to-stone" />
 
       {/* Desktop small photo when a panel opens */}
       <div
         className={cn(
-          "hidden lg:block fixed left-4 bottom-4 z-0 w-[30%] h-[28vh] overflow-hidden rounded-[24px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+          "hidden lg:block absolute left-4 bottom-4 z-0 w-[30%] h-[28vh] overflow-hidden rounded-[24px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
           panelOpen ? "opacity-100 scale-100" : "opacity-0 scale-90 pointer-events-none"
         )}
       >
