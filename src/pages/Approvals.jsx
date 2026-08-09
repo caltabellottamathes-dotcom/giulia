@@ -48,8 +48,8 @@ export default function Approvals() {
         {[
           { label: "Wachtend", count: approvals.filter((a) => a.status === "pending").length },
           { label: "Goedgekeurd", count: approvals.filter((a) => a.status === "approved").length },
-          { label: "Afgewezen", count: approvals.filter((a) => a.status === "rejected").length },
-          { label: "Uitgevoerd", count: approvals.filter((a) => a.status === "executed").length },
+          { label: "Verwerpen", count: approvals.filter((a) => a.status === "discarded").length },
+          { label: "Bewerkt", count: approvals.filter((a) => a.status === "edited").length },
         ].map((stat) => (
           <GlassPanel key={stat.label} level={1} className="p-4">
             <p className="text-2xl font-display font-semibold">{stat.count}</p>
@@ -76,7 +76,7 @@ export default function Approvals() {
       <div className="space-y-3">
         {loading && [0, 1].map((i) => <div key={i} className="h-32 rounded-2xl shimmer" />)}
         {!loading && pending.map((approval) => {
-          const Icon = categoryIcons[approval.category] || AlertCircle;
+          const Icon = categoryIcons[approval.category] || categoryIcons[approval.type] || AlertCircle;
           return (
             <GlassPanel key={approval.id} level={2} className="p-5">
               <div className="flex items-start gap-4">
@@ -85,11 +85,14 @@ export default function Approvals() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <StatusBadge variant="urgent">{approval.category}</StatusBadge>
+                    <StatusBadge variant="urgent">{approval.type || approval.category}</StatusBadge>
                     {approval.action_type && <StatusBadge variant="muted">{approval.action_type.replace(/_/g, " ")}</StatusBadge>}
                   </div>
                   <h3 className="text-sm font-display font-semibold">{approval.description}</h3>
                   {approval.proposed_action && <p className="text-xs text-muted-foreground mt-1">{approval.proposed_action}</p>}
+                  {approval.content && (
+                    <div className="glass-1 rounded-lg p-3 mt-3 whitespace-pre-wrap text-xs text-muted-foreground">{approval.content}</div>
+                  )}
                   {approval.context && (
                     <div className="glass-1 rounded-lg p-3 mt-3">
                       <div className="flex items-center gap-1.5 mb-1">
@@ -106,8 +109,8 @@ export default function Approvals() {
               </div>
               <div className="flex gap-2 mt-4 pt-4 border-t border-border/40">
                 <GlassButton variant="primary" size="sm" onClick={() => setStatus(approval.id, "approved")}><Check className="h-4 w-4" /> Goedkeuren</GlassButton>
-                <GlassButton variant="outline" size="sm" onClick={() => { setSelected(approval); setEditText(approval.proposed_action || ""); }}><Edit3 className="h-4 w-4" /> Bewerk</GlassButton>
-                <GlassButton variant="ghost" size="sm" onClick={() => setStatus(approval.id, "rejected")}><X className="h-4 w-4" /> Afwijzen</GlassButton>
+                <GlassButton variant="outline" size="sm" onClick={() => { setSelected(approval); setEditText(approval.content || approval.proposed_action || ""); }}><Edit3 className="h-4 w-4" /> Bewerk</GlassButton>
+                <GlassButton variant="ghost" size="sm" onClick={() => setStatus(approval.id, "discarded")}><X className="h-4 w-4" /> Verwerpen</GlassButton>
               </div>
             </GlassPanel>
           );
@@ -131,7 +134,7 @@ export default function Approvals() {
               <p className="text-sm text-muted-foreground mt-1">{selected.description}</p>
             </div>
             <div>
-              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Voorgestelde actie</label>
+              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Concept</label>
               <textarea
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
@@ -139,7 +142,7 @@ export default function Approvals() {
               />
             </div>
             <div className="flex gap-2">
-              <GlassButton variant="primary" size="md" className="flex-1" onClick={async () => { await base44.entities.Approval.update(selected.id, { proposed_action: editText }); setStatus(selected.id, "executed"); }}>
+              <GlassButton variant="primary" size="md" className="flex-1" onClick={async () => { await base44.entities.Approval.update(selected.id, { content: editText, status: "edited" }); setStatus(selected.id, "approved"); }}>
                 <Check className="h-4 w-4" /> Goedkeuren & Uitvoeren
               </GlassButton>
               <GlassButton variant="outline" size="md" onClick={() => setSelected(null)}>Annuleer</GlassButton>

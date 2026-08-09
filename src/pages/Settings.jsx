@@ -5,7 +5,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { base44 } from "@/api/base44Client";
 import {
   Settings as SettingsIcon, Palette, Bell, Brain, Lock, Mic,
-  Database, Zap, Plug,
+  Database, Zap, Plug, Bot,
 } from "lucide-react";
 
 const sections = [
@@ -18,6 +18,7 @@ const sections = [
   { id: "memory", label: "Memory", icon: Database },
   { id: "automation", label: "Automation", icon: Zap },
   { id: "integrations", label: "Integrations", icon: Plug },
+  { id: "agents", label: "Agents", icon: Bot },
 ];
 
 const NOTIF_KEYS = ["Email notificaties", "WhatsApp notificaties", "Agenda herinneringen", "Giulia suggesties", "Goedkeuring verzoeken"];
@@ -25,6 +26,21 @@ const AUTO_KEYS = ["Informatie structureren", "Interne taak voorstellen", "Samen
 const THEMES = ["Light", "Smoked", "Dark"];
 const PROACTIVITY = ["Subtiel", "Gebalanceerd", "Actief"];
 const VOICES = ["River — kalm, neutraal", "Honey — warm, zacht", "Sunny — helder, opgewekt"];
+
+const AGENTS = [
+  { name: "interpretInput", cadence: "Bij elk nieuw bericht" },
+  { name: "syncCalendar", cadence: "Elke 15 min" },
+  { name: "manageCommunication", cadence: "Elke 15 min" },
+  { name: "manageTasks", cadence: "Elke 30 min" },
+  { name: "runProactivity", cadence: "Elke 30 min" },
+  { name: "dailyPlanning", cadence: "Dagelijks 07:00" },
+  { name: "manageProjects", cadence: "Dagelijks 09:00" },
+  { name: "managePeople", cadence: "Dagelijks 09:00" },
+  { name: "manageFiles", cadence: "Dagelijks 10:00" },
+  { name: "manageIdeas", cadence: "Zondag 17:00" },
+  { name: "weeklyPlanning", cadence: "Zondag 18:00" },
+  { name: "weekReview", cadence: "Vrijdag 17:00" },
+];
 
 export default function Settings() {
   const [active, setActive] = useState("general");
@@ -35,6 +51,8 @@ export default function Settings() {
     glass: 60,
     proactivity: "Gebalanceerd",
     voice: VOICES[0],
+    quietHoursStart: "22:00",
+    quietHoursEnd: "07:00",
     notifications: Object.fromEntries(NOTIF_KEYS.map((k) => [k, true])),
     autoApprove: Object.fromEntries(AUTO_KEYS.map((k) => [k, true])),
   });
@@ -208,6 +226,45 @@ export default function Settings() {
                   <select value={prefs.voice} onChange={(e) => set("voice", e.target.value)} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
                     {VOICES.map((v) => <option key={v}>{v}</option>)}
                   </select>
+                </div>
+              </div>
+            )}
+
+            {active === "agents" && (
+              <div className="space-y-6">
+                <h2 className="text-lg font-heading font-medium">Agents & automatisering</h2>
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">Stille uren</p>
+                  <div className="flex items-center gap-3">
+                    <input type="time" value={prefs.quietHoursStart} onChange={(e) => set("quietHoursStart", e.target.value)} className="glass-1 rounded-xl px-3 py-2 text-sm focus:outline-none" />
+                    <span className="text-sm text-muted-foreground">tot</span>
+                    <input type="time" value={prefs.quietHoursEnd} onChange={(e) => set("quietHoursEnd", e.target.value)} className="glass-1 rounded-xl px-3 py-2 text-sm focus:outline-none" />
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">Kanalen</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[["Google Calendar", "actief"], ["Gmail", "actief"], ["Google Drive", "actief"], ["WhatsApp", "actief"]].map(([n, s]) => (
+                      <div key={n} className="glass-1 rounded-xl p-3 flex items-center justify-between">
+                        <span className="text-sm">{n}</span>
+                        <span className="text-[10px] uppercase tracking-wider font-semibold text-olive">{s}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">Agents ({AGENTS.length})</p>
+                  <div className="space-y-1.5">
+                    {AGENTS.map((a) => (
+                      <div key={a.name} className="glass-1 rounded-xl px-3 py-2 flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium">{a.name}</p>
+                          <p className="text-[11px] text-muted-foreground">{a.cadence}</p>
+                        </div>
+                        <span className="h-2 w-2 rounded-full bg-olive" />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
