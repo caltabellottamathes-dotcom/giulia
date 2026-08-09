@@ -80,6 +80,14 @@
     "context": {
       "type": "string",
       "title": "Context"
+    },
+    "gmail_message_id": {
+      "type": "string",
+      "title": "Gmail Message ID"
+    },
+    "gmail_thread_id": {
+      "type": "string",
+      "title": "Gmail Thread ID"
     }
   },
   "required": [
@@ -87,9 +95,7 @@
   ],
   "rls": {
     "create": true,
-    "read": {
-      "created_by_id": "{{user.id}}"
-    },
+    "read": true,
     "update": {
       "created_by_id": "{{user.id}}"
     },
