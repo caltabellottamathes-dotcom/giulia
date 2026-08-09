@@ -3,6 +3,7 @@ import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { IMAGES } from "@/lib/images";
 import QuickAction from "@/components/glass/QuickAction";
+import OpenChatButton from "@/components/glass/OpenChatButton";
 import FloatingPanel from "@/components/glass/FloatingPanel";
 import ModulePanel from "@/components/panels/ModulePanel";
 import ChatWindow from "@/components/panels/ChatWindow";
@@ -279,6 +280,9 @@ function LayoutInner() {
 
       {/* Universal quick action — floating, detached */}
       <QuickAction />
+
+      {/* Dedicated button to open the Giulia chat window */}
+      <OpenChatButton />
 
       {/* Giulia concierge — fixed anchor, tap-to-talk voice + text */}
       <ConciergeWidget />

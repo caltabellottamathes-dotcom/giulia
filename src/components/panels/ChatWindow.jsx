@@ -75,7 +75,7 @@ export default function ChatWindow() {
   if (!chatOpen) return null;
 
   return (
-    <div className="fixed right-4 bottom-4 lg:right-7 lg:bottom-7 z-[60] w-[calc(100%-2rem)] sm:w-[440px] h-[min(680px,calc(100vh-3rem))] flex flex-col glass-4 float-shadow rounded-[28px] overflow-hidden animate-scale-in">
+    <div className="fixed right-4 bottom-4 lg:right-7 lg:bottom-7 z-[60] w-[calc(100%-2rem)] sm:w-[440px] h-[min(680px,calc(100vh-3rem))] flex flex-col refraction-panel rounded-[32px] overflow-hidden animate-scale-in">
       <button
         onClick={closeChat}
         className="absolute top-3 left-3 z-20 h-8 w-8 rounded-lg bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/80 hover:text-ivory transition-colors"

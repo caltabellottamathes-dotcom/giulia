@@ -179,12 +179,12 @@
   .refraction-panel {
     position: relative;
     overflow: hidden;
-    background: linear-gradient(135deg, hsl(var(--warm-white) / 0.10), hsl(var(--warm-white) / 0.04));
+    background: rgba(255, 255, 255, 0.16);
     backdrop-filter: blur(30px) saturate(1.8);
     -webkit-backdrop-filter: blur(30px) saturate(1.8);
-    border: 1px solid hsl(var(--warm-white) / 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.42);
     border-radius: 32px;
-    box-shadow: 0 10px 30px hsl(30 10% 10% / 0.28), inset 0 1px 0 hsl(40 20% 100% / 0.16);
+    box-shadow: 0 10px 30px hsl(30 10% 10% / 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
 
   .refraction-panel::before {
