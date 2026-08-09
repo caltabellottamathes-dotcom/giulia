@@ -13,7 +13,8 @@ const PERSONA =
   "Toon: kalm, concreet, proactief, Nederlands. Houd advies kort en actiegericht. " +
   "Denk in beslissingen en concrete volgende stappen. " +
   "Externe acties (email, whatsapp, calendar) gaan ALTIJD via create_approval — je stuurt nooit zelf. " +
-  "Gebruik report_to_salvo / notify_salvo alleen als Salvo's aandacht echt nodig is.";
+  "Gebruik report_to_salvo om acties te loggen in de Activity-feed (widgets & panelen) — niet in de chat. " +
+  "Gebruik notify_salvo (push) alleen als Salvo's aandacht echt nodig is.";
 
 export function todayStr() {
   return new Date().toLocaleDateString("sv-SE");
@@ -29,10 +30,11 @@ export function mondayStr() {
 export async function reportToSalvo(base44, agentName, message, threadId) {
   if (!message) return null;
   try {
-    return await base44.asServiceRole.entities.Message.create({
-      role: "giulia", content: message, channel: "in-app", status: "sent",
-      direction: "outgoing", agent_source: agentName,
-      ...(threadId ? { thread_id: threadId } : {}),
+    return await base44.asServiceRole.entities.Activity.create({
+      description: message,
+      action: "report",
+      source: agentName,
+      timestamp: new Date().toISOString(),
     });
   } catch { return null; }
 }
@@ -60,7 +62,7 @@ async function buildDossier(sr) {
     sr.entities.Project.list().catch(() => []),
     sr.entities.Contact.list().catch(() => []),
     sr.entities.Message.filter({ direction: "incoming" }, "-created_date", 8).catch(() => []),
-    sr.entities.Message.filter({ role: "giulia" }, "-created_date", 8).catch(() => []),
+    sr.entities.Activity.list("-created_date", 8).catch(() => []),
   ]);
   const lines = [];
   if (memories.length) { lines.push("Wat je over Salvo weet:"); memories.forEach(m => lines.push(`- [${m.category || "info"}] ${String(m.content).slice(0, 160)}`)); }
@@ -68,7 +70,7 @@ async function buildDossier(sr) {
   if (projects.length) { lines.push("Projecten:"); projects.forEach(p => lines.push(`- ${p.title} [${p.status || "?"}]${p.next_milestone ? ` — next: ${p.next_milestone}` : ""}`)); }
   if (contacts.length) { lines.push("Personen:"); contacts.forEach(c => lines.push(`- ${c.name}${c.company ? ` (${c.company})` : ""}`)); }
   if (msgs.length) { lines.push("Recente inkomende berichten:"); msgs.slice(-8).forEach(m => lines.push(`- [${m.channel}] ${String(m.content).slice(0, 100)}`)); }
-  if (agentMsgs.length) { lines.push("Recente acties door andere agents (samenwerk):"); agentMsgs.forEach(m => lines.push(`- [${m.agent_source || "giulia"}] ${String(m.content).slice(0, 120)}`)); }
+  if (agentMsgs.length) { lines.push("Recente acties door andere agents (samenwerk):"); agentMsgs.forEach(m => lines.push(`- [${m.source || "giulia"}] ${String(m.description).slice(0, 120)}`)); }
   return lines.join("\n");
 }
 
@@ -80,7 +82,7 @@ export async function runGiuliaAgent(base44, agentName, task, tools, stopAfter =
 
   const builtIn = {
     report_to_salvo: {
-      description: "Stuur een proactief bericht aan Salvo in de app (in-app Message, agent_source = deze agent). Alleen als aandacht echt nodig is.",
+      description: "Log een activiteit/melding in de Activity-feed (zichtbaar in widgets & panelen, NIET in de chat). Gebruik voor elke routine-actie of status.",
       inputSchema: { type: "object", properties: { message: { type: "string" } }, required: ["message"] },
       execute: ({ message }) => reportToSalvo(base44, agentName, message),
     },

@@ -1,0 +1,44 @@
+{
+  "name": "Chat Gatekeeper",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "chat_gatekeeper",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "gatekeeper": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "chatGatekeeper"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Chat gatekeeper",
+            "description": "Elke 30 min"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Bekijkt elke 30 min agent-activiteit en deelt alleen \u00e9cht belangrijke informatie of echte gesprekken in de chat \u2014 geen routine.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "*/30 * * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePanel } from "@/lib/PanelContext";
 import { X, ArrowUp, Loader2, Phone } from "lucide-react";
@@ -21,7 +21,6 @@ export default function ChatWindow() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
-  const [conversationId, setConversationId] = useState(null);
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -40,6 +39,16 @@ export default function ChatWindow() {
   const scrollToBottom = () =>
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
 
+  const load = useCallback(async () => {
+    try {
+      const list = await base44.entities.Message.list("-created_date", 200);
+      const inApp = (list || []).filter((m) => m.channel === "in-app");
+      setMessages(inApp.reverse().slice(-120));
+    } catch { setMessages([]); }
+  }, []);
+
+  useEffect(() => { if (chatOpen) load(); }, [chatOpen, load]);
+
   const send = async (text) => {
     const content = (text ?? input).trim();
     if (!content || thinking) return;
@@ -48,21 +57,10 @@ export default function ChatWindow() {
     setThinking(true);
     scrollToBottom();
     try {
-      const res = await base44.functions.invoke("chatWithGiulia", {
-        message: content,
-        ...(conversationId ? { conversation_id: conversationId } : {}),
-      });
-      const data = res?.data ?? res ?? {};
-      if (data.conversation_id) setConversationId(data.conversation_id);
-      setMessages((prev) => [
-        ...prev,
-        { id: `g${Date.now()}`, role: "giulia", content: data.response || "(geen antwoord)" },
-      ]);
+      await base44.functions.invoke("chatWithGiulia", { message: content });
+      await load();
     } catch (e) {
-      setMessages((prev) => [
-        ...prev,
-        { id: `e${Date.now()}`, role: "giulia", content: "Er ging iets mis bij het bereiken van Giulia. Probeer het opnieuw." },
-      ]);
+      setMessages((prev) => [...prev, { id: `e${Date.now()}`, role: "giulia", content: "Er ging iets mis bij het bereiken van Giulia. Probeer het opnieuw." }]);
     } finally {
       setThinking(false);
       requestAnimationFrame(scrollToBottom);

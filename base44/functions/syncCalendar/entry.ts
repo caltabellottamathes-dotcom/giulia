@@ -28,29 +28,12 @@ export default async function (req) {
       return Response.json({ error: 'calendar list failed', detail: await res.text() }, { status: 502 });
     }
     const data = await res.json();
-    const ALLOWED = 'mail@salvatorecaltabellotta.com';
-    const orgOf = (it) => (it.organizer?.email || it.creator?.email || '').toLowerCase();
-    const items = (data.items || []).filter((it) => orgOf(it) === ALLOWED);
-    const wrongKeys = new Set(
-      (data.items || [])
-        .filter((it) => { const o = orgOf(it); return o && o !== ALLOWED; })
-        .map((it) => `${(it.summary || '').trim()}|${(it.start?.dateTime || it.start?.date || '').slice(0, 16)}`)
-    );
+    const items = data.items || [];
 
     const existing = await ent.Event.list();
     const seen = new Set(
       existing.map((e) => `${(e.title || '').trim()}|${(e.start || '').slice(0, 16)}`)
     );
-
-    // Remove previously-synced events that belong to other gmail addresses
-    let removed = 0;
-    for (const e of existing) {
-      const key = `${(e.title || '').trim()}|${(e.start || '').slice(0, 16)}`;
-      if (wrongKeys.has(key)) {
-        await ent.Event.delete(e.id).catch(() => {});
-        removed++;
-      }
-    }
 
     let added = 0;
     for (const it of items) {
@@ -64,12 +47,12 @@ export default async function (req) {
         start,
         end,
         location: it.location || '',
-        attendees: (it.attendees || []).map((a) => a.email).filter((a) => a.toLowerCase() === ALLOWED),
+        attendees: (it.attendees || []).map((a) => a.email).filter(Boolean),
       });
       added++;
     }
 
-    return Response.json({ ok: true, added, removed, total: items.length, mode: user ? 'user' : 'service' });
+    return Response.json({ ok: true, added, total: items.length, mode: user ? 'user' : 'service' });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

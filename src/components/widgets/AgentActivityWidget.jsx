@@ -18,22 +18,25 @@ const AGENT_LABEL = {
   weeklyPlanning: "Weekplanning",
   weekReview: "Weekreview",
   syncCalendar: "Agenda-sync",
+  chatGatekeeper: "Chat",
   visibilityTest: "Test",
 };
+const AGENT_SOURCES = new Set(Object.keys(AGENT_LABEL));
 
 /**
  * AgentActivityWidget — bold graphic edition. Full-bleed editorial photo,
  * a giant hero number of today's agent runs, an iconographic header, and the
- * most recent agent action in large type. Light text over a darkened image.
+ * most recent agent action in large type. Reads the Activity feed (agent
+ * sources only) — agents now log here instead of flooding chat.
  */
 export default function AgentActivityWidget() {
-  const { data: msgs, loading } = useEntityList("Message", { sort: "-created_date" });
-  const agentMsgs = (msgs || []).filter((m) => m.role === "giulia" && m.agent_source);
+  const { data: acts, loading } = useEntityList("Activity", { sort: "-created_date" });
+  const agentActs = (acts || []).filter((a) => a.source && AGENT_SOURCES.has(a.source));
   const todayStr = new Date().toLocaleDateString("sv-SE");
-  const today = agentMsgs.filter((m) => (m.created_date || "").slice(0, 10) === todayStr);
-  const agents = [...new Set(agentMsgs.slice(0, 40).map((m) => m.agent_source))];
-  const latest = agentMsgs[0];
-  const when = (m) => { try { return formatDistanceToNowStrict(new Date(m.created_date), { addSuffix: true }); } catch { return ""; } };
+  const today = agentActs.filter((a) => (a.created_date || "").slice(0, 10) === todayStr);
+  const agents = [...new Set(agentActs.slice(0, 40).map((a) => a.source))];
+  const latest = agentActs[0];
+  const when = (a) => { try { return formatDistanceToNowStrict(new Date(a.created_date), { addSuffix: true }); } catch { return ""; } };
 
   return (
     <WidgetShell size="2x2" radius="large" className="min-h-[300px]">
@@ -68,8 +71,8 @@ export default function AgentActivityWidget() {
             </div>
             {latest ? (
               <>
-                <p className="text-lg font-display font-semibold text-ivory leading-tight">{AGENT_LABEL[latest.agent_source] || latest.agent_source}</p>
-                <p className="text-sm text-ivory/70 leading-snug line-clamp-2 mt-0.5">{latest.content}</p>
+                <p className="text-lg font-display font-semibold text-ivory leading-tight">{AGENT_LABEL[latest.source] || latest.source}</p>
+                <p className="text-sm text-ivory/70 leading-snug line-clamp-2 mt-0.5">{latest.description}</p>
                 <p className="text-[11px] text-ivory/50 mt-1.5">{when(latest)}</p>
               </>
             ) : (
