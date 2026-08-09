@@ -1,0 +1,44 @@
+{
+  "name": "Manage Files",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "manage_files",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "manage": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "manageFiles"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Bestanden beheren",
+            "description": "Dagelijks 10:00"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Ordent bestanden dagelijks om 10:00: categoriseren, koppelen aan projecten, duplicaten.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 10 * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

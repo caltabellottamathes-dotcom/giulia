@@ -1,0 +1,50 @@
+{
+  "name": "DailyPlan",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+    },
+    "plan_data": {
+      "type": "object",
+      "title": "Plan Data"
+    },
+    "priorities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Priorities"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "completed"
+      ],
+      "default": "draft",
+      "title": "Status"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Last Updated"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
+    }
+  },
+  "required": [
+    "date"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

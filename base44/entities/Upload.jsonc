@@ -28,6 +28,19 @@
     "uploaded_for": {
       "type": "string",
       "title": "Uploaded For"
+    },
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    },
+    "categorized": {
+      "type": "boolean",
+      "default": false,
+      "title": "Categorized"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
     }
   },
   "required": [

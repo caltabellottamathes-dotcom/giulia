@@ -15,7 +15,9 @@
       "enum": [
         "open",
         "resolved",
-        "archived"
+        "archived",
+        "closed",
+        "needs_info"
       ],
       "default": "open",
       "title": "Status"
@@ -62,6 +64,11 @@
       "type": "boolean",
       "default": false,
       "title": "Draft Ready"
+    },
+    "last_message_date": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Last Message Date"
     }
   },
   "required": [

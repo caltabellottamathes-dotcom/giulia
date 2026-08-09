@@ -1,0 +1,44 @@
+{
+  "name": "Daily Planning",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "daily_planning",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "plan": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "dailyPlanning"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Dagplanning maken",
+            "description": "Dagelijks 07:00"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Compileert elke ochtend om 07:00 een concrete dagplanning (DailyPlan) uit agenda, taken, deadlines en communicatie.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 7 * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

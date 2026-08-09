@@ -33,12 +33,20 @@
     "channel": {
       "type": "string",
       "enum": [
-        "email",
-        "whatsapp",
         "in-app",
+        "whatsapp",
+        "email",
         "voice"
       ],
       "title": "Channel"
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "incoming",
+        "outgoing"
+      ],
+      "title": "Direction"
     },
     "is_draft": {
       "type": "boolean",
@@ -52,6 +60,14 @@
     "gmail_thread_id": {
       "type": "string",
       "title": "Gmail Thread ID"
+    },
+    "whatsapp_message_id": {
+      "type": "string",
+      "title": "WhatsApp Message ID"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
     }
   },
   "required": [
@@ -59,7 +75,9 @@
   ],
   "rls": {
     "create": true,
-    "read": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
     "update": {
       "created_by_id": "{{user.id}}"
     },

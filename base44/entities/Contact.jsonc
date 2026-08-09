@@ -31,6 +31,26 @@
     "notes": {
       "type": "string",
       "title": "Notes"
+    },
+    "last_contact_date": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Last Contact Date"
+    },
+    "project_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Project IDs"
+    },
+    "relationship_type": {
+      "type": "string",
+      "title": "Relationship Type"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
     }
   },
   "required": [

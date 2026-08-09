@@ -1,0 +1,43 @@
+{
+  "name": "WeeklyPlan",
+  "type": "object",
+  "properties": {
+    "week_start": {
+      "type": "string",
+      "format": "date",
+      "title": "Week Start"
+    },
+    "plan_data": {
+      "type": "object",
+      "title": "Plan Data"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "completed"
+      ],
+      "default": "draft",
+      "title": "Status"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Last Updated"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
+    }
+  },
+  "required": [
+    "week_start"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

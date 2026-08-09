@@ -1,0 +1,44 @@
+{
+  "name": "Manage Communication",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "manage_communication",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "manage": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "manageCommunication"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Communicatie beheren",
+            "description": "Elke 15 min"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Verzamelt email + WhatsApp + in-app communicatie elke 15 minuten, classificeert en maakt antwoord-concepten (Approvals).",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "*/15 * * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

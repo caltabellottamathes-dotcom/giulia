@@ -1,0 +1,44 @@
+{
+  "name": "Manage Projects",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "manage_projects",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "manage": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "manageProjects"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Projecten beheren",
+            "description": "Dagelijks 09:00"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Beoordeelt projecten dagelijks om 09:00: status, health, volgende acties, stilgevallen projecten.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 9 * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

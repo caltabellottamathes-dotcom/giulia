@@ -1,0 +1,44 @@
+{
+  "name": "Manage Ideas",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "manage_ideas",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "manage": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "manageIdeas"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Idee\u00ebn beheren",
+            "description": "Zondag 17:00"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Categoriseert en herwaardeert idee\u00ebn wekelijks op zondag 17:00; brengt oude idee\u00ebn onder aandacht.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 17 * * 0",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

@@ -2,6 +2,10 @@
   "name": "Approval",
   "type": "object",
   "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
     "action_type": {
       "type": "string",
       "title": "Action Type"
@@ -24,7 +28,9 @@
         "pending",
         "approved",
         "rejected",
-        "executed"
+        "executed",
+        "discarded",
+        "edited"
       ],
       "default": "pending",
       "title": "Status"
@@ -43,13 +49,36 @@
       "default": "other",
       "title": "Category"
     },
+    "type": {
+      "type": "string",
+      "enum": [
+        "email",
+        "whatsapp",
+        "calendar",
+        "task",
+        "file"
+      ],
+      "title": "Type"
+    },
+    "content": {
+      "type": "string",
+      "title": "Content"
+    },
     "context": {
       "type": "string",
       "title": "Context"
     },
+    "thread_id": {
+      "type": "string",
+      "title": "Thread ID"
+    },
     "project_id": {
       "type": "string",
       "title": "Project ID"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
     }
   },
   "required": [

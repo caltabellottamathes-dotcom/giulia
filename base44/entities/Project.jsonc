@@ -49,6 +49,34 @@
     "next_milestone": {
       "type": "string",
       "title": "Next Milestone"
+    },
+    "color": {
+      "type": "string",
+      "title": "Color"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "title": "End Date"
+    },
+    "last_activity_date": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Last Activity Date"
+    },
+    "health": {
+      "type": "string",
+      "enum": [
+        "good",
+        "attention",
+        "critical"
+      ],
+      "default": "good",
+      "title": "Health"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
     }
   },
   "required": [

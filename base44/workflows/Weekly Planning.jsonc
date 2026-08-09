@@ -1,0 +1,44 @@
+{
+  "name": "Weekly Planning",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "weekly_planning",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "plan": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "weeklyPlanning"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Weekplanning maken",
+            "description": "Zondag 18:00"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Maakt elke zondag 18:00 een realistische weekplanning (WeeklyPlan), verdeeld over dagen.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 18 * * 0",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

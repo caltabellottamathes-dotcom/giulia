@@ -1,0 +1,40 @@
+{
+  "name": "Interpret Input",
+  "description": "Interpreteert elk nieuw inkomend bericht (Message, direction: incoming) \u2014 classificeert en koppelt aan projecten/personen/taken.",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "Message",
+      "events": [
+        "create"
+      ]
+    },
+    "condition": "${ .trigger.data.direction == \"incoming\" }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "interpret_input",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "interpret": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "interpretInput",
+            "args": {
+              "message_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Interpreteer bericht",
+            "description": "Classificeer en koppel"
+          }
+        }
+      }
+    ]
+  }
+}

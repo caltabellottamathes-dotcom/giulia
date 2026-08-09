@@ -18,7 +18,10 @@
         "overdue",
         "waiting",
         "delegated",
-        "completed"
+        "completed",
+        "todo",
+        "in_progress",
+        "done"
       ],
       "default": "upcoming",
       "title": "Status"
@@ -50,6 +53,38 @@
       "type": "boolean",
       "default": false,
       "title": "Delegated to Giulia"
+    },
+    "parent_task_id": {
+      "type": "string",
+      "title": "Parent Task ID"
+    },
+    "subtasks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Subtasks"
+    },
+    "energy_level": {
+      "type": "string",
+      "enum": [
+        "deep",
+        "shallow",
+        "quick"
+      ],
+      "title": "Energy Level"
+    },
+    "estimated_duration": {
+      "type": "number",
+      "title": "Estimated Duration (min)"
+    },
+    "context": {
+      "type": "string",
+      "title": "Context"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
     }
   },
   "required": [

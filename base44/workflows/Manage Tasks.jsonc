@@ -1,0 +1,44 @@
+{
+  "name": "Manage Tasks",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "manage_tasks",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "manage": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "manageTasks"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Taken beheren",
+            "description": "Elke 30 min"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Beheert taken elke 30 minuten: prioriteiten, deadlines, achterstallige taken, opsplitsen.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "*/30 * * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

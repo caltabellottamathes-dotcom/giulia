@@ -41,6 +41,18 @@
     "project_id": {
       "type": "string",
       "title": "Project ID"
+    },
+    "travel_time": {
+      "type": "number",
+      "title": "Travel Time (min)"
+    },
+    "prep_time": {
+      "type": "number",
+      "title": "Prep Time (min)"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
     }
   },
   "required": [
