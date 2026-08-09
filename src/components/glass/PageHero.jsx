@@ -12,6 +12,7 @@ const HERO_IMG = {
   tasks: IMAGES.feetChairs,
   projects: IMAGES.walkChairsHigh,
   agenda: IMAGES.walkChairsBeach,
+  planning: IMAGES.loungeChairs,
   whatsapp: IMAGES.stilettoHead,
   knowledge: IMAGES.chairWater,
   documents: IMAGES.chairsScattered,

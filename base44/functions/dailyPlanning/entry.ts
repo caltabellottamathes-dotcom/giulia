@@ -20,7 +20,20 @@ export default async function (req) {
       save_daily_plan: tool({ description: "Sla de dagplanning op (upsert op datum).", inputSchema: { type: "object", properties: { date: { type: "string" }, priorities: { type: "array", items: { type: "string" } }, plan: { type: "array", items: { type: "object", properties: { time: { type: "string" }, item: { type: "string" } } } }, summary: { type: "string" } }, required: ["date", "priorities", "plan"] }, execute: async ({ date, priorities, plan, summary }) => { const existing = await sr.entities.DailyPlan.filter({ date }).catch(() => []); const plan_data = { plan, summary }; const now = new Date().toISOString(); if (existing.length) return sr.entities.DailyPlan.update(existing[0].id, { plan_data, priorities, status: "active", last_updated: now, agent_source: "dailyPlanning" }).catch(() => null); return sr.entities.DailyPlan.create({ date, plan_data, priorities, status: "active", last_updated: now, agent_source: "dailyPlanning" }).catch(() => null); } }),
     };
 
-    const task = `Compileer een concrete dagplanning voor ${t}. Gebruik list_* voor actuele situatie. Beantwoord: Wat moet vandaag? Wat is belangrijk? Wat is veranderd? Wat wacht op mij? Wat heb ik vergeten? Sla op via save_daily_plan (priorities = top 3-5, plan = tijdblokken). Rapporteer kort aan Salvo (report_to_salvo + notify_salvo).`;
+    const task = `Compileer een concrete dagplanning voor ${t}. Gebruik list_* voor de actuele situatie.
+
+Beantwoord expliciet:
+- Wat moet vandaag?
+- Wat is belangrijk?
+- Wat is veranderd sinds gisteren?
+- Wat wacht op mij?
+- Wat heb ik mogelijk vergeten?
+
+Bepaal de 3 dingen die vandaag het meest ertoe doen — niet alleen urgent, maar op belangrijkheid, afhankelijkheden en wat daadwerkelijk oplevert. Dat zijn de priorities.
+
+Maak een tijdblok-planning (plan = [{time, item}]) die deze prioriteiten in de beste momenten plaatst: deep work 's ochtends, admin/shallow werk in laag-energie momenten, rekening houdend met vaste afspraken uit list_events. Plaats een 15-min taak niet in een diep-focus blok.
+
+Sla op via save_daily_plan (priorities = top 3, plan = tijdblokken, summary = korte boodschap). Rapporteer aan Salvo (report_to_salvo + notify_salvo) in de stijl: "Goedemorgen. Ik heb je dag heringericht op wat veranderd is. 3 dingen doen er vandaag toe: 01 … 02 … 03 …" met daarna wat er verder omheen is geplaatst.`;
 
     await runGiuliaAgent(base44, "dailyPlanning", task, tools, 8);
     return Response.json({ ok: true, date: t });

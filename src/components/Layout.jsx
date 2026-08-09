@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/lib/AuthContext";
 import {
-  Home, Calendar, Briefcase, CheckSquare, Mail, MessageCircle,
+  Home, Calendar, CalendarDays, Briefcase, CheckSquare, Mail, MessageCircle,
   BookOpen, FileText, Users, MessageSquare, Mic, ClipboardCheck,
   Activity, Brain, Plug, Settings, User, Search, Bell,
   Menu, LogOut, ChevronDown, Phone,
@@ -34,6 +34,7 @@ const navSections = [
     items: [
       { key: "home", to: "/", icon: Home, label: "Home" },
       { key: "agenda", icon: Calendar, label: "Agenda" },
+      { key: "planning", to: "/planning", icon: CalendarDays, label: "Planning" },
       { key: "projects", icon: Briefcase, label: "Projects" },
       { key: "tasks", icon: CheckSquare, label: "Tasks" },
       { key: "email", icon: Mail, label: "Email" },
