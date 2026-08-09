@@ -31,7 +31,7 @@ export default async function (req) {
     for (const id of ids) {
       if (seen.has(id)) continue;
       const mRes = await fetch(
-        `https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`,
+        `https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Delivered-To&metadataHeaders=Subject&metadataHeaders=Date`,
         { headers: h }
       );
       if (!mRes.ok) continue;
@@ -43,6 +43,11 @@ export default async function (req) {
       const subject = get('subject') || '(geen onderwerp)';
       const senderName = from.replace(/<.*>/, '').trim().replace(/"/g, '') || from;
       const senderEmail = (from.match(/<([^>]+)>/) || [, from])[1];
+      const toHdr = get('to');
+      const deliveredTo = get('delivered-to');
+      // Only sync mail for the custom domain — ignore the Gmail mailbox entirely.
+      const isOurs = [from, toHdr, deliveredTo].some((v) => /salvatorecaltabellotta\.com/i.test(v || ''));
+      if (!isOurs) continue;
 
       await ent.Email.create({
         sender: senderName,

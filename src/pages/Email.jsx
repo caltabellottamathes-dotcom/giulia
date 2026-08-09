@@ -73,7 +73,7 @@ export default function Email() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-2xl font-display font-semibold tracking-tight">Email</h1>
-          <p className="text-sm text-muted-foreground mt-1">Jouw echte Gmail-inbox, met Giulia's hulp</p>
+          <p className="text-sm text-muted-foreground mt-1">mail@salvatorecaltabellotta.com · met Giulia's hulp</p>
         </div>
         <div className="flex items-center gap-2">
           <GlassButton variant="outline" size="sm" onClick={sync} disabled={syncing}>
@@ -143,7 +143,7 @@ export default function Email() {
               ))}
               {!loading && folderEmails.length === 0 && (
                 <div className="p-8 text-center text-sm text-muted-foreground">
-                  {folder === "inbox" ? "Geen emails — druk op Sync om je Gmail in te laden." : "Geen emails"}
+                  {folder === "inbox" ? "Geen emails — druk op Sync om je inbox in te laden." : "Geen emails"}
                 </div>
               )}
             </div>

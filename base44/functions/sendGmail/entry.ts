@@ -25,7 +25,7 @@ export default async function (req) {
         .replace(/=+$/, '');
 
     const raw = [
-      `From: ${user.email || 'me'}`,
+      `From: mail@salvatorecaltabellotta.com`,
       `To: ${to}`,
       `Subject: =?UTF-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`,
       'MIME-Version: 1.0',
