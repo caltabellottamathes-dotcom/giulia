@@ -6,7 +6,7 @@ import Avatar from "@/components/glass/Avatar";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
-import { Search, Send, Sparkles, Check, Edit3, RefreshCw, X, Phone, Video } from "lucide-react";
+import { Search, Send, PenLine, Check, Edit3, RefreshCw, X, Phone, Video } from "lucide-react";
 
 /**
  * WhatsApp — Giulia has full access: unread & unanswered messages are
@@ -59,6 +59,23 @@ export default function WhatsApp() {
     markRead(id);
   };
 
+  const deliver = async (contactId, text) => {
+    const c = contacts.find((x) => x.id === contactId);
+    if (!c?.phone) {
+      toast({ title: "Geen telefoonnummer bij dit contact", variant: "destructive" });
+      return false;
+    }
+    try {
+      const res = await base44.functions.invoke("sendWhatsApp", { to: c.phone, message: text });
+      if (res?.data?.ok) return true;
+      toast({ title: "Niet afgeleverd", description: res?.data?.error || "WhatsApp fout", variant: "destructive" });
+      return false;
+    } catch {
+      toast({ title: "Niet afgeleverd", variant: "destructive" });
+      return false;
+    }
+  };
+
   const sendMessage = async (text) => {
     if (!text.trim() || !selectedId) return;
     await base44.entities.WhatsAppMessage.create({
@@ -68,6 +85,7 @@ export default function WhatsApp() {
       timestamp: new Date().toISOString(),
       status: "delivered",
     });
+    deliver(selectedId, text.trim());
     setDraft("");
     reloadMsgs();
   };
@@ -80,8 +98,9 @@ export default function WhatsApp() {
       timestamp: new Date().toISOString(),
       status: "delivered",
     });
+    const ok = await deliver(d.contact_id, d.content);
     await base44.entities.GiuliaDraft.update(d.id, { status: "sent" });
-    toast({ title: "Verzonden" });
+    toast({ title: ok ? "Verzonden" : "Lokaal opgeslagen — niet afgeleverd" });
     reloadMsgs();
     reloadDrafts();
   };
@@ -138,7 +157,7 @@ export default function WhatsApp() {
         </div>
         <div className="flex items-center gap-3 text-xs">
           {totalUnread > 0 && <span className="rounded-full bg-olive/15 text-olive font-semibold px-2.5 py-1">{totalUnread} ongelezen</span>}
-          {awaitingAll.length > 0 && <span className="rounded-full bg-sand/20 text-charcoal font-semibold px-2.5 py-1 flex items-center gap-1"><Sparkles className="h-3 w-3" /> {awaitingAll.length} klaar</span>}
+          {awaitingAll.length > 0 && <span className="rounded-full bg-sand/20 text-charcoal font-semibold px-2.5 py-1 flex items-center gap-1"><PenLine className="h-3 w-3" /> {awaitingAll.length} klaar</span>}
         </div>
       </div>
 
@@ -178,7 +197,7 @@ export default function WhatsApp() {
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-sm font-medium truncate">{contact.name}</p>
                         <span className="flex items-center gap-1.5 shrink-0">
-                          {hasDraft && <Sparkles className="h-3 w-3 text-sand" />}
+                          {hasDraft && <PenLine className="h-3 w-3 text-sand" />}
                           {hasUnread && <span className="h-2 w-2 rounded-full bg-olive" />}
                         </span>
                       </div>
@@ -226,7 +245,7 @@ export default function WhatsApp() {
                 <div key={d.id} className="flex justify-end">
                   <div className="max-w-[78%] glass-1 rounded-2xl border border-olive/30 p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <Sparkles className="h-3.5 w-3.5 text-olive" />
+                      <PenLine className="h-3.5 w-3.5 text-olive" />
                       <p className="text-[10px] font-medium uppercase tracking-wider text-olive">Door Giulia · klaar om te versturen</p>
                     </div>
                     <p className="text-sm text-foreground/85 mb-3 whitespace-pre-wrap">{d.content}</p>
@@ -243,7 +262,7 @@ export default function WhatsApp() {
 
             <div className="p-4 border-t border-border/40 space-y-2">
               <button onClick={prepareNow} disabled={busy || !selectedContact} className="text-[11px] text-olive hover:underline flex items-center gap-1.5 disabled:opacity-50">
-                <Sparkles className="h-3.5 w-3.5" /> {busy ? "Giulia denkt na..." : "Laat Giulia een reactie voorbereiden"}
+                <PenLine className="h-3.5 w-3.5" /> {busy ? "Giulia denkt na..." : "Laat Giulia een reactie voorbereiden"}
               </button>
               <div className="flex items-center gap-2">
                 <input
@@ -267,7 +286,7 @@ export default function WhatsApp() {
         <div className="lg:col-span-3 space-y-4">
           <GlassPanel level={3} className="p-5">
             <div className="flex items-center gap-2 mb-3">
-              <span className="h-9 w-9 rounded-xl bg-olive text-ivory flex items-center justify-center"><Sparkles className="h-4 w-4" /></span>
+              <span className="h-9 w-9 rounded-xl bg-olive text-ivory flex items-center justify-center"><PenLine className="h-4 w-4" /></span>
               <div>
                 <h3 className="text-sm font-display font-semibold leading-none">Giulia antwoordt automatisch</h3>
                 <p className="text-[10px] text-muted-foreground mt-1">Concepten verschijnen hier, je keurt goed.</p>

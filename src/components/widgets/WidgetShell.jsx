@@ -3,11 +3,12 @@ import { cn } from "@/lib/utils";
 
 /**
  * WidgetShell — a SOLID editorial tile hosting every dashboard widget.
- * Full-opacity GIULIA palette: Metal / Clay Creek / Dark Sand / Blue Ridge Sky /
- * Ancient Marble / Storm. No translucency — solid color blocks with a solid
- * palette accent strip along the top edge. The tile sets a base text color so
- * widget internals inherit readable contrast; `--tile-accent` /
- * `--tile-on-accent` drive the header chip + strip.
+ * Full-opacity GIULIA palette (Metal / Clay Creek / Dark Sand / Blue Ridge Sky /
+ * Ancient Marble / Storm) plus a translucent "liquid" glass variant. A solid
+ * accent strip runs the top edge; clean rounded corners; an optional specular
+ * edge on glassy tiles. The tile sets a base text color so widget internals
+ * inherit readable contrast; `--tile-accent` / `--tile-on-accent` drive the
+ * header chip + strip.
  */
 const sizeMap = {
   "1x1": "min-h-[168px]",
@@ -28,17 +29,20 @@ const radiusMap = {
 
 const tileMap = {
   // light tiles — dark text
-  card:        { cls: "bg-stone text-charcoal border border-charcoal/10",     accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
-  translucent: { cls: "glass-card text-charcoal",                           accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
-  marble:      { cls: "bg-stone text-charcoal border border-charcoal/10",     accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
-  sky:         { cls: "bg-blue-grey text-charcoal border border-charcoal/10", accent: "hsl(var(--charcoal))", on: "hsl(var(--ivory))" },
-  storm:       { cls: "bg-ivory text-charcoal border border-charcoal/10",     accent: "hsl(var(--charcoal))", on: "hsl(var(--ivory))" },
+  card:        { cls: "bg-stone text-charcoal border border-charcoal/10",                accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
+  translucent: { cls: "glass-card text-charcoal specular-edge",                           accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
+  marble:      { cls: "bg-stone text-charcoal border border-charcoal/10",                accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
+  sky:         { cls: "bg-blue-grey text-charcoal border border-charcoal/10 specular-edge", accent: "hsl(var(--charcoal))", on: "hsl(var(--ivory))" },
+  storm:       { cls: "bg-ivory text-charcoal border border-charcoal/10",                accent: "hsl(var(--charcoal))", on: "hsl(var(--ivory))" },
   // dark tiles — light text
-  opaque:      { cls: "bg-charcoal text-ivory border border-white/10",        accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
-  metal:       { cls: "bg-charcoal text-ivory border border-white/10",        accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
-  solid:       { cls: "bg-olive text-ivory border border-white/10",           accent: "hsl(var(--ivory))",    on: "hsl(var(--charcoal))" },
-  clay:        { cls: "bg-olive text-ivory border border-white/10",           accent: "hsl(var(--ivory))",    on: "hsl(var(--charcoal))" },
-  sand:        { cls: "bg-sand text-ivory border border-white/10",            accent: "hsl(var(--ivory))",    on: "hsl(var(--charcoal))" },
+  opaque:      { cls: "bg-charcoal text-ivory border border-white/10",                   accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
+  metal:       { cls: "bg-charcoal text-ivory border border-white/10",                    accent: "hsl(var(--sand))",     on: "hsl(var(--ivory))" },
+  solid:       { cls: "bg-olive text-ivory border border-white/10",                       accent: "hsl(var(--ivory))",    on: "hsl(var(--charcoal))" },
+  clay:        { cls: "bg-olive text-ivory border border-white/10",                        accent: "hsl(var(--ivory))",    on: "hsl(var(--charcoal))" },
+  sand:        { cls: "bg-sand text-ivory border border-white/10",                         accent: "hsl(var(--ivory))",    on: "hsl(var(--charcoal))" },
+  // translucent deep glass — light text, blue tint
+  liquid:      { cls: "liquid-glass text-ivory specular-edge",                            accent: "hsl(var(--sand))",     on: "hsl(var(--charcoal))" },
+  blue:        { cls: "bg-blue-grey text-charcoal border border-charcoal/10 specular-edge", accent: "hsl(var(--charcoal))", on: "hsl(var(--ivory))" },
 };
 
 export default function WidgetShell({
@@ -68,8 +72,6 @@ export default function WidgetShell({
     >
       {/* Solid palette accent strip — the editorial top edge */}
       <span className="pointer-events-none absolute inset-x-0 top-0 h-[3px]" style={{ background: "var(--tile-accent)" }} />
-      {/* Graphic corner tab — editorial signature */}
-      <span className="pointer-events-none absolute top-0 left-0 h-[16px] w-[16px] rounded-br-[12px]" style={{ background: "var(--tile-accent)" }} />
       {children}
     </div>
   );

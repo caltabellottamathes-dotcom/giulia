@@ -65,9 +65,9 @@ export default function ModulePanel() {
   };
 
   return (
-    <FloatingPanel open={!!mod} onClose={closeModule} position="right" level={3} width={mod?.panelWidth || 720}>
+    <FloatingPanel open={!!mod} onClose={closeModule} level={3} width={mod?.panelWidth || 720} draggable>
       {mod && (
-        <div className="flex flex-col h-full">
+        <div className="flex-1 min-h-0 flex flex-col">
           <div className="h-[3px] w-full shrink-0" style={{ background: MODULE_ACCENT[activeModule] || "hsl(var(--sand))" }} />
           {/* Cleaner header — lighter image, clearer title, dashboard action */}
           <div className="relative px-7 lg:px-9 pt-7 pb-5 shrink-0 overflow-hidden">
