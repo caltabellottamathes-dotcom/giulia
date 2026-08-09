@@ -27,7 +27,7 @@ export default function AgendaWidget() {
   const pos = (start) => { const d = new Date(start); const h = d.getHours() + d.getMinutes() / 60; return Math.max(0, Math.min(1, (h - 8) / HOURS)); };
 
   return (
-    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("agenda")} className="min-h-[300px]">
+    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("agenda")} className="min-h-[260px]">
       <div className="flex flex-col h-full">
         <div className="relative h-44 overflow-hidden">
           <BrandPhoto src={IMAGES.walkChairsBeach} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/85 via-charcoal/45 to-charcoal/20" />

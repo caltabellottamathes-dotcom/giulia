@@ -21,7 +21,7 @@ export default function ProjectsWidget() {
   const nudge = async (e, p, delta) => { e.stopPropagation(); const np = Math.max(0, Math.min(100, Math.round((p.progress || 0) + delta))); try { await base44.entities.Project.update(p.id, { progress: np }); reload(); } catch {} };
 
   return (
-    <WidgetShell size="2x2" radius="medium" interactive onClick={() => openModule("projects")} className="min-h-[300px]">
+    <WidgetShell size="2x2" radius="medium" interactive onClick={() => openModule("projects")} className="min-h-[260px]">
       <div className="p-5 flex flex-col h-full">
         <WidgetHeader label="Projecten" count={`${active.length} actief`} />
         {loading ? (

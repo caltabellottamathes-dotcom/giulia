@@ -21,7 +21,7 @@ export default function MemoryWidget() {
   const setConf = async (e, m, delta) => { e.stopPropagation(); const c = Math.max(0, Math.min(1, +(m.confidence || 0.5) + delta)); try { await base44.entities.Memory.update(m.id, { confidence: +c.toFixed(2) }); reload(); } catch {} };
 
   return (
-    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("memory")} className="min-h-[260px]">
+    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("memory")} className="min-h-[220px]">
       <div className="p-5 flex flex-col h-full">
         <WidgetHeader label="Geheugen" count={`${memories.length} herinneringen`} />
         {loading ? (

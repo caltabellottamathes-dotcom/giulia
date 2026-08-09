@@ -26,7 +26,7 @@ export default function TasksWidget() {
   const complete = async (e, task) => { e.stopPropagation(); try { await base44.entities.Task.update(task.id, { status: "completed" }); reload(); } catch {} };
 
   return (
-    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("tasks")} className="min-h-[240px]">
+    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("tasks")} className="min-h-[208px]">
       <div className="p-5 flex flex-col h-full">
         <WidgetHeader label="Taken" count={active.length ? `${active.length} open` : "alles klaar"} />
         {loading ? (

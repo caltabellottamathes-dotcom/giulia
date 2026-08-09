@@ -19,7 +19,7 @@ export default function ApprovalsWidget() {
   const decide = async (e, id, status) => { e.stopPropagation(); try { await base44.entities.Approval.update(id, { status }); reload(); } catch {} };
 
   return (
-    <WidgetShell size="2x1" radius="soft" interactive onClick={() => openModule("approvals")} className="min-h-[240px]">
+    <WidgetShell size="2x1" radius="soft" interactive onClick={() => openModule("approvals")} className="min-h-[208px]">
       <div className="p-5 flex flex-col h-full">
         <WidgetHeader label="Goedkeuringen" count={approvals.length ? `${approvals.length} wacht` : "leeg"} />
         {loading ? (

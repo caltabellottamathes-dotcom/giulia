@@ -18,7 +18,7 @@ export default function PeopleWidget() {
   const cluster = contacts.slice(0, 5);
 
   return (
-    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("people")} className="min-h-[240px]">
+    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("people")} className="min-h-[208px]">
       <div className="flex flex-col h-full">
         <BrandPhoto src={IMAGES.portraitThinking} className="h-16" overlay="bg-gradient-to-t from-charcoal/80 to-transparent">
           <div className="absolute inset-0 px-5 flex items-center justify-between">

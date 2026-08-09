@@ -21,7 +21,7 @@ export default function EmailWidget() {
   const next = unread[0];
 
   return (
-    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("email")} className="min-h-[300px]">
+    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("email")} className="min-h-[260px]">
       <div className="p-6 flex flex-col h-full">
         <WidgetHeader label="Email" count={hero ? `${hero} ongelezen` : "alles gelezen"} />
         {loading ? (
@@ -50,7 +50,7 @@ export default function EmailWidget() {
                     {urgent.length} nodig actie
                   </button>
                 ) : (
-                  <button onClick={(e) => { e.stopPropagation(); openModule("email"); }} className="rounded-full px-3.5 py-1.5 text-[11px] font-semibold border border-ivory/30 text-ivory transition hover:bg-ivory/10 shrink-0">Open mail</button>
+                  <button onClick={(e) => { e.stopPropagation(); openModule("email"); }} className="rounded-full px-3.5 py-1.5 text-[11px] font-semibold border border-current/25 text-current transition hover:bg-current/10 shrink-0">Open mail</button>
                 )}
               </div>
             </BrandPhoto>

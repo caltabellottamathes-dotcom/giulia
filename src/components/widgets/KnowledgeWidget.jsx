@@ -21,7 +21,7 @@ export default function KnowledgeWidget() {
   const maxC = Math.max(1, ...Object.values(counts));
 
   return (
-    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("knowledge")} className="min-h-[280px]">
+    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("knowledge")} className="min-h-[240px]">
       <div className="p-5 flex flex-col h-full">
         <WidgetHeader label="Kennisbank" count={`${items.length} notities`} />
         {loading ? (

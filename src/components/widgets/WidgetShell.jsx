@@ -10,13 +10,13 @@ import { useWidgetTheme } from "@/lib/WidgetThemeContext";
  * stay readable on every option — including the light Sky and Storm tiles.
  */
 const sizeMap = {
-  "1x1": "min-h-[168px]",
-  "2x1": "min-h-[168px]",
-  "1x2": "min-h-[372px]",
-  "2x2": "min-h-[372px]",
-  "3x2": "min-h-[372px]",
-  wide: "min-h-[372px]",
-  full: "min-h-[168px]",
+  "1x1": "min-h-[150px]",
+  "2x1": "min-h-[150px]",
+  "1x2": "min-h-[320px]",
+  "2x2": "min-h-[320px]",
+  "3x2": "min-h-[320px]",
+  wide: "min-h-[320px]",
+  full: "min-h-[150px]",
 };
 
 const radiusMap = {
@@ -55,9 +55,9 @@ export default function WidgetShell({
   const bg =
     resolved === "glass"
       ? {
-          background: `rgba(120,122,128,${0.1 * opacity})`,
-          backdropFilter: `blur(${56 + blur}px) saturate(1.4)`,
-          WebkitBackdropFilter: `blur(${56 + blur}px) saturate(1.4)`,
+          background: `rgba(48,50,55,${0.34 * opacity})`,
+          backdropFilter: `blur(${56 + blur}px) saturate(1.5)`,
+          WebkitBackdropFilter: `blur(${56 + blur}px) saturate(1.5)`,
         }
       : {
           background: `hsl(var(--${tile.token}) / ${opacity})`,

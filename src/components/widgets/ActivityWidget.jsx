@@ -23,7 +23,7 @@ export default function ActivityWidget() {
   const when = (a) => { const t = a.timestamp || a.created_date; if (!t) return ""; try { return formatDistanceToNowStrict(new Date(t), { addSuffix: true }); } catch { return ""; } };
 
   return (
-    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("activity")} className="min-h-[200px]">
+    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("activity")} className="min-h-[176px]">
       <div className="flex flex-col h-full">
         <BrandPhoto src={IMAGES.topDownWalk} className="h-16" overlay="bg-gradient-to-t from-charcoal/85 to-transparent">
           <div className="absolute inset-0 px-5 flex items-end justify-between pb-2">

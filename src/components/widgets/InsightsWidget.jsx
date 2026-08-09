@@ -38,7 +38,7 @@ export default function InsightsWidget() {
   };
 
   return (
-    <WidgetShell size="2x2" radius="medium" interactive onClick={() => openModule("insights")} className="min-h-[300px]">
+    <WidgetShell size="2x2" radius="medium" interactive onClick={() => openModule("insights")} className="min-h-[260px]">
       <div className="p-5 flex flex-col h-full">
         <WidgetHeader label="Giulia · Inzichten" count={insights.length ? `${insights.length}` : ""} />
         {loading ? (
