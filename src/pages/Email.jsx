@@ -4,6 +4,7 @@ import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
 import StatusBadge from "@/components/glass/StatusBadge";
 import FloatingPanel from "@/components/glass/FloatingPanel";
+import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import {
@@ -70,18 +71,19 @@ export default function Email() {
 
   return (
     <div className="h-full min-h-0 flex flex-col animate-fade-up">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h1 className="text-2xl font-display font-semibold tracking-tight">Email</h1>
-          <p className="text-sm text-muted-foreground mt-1">mail@salvatorecaltabellotta.com · met Giulia's hulp</p>
-        </div>
-        <div className="flex items-center gap-2">
+      <PageHero
+        page="email"
+        icon={Mail}
+        eyebrow="Communicatie"
+        title="Email"
+        subtitle="mail@salvatorecaltabellotta.com · met Giulia's hulp"
+        actions={<>
           <GlassButton variant="outline" size="sm" onClick={sync} disabled={syncing}>
             <RefreshCw className={cn("h-4 w-4", syncing && "animate-spin")} /> {syncing ? "Synchroniseert..." : "Sync"}
           </GlassButton>
           <GlassButton variant="primary" size="md"><Mail className="h-4 w-4" /> Opstellen</GlassButton>
-        </div>
-      </div>
+        </>}
+      />
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0">
         <div className="lg:col-span-2 space-y-1">

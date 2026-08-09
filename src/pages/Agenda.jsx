@@ -4,11 +4,12 @@ import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
 import StatusBadge from "@/components/glass/StatusBadge";
 import FloatingPanel from "@/components/glass/FloatingPanel";
+import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import {
   ChevronLeft, ChevronRight, Clock, MapPin, Sparkles,
-  AlertCircle, Plus, RefreshCw,
+  AlertCircle, Plus, RefreshCw, Calendar,
 } from "lucide-react";
 
 const weekDays = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
@@ -70,20 +71,21 @@ export default function Agenda() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-display font-semibold tracking-tight">Agenda</h1>
-          <p className="text-sm text-muted-foreground mt-1">Jouw tijd, georganiseerd door Giulia</p>
-        </div>
-        <div className="flex items-center gap-2">
+      <PageHero
+        page="agenda"
+        icon={Calendar}
+        eyebrow="Tijd"
+        title="Agenda"
+        subtitle="Jouw tijd, georganiseerd door Giulia"
+        actions={<>
           <GlassButton variant="outline" size="sm" onClick={sync} disabled={syncing}>
             <RefreshCw className={cn("h-4 w-4", syncing && "animate-spin")} /> {syncing ? "Sync" : "Sync"}
           </GlassButton>
           <GlassButton variant="primary" size="sm" onClick={() => setShowNewEvent(true)}>
             <Plus className="h-4 w-4" /> Nieuw event
           </GlassButton>
-        </div>
-      </div>
+        </>}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <GlassPanel level={2} className="lg:col-span-2 p-6">

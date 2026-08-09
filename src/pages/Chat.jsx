@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import { Send, Mic, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import PageHero from "@/components/glass/PageHero";
 
 const GIULIA_AVATAR = IMAGES.giuliaConcierge;
 const PILLS = ["Wat staat er vandaag?", "Openstaande taken?", "Check mijn email", "Wat is veranderd?"];
@@ -52,18 +53,18 @@ export default function Chat() {
 
   return (
     <div className="h-[calc(100vh-7rem)] flex flex-col animate-fade-up">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <img src={GIULIA_AVATAR} alt="Giulia" className="h-10 w-10 rounded-full object-cover" />
-          <div>
-            <h1 className="text-2xl font-heading font-light tracking-tight">Giulia</h1>
-            <p className="text-xs text-muted-foreground">Je persoonlijke besturingssysteem — altijd actief</p>
-          </div>
-        </div>
-        <Link to="/voice" className="glass-button rounded-full h-9 px-3 inline-flex items-center gap-2 text-xs font-medium text-foreground/80 hover:text-foreground">
-          <Mic className="h-4 w-4" /> Voice
-        </Link>
-      </div>
+      <PageHero
+        page="chat"
+        icon={Sparkles}
+        eyebrow="Giulia"
+        title="Giulia"
+        subtitle="Je persoonlijke besturingssysteem — altijd actief"
+        actions={
+          <Link to="/voice" className="glass-button rounded-full h-9 px-3 inline-flex items-center gap-2 text-xs font-medium text-foreground/80 hover:text-foreground">
+            <Mic className="h-4 w-4" /> Voice
+          </Link>
+        }
+      />
 
       <div className="glass-2 rounded-3xl flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Messages */}

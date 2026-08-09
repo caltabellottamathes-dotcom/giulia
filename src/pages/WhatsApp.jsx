@@ -3,10 +3,11 @@ import { cn } from "@/lib/utils";
 import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
 import Avatar from "@/components/glass/Avatar";
+import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
-import { Search, Send, Sparkles, Check, Edit3, RefreshCw, X, Phone, Video } from "lucide-react";
+import { Search, Send, Sparkles, Check, Edit3, RefreshCw, X, Phone, Video, MessageCircle } from "lucide-react";
 
 /**
  * WhatsApp — Giulia has full access: unread & unanswered messages are
@@ -131,16 +132,17 @@ export default function WhatsApp() {
 
   return (
     <div className="h-full min-h-0 flex flex-col animate-fade-up">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h1 className="text-2xl font-display font-semibold tracking-tight">WhatsApp</h1>
-          <p className="text-sm text-muted-foreground mt-1">Giulia houdt je berichten bij — en bereidt antwoorden voor.</p>
-        </div>
-        <div className="flex items-center gap-3 text-xs">
+      <PageHero
+        page="whatsapp"
+        icon={MessageCircle}
+        eyebrow="Communicatie"
+        title="WhatsApp"
+        subtitle="Giulia houdt je berichten bij — en bereidt antwoorden voor."
+        actions={<>
           {totalUnread > 0 && <span className="rounded-full bg-olive/15 text-olive font-semibold px-2.5 py-1">{totalUnread} ongelezen</span>}
           {awaitingAll.length > 0 && <span className="rounded-full bg-sand/20 text-charcoal font-semibold px-2.5 py-1 flex items-center gap-1"><Sparkles className="h-3 w-3" /> {awaitingAll.length} klaar</span>}
-        </div>
-      </div>
+        </>}
+      />
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0">
         {/* Conversations */}

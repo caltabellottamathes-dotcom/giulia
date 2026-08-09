@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
 import FloatingPanel from "@/components/glass/FloatingPanel";
+import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import { Brain, Plus, Edit3, Trash2, Sparkles } from "lucide-react";
@@ -42,15 +43,18 @@ export default function Memory() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-display font-semibold tracking-tight">Geheugen</h1>
-          <p className="text-sm text-muted-foreground mt-1">Wat Giulia over je onthoudt</p>
-        </div>
-        <GlassButton variant="primary" size="md" onClick={() => setShowNew(true)}>
-          <Plus className="h-4 w-4" /> Nieuwe herinnering
-        </GlassButton>
-      </div>
+      <PageHero
+        page="memory"
+        icon={Brain}
+        eyebrow="Giulia"
+        title="Geheugen"
+        subtitle="Wat Giulia over je onthoudt"
+        actions={
+          <GlassButton variant="primary" size="md" onClick={() => setShowNew(true)}>
+            <Plus className="h-4 w-4" /> Nieuwe herinnering
+          </GlassButton>
+        }
+      />
 
       <GlassPanel level={3} className="p-5">
         <div className="flex items-start gap-3">

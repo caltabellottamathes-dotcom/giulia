@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import GlassPanel from "@/components/glass/GlassPanel";
+import PageHero from "@/components/glass/PageHero";
 import { useToast } from "@/components/ui/use-toast";
 import { base44 } from "@/api/base44Client";
 import {
@@ -82,10 +83,13 @@ export default function Settings() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <div>
-        <h1 className="text-2xl font-heading font-light tracking-tight">Backdesk</h1>
-        <p className="text-sm text-muted-foreground mt-1">Configureer jouw Giulia ervaring</p>
-      </div>
+      <PageHero
+        page="settings"
+        icon={SettingsIcon}
+        eyebrow="Systeem"
+        title="Backdesk"
+        subtitle="Configureer jouw Giulia ervaring"
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="space-y-1">

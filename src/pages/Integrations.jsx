@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
 import StatusBadge from "@/components/glass/StatusBadge";
+import PageHero from "@/components/glass/PageHero";
 import {
   Mail, MessageCircle, Calendar, HardDrive, Mic,
   Brain, Cloud, Box, Database, Sparkles, Plug,
@@ -46,10 +47,13 @@ const integrationGroups = [
 export default function Integrations() {
   return (
     <div className="space-y-6 animate-fade-up">
-      <div>
-        <h1 className="text-2xl font-heading font-light tracking-tight">Integrations</h1>
-        <p className="text-sm text-muted-foreground mt-1">Verbonden services en synchronisatie</p>
-      </div>
+      <PageHero
+        page="integrations"
+        icon={Plug}
+        eyebrow="Systeem"
+        title="Integrations"
+        subtitle="Verbonden services en synchronisatie"
+      />
 
       {integrationGroups.map((group) => (
         <div key={group.label} className="space-y-3">

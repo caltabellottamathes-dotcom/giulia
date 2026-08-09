@@ -4,6 +4,7 @@ import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
 import StatusBadge from "@/components/glass/StatusBadge";
 import FloatingPanel from "@/components/glass/FloatingPanel";
+import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import {
@@ -39,10 +40,13 @@ export default function Approvals() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <div>
-        <h1 className="text-2xl font-display font-semibold tracking-tight">Ter goedkeuring</h1>
-        <p className="text-sm text-muted-foreground mt-1">Centrale AI-controlekamer</p>
-      </div>
+      <PageHero
+        page="approvals"
+        icon={ClipboardCheck}
+        eyebrow="Controle"
+        title="Ter goedkeuring"
+        subtitle="Centrale AI-controlekamer"
+      />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[

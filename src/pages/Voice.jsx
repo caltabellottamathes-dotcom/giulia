@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
+import PageHero from "@/components/glass/PageHero";
 import { Mic, Phone, PhoneOff, Volume2 } from "lucide-react";
 
 /**
@@ -124,12 +125,13 @@ export default function Voice() {
 
   return (
     <div className="h-full min-h-0 flex flex-col animate-fade-up">
-      <div className="mb-4">
-        <h1 className="text-2xl font-display font-semibold tracking-tight">Voice met Giulia</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Spreek met je assistent — echt, stemgestuurd
-        </p>
-      </div>
+      <PageHero
+        page="voice"
+        icon={Mic}
+        eyebrow="Giulia"
+        title="Voice met Giulia"
+        subtitle="Spreek met je assistent — echt, stemgestuurd"
+      />
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
         {/* Voice stage */}

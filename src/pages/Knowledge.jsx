@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
 import StatusBadge from "@/components/glass/StatusBadge";
+import PageHero from "@/components/glass/PageHero";
 import { IMAGES } from "@/lib/images";
 import { useEntityList } from "@/hooks/useEntity";
 import { Search, BookOpen } from "lucide-react";
@@ -25,14 +26,13 @@ export default function Knowledge() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <div className="relative overflow-hidden rounded-2xl">
-        <div className="absolute inset-0" style={{ backgroundImage: `url(${IMAGES.walkingChairs})`, backgroundSize: "cover", backgroundPosition: "center" }} />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/40" />
-        <div className="relative p-8 lg:p-10 max-w-2xl">
-          <h1 className="text-3xl font-display font-semibold tracking-tight mb-2 text-balance">Kennisbank</h1>
-          <p className="text-sm text-muted-foreground mb-4">Doorzoek de database</p>
-        </div>
-      </div>
+      <PageHero
+        page="knowledge"
+        icon={BookOpen}
+        eyebrow="Kennis"
+        title="Kennisbank"
+        subtitle="Doorzoek de database"
+      />
 
       <div className="relative">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

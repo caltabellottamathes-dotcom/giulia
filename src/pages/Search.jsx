@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import GlassPanel from "@/components/glass/GlassPanel";
 import Avatar from "@/components/glass/Avatar";
+import PageHero from "@/components/glass/PageHero";
 import {
   mockProjects, mockTasks, mockEmails, mockContacts,
   mockEvents, mockKnowledge, mockDocuments,
@@ -45,10 +46,13 @@ export default function SearchPage() {
 
   return (
     <div className="space-y-6 animate-fade-up max-w-3xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-heading font-light tracking-tight">Zoeken</h1>
-        <p className="text-sm text-muted-foreground mt-1">Doorzoek het hele ecosysteem</p>
-      </div>
+      <PageHero
+        page="search"
+        icon={SearchIcon}
+        eyebrow="Systeem"
+        title="Zoeken"
+        subtitle="Doorzoek het hele ecosysteem"
+      />
 
       <div className="relative">
         <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />

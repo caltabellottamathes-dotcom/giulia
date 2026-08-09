@@ -1,16 +1,20 @@
 import React from "react";
 import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
+import PageHero from "@/components/glass/PageHero";
 import { IMAGES } from "@/lib/images";
-import { Mail, Phone, Building2, Calendar, Sparkles, Edit3 } from "lucide-react";
+import { Mail, Phone, Building2, Calendar, Sparkles, Edit3, UserCircle } from "lucide-react";
 
 export default function Profile() {
   return (
     <div className="space-y-6 animate-fade-up">
-      <div>
-        <h1 className="text-2xl font-heading font-light tracking-tight">Profile</h1>
-        <p className="text-sm text-muted-foreground mt-1">Jouw account en voorkeuren</p>
-      </div>
+      <PageHero
+        page="profile"
+        icon={UserCircle}
+        eyebrow="Account"
+        title="Profile"
+        subtitle="Jouw account en voorkeuren"
+      />
 
       {/* Profile header */}
       <GlassPanel level={3} className="p-6 lg:p-8">

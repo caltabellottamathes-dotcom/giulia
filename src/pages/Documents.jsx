@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
+import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import {
@@ -53,16 +54,19 @@ export default function Documents() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-display font-semibold tracking-tight">Documenten</h1>
-          <p className="text-sm text-muted-foreground mt-1">Jouw editoriale documentbibliotheek</p>
-        </div>
-        <GlassButton variant="primary" size="md" onClick={() => fileRef.current?.click()} disabled={uploading}>
-          <Plus className="h-4 w-4" /> {uploading ? "Uploaden..." : "Upload document"}
-        </GlassButton>
-        <input ref={fileRef} type="file" className="hidden" onChange={handleUpload} />
-      </div>
+      <PageHero
+        page="documents"
+        icon={FileText}
+        eyebrow="Werk"
+        title="Documenten"
+        subtitle="Jouw editoriale documentbibliotheek"
+        actions={<>
+          <GlassButton variant="primary" size="md" onClick={() => fileRef.current?.click()} disabled={uploading}>
+            <Plus className="h-4 w-4" /> {uploading ? "Uploaden..." : "Upload document"}
+          </GlassButton>
+          <input ref={fileRef} type="file" className="hidden" onChange={handleUpload} />
+        </>}
+      />
 
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

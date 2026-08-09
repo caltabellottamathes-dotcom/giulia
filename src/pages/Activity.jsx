@@ -1,5 +1,6 @@
 import React from "react";
 import GlassPanel from "@/components/glass/GlassPanel";
+import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import {
   Mail, Calendar, FileText, MessageCircle, CheckSquare,
@@ -18,10 +19,13 @@ export default function Activity() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <div>
-        <h1 className="text-2xl font-display font-semibold tracking-tight">Activiteit</h1>
-        <p className="text-sm text-muted-foreground mt-1">Wat Giulia voor je heeft gedaan</p>
-      </div>
+      <PageHero
+        page="activity"
+        icon={ActivityIcon}
+        eyebrow="Giulia"
+        title="Activiteit"
+        subtitle="Wat Giulia voor je heeft gedaan"
+      />
 
       <GlassPanel level={2} className="p-6">
         <div className="space-y-1">

@@ -4,9 +4,10 @@ import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
 import FloatingPanel from "@/components/glass/FloatingPanel";
 import Avatar from "@/components/glass/Avatar";
+import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
-import { Search, Plus, Mail, Phone } from "lucide-react";
+import { Search, Plus, Mail, Phone, Users } from "lucide-react";
 
 export default function People() {
   const navigate = useNavigate();
@@ -30,15 +31,18 @@ export default function People() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-display font-semibold tracking-tight">Mensen</h1>
-          <p className="text-sm text-muted-foreground mt-1">Jouw contactomgeving</p>
-        </div>
-        <GlassButton variant="primary" size="md" onClick={() => setShowNew(true)}>
-          <Plus className="h-4 w-4" /> Nieuw contact
-        </GlassButton>
-      </div>
+      <PageHero
+        page="people"
+        icon={Users}
+        eyebrow="Netwerk"
+        title="Mensen"
+        subtitle="Jouw contactomgeving"
+        actions={
+          <GlassButton variant="primary" size="md" onClick={() => setShowNew(true)}>
+            <Plus className="h-4 w-4" /> Nieuw contact
+          </GlassButton>
+        }
+      />
 
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

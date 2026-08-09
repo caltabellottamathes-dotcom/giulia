@@ -4,6 +4,7 @@ import { useEntityList } from "@/hooks/useEntity";
 import { useToast } from "@/components/ui/use-toast";
 import { Telescope, Sparkles, Check, Archive, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import PageHero from "@/components/glass/PageHero";
 
 const CATS = ["Opportunity", "Risk", "Research", "Suggestion", "Follow-up", "Trend"];
 const CAT_STYLE = {
@@ -87,6 +88,14 @@ export default function Insights() {
 
   return (
     <div className="space-y-6">
+      <PageHero
+        page="insights"
+        icon={Telescope}
+        eyebrow="Giulia"
+        title="Inzichten"
+        subtitle="Proactief onderzoek & signalen"
+      />
+
       {/* Research composer */}
       <div className="glass-card rounded-2xl p-5">
         <div className="flex items-center gap-2.5 mb-3">

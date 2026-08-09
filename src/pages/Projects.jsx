@@ -5,10 +5,11 @@ import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
 import StatusBadge from "@/components/glass/StatusBadge";
 import FloatingPanel from "@/components/glass/FloatingPanel";
+import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
-import { Plus } from "lucide-react";
+import { Plus, Briefcase } from "lucide-react";
 
 const filters = ["Active", "planning", "in_progress", "waiting", "completed", "archived"];
 
@@ -48,15 +49,18 @@ export default function Projects() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-display font-semibold tracking-tight">Projecten</h1>
-          <p className="text-sm text-muted-foreground mt-1">Jouw editoriale projectbibliotheek</p>
-        </div>
-        <GlassButton variant="primary" size="md" onClick={() => setShowNew(true)}>
-          <Plus className="h-4 w-4" /> Nieuw project
-        </GlassButton>
-      </div>
+      <PageHero
+        page="projects"
+        icon={Briefcase}
+        eyebrow="Werk"
+        title="Projecten"
+        subtitle="Jouw editoriale projectbibliotheek"
+        actions={
+          <GlassButton variant="primary" size="md" onClick={() => setShowNew(true)}>
+            <Plus className="h-4 w-4" /> Nieuw project
+          </GlassButton>
+        }
+      />
 
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
         {filters.map((f) => (

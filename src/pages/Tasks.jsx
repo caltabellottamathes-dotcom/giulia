@@ -4,6 +4,7 @@ import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
 import StatusBadge from "@/components/glass/StatusBadge";
 import FloatingPanel from "@/components/glass/FloatingPanel";
+import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import { Plus, Sparkles, CheckSquare, Clock } from "lucide-react";
@@ -45,15 +46,18 @@ export default function Tasks() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-display font-semibold tracking-tight">Taken</h1>
-          <p className="text-sm text-muted-foreground mt-1">Jouw taken, elegant beheerd</p>
-        </div>
-        <GlassButton variant="primary" size="md" onClick={() => setShowNew(true)}>
-          <Plus className="h-4 w-4" /> Nieuwe taak
-        </GlassButton>
-      </div>
+      <PageHero
+        page="tasks"
+        icon={CheckSquare}
+        eyebrow="Werk"
+        title="Taken"
+        subtitle="Jouw taken, elegant beheerd"
+        actions={
+          <GlassButton variant="primary" size="md" onClick={() => setShowNew(true)}>
+            <Plus className="h-4 w-4" /> Nieuwe taak
+          </GlassButton>
+        }
+      />
 
       {overdueCount > 0 && (
         <GlassPanel level={3} className="p-5">
