@@ -192,7 +192,7 @@ export default function Home() {
           </div>
           <button
             onClick={() => setPickerOpen(true)}
-            className="shrink-0 inline-flex items-center gap-2 rounded-full glass-1 px-4 py-2.5 text-xs font-semibold text-foreground hover:bg-foreground/5 transition"
+            className="shrink-0 inline-flex items-center gap-2 rounded-full glass-1 px-4 py-2.5 text-xs font-semibold text-ivory hover:bg-ivory/10 transition"
           >
             <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Widget</span>
           </button>
