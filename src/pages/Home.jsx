@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Plus } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import AddWidgetPicker from "@/components/panels/AddWidgetPicker";
-import DesktopCanvas from "@/components/dashboard/DesktopCanvas";
+import DesktopDashboard from "@/components/dashboard/DesktopDashboard";
 import MobileDashboard from "@/components/dashboard/MobileDashboard";
 
 const DEFAULT_WIDGETS = ["giuliaHero", "giulia", "agenda", "tasks", "approvals", "email"];
@@ -116,10 +116,6 @@ export default function Home() {
     });
   };
 
-  const onMove = (id, x, y) => {
-    base44.entities.DashboardWidget.update(id, { x: Math.round(x), y: Math.round(y) }).catch(() => {});
-  };
-
   if (loading || isMobile === undefined) {
     return (
       <div className="grid grid-cols-2 lg:grid-cols-12 gap-2.5 lg:gap-5 p-4 lg:p-10 h-[calc(100svh-3.5rem)]">
@@ -135,10 +131,10 @@ export default function Home() {
       {isMobile ? (
         <MobileDashboard widgets={widgets} onReorder={onReorder} onRemove={removeWidget} />
       ) : (
-        <DesktopCanvas
+        <DesktopDashboard
           widgets={widgets}
+          onReorder={onReorder}
           onRemove={removeWidget}
-          onMove={onMove}
           onAdd={() => setPickerOpen(true)}
           userName={userName}
           panelOpen={panelOpen}

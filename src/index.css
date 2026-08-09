@@ -210,9 +210,9 @@
 
   /* On the mobile fixed-screen dashboard, let widget tiles shrink to fit
      their 1fr grid rows instead of enforcing desktop min-heights. */
-  @media (max-width: 1023px) {
-    .dash-grid .widget-shell { min-height: 0 !important; }
-  }
+  /* Widgets shrink to fit their grid cells on both mobile and desktop so the
+     dashboard stays a fixed, scroll-free surface. */
+  .dash-grid .widget-shell { min-height: 0 !important; }
 
   .editorial-bg {
     background-size: cover;
@@ -253,3 +253,6 @@
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: hsl(var(--smoke) / 0.25); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: hsl(var(--smoke) / 0.4); }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
