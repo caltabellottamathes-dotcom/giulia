@@ -1,12 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { agentDecide, reportToSalvo } from "../../shared/agent.ts";
+import { tool, runGiuliaAgent } from "../../shared/codeAgent.ts";
 
 /**
- * interpretInput — interprets a new incoming message. Classifies as
- * task/event/idea/reminder/project/contact/note/commitment/thinking, links to
- * existing projects/persons/tasks, detects duplicates, signals missing info,
- * and creates the right entity. Triggered on Message create (direction: incoming)
- * and callable directly. Internal actions only — never sends externally.
+ * interpretInput (Agent 1 — Centrale Intelligentie). Real code agent.
+ * Interprets every incoming message, classifies, links to projects/persons/
+ * tasks, recognizes duplicates, signals missing info, creates the right entity,
+ * and signals downstream agents. Trigger: Message create (direction: incoming).
  */
 export default async function (req) {
   try {
@@ -23,76 +22,26 @@ export default async function (req) {
     }
     if (!msg) return Response.json({ ok: true, reason: "no message" });
 
-    const [tasks, projects, contacts] = await Promise.all([
-      sr.entities.Task.list().catch(() => []),
-      sr.entities.Project.list().catch(() => []),
-      sr.entities.Contact.list().catch(() => []),
-    ]);
-
-    const context = [
-      `Bericht: "${msg.content}"`,
-      `Kanaal: ${msg.channel}`,
-      `Bekende projecten: ${projects.map((p) => p.title).join(", ") || "geen"}`,
-      `Bekende personen: ${contacts.map((c) => c.name).join(", ") || "geen"}`,
-      `Bestaande taken: ${tasks.slice(0, 20).map((t) => t.title).join(", ") || "geen"}`,
-    ].join("\n");
-
-    const schema = {
-      type: "object",
-      properties: {
-        classification: { type: "string", enum: ["task", "event", "idea", "reminder", "project", "contact", "note", "commitment", "thinking"] },
-        summary: { type: "string" },
-        project_id: { type: "string" },
-        person_name: { type: "string" },
-        action: { type: "string", enum: ["create_task", "create_event", "create_idea", "create_note", "none"] },
-        title: { type: "string" },
-        deadline: { type: "string" },
-        priority: { type: "string", enum: ["low", "medium", "high"] },
-        duplicate_of: { type: "string" },
-        missing_info: { type: "string" },
-      },
-      required: ["classification", "summary", "action"],
+    const tools = {
+      list_projects: tool({ description: "Bekende projecten (voor koppeling).", inputSchema: { type: "object", properties: {} }, execute: () => sr.entities.Project.list().catch(() => []).then(l => l.map(p => ({ id: p.id, title: p.title }))) }),
+      list_contacts: tool({ description: "Bekende personen.", inputSchema: { type: "object", properties: {} }, execute: () => sr.entities.Contact.list().catch(() => []).then(l => l.map(c => ({ id: c.id, name: c.name, company: c.company }))) }),
+      list_tasks: tool({ description: "Bestaande taken (duplicaat-herkenning).", inputSchema: { type: "object", properties: {} }, execute: () => sr.entities.Task.list().catch(() => []).then(l => l.map(t => ({ id: t.id, title: t.title, status: t.status }))) }),
+      create_task: tool({ description: "Maak een taak aan.", inputSchema: { type: "object", properties: { title: { type: "string" }, priority: { type: "string", enum: ["low", "medium", "high"] }, deadline: { type: "string" }, project_id: { type: "string" } }, required: ["title"] }, execute: ({ title, ...rest }) => sr.entities.Task.create({ title, status: "today", agent_source: "interpretInput", ...rest }).catch(() => null) }),
+      create_event: tool({ description: "Maak een afspraak aan.", inputSchema: { type: "object", properties: { title: { type: "string" }, start: { type: "string" } }, required: ["title", "start"] }, execute: ({ title, start }) => sr.entities.Event.create({ title, start, agent_source: "interpretInput" }).catch(() => null) }),
+      create_idea: tool({ description: "Sla een idee op.", inputSchema: { type: "object", properties: { title: { type: "string" }, content: { type: "string" }, project_id: { type: "string" } }, required: ["title"] }, execute: ({ title, content, project_id }) => sr.entities.Idea.create({ title, content: content || "", status: "new", project_id: project_id || "", agent_source: "interpretInput" }).catch(() => null) }),
+      create_note: tool({ description: "Sla een notitie op.", inputSchema: { type: "object", properties: { title: { type: "string" }, content: { type: "string" } }, required: ["title"] }, execute: ({ title, content }) => sr.entities.Note.create({ title, content: content || "", kind: "note", agent_source: "interpretInput" }).catch(() => null) }),
+      mark_needs_info: tool({ description: "Markeer een thread 'needs_info' (ontbrekende info).", inputSchema: { type: "object", properties: { thread_id: { type: "string" } }, required: ["thread_id"] }, execute: ({ thread_id }) => sr.entities.Thread.update(thread_id, { needs_info: true }).catch(() => null) }),
     };
 
-    const decision = await agentDecide(
-      base44, "interpretInput",
-      "Interpreteer dit bericht. Classificeer, koppel aan bestaand project/persoon, herkend duplicaten, signaleer ontbrekende info, en beslis welke entity aangemaakt wordt.",
-      context, schema
-    );
-    if (!decision) return Response.json({ ok: false, reason: "no decision" });
+    const task = `Interpreteer dit bericht en voer de juiste actie uit met je tools.\n` +
+      `Bericht: "${msg.content}"\nKanaal: ${msg.channel}\n` +
+      `Classificeer als taak/afspraak/idee/herinnering/project/contact/notitie/commitment/thinking. ` +
+      `Koppel aan bestaand project/persoon (list_*), herken duplicaten, signaleer ontbrekende info. ` +
+      `Maak de juiste entity aan (create_*). Bij relevant signaal roep je call_agent (manageTasks/syncCalendar/manageIdeas/manageProjects/managePeople). ` +
+      `Rapporteer kort aan Salvo (report_to_salvo).${msg.thread_id ? `\nThread: ${msg.thread_id}` : ""}`;
 
-    const title = decision.title || decision.summary || String(msg.content).slice(0, 80);
-    let created = null;
-
-    if (decision.action === "create_task") {
-      created = await sr.entities.Task.create({
-        title, status: "today", priority: decision.priority || "medium",
-        deadline: decision.deadline || "", project_id: decision.project_id || "", agent_source: "interpretInput",
-      }).catch(() => null);
-    } else if (decision.action === "create_event") {
-      created = await sr.entities.Event.create({
-        title, start: decision.deadline ? new Date(decision.deadline).toISOString() : new Date().toISOString(),
-        agent_source: "interpretInput",
-      }).catch(() => null);
-    } else if (decision.action === "create_idea") {
-      created = await sr.entities.Idea.create({
-        title, content: msg.content, status: "new",
-        project_id: decision.project_id || "", agent_source: "interpretInput",
-      }).catch(() => null);
-    } else if (decision.action === "create_note") {
-      created = await sr.entities.Note.create({
-        title, content: msg.content, kind: "note", agent_source: "interpretInput",
-      }).catch(() => null);
-    }
-
-    let report = decision.summary;
-    if (decision.missing_info) report += ` Ontbrekt: ${decision.missing_info}.`;
-    if (decision.missing_info && msg.thread_id) {
-      await sr.entities.Thread.update(msg.thread_id, { needs_info: true }).catch(() => {});
-    }
-    await reportToSalvo(base44, "interpretInput", report, msg.thread_id);
-
-    return Response.json({ ok: true, classification: decision.classification, action: decision.action, created_id: created?.id || null });
+    await runGiuliaAgent(base44, "interpretInput", task, tools, 6);
+    return Response.json({ ok: true });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

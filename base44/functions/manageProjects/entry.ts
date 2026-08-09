@@ -1,10 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { agentDecide, reportToSalvo, notifySalvo } from "../../shared/agent.ts";
+import { tool, runGiuliaAgent } from "../../shared/codeAgent.ts";
 
 /**
- * manageProjects — recognizes projects, gathers info, links tasks/docs/people/
- * conversations, tracks status, detects stalled projects, proposes next
- * actions, signals when a project needs attention.
+ * manageProjects (Agent 8 — Project Agent). Real code agent.
+ * Trigger: daily + on interpretation.
  */
 export default async function (req) {
   try {
@@ -17,42 +16,16 @@ export default async function (req) {
       sr.entities.Event.list().catch(() => []),
     ]);
 
-    const context = `Projecten (${projects.length}):\n` +
-      projects.map((p) => `- [${p.status}] ${p.title} | progress ${p.progress}% | deadline ${p.deadline || "?"} | health ${p.health || "?"} | next: ${p.next_milestone || "?"}`).join("\n") +
-      `\n\nGekoppelde taken: ${tasks.length}, events: ${events.length}`;
-
-    const schema = {
-      type: "object",
-      properties: {
-        message: { type: "string" },
-        updates: { type: "array", items: { type: "object", properties: { id: { type: "string" }, status: { type: "string" }, health: { type: "string", enum: ["good", "attention", "critical"] }, next_milestone: { type: "string" }, last_activity_date: { type: "string" } } } },
-        attention: { type: "array", items: { type: "string" } },
-      },
-      required: ["message"],
+    const tools = {
+      list_projects: tool({ description: "Alle projecten.", inputSchema: { type: "object", properties: {} }, execute: () => sr.entities.Project.list().catch(() => []).then(l => l.map(p => ({ id: p.id, title: p.title, status: p.status, progress: p.progress, health: p.health, deadline: p.deadline, next_milestone: p.next_milestone, last_activity_date: p.last_activity_date }))) }),
+      list_tasks: tool({ description: "Gekoppelde taken.", inputSchema: { type: "object", properties: {} }, execute: () => sr.entities.Task.list().catch(() => []).then(l => l.map(t => ({ id: t.id, title: t.title, status: t.status, project_id: t.project_id }))) }),
+      update_project: tool({ description: "Update een project (status/health/next_milestone/last_activity_date/progress).", inputSchema: { type: "object", properties: { id: { type: "string" }, status: { type: "string" }, health: { type: "string", enum: ["good", "attention", "critical"] }, next_milestone: { type: "string" }, last_activity_date: { type: "string" }, progress: { type: "number" } }, required: ["id"] }, execute: ({ id, ...patch }) => sr.entities.Project.update(id, patch).catch(() => null) }),
     };
 
-    const decision = await agentDecide(
-      base44, "manageProjects",
-      "Herkend stilgevallen projecten (lang geen activiteit). Stel volgende acties voor. Update status en health. Signaleer wanneer een project aandacht nodig heeft.",
-      context, schema
-    );
+    const context = `Projecten (${projects.length}):\n` + projects.map(p => `- id:${p.id} | [${p.status}] ${p.title} | ${p.progress}% | health ${p.health || "?"} | deadline ${p.deadline || "?"} | next: ${p.next_milestone || "?"}`).join("\n") + `\n\nTaken: ${tasks.length}, Afspraken: ${events.length}`;
+    const task = `Herkend stilgevallen projecten (lang geen last_activity_date). Stel volgende acties voor (next_milestone). Update status/health/progress. Signaleer wanneer een project aandacht nodig heeft (report_to_salvo + notify_salvo).\n\n${context}`;
 
-    if (decision?.updates) {
-      for (const u of decision.updates) {
-        const patch = {};
-        if (u.status) patch.status = u.status;
-        if (u.health) patch.health = u.health;
-        if (u.next_milestone) patch.next_milestone = u.next_milestone;
-        if (u.last_activity_date) patch.last_activity_date = u.last_activity_date;
-        if (Object.keys(patch).length) await sr.entities.Project.update(u.id, patch).catch(() => {});
-      }
-    }
-
-    if (decision?.attention?.length) {
-      await reportToSalvo(base44, "manageProjects", decision.message);
-      await notifySalvo(base44, "Projecten", decision.message);
-    }
-
+    await runGiuliaAgent(base44, "manageProjects", task, tools, 6);
     return Response.json({ ok: true, projects: projects.length });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
