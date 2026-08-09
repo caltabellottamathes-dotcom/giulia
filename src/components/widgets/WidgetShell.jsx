@@ -18,6 +18,7 @@ const sizeMap = {
   "3x2": "min-h-[372px]",
   wide: "min-h-[372px]",
   full: "min-h-[168px]",
+  tall: "min-h-[480px]",
 };
 
 const radiusMap = {
@@ -62,7 +63,7 @@ export default function WidgetShell({
       onClick={onClick}
       style={{ "--tile-accent": tile.accent, "--tile-on-accent": tile.on, ...style, zIndex }}
       className={cn(
-        "relative overflow-hidden flex flex-col h-full animate-fade-up shadow-[0_18px_44px_-16px_hsl(30_10%_20%/0.16)]",
+        "widget-shell relative overflow-hidden flex flex-col h-full animate-fade-up shadow-[0_18px_44px_-16px_hsl(30_10%_20%/0.16)]",
         tile.cls,
         sizeMap[size] || sizeMap["1x1"],
         radiusMap[radius] || radiusMap.medium,

@@ -5,10 +5,13 @@ import { secrets } from "base44:runtime";
  * sendWhatsApp — sends a WhatsApp Business Cloud API text message for real.
  * Payload: { to, message, api_key? }
  * `to` = destination phone number (intl digits; '+' and spaces stripped).
- * Authorized by an internal caller passing api_key === GIULIA_API_KEY, or an
- * authenticated admin user. Credentials: WHATSAPP_PHONE_NUMBER_ID and
- * WHATSAPP_ACCESS_TOKEN secrets.
+ * The stored WHATSAPP_PHONE_NUMBER_ID may be the Phone Number ID (used
+ * directly) OR the WhatsApp Business Account (WABA) ID — in the latter case we
+ * resolve the first phone_number_id from the WABA and retry. The resolved id is
+ * cached per worker instance. Authorized by GIULIA_API_KEY or an admin user.
  */
+let cachedPhoneId = null;
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -24,32 +27,45 @@ export default async function (req) {
     }
     if (!authorized) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-    const phoneNumberId = secrets.get("WHATSAPP_PHONE_NUMBER_ID");
+    const storedId = secrets.get("WHATSAPP_PHONE_NUMBER_ID");
     const accessToken = secrets.get("WHATSAPP_ACCESS_TOKEN");
-    if (!phoneNumberId || !accessToken) {
+    if (!storedId || !accessToken) {
       return Response.json({ error: "WhatsApp credentials not configured" }, { status: 500 });
     }
 
     const phone = String(to).replace(/[^\d]/g, "");
-    const res = await fetch(`https://graph.facebook.com/v21.0/${phoneNumberId}/messages`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        to: phone,
-        type: "text",
-        text: { body: String(message) },
-      }),
-    });
-    const data = await res.json().catch(() => ({}));
+    const doSend = (pid) =>
+      fetch(`https://graph.facebook.com/v21.0/${pid}/messages`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ messaging_product: "whatsapp", to: phone, type: "text", text: { body: String(message) } }),
+      });
+
+    let res = await doSend(cachedPhoneId || storedId);
+    let data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      const msg = data?.error?.message || "";
+      const retriable = /does not exist|does not support|permission|not allowed|unsupported/i.test(msg);
+      if (retriable) {
+        // stored id is likely the WABA id — resolve a phone_number_id from it
+        const r = await fetch(`https://graph.facebook.com/v21.0/${storedId}/phone_numbers`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        const d = await r.json().catch(() => ({}));
+        const resolved = d?.data?.[0]?.id;
+        if (resolved && resolved !== storedId) {
+          cachedPhoneId = resolved;
+          res = await doSend(resolved);
+          data = await res.json().catch(() => ({}));
+        }
+      }
+    }
+
     if (!res.ok) {
       return Response.json({ error: data?.error?.message || "WhatsApp send failed" }, { status: 502 });
     }
-    const messageId = data?.messages?.[0]?.id || null;
-    return Response.json({ ok: true, message_id: messageId });
+    return Response.json({ ok: true, message_id: data?.messages?.[0]?.id || null });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

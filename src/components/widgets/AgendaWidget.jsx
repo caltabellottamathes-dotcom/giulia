@@ -27,7 +27,7 @@ export default function AgendaWidget() {
   const projTitle = (id) => projects.find((p) => p.id === id)?.title;
 
   return (
-    <WidgetShell size="2x2" radius="large" glass="card" interactive onClick={() => openModule("agenda")} className="min-h-[300px]">
+    <WidgetShell size="2x2" radius="large" glass="translucent" interactive onClick={() => openModule("agenda")} className="min-h-[300px]">
       <div className="p-5 lg:p-6 flex flex-col h-full">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">

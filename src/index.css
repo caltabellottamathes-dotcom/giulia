@@ -208,6 +208,12 @@
   .glass-grip { cursor: grab; }
   .glass-grip:active { cursor: grabbing; }
 
+  /* On the mobile fixed-screen dashboard, let widget tiles shrink to fit
+     their 1fr grid rows instead of enforcing desktop min-heights. */
+  @media (max-width: 1023px) {
+    .dash-grid .widget-shell { min-height: 0 !important; }
+  }
+
   .editorial-bg {
     background-size: cover;
     background-position: center;

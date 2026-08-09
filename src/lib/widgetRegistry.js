@@ -1,6 +1,6 @@
 import {
   Sunrise, Calendar, CheckSquare, ClipboardCheck, Mail, MessageCircle,
-  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope,
+  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, MessageSquare,
 } from "lucide-react";
 
 import DailyBriefingWidget from "@/components/widgets/DailyBriefingWidget";
@@ -16,6 +16,7 @@ import DocumentsWidget from "@/components/widgets/DocumentsWidget";
 import MemoryWidget from "@/components/widgets/MemoryWidget";
 import InsightsWidget from "@/components/widgets/InsightsWidget";
 import ActivityWidget from "@/components/widgets/ActivityWidget";
+import GiuliaHeroWidget from "@/components/widgets/GiuliaHeroWidget";
 
 /**
  * Single source of truth for every dashboard widget.
@@ -23,6 +24,7 @@ import ActivityWidget from "@/components/widgets/ActivityWidget";
  * ("opaque" | "card" | "translucent") so tiles vary between solid and airy.
  */
 export const WIDGETS = {
+  giuliaHero: { type: "giuliaHero", label: "Giulia",          icon: MessageSquare,   Component: GiuliaHeroWidget, w: 300, span: 4, category: "core" },
   giulia:     { type: "giulia",     label: "Dagoverzicht",    icon: Sunrise,         Component: DailyBriefingWidget, w: 360, span: 8, category: "core" },
   agenda:     { type: "agenda",    label: "Agenda",           icon: Calendar,       Component: AgendaWidget,    w: 300, span: 4, category: "core" },
   tasks:      { type: "tasks",     label: "Taken",            icon: CheckSquare,    Component: TasksWidget,     w: 320, span: 4, category: "work" },
