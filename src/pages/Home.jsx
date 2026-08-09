@@ -23,7 +23,7 @@ const PAGE_LINKS = [
   { label: "Backdesk", to: "/settings" },
 ];
 
-const DEFAULT_WIDGETS = ["giulia", "giulia_video", "agenda", "tasks", "approvals", "email", "projects"];
+const DEFAULT_WIDGETS = ["giulia", "agenda", "tasks", "approvals", "email", "projects"];
 
 const SPAN_COL = {
   3: "lg:col-span-3",
