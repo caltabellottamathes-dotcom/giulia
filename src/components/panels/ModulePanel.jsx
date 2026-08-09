@@ -6,7 +6,8 @@ import { WIDGETS } from "@/lib/widgetRegistry";
 import { IMAGES } from "@/lib/images";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, LayoutGrid } from "lucide-react";
+import { Plus, LayoutGrid, ArrowUpRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 /**
  * The ONE sliding glass panel used for every module. The content determines
@@ -38,8 +39,17 @@ const MODULE_IMAGE = {
   voice: IMAGES.portraitBootFace,
 };
 
+const MODULE_ROUTE = {
+  agenda: "/agenda", projects: "/projects", tasks: "/tasks", email: "/email",
+  whatsapp: "/whatsapp", knowledge: "/knowledge", documents: "/documents",
+  people: "/people", chat: "/chat", voice: "/voice", approvals: "/approvals",
+  activity: "/activity", memory: "/memory", integrations: "/integrations",
+  settings: "/settings", profile: "/profile", insights: "/insights",
+};
+
 export default function ModulePanel() {
   const { activeModule, closeModule } = usePanel();
+  const navigate = useNavigate();
   const mod = activeModule ? MODULES[activeModule] : null;
   const ActiveComponent = mod?.Component;
   const widgetDef = activeModule ? WIDGETS[activeModule] : null;
@@ -69,37 +79,45 @@ export default function ModulePanel() {
       {mod && (
         <div className="flex flex-col h-full">
           <div className="h-[3px] w-full shrink-0" style={{ background: MODULE_ACCENT[activeModule] || "hsl(var(--sand))" }} />
-          {/* Cleaner header — lighter image, clearer title, dashboard action */}
-          <div className="relative px-7 lg:px-9 pt-7 pb-5 shrink-0 overflow-hidden">
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              <img src={MODULE_IMAGE[activeModule] || IMAGES.walkingChairs} alt="" className="h-full w-full object-cover opacity-25" draggable={false} />
-              <div className="absolute inset-0 bg-gradient-to-r from-warm-white/95 via-warm-white/85 to-warm-white/55" />
-            </div>
-            <div className="relative flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-[0.28em] text-olive/80 font-medium mb-2">Onderdeel</p>
-                <h2 className="text-[26px] lg:text-[30px] font-display font-semibold tracking-tight leading-none text-foreground">
-                  {mod.label}
-                </h2>
+          {/* Header — full-bleed photo, ivory type */}
+          <div className="relative shrink-0 h-40 overflow-hidden">
+            <img src={MODULE_IMAGE[activeModule] || IMAGES.walkingChairs} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
+            <div className="absolute inset-0 bg-gradient-to-r from-charcoal/85 via-charcoal/55 to-charcoal/25" />
+            <div className="relative h-full flex flex-col justify-between p-7 lg:p-9 pl-14 lg:pl-16">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/70 font-medium mb-2">Onderdeel</p>
+                  <h2 className="text-[26px] lg:text-[30px] font-display font-semibold tracking-tight leading-none text-ivory">
+                    {mod.label}
+                  </h2>
+                </div>
+                <div className="flex items-center gap-2 shrink-0 mt-0.5">
+                  {widgetDef && (
+                    <button
+                      onClick={addToDashboard}
+                      disabled={adding}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-ivory/10 border border-ivory/20 px-3 py-2 text-[11px] font-semibold text-ivory hover:bg-ivory/20 transition disabled:opacity-50"
+                    >
+                      <LayoutGrid className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">Widget</span>
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  )}
+                  {MODULE_ROUTE[activeModule] && (
+                    <button
+                      onClick={() => { navigate(MODULE_ROUTE[activeModule]); closeModule(); }}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-ivory/10 border border-ivory/20 px-3 py-2 text-[11px] font-semibold text-ivory hover:bg-ivory/20 transition"
+                    >
+                      <ArrowUpRight className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">Pagina</span>
+                    </button>
+                  )}
+                  <span className="h-11 w-11 rounded-full bg-ivory/10 border border-ivory/20 flex items-center justify-center shrink-0">
+                    <mod.icon className="h-4 w-4 text-ivory/80" strokeWidth={1.5} />
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                {widgetDef && (
-                  <button
-                    onClick={addToDashboard}
-                    disabled={adding}
-                    className="inline-flex items-center gap-1.5 rounded-full glass-1 px-3 py-2 text-[11px] font-semibold text-foreground hover:bg-foreground/5 transition disabled:opacity-50"
-                  >
-                    <LayoutGrid className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Widget</span>
-                    <Plus className="h-3 w-3" />
-                  </button>
-                )}
-                <span className="h-11 w-11 rounded-full glass-1 flex items-center justify-center shrink-0">
-                  <mod.icon className="h-4 w-4 text-foreground/70" strokeWidth={1.5} />
-                </span>
-              </div>
             </div>
-            <div className="relative mt-5 h-px w-full bg-gradient-to-r from-border/70 via-border/30 to-transparent" />
           </div>
 
           {/* Content — cleaner, more opaque surface for readability */}

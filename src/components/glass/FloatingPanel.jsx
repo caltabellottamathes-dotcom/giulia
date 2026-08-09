@@ -96,7 +96,7 @@ export default function FloatingPanel({
           {onClose && (
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 z-10 h-8 w-8 rounded-lg glass-1 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              className="absolute top-4 left-4 z-10 h-8 w-8 rounded-lg glass-1 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Sluiten"
             >
               <X className="h-4 w-4" />

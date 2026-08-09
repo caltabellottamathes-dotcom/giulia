@@ -8,8 +8,22 @@ import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import AddWidgetPicker from "@/components/panels/AddWidgetPicker";
 import WidgetCell from "@/components/widgets/WidgetCell";
+import { Link } from "react-router-dom";
 
-const DEFAULT_WIDGETS = ["giulia", "agenda", "tasks", "approvals", "email", "projects"];
+const PAGE_LINKS = [
+  { label: "Agenda", to: "/agenda" },
+  { label: "Projecten", to: "/projects" },
+  { label: "Taken", to: "/tasks" },
+  { label: "Email", to: "/email" },
+  { label: "WhatsApp", to: "/whatsapp" },
+  { label: "Kennisbank", to: "/knowledge" },
+  { label: "Documenten", to: "/documents" },
+  { label: "Mensen", to: "/people" },
+  { label: "Inzichten", to: "/insights" },
+  { label: "Backdesk", to: "/settings" },
+];
+
+const DEFAULT_WIDGETS = ["giulia", "giulia_video", "agenda", "tasks", "approvals", "email", "projects"];
 
 const SPAN_COL = {
   3: "lg:col-span-3",
@@ -26,7 +40,7 @@ const SPAN_COL = {
  * automatically. Giulia always leads.
  */
 export default function Home() {
-  const { activeModule, openModule } = usePanel();
+  const { activeModule } = usePanel();
   const panelOpen = !!activeModule;
   const [widgets, setWidgets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -147,15 +161,15 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-b from-charcoal/10 to-background/25" />
       </div>
 
-      {/* Photo — small oblong card bottom-left when a panel opens */}
+      {/* Photo — large bottom card when a panel opens; right portion sits behind the panel */}
       <div
         className={cn(
-          "fixed left-4 bottom-4 z-0 w-[52%] h-[24vh] lg:w-[30%] lg:h-[28vh] overflow-hidden rounded-[24px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
-          panelOpen ? "opacity-100 scale-100" : "opacity-0 scale-90 pointer-events-none"
+          "fixed left-0 bottom-0 z-0 w-full h-[40vh] lg:w-[68%] lg:h-[62vh] overflow-hidden rounded-tr-[32px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+          panelOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6 pointer-events-none"
         )}
       >
         <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
-        <div className="absolute inset-0 bg-gradient-to-tr from-charcoal/45 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/35 to-transparent" />
       </div>
 
       {/* Content */}
@@ -215,28 +229,20 @@ export default function Home() {
             </div>
           )}
         </div>
-
-        <nav className="px-5 lg:px-10 pb-8 flex flex-wrap gap-x-6 gap-y-2">
-          {[
-            { label: "Projecten", key: "projects" },
-            { label: "Email", key: "email" },
-            { label: "WhatsApp", key: "whatsapp" },
-            { label: "Kennisbank", key: "knowledge" },
-            { label: "Documenten", key: "documents" },
-            { label: "Mensen", key: "people" },
-            { label: "Activiteit", key: "activity" },
-            { label: "Inzichten", key: "insights" },
-          ].map((m) => (
-            <button
-              key={m.key}
-              onClick={() => openModule(m.key)}
-              className="text-[12px] text-foreground/75 hover:text-foreground transition-colors tracking-wide font-medium"
-            >
-              {m.label}
-            </button>
-          ))}
-        </nav>
       </div>
+
+      {/* Fixed bottom word-links — stay on the background, navigate to pages */}
+      <nav className="hidden lg:flex fixed bottom-5 left-10 right-10 z-10 flex-wrap gap-x-6 gap-y-2">
+        {PAGE_LINKS.map((l) => (
+          <Link
+            key={l.to}
+            to={l.to}
+            className="text-[12px] text-foreground/75 hover:text-foreground transition-colors tracking-wide font-medium"
+          >
+            {l.label}
+          </Link>
+        ))}
+      </nav>
 
       <AddWidgetPicker
         open={pickerOpen}

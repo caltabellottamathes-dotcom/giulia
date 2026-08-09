@@ -1,6 +1,6 @@
 import {
   Sparkles, Calendar, CheckSquare, ClipboardCheck, Mail, MessageCircle,
-  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope,
+  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Video,
 } from "lucide-react";
 
 import GiuliaWidget from "@/components/widgets/GiuliaWidget";
@@ -16,6 +16,7 @@ import DocumentsWidget from "@/components/widgets/DocumentsWidget";
 import MemoryWidget from "@/components/widgets/MemoryWidget";
 import InsightsWidget from "@/components/widgets/InsightsWidget";
 import ActivityWidget from "@/components/widgets/ActivityWidget";
+import GiuliaVideoWidget from "@/components/widgets/GiuliaVideoWidget";
 
 /**
  * Single source of truth for every dashboard widget.
@@ -23,7 +24,8 @@ import ActivityWidget from "@/components/widgets/ActivityWidget";
  * ("opaque" | "card" | "translucent") so tiles vary between solid and airy.
  */
 export const WIDGETS = {
-  giulia:     { type: "giulia",     label: "Giulia · je dag", icon: Sparkles,       Component: GiuliaWidget,    w: 360, span: 8, category: "core" },
+  giulia:       { type: "giulia",       label: "Giulia · je dag",  icon: Sparkles,       Component: GiuliaWidget,      w: 360, span: 8, category: "core" },
+  giulia_video: { type: "giulia_video", label: "Giulia · video",  icon: Video,          Component: GiuliaVideoWidget, w: 220, span: 3, category: "core" },
   agenda:     { type: "agenda",    label: "Agenda",           icon: Calendar,       Component: AgendaWidget,    w: 300, span: 4, category: "core" },
   tasks:      { type: "tasks",     label: "Taken",            icon: CheckSquare,    Component: TasksWidget,     w: 320, span: 4, category: "work" },
   approvals:  { type: "approvals",  label: "Goedkeuringen",    icon: ClipboardCheck, Component: ApprovalsWidget, w: 300, span: 4, category: "work" },

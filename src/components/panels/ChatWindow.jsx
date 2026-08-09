@@ -76,6 +76,13 @@ export default function ChatWindow() {
 
   return (
     <div className="fixed right-4 bottom-4 lg:right-7 lg:bottom-7 z-[60] w-[calc(100%-2rem)] sm:w-[440px] h-[min(680px,calc(100vh-3rem))] flex flex-col glass-4 float-shadow rounded-[28px] overflow-hidden animate-scale-in">
+      <button
+        onClick={closeChat}
+        className="absolute top-3 left-3 z-20 h-8 w-8 rounded-lg bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/80 hover:text-ivory transition-colors"
+        aria-label="Sluiten"
+      >
+        <X className="h-4 w-4" />
+      </button>
       {/* Header with editorial fashion image */}
       <div className="relative shrink-0 h-28 overflow-hidden">
         <img
@@ -93,13 +100,7 @@ export default function ChatWindow() {
                 Giulia
               </span>
             </div>
-            <button
-              onClick={closeChat}
-              className="h-8 w-8 rounded-lg bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/80 hover:text-ivory transition-colors"
-              aria-label="Sluiten"
-            >
-              <X className="h-4 w-4" />
-            </button>
+            {/* close button moved to top-left of window */}
           </div>
           <div className="flex items-end justify-between">
             <div>

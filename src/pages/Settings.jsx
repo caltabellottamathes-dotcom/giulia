@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import GlassPanel from "@/components/glass/GlassPanel";
-import GlassButton from "@/components/glass/GlassButton";
+import { useToast } from "@/components/ui/use-toast";
+import { base44 } from "@/api/base44Client";
 import {
   Settings as SettingsIcon, Palette, Bell, Brain, Lock, Mic,
   Database, Zap, Plug,
@@ -19,13 +20,52 @@ const sections = [
   { id: "integrations", label: "Integrations", icon: Plug },
 ];
 
+const NOTIF_KEYS = ["Email notificaties", "WhatsApp notificaties", "Agenda herinneringen", "Giulia suggesties", "Goedkeuring verzoeken"];
+const AUTO_KEYS = ["Informatie structureren", "Interne taak voorstellen", "Samenvatting maken", "Kennis organiseren"];
+const THEMES = ["Light", "Smoked", "Dark"];
+const PROACTIVITY = ["Subtiel", "Gebalanceerd", "Actief"];
+const VOICES = ["River — kalm, neutraal", "Honey — warm, zacht", "Sunny — helder, opgewekt"];
+
 export default function Settings() {
   const [active, setActive] = useState("general");
+  const [prefs, setPrefs] = useState({
+    language: "Nederlands",
+    timezone: "Europe/Amsterdam",
+    theme: "Light",
+    glass: 60,
+    proactivity: "Gebalanceerd",
+    voice: VOICES[0],
+    notifications: Object.fromEntries(NOTIF_KEYS.map((k) => [k, true])),
+    autoApprove: Object.fromEntries(AUTO_KEYS.map((k) => [k, true])),
+  });
+  const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    base44.auth.me().then((u) => {
+      if (u?.settings) setPrefs((p) => ({ ...p, ...u.settings }));
+    }).catch(() => {});
+  }, []);
+
+  const set = (k, v) => setPrefs((p) => ({ ...p, [k]: v }));
+  const toggle = (group, key) => setPrefs((p) => ({ ...p, [group]: { ...p[group], [key]: !p[group][key] } }));
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await base44.auth.updateMe({ settings: prefs });
+      toast({ title: "Opgeslagen", description: "Je voorkeuren zijn bijgewerkt." });
+    } catch {
+      toast({ title: "Opslaan mislukt", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="space-y-6 animate-fade-up">
       <div>
-        <h1 className="text-2xl font-heading font-light tracking-tight">Settings</h1>
+        <h1 className="text-2xl font-heading font-light tracking-tight">Backdesk</h1>
         <p className="text-sm text-muted-foreground mt-1">Configureer jouw Giulia ervaring</p>
       </div>
 
@@ -37,13 +77,10 @@ export default function Settings() {
               onClick={() => setActive(s.id)}
               className={cn(
                 "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-all",
-                active === s.id
-                  ? "glass-1 text-foreground font-medium"
-                  : "text-muted-foreground hover:text-foreground hover:bg-foreground/[0.03]"
+                active === s.id ? "glass-1 text-foreground font-medium" : "text-muted-foreground hover:text-foreground hover:bg-foreground/[0.03]"
               )}
             >
-              <s.icon className="h-4 w-4 shrink-0" />
-              {s.label}
+              <s.icon className="h-4 w-4 shrink-0" /> {s.label}
             </button>
           ))}
         </div>
@@ -56,14 +93,14 @@ export default function Settings() {
                 <div className="space-y-4">
                   <div>
                     <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Taal</label>
-                    <select className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+                    <select value={prefs.language} onChange={(e) => set("language", e.target.value)} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
                       <option>Nederlands</option>
                       <option>English</option>
                     </select>
                   </div>
                   <div>
                     <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Tijdzone</label>
-                    <select className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+                    <select value={prefs.timezone} onChange={(e) => set("timezone", e.target.value)} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
                       <option>UTC</option>
                       <option>Europe/Amsterdam</option>
                     </select>
@@ -78,12 +115,13 @@ export default function Settings() {
                 <div>
                   <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Thema</label>
                   <div className="grid grid-cols-3 gap-3 mt-2">
-                    {["Light", "Smoked", "Dark"].map((theme, i) => (
+                    {THEMES.map((theme) => (
                       <button
                         key={theme}
+                        onClick={() => set("theme", theme)}
                         className={cn(
                           "p-4 rounded-xl border-2 transition-all text-sm",
-                          i === 0 ? "border-olive bg-olive/5" : "border-border/60 glass-1 hover:border-foreground/20"
+                          prefs.theme === theme ? "border-olive bg-olive/5" : "border-border/60 glass-1 hover:border-foreground/20"
                         )}
                       >
                         {theme}
@@ -93,7 +131,8 @@ export default function Settings() {
                 </div>
                 <div>
                   <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Glass intensiteit</label>
-                  <input type="range" min="0" max="100" defaultValue="60" className="w-full mt-2" />
+                  <input type="range" min="0" max="100" value={prefs.glass} onChange={(e) => set("glass", Number(e.target.value))} className="w-full mt-2" />
+                  <p className="text-xs text-muted-foreground mt-1">{prefs.glass}%</p>
                 </div>
               </div>
             )}
@@ -102,11 +141,15 @@ export default function Settings() {
               <div className="space-y-6">
                 <h2 className="text-lg font-heading font-medium">Notifications</h2>
                 <div className="space-y-3">
-                  {["Email notificaties", "WhatsApp notificaties", "Agenda herinneringen", "Giulia suggesties", "Goedkeuring verzoeken"].map((item) => (
+                  {NOTIF_KEYS.map((item) => (
                     <div key={item} className="flex items-center justify-between p-3 glass-1 rounded-xl">
                       <span className="text-sm">{item}</span>
-                      <button className="h-6 w-11 rounded-full bg-olive/30 relative transition-colors">
-                        <span className="absolute top-0.5 right-0.5 h-5 w-5 rounded-full bg-white shadow" />
+                      <button
+                        onClick={() => toggle("notifications", item)}
+                        className={cn("h-6 w-11 rounded-full relative transition-colors", prefs.notifications[item] ? "bg-olive" : "bg-foreground/15")}
+                        aria-label={item}
+                      >
+                        <span className={cn("absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all", prefs.notifications[item] ? "left-[22px]" : "left-0.5")} />
                       </button>
                     </div>
                   ))}
@@ -121,8 +164,12 @@ export default function Settings() {
                   <div>
                     <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Proactiviteit niveau</label>
                     <div className="grid grid-cols-3 gap-2 mt-2">
-                      {["Subtiel", "Gebalanceerd", "Actief"].map((level, i) => (
-                        <button key={level} className={cn("p-3 rounded-xl text-sm transition-all", i === 1 ? "bg-foreground text-background font-medium" : "glass-1 text-muted-foreground hover:text-foreground")}>
+                      {PROACTIVITY.map((level) => (
+                        <button
+                          key={level}
+                          onClick={() => set("proactivity", level)}
+                          className={cn("p-3 rounded-xl text-sm transition-all", prefs.proactivity === level ? "bg-foreground text-background font-medium" : "glass-1 text-muted-foreground hover:text-foreground")}
+                        >
                           {level}
                         </button>
                       ))}
@@ -132,10 +179,10 @@ export default function Settings() {
                     <p className="text-sm font-medium mb-2">Automatisch goedkeuren</p>
                     <p className="text-xs text-muted-foreground mb-3">Giulia mag deze acties zonder goedkeuring uitvoeren:</p>
                     <div className="space-y-2">
-                      {["Informatie structureren", "Interne taak voorstellen", "Samenvatting maken", "Kennis organiseren"].map((item) => (
-                        <div key={item} className="flex items-center gap-2 text-sm">
-                          <input type="checkbox" defaultChecked className="rounded" /> {item}
-                        </div>
+                      {AUTO_KEYS.map((item) => (
+                        <label key={item} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <input type="checkbox" checked={!!prefs.autoApprove[item]} onChange={() => toggle("autoApprove", item)} className="rounded" /> {item}
+                        </label>
                       ))}
                     </div>
                   </div>
@@ -158,10 +205,8 @@ export default function Settings() {
                 <h2 className="text-lg font-heading font-medium">Voice</h2>
                 <div>
                   <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Stem</label>
-                  <select className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
-                    <option>River — kalm, neutraal</option>
-                    <option>Honey — warm, zacht</option>
-                    <option>Sunny — helder, opgewekt</option>
+                  <select value={prefs.voice} onChange={(e) => set("voice", e.target.value)} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+                    {VOICES.map((v) => <option key={v}>{v}</option>)}
                   </select>
                 </div>
               </div>
@@ -175,7 +220,13 @@ export default function Settings() {
             )}
 
             <div className="pt-6 border-t border-border/40 mt-6">
-              <GlassButton variant="primary" size="md">Wijzigingen opslaan</GlassButton>
+              <button
+                onClick={save}
+                disabled={saving}
+                className="inline-flex items-center gap-2 rounded-full bg-foreground text-background px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition disabled:opacity-50"
+              >
+                {saving ? "Opslaan…" : "Wijzigingen opslaan"}
+              </button>
             </div>
           </GlassPanel>
         </div>
