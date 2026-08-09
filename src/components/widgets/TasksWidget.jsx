@@ -46,7 +46,7 @@ export default function TasksWidget() {
   };
 
   return (
-    <WidgetShell size="2x1" radius="medium" glass="opaque" interactive onClick={() => openModule("tasks")} className="min-h-[240px]">
+    <WidgetShell size="2x1" radius="medium" glass="translucent" interactive onClick={() => openModule("tasks")} className="min-h-[240px]">
       <div className="p-5 flex flex-col h-full">
         <WidgetHeader icon={CheckSquare} label="Taken" count={active.length ? `${active.length} open` : "alles klaar"} />
 

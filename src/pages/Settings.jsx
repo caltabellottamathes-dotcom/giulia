@@ -6,7 +6,6 @@ import {
   Settings as SettingsIcon, Palette, Bell, Brain, Lock, Mic,
   Database, Zap, Plug,
 } from "lucide-react";
-import PushToggle from "@/components/push/PushToggle";
 
 const sections = [
   { id: "general", label: "General", icon: SettingsIcon },
@@ -102,11 +101,6 @@ export default function Settings() {
             {active === "notifications" && (
               <div className="space-y-6">
                 <h2 className="text-lg font-heading font-medium">Notifications</h2>
-                <div className="glass-1 rounded-xl p-4">
-                  <p className="text-sm font-medium mb-1">Pushmeldingen</p>
-                  <p className="text-xs text-muted-foreground mb-3">Ontvang meldingen op dit apparaat wanneer Giulia iets te melden heeft.</p>
-                  <PushToggle />
-                </div>
                 <div className="space-y-3">
                   {["Email notificaties", "WhatsApp notificaties", "Agenda herinneringen", "Giulia suggesties", "Goedkeuring verzoeken"].map((item) => (
                     <div key={item} className="flex items-center justify-between p-3 glass-1 rounded-xl">

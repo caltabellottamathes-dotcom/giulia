@@ -26,7 +26,7 @@ export default function EmailWidget() {
   };
 
   return (
-    <WidgetShell size="2x2" radius="medium" glass="blue" interactive onClick={() => openModule("email")} className="min-h-[300px]">
+    <WidgetShell size="2x2" radius="medium" glass="translucent" interactive onClick={() => openModule("email")} className="min-h-[300px]">
       <div className="p-5 flex flex-col h-full">
         <WidgetHeader icon={Mail} label="Email" count={unread.length ? `${unread.length} ongelezen` : "alles gelezen"} />
 

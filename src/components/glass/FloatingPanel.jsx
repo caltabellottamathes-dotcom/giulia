@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { X, GripHorizontal } from "lucide-react";
+import { X } from "lucide-react";
 
 /**
- * FloatingPanel — spatial glass overlay. Slides in from the chosen side, or —
- * when `draggable` — behaves like a real OS window: a free-positioned panel
- * with a grip strip you can drag by pointer, that sits within the viewport.
+ * FloatingPanel — spatial glass overlay that slides in from the sides.
+ * `width` (px) scales the right-positioned panel so the content determines
+ * the size — not every panel needs the same ratio.
  *
  * Positions: right · left · bottom · top · center
  * Glass levels: 2 (subtle), 3 (feature), 4 (modal/focus)
@@ -48,11 +48,7 @@ export default function FloatingPanel({
   className,
   showOverlay = true,
   closeOnOverlay = true,
-  draggable = false,
 }) {
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const drag = useRef({ active: false, sx: 0, sy: 0, bx: 0, by: 0 });
-
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
@@ -73,30 +69,10 @@ export default function FloatingPanel({
   if (!open) return null;
 
   const isCenter = position === "center";
-  const isWindow = draggable;
-
-  const posClass = isWindow
-    ? `fixed top-[4vh] right-4 lg:right-6 z-50 w-[calc(100%-2rem)] ${widthClass[width] || widthClass[720]}`
-    : position === "right"
+  const posClass =
+    position === "right"
       ? `fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 w-[calc(100%-2rem)] ${widthClass[width] || widthClass[720]} z-50`
       : positions[position];
-
-  const onPointerDown = (e) => {
-    if (!isWindow) return;
-    drag.current = { active: true, sx: e.clientX, sy: e.clientY, bx: offset.x, by: offset.y };
-    e.currentTarget.setPointerCapture?.(e.pointerId);
-  };
-  const onPointerMove = (e) => {
-    if (!drag.current.active) return;
-    setOffset({
-      x: drag.current.bx + (e.clientX - drag.current.sx),
-      y: drag.current.by + (e.clientY - drag.current.sy),
-    });
-  };
-  const endDrag = (e) => {
-    drag.current.active = false;
-    e?.currentTarget?.releasePointerCapture?.(e.pointerId);
-  };
 
   return (
     <>
@@ -109,32 +85,18 @@ export default function FloatingPanel({
           onClick={closeOnOverlay ? onClose : undefined}
         />
       )}
-      <div
-        className={cn(posClass, animations[position], className)}
-        style={isWindow ? { transform: `translate(${offset.x}px, ${offset.y}px)`, maxHeight: "92vh" } : undefined}
-      >
+      <div className={cn(posClass, animations[position], className)}>
         <div
           className={cn(
             glassLevels[level] || "glass-3",
-            "specular-edge float-shadow rounded-[28px] overflow-hidden relative flex flex-col",
-            isCenter ? "w-full max-w-lg max-h-[85vh]" : isWindow ? "h-[88vh]" : "h-full"
+            "float-shadow rounded-[28px] overflow-hidden relative flex flex-col",
+            isCenter ? "w-full max-w-lg max-h-[85vh]" : "h-full"
           )}
         >
-          {isWindow && (
-            <div
-              onPointerDown={onPointerDown}
-              onPointerMove={onPointerMove}
-              onPointerUp={endDrag}
-              onPointerCancel={endDrag}
-              className="glass-grip shrink-0 h-9 flex items-center justify-center border-b border-white/10 select-none"
-            >
-              <GripHorizontal className="h-4 w-4 text-foreground/40" />
-            </div>
-          )}
           {onClose && (
             <button
               onClick={onClose}
-              className="absolute top-3 right-3 z-10 h-8 w-8 rounded-lg glass-1 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              className="absolute top-4 right-4 z-10 h-8 w-8 rounded-lg glass-1 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Sluiten"
             >
               <X className="h-4 w-4" />

@@ -65,40 +65,41 @@ export default function ModulePanel() {
   };
 
   return (
-    <FloatingPanel open={!!mod} onClose={closeModule} level={3} width={mod?.panelWidth || 720} draggable>
+    <FloatingPanel open={!!mod} onClose={closeModule} position="right" level={3} width={mod?.panelWidth || 720}>
       {mod && (
-        <div className="flex-1 min-h-0 flex flex-col">
+        <div className="flex flex-col h-full">
           <div className="h-[3px] w-full shrink-0" style={{ background: MODULE_ACCENT[activeModule] || "hsl(var(--sand))" }} />
-          {/* Bold graphic header — no photo banner, big display type */}
-          <div className="px-7 lg:px-9 pt-6 pb-5 shrink-0">
-            <div className="flex items-start justify-between gap-4">
+          {/* Cleaner header — lighter image, clearer title, dashboard action */}
+          <div className="relative px-7 lg:px-9 pt-7 pb-5 shrink-0 overflow-hidden">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img src={MODULE_IMAGE[activeModule] || IMAGES.walkingChairs} alt="" className="h-full w-full object-cover opacity-25" draggable={false} />
+              <div className="absolute inset-0 bg-gradient-to-r from-warm-white/95 via-warm-white/85 to-warm-white/55" />
+            </div>
+            <div className="relative flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-[0.3em] text-foreground/45 font-semibold mb-2">Onderdeel</p>
-                <h2 className="text-[28px] lg:text-[34px] font-display font-semibold tracking-[-0.02em] leading-none text-foreground">
+                <p className="text-[10px] uppercase tracking-[0.28em] text-olive/80 font-medium mb-2">Onderdeel</p>
+                <h2 className="text-[26px] lg:text-[30px] font-display font-semibold tracking-tight leading-none text-foreground">
                   {mod.label}
                 </h2>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 shrink-0 mt-0.5">
                 {widgetDef && (
                   <button
                     onClick={addToDashboard}
                     disabled={adding}
-                    className="inline-flex items-center gap-1.5 rounded-full glass-1 text-foreground px-3 py-2 text-[11px] font-semibold hover:bg-foreground/5 transition disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 rounded-full glass-1 px-3 py-2 text-[11px] font-semibold text-foreground hover:bg-foreground/5 transition disabled:opacity-50"
                   >
                     <LayoutGrid className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Widget</span>
                     <Plus className="h-3 w-3" />
                   </button>
                 )}
-                <span
-                  className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: MODULE_ACCENT[activeModule] || "hsl(var(--sand))", color: "hsl(var(--ivory))" }}
-                >
-                  <mod.icon className="h-4 w-4" strokeWidth={1.75} />
+                <span className="h-11 w-11 rounded-full glass-1 flex items-center justify-center shrink-0">
+                  <mod.icon className="h-4 w-4 text-foreground/70" strokeWidth={1.5} />
                 </span>
               </div>
             </div>
-            <div className="mt-5 h-px w-full bg-foreground/10" />
+            <div className="relative mt-5 h-px w-full bg-gradient-to-r from-border/70 via-border/30 to-transparent" />
           </div>
 
           {/* Content — cleaner, more opaque surface for readability */}

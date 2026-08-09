@@ -25,7 +25,7 @@ export default function ApprovalsWidget() {
   };
 
   return (
-    <WidgetShell size="2x1" radius="soft" glass="sky" interactive onClick={() => openModule("approvals")} className="min-h-[240px]">
+    <WidgetShell size="2x1" radius="soft" glass="card" interactive onClick={() => openModule("approvals")} className="min-h-[240px]">
       <div className="p-5 flex flex-col h-full">
         <WidgetHeader icon={ClipboardCheck} label="Goedkeuringen" count={approvals.length ? `${approvals.length} wacht` : "leeg"} />
 
