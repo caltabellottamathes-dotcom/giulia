@@ -3,12 +3,11 @@ import WidgetShell from "./WidgetShell";
 import WidgetHeader from "./WidgetHeader";
 import GiuliaStepCard from "./GiuliaStepCard";
 import { base44 } from "@/api/base44Client";
-import { Sparkles, AlertCircle, Calendar, Mail, ClipboardCheck, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 /**
- * GiuliaWidget — "je dag": an interactive, page-by-page walkthrough of the
- * most urgent items. One big clear step at a time with big action buttons.
- * No chat, no video here — those live in their own components.
+ * GiuliaWidget — "je dag": a page-by-page walkthrough of the most urgent
+ * items. One bold step at a time. No chat, no video here.
  */
 export default function GiuliaWidget() {
   const [steps, setSteps] = useState([]);
@@ -30,22 +29,22 @@ export default function GiuliaWidget() {
       .filter((t) => t.status === "overdue")
       .sort((a, b) => new Date(a.deadline || 0) - new Date(b.deadline || 0))
       .slice(0, 3)
-      .forEach((t) => s.push({ id: t.id, type: "task", icon: AlertCircle, tone: "overdue", kind: "Te laat", title: t.title, meta: t.deadline ? `Deadline was ${t.deadline}` : "Geen deadline" }));
+      .forEach((t) => s.push({ id: t.id, type: "task", tone: "overdue", kind: "Te laat", title: t.title, meta: t.deadline ? `Deadline was ${t.deadline}` : "Geen deadline" }));
 
     events
       .filter((e) => (e.start || "").slice(0, 10) === todayStr)
       .sort((a, b) => new Date(a.start) - new Date(b.start))
       .slice(0, 3)
-      .forEach((e) => s.push({ id: e.id, type: "event", icon: Calendar, kind: "Vandaag", title: e.title, meta: new Date(e.start).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" }) }));
+      .forEach((e) => s.push({ id: e.id, type: "event", kind: "Vandaag", title: e.title, meta: new Date(e.start).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" }) }));
 
     tasks
       .filter((t) => t.status === "today")
       .slice(0, 3)
-      .forEach((t) => s.push({ id: t.id, type: "task", icon: CheckCircle2, kind: "Taak vandaag", title: t.title, meta: t.deadline ? `Deadline ${t.deadline}` : "Vandaag" }));
+      .forEach((t) => s.push({ id: t.id, type: "task", kind: "Taak vandaag", title: t.title, meta: t.deadline ? `Deadline ${t.deadline}` : "Vandaag" }));
 
-    emails.slice(0, 2).forEach((m) => s.push({ id: m.id, type: "email", icon: Mail, kind: "Ongelezen", title: m.subject || "Email", meta: m.sender ? `Van ${m.sender}` : "Inbox" }));
+    emails.slice(0, 2).forEach((m) => s.push({ id: m.id, type: "email", kind: "Ongelezen", title: m.subject || "Email", meta: m.sender ? `Van ${m.sender}` : "Inbox" }));
 
-    approvals.slice(0, 2).forEach((a) => s.push({ id: a.id, type: "approval", icon: ClipboardCheck, kind: "Goedkeuring", title: a.description || a.action_type || "Actie", meta: "Wacht op jou" }));
+    approvals.slice(0, 2).forEach((a) => s.push({ id: a.id, type: "approval", kind: "Goedkeuring", title: a.description || a.action_type || "Actie", meta: "Wacht op jou" }));
 
     setSteps(s.slice(0, 8));
     setIndex(0);
@@ -56,34 +55,26 @@ export default function GiuliaWidget() {
 
   const step = steps[index];
 
-  const complete = async () => {
-    if (!step) return;
-    try { await base44.entities.Task.update(step.id, { status: "completed" }); } catch {}
-    load();
-  };
-  const approve = async () => {
-    if (!step) return;
-    try { await base44.entities.Approval.update(step.id, { status: "approved" }); } catch {}
-    load();
-  };
-  const reject = async () => {
-    if (!step) return;
-    try { await base44.entities.Approval.update(step.id, { status: "rejected" }); } catch {}
-    load();
-  };
+  const complete = async () => { if (!step) return; try { await base44.entities.Task.update(step.id, { status: "completed" }); } catch {} load(); };
+  const approve = async () => { if (!step) return; try { await base44.entities.Approval.update(step.id, { status: "approved" }); } catch {} load(); };
+  const reject = async () => { if (!step) return; try { await base44.entities.Approval.update(step.id, { status: "rejected" }); } catch {} load(); };
   const skip = () => setIndex((i) => (i + 1 < steps.length ? i + 1 : 0));
   const prev = () => setIndex((i) => (i > 0 ? i - 1 : steps.length - 1));
   const next = () => setIndex((i) => (i + 1 < steps.length ? i + 1 : 0));
 
   return (
-    <WidgetShell size="2x2" radius="large" glass="card" className="min-h-[440px]">
+    <WidgetShell size="2x2" radius="large" className="min-h-[440px]">
       <div className="relative p-5 lg:p-6 flex flex-col h-full">
-        <WidgetHeader icon={Sparkles} label="Giulia · je dag" count={steps.length ? `${index + 1}/${steps.length}` : ""} />
+        <WidgetHeader label="Giulia · je dag" count={steps.length ? `${index + 1}/${steps.length}` : ""} />
 
         {steps.length > 0 && (
-          <div className="flex items-center gap-1.5 mb-3">
+          <div className="flex items-center gap-1.5 mb-4">
             {steps.map((_, i) => (
-              <span key={i} className={`h-1 flex-1 rounded-full transition-colors ${i === index ? "bg-olive" : "bg-ivory/15"}`} />
+              <span
+                key={i}
+                className={cn("h-1 flex-1 rounded-full transition-all duration-500", i === index ? "" : "opacity-20")}
+                style={{ background: i === index ? "var(--tile-accent)" : "currentColor" }}
+              />
             ))}
           </div>
         )}
@@ -94,21 +85,19 @@ export default function GiuliaWidget() {
           </div>
         ) : !step ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center">
-            <CheckCircle2 className="h-10 w-10 text-ivory/40 mb-3" />
-            <p className="text-ivory/70 font-medium">Niets dringends vandaag.</p>
+            <div className="h-20 w-20 rounded-full flex items-center justify-center mb-4" style={{ background: "var(--tile-accent)", color: "var(--tile-on-accent)" }}>
+              <span className="text-4xl font-display font-semibold tracking-[-0.04em] leading-none">0</span>
+            </div>
+            <p className="text-current font-medium">Niets dringends vandaag.</p>
           </div>
         ) : (
-          <GiuliaStepCard step={step} onComplete={complete} onApprove={approve} onReject={reject} onSkip={skip} />
+          <GiuliaStepCard step={step} index={index} onComplete={complete} onApprove={approve} onReject={reject} onSkip={skip} />
         )}
 
         {steps.length > 1 && (
           <div className="flex items-center justify-between mt-3">
-            <button onClick={prev} className="h-9 w-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition" aria-label="Vorige">
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <button onClick={next} className="h-9 w-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition" aria-label="Volgende">
-              <ChevronRight className="h-4 w-4" />
-            </button>
+            <button onClick={prev} className="h-10 w-10 rounded-full border border-ivory/15 text-current text-lg leading-none flex items-center justify-center transition hover:-translate-y-0.5 active:scale-95" aria-label="Vorige">‹</button>
+            <button onClick={next} className="h-10 w-10 rounded-full border border-ivory/15 text-current text-lg leading-none flex items-center justify-center transition hover:-translate-y-0.5 active:scale-95" aria-label="Volgende">›</button>
           </div>
         )}
       </div>

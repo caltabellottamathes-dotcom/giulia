@@ -4,18 +4,22 @@ import WidgetHeader from "./WidgetHeader";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
-import { FileText, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const typeLabel = { pdf: "PDF", image: "IMG", doc: "DOC", sheet: "XLS", figma: "FIG", other: "FILE" };
+const TYPE_MARK = { pdf: "PDF", image: "IMG", doc: "DOC", sheet: "XLS", figma: "FIG", other: "FILE" };
+const TYPE_COLOR = { pdf: "bg-sand", image: "bg-olive", doc: "bg-charcoal", sheet: "bg-sand", figma: "bg-olive", other: "bg-charcoal" };
 
 /**
- * DocumentsWidget — star / unstar a file inline (favorite ↔ recent).
+ * DocumentsWidget — content gets a photographic/illustrative preview. A fanned
+ * stack of cards: the top file shows its thumbnail (image) or a solid color
+ * block with the file type as oversized typography. Count badge on top.
  */
 export default function DocumentsWidget() {
   const { openModule } = usePanel();
   const { data: docs, loading, reload } = useEntityList("Document", { sort: "-created_date" });
-  const visible = docs.slice(0, 4);
+  const favs = docs.filter((d) => d.status === "favorite");
+  const top = docs[0];
+  const stack = docs.slice(0, 3);
 
   const toggleFav = async (e, d) => {
     e.stopPropagation();
@@ -23,35 +27,45 @@ export default function DocumentsWidget() {
   };
 
   return (
-    <WidgetShell size="2x1" radius="medium" glass="translucent" interactive onClick={() => openModule("documents")} className="min-h-[240px]">
+    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("documents")} className="min-h-[240px]">
       <div className="p-5 flex flex-col h-full">
-        <WidgetHeader icon={FileText} label="Documenten" count={`${docs.length}`} />
-
+        <WidgetHeader label="Documenten" count={`${docs.length}`} />
         {loading ? (
-          <div className="flex-1 space-y-2.5">
-            {[0, 1, 2, 3].map((i) => <div key={i} className="h-8 rounded-lg shimmer" />)}
-          </div>
-        ) : visible.length > 0 ? (
-          <div className="flex-1 space-y-2 overflow-hidden">
-            {visible.map((d) => (
-              <div key={d.id} className="flex items-center gap-2.5">
-                <span className="h-8 w-8 rounded-lg bg-ivory/5 border border-ivory/10 flex items-center justify-center text-[8px] font-bold text-ivory/60 shrink-0">
-                  {typeLabel[d.type] || "FILE"}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-ivory truncate">{d.name}</p>
-                  {d.owner && <p className="text-[10px] text-ivory/45 truncate">{d.owner}</p>}
+          <div className="flex-1 flex items-center justify-center"><div className="h-8 w-8 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" /></div>
+        ) : docs.length > 0 ? (
+          <div className="flex-1 flex items-center gap-5">
+            <div className="relative w-24 h-28 shrink-0">
+              {stack.map((d, i) => (
+                <div
+                  key={d.id}
+                  className={cn("absolute inset-0 rounded-2xl overflow-hidden border border-ivory/15", i === 0 ? "z-30" : "z-20", i > 0 && (TYPE_COLOR[d.type] || "bg-charcoal"))}
+                  style={{ transform: `translate(${i * 6}px, ${i * 6}px) rotate(${i * 4}deg)` }}
+                >
+                  {i === 0 && (
+                    d.type === "image" && d.url
+                      ? <img src={d.url} alt="" className="h-full w-full object-cover" />
+                      : <div className={cn("h-full w-full flex items-center justify-center", TYPE_COLOR[d.type] || "bg-charcoal")}><span className="font-display font-bold text-lg tracking-tight text-current">{TYPE_MARK[d.type] || "FILE"}</span></div>
+                  )}
                 </div>
-                <button onClick={(e) => toggleFav(e, d)} className="shrink-0 h-7 w-7 rounded-lg flex items-center justify-center hover:bg-ivory/5 transition" aria-label="Favoriet">
-                  <Star className={cn("h-3.5 w-3.5", d.status === "favorite" ? "fill-olive text-olive" : "text-ivory/30")} />
-                </button>
-              </div>
-            ))}
+              ))}
+              <span className="absolute -top-2 -right-2 z-40 h-7 min-w-7 px-1.5 rounded-full flex items-center justify-center text-[11px] font-bold" style={{ background: "var(--tile-accent)", color: "var(--tile-on-accent)" }}>{docs.length}</span>
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-current truncate">{top?.name}</p>
+              <p className="text-[11px] opacity-50 truncate mt-0.5">{top?.owner || "Onbekend"}</p>
+              <button
+                onClick={(e) => toggleFav(e, top)}
+                className={cn("mt-3 rounded-full px-3 py-1.5 text-[11px] font-semibold border transition", top?.status === "favorite" ? "border-transparent" : "border-ivory/15 text-current")}
+                style={top?.status === "favorite" ? { background: "var(--tile-accent)", color: "var(--tile-on-accent)" } : undefined}
+              >
+                {top?.status === "favorite" ? "Favoriet" : "Markeer favoriet"}
+              </button>
+              {favs.length > 0 && <p className="text-[11px] opacity-50 mt-2">{favs.length} favorieten</p>}
+            </div>
           </div>
         ) : (
-          <div className="flex-1 flex items-center justify-center">
-            <p className="text-xs text-ivory/45">Geen bestanden</p>
-          </div>
+          <div className="flex-1 flex items-center justify-center"><p className="text-xs text-ivory/45">Geen bestanden</p></div>
         )}
       </div>
     </WidgetShell>

@@ -1,18 +1,21 @@
 import React from "react";
 import WidgetShell from "./WidgetShell";
 import WidgetHeader from "./WidgetHeader";
+import CountUp from "./CountUp";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
-import { Briefcase, Minus, Plus } from "lucide-react";
 
 /**
- * ProjectsWidget — nudge each project's progress with in-card +/- controls.
+ * ProjectsWidget — progress as a bespoke Gantt-style stack. Hero is the
+ * average completion; each active project is a track with an accent fill.
+ * Tactile ± nudges the lead project's progress.
  */
 export default function ProjectsWidget() {
   const { openModule } = usePanel();
   const { data: projects, loading, reload } = useEntityList("Project");
   const active = projects.filter((p) => ["planning", "in_progress", "waiting"].includes(p.status));
+  const avg = active.length ? Math.round(active.reduce((s, p) => s + (p.progress || 0), 0) / active.length) : 0;
   const visible = active.slice(0, 3);
 
   const nudge = async (e, p, delta) => {
@@ -22,40 +25,40 @@ export default function ProjectsWidget() {
   };
 
   return (
-    <WidgetShell size="2x2" radius="medium" glass="card" interactive onClick={() => openModule("projects")} className="min-h-[300px]">
+    <WidgetShell size="2x2" radius="medium" interactive onClick={() => openModule("projects")} className="min-h-[300px]">
       <div className="p-5 flex flex-col h-full">
-        <WidgetHeader icon={Briefcase} label="Projecten" count={`${active.length} actief`} />
-
+        <WidgetHeader label="Projecten" count={`${active.length} actief`} />
         {loading ? (
-          <div className="flex-1 space-y-3">
-            {[0, 1, 2].map((i) => <div key={i} className="h-12 rounded-lg shimmer" />)}
-          </div>
-        ) : visible.length > 0 ? (
-          <div className="flex-1 space-y-4">
-            {visible.map((p) => (
-              <div key={p.id}>
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-ivory truncate">{p.title}</p>
-                  <span className="text-[10px] text-ivory/50 tabular-nums">{p.progress || 0}%</span>
-                </div>
-                <div className="mt-2 flex items-center gap-2">
-                  <button onClick={(e) => nudge(e, p, -10)} className="h-6 w-6 rounded-md bg-ivory/5 border border-ivory/10 flex items-center justify-center text-ivory/60 hover:text-ivory hover:bg-ivory/10 transition" aria-label="Minder">
-                    <Minus className="h-3 w-3" />
-                  </button>
-                  <div className="flex-1 h-2 rounded-full bg-ivory/10 overflow-hidden">
-                    <div className="h-full bg-olive rounded-full transition-all duration-300" style={{ width: `${Math.min(p.progress || 0, 100)}%` }} />
+          <div className="flex-1 flex items-center justify-center"><div className="h-8 w-8 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" /></div>
+        ) : active.length > 0 ? (
+          <>
+            <div className="flex items-end gap-3 mb-5">
+              <CountUp value={avg} className="text-5xl font-display font-semibold tracking-[-0.03em] leading-none text-current" />
+              <p className="text-[11px] uppercase tracking-[0.2em] opacity-50 mb-1.5">gemiddeld klaar</p>
+            </div>
+
+            <div className="flex-1 space-y-4">
+              {visible.map((p) => (
+                <div key={p.id}>
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <p className="text-sm font-medium text-current truncate">{p.title}</p>
+                    <span className="text-[11px] tabular-nums opacity-50">{p.progress || 0}%</span>
                   </div>
-                  <button onClick={(e) => nudge(e, p, 10)} className="h-6 w-6 rounded-md bg-ivory/5 border border-ivory/10 flex items-center justify-center text-ivory/60 hover:text-ivory hover:bg-ivory/10 transition" aria-label="Meer">
-                    <Plus className="h-3 w-3" />
-                  </button>
+                  <div className="relative h-2.5 rounded-full bg-ivory/10 overflow-hidden">
+                    <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-500" style={{ width: `${Math.min(p.progress || 0, 100)}%`, background: "var(--tile-accent)" }} />
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+
+            <div className="mt-4 flex items-center gap-2">
+              <button onClick={(e) => nudge(e, active[0], -10)} className="h-9 w-9 rounded-full border border-ivory/15 text-current text-lg leading-none flex items-center justify-center transition hover:bg-ivory/5">−</button>
+              <button onClick={(e) => nudge(e, active[0], 10)} className="h-9 w-9 rounded-full border border-ivory/15 text-current text-lg leading-none flex items-center justify-center transition hover:bg-ivory/5">+</button>
+              <span className="text-[11px] opacity-50 truncate">{active[0]?.title}</span>
+            </div>
+          </>
         ) : (
-          <div className="flex-1 flex items-center justify-center">
-            <p className="text-xs text-ivory/45">Geen actieve projecten</p>
-          </div>
+          <div className="flex-1 flex items-center justify-center"><p className="text-xs text-ivory/45">Geen actieve projecten</p></div>
         )}
       </div>
     </WidgetShell>

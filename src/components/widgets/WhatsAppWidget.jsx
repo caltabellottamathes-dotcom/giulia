@@ -1,14 +1,15 @@
 import React, { useMemo, useState } from "react";
 import WidgetShell from "./WidgetShell";
 import WidgetHeader from "./WidgetHeader";
+import CountUp from "./CountUp";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
-import { MessageCircle, Send, Sparkles } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 /**
- * WhatsAppWidget — quick-reply to your most recent chat, right from the tile.
+ * WhatsAppWidget — conversation as a bespoke chat bubble with the latest
+ * message preview and a status dot. Hero is the unread count; reply inline
+ * with a sculpted send button. A draft-ready pill surfaces Giulia's concept.
  */
 export default function WhatsAppWidget() {
   const { openModule } = usePanel();
@@ -18,7 +19,6 @@ export default function WhatsAppWidget() {
   const [reply, setReply] = useState("");
 
   const draftsReady = useMemo(() => drafts.filter((d) => d.status === "awaiting_approval"), [drafts]);
-  const draftFor = (id) => draftsReady.some((d) => d.contact_id === id);
 
   const convos = useMemo(() => {
     const byContact = new Map();
@@ -37,6 +37,8 @@ export default function WhatsAppWidget() {
 
   const nameOf = (id) => contacts.find((c) => c.id === id)?.name || "Onbekend";
   const top = convos[0];
+  const unreadTotal = convos.reduce((s, c) => s + c.unread, 0);
+  const draftForTop = top && draftsReady.some((d) => d.contact_id === top.contact_id);
 
   const send = async (e) => {
     e.stopPropagation();
@@ -49,50 +51,49 @@ export default function WhatsAppWidget() {
   };
 
   return (
-    <WidgetShell size="2x2" radius="medium" glass="translucent" interactive onClick={() => openModule("whatsapp")} className="min-h-[280px]">
+    <WidgetShell size="2x2" radius="medium" interactive onClick={() => openModule("whatsapp")} className="min-h-[280px]">
       <div className="p-5 flex flex-col h-full">
-        <WidgetHeader icon={MessageCircle} label="WhatsApp" count={draftsReady.length ? `${draftsReady.length} klaar` : convos.length ? `${convos.length} chats` : "leeg"} />
-
+        <WidgetHeader label="WhatsApp" count={unreadTotal ? `${unreadTotal} nieuw` : draftsReady.length ? `${draftsReady.length} concept` : convos.length ? `${convos.length} chats` : "leeg"} />
         {loading ? (
-          <div className="flex-1 space-y-2.5">
-            {[0, 1, 2].map((i) => <div key={i} className="h-9 rounded-lg shimmer" />)}
-          </div>
-        ) : convos.length > 0 ? (
-          <div className="flex-1 space-y-2.5 overflow-hidden">
-            {convos.map((c, i) => (
-              <div key={c.contact_id} className={cn("flex items-start gap-2.5", i === 0 && "bg-olive/[0.06] -mx-2 px-2 py-1.5 rounded-lg")}>
-                <span className="mt-1 h-7 w-7 rounded-full bg-olive/20 border border-olive/30 flex items-center justify-center text-[10px] font-semibold text-olive shrink-0">
-                  {nameOf(c.contact_id).slice(0, 1).toUpperCase()}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-semibold text-ivory truncate">{nameOf(c.contact_id)}</p>
-                    {draftFor(c.contact_id) && <Sparkles className="h-3 w-3 text-sand shrink-0" />}
-                    {c.unread > 0 && <span className="text-[10px] font-semibold text-ivory bg-olive rounded-full px-1.5 py-0.5 shrink-0">{c.unread}</span>}
-                  </div>
-                  <p className="text-[11px] text-ivory/55 truncate">{c.last.message}</p>
-                </div>
+          <div className="flex-1 flex items-center justify-center"><div className="h-8 w-8 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" /></div>
+        ) : top ? (
+          <div className="flex-1 flex flex-col justify-center">
+            {unreadTotal > 0 && (
+              <div className="flex items-end gap-2 mb-3">
+                <CountUp value={unreadTotal} className="text-5xl font-display font-semibold tracking-[-0.03em] leading-none text-current" />
+                <p className="text-[11px] uppercase tracking-[0.2em] opacity-50 mb-1.5">ongelezen</p>
               </div>
-            ))}
+            )}
+
+            <div className="flex items-start gap-2.5">
+              <span className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-semibold shrink-0" style={{ background: "var(--tile-accent)", color: "var(--tile-on-accent)" }}>{nameOf(top.contact_id).slice(0, 1).toUpperCase()}</span>
+              <div className="relative flex-1 rounded-2xl rounded-tl-sm px-4 py-3 bg-ivory/[0.08]">
+                <p className="text-[10px] uppercase tracking-wider opacity-50 mb-0.5">{nameOf(top.contact_id)}</p>
+                <p className="text-sm text-current leading-snug line-clamp-2">{top.last.message}</p>
+                {top.unread > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 h-5 min-w-5 px-1 rounded-full text-[10px] font-bold flex items-center justify-center" style={{ background: "var(--tile-accent)", color: "var(--tile-on-accent)" }}>{top.unread}</span>
+                )}
+              </div>
+            </div>
+
+            {draftForTop && (
+              <button onClick={(e) => { e.stopPropagation(); openModule("whatsapp"); }} className="mt-3 self-start rounded-full px-3 py-1.5 text-[11px] font-semibold border border-ivory/15 text-current transition hover:bg-ivory/5">
+                Giulia stelde een concept voor
+              </button>
+            )}
+
+            <form onSubmit={(e) => { e.preventDefault(); send(e); }} onClick={(e) => e.stopPropagation()} className="mt-3 flex items-center gap-2">
+              <input
+                value={reply}
+                onChange={(e) => setReply(e.target.value)}
+                placeholder={`Antwoord aan ${nameOf(top.contact_id)}…`}
+                className="flex-1 min-w-0 bg-ivory/5 border border-ivory/15 rounded-full px-4 py-2.5 text-sm text-current placeholder:text-ivory/40 focus:outline-none focus:border-ivory/40"
+              />
+              <button type="submit" className="h-11 w-11 rounded-full flex items-center justify-center font-semibold transition hover:-translate-y-0.5 active:scale-95 shrink-0" style={{ background: "var(--tile-accent)", color: "var(--tile-on-accent)" }}>→</button>
+            </form>
           </div>
         ) : (
-          <div className="flex-1 flex items-center justify-center">
-            <p className="text-xs text-ivory/45">Geen berichten</p>
-          </div>
-        )}
-
-        {top && (
-          <form onSubmit={(e) => { e.preventDefault(); send(e); }} onClick={(e) => e.stopPropagation()} className="mt-3 pt-3 border-t border-ivory/10 flex items-center gap-2">
-            <input
-              value={reply}
-              onChange={(e) => setReply(e.target.value)}
-              placeholder={`Antwoord aan ${nameOf(top.contact_id)}…`}
-              className="flex-1 min-w-0 bg-ivory/5 border border-ivory/10 rounded-full px-3 py-2 text-xs text-ivory placeholder:text-ivory/40 focus:outline-none focus:border-olive/40"
-            />
-            <button type="submit" className="h-8 w-8 rounded-full bg-olive text-ivory flex items-center justify-center shrink-0 hover:bg-olive/90 transition" aria-label="Verstuur">
-              <Send className="h-3.5 w-3.5" />
-            </button>
-          </form>
+          <div className="flex-1 flex items-center justify-center"><p className="text-xs text-ivory/45">Geen berichten</p></div>
         )}
       </div>
     </WidgetShell>
