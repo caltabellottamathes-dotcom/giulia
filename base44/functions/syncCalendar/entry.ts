@@ -1,14 +1,17 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 /**
- * syncCalendar — pulls upcoming Google Calendar events (past week + next 30 days)
- * from the connected account into the Event entity. Deduped by title+start.
+ * syncCalendar — pulls upcoming Google Calendar events into the Event entity
+ * (deduped by title+start). Works both with a logged-in user (app-user token,
+ * records owned by the user) and without (scheduled/service-role). The
+ * Google Calendar connector is shared, so asServiceRole.connectors works
+ * in both cases.
  */
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const user = await base44.auth.me().catch(() => null);
+    const ent = user ? base44.entities : base44.asServiceRole.entities;
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('googlecalendar');
     const h = { Authorization: `Bearer ${accessToken}` };
@@ -27,7 +30,7 @@ export default async function (req) {
     const data = await res.json();
     const items = data.items || [];
 
-    const existing = await base44.entities.Event.list();
+    const existing = await ent.Event.list();
     const seen = new Set(
       existing.map((e) => `${(e.title || '').trim()}|${(e.start || '').slice(0, 16)}`)
     );
@@ -39,7 +42,7 @@ export default async function (req) {
       if (!start) continue;
       const key = `${(it.summary || '').trim()}|${(start || '').slice(0, 16)}`;
       if (seen.has(key)) continue;
-      await base44.entities.Event.create({
+      await ent.Event.create({
         title: it.summary || '(geen titel)',
         start,
         end,
@@ -49,7 +52,7 @@ export default async function (req) {
       added++;
     }
 
-    return Response.json({ added, total: items.length });
+    return Response.json({ ok: true, added, total: items.length, mode: user ? 'user' : 'service' });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

@@ -3,8 +3,9 @@ import { secrets } from "base44:runtime";
 
 /**
  * chatWithGiulia — bridge from the app (UI/skin) to the external Giulia
- * Superagent (ID 6a6cc0011ab9e3b32cfc1057). The app is the skin; Giulia is the
- * brain. All app→Giulia traffic flows through this function.
+ * Superagent. All app→Giulia chat traffic flows through this function.
+ * Persists both the user's message and Giulia's reply to the Message entity
+ * so the conversation history and Giulia's proactive messages show in-app.
  */
 const AGENT_ID = "6a6cc0011ab9e3b32cfc1057";
 const DEFAULT_CONVERSATION = "6a6cc0034bc0607c481f1602";
@@ -22,6 +23,16 @@ export default async function (req) {
     if (!message) {
       return Response.json({ error: "No message provided" }, { status: 400 });
     }
+
+    // Persist the user's message (best-effort)
+    try {
+      await base44.entities.Message.create({
+        role: "user",
+        content: message,
+        channel: "in-app",
+        status: "sent",
+      });
+    } catch (e) { /* ignore persistence errors */ }
 
     const today = new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
     const context = `Context: vandaag is ${today}.${user?.full_name ? ` Je spreekt met ${user.full_name}.` : ""}\n\n`;
@@ -55,8 +66,20 @@ export default async function (req) {
     }
 
     const data = await response.json();
+    const reply = data.content || "";
+
+    // Persist Giulia's reply (best-effort)
+    try {
+      await base44.entities.Message.create({
+        role: "giulia",
+        content: reply,
+        channel: "in-app",
+        status: "sent",
+      });
+    } catch (e) { /* ignore */ }
+
     return Response.json({
-      response: data.content || "",
+      response: reply,
       conversation_id: conversationId,
       message_id: data.id || null,
       credits_charged: data.usage?.credits_charged || 0,

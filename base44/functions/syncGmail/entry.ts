@@ -2,13 +2,14 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 /**
  * syncGmail — pulls recent inbox messages from the connected Gmail account
- * into the Email entity (deduped by gmail_message_id). Giulia reads the real inbox.
+ * into the Email entity (deduped by gmail_message_id). Works both with a
+ * logged-in user and without (scheduled/service-role).
  */
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const user = await base44.auth.me().catch(() => null);
+    const ent = user ? base44.entities : base44.asServiceRole.entities;
 
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
     const h = { Authorization: `Bearer ${accessToken}` };
@@ -23,7 +24,7 @@ export default async function (req) {
     const list = await listRes.json();
     const ids = (list.messages || []).map((m) => m.id);
 
-    const existing = await base44.entities.Email.filter({ folder: 'inbox' });
+    const existing = await ent.Email.filter({ folder: 'inbox' });
     const seen = new Set(existing.map((e) => e.gmail_message_id).filter(Boolean));
 
     let added = 0;
@@ -43,7 +44,7 @@ export default async function (req) {
       const senderName = from.replace(/<.*>/, '').trim().replace(/"/g, '') || from;
       const senderEmail = (from.match(/<([^>]+)>/) || [, from])[1];
 
-      await base44.entities.Email.create({
+      await ent.Email.create({
         sender: senderName,
         sender_email: senderEmail,
         subject,
@@ -57,7 +58,7 @@ export default async function (req) {
       added++;
     }
 
-    return Response.json({ added, total: ids.length });
+    return Response.json({ ok: true, added, total: ids.length, mode: user ? 'user' : 'service' });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
