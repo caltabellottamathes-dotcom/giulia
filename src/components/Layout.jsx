@@ -10,6 +10,9 @@ import ChatWindow from "@/components/panels/ChatWindow";
 import { PanelProvider, usePanel } from "@/lib/PanelContext";
 import { GiuliaVoiceProvider } from "@/lib/GiuliaVoiceContext";
 import AmbientBloom from "@/components/glass/AmbientBloom";
+import { GiuliaAgentProvider } from "@/lib/GiuliaAgentContext";
+import GiuliaAgentButton from "@/components/giulia/GiuliaAgentButton";
+import GiuliaAgentPanel from "@/components/giulia/GiuliaAgentPanel";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
@@ -154,7 +157,9 @@ export default function Layout() {
   return (
     <PanelProvider>
       <GiuliaVoiceProvider>
-        <LayoutInner />
+        <GiuliaAgentProvider>
+          <LayoutInner />
+        </GiuliaAgentProvider>
       </GiuliaVoiceProvider>
     </PanelProvider>
   );
@@ -284,6 +289,10 @@ function LayoutInner() {
 
       {/* Dedicated chat window — the Giulia agent */}
       <ChatWindow />
+
+      {/* Platform agent — floating conversational panel with tool access */}
+      <GiuliaAgentButton />
+      <GiuliaAgentPanel />
     </div>
   );
 }
