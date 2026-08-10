@@ -1,11 +1,13 @@
 import React from "react";
 import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { BarChart, Bar, Cell, ResponsiveContainer } from "recharts";
 
 /** Shared L02 (Onderdeelpaneel) building blocks — graphic, branded, animated.
  *  Surfaces are light frosted cards (they sit on the floating ivory panel),
- *  each led by a dominant graphic element: a bold number, a distribution bar
- *  or a progress ring — never a block of plain text. */
+ *  each led by a dominant graphic element: a bold number, an animated bar
+ *  diagram or a progress ring — never a block of plain text. */
 
 const CARD = "bg-foreground/[0.03] border border-foreground/[0.06]";
 
@@ -21,7 +23,7 @@ export function Stat({ label, value, accent, hint }) {
   );
 }
 
-/** Dominant graphic stat — a big number with an optional data visual slot. */
+/** Dominant graphic stat — a big number with an optional data-visual slot. */
 export function HeroStat({ value, label, accent, sub, visual }) {
   return (
     <div className={cn("relative animate-fade-up rounded-2xl p-5 overflow-hidden", CARD)}>
@@ -35,7 +37,24 @@ export function HeroStat({ value, label, accent, sub, visual }) {
   );
 }
 
-/** Stacked horizontal distribution bar — a hand-shaped data visual. */
+/** Animated vertical bar diagram (recharts) — a moving, branded data visual. */
+export function MiniBars({ data, height = 56 }) {
+  return (
+    <div style={{ height }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
+          <Bar dataKey="value" radius={[4, 4, 0, 0]} isAnimationActive animationDuration={900} animationEasing="ease-out">
+            {data.map((d, i) => (
+              <Cell key={i} fill={d.color} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/** Stacked horizontal distribution bar. */
 export function BarDistribution({ segments }) {
   const total = segments.reduce((s, x) => s + (x.value || 0), 0) || 1;
   return (
@@ -47,7 +66,7 @@ export function BarDistribution({ segments }) {
   );
 }
 
-/** Small SVG progress ring. */
+/** Small SVG progress ring that animates its stroke on mount/change. */
 export function RingMini({ value, accent, size = 64 }) {
   const r = (size - 8) / 2;
   const c = 2 * Math.PI * r;
@@ -58,9 +77,23 @@ export function RingMini({ value, accent, size = 64 }) {
       <circle
         cx={size / 2} cy={size / 2} r={r} fill="none" stroke={accent || "hsl(var(--olive))"} strokeWidth="6" strokeLinecap="round"
         strokeDasharray={c} strokeDashoffset={off} transform={`rotate(-90 ${size / 2} ${size / 2})`}
-        style={{ transition: "stroke-dashoffset 0.7s cubic-bezier(0.16,1,0.3,1)" }}
+        style={{ transition: "stroke-dashoffset 0.8s cubic-bezier(0.16,1,0.3,1)" }}
       />
     </svg>
+  );
+}
+
+/** Animated pictogram — a lucide icon that gently floats. Branded accent. */
+export function AnimatedPicto({ icon: Icon, accent }) {
+  return (
+    <motion.span
+      className="inline-flex items-center justify-center rounded-2xl h-10 w-10 bg-foreground/[0.05] border border-foreground/[0.08] shrink-0"
+      style={{ color: accent || "hsl(var(--foreground))" }}
+      animate={{ y: [0, -3, 0] }}
+      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+    >
+      {Icon && <Icon className="h-4 w-4" strokeWidth={1.75} />}
+    </motion.span>
   );
 }
 

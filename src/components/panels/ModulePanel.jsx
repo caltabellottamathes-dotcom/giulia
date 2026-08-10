@@ -21,6 +21,7 @@ import MemoryPreview from "@/components/panels/previews/MemoryPreview";
 import KnowledgePreview from "@/components/panels/previews/KnowledgePreview";
 import DocumentsPreview from "@/components/panels/previews/DocumentsPreview";
 import AgentsPreview from "@/components/panels/previews/AgentsPreview";
+import { AnimatedPicto } from "@/components/panels/previews/previewParts";
 
 /** LEVEL 02 quick-context previews — one per data module. Modules without
  *  a preview (chat, voice, settings, profile, integrations) keep the full
@@ -117,7 +118,7 @@ export default function ModulePanel() {
           </div>
 
           {/* Floating glass content card — overlaps the header photo with rounded corners */}
-          <div className="flex-1 -mt-10 rounded-t-[28px] bg-background/85 backdrop-blur-2xl overflow-y-auto border-t border-white/10 shadow-[0_-14px_34px_-14px_rgba(0,0,0,0.22)]">
+          <div className="flex-1 -mt-10 rounded-t-[28px] bg-background/70 backdrop-blur-[80px] saturate-150 overflow-y-auto border-t border-white/10 shadow-[0_-14px_34px_-14px_rgba(0,0,0,0.22)]">
             <div className="px-7 lg:px-9 pt-7 pb-5 flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground font-medium mb-1.5">Snelle context · Niveau 02</p>
@@ -146,9 +147,7 @@ export default function ModulePanel() {
                     <span className="hidden sm:inline">Open space</span>
                   </button>
                 )}
-                <span className="h-10 w-10 rounded-full glass-1 border border-border/40 flex items-center justify-center shrink-0">
-                  <mod.icon className="h-4 w-4 text-foreground/70" strokeWidth={1.5} />
-                </span>
+                <AnimatedPicto icon={mod.icon} accent={MODULE_ACCENT[activeModule]} />
               </div>
             </div>
 

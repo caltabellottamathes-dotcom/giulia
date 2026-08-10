@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Row, Empty, SectionLabel, ActionBtn, HeroStat, BarDistribution } from "./previewParts";
+import { Row, Empty, SectionLabel, ActionBtn, HeroStat, MiniBars } from "./previewParts";
 import { format } from "date-fns";
 import { RefreshCw, Check } from "lucide-react";
 
@@ -56,11 +56,12 @@ export default function EmailPreview({ onOpen }) {
           accent="hsl(var(--blue-grey))"
           sub={`${important.length} belangrijk`}
           visual={
-            <BarDistribution
-              segments={[
-                { value: unread.length, color: "hsl(var(--blue-grey))" },
-                { value: important.length, color: "hsl(var(--sand))" },
-                { value: read, color: "hsl(var(--foreground) / 0.15)" },
+            <MiniBars
+              height={56}
+              data={[
+                { value: Math.max(unread.length, 1), color: "hsl(var(--blue-grey))" },
+                { value: Math.max(important.length, 1), color: "hsl(var(--sand))" },
+                { value: Math.max(read, 1), color: "hsl(var(--foreground) / 0.18)" },
               ]}
             />
           }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Row, Empty, SectionLabel, ActionBtn, HeroStat, BarDistribution } from "./previewParts";
+import { Row, Empty, SectionLabel, ActionBtn, HeroStat, MiniBars } from "./previewParts";
 import { Check } from "lucide-react";
 
 const PRIORITY_COLOR = {
@@ -54,12 +54,13 @@ export default function TasksPreview({ onOpen }) {
         accent="hsl(var(--sand))"
         sub={`${tasks.length} open · ${overdue} te laat · ${waiting} wacht`}
         visual={
-          <BarDistribution
-            segments={[
-              { value: overdue, color: "hsl(var(--destructive))" },
-              { value: today.length - overdue, color: "hsl(var(--sand))" },
-              { value: upcoming, color: "hsl(var(--blue-grey))" },
-              { value: waiting, color: "hsl(var(--smoke))" },
+          <MiniBars
+            height={56}
+            data={[
+              { value: Math.max(overdue, 1), color: "hsl(var(--destructive))" },
+              { value: Math.max(today.length - overdue, 1), color: "hsl(var(--sand))" },
+              { value: Math.max(upcoming, 1), color: "hsl(var(--blue-grey))" },
+              { value: Math.max(waiting, 1), color: "hsl(var(--smoke))" },
             ]}
           />
         }
