@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
 import StatusBadge from "@/components/glass/StatusBadge";
-import FloatingPanel from "@/components/glass/FloatingPanel";
+import PanelForm from "@/components/glass/PanelForm";
 import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
@@ -253,53 +253,54 @@ export default function Email() {
         </div>
       </div>
 
-      <FloatingPanel open={showDraftPanel} onClose={() => setShowDraftPanel(false)} position="right">
+      <PanelForm
+        open={showDraftPanel}
+        onClose={() => setShowDraftPanel(false)}
+        title="Email goedkeuren & versturen"
+        eyebrow="Giulia concept"
+        footer={<>
+          <GlassButton variant="primary" size="md" className="flex-1" onClick={approveAndSend} disabled={sending}>
+            <Check className="h-4 w-4" /> {sending ? "Versturen..." : "Goedkeuren & Versturen"}
+          </GlassButton>
+          <GlassButton variant="outline" size="md" onClick={() => setShowDraftPanel(false)}><X className="h-4 w-4" /> Annuleer</GlassButton>
+        </>}
+      >
         {selectedEmail && (
-          <div className="space-y-5">
+          <div className="glass-1 rounded-xl p-4 space-y-3">
+            <div><p className="text-[10px] uppercase tracking-wider text-muted-foreground">Aan</p><p className="text-sm">{selectedEmail.sender} ({selectedEmail.sender_email})</p></div>
+            <div><p className="text-[10px] uppercase tracking-wider text-muted-foreground">Onderwerp</p><p className="text-sm">{selectedEmail.subject}</p></div>
             <div>
-              <StatusBadge variant="draft"><Sparkles className="h-2.5 w-2.5" /> Giulia concept</StatusBadge>
-              <h2 className="text-xl font-display font-semibold mt-3">Email goedkeuren & versturen</h2>
-            </div>
-            <div className="glass-1 rounded-xl p-4 space-y-3">
-              <div><p className="text-[10px] uppercase tracking-wider text-muted-foreground">Aan</p><p className="text-sm">{selectedEmail.sender} ({selectedEmail.sender_email})</p></div>
-              <div><p className="text-[10px] uppercase tracking-wider text-muted-foreground">Onderwerp</p><p className="text-sm">{selectedEmail.subject}</p></div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Bericht (bewerkbaar)</p>
-                <textarea value={draftBody} onChange={(e) => setDraftBody(e.target.value)} className="w-full glass-1 rounded-xl px-3 py-2 text-sm focus:outline-none min-h-[160px] resize-none" />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <GlassButton variant="primary" size="md" className="flex-1" onClick={approveAndSend} disabled={sending}>
-                <Check className="h-4 w-4" /> {sending ? "Versturen..." : "Goedkeuren & Versturen"}
-              </GlassButton>
-              <GlassButton variant="outline" size="md" onClick={() => setShowDraftPanel(false)}><X className="h-4 w-4" /> Annuleer</GlassButton>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Bericht (bewerkbaar)</p>
+              <textarea value={draftBody} onChange={(e) => setDraftBody(e.target.value)} className="w-full glass-1 rounded-xl px-3 py-2 text-sm focus:outline-none min-h-[160px] resize-none" />
             </div>
           </div>
         )}
-      </FloatingPanel>
+      </PanelForm>
 
-      <FloatingPanel open={showCompose} onClose={() => setShowCompose(false)} position="right">
-        <div className="space-y-4">
-          <h2 className="text-xl font-display font-semibold">Nieuwe email</h2>
-          <div>
-            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Aan</label>
-            <input value={compose.to} onChange={(e) => setCompose({ ...compose, to: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" placeholder="naam@voorbeeld.com" />
-          </div>
-          <div>
-            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Onderwerp</label>
-            <input value={compose.subject} onChange={(e) => setCompose({ ...compose, subject: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
-          </div>
-          <div>
-            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Bericht</label>
-            <textarea value={compose.body} onChange={(e) => setCompose({ ...compose, body: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none min-h-[160px] resize-none" />
-          </div>
-          <div className="flex gap-2 pt-2">
-            <GlassButton variant="primary" size="md" className="flex-1" onClick={sendCompose} disabled={sendingCompose}>{sendingCompose ? "Versturen…" : "Verstuur"}</GlassButton>
-            <GlassButton variant="outline" size="md" onClick={saveComposeDraft}>Concept</GlassButton>
-            <GlassButton variant="ghost" size="md" onClick={() => setShowCompose(false)}>Annuleer</GlassButton>
-          </div>
+      <PanelForm
+        open={showCompose}
+        onClose={() => setShowCompose(false)}
+        title="Nieuwe email"
+        eyebrow="Email · Opstellen"
+        footer={<>
+          <GlassButton variant="primary" size="md" className="flex-1" onClick={sendCompose} disabled={sendingCompose}>{sendingCompose ? "Versturen…" : "Verstuur"}</GlassButton>
+          <GlassButton variant="outline" size="md" onClick={saveComposeDraft}>Concept</GlassButton>
+          <GlassButton variant="ghost" size="md" onClick={() => setShowCompose(false)}>Annuleer</GlassButton>
+        </>}
+      >
+        <div>
+          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Aan</label>
+          <input value={compose.to} onChange={(e) => setCompose({ ...compose, to: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" placeholder="naam@voorbeeld.com" />
         </div>
-      </FloatingPanel>
+        <div>
+          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Onderwerp</label>
+          <input value={compose.subject} onChange={(e) => setCompose({ ...compose, subject: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
+        </div>
+        <div>
+          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Bericht</label>
+          <textarea value={compose.body} onChange={(e) => setCompose({ ...compose, body: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none min-h-[160px] resize-none" />
+        </div>
+      </PanelForm>
     </div>
   );
 }

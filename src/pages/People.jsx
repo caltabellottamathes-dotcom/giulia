@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
-import FloatingPanel from "@/components/glass/FloatingPanel";
+import PanelForm from "@/components/glass/PanelForm";
 import Avatar from "@/components/glass/Avatar";
 import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
@@ -109,49 +109,53 @@ export default function People() {
         )}
       </div>
 
-      <FloatingPanel open={showNew} onClose={() => setShowNew(false)} position="right">
-        <div className="space-y-4">
-          <h2 className="text-xl font-display font-semibold">Nieuw contact</h2>
-          {[
-            { k: "name", l: "Naam" }, { k: "company", l: "Bedrijf" },
-            { k: "role", l: "Functie" }, { k: "email", l: "Email" }, { k: "phone", l: "Telefoon" },
-          ].map((f) => (
-            <div key={f.k}>
-              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{f.l}</label>
-              <input value={draft[f.k]} onChange={(e) => setDraft({ ...draft, [f.k]: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-olive/30" />
-            </div>
-          ))}
-          <div className="flex gap-2 pt-2">
-            <GlassButton variant="primary" size="md" className="flex-1" onClick={createContact}>Maak aan</GlassButton>
-            <GlassButton variant="outline" size="md" onClick={() => setShowNew(false)}>Annuleer</GlassButton>
+      <PanelForm
+        open={showNew}
+        onClose={() => setShowNew(false)}
+        title="Nieuw contact"
+        eyebrow="Mensen"
+        footer={<>
+          <GlassButton variant="primary" size="md" className="flex-1" onClick={createContact}>Maak aan</GlassButton>
+          <GlassButton variant="outline" size="md" onClick={() => setShowNew(false)}>Annuleer</GlassButton>
+        </>}
+      >
+        {[
+          { k: "name", l: "Naam" }, { k: "company", l: "Bedrijf" },
+          { k: "role", l: "Functie" }, { k: "email", l: "Email" }, { k: "phone", l: "Telefoon" },
+        ].map((f) => (
+          <div key={f.k}>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{f.l}</label>
+            <input value={draft[f.k]} onChange={(e) => setDraft({ ...draft, [f.k]: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-olive/30" />
           </div>
-        </div>
-      </FloatingPanel>
+        ))}
+      </PanelForm>
 
-      <FloatingPanel open={!!editContact} onClose={() => setEditContact(null)} position="right">
-        <div className="space-y-4">
-          <h2 className="text-xl font-display font-semibold">Contact bewerken</h2>
-          <ImageInput label="Avatar" value={editDraft.avatar || ""} onChange={(url) => setEditDraft({ ...editDraft, avatar: url })} />
-          {[
-            { k: "name", l: "Naam" }, { k: "company", l: "Bedrijf" },
-            { k: "role", l: "Functie" }, { k: "email", l: "Email" }, { k: "phone", l: "Telefoon" },
-            { k: "relationship_type", l: "Relatie" },
-          ].map((f) => (
-            <div key={f.k}>
-              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{f.l}</label>
-              <input value={editDraft[f.k] || ""} onChange={(e) => setEditDraft({ ...editDraft, [f.k]: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
-            </div>
-          ))}
-          <div>
-            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Notities</label>
-            <textarea value={editDraft.notes || ""} onChange={(e) => setEditDraft({ ...editDraft, notes: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none min-h-[70px] resize-none" />
+      <PanelForm
+        open={!!editContact}
+        onClose={() => setEditContact(null)}
+        title="Contact bewerken"
+        eyebrow="Mensen"
+        footer={<>
+          <GlassButton variant="primary" size="md" className="flex-1" onClick={saveEdit}>Opslaan</GlassButton>
+          <GlassButton variant="outline" size="md" onClick={() => setEditContact(null)}>Annuleer</GlassButton>
+        </>}
+      >
+        <ImageInput label="Avatar" value={editDraft.avatar || ""} onChange={(url) => setEditDraft({ ...editDraft, avatar: url })} />
+        {[
+          { k: "name", l: "Naam" }, { k: "company", l: "Bedrijf" },
+          { k: "role", l: "Functie" }, { k: "email", l: "Email" }, { k: "phone", l: "Telefoon" },
+          { k: "relationship_type", l: "Relatie" },
+        ].map((f) => (
+          <div key={f.k}>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{f.l}</label>
+            <input value={editDraft[f.k] || ""} onChange={(e) => setEditDraft({ ...editDraft, [f.k]: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
           </div>
-          <div className="flex gap-2 pt-2">
-            <GlassButton variant="primary" size="md" className="flex-1" onClick={saveEdit}>Opslaan</GlassButton>
-            <GlassButton variant="outline" size="md" onClick={() => setEditContact(null)}>Annuleer</GlassButton>
-          </div>
+        ))}
+        <div>
+          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Notities</label>
+          <textarea value={editDraft.notes || ""} onChange={(e) => setEditDraft({ ...editDraft, notes: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none min-h-[70px] resize-none" />
         </div>
-      </FloatingPanel>
+      </PanelForm>
     </div>
   );
 }

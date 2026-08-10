@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
 import StatusBadge from "@/components/glass/StatusBadge";
-import FloatingPanel from "@/components/glass/FloatingPanel";
+import PanelForm from "@/components/glass/PanelForm";
 import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
@@ -177,60 +177,64 @@ export default function Tasks() {
         </div>
       </GlassPanel>
 
-      <FloatingPanel open={showNew} onClose={() => setShowNew(false)} position="right">
-        <div className="space-y-5">
-          <h2 className="text-xl font-display font-semibold">Nieuwe taak</h2>
-          <div>
-            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Titel</label>
-            <input
-              autoFocus
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && createTask()}
-              className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-olive/30"
-              placeholder="Wat staat er te doen?"
-            />
-          </div>
-          <div className="flex gap-2 pt-2">
-            <GlassButton variant="primary" size="md" className="flex-1" onClick={createTask}>Maak aan</GlassButton>
-            <GlassButton variant="outline" size="md" onClick={() => setShowNew(false)}>Annuleer</GlassButton>
-          </div>
+      <PanelForm
+        open={showNew}
+        onClose={() => setShowNew(false)}
+        title="Nieuwe taak"
+        eyebrow="Taken"
+        footer={<>
+          <GlassButton variant="primary" size="md" className="flex-1" onClick={createTask}>Maak aan</GlassButton>
+          <GlassButton variant="outline" size="md" onClick={() => setShowNew(false)}>Annuleer</GlassButton>
+        </>}
+      >
+        <div>
+          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Titel</label>
+          <input
+            autoFocus
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && createTask()}
+            className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-olive/30"
+            placeholder="Wat staat er te doen?"
+          />
         </div>
-      </FloatingPanel>
+      </PanelForm>
 
-      <FloatingPanel open={!!editTask} onClose={() => setEditTask(null)} position="right">
-        <div className="space-y-5">
-          <h2 className="text-xl font-display font-semibold">Taak bewerken</h2>
+      <PanelForm
+        open={!!editTask}
+        onClose={() => setEditTask(null)}
+        title="Taak bewerken"
+        eyebrow="Taken"
+        footer={<>
+          <GlassButton variant="primary" size="md" className="flex-1" onClick={saveEdit}>Opslaan</GlassButton>
+          <GlassButton variant="outline" size="md" onClick={() => setEditTask(null)}>Annuleer</GlassButton>
+        </>}
+      >
+        <div>
+          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Titel</label>
+          <input value={editDraft.title || ""} onChange={(e) => setEditDraft({ ...editDraft, title: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Titel</label>
-            <input value={editDraft.title || ""} onChange={(e) => setEditDraft({ ...editDraft, title: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Prioriteit</label>
-              <select value={editDraft.priority} onChange={(e) => setEditDraft({ ...editDraft, priority: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
-                <option value="low">Laag</option>
-                <option value="medium">Gemiddeld</option>
-                <option value="high">Hoog</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Status</label>
-              <select value={editDraft.status} onChange={(e) => setEditDraft({ ...editDraft, status: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
-                {categories.map((c) => <option key={c} value={c}>{categoryLabel[c]}</option>)}
-              </select>
-            </div>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Prioriteit</label>
+            <select value={editDraft.priority} onChange={(e) => setEditDraft({ ...editDraft, priority: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+              <option value="low">Laag</option>
+              <option value="medium">Gemiddeld</option>
+              <option value="high">Hoog</option>
+            </select>
           </div>
           <div>
-            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Deadline</label>
-            <input type="date" value={editDraft.deadline || ""} onChange={(e) => setEditDraft({ ...editDraft, deadline: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
-          </div>
-          <div className="flex gap-2 pt-2">
-            <GlassButton variant="primary" size="md" className="flex-1" onClick={saveEdit}>Opslaan</GlassButton>
-            <GlassButton variant="outline" size="md" onClick={() => setEditTask(null)}>Annuleer</GlassButton>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Status</label>
+            <select value={editDraft.status} onChange={(e) => setEditDraft({ ...editDraft, status: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+              {categories.map((c) => <option key={c} value={c}>{categoryLabel[c]}</option>)}
+            </select>
           </div>
         </div>
-      </FloatingPanel>
+        <div>
+          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Deadline</label>
+          <input type="date" value={editDraft.deadline || ""} onChange={(e) => setEditDraft({ ...editDraft, deadline: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
+        </div>
+      </PanelForm>
     </div>
   );
 }

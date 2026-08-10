@@ -28,10 +28,10 @@ const DEFAULT_WIDGETS = ["giulia", "agenda", "tasks", "approvals", "email", "pro
 
 const SPAN_COL = {
   3: "lg:col-span-3",
-  4: "lg:col-span-4",
-  5: "lg:col-span-5",
-  6: "lg:col-span-6",
-  8: "lg:col-span-8",
+  4: "lg:col-span-3",
+  5: "lg:col-span-4",
+  6: "lg:col-span-4",
+  8: "lg:col-span-6",
 };
 
 /**
@@ -148,6 +148,17 @@ export default function Home() {
   return (
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-my-8 min-h-[calc(100svh-3.5rem)] overflow-hidden">
       <GiuliaIntroOverlay />
+      {/* Photo — wide card reaching the viewport RIGHT edge (desktop) */}
+      <div
+        className={cn(
+          "hidden lg:block fixed top-14 right-0 bottom-0 w-[58%] overflow-hidden z-0 lg:rounded-l-[32px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+          panelOpen ? "opacity-0 scale-95 pointer-events-none" : "opacity-100 scale-100"
+        )}
+      >
+        <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
+        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-storm/25" />
+      </div>
+
       {/* Photo — mobile banner */}
       <div
         className={cn(

@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
 import StatusBadge from "@/components/glass/StatusBadge";
-import FloatingPanel from "@/components/glass/FloatingPanel";
+import PanelForm from "@/components/glass/PanelForm";
 import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
@@ -134,27 +134,31 @@ export default function Knowledge() {
         </GlassPanel>
       )}
 
-      <FloatingPanel open={showNew} onClose={() => setShowNew(false)} position="right">
-        <div className="space-y-4">
-          <h2 className="text-xl font-display font-semibold">Nieuwe kennis</h2>
-          <Fields d={draft} set={setDraft} projects={projects} />
-          <div className="flex gap-2 pt-2">
-            <GlassButton variant="primary" size="md" className="flex-1" onClick={create}>Maak aan</GlassButton>
-            <GlassButton variant="outline" size="md" onClick={() => setShowNew(false)}>Annuleer</GlassButton>
-          </div>
-        </div>
-      </FloatingPanel>
+      <PanelForm
+        open={showNew}
+        onClose={() => setShowNew(false)}
+        title="Nieuwe kennis"
+        eyebrow="Kennisbank"
+        footer={<>
+          <GlassButton variant="primary" size="md" className="flex-1" onClick={create}>Maak aan</GlassButton>
+          <GlassButton variant="outline" size="md" onClick={() => setShowNew(false)}>Annuleer</GlassButton>
+        </>}
+      >
+        <Fields d={draft} set={setDraft} projects={projects} />
+      </PanelForm>
 
-      <FloatingPanel open={!!editItem} onClose={() => setEditItem(null)} position="right">
-        <div className="space-y-4">
-          <h2 className="text-xl font-display font-semibold">Kennis bewerken</h2>
-          <Fields d={editDraft} set={setEditDraft} projects={projects} />
-          <div className="flex gap-2 pt-2">
-            <GlassButton variant="primary" size="md" className="flex-1" onClick={saveEdit}>Opslaan</GlassButton>
-            <GlassButton variant="outline" size="md" onClick={() => setEditItem(null)}>Annuleer</GlassButton>
-          </div>
-        </div>
-      </FloatingPanel>
+      <PanelForm
+        open={!!editItem}
+        onClose={() => setEditItem(null)}
+        title="Kennis bewerken"
+        eyebrow="Kennisbank"
+        footer={<>
+          <GlassButton variant="primary" size="md" className="flex-1" onClick={saveEdit}>Opslaan</GlassButton>
+          <GlassButton variant="outline" size="md" onClick={() => setEditItem(null)}>Annuleer</GlassButton>
+        </>}
+      >
+        <Fields d={editDraft} set={setEditDraft} projects={projects} />
+      </PanelForm>
     </div>
   );
 }

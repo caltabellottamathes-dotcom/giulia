@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useEntityList } from "@/hooks/useEntity";
 import { useToast } from "@/components/ui/use-toast";
 import { Telescope, Sparkles, Check, Archive, RefreshCw, Plus, Trash2 } from "lucide-react";
-import FloatingPanel from "@/components/glass/FloatingPanel";
+import PanelForm from "@/components/glass/PanelForm";
 import GlassButton from "@/components/glass/GlassButton";
 import { cn } from "@/lib/utils";
 import PageHero from "@/components/glass/PageHero";
@@ -223,29 +223,31 @@ export default function Insights() {
         </div>
       )}
 
-      <FloatingPanel open={showNew} onClose={() => setShowNew(false)} position="right">
-        <div className="space-y-4">
-          <h2 className="text-xl font-display font-semibold">Nieuw inzicht</h2>
-          <div>
-            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Titel</label>
-            <input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
-          </div>
-          <div>
-            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Categorie</label>
-            <select value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
-              {CATS.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Inhoud</label>
-            <textarea value={draft.content} onChange={(e) => setDraft({ ...draft, content: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none min-h-[120px] resize-none" />
-          </div>
-          <div className="flex gap-2 pt-2">
-            <GlassButton variant="primary" size="md" className="flex-1" onClick={createInsight}>Maak aan</GlassButton>
-            <GlassButton variant="outline" size="md" onClick={() => setShowNew(false)}>Annuleer</GlassButton>
-          </div>
+      <PanelForm
+        open={showNew}
+        onClose={() => setShowNew(false)}
+        title="Nieuw inzicht"
+        eyebrow="Inzichten"
+        footer={<>
+          <GlassButton variant="primary" size="md" className="flex-1" onClick={createInsight}>Maak aan</GlassButton>
+          <GlassButton variant="outline" size="md" onClick={() => setShowNew(false)}>Annuleer</GlassButton>
+        </>}
+      >
+        <div>
+          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Titel</label>
+          <input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
         </div>
-      </FloatingPanel>
+        <div>
+          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Categorie</label>
+          <select value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+            {CATS.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Inhoud</label>
+          <textarea value={draft.content} onChange={(e) => setDraft({ ...draft, content: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none min-h-[120px] resize-none" />
+        </div>
+      </PanelForm>
     </div>
   );
 }
