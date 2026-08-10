@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Stat, Empty, SectionLabel } from "./previewParts";
+import { Stat, Card, Empty, SectionLabel, Pill } from "./previewParts";
 
 export default function KnowledgePreview({ onOpen }) {
   const [items, setItems] = useState([]);
@@ -22,7 +22,7 @@ export default function KnowledgePreview({ onOpen }) {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <Stat label="Notities" value={items.length} accent="hsl(var(--olive))" />
-        <Stat label="Categorieën" value={new Set(items.map((i) => i.category)).size} />
+        <Stat label="Categorieën" value={new Set(items.map((i) => i.category)).size} accent="hsl(var(--sand))" />
       </div>
       <SectionLabel>Recente kennis</SectionLabel>
       {loading ? (
@@ -30,17 +30,11 @@ export default function KnowledgePreview({ onOpen }) {
       ) : items.length ? (
         <div className="space-y-2">
           {items.map((k) => (
-            <button
-              key={k.id}
-              onClick={onOpen}
-              className="w-full text-left rounded-2xl px-4 py-3 glass-1 hover:bg-foreground/5 transition"
-            >
-              <span className="block text-[10px] uppercase tracking-[0.18em] text-foreground/40 font-semibold mb-1">
-                {k.category}
-              </span>
-              <span className="block text-sm font-medium text-foreground truncate">{k.title}</span>
+            <Card key={k.id} onClick={onOpen} accent="hsl(var(--olive))">
+              {k.category && <Pill accent="hsl(var(--olive))">{k.category}</Pill>}
+              <span className="block text-sm font-medium text-foreground mt-1.5 truncate">{k.title}</span>
               {k.content && <span className="block text-xs text-foreground/50 line-clamp-2 mt-0.5">{k.content}</span>}
-            </button>
+            </Card>
           ))}
         </div>
       ) : (

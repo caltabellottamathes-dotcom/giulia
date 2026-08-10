@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Stat, Empty, SectionLabel } from "./previewParts";
-import { Check, ArrowUpRight } from "lucide-react";
+import { Stat, Row, Empty, SectionLabel, ActionBtn } from "./previewParts";
+import { Check } from "lucide-react";
 
 const PRIORITY_COLOR = {
   high: "hsl(var(--destructive))",
@@ -47,7 +47,7 @@ export default function TasksPreview({ onOpen }) {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <Stat label="Vandaag" value={today.length} accent="hsl(var(--sand))" />
-        <Stat label="Open" value={tasks.length} />
+        <Stat label="Open" value={tasks.length} accent="hsl(var(--charcoal))" />
       </div>
       <SectionLabel>Focus · volgorde op prioriteit</SectionLabel>
       {loading ? (
@@ -55,23 +55,14 @@ export default function TasksPreview({ onOpen }) {
       ) : ordered.length ? (
         <div className="space-y-2">
           {ordered.map((t) => (
-            <div key={t.id} className="flex items-center gap-2 rounded-2xl px-4 py-3 glass-1">
-              <span
-                className="h-1.5 w-1.5 rounded-full shrink-0"
-                style={{ background: PRIORITY_COLOR[t.priority] || "hsl(var(--smoke))" }}
-              />
-              <button onClick={onOpen} className="min-w-0 flex-1 text-left group flex items-center gap-1">
-                <span className="block text-sm font-medium text-foreground truncate">{t.title}</span>
-                <ArrowUpRight className="h-3.5 w-3.5 text-foreground/30 group-hover:text-foreground/60 transition shrink-0" />
-              </button>
-              <button
-                onClick={() => complete(t)}
-                className="h-7 w-7 rounded-full glass-1 flex items-center justify-center text-foreground/50 hover:text-foreground hover:bg-foreground/5 transition"
-                aria-label="Afronden"
-              >
-                <Check className="h-4 w-4" />
-              </button>
-            </div>
+            <Row
+              key={t.id}
+              title={t.title}
+              sub={t.deadline ? `Uiterlijk ${new Date(t.deadline).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}` : undefined}
+              onClick={onOpen}
+              accent={PRIORITY_COLOR[t.priority] || "hsl(var(--smoke))"}
+              action={<ActionBtn icon={Check} label="Afronden" tone="olive" onClick={() => complete(t)} />}
+            />
           ))}
         </div>
       ) : (

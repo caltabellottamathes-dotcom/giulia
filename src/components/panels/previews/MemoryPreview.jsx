@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Stat, Empty, SectionLabel } from "./previewParts";
+import { Stat, Card, Empty, SectionLabel, Pill } from "./previewParts";
 
 export default function MemoryPreview({ onOpen }) {
   const [items, setItems] = useState([]);
@@ -22,7 +22,7 @@ export default function MemoryPreview({ onOpen }) {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <Stat label="Herinneringen" value={items.length} accent="hsl(var(--charcoal))" />
-        <Stat label="Categorieën" value={new Set(items.map((i) => i.category)).size} />
+        <Stat label="Categorieën" value={new Set(items.map((i) => i.category)).size} accent="hsl(var(--olive))" />
       </div>
       <SectionLabel>Wat Giulia onthoudt</SectionLabel>
       {loading ? (
@@ -30,16 +30,10 @@ export default function MemoryPreview({ onOpen }) {
       ) : items.length ? (
         <div className="space-y-2">
           {items.map((m) => (
-            <button
-              key={m.id}
-              onClick={onOpen}
-              className="w-full text-left rounded-2xl px-4 py-3 glass-1 hover:bg-foreground/5 transition"
-            >
-              <span className="block text-[10px] uppercase tracking-[0.18em] text-foreground/40 font-semibold mb-1">
-                {m.category}
-              </span>
-              <span className="block text-sm text-foreground/80 line-clamp-3">{m.content}</span>
-            </button>
+            <Card key={m.id} onClick={onOpen} accent="hsl(var(--charcoal))">
+              {m.category && <Pill accent="hsl(var(--olive))">{m.category}</Pill>}
+              <span className="block text-sm text-foreground/80 line-clamp-3 mt-1.5">{m.content}</span>
+            </Card>
           ))}
         </div>
       ) : (

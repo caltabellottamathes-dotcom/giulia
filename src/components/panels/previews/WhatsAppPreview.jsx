@@ -1,48 +1,61 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Stat, Empty, SectionLabel } from "./previewParts";
-import { ArrowUpRight } from "lucide-react";
+import { Stat, Row, Empty, SectionLabel, ActionBtn } from "./previewParts";
+import { Check, X } from "lucide-react";
 
 export default function WhatsAppPreview({ onOpen }) {
   const [msgs, setMsgs] = useState([]);
   const [drafts, setDrafts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const [m, d] = await Promise.all([
-          base44.entities.WhatsAppMessage.filter({ status: "unread" }, "-timestamp", 5),
-          base44.entities.GiuliaDraft.filter({ type: "whatsapp", status: "awaiting_approval" }, "-created_date", 5),
-        ]);
-        setMsgs(m || []);
-        setDrafts(d || []);
-      } catch (e) {
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+  const load = async () => {
+    try {
+      const [m, d] = await Promise.all([
+        base44.entities.WhatsAppMessage.filter({ status: "unread" }, "-timestamp", 5),
+        base44.entities.GiuliaDraft.filter({ type: "whatsapp", status: "awaiting_approval" }, "-created_date", 5),
+      ]);
+      setMsgs(m || []);
+      setDrafts(d || []);
+    } catch (e) {
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const decide = async (d, status) => {
+    setDrafts((prev) => prev.filter((x) => x.id !== d.id));
+    try {
+      await base44.entities.GiuliaDraft.update(d.id, { status });
+    } catch (e) {
+      load();
+    }
+  };
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <Stat label="Ongelezen" value={msgs.length} accent="hsl(var(--sand))" />
-        <Stat label="Drafts" value={drafts.length} />
+        <Stat label="Drafts" value={drafts.length} accent="hsl(var(--olive))" />
       </div>
       {drafts.length > 0 && (
         <>
           <SectionLabel>Giulia-koncepten ter goedkeuring</SectionLabel>
           <div className="space-y-2">
             {drafts.map((d) => (
-              <button
+              <Row
                 key={d.id}
+                title={d.content}
                 onClick={onOpen}
-                className="w-full text-left rounded-2xl px-4 py-3 glass-1 hover:bg-foreground/5 transition group flex items-center gap-2"
-              >
-                <span className="text-sm text-foreground/80 line-clamp-2 flex-1">{d.content}</span>
-                <ArrowUpRight className="h-3.5 w-3.5 text-foreground/30 group-hover:text-foreground/60 transition shrink-0" />
-              </button>
+                accent="hsl(var(--olive))"
+                action={
+                  <div className="flex items-center gap-1">
+                    <ActionBtn icon={Check} label="Goedkeuren" tone="olive" onClick={() => decide(d, "approved")} />
+                    <ActionBtn icon={X} label="Afkeuren" onClick={() => decide(d, "rejected")} />
+                  </div>
+                }
+              />
             ))}
           </div>
         </>
@@ -53,15 +66,7 @@ export default function WhatsAppPreview({ onOpen }) {
       ) : msgs.length ? (
         <div className="space-y-2">
           {msgs.map((m) => (
-            <button
-              key={m.id}
-              onClick={onOpen}
-              className="w-full text-left rounded-2xl px-4 py-3 glass-1 hover:bg-foreground/5 transition group flex items-center gap-2"
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-sand shrink-0" />
-              <span className="text-sm text-foreground/80 line-clamp-2 flex-1">{m.message}</span>
-              <ArrowUpRight className="h-3.5 w-3.5 text-foreground/30 group-hover:text-foreground/60 transition shrink-0" />
-            </button>
+            <Row key={m.id} title={m.message} onClick={onOpen} accent="hsl(var(--sand))" />
           ))}
         </div>
       ) : (

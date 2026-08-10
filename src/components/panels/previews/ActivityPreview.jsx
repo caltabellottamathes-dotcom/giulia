@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Stat, Empty, SectionLabel } from "./previewParts";
+import { Stat, Card, Empty, SectionLabel } from "./previewParts";
 import { format } from "date-fns";
 
 const SRC_COLOR = {
@@ -30,7 +30,7 @@ export default function ActivityPreview({ onOpen }) {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <Stat label="Recent" value={items.length} accent="hsl(var(--sand))" />
-        <Stat label="Bronnen" value={new Set(items.map((i) => i.source)).size} />
+        <Stat label="Bronnen" value={new Set(items.map((i) => i.source)).size} accent="hsl(var(--olive))" />
       </div>
       <SectionLabel>Laatste gebeurtenissen</SectionLabel>
       {loading ? (
@@ -38,22 +38,12 @@ export default function ActivityPreview({ onOpen }) {
       ) : items.length ? (
         <div className="space-y-2">
           {items.map((a) => (
-            <button
-              key={a.id}
-              onClick={onOpen}
-              className="w-full text-left flex items-start gap-3 rounded-2xl px-4 py-3 glass-1 hover:bg-foreground/5 transition"
-            >
-              <span
-                className="h-1.5 w-1.5 rounded-full mt-1.5 shrink-0"
-                style={{ background: SRC_COLOR[a.source] || "hsl(var(--smoke))" }}
-              />
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm text-foreground/80 line-clamp-2">{a.description}</span>
-                <span className="block text-[11px] text-foreground/40 mt-0.5">
-                  {a.timestamp ? format(new Date(a.timestamp), "d MMM HH:mm") : ""}
-                </span>
+            <Card key={a.id} onClick={onOpen} accent={SRC_COLOR[a.source] || "hsl(var(--smoke))"}>
+              <span className="block text-sm text-foreground/80 line-clamp-2">{a.description}</span>
+              <span className="block text-[11px] text-foreground/40 mt-1">
+                {a.source ? a.source + " · " : ""}{a.timestamp ? format(new Date(a.timestamp), "d MMM HH:mm") : ""}
               </span>
-            </button>
+            </Card>
           ))}
         </div>
       ) : (

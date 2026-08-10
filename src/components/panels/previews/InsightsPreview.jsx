@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Stat, Empty, SectionLabel } from "./previewParts";
+import { Stat, Card, Empty, SectionLabel, Pill } from "./previewParts";
 
 const CAT_COLOR = {
   Opportunity: "hsl(var(--olive))",
@@ -33,7 +33,7 @@ export default function InsightsPreview({ onOpen }) {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <Stat label="Nieuw" value={items.length} accent="hsl(var(--sand))" />
-        <Stat label="Gem. vertrouwen" value={avg} />
+        <Stat label="Gem. vertrouwen" value={avg} accent="hsl(var(--olive))" />
       </div>
       <SectionLabel>Inzichten om te bekijken</SectionLabel>
       {loading ? (
@@ -41,18 +41,11 @@ export default function InsightsPreview({ onOpen }) {
       ) : items.length ? (
         <div className="space-y-2">
           {items.map((i) => (
-            <button
-              key={i.id}
-              onClick={onOpen}
-              className="w-full text-left rounded-2xl px-4 py-3 glass-1 hover:bg-foreground/5 transition"
-            >
-              <div className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full" style={{ background: CAT_COLOR[i.category] || "hsl(var(--smoke))" }} />
-                <span className="text-[10px] uppercase tracking-[0.18em] text-foreground/40 font-semibold">{i.category}</span>
-              </div>
+            <Card key={i.id} onClick={onOpen} accent={CAT_COLOR[i.category] || "hsl(var(--smoke))"}>
+              <Pill accent={CAT_COLOR[i.category]}>{i.category}</Pill>
               <span className="block text-sm font-medium text-foreground mt-1.5">{i.title}</span>
               <span className="block text-xs text-foreground/50 line-clamp-2 mt-0.5">{i.content}</span>
-            </button>
+            </Card>
           ))}
         </div>
       ) : (

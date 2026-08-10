@@ -148,18 +148,23 @@ export default function Home() {
   return (
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-my-8 min-h-[calc(100svh-3.5rem)] overflow-hidden">
       <GiuliaIntroOverlay />
-      {/* Photo — wide card reaching the viewport RIGHT edge (desktop) */}
+      {/* Photo — ONE home background image that transforms when a panel opens.
+          Desktop: glides from the right side (closed) to the bottom-left corner
+          (open), keeping the same image so it reads as a transform — not a new
+          photo entering from another side. Stays the same size as before on open. */}
       <div
         className={cn(
-          "hidden lg:block fixed top-14 right-0 bottom-0 w-[58%] overflow-hidden z-0 lg:rounded-l-[32px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
-          panelOpen ? "opacity-0 scale-95 pointer-events-none" : "opacity-100 scale-100"
+          "hidden lg:block fixed z-0 overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[left,right,top]",
+          panelOpen
+            ? "left-0 right-[32%] top-[38vh] bottom-0 rounded-tr-[32px]"
+            : "left-[42%] right-0 top-14 bottom-0 rounded-l-[32px]"
         )}
       >
         <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
-        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-storm/25" />
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 via-charcoal/10 to-transparent" />
       </div>
 
-      {/* Photo — mobile banner */}
+      {/* Photo — mobile banner (closed) */}
       <div
         className={cn(
           "lg:hidden fixed top-14 left-0 right-0 h-[26vh] overflow-hidden z-0 rounded-b-[28px] transition-all duration-700",
@@ -170,10 +175,10 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-b from-charcoal/10 to-background/25" />
       </div>
 
-      {/* Photo — large bottom card when a panel opens; right portion sits behind the panel */}
+      {/* Photo — mobile bottom card (open) */}
       <div
         className={cn(
-          "fixed left-0 bottom-0 z-0 w-full h-[40vh] lg:w-[68%] lg:h-[62vh] overflow-hidden rounded-tr-[32px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+          "lg:hidden fixed left-0 bottom-0 z-0 w-full h-[40vh] overflow-hidden rounded-t-[28px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
           panelOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6 pointer-events-none"
         )}
       >

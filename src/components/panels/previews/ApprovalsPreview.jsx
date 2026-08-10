@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Stat, Empty, SectionLabel } from "./previewParts";
+import { Stat, Card, Empty, SectionLabel } from "./previewParts";
 import { Check, X, ArrowUpRight } from "lucide-react";
 
 export default function ApprovalsPreview({ onOpen }) {
@@ -34,7 +34,7 @@ export default function ApprovalsPreview({ onOpen }) {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <Stat label="Wacht op jou" value={items.length} accent="hsl(var(--olive))" />
-        <Stat label="Categorie" value={items[0]?.category || "—"} />
+        <Stat label="Categorie" value={items[0]?.category || "—"} accent="hsl(var(--sand))" />
       </div>
       <SectionLabel>Wacht op goedkeuring</SectionLabel>
       {loading ? (
@@ -42,29 +42,35 @@ export default function ApprovalsPreview({ onOpen }) {
       ) : items.length ? (
         <div className="space-y-2">
           {items.map((a) => (
-            <div key={a.id} className="rounded-2xl px-4 py-3 glass-1">
-              <button onClick={onOpen} className="w-full text-left group flex items-start gap-2">
+            <Card
+              key={a.id}
+              onClick={onOpen}
+              accent="hsl(var(--olive))"
+              action={
+                <>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); decide(a, "approved"); }}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full bg-olive text-ivory px-3 py-1.5 text-xs font-semibold hover:bg-olive/90 transition"
+                  >
+                    <Check className="h-3.5 w-3.5" /> Goed
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); decide(a, "rejected"); }}
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full glass-1 px-3 py-1.5 text-xs font-semibold text-foreground/70 hover:bg-foreground/5 transition"
+                  >
+                    <X className="h-3.5 w-3.5" /> Af
+                  </button>
+                </>
+              }
+            >
+              <div className="flex items-start gap-2">
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-medium text-foreground">{a.title || a.action_type}</span>
                   <span className="block text-xs text-foreground/50 line-clamp-2 mt-0.5">{a.description}</span>
                 </span>
-                <ArrowUpRight className="h-3.5 w-3.5 text-foreground/30 group-hover:text-foreground/60 transition shrink-0 mt-0.5" />
-              </button>
-              <div className="flex items-center gap-2 mt-2.5">
-                <button
-                  onClick={() => decide(a, "approved")}
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full bg-olive text-ivory px-3 py-1.5 text-xs font-semibold hover:bg-olive/90 transition"
-                >
-                  <Check className="h-3.5 w-3.5" /> Goed
-                </button>
-                <button
-                  onClick={() => decide(a, "rejected")}
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full glass-1 px-3 py-1.5 text-xs font-semibold text-foreground/70 hover:bg-foreground/5 transition"
-                >
-                  <X className="h-3.5 w-3.5" /> Af
-                </button>
+                <ArrowUpRight className="h-3.5 w-3.5 text-foreground/30 shrink-0 mt-0.5" />
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       ) : (
