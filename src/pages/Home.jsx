@@ -7,7 +7,7 @@ import { WidgetThemeProvider } from "@/lib/WidgetThemeContext";
 import { IMAGES } from "@/lib/images";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
-import { Plus } from "lucide-react";
+import { Plus, MessageCircle, BookOpen, FileText, Users, Telescope, ClipboardCheck, Activity, Brain } from "lucide-react";
 import AddWidgetPicker from "@/components/panels/AddWidgetPicker";
 import WidgetCell from "@/components/widgets/WidgetCell";
 import GiuliaIntroOverlay from "@/components/widgets/GiuliaIntroOverlay";
@@ -16,6 +16,17 @@ import { Link } from "react-router-dom";
 import { MODULES } from "@/lib/moduleRegistry";
 
 const DEFAULT_WIDGETS = ["giulia", "agenda", "tasks", "approvals", "email", "projects"];
+
+const MOBILE_SHORTCUTS = [
+  { key: "whatsapp", label: "WhatsApp", icon: MessageCircle },
+  { key: "knowledge", label: "Kennis", icon: BookOpen },
+  { key: "documents", label: "Docs", icon: FileText },
+  { key: "people", label: "Mensen", icon: Users },
+  { key: "insights", label: "Inzichten", icon: Telescope },
+  { key: "approvals", label: "Goedkeuring", icon: ClipboardCheck },
+  { key: "activity", label: "Activiteit", icon: Activity },
+  { key: "memory", label: "Geheugen", icon: Brain },
+];
 
 const SPAN_COL = {
   3: "lg:col-span-3",
@@ -32,7 +43,7 @@ const SPAN_COL = {
  * automatically. Giulia always leads.
  */
 export default function Home() {
-  const { activeModule } = usePanel();
+  const { activeModule, openModule } = usePanel();
   const panelOpen = !!activeModule;
   const [widgets, setWidgets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -165,28 +176,6 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 via-charcoal/10 to-transparent" />
       </div>
 
-      {/* Photo — mobile banner (closed) */}
-      <div
-        className={cn(
-          "lg:hidden fixed top-14 left-0 right-0 h-[26vh] overflow-hidden z-0 rounded-b-[28px] transition-all duration-700",
-          panelOpen ? "opacity-0 -translate-y-4 pointer-events-none" : "opacity-100"
-        )}
-      >
-        <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
-        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/10 to-background/25" />
-      </div>
-
-      {/* Photo — mobile bottom card (open) */}
-      <div
-        className={cn(
-          "lg:hidden fixed left-0 bottom-0 z-0 w-full h-[40vh] overflow-hidden rounded-t-[28px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
-          panelOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6 pointer-events-none"
-        )}
-      >
-        <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/35 to-transparent" />
-      </div>
-
       {/* Panel name + function links — where the greeting sits, shown when a panel is open */}
       <div className={cn("hidden lg:block fixed top-24 left-10 z-20 max-w-[34rem] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]", panelOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none")}>
         <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/70 mb-3 font-semibold">
@@ -216,7 +205,7 @@ export default function Home() {
       {/* Content */}
       <div
         className={cn(
-          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[26vh] lg:pt-0",
+          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-2 lg:pt-0",
           panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100"
         )}
       >
@@ -239,6 +228,19 @@ export default function Home() {
 
         {/* Tidy sorted bento grid */}
         <div className="px-5 lg:px-10 pb-10">
+          {/* Mobile quick access */}
+          <div className="lg:hidden mb-5">
+            <p className="text-[10px] uppercase tracking-[0.22em] text-foreground/55 font-semibold mb-2.5">Snelle toegang</p>
+            <div className="grid grid-cols-4 gap-2.5">
+              {MOBILE_SHORTCUTS.map((s) => (
+                <button key={s.key} onClick={() => openModule(s.key)} className="flex flex-col items-center gap-1.5 glass-1 rounded-2xl py-3 px-1 text-foreground/80 hover:text-foreground hover:bg-foreground/[0.04] transition-colors">
+                  <s.icon className="h-5 w-5" strokeWidth={1.6} />
+                  <span className="text-[10px] font-medium leading-none">{s.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {loading ? (
             <div className="grid grid-cols-12 gap-4">
               {[0, 1, 2, 3].map((i) => (

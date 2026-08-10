@@ -52,7 +52,7 @@ export default function PageHero({ page, image, icon: Icon, eyebrow = "Space", t
           Terug
         </button>
       )}
-      <div className="relative h-40 lg:h-48 overflow-hidden rounded-[24px] mb-5 float-shadow">
+      <div className="relative h-28 lg:h-48 overflow-hidden rounded-[24px] mb-4 lg:mb-5 float-shadow">
         <img src={src} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-charcoal/90 via-charcoal/55 to-charcoal/25" />
         <div className="relative h-full flex items-end p-5 lg:p-7">

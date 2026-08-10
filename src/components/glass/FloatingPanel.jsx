@@ -73,7 +73,7 @@ export default function FloatingPanel({
   const isCenter = position === "center";
   const posClass =
     position === "right"
-      ? `fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 w-[calc(100%-2rem)] ${widthClass[width] || widthClass[720]} z-50`
+      ? `fixed inset-0 lg:left-auto lg:right-6 lg:top-6 lg:bottom-6 ${widthClass[width] || widthClass[720]} z-50`
       : positions[position];
 
   return createPortal(
@@ -92,14 +92,14 @@ export default function FloatingPanel({
         <div
           className={cn(
             glassLevels[level] || "glass-3",
-            "float-shadow rounded-[28px] overflow-y-auto overflow-x-hidden relative flex flex-col",
+            "float-shadow rounded-none lg:rounded-[28px] overflow-y-auto overflow-x-hidden relative flex flex-col",
             isCenter ? "w-full max-w-lg max-h-[85vh]" : "h-full"
           )}
         >
           {onClose && (
             <button
               onClick={onClose}
-              className="absolute top-4 left-4 z-10 h-8 w-8 rounded-lg glass-1 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors"
+              className="hidden lg:flex absolute top-4 left-4 z-10 h-8 w-8 rounded-lg glass-1 items-center justify-center text-ivory/70 hover:text-ivory transition-colors"
               aria-label="Sluiten"
             >
               <X className="h-4 w-4" />
