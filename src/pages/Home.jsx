@@ -208,7 +208,7 @@ export default function Home() {
 
       {/* Floating widget — the active module's widget, left of the panel over the photo's left side */}
       {panelOpen && WIDGETS[activeModule] && (() => { const W = WIDGETS[activeModule].Component; return (
-        <div className="hidden lg:block fixed left-[22%] top-[45vh] z-20 w-[300px] animate-fade-up">
+        <div className="hidden lg:block fixed left-10 top-[24rem] z-20 w-[480px] animate-fade-up">
           <WidgetThemeProvider value={{ theme: "glass", color: "", opacity: 1, blur: 0 }}>
             <W />
           </WidgetThemeProvider>
