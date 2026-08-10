@@ -1,7 +1,7 @@
 import {
   Calendar, Briefcase, CheckSquare, Mail, MessageCircle,
   BookOpen, FileText, Users, MessageSquare, Mic, ClipboardCheck,
-  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope,
+  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu,
 } from "lucide-react";
 
 import Agenda from "@/pages/Agenda";
@@ -45,4 +45,5 @@ export const MODULES = {
   settings:    { label: "Settings",      icon: SettingsIcon,   Component: SettingsPage, panelWidth: 720 },
   profile:     { label: "Profile",       icon: User,           Component: Profile,     panelWidth: 560 },
   insights:    { label: "Insights",      icon: Telescope,      Component: Insights,    panelWidth: 720 },
+  agents:      { label: "Agenten",       icon: Cpu,             Component: ActivityPage, panelWidth: 860 },
 };

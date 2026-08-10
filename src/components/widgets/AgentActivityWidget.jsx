@@ -4,6 +4,7 @@ import { useEntityList } from "@/hooks/useEntity";
 import { formatDistanceToNowStrict } from "date-fns";
 import { IMAGES } from "@/lib/images";
 import { Cpu } from "lucide-react";
+import { usePanel } from "@/lib/PanelContext";
 
 const AGENT_LABEL = {
   interpretInput: "Interpretatie",
@@ -30,6 +31,7 @@ const AGENT_SOURCES = new Set(Object.keys(AGENT_LABEL));
  * sources only) — agents now log here instead of flooding chat.
  */
 export default function AgentActivityWidget() {
+  const { openModule } = usePanel();
   const { data: acts, loading } = useEntityList("Activity", { sort: "-created_date" });
   const agentActs = (acts || []).filter((a) => a.source && AGENT_SOURCES.has(a.source));
   const todayStr = new Date().toLocaleDateString("sv-SE");
@@ -39,7 +41,7 @@ export default function AgentActivityWidget() {
   const when = (a) => { try { return formatDistanceToNowStrict(new Date(a.created_date), { addSuffix: true }); } catch { return ""; } };
 
   return (
-    <WidgetShell size="2x2" radius="large" className="min-h-[300px]">
+    <WidgetShell size="2x2" radius="large" className="min-h-[300px]" onClick={() => openModule("agents")} interactive>
       <div className="relative h-full overflow-hidden">
         <img src={IMAGES.feetChair} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/92 via-charcoal/45 to-charcoal/15" />

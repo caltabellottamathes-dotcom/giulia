@@ -20,6 +20,7 @@ import InsightsPreview from "@/components/panels/previews/InsightsPreview";
 import MemoryPreview from "@/components/panels/previews/MemoryPreview";
 import KnowledgePreview from "@/components/panels/previews/KnowledgePreview";
 import DocumentsPreview from "@/components/panels/previews/DocumentsPreview";
+import AgentsPreview from "@/components/panels/previews/AgentsPreview";
 
 /** LEVEL 02 quick-context previews — one per data module. Modules without
  *  a preview (chat, voice, settings, profile, integrations) keep the full
@@ -29,6 +30,7 @@ const PREVIEWS = {
   email: EmailPreview, whatsapp: WhatsAppPreview, people: PeoplePreview,
   approvals: ApprovalsPreview, activity: ActivityPreview, insights: InsightsPreview,
   memory: MemoryPreview, knowledge: KnowledgePreview, documents: DocumentsPreview,
+  agents: AgentsPreview,
 };
 
 /**
@@ -42,6 +44,7 @@ const MODULE_ACCENT = {
   documents: "hsl(var(--charcoal))", people: "hsl(var(--blue-grey))", approvals: "hsl(var(--olive))",
   activity: "hsl(var(--sand))", memory: "hsl(var(--charcoal))", insights: "hsl(var(--sand))",
   chat: "hsl(var(--olive))", voice: "hsl(var(--charcoal))",
+  agents: "hsl(var(--olive))",
 };
 
 const MODULE_IMAGE = {
@@ -59,6 +62,7 @@ const MODULE_IMAGE = {
   insights: IMAGES.portraitBootHands,
   chat: IMAGES.portraitBootFace,
   voice: IMAGES.portraitBootFace,
+  agents: IMAGES.feetChair,
 };
 
 const MODULE_ROUTE = {
@@ -67,6 +71,7 @@ const MODULE_ROUTE = {
   people: "/people", chat: "/chat", voice: "/voice", approvals: "/approvals",
   activity: "/activity", memory: "/memory", integrations: "/integrations",
   settings: "/settings", profile: "/profile", insights: "/insights",
+  agents: "/activity",
 };
 
 export default function ModulePanel() {
