@@ -8,10 +8,7 @@ import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 
-/**
- * WhatsAppWidget — conversation as a bespoke chat bubble; unread count as
- * hero over a branded portrait, reply inline, and a Giulia-draft pill.
- */
+/** WhatsAppWidget — photo floats over the glass (unread count on the photo). */
 export default function WhatsAppWidget() {
   const { openModule } = usePanel();
   const { data: contacts, loading } = useEntityList("Contact");
@@ -41,8 +38,8 @@ export default function WhatsAppWidget() {
   return (
     <WidgetShell size="2x2" radius="medium" interactive onClick={() => openModule("whatsapp")} className="min-h-[240px]">
       <div className="flex flex-col h-full">
-        <BrandPhoto src={IMAGES.stilettoHead} className="h-20" overlay="bg-gradient-to-t from-charcoal/85 to-charcoal/30">
-          <div className="absolute inset-0 px-5 flex items-end justify-between pb-2">
+        <BrandPhoto src={IMAGES.stilettoHead} className="h-24 -mb-8 rounded-b-[24px] shadow-[0_14px_28px_-12px_rgba(0,0,0,0.3)] relative z-10" overlay="bg-gradient-to-t from-charcoal/85 to-charcoal/30">
+          <div className="absolute inset-0 px-5 flex items-end justify-between pb-3">
             <div>
               <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80 mb-1">WhatsApp</h3>
               {unreadTotal > 0 && (
@@ -56,7 +53,7 @@ export default function WhatsAppWidget() {
           </div>
         </BrandPhoto>
 
-        <div className="p-5 flex-1 flex flex-col">
+        <div className="p-5 pt-10 flex-1 flex flex-col">
           {loading ? (
             <div className="flex-1 flex items-center"><div className="h-8 w-8 border-2 border-current/20 border-t-current rounded-full animate-spin" /></div>
           ) : top ? (

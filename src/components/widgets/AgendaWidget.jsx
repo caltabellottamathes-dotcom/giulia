@@ -6,12 +6,9 @@ import { useEntityList } from "@/hooks/useEntity";
 import { IMAGES } from "@/lib/images";
 import { cn } from "@/lib/utils";
 
-/**
- * AgendaWidget — the next event as oversized type over a branded photo; a
- * bespoke day-segment timeline (08–20) runs beneath it.
- */
 const HOURS = 12;
 
+/** AgendaWidget — glass floats over a tall header photo (info on the photo). */
 export default function AgendaWidget() {
   const { openModule } = usePanel();
   const { data: events, loading } = useEntityList("Event", { sort: "start" });
@@ -29,8 +26,8 @@ export default function AgendaWidget() {
   return (
     <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("agenda")} className="min-h-[260px]">
       <div className="flex flex-col h-full">
-        <div className="relative h-44 overflow-hidden">
-          <BrandPhoto src={IMAGES.walkChairsBeach} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/85 via-charcoal/45 to-charcoal/20" />
+        <div className="relative h-52 shrink-0 overflow-hidden">
+          <BrandPhoto src={IMAGES.walkChairsBeach} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/80 via-charcoal/30 to-charcoal/10" />
           <div className="absolute inset-0 p-5 flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">Agenda</h3>
@@ -59,21 +56,21 @@ export default function AgendaWidget() {
           </div>
         </div>
 
-        <div className="p-5 flex-1 flex flex-col">
+        <div className="flex-1 -mt-12 rounded-t-[28px] glass-3 p-5 relative z-10 shadow-[0_-14px_30px_-12px_rgba(0,0,0,0.35)] text-ivory flex flex-col">
           {loading ? (
-            <div className="flex-1 flex items-center"><div className="h-8 w-8 border-2 border-current/20 border-t-current rounded-full animate-spin" /></div>
+            <div className="flex-1 flex items-center"><div className="h-8 w-8 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" /></div>
           ) : (
             <>
               <div className="relative h-10">
-                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1 rounded-full bg-current/10" />
+                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1 rounded-full bg-ivory/15" />
                 {todays.map((e) => (
                   <span key={e.id} className="absolute top-1/2 -translate-y-1/2 h-6 w-2 rounded-full" style={{ left: `calc(${pos(e.start) * 100}% - 4px)`, background: "var(--tile-accent)" }} />
                 ))}
-                <span className="absolute -bottom-1 left-0 text-[9px] opacity-40 tabular-nums">08</span>
-                <span className="absolute -bottom-1 right-0 text-[9px] opacity-40 tabular-nums">20</span>
+                <span className="absolute -bottom-1 left-0 text-[9px] text-ivory/50 tabular-nums">08</span>
+                <span className="absolute -bottom-1 right-0 text-[9px] text-ivory/50 tabular-nums">20</span>
               </div>
               <div className="mt-auto pt-5 flex items-center justify-between">
-                <span className="text-[11px] opacity-50">{todays.length} afspraak{todays.length !== 1 ? "en" : ""}</span>
+                <span className="text-[11px] text-ivory/60">{todays.length} afspraak{todays.length !== 1 ? "en" : ""}</span>
                 <button onClick={(e) => { e.stopPropagation(); openModule("agenda"); }} className="rounded-full px-4 py-2 text-[12px] font-semibold transition hover:-translate-y-0.5 active:scale-95" style={{ background: "var(--tile-accent)", color: "var(--tile-on-accent)" }}>Openen</button>
               </div>
             </>

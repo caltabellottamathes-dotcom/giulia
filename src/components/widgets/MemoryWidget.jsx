@@ -8,11 +8,7 @@ import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 
-/**
- * MemoryWidget — a bespoke confidence ring (average certainty) with the latest
- * memory beside it and tactile ± controls. A branded photo bleeds off the
- * bottom edge.
- */
+/** MemoryWidget — glass floats over a bottom photo; confidence ring + ±. */
 export default function MemoryWidget() {
   const { openModule } = usePanel();
   const { data: memories, loading, reload } = useEntityList("Memory", { sort: "-created_date" });
@@ -22,32 +18,36 @@ export default function MemoryWidget() {
 
   return (
     <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("memory")} className="min-h-[220px]">
-      <div className="p-5 flex flex-col h-full">
-        <WidgetHeader label="Geheugen" count={`${memories.length} herinneringen`} />
-        {loading ? (
-          <div className="flex-1 flex items-center justify-center"><div className="h-8 w-8 border-2 border-current/20 border-t-current rounded-full animate-spin" /></div>
-        ) : memories.length > 0 ? (
-          <div className="flex-1 flex items-center gap-5">
-            <Ring value={avg} max={1} size={112} stroke={12}>
-              <div className="text-center">
-                <span className="text-2xl font-display font-semibold leading-none text-current">{Math.round(avg * 100)}</span>
-                <p className="text-[9px] uppercase tracking-wider opacity-45 mt-0.5">zeker</p>
-              </div>
-            </Ring>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] uppercase tracking-wider opacity-45">{top.category}</p>
-              <p className="text-sm text-current opacity-80 line-clamp-2 leading-snug mt-0.5">{top.content}</p>
-              <div className="mt-3 flex items-center gap-2">
-                <button onClick={(e) => setConf(e, top, -0.1)} className="h-8 w-8 rounded-full border border-current/15 text-current text-lg leading-none flex items-center justify-center transition hover:bg-current/5">−</button>
-                <button onClick={(e) => setConf(e, top, 0.1)} className="h-8 w-8 rounded-full border border-current/15 text-current text-lg leading-none flex items-center justify-center transition hover:bg-current/5">+</button>
+      <div className="flex flex-col h-full">
+        <div className="flex-1 -mb-8 rounded-b-[24px] glass-3 p-5 relative z-10 shadow-[0_14px_28px_-12px_rgba(0,0,0,0.35)] text-ivory flex flex-col">
+          <WidgetHeader label="Geheugen" count={`${memories.length} herinneringen`} />
+          {loading ? (
+            <div className="flex-1 flex items-center justify-center"><div className="h-8 w-8 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" /></div>
+          ) : memories.length > 0 ? (
+            <div className="flex-1 flex items-center gap-5">
+              <Ring value={avg} max={1} size={104} stroke={12}>
+                <div className="text-center">
+                  <span className="text-2xl font-display font-semibold leading-none text-ivory">{Math.round(avg * 100)}</span>
+                  <p className="text-[9px] uppercase tracking-wider text-ivory/45 mt-0.5">zeker</p>
+                </div>
+              </Ring>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] uppercase tracking-wider text-ivory/45">{top.category}</p>
+                <p className="text-sm text-ivory/85 line-clamp-2 leading-snug mt-0.5">{top.content}</p>
+                <div className="mt-3 flex items-center gap-2">
+                  <button onClick={(e) => setConf(e, top, -0.1)} className="h-8 w-8 rounded-full glass-button text-ivory text-lg leading-none flex items-center justify-center transition hover:bg-white/15">−</button>
+                  <button onClick={(e) => setConf(e, top, 0.1)} className="h-8 w-8 rounded-full glass-button text-ivory text-lg leading-none flex items-center justify-center transition hover:bg-white/15">+</button>
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="flex-1 flex items-center justify-center"><p className="text-xs opacity-45">Nog niets onthouden</p></div>
-        )}
+          ) : (
+            <div className="flex-1 flex items-center justify-center"><p className="text-xs text-ivory/45">Nog niets onthouden</p></div>
+          )}
+        </div>
+        <div className="relative h-20 shrink-0 overflow-hidden">
+          <BrandPhoto src={IMAGES.loungeChairs} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/70 to-charcoal/20" />
+        </div>
       </div>
-      <BrandPhoto src={IMAGES.loungeChairs} className="h-10 w-full" overlay="bg-gradient-to-t from-black/30 to-transparent" />
     </WidgetShell>
   );
 }

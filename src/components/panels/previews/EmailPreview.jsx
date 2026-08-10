@@ -19,28 +19,16 @@ export default function EmailPreview({ onOpen }) {
     }
   };
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { load(); }, []);
 
   const sync = async () => {
     setSyncing(true);
-    try {
-      await base44.functions.syncGmail.invoke({});
-      await load();
-    } catch (e) {
-    } finally {
-      setSyncing(false);
-    }
+    try { await base44.functions.syncGmail.invoke({}); await load(); } catch (e) {} finally { setSyncing(false); }
   };
 
   const markRead = async (e) => {
     setEmails((prev) => prev.map((x) => (x.id === e.id ? { ...x, status: "read" } : x)));
-    try {
-      await base44.entities.Email.update(e.id, { status: "read" });
-    } catch (e2) {
-      load();
-    }
+    try { await base44.entities.Email.update(e.id, { status: "read" }); } catch (e2) { load(); }
   };
 
   const unread = emails.filter((e) => e.status === "unread");
@@ -56,23 +44,16 @@ export default function EmailPreview({ onOpen }) {
           accent="hsl(var(--blue-grey))"
           sub={`${important.length} belangrijk`}
           visual={
-            <MiniBars
-              height={56}
-              data={[
-                { value: Math.max(unread.length, 1), color: "hsl(var(--blue-grey))" },
-                { value: Math.max(important.length, 1), color: "hsl(var(--sand))" },
-                { value: Math.max(read, 1), color: "hsl(var(--foreground) / 0.18)" },
-              ]}
-            />
+            <MiniBars height={56} data={[
+              { value: Math.max(unread.length, 1), color: "hsl(var(--blue-grey))" },
+              { value: Math.max(important.length, 1), color: "hsl(var(--sand))" },
+              { value: Math.max(read, 1), color: "hsl(var(--ivory) / 0.25)" },
+            ]} />
           }
         />
-        <button
-          onClick={sync}
-          disabled={syncing}
-          className="animate-fade-up rounded-2xl bg-foreground/[0.03] border border-foreground/[0.06] px-4 py-3 flex flex-col items-center justify-center gap-1.5 hover:bg-foreground/[0.06] transition disabled:opacity-50"
-        >
-          <span className="text-[10px] uppercase tracking-[0.18em] text-foreground/50 font-semibold">Sync</span>
-          <RefreshCw className={"h-5 w-5 text-foreground " + (syncing ? "animate-spin" : "")} />
+        <button onClick={sync} disabled={syncing} className="animate-fade-up rounded-2xl glass-card-2 px-4 py-3 flex flex-col items-center justify-center gap-1.5 text-ivory hover:bg-white/10 transition disabled:opacity-50">
+          <span className="text-[10px] uppercase tracking-[0.18em] text-ivory/55 font-semibold">Sync</span>
+          <RefreshCw className={"h-5 w-5 text-ivory " + (syncing ? "animate-spin" : "")} />
         </button>
       </div>
       <SectionLabel>Recent · mail@salvatorecaltabellotta.com</SectionLabel>
@@ -81,14 +62,7 @@ export default function EmailPreview({ onOpen }) {
       ) : emails.length ? (
         <div className="space-y-2">
           {emails.map((e) => (
-            <Row
-              key={e.id}
-              title={e.subject}
-              sub={`${e.sender || ""} · ${e.timestamp ? format(new Date(e.timestamp), "d MMM HH:mm") : ""}`}
-              onClick={onOpen}
-              accent={e.important ? "hsl(var(--sand))" : undefined}
-              action={e.status === "unread" ? <ActionBtn icon={Check} label="Markeer gelezen" onClick={() => markRead(e)} /> : undefined}
-            />
+            <Row key={e.id} title={e.subject} sub={`${e.sender || ""} · ${e.timestamp ? format(new Date(e.timestamp), "d MMM HH:mm") : ""}`} onClick={onOpen} accent={e.important ? "hsl(var(--sand))" : undefined} action={e.status === "unread" ? <ActionBtn icon={Check} label="Markeer gelezen" onClick={() => markRead(e)} /> : undefined} />
           ))}
         </div>
       ) : (

@@ -18,10 +18,7 @@ export default function InsightsPreview({ onOpen }) {
       try {
         const data = await base44.entities.Insight.filter({ status: "new" }, "-created_date", 6);
         setItems(data || []);
-      } catch (e) {
-      } finally {
-        setLoading(false);
-      }
+      } catch (e) {} finally { setLoading(false); }
     })();
   }, []);
 
@@ -32,9 +29,9 @@ export default function InsightsPreview({ onOpen }) {
     <div className="space-y-4">
       <div className="grid grid-cols-[1fr_auto] gap-3 items-stretch">
         <HeroStat value={items.length} label="Nieuw" accent="hsl(var(--sand))" sub={`${avg} gem. vertrouwen`} />
-        <div className="animate-fade-up rounded-2xl bg-foreground/[0.03] border border-foreground/[0.06] p-4 flex flex-col items-center justify-center gap-1">
+        <div className="animate-fade-up rounded-2xl glass-card-2 p-4 flex flex-col items-center justify-center gap-1 text-ivory">
           <RingMini value={avgNum} accent="hsl(var(--olive))" size={64} />
-          <span className="text-[10px] uppercase tracking-wider text-foreground/50">vertrouwen</span>
+          <span className="text-[10px] uppercase tracking-wider text-ivory/55">vertrouwen</span>
         </div>
       </div>
       <SectionLabel>Inzichten om te bekijken</SectionLabel>
@@ -45,8 +42,8 @@ export default function InsightsPreview({ onOpen }) {
           {items.map((i) => (
             <Card key={i.id} onClick={onOpen} accent={CAT_COLOR[i.category] || "hsl(var(--smoke))"}>
               <Pill accent={CAT_COLOR[i.category]}>{i.category}</Pill>
-              <span className="block text-sm font-medium text-foreground mt-1.5">{i.title}</span>
-              <span className="block text-xs text-foreground/50 line-clamp-2 mt-0.5">{i.content}</span>
+              <span className="block text-sm font-medium text-ivory mt-1.5">{i.title}</span>
+              <span className="block text-xs text-ivory/50 line-clamp-2 mt-0.5">{i.content}</span>
             </Card>
           ))}
         </div>
