@@ -13,6 +13,12 @@
     "status": {
       "type": "string",
       "enum": [
+        "klaar",
+        "actief",
+        "gepland",
+        "wacht",
+        "te_specifieren",
+        "gepauzeerd",
         "today",
         "upcoming",
         "overdue",
@@ -23,7 +29,7 @@
         "in_progress",
         "done"
       ],
-      "default": "upcoming",
+      "default": "gepland",
       "title": "Status"
     },
     "priority": {

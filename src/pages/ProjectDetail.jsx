@@ -9,20 +9,28 @@ import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 import {
   ArrowLeft, CheckCircle2, Circle, Clock, AlertCircle, Loader2, Pencil, Trash2,
-  Calendar, Mail, FileText, Users, Briefcase,
+  Calendar, Mail, FileText, Users, Briefcase, HelpCircle, PauseCircle,
 } from "lucide-react";
 import ProjectEditorPanel from "@/components/projects/ProjectEditorPanel";
 
+// Canonical project-management statuses (Dutch)
 const statusMeta = {
-  done: { label: "Klaar", color: "text-emerald-600", dot: "bg-emerald-500" },
-  completed: { label: "Klaar", color: "text-emerald-600", dot: "bg-emerald-500" },
-  in_progress: { label: "Actief", color: "text-olive", dot: "bg-olive" },
-  upcoming: { label: "Gepland", color: "text-blue-500", dot: "bg-blue-500" },
-  today: { label: "Vandaag", color: "text-olive", dot: "bg-olive" },
-  todo: { label: "Te doen", color: "text-muted-foreground", dot: "bg-muted-foreground/50" },
-  waiting: { label: "Wacht", color: "text-amber-500", dot: "bg-amber-500" },
-  overdue: { label: "Te laat", color: "text-red-500", dot: "bg-red-500" },
-  delegated: { label: "Gedelegeerd", color: "text-purple-500", dot: "bg-purple-500" },
+  klaar: { label: "Klaar", color: "text-emerald-600", dot: "bg-emerald-500", ring: "border-emerald-500 bg-emerald-500" },
+  done: { label: "Klaar", color: "text-emerald-600", dot: "bg-emerald-500", ring: "border-emerald-500 bg-emerald-500" },
+  completed: { label: "Klaar", color: "text-emerald-600", dot: "bg-emerald-500", ring: "border-emerald-500 bg-emerald-500" },
+  actief: { label: "Actief", color: "text-olive", dot: "bg-olive", ring: "border-olive bg-olive" },
+  in_progress: { label: "Actief", color: "text-olive", dot: "bg-olive", ring: "border-olive bg-olive" },
+  today: { label: "Vandaag", color: "text-olive", dot: "bg-olive", ring: "border-olive bg-olive" },
+  gepland: { label: "Gepland", color: "text-blue-500", dot: "bg-blue-500", ring: "border-blue-500 bg-blue-500" },
+  upcoming: { label: "Gepland", color: "text-blue-500", dot: "bg-blue-500", ring: "border-blue-500 bg-blue-500" },
+  wacht: { label: "Wacht op", color: "text-amber-500", dot: "bg-amber-500", ring: "border-amber-500 bg-amber-500" },
+  waiting: { label: "Wacht op", color: "text-amber-500", dot: "bg-amber-500", ring: "border-amber-500 bg-amber-500" },
+  te_specifieren: { label: "Te specificeren", color: "text-foreground/55", dot: "bg-foreground/30", ring: "border-foreground/40 bg-foreground/30" },
+  todo: { label: "Te specificeren", color: "text-foreground/55", dot: "bg-foreground/30", ring: "border-foreground/40 bg-foreground/30" },
+  gepauzeerd: { label: "Gepauzeerd", color: "text-muted-foreground", dot: "bg-muted-foreground/40", ring: "border-muted-foreground/40 bg-muted-foreground/40" },
+  paused: { label: "Gepauzeerd", color: "text-muted-foreground", dot: "bg-muted-foreground/40", ring: "border-muted-foreground/40 bg-muted-foreground/40" },
+  overdue: { label: "Te laat", color: "text-red-500", dot: "bg-red-500", ring: "border-red-500 bg-red-500" },
+  delegated: { label: "Gedelegeerd", color: "text-purple-500", dot: "bg-purple-500", ring: "border-purple-500 bg-purple-500" },
 };
 
 const projectStatusMap = {
@@ -31,6 +39,16 @@ const projectStatusMap = {
 
 const projectStatusVariant = {
   planning: "waiting", in_progress: "active", waiting: "waiting", completed: "completed", archived: "muted",
+};
+
+const statusIcon = {
+  klaar: CheckCircle2, done: CheckCircle2, completed: CheckCircle2,
+  actief: Loader2, in_progress: Loader2, today: Loader2,
+  gepland: Clock, upcoming: Clock,
+  wacht: AlertCircle, waiting: AlertCircle,
+  te_specifieren: HelpCircle, todo: HelpCircle,
+  gepauzeerd: PauseCircle, paused: PauseCircle,
+  overdue: AlertCircle, delegated: Users,
 };
 
 export default function ProjectDetail() {
@@ -71,13 +89,13 @@ export default function ProjectDetail() {
   };
 
   const toggleTask = async (task) => {
-    const next = task.status === "done" ? "in_progress" : "done";
+    const next = task.status === "klaar" || task.status === "done" ? "actief" : "klaar";
     await base44.entities.Task.update(task.id, { status: next });
     const allTasks = await base44.entities.Task.list();
     const projTasks = allTasks.filter((t) => t.project_id === id);
     setTasks(projTasks);
     if (projTasks.length) {
-      const done = projTasks.filter((t) => t.status === "done").length;
+      const done = projTasks.filter((t) => t.status === "klaar" || t.status === "done").length;
       const progress = Math.round((done / projTasks.length) * 100);
       await base44.entities.Project.update(id, { progress });
       setProject((p) => (p ? { ...p, progress } : p));
@@ -98,28 +116,41 @@ export default function ProjectDetail() {
     </GlassPanel>
   );
 
-  // group tasks by context (fase)
-  const groups = {};
+  // Build hierarchy: ONDERDEEL → SUBONDERDEEL → taken
+  const hierarchy = {};
   tasks.forEach((t) => {
-    const ctx = t.context || "Overig";
-    if (!groups[ctx]) groups[ctx] = [];
-    groups[ctx].push(t);
+    const parts = t.context ? t.context.split(" · ") : [];
+    const ond = parts[0] || "Overig";
+    const sub = parts[1] || ond;
+    if (!hierarchy[ond]) hierarchy[ond] = {};
+    if (!hierarchy[ond][sub]) hierarchy[ond][sub] = [];
+    hierarchy[ond][sub].push(t);
   });
-  const groupKeys = Object.keys(groups).sort();
+  const onderdelen = Object.keys(hierarchy);
 
-  const doneCount = tasks.filter((t) => t.status === "done").length;
-  const activeCount = tasks.filter((t) => t.status === "in_progress").length;
-  const todoCount = tasks.filter((t) => ["todo", "upcoming"].includes(t.status)).length;
-  const waitCount = tasks.filter((t) => t.status === "waiting").length;
+  const isDone = (t) => t.status === "klaar" || t.status === "done" || t.status === "completed";
+  const doneCount = tasks.filter(isDone).length;
+  const activeCount = tasks.filter((t) => ["actief", "in_progress", "today"].includes(t.status)).length;
+  const geplandCount = tasks.filter((t) => ["gepland", "upcoming"].includes(t.status)).length;
+  const wachtCount = tasks.filter((t) => ["wacht", "waiting"].includes(t.status)).length;
+  const specCount = tasks.filter((t) => ["te_specifieren", "todo"].includes(t.status)).length;
   const progress = tasks.length ? Math.round((doneCount / tasks.length) * 100) : (project.progress || 0);
 
   const stats = [
     { label: "Taken", value: tasks.length, icon: Briefcase, tone: "text-foreground" },
     { label: "Klaar", value: doneCount, icon: CheckCircle2, tone: "text-emerald-600" },
     { label: "Actief", value: activeCount, icon: Loader2, tone: "text-olive" },
-    { label: "Te doen", value: todoCount, icon: Circle, tone: "text-muted-foreground" },
-    { label: "Wacht", value: waitCount, icon: AlertCircle, tone: "text-amber-500" },
+    { label: "Gepland", value: geplandCount, icon: Clock, tone: "text-blue-500" },
+    { label: "Wacht", value: wachtCount, icon: AlertCircle, tone: "text-amber-500" },
+    { label: "Te spec.", value: specCount, icon: HelpCircle, tone: "text-foreground/55" },
   ];
+
+  const subStatus = (subTasks) => {
+    const d = subTasks.filter(isDone).length;
+    if (d === subTasks.length) return "klaar";
+    const first = subTasks.find((t) => !isDone(t));
+    return first ? first.status : "klaar";
+  };
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -149,12 +180,6 @@ export default function ProjectDetail() {
             </div>
             <h1 className="text-3xl lg:text-4xl font-display font-bold text-white mb-2 tracking-tight">{project.title}</h1>
             {project.description && <p className="text-sm text-white/70 max-w-2xl">{project.description}</p>}
-            {(project.deadline || project.next_milestone) && (
-              <div className="flex items-center gap-4 mt-4 text-xs text-white/60">
-                {project.deadline && <span>Deadline: {new Date(project.deadline).toLocaleDateString("nl-NL", { day: "numeric", month: "long" })}</span>}
-                {project.next_milestone && <span>Volgende: {project.next_milestone}</span>}
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -172,7 +197,7 @@ export default function ProjectDetail() {
             <div className="h-full bg-olive rounded-full transition-all duration-700" style={{ width: `${progress}%` }} />
           </div>
         </GlassPanel>
-        <div className="lg:col-span-2 grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="lg:col-span-2 grid grid-cols-3 sm:grid-cols-6 gap-3">
           {stats.map((s) => (
             <div key={s.label} className="glass rounded-2xl p-4 flex flex-col">
               <s.icon className={cn("h-4 w-4 mb-3", s.tone)} strokeWidth={1.75} />
@@ -183,50 +208,62 @@ export default function ProjectDetail() {
         </div>
       </div>
 
-      {/* Task groups per fase */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-display font-bold tracking-tight">Taken per fase</h2>
-          <span className="text-xs text-muted-foreground">{groupKeys.length} fases · {tasks.length} taken</span>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {groupKeys.map((g) => {
-            const gTasks = [...groups[g]].sort((a, b) => (a.status === "done" ? 1 : 0) - (b.status === "done" ? 1 : 0));
-            const gDone = groups[g].filter((t) => t.status === "done").length;
-            const gTotal = groups[g].length;
-            const gProgress = gTotal ? Math.round((gDone / gTotal) * 100) : 0;
-            return (
-              <div key={g} className="glass rounded-2xl p-5">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-display font-semibold pr-2">{g}</h3>
-                  <span className="text-xs text-muted-foreground tabular-nums shrink-0">{gDone}/{gTotal}</span>
-                </div>
-                <div className="h-1 bg-muted rounded-full overflow-hidden mb-3">
-                  <div className="h-full bg-olive/60 rounded-full transition-all duration-500" style={{ width: `${gProgress}%` }} />
-                </div>
-                <div className="space-y-0.5">
-                  {gTasks.map((task) => {
-                    const meta = statusMeta[task.status] || statusMeta.todo;
-                    const isDone = task.status === "done";
-                    return (
-                      <button
-                        key={task.id}
-                        onClick={() => toggleTask(task)}
-                        className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-foreground/[0.04] transition text-left"
-                      >
-                        <span className={cn("h-5 w-5 rounded-full border flex items-center justify-center shrink-0 transition", isDone ? "bg-emerald-500 border-emerald-500" : "border-border/60")}>
-                          {isDone ? <CheckCircle2 className="h-4 w-4 text-white" /> : <span className={cn("h-1.5 w-1.5 rounded-full", meta.dot)} />}
-                        </span>
-                        <span className={cn("text-sm flex-1 leading-snug", isDone ? "line-through text-muted-foreground" : "text-foreground")}>{task.title}</span>
-                        {!isDone && <span className={cn("text-[10px] uppercase tracking-wider font-semibold shrink-0", meta.color)}>{meta.label}</span>}
-                      </button>
-                    );
-                  })}
-                </div>
+      {/* Hierarchy: ONDERDEEL → SUBONDERDEEL → taken */}
+      <div className="space-y-8">
+        {onderdelen.map((ond) => {
+          const ondTasks = Object.values(hierarchy[ond]).flat();
+          const ondDone = ondTasks.filter(isDone).length;
+          return (
+            <div key={ond}>
+              <div className="flex items-center gap-3 mb-4">
+                <h2 className="text-xl font-display font-bold tracking-tight">{ond}</h2>
+                <div className="h-px flex-1 bg-border/40" />
+                <span className="text-xs text-muted-foreground tabular-nums">{ondDone}/{ondTasks.length} klaar</span>
               </div>
-            );
-          })}
-        </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {Object.entries(hierarchy[ond]).map(([sub, subTasks]) => {
+                  const d = subTasks.filter(isDone).length;
+                  const st = subStatus(subTasks);
+                  const meta = statusMeta[st] || statusMeta.te_specifieren;
+                  const SIcon = statusIcon[st] || HelpCircle;
+                  const subProgress = subTasks.length ? Math.round((d / subTasks.length) * 100) : 0;
+                  return (
+                    <div key={sub} className="glass rounded-2xl p-5">
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <h3 className="text-sm font-display font-semibold pr-1">{sub}</h3>
+                        <span className={cn("inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold shrink-0", meta.color)}>
+                          <SIcon className="h-3 w-3" />
+                          {meta.label}
+                        </span>
+                      </div>
+                      <div className="h-1 bg-muted rounded-full overflow-hidden mb-3">
+                        <div className="h-full bg-olive/60 rounded-full transition-all duration-500" style={{ width: `${subProgress}%` }} />
+                      </div>
+                      <div className="space-y-0.5">
+                        {[...subTasks].sort((a, b) => isDone(a) - isDone(b)).map((task) => {
+                          const done = isDone(task);
+                          const tmeta = statusMeta[task.status] || statusMeta.te_specifieren;
+                          return (
+                            <button
+                              key={task.id}
+                              onClick={() => toggleTask(task)}
+                              className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-foreground/[0.04] transition text-left"
+                            >
+                              <span className={cn("h-5 w-5 rounded-full border flex items-center justify-center shrink-0 transition", done ? "border-emerald-500 bg-emerald-500" : "border-border/60")}>
+                                {done ? <CheckCircle2 className="h-4 w-4 text-white" /> : <span className={cn("h-1.5 w-1.5 rounded-full", tmeta.dot)} />}
+                              </span>
+                              <span className={cn("text-sm flex-1 leading-snug", done ? "line-through text-muted-foreground" : "text-foreground")}>{task.title}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Related: afspraken, emails, bestanden, betrokkenen */}
@@ -237,9 +274,7 @@ export default function ProjectDetail() {
             <h3 className="text-sm font-display font-semibold">Afspraken</h3>
             <span className="text-xs text-muted-foreground ml-auto">{events.length}</span>
           </div>
-          {events.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Geen afspraken gekoppeld.</p>
-          ) : (
+          {events.length === 0 ? <p className="text-xs text-muted-foreground">Geen afspraken gekoppeld.</p> : (
             <div className="space-y-2">
               {events.map((event) => (
                 <div key={event.id} className="flex items-center gap-3">
@@ -260,9 +295,7 @@ export default function ProjectDetail() {
             <h3 className="text-sm font-display font-semibold">Communicatie</h3>
             <span className="text-xs text-muted-foreground ml-auto">{emails.length}</span>
           </div>
-          {emails.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Geen emails gekoppeld.</p>
-          ) : (
+          {emails.length === 0 ? <p className="text-xs text-muted-foreground">Geen emails gekoppeld.</p> : (
             <div className="space-y-2">
               {emails.map((email) => (
                 <div key={email.id} className="cursor-pointer" onClick={() => navigate("/email")}>
@@ -283,9 +316,7 @@ export default function ProjectDetail() {
             <h3 className="text-sm font-display font-semibold">Bestanden</h3>
             <span className="text-xs text-muted-foreground ml-auto">{documents.length}</span>
           </div>
-          {documents.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Geen bestanden gekoppeld.</p>
-          ) : (
+          {documents.length === 0 ? <p className="text-xs text-muted-foreground">Geen bestanden gekoppeld.</p> : (
             <div className="space-y-2">
               {documents.map((doc) => (
                 <div key={doc.id} className="flex items-center gap-3 cursor-pointer hover:bg-foreground/[0.03] p-1.5 rounded-lg" onClick={() => doc.url && window.open(doc.url, "_blank")}>
@@ -303,9 +334,7 @@ export default function ProjectDetail() {
             <h3 className="text-sm font-display font-semibold">Betrokkenen</h3>
             <span className="text-xs text-muted-foreground ml-auto">{contacts.length}</span>
           </div>
-          {contacts.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Nog geen contacten.</p>
-          ) : (
+          {contacts.length === 0 ? <p className="text-xs text-muted-foreground">Nog geen contacten.</p> : (
             <div className="space-y-2">
               {contacts.slice(0, 6).map((contact) => (
                 <div key={contact.id} className="flex items-center gap-3 cursor-pointer" onClick={() => navigate(`/people/${contact.id}`)}>
