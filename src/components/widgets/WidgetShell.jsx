@@ -55,9 +55,9 @@ export default function WidgetShell({
   const bg =
     resolved === "glass"
       ? {
-          background: `rgba(48,50,55,${0.34 * opacity})`,
-          backdropFilter: `blur(${56 + blur}px) saturate(1.5)`,
-          WebkitBackdropFilter: `blur(${56 + blur}px) saturate(1.5)`,
+          background: `rgba(48,50,55,${0.18 * opacity})`,
+          backdropFilter: `blur(${22 + blur}px) saturate(1.35)`,
+          WebkitBackdropFilter: `blur(${22 + blur}px) saturate(1.35)`,
         }
       : {
           background: `hsl(var(--${tile.token}) / ${opacity})`,

@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
+import { Outlet, useNavigate } from "react-router-dom";
 import { IMAGES } from "@/lib/images";
 import QuickAction from "@/components/glass/QuickAction";
-import FloatingPanel from "@/components/glass/FloatingPanel";
 import ModulePanel from "@/components/panels/ModulePanel";
 import ChatWindow from "@/components/panels/ChatWindow";
 import { PanelProvider, usePanel } from "@/lib/PanelContext";
@@ -18,10 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/lib/AuthContext";
 import {
-  Home, Calendar, CalendarDays, Briefcase, CheckSquare, Mail, MessageCircle,
-  BookOpen, FileText, Users, MessageSquare, Mic, ClipboardCheck,
-  Activity, Brain, Plug, Settings, User, Search, Bell,
-  Menu, LogOut, ChevronDown, Phone,
+  Plug, Settings, User, Search, Bell, ChevronDown, LogOut, Phone,
 } from "lucide-react";
 
 const userMenuItems = [
@@ -29,129 +24,6 @@ const userMenuItems = [
   { key: "settings", icon: Settings, label: "Settings" },
   { key: "integrations", icon: Plug, label: "Integrations" },
 ];
-
-const navSections = [
-  {
-    label: null,
-    items: [
-      { key: "home", to: "/", icon: Home, label: "Home" },
-      { key: "agenda", icon: Calendar, label: "Agenda" },
-      { key: "planning", to: "/planning", icon: CalendarDays, label: "Planning" },
-      { key: "projects", icon: Briefcase, label: "Projects" },
-      { key: "tasks", icon: CheckSquare, label: "Tasks" },
-      { key: "email", icon: Mail, label: "Email" },
-      { key: "whatsapp", icon: MessageCircle, label: "WhatsApp" },
-      { key: "knowledge", icon: BookOpen, label: "Knowledge" },
-      { key: "documents", icon: FileText, label: "Documents" },
-      { key: "people", icon: Users, label: "People" },
-    ],
-  },
-  {
-    label: "Giulia",
-    items: [
-      { key: "chat", icon: MessageSquare, label: "Chat" },
-      { key: "voice", icon: Mic, label: "Voice" },
-    ],
-  },
-  {
-    label: "Intelligence",
-    items: [
-      { key: "approvals", icon: ClipboardCheck, label: "Approvals" },
-      { key: "activity", icon: Activity, label: "Activity" },
-      { key: "memory", icon: Brain, label: "Memory" },
-    ],
-  },
-  {
-    label: "System",
-    items: [
-      { key: "integrations", icon: Plug, label: "Integrations" },
-      { key: "settings", icon: Settings, label: "Settings" },
-      { key: "profile", icon: User, label: "Profile" },
-    ],
-  },
-];
-
-function SidebarContent({ onNavigate }) {
-  const { activeModule, openModule } = usePanel();
-
-  return (
-    <div className="relative flex flex-col h-full">
-      <div className="relative flex flex-col h-full py-8 px-5">
-
-      {/* Navigation — bold, editorial */}
-      <nav className="flex-1 space-y-6 overflow-y-auto">
-        {navSections.map((section, si) => (
-          <div key={si} className="space-y-1">
-            {section.label && (
-              <p className="px-2 mb-2 text-[10px] uppercase tracking-[0.24em] text-ivory/70 font-semibold">
-                {section.label}
-              </p>
-            )}
-            {section.items.map((item) =>
-              item.to ? (
-                <NavLink
-                  key={item.key}
-                  to={item.to}
-                  end
-                  onClick={onNavigate}
-                  className={({ isActive }) =>
-                    cn(
-                      "flex items-center gap-3 px-2.5 py-2.5 rounded-xl text-[15px] transition-all duration-300 relative font-medium",
-                      isActive
-                        ? "glass-1 text-ivory"
-                        : "text-ivory/85 hover:text-ivory hover:bg-ivory/[0.07]"
-                    )
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      {isActive && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-full bg-olive" />
-                      )}
-                      <item.icon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
-                      <span className="truncate">{item.label}</span>
-                    </>
-                  )}
-                </NavLink>
-              ) : (
-                <button
-                  key={item.key}
-                  onClick={() => {
-                    openModule(item.key);
-                    onNavigate?.();
-                  }}
-                  className={cn(
-                    "w-full flex items-center gap-3 px-2.5 py-2.5 rounded-xl text-[15px] transition-all duration-300 relative font-medium",
-                    activeModule === item.key
-                      ? "glass-1 text-ivory"
-                      : "text-ivory/85 hover:text-ivory hover:bg-ivory/[0.07]"
-                  )}
-                >
-                  {activeModule === item.key && (
-                    <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-0.5 rounded-full bg-olive" />
-                  )}
-                  <item.icon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
-                  <span className="truncate">{item.label}</span>
-                </button>
-              )
-            )}
-          </div>
-        ))}
-      </nav>
-
-      <div className="mt-auto px-1 pt-6 pb-1">
-        <p className="font-display font-semibold tracking-[0.32em] text-[40px] leading-none text-ivory [text-shadow:0_2px_16px_rgba(0,0,0,0.5)]">
-          GIULIA
-        </p>
-        <p className="text-[10px] uppercase tracking-[0.3em] text-ivory/55 mt-2 font-medium">
-          Persoonlijk besturingssysteem
-        </p>
-        <div className="pointer-events-none absolute inset-0 -z-10 bg-charcoal/30 rounded-[28px]" />
-      </div>
-      </div>
-    </div>
-  );
-}
 
 export default function Layout() {
   return (
@@ -166,7 +38,6 @@ export default function Layout() {
 }
 
 function LayoutInner() {
-  const [navOpen, setNavOpen] = useState(false);
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const { openModule } = usePanel();
@@ -175,18 +46,11 @@ function LayoutInner() {
   return (
     <div className="min-h-screen relative">
       <AmbientBloom />
-      {/* Full-width workspace — the nav now lives in a sliding panel */}
+      {/* Full-width workspace — navigation lives in the bottom plus-button menu */}
       <div className="flex flex-col min-h-screen relative">
         {/* Header */}
         <header className="sticky top-0 z-20 h-14 flex items-center justify-between px-5 lg:px-10 bg-transparent">
           <div className="flex items-center gap-3 flex-1">
-            <button
-              onClick={() => setNavOpen(true)}
-              className="p-1.5 -ml-1.5 rounded-lg glass-1 text-foreground transition-colors shrink-0"
-              aria-label="Menu openen"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
             <button
               onClick={() => navigate("/")}
               className="flex items-center gap-2 shrink-0 pr-1 group"
@@ -269,23 +133,8 @@ function LayoutInner() {
         </main>
       </div>
 
-      {/* Left-sliding glass nav panel */}
-      <FloatingPanel
-        open={navOpen}
-        onClose={() => setNavOpen(false)}
-        position="left"
-        level={3}
-        dim={false}
-      >
-        <SidebarContent onNavigate={() => setNavOpen(false)} />
-      </FloatingPanel>
-
-      {/* Universal quick action — floating, detached */}
+      {/* Bottom plus-button — opens the navigation menu */}
       <QuickAction />
-
-
-
-
 
       {/* The single sliding glass panel that hosts every module */}
       <ModulePanel />
