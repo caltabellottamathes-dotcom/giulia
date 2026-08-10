@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { base44 } from "@/api/base44Client";
 import {
   Settings as SettingsIcon, Palette, Bell, Brain, Lock, Mic,
-  Database, Zap, Plug, Bot,
+  Database, Zap, Plug, Bot, RefreshCw,
 } from "lucide-react";
 
 const sections = [
@@ -16,9 +16,6 @@ const sections = [
   { id: "ai", label: "AI behavior", icon: Brain },
   { id: "privacy", label: "Privacy", icon: Lock },
   { id: "voice", label: "Voice", icon: Mic },
-  { id: "memory", label: "Memory", icon: Database },
-  { id: "automation", label: "Automation", icon: Zap },
-  { id: "integrations", label: "Integrations", icon: Plug },
   { id: "agents", label: "Agents", icon: Bot },
 ];
 
@@ -58,6 +55,8 @@ export default function Settings() {
     autoApprove: Object.fromEntries(AUTO_KEYS.map((k) => [k, true])),
   });
   const [saving, setSaving] = useState(false);
+  const [cycleRunning, setCycleRunning] = useState(false);
+  const [cycleResult, setCycleResult] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -78,6 +77,24 @@ export default function Settings() {
       toast({ title: "Opslaan mislukt", variant: "destructive" });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const runCycle = async () => {
+    setCycleRunning(true);
+    setCycleResult("");
+    try {
+      const res = await base44.functions.invoke("runGiuliaCycle", {});
+      const d = res.data || {};
+      const ok = (d.agents || []).filter((r) => r.ok).length;
+      const total = (d.agents || []).length;
+      setCycleResult(`Cyclus voltooid · ${ok}/${total} agenten`);
+      toast({ title: "Cyclus voltooid", description: `${ok}/${total} agenten bijgewerkt` });
+    } catch {
+      setCycleResult("Cyclus mislukt");
+      toast({ title: "Cyclus mislukt", variant: "destructive" });
+    } finally {
+      setCycleRunning(false);
     }
   };
 
@@ -237,6 +254,14 @@ export default function Settings() {
             {active === "agents" && (
               <div className="space-y-6">
                 <h2 className="text-lg font-heading font-medium">Agents & automatisering</h2>
+                <div className="glass-1 rounded-xl p-4">
+                  <p className="text-sm font-medium mb-1">Handmatige cyclus</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-3">Achtergrond-agents draaien alleen als jij het vraagt. Eén klik synchroniseert alle bronnen en laat elke agent zijn werk doen met de nieuwe gegevens.</p>
+                  <button onClick={runCycle} disabled={cycleRunning} className="inline-flex items-center gap-2 rounded-full bg-foreground text-background px-4 py-2 text-xs font-semibold disabled:opacity-60">
+                    <RefreshCw className={"h-3.5 w-3.5 " + (cycleRunning ? "animate-spin" : "")} /> {cycleRunning ? "Bezig…" : "Start cyclus"}
+                  </button>
+                  {cycleResult && <p className="text-xs text-muted-foreground mt-3">{cycleResult}</p>}
+                </div>
                 <div>
                   <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">Stille uren</p>
                   <div className="flex items-center gap-3">
@@ -256,27 +281,6 @@ export default function Settings() {
                     ))}
                   </div>
                 </div>
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">Agents ({AGENTS.length})</p>
-                  <div className="space-y-1.5">
-                    {AGENTS.map((a) => (
-                      <div key={a.name} className="glass-1 rounded-xl px-3 py-2 flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium">{a.name}</p>
-                          <p className="text-[11px] text-muted-foreground">{a.cadence}</p>
-                        </div>
-                        <span className="h-2 w-2 rounded-full bg-olive" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {["memory", "automation", "integrations"].includes(active) && (
-              <div className="space-y-6">
-                <h2 className="text-lg font-heading font-medium capitalize">{active}</h2>
-                <p className="text-sm text-muted-foreground">Configuratie opties voor {active} — binnenkort beschikbaar.</p>
               </div>
             )}
 

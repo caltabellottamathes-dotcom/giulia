@@ -19,6 +19,8 @@ export default function Agenda() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showNewEvent, setShowNewEvent] = useState(false);
   const [newEvent, setNewEvent] = useState({ title: "", date: "", time: "09:00", location: "" });
+  const [editing, setEditing] = useState(false);
+  const [editDraft, setEditDraft] = useState({});
 
   const { data: events, loading, reload } = useEntityList("Event", { sort: "start" });
   const { data: projects } = useEntityList("Project");
@@ -66,6 +68,21 @@ export default function Agenda() {
     await base44.entities.Event.create({ title: newEvent.title.trim(), start, end, location: newEvent.location });
     setNewEvent({ title: "", date: "", time: "09:00", location: "" });
     setShowNewEvent(false);
+    reload();
+  };
+
+  const startEditEvent = (ev) => {
+    const d = new Date(ev.start);
+    setEditDraft({ title: ev.title, date: d.toISOString().slice(0, 10), time: d.toTimeString().slice(0, 5), location: ev.location || "" });
+    setEditing(true);
+  };
+  const saveEditEvent = async () => {
+    if (!selectedEvent || !editDraft.date) return;
+    const start = new Date(`${editDraft.date}T${editDraft.time || "09:00"}:00`).toISOString();
+    const end = new Date(new Date(start).getTime() + 60 * 60 * 1000).toISOString();
+    await base44.entities.Event.update(selectedEvent.id, { title: editDraft.title, start, end, location: editDraft.location });
+    setEditing(false);
+    setSelectedEvent(null);
     reload();
   };
 
@@ -225,10 +242,39 @@ export default function Agenda() {
               </div>
             )}
             <div className="flex gap-2 pt-2">
+              <GlassButton variant="primary" size="sm" className="flex-1" onClick={() => startEditEvent(selectedEvent)}>Bewerk</GlassButton>
               <GlassButton variant="outline" size="sm" className="flex-1" onClick={async () => { await base44.entities.Event.delete(selectedEvent.id); setSelectedEvent(null); reload(); }}>Verwijder</GlassButton>
             </div>
           </div>
         )}
+      </FloatingPanel>
+
+      <FloatingPanel open={editing} onClose={() => setEditing(false)} position="right">
+        <div className="space-y-5">
+          <h2 className="text-xl font-display font-semibold">Event bewerken</h2>
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Titel</label>
+            <input value={editDraft.title || ""} onChange={(e) => setEditDraft({ ...editDraft, title: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" placeholder="Event naam" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Datum</label>
+              <input type="date" value={editDraft.date || ""} onChange={(e) => setEditDraft({ ...editDraft, date: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
+            </div>
+            <div>
+              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Tijd</label>
+              <input type="time" value={editDraft.time || ""} onChange={(e) => setEditDraft({ ...editDraft, time: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Locatie</label>
+            <input value={editDraft.location || ""} onChange={(e) => setEditDraft({ ...editDraft, location: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" placeholder="Locatie of video call" />
+          </div>
+          <div className="flex gap-2 pt-2">
+            <GlassButton variant="primary" size="md" className="flex-1" onClick={saveEditEvent}>Opslaan</GlassButton>
+            <GlassButton variant="outline" size="md" onClick={() => setEditing(false)}>Annuleer</GlassButton>
+          </div>
+        </div>
       </FloatingPanel>
 
       <FloatingPanel open={showNewEvent} onClose={() => setShowNewEvent(false)} position="right">

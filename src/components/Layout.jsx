@@ -83,7 +83,7 @@ function SidebarContent({ onNavigate }) {
         {navSections.map((section, si) => (
           <div key={si} className="space-y-1">
             {section.label && (
-              <p className="px-2 mb-2 text-[10px] uppercase tracking-[0.24em] text-ivory/40 font-semibold">
+              <p className="px-2 mb-2 text-[10px] uppercase tracking-[0.24em] text-ivory/70 font-semibold">
                 {section.label}
               </p>
             )}
@@ -99,7 +99,7 @@ function SidebarContent({ onNavigate }) {
                       "flex items-center gap-3 px-2.5 py-2.5 rounded-xl text-[15px] transition-all duration-300 relative font-medium",
                       isActive
                         ? "glass-1 text-ivory"
-                        : "text-ivory/60 hover:text-ivory hover:bg-ivory/[0.03]"
+                        : "text-ivory/85 hover:text-ivory hover:bg-ivory/[0.07]"
                     )
                   }
                 >
@@ -124,7 +124,7 @@ function SidebarContent({ onNavigate }) {
                     "w-full flex items-center gap-3 px-2.5 py-2.5 rounded-xl text-[15px] transition-all duration-300 relative font-medium",
                     activeModule === item.key
                       ? "glass-1 text-ivory"
-                      : "text-ivory/60 hover:text-ivory hover:bg-ivory/[0.03]"
+                      : "text-ivory/85 hover:text-ivory hover:bg-ivory/[0.07]"
                   )}
                 >
                   {activeModule === item.key && (
@@ -146,6 +146,7 @@ function SidebarContent({ onNavigate }) {
         <p className="text-[10px] uppercase tracking-[0.3em] text-ivory/55 mt-2 font-medium">
           Persoonlijk besturingssysteem
         </p>
+        <div className="pointer-events-none absolute inset-0 -z-10 bg-charcoal/30 rounded-[28px]" />
       </div>
       </div>
     </div>

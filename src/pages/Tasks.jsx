@@ -7,7 +7,7 @@ import FloatingPanel from "@/components/glass/FloatingPanel";
 import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
-import { Plus, Sparkles, CheckSquare, Clock } from "lucide-react";
+import { Plus, Sparkles, CheckSquare, Clock, Pencil, Trash2 } from "lucide-react";
 
 const categories = ["today", "upcoming", "overdue", "waiting", "delegated", "completed"];
 const categoryLabel = {
@@ -23,6 +23,8 @@ export default function Tasks() {
   const { data: projects } = useEntityList("Project");
   const [showNew, setShowNew] = useState(false);
   const [newTitle, setNewTitle] = useState("");
+  const [editTask, setEditTask] = useState(null);
+  const [editDraft, setEditDraft] = useState({});
 
   const projTitle = (id) => projects.find((p) => p.id === id)?.title;
   const filtered = tasks.filter((t) => t.status === category);
@@ -39,6 +41,21 @@ export default function Tasks() {
     await base44.entities.Task.create({ title: newTitle.trim(), status: "today", priority: "medium" });
     setNewTitle("");
     setShowNew(false);
+    reload();
+  };
+
+  const startEdit = (t) => {
+    setEditTask(t);
+    setEditDraft({ title: t.title, priority: t.priority || "medium", status: t.status, deadline: t.deadline || "" });
+  };
+  const saveEdit = async () => {
+    if (!editTask) return;
+    await base44.entities.Task.update(editTask.id, { ...editDraft, deadline: editDraft.deadline || undefined });
+    setEditTask(null);
+    reload();
+  };
+  const delTask = async (t) => {
+    await base44.entities.Task.delete(t.id);
     reload();
   };
 
@@ -152,6 +169,8 @@ export default function Tasks() {
                 {task.status === "delegated" && (
                   <StatusBadge variant="draft"><Sparkles className="h-2.5 w-2.5" /> Giulia</StatusBadge>
                 )}
+                <button onClick={() => startEdit(task)} className="h-7 w-7 rounded-lg glass-1 flex items-center justify-center text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition" aria-label="Bewerk"><Pencil className="h-3.5 w-3.5" /></button>
+                <button onClick={() => delTask(task)} className="h-7 w-7 rounded-lg glass-1 flex items-center justify-center text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition" aria-label="Verwijder"><Trash2 className="h-3.5 w-3.5" /></button>
               </div>
             </div>
           ))}
@@ -175,6 +194,40 @@ export default function Tasks() {
           <div className="flex gap-2 pt-2">
             <GlassButton variant="primary" size="md" className="flex-1" onClick={createTask}>Maak aan</GlassButton>
             <GlassButton variant="outline" size="md" onClick={() => setShowNew(false)}>Annuleer</GlassButton>
+          </div>
+        </div>
+      </FloatingPanel>
+
+      <FloatingPanel open={!!editTask} onClose={() => setEditTask(null)} position="right">
+        <div className="space-y-5">
+          <h2 className="text-xl font-display font-semibold">Taak bewerken</h2>
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Titel</label>
+            <input value={editDraft.title || ""} onChange={(e) => setEditDraft({ ...editDraft, title: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Prioriteit</label>
+              <select value={editDraft.priority} onChange={(e) => setEditDraft({ ...editDraft, priority: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+                <option value="low">Laag</option>
+                <option value="medium">Gemiddeld</option>
+                <option value="high">Hoog</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Status</label>
+              <select value={editDraft.status} onChange={(e) => setEditDraft({ ...editDraft, status: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+                {categories.map((c) => <option key={c} value={c}>{categoryLabel[c]}</option>)}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Deadline</label>
+            <input type="date" value={editDraft.deadline || ""} onChange={(e) => setEditDraft({ ...editDraft, deadline: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
+          </div>
+          <div className="flex gap-2 pt-2">
+            <GlassButton variant="primary" size="md" className="flex-1" onClick={saveEdit}>Opslaan</GlassButton>
+            <GlassButton variant="outline" size="md" onClick={() => setEditTask(null)}>Annuleer</GlassButton>
           </div>
         </div>
       </FloatingPanel>

@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 import { safeReturnTo } from "@/lib/authReturnTo";
 import { Mail, Lock, Loader2, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("mail@salvatorecaltabellotta.com");
@@ -94,6 +95,10 @@ export default function Login() {
               )}
             </button>
           </form>
+
+          <p className="text-xs text-muted-foreground text-center mt-5">
+            <Link to="/forgot-password" className="hover:text-foreground underline underline-offset-2">Wachtwoord vergeten?</Link>
+          </p>
         </div>
       </div>
     </div>

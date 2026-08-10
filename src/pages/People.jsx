@@ -7,13 +7,16 @@ import Avatar from "@/components/glass/Avatar";
 import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
-import { Search, Plus, Mail, Phone, Users } from "lucide-react";
+import { Search, Plus, Mail, Phone, Users, Pencil, Trash2 } from "lucide-react";
+import ImageInput from "@/components/glass/ImageInput";
 
 export default function People() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [showNew, setShowNew] = useState(false);
   const [draft, setDraft] = useState({ name: "", company: "", role: "", email: "", phone: "" });
+  const [editContact, setEditContact] = useState(null);
+  const [editDraft, setEditDraft] = useState({});
 
   const { data: contacts, loading, reload } = useEntityList("Contact");
 
@@ -26,6 +29,22 @@ export default function People() {
     await base44.entities.Contact.create({ ...draft, name: draft.name.trim() });
     setDraft({ name: "", company: "", role: "", email: "", phone: "" });
     setShowNew(false);
+    reload();
+  };
+
+  const startEdit = (c) => {
+    setEditContact(c);
+    setEditDraft({ name: c.name || "", company: c.company || "", role: c.role || "", email: c.email || "", phone: c.phone || "", avatar: c.avatar || "", notes: c.notes || "", relationship_type: c.relationship_type || "" });
+  };
+  const saveEdit = async () => {
+    if (!editContact) return;
+    await base44.entities.Contact.update(editContact.id, { ...editDraft, name: editDraft.name.trim() });
+    setEditContact(null);
+    reload();
+  };
+  const delContact = async (c) => {
+    if (!window.confirm("Contact verwijderen?")) return;
+    await base44.entities.Contact.delete(c.id);
     reload();
   };
 
@@ -57,7 +76,11 @@ export default function People() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading && [0, 1, 2].map((i) => <div key={i} className="h-44 rounded-2xl shimmer" />)}
         {!loading && filtered.map((contact) => (
-          <GlassPanel key={contact.id} level={2} className="p-5 cursor-pointer hover:scale-[1.01] transition-transform group">
+          <GlassPanel key={contact.id} level={2} className="p-5 cursor-pointer hover:scale-[1.01] transition-transform group relative">
+            <div className="absolute top-3 right-3 flex gap-1.5 z-10">
+              <button onClick={(e) => { e.stopPropagation(); startEdit(contact); }} className="h-7 w-7 rounded-full glass-1 flex items-center justify-center text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition" aria-label="Bewerk"><Pencil className="h-3.5 w-3.5" /></button>
+              <button onClick={(e) => { e.stopPropagation(); delContact(contact); }} className="h-7 w-7 rounded-full glass-1 flex items-center justify-center text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition" aria-label="Verwijder"><Trash2 className="h-3.5 w-3.5" /></button>
+            </div>
             <div className="flex items-start gap-4 mb-4" onClick={() => navigate(`/people/${contact.id}`)}>
               <Avatar src={contact.avatar} name={contact.name} size="xl" />
               <div className="flex-1 min-w-0">
@@ -101,6 +124,31 @@ export default function People() {
           <div className="flex gap-2 pt-2">
             <GlassButton variant="primary" size="md" className="flex-1" onClick={createContact}>Maak aan</GlassButton>
             <GlassButton variant="outline" size="md" onClick={() => setShowNew(false)}>Annuleer</GlassButton>
+          </div>
+        </div>
+      </FloatingPanel>
+
+      <FloatingPanel open={!!editContact} onClose={() => setEditContact(null)} position="right">
+        <div className="space-y-4">
+          <h2 className="text-xl font-display font-semibold">Contact bewerken</h2>
+          <ImageInput label="Avatar" value={editDraft.avatar || ""} onChange={(url) => setEditDraft({ ...editDraft, avatar: url })} />
+          {[
+            { k: "name", l: "Naam" }, { k: "company", l: "Bedrijf" },
+            { k: "role", l: "Functie" }, { k: "email", l: "Email" }, { k: "phone", l: "Telefoon" },
+            { k: "relationship_type", l: "Relatie" },
+          ].map((f) => (
+            <div key={f.k}>
+              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{f.l}</label>
+              <input value={editDraft[f.k] || ""} onChange={(e) => setEditDraft({ ...editDraft, [f.k]: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
+            </div>
+          ))}
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Notities</label>
+            <textarea value={editDraft.notes || ""} onChange={(e) => setEditDraft({ ...editDraft, notes: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none min-h-[70px] resize-none" />
+          </div>
+          <div className="flex gap-2 pt-2">
+            <GlassButton variant="primary" size="md" className="flex-1" onClick={saveEdit}>Opslaan</GlassButton>
+            <GlassButton variant="outline" size="md" onClick={() => setEditContact(null)}>Annuleer</GlassButton>
           </div>
         </div>
       </FloatingPanel>
