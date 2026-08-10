@@ -1,0 +1,50 @@
+{
+  "name": "Decision",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+    },
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    },
+    "linked_task_id": {
+      "type": "string",
+      "title": "Linked Task ID"
+    },
+    "person_id": {
+      "type": "string",
+      "title": "Person ID"
+    },
+    "milestone_id": {
+      "type": "string",
+      "title": "Milestone ID"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

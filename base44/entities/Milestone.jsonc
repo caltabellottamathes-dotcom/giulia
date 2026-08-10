@@ -1,0 +1,63 @@
+{
+  "name": "Milestone",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Name"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "done",
+        "planning",
+        "waiting"
+      ],
+      "default": "open",
+      "title": "Status"
+    },
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    },
+    "linked_tasks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Linked Tasks"
+    },
+    "involved_people": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Involved People"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

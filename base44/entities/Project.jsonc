@@ -16,6 +16,7 @@
         "planning",
         "in_progress",
         "waiting",
+        "afwerking",
         "completed",
         "archived"
       ],
