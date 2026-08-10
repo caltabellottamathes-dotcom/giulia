@@ -8,6 +8,28 @@ import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import { Plus, LayoutGrid, ArrowUpRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import AgendaPreview from "@/components/panels/previews/AgendaPreview";
+import TasksPreview from "@/components/panels/previews/TasksPreview";
+import ProjectsPreview from "@/components/panels/previews/ProjectsPreview";
+import EmailPreview from "@/components/panels/previews/EmailPreview";
+import WhatsAppPreview from "@/components/panels/previews/WhatsAppPreview";
+import PeoplePreview from "@/components/panels/previews/PeoplePreview";
+import ApprovalsPreview from "@/components/panels/previews/ApprovalsPreview";
+import ActivityPreview from "@/components/panels/previews/ActivityPreview";
+import InsightsPreview from "@/components/panels/previews/InsightsPreview";
+import MemoryPreview from "@/components/panels/previews/MemoryPreview";
+import KnowledgePreview from "@/components/panels/previews/KnowledgePreview";
+import DocumentsPreview from "@/components/panels/previews/DocumentsPreview";
+
+/** LEVEL 02 quick-context previews — one per data module. Modules without
+ *  a preview (chat, voice, settings, profile, integrations) keep the full
+ *  component, since those surfaces are themselves the interaction. */
+const PREVIEWS = {
+  agenda: AgendaPreview, tasks: TasksPreview, projects: ProjectsPreview,
+  email: EmailPreview, whatsapp: WhatsAppPreview, people: PeoplePreview,
+  approvals: ApprovalsPreview, activity: ActivityPreview, insights: InsightsPreview,
+  memory: MemoryPreview, knowledge: KnowledgePreview, documents: DocumentsPreview,
+};
 
 /**
  * The ONE sliding glass panel used for every module. The content determines
@@ -52,6 +74,11 @@ export default function ModulePanel() {
   const navigate = useNavigate();
   const mod = activeModule ? MODULES[activeModule] : null;
   const ActiveComponent = mod?.Component;
+  const Preview = activeModule ? PREVIEWS[activeModule] : null;
+  const openSpace = () => {
+    if (MODULE_ROUTE[activeModule]) navigate(MODULE_ROUTE[activeModule]);
+    closeModule();
+  };
   const widgetDef = activeModule ? WIDGETS[activeModule] : null;
   const { toast } = useToast();
   const [adding, setAdding] = useState(false);
@@ -120,9 +147,10 @@ export default function ModulePanel() {
             </div>
           </div>
 
-          {/* Content — cleaner, more opaque surface for readability */}
+          {/* Content — LEVEL 02 quick-context preview, or full component for
+              interaction surfaces (chat/voice/settings/profile/integrations). */}
           <div className="flex-1 overflow-y-auto px-7 lg:px-9 py-7">
-            <ActiveComponent />
+            {Preview ? <Preview onOpen={openSpace} /> : <ActiveComponent />}
           </div>
         </div>
       )}
