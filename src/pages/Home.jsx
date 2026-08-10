@@ -168,14 +168,17 @@ export default function Home() {
       {/* Photo — mobile banner (closed) */}
       <div
         className={cn(
-          "lg:hidden fixed top-14 left-0 right-0 h-[34vh] overflow-hidden z-0 rounded-b-[32px] transition-all duration-700",
+          "lg:hidden fixed top-14 left-0 right-0 h-[58vh] overflow-hidden z-0 rounded-b-[40px] transition-all duration-700",
           panelOpen ? "opacity-0 -translate-y-4 pointer-events-none" : "opacity-100"
         )}
       >
-        <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
-        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/15 via-transparent to-background/30" />
-        <div className="absolute left-5 bottom-4 z-10">
-          <span className="glass-1 rounded-full px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] text-ivory font-semibold">
+        <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover object-[30%_32%]" draggable={false} />
+        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/15 via-transparent to-background/40" />
+        <div className="absolute right-5 top-5 z-10">
+          <span className="font-display font-semibold tracking-[0.3em] text-[11px] uppercase text-ivory/80">Giulia</span>
+        </div>
+        <div className="absolute left-5 bottom-5 z-10">
+          <span className="glass-1 inline-block rounded-full px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-ivory font-semibold">
             {new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}
           </span>
         </div>
@@ -221,7 +224,7 @@ export default function Home() {
       {/* Content */}
       <div
         className={cn(
-          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[34vh] lg:pt-0",
+          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[58vh] lg:pt-0",
           panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100"
         )}
       >

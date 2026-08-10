@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import FloatingPanel from "@/components/glass/FloatingPanel";
 import { usePanel } from "@/lib/PanelContext";
 import { MODULES } from "@/lib/moduleRegistry";
@@ -106,50 +107,57 @@ export default function ModulePanel() {
       {mod && (
         <div className="flex flex-col h-full">
           <div className="h-[3px] w-full shrink-0" style={{ background: MODULE_ACCENT[activeModule] || "hsl(var(--sand))" }} />
-          {/* Clean header photo — no overlay */}
-          <div className="relative shrink-0 h-44 overflow-hidden">
-            <img src={WIDGETS[activeModule]?.image || MODULE_IMAGE[activeModule] || IMAGES.walkingChairs} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
-          </div>
 
-          {/* Floating glass content card — overlaps the header photo with rounded corners */}
-          <div className="flex-1 -mt-10 rounded-t-[28px] glass-3 overflow-y-auto">
-            <div className="px-7 lg:px-9 pt-7 pb-5">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
+          <div className="flex-1 overflow-y-auto">
+            <div className="px-6 lg:px-9 pt-16 pb-5">
+              <div className="flex gap-5 lg:gap-6 items-start">
+                {/* Floating photo card — slides up from below into the seam between
+                    panel and widget. Different crop than the widget's own photo. */}
+                <motion.div
+                  initial={{ y: 150, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 120, damping: 18, delay: 0.16 }}
+                  className="relative w-36 h-52 lg:w-44 lg:h-64 shrink-0 rounded-[24px] overflow-hidden shadow-2xl border border-white/25"
+                >
+                  <img src={WIDGETS[activeModule]?.image || MODULE_IMAGE[activeModule] || IMAGES.walkingChairs} alt="" className="absolute inset-0 h-full w-full object-cover object-[18%_22%]" draggable={false} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-charcoal/50 via-transparent to-transparent" />
+                </motion.div>
+
+                <div className="flex-1 min-w-0 pt-1">
                   <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/55 font-medium mb-1.5">Snelle context · Niveau 02</p>
                   <h2 className="text-[24px] lg:text-[28px] font-display font-semibold tracking-tight leading-none text-ivory">
                     {mod.label}
                   </h2>
-                </div>
-              <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                {widgetDef && (
-                  <button
-                    onClick={addToDashboard}
-                    disabled={adding}
-                    className="inline-flex items-center gap-1.5 rounded-full glass-button px-3 py-2 text-[11px] font-semibold text-ivory transition disabled:opacity-50"
-                  >
-                    <LayoutGrid className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Widget</span>
-                    <Plus className="h-3 w-3" />
-                  </button>
-                )}
-                {MODULE_ROUTE[activeModule] && (
-                  <button
-                    onClick={() => { navigate(MODULE_ROUTE[activeModule]); closeModule(); }}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-charcoal text-ivory px-3.5 py-2 text-[11px] font-bold hover:bg-charcoal/90 transition shadow-sm"
-                  >
-                    <ArrowUpRight className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Open space</span>
-                  </button>
-                )}
-                <AnimatedPicto icon={mod.icon} accent={MODULE_ACCENT[activeModule]} />
+                  <div className="flex items-center gap-2 mt-4 flex-wrap">
+                    {widgetDef && (
+                      <button
+                        onClick={addToDashboard}
+                        disabled={adding}
+                        className="inline-flex items-center gap-1.5 rounded-full glass-button px-3 py-2 text-[11px] font-semibold text-ivory transition disabled:opacity-50"
+                      >
+                        <LayoutGrid className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">Widget</span>
+                        <Plus className="h-3 w-3" />
+                      </button>
+                    )}
+                    {MODULE_ROUTE[activeModule] && (
+                      <button
+                        onClick={() => { navigate(MODULE_ROUTE[activeModule]); closeModule(); }}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-charcoal text-ivory px-3.5 py-2 text-[11px] font-bold hover:bg-charcoal/90 transition shadow-sm"
+                      >
+                        <ArrowUpRight className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">Open space</span>
+                      </button>
+                    )}
+                    <AnimatedPicto icon={mod.icon} accent={MODULE_ACCENT[activeModule]} />
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Content — LEVEL 02 quick-context preview, or full component for
                 interaction surfaces (chat/voice/settings/profile/integrations). */}
-            <div className="px-7 lg:px-9 pb-8">
+            <div className="px-6 lg:px-9 pb-8">
               {Preview ? <Preview onOpen={openSpace} /> : <ActiveComponent />}
             </div>
           </div>
