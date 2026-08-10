@@ -1,26 +1,50 @@
 import React from "react";
 import WidgetShell from "./WidgetShell";
-import WidgetHeader from "./WidgetHeader";
 import BrandPhoto from "./BrandPhoto";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
-import { formatDistanceToNowStrict } from "date-fns";
+import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
-import { cn } from "@/lib/utils";
+import { Trash2 } from "lucide-react";
 
-const SRC_COLOR = { email: "bg-olive", whatsapp: "bg-sand", task: "bg-charcoal", calendar: "bg-olive", system: "bg-sand" };
+const SRC_COLOR = {
+  email: "hsl(16 45% 47%)",
+  whatsapp: "hsl(var(--sand))",
+  task: "hsl(var(--olive))",
+  calendar: "hsl(var(--ridge))",
+  system: "hsl(var(--smoke))",
+  giulia: "hsl(var(--olive))",
+};
+const SRC_LABEL = {
+  email: "Email",
+  whatsapp: "WhatsApp",
+  task: "Taken",
+  calendar: "Agenda",
+  system: "Systeem",
+  giulia: "Giulia",
+};
+const dot = (s) => SRC_COLOR[(s || "").toLowerCase()] || "hsl(var(--smoke))";
+const label = (s) => SRC_LABEL[(s || "").toLowerCase()] || (s || "Overig");
 
 /**
- * ActivityWidget — a timeline, not a list. A branded banner carries the count;
- * a bespoke route-line below holds a dot per event (color = source, latest
- * pulses).
+ * ActivityWidget — grouped by source category, each row carries the latest
+ * activity for that category with a count and a hover action to clear it.
  */
 export default function ActivityWidget() {
   const { openModule } = usePanel();
-  const { data: items, loading } = useEntityList("Activity", { sort: "-created_date" });
-  const visible = items.slice(0, 8);
-  const latest = items[0];
-  const when = (a) => { const t = a.timestamp || a.created_date; if (!t) return ""; try { return formatDistanceToNowStrict(new Date(t), { addSuffix: true }); } catch { return ""; } };
+  const { data: items, loading, reload } = useEntityList("Activity", { sort: "-created_date" });
+
+  const groups = {};
+  items.forEach((it) => {
+    const k = (it.source || "overig").toLowerCase();
+    (groups[k] = groups[k] || []).push(it);
+  });
+  const keys = Object.keys(groups).sort((a, b) => groups[b].length - groups[a].length).slice(0, 4);
+
+  const clearCat = async (k) => {
+    const ids = groups[k].map((g) => g.id);
+    try { await base44.entities.Activity.deleteMany({ id: { $in: ids } }); reload(); } catch {}
+  };
 
   return (
     <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("activity")} className="min-h-[176px]">
@@ -31,24 +55,30 @@ export default function ActivityWidget() {
             <span className="text-2xl font-display font-semibold text-ivory tabular-nums">{items.length}</span>
           </div>
         </BrandPhoto>
-        <div className="p-5 flex-1 flex flex-col">
+        <div className="p-4 flex-1 flex flex-col">
           {loading ? (
-            <div className="flex-1 flex items-center"><div className="h-8 w-8 border-2 border-current/20 border-t-current rounded-full animate-spin" /></div>
-          ) : items.length > 0 ? (
-            <>
-              <div className="relative h-8 flex items-center">
-                <div className="absolute inset-x-0 h-0.5 rounded-full bg-current/10" />
-                <div className="relative flex justify-between w-full">
-                  {visible.map((a, i) => (
-                    <span key={a.id} className={cn("h-3 w-3 rounded-full border-2 border-current/20", i !== 0 && (SRC_COLOR[(a.source || "").toLowerCase()] || "bg-current"), i === 0 && "animate-pulse-soft")} style={i === 0 ? { background: "var(--tile-accent)" } : undefined} />
-                  ))}
-                </div>
-              </div>
-              <div className="mt-4 flex items-baseline gap-2">
-                <span className="text-[11px] opacity-50">laatste {latest ? when(latest) : ""}</span>
-              </div>
-              {latest && <p className="text-sm opacity-70 truncate mt-1">{latest.description}</p>}
-            </>
+            <div className="flex-1 flex items-center"><div className="h-7 w-7 border-2 border-current/20 border-t-current rounded-full animate-spin" /></div>
+          ) : keys.length ? (
+            <div className="space-y-2">
+              {keys.map((k) => {
+                const list = groups[k];
+                return (
+                  <div key={k} className="group flex items-center gap-2.5">
+                    <span className="h-2 w-2 rounded-full shrink-0" style={{ background: dot(k) }} />
+                    <span className="text-[10px] uppercase tracking-wider font-bold w-20 shrink-0 text-current opacity-70">{label(k)}</span>
+                    <span className="text-[11px] text-current opacity-60 truncate flex-1">{list[0].description}</span>
+                    <span className="text-[10px] tabular-nums text-current opacity-50 shrink-0">{list.length}</span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); clearCat(k); }}
+                      className="opacity-0 group-hover:opacity-100 text-current/50 hover:text-current transition-opacity shrink-0"
+                      aria-label="Wis categorie"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
           ) : (
             <div className="flex-1 flex items-center justify-center"><p className="text-xs opacity-45">Nog geen activiteit</p></div>
           )}

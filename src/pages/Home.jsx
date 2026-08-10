@@ -9,7 +9,6 @@ import { Plus } from "lucide-react";
 import AddWidgetPicker from "@/components/panels/AddWidgetPicker";
 import WidgetCell from "@/components/widgets/WidgetCell";
 import GiuliaIntroOverlay from "@/components/widgets/GiuliaIntroOverlay";
-import DashboardBriefing from "@/components/widgets/DashboardBriefing";
 import { Link } from "react-router-dom";
 
 const PAGE_LINKS = [
@@ -205,8 +204,6 @@ export default function Home() {
             <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Widget</span>
           </button>
         </header>
-
-        <DashboardBriefing />
 
         {/* Tidy sorted bento grid */}
         <div className="px-5 lg:px-10 pb-10">
