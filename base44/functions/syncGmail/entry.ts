@@ -46,6 +46,12 @@ export default async function (req) {
       const subject = get('subject') || '(geen onderwerp)';
       const senderName = from.replace(/<.*>/, '').trim().replace(/"/g, '') || from;
       const senderEmail = (from.match(/<([^>]+)>/) || [, from])[1];
+      const toHdr = get('to');
+      const deliveredTo = get('delivered-to');
+      // Only sync mail for the custom address (mail@salvatorecaltabellotta.com) — ignore the Gmail mailbox.
+      const isOurs = [from, toHdr, deliveredTo].some((v) => /salvatorecaltabellotta\.com/i.test(v || ''));
+      if (!isOurs) continue;
+
       await ent.Email.create({
         sender: senderName,
         sender_email: senderEmail,

@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import AddWidgetPicker from "@/components/panels/AddWidgetPicker";
 import WidgetCell from "@/components/widgets/WidgetCell";
-import GiuliaIntroOverlay from "@/components/widgets/GiuliaIntroOverlay";
+
 import { Link } from "react-router-dom";
 import { MODULES } from "@/lib/moduleRegistry";
 
@@ -143,7 +143,11 @@ export default function Home() {
 
   return (
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-my-8 min-h-[calc(100svh-3.5rem)] overflow-hidden">
-      <GiuliaIntroOverlay />
+      {/* Large GIULIA branding wordmark — bottom-left corner of the background */}
+      <div className="hidden lg:block fixed left-6 bottom-4 z-0 pointer-events-none select-none">
+        <span className="font-display font-bold tracking-[-0.05em] leading-none text-foreground/[0.05]" style={{ fontSize: "11rem" }}>GIULIA</span>
+      </div>
+
       {/* Photo — ONE home background image that transforms when a panel opens.
           Desktop: glides from the right side (closed) to the bottom-left corner
           (open), keeping the same image so it reads as a transform — not a new
