@@ -5,6 +5,7 @@ import PanelForm from "@/components/glass/PanelForm";
 import { base44 } from "@/api/base44Client";
 import { Plus, Trash2, CheckCircle2, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import EmptyState from "@/components/projects/EmptyState";
 
 const milestoneStatus = [
   { value: "open", label: "Open" },
@@ -77,9 +78,14 @@ export default function MilestonesSection({ project }) {
           );
         })}
         {!loading && milestones.length === 0 && (
-          <GlassPanel level={1} className="p-8 text-center md:col-span-2">
-            <p className="text-sm text-muted-foreground">Nog geen milestones.</p>
-          </GlassPanel>
+          <div className="md:col-span-2">
+            <EmptyState
+              icon={CheckCircle2}
+              title="Nog geen milestones"
+              hint="Markeer de belangrijke momenten in dit project — een oplevering, indiening of afspraak."
+              action={<GlassButton variant="glass" size="sm" onClick={openNew}><Plus className="h-3.5 w-3.5" /> Nieuwe milestone</GlassButton>}
+            />
+          </div>
         )}
       </div>
 

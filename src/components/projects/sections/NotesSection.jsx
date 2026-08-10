@@ -4,6 +4,7 @@ import GlassButton from "@/components/glass/GlassButton";
 import PanelForm from "@/components/glass/PanelForm";
 import { base44 } from "@/api/base44Client";
 import { Plus, Trash2, StickyNote } from "lucide-react";
+import EmptyState from "@/components/projects/EmptyState";
 
 /** Notes — free-form project notes (thoughts, not decisions). */
 export default function NotesSection({ project }) {
@@ -55,9 +56,14 @@ export default function NotesSection({ project }) {
           </div>
         ))}
         {notes.length === 0 && (
-          <GlassPanel level={1} className="p-8 text-center md:col-span-2">
-            <p className="text-sm text-muted-foreground">Nog geen notities.</p>
-          </GlassPanel>
+          <div className="md:col-span-2">
+            <EmptyState
+              icon={StickyNote}
+              title="Nog geen notities"
+              hint="Vast gedachte, een open vraag of context die je niet wilt vergeten? Leg het hier vast."
+              action={<GlassButton variant="glass" size="sm" onClick={openNew}><Plus className="h-3.5 w-3.5" /> Nieuwe notitie</GlassButton>}
+            />
+          </div>
         )}
       </div>
 

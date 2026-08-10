@@ -13,11 +13,14 @@
     "status": {
       "type": "string",
       "enum": [
+        "idea",
         "planning",
         "in_progress",
+        "review",
         "waiting",
         "afwerking",
         "completed",
+        "paused",
         "archived"
       ],
       "default": "planning",

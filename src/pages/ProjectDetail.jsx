@@ -68,7 +68,7 @@ export default function ProjectDetail() {
       <ProjectHeader project={project} onUpdate={updateProject} onEdit={() => setEditorOpen(true)} onDelete={delProject} />
       <ProjectNav active={section} onChange={setSection} />
 
-      {section === "Overview" && <OverviewSection project={project} tasks={tasks} onNavigate={setSection} />}
+      {section === "Overview" && <OverviewSection project={project} tasks={tasks} onNavigate={setSection} reload={load} />}
       {section === "Tasks" && <TasksSection project={project} tasks={tasks} reload={load} />}
       {section === "Timeline" && <TimelineSection project={project} tasks={tasks} />}
       {section === "Milestones" && <MilestonesSection project={project} />}

@@ -4,6 +4,7 @@ import GlassButton from "@/components/glass/GlassButton";
 import PanelForm from "@/components/glass/PanelForm";
 import { base44 } from "@/api/base44Client";
 import { Plus, Trash2, Gavel } from "lucide-react";
+import EmptyState from "@/components/projects/EmptyState";
 
 /** Decisions — historical record of why choices were made. */
 export default function DecisionsSection({ project }) {
@@ -57,9 +58,12 @@ export default function DecisionsSection({ project }) {
           </div>
         ))}
         {decisions.length === 0 && (
-          <GlassPanel level={1} className="p-8 text-center">
-            <p className="text-sm text-muted-foreground">Nog geen beslissingen vastgelegd.</p>
-          </GlassPanel>
+          <EmptyState
+            icon={Gavel}
+            title="Nog geen beslissingen vastgelegd"
+            hint="Waarom werd een keuze gemaakt? Houd de achterliggende redenen bij als projectgeheugen."
+            action={<GlassButton variant="glass" size="sm" onClick={openNew}><Plus className="h-3.5 w-3.5" /> Nieuwe beslissing</GlassButton>}
+          />
         )}
       </div>
 

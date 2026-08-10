@@ -32,20 +32,26 @@ export const isTaskDone = (t) =>
   t.status === "klaar" || t.status === "done" || t.status === "completed";
 
 export const projectStatusMeta = {
+  idea: { label: "Idee", variant: "muted" },
   planning: { label: "Planning", variant: "waiting" },
   in_progress: { label: "Actief", variant: "active" },
+  review: { label: "Review", variant: "waiting" },
   waiting: { label: "Wacht op klant", variant: "waiting" },
-  afwerking: { label: "Afwerving", variant: "active" },
+  afwerking: { label: "Afwering", variant: "active" },
   completed: { label: "Klaar", variant: "completed" },
+  paused: { label: "Gepauzeerd", variant: "muted" },
   archived: { label: "Gearchiveerd", variant: "muted" },
 };
 
 export const projectStatusOptions = [
+  { value: "idea", label: "Idee" },
   { value: "planning", label: "Planning" },
   { value: "in_progress", label: "Actief" },
+  { value: "review", label: "Review" },
   { value: "waiting", label: "Wacht op klant" },
-  { value: "afwerking", label: "Afwerving" },
+  { value: "afwerking", label: "Afwering" },
   { value: "completed", label: "Klaar" },
+  { value: "paused", label: "Gepauzeerd" },
   { value: "archived", label: "Gearchiveerd" },
 ];
 
