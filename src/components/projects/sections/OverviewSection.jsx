@@ -1,19 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import GlassPanel from "@/components/glass/GlassPanel";
 import Avatar from "@/components/glass/Avatar";
-import { Image } from "@/components/ui/image";
 import { base44 } from "@/api/base44Client";
-import { Mail, Calendar, FileText, AlertCircle, HelpCircle, ArrowRight } from "lucide-react";
-import { isTaskDone, parseContext, statusBlockColor } from "@/lib/projectStatus";
+import { Mail, Calendar, FileText, AlertCircle, HelpCircle, Bot, ArrowRight } from "lucide-react";
+import { isTaskDone, parseContext } from "@/lib/projectStatus";
 import StatusGrid, { StatusLegend } from "@/components/projects/StatusGrid";
-import PhotoBlock from "@/components/projects/PhotoBlock";
-import { PROJECT_PHOTOS } from "@/lib/projectPhotos";
 
-/** Overview — the project reads in one glance. Photographs are used as
- *  design elements: a mood band opens the page, and Giulia's reading sits
- *  over a darkened field photo. The data widgets stay on the brand palette. */
+/** Overview — bold information-design dashboard. The whole project reads in
+ *  one glance: a giant progress figure, a full-project status mosaic, the
+ *  per-onderdeel breakdown, and Giulia's reading of where things stand. */
 export default function OverviewSection({ project, tasks, onNavigate }) {
   const [emails, setEmails] = useState([]);
   const [events, setEvents] = useState([]);
@@ -58,47 +54,30 @@ export default function OverviewSection({ project, tasks, onNavigate }) {
 
   return (
     <div className="space-y-6">
-      {/* Mood band — photograph as the opening design element */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <PhotoBlock
-          src={PROJECT_PHOTOS.notebookChair}
-          eyebrow="Veldnotities"
-          caption={project.next_milestone ? `Volgende stap — ${project.next_milestone}` : "Een overzicht van waar dit project staat."}
-          aspect="aspect-[16/6]"
-          focalPointY={0.45}
-        />
-      </motion.div>
-
       {/* Hero progress — giant number + full-project status mosaic */}
       <GlassPanel level={2} className="p-6 lg:p-8">
         <div className="flex flex-col lg:flex-row lg:items-end gap-6 lg:gap-10">
           <div className="shrink-0">
             <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-1">Voortgang</p>
             <div className="flex items-end gap-2 leading-none">
-              <span className="text-[64px] lg:text-[80px] font-display font-bold tracking-tighter tabular-nums">
-                {progress}
-              </span>
+              <span className="text-[64px] lg:text-[80px] font-display font-bold tracking-tighter tabular-nums">{progress}</span>
               <span className="text-2xl text-muted-foreground mb-2">%</span>
             </div>
             <p className="text-xs text-muted-foreground tabular-nums mt-1">{doneCount} van {tasks.length} taken klaar</p>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between mb-2 gap-3 flex-wrap">
+            <div className="flex items-center justify-between mb-2">
               <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Status van alle taken</p>
               <StatusLegend tasks={tasks} />
             </div>
             <div className="grid grid-cols-[repeat(auto-fill,minmax(10px,1fr))] gap-[3px]">
-              {tasks.map((t) => (
-                <div
-                  key={t.id}
-                  title={`${t.title} — ${t.status}`}
-                  className={cn("h-3.5 rounded-[3px] hover:scale-[1.4] hover:z-10 transition-transform cursor-default", statusBlockColor[t.status] || "bg-foreground/15")}
-                />
-              ))}
+              {tasks.map((t) => {
+                const color = {
+                  klaar: "bg-emerald-500", actief: "bg-olive", gepland: "bg-blue-500",
+                  wacht: "bg-amber-500", te_specifieren: "bg-foreground/25",
+                }[t.status] || "bg-foreground/15";
+                return <div key={t.id} title={`${t.title} — ${t.status}`} className={cn("h-3.5 rounded-[3px] hover:scale-[1.4] hover:z-10 transition-transform cursor-default", color)} />;
+              })}
             </div>
           </div>
         </div>
@@ -129,24 +108,17 @@ export default function OverviewSection({ project, tasks, onNavigate }) {
         </div>
       </div>
 
-      {/* Giulia reading — photograph as a darkened backdrop design element */}
-      <div className="relative overflow-hidden rounded-2xl float-shadow">
-        <Image
-          src={PROJECT_PHOTOS.walkingChair}
-          fittingType="fill"
-          focalPointY={0.55}
-          className="absolute inset-0 h-full w-full"
-        />
-        <div className="absolute inset-0 bg-charcoal/82" />
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-          className="relative p-6 lg:p-7"
-        >
-          <p className="text-[10px] uppercase tracking-[0.24em] text-ivory/50 font-semibold mb-2">Giulia leest dit project</p>
-          <p className="text-sm text-ivory/90 leading-relaxed max-w-2xl">{giuliaContext}</p>
-        </motion.div>
+      {/* Giulia reading — bold dark card */}
+      <div className="glass-dark rounded-2xl p-6">
+        <div className="flex items-start gap-4">
+          <span className="h-11 w-11 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center shrink-0">
+            <Bot className="h-5 w-5 text-white" strokeWidth={1.5} />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[10px] uppercase tracking-[0.24em] text-white/50 font-semibold mb-1.5">Giulia leest dit project</p>
+            <p className="text-sm text-white/90 leading-relaxed">{giuliaContext}</p>
+          </div>
+        </div>
       </div>
 
       {/* Quick info + people */}
