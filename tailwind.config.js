@@ -57,6 +57,9 @@ module.exports = {
   			smoke: 'hsl(var(--smoke))',
   			ridge: 'hsl(var(--ridge))',
   			storm: 'hsl(var(--storm))',
+  			powder: 'hsl(var(--powder))',
+  			steel: 'hsl(var(--steel))',
+  			linen: 'hsl(var(--linen))',
   		},
   		fontFamily: {
   			heading: ['var(--font-heading)'],

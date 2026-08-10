@@ -3,8 +3,9 @@ import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
 import Avatar from "@/components/glass/Avatar";
 import StatusBadge from "@/components/glass/StatusBadge";
-import ProgressDial from "@/components/projects/ProgressDial";
 import StatusDistribution from "@/components/projects/StatusDistribution";
+import PhotoCard from "@/components/projects/PhotoCard";
+import { IMAGES } from "@/lib/images";
 import { base44 } from "@/api/base44Client";
 import { projectStatusMeta, isTaskDone } from "@/lib/projectStatus";
 import { buildBreakdown, weightedProgress, giuliaInterpret, parseTasksFromText } from "@/lib/projectEngine";
@@ -74,18 +75,28 @@ export default function OverviewSection({ project, tasks, onNavigate, reload }) 
     <div className="space-y-4">
       {/* Top bento: progress · distribution · Giulia */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Progress hero */}
-        <GlassPanel level={2} className="lg:col-span-4 p-6 flex flex-col items-center justify-center text-center">
-          <ProgressDial value={progress} size={180} />
-          <div className="mt-4 flex items-center gap-2">
-            <StatusBadge variant={ps.variant}>{ps.label}</StatusBadge>
-          </div>
-          {giulia.nextStep && (
-            <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-olive/12 border border-olive/25 px-3 py-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-olive" />
-              <span className="text-[11px] font-medium text-olive">{giulia.nextStep}</span>
+        {/* Progress hero — brand photo as design element */}
+        <GlassPanel level={2} className="lg:col-span-4 relative overflow-hidden p-0 min-h-[280px] flex flex-col justify-end">
+          <img src={IMAGES.walkTowardChair} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/45 to-charcoal/10" />
+          <div className="relative p-6">
+            <div className="flex items-end gap-1">
+              <span className="text-[64px] font-display font-bold leading-none tabular-nums text-ivory">{progress}</span>
+              <span className="text-2xl font-display text-ivory/65 mb-1.5">%</span>
             </div>
-          )}
+            <div className="mt-3 h-1.5 w-full bg-ivory/20 rounded-full overflow-hidden">
+              <div className="h-full bg-powder rounded-full transition-all duration-700" style={{ width: `${Math.max(progress, 2)}%` }} />
+            </div>
+            <div className="mt-4 flex items-center gap-2">
+              <StatusBadge variant={ps.variant}>{ps.label}</StatusBadge>
+            </div>
+            {giulia.nextStep && (
+              <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-ivory/12 border border-ivory/25 px-3 py-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-powder" />
+                <span className="text-[11px] font-medium text-ivory">{giulia.nextStep}</span>
+              </div>
+            )}
+          </div>
         </GlassPanel>
 
         {/* Status distribution */}
@@ -180,7 +191,7 @@ export default function OverviewSection({ project, tasks, onNavigate, reload }) 
       {/* Bottom bento: deadlines · people · knowledge */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Deadlines */}
-        <GlassPanel level={1} className="lg:col-span-5 p-5">
+        <PhotoCard src={IMAGES.hourglassJacket} className="lg:col-span-5">
           <ModuleHeader icon={Calendar} label="Komende deadlines" onMore={() => onNavigate("Timeline")} />
           {upcoming.length > 0 ? (
             <div className="flex flex-wrap gap-2.5">
@@ -200,10 +211,10 @@ export default function OverviewSection({ project, tasks, onNavigate, reload }) 
           ) : (
             <p className="text-xs text-muted-foreground py-3">Geen deadlines in zicht voor de komende taken.</p>
           )}
-        </GlassPanel>
+        </PhotoCard>
 
         {/* People cluster */}
-        <GlassPanel level={1} className="lg:col-span-3 p-5">
+        <PhotoCard src={IMAGES.bagJacket} className="lg:col-span-3">
           <ModuleHeader icon={Users} label="Betrokkenen" onMore={() => onNavigate("People")} />
           {contacts.length > 0 ? (
             <div className="flex flex-col gap-3">
@@ -217,17 +228,17 @@ export default function OverviewSection({ project, tasks, onNavigate, reload }) 
           ) : (
             <p className="text-xs text-muted-foreground py-3">Nog niemand gekoppeld.</p>
           )}
-        </GlassPanel>
+        </PhotoCard>
 
         {/* Knowledge & communication */}
-        <GlassPanel level={1} className="lg:col-span-4 p-5">
+        <PhotoCard src={IMAGES.notebookStacked} className="lg:col-span-4">
           <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3">Kennis & communicatie</p>
           <div className="space-y-2.5">
             <MiniRow icon={Mail} label="E-mails" count={emails.length} onClick={() => onNavigate("Communication")} />
             <MiniRow icon={Gavel} label="Beslissingen" count={decisions.length} onClick={() => onNavigate("Decisions")} />
             <MiniRow icon={FileText} label="Bestanden" count={documents.length} onClick={() => onNavigate("Files")} />
           </div>
-        </GlassPanel>
+        </PhotoCard>
       </div>
     </div>
   );

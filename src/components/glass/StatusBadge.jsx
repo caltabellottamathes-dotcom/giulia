@@ -2,12 +2,12 @@ import React from "react";
 import { cn } from "@/lib/utils";
 
 const variants = {
-  active: "bg-olive/15 text-olive border-olive/20",
-  pending: "bg-amber-400/10 text-amber-700 border-amber-600/20",
-  waiting: "bg-blue-grey/15 text-blue-grey border-blue-grey/20",
-  completed: "bg-emerald-600/10 text-emerald-700 border-emerald-600/20",
-  draft: "bg-stone/30 text-foreground/60 border-stone/40",
-  urgent: "bg-red-500/10 text-red-600 border-red-500/20",
+  active: "bg-olive/15 text-olive border-olive/25",
+  pending: "bg-powder/25 text-steel border-powder/40",
+  waiting: "bg-steel/15 text-steel border-steel/25",
+  completed: "bg-olive/15 text-olive border-olive/25",
+  draft: "bg-steel/10 text-steel border-steel/20",
+  urgent: "bg-charcoal/10 text-charcoal border-charcoal/25",
   muted: "bg-muted text-muted-foreground border-border",
 };
 

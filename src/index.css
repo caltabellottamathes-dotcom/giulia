@@ -45,6 +45,11 @@
     --ridge: 204 18% 73%;
     --storm: 60 6% 94%;
 
+    /* Brand palette accents — powder blue, steel slate, linen sand */
+    --powder: 202 34% 74%;
+    --steel: 204 4% 52%;
+    --linen: 72 8% 87%;
+
     --glass-bg: 51 14% 88%;
     --glass-border: 60 12% 97%;
     --bloom-blue: 75% 0.12 230;

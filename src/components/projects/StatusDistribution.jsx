@@ -4,11 +4,11 @@ import React from "react";
  *  project's tasks divide across statuses. The bar is the hero; counts sit
  *  in a compact legend. No paragraphs. */
 const SEGMENTS = [
-  { key: "klaar", label: "Klaar", color: "bg-emerald-500", match: ["klaar", "done", "completed"] },
-  { key: "actief", label: "Actief", color: "bg-olive", match: ["actief", "in_progress", "today"] },
-  { key: "gepland", label: "Gepland", color: "bg-blue-500", match: ["gepland", "upcoming"] },
-  { key: "wacht", label: "Wacht", color: "bg-amber-500", match: ["wacht", "waiting"] },
-  { key: "te_specifieren", label: "Te spec.", color: "bg-foreground/25", match: ["te_specifieren", "todo"] },
+  { key: "klaar", label: "Klaar", color: "bg-olive", match: ["klaar", "done", "completed"] },
+  { key: "actief", label: "Actief", color: "bg-powder", match: ["actief", "in_progress", "today"] },
+  { key: "gepland", label: "Gepland", color: "bg-powder/55", match: ["gepland", "upcoming"] },
+  { key: "wacht", label: "Wacht", color: "bg-steel", match: ["wacht", "waiting"] },
+  { key: "te_specifieren", label: "Te spec.", color: "bg-steel/40", match: ["te_specifieren", "todo"] },
 ];
 
 export default function StatusDistribution({ tasks }) {

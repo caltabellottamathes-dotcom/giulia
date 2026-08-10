@@ -28,6 +28,19 @@ export const IMAGES = {
   walkChairsHigh: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/456fa7c2c_Crop_this_last_image_so_202606301550.jpg",
   chairsScattered: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/67a83c915_Make_a_photograph_that_belong_202606301549.jpg",
   chairWater: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/38ab5187a_remake_the_first_image_But_202606301559.jpg",
+  // Branding series 2 — editorial still-life & beach motifs (uploaded 2026-08-10)
+  personClipboard: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/78dd167d8_Person_holding_clipboard_on_sand_202608101819.jpg",
+  hourglassJacket: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/e7eab01cf_Hourglass_and_jacket_on_backdrop_202608101819.jpg",
+  capOnTablet: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/5ad1246e2_Baseball_cap_on_tablet_device_202608101819.jpg",
+  twoChairsSand: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/e5a90ef6f_Two_lawn_chairs_on_sand_202608101819.jpg",
+  notebookChair: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/a8d5c1938_Notebook_and_pen_on_chair_202608101812.jpg",
+  walkTowardChair: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0a3990207_Person_walking_toward_white_chair_202608101812.jpg",
+  womanFolder: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/21fed459f_Woman_holding_leather_folder_2K_202608101812.jpg",
+  notebookStacked: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/76f181950_Notebook_on_stacked_lawn_chairs_202608101812.jpg",
+  capBoot: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/d748b7ca9_Baseball_cap_and_rubber_boot_202608101750.jpg",
+  chairsBeach: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/6038e90ba_Plastic_lawn_chairs_on_beach_202608101750.jpg",
+  capOnBoot: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/96ea3c49a_Baseball_cap_on_rubber_boot_202608101750.jpg",
+  bagJacket: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/c8916d9bd_Leather_handbag_and_quilted_jacket_202608101729.jpg",
 };
 
 export const editorialImages = [
@@ -51,4 +64,16 @@ export const brandGallery = [
   IMAGES.walkChairsHigh,
   IMAGES.chairsScattered,
   IMAGES.chairWater,
+  IMAGES.personClipboard,
+  IMAGES.hourglassJacket,
+  IMAGES.capOnTablet,
+  IMAGES.twoChairsSand,
+  IMAGES.notebookChair,
+  IMAGES.walkTowardChair,
+  IMAGES.womanFolder,
+  IMAGES.notebookStacked,
+  IMAGES.capBoot,
+  IMAGES.chairsBeach,
+  IMAGES.capOnBoot,
+  IMAGES.bagJacket,
 ];

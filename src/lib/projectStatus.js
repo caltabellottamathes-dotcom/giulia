@@ -1,22 +1,22 @@
 // Shared project-management status metadata for the project workspace.
 
 export const taskStatusMeta = {
-  klaar: { label: "Klaar", color: "text-emerald-600", dot: "bg-emerald-500" },
-  done: { label: "Klaar", color: "text-emerald-600", dot: "bg-emerald-500" },
-  completed: { label: "Klaar", color: "text-emerald-600", dot: "bg-emerald-500" },
-  actief: { label: "Actief", color: "text-olive", dot: "bg-olive" },
-  in_progress: { label: "Actief", color: "text-olive", dot: "bg-olive" },
-  today: { label: "Vandaag", color: "text-olive", dot: "bg-olive" },
-  gepland: { label: "Gepland", color: "text-blue-500", dot: "bg-blue-500" },
-  upcoming: { label: "Gepland", color: "text-blue-500", dot: "bg-blue-500" },
-  wacht: { label: "Wacht op", color: "text-amber-500", dot: "bg-amber-500" },
-  waiting: { label: "Wacht op", color: "text-amber-500", dot: "bg-amber-500" },
-  te_specifieren: { label: "Te specificeren", color: "text-foreground/55", dot: "bg-foreground/30" },
-  todo: { label: "Te specificeren", color: "text-foreground/55", dot: "bg-foreground/30" },
-  gepauzeerd: { label: "Gepauzeerd", color: "text-muted-foreground", dot: "bg-muted-foreground/40" },
-  paused: { label: "Gepauzeerd", color: "text-muted-foreground", dot: "bg-muted-foreground/40" },
-  overdue: { label: "Te laat", color: "text-red-500", dot: "bg-red-500" },
-  delegated: { label: "Gedelegeerd", color: "text-purple-500", dot: "bg-purple-500" },
+  klaar: { label: "Klaar", color: "text-olive", dot: "bg-olive" },
+  done: { label: "Klaar", color: "text-olive", dot: "bg-olive" },
+  completed: { label: "Klaar", color: "text-olive", dot: "bg-olive" },
+  actief: { label: "Actief", color: "text-powder", dot: "bg-powder" },
+  in_progress: { label: "Actief", color: "text-powder", dot: "bg-powder" },
+  today: { label: "Vandaag", color: "text-powder", dot: "bg-powder" },
+  gepland: { label: "Gepland", color: "text-steel", dot: "bg-steel/60" },
+  upcoming: { label: "Gepland", color: "text-steel", dot: "bg-steel/60" },
+  wacht: { label: "Wacht op", color: "text-steel", dot: "bg-steel" },
+  waiting: { label: "Wacht op", color: "text-steel", dot: "bg-steel" },
+  te_specifieren: { label: "Te specificeren", color: "text-steel/70", dot: "bg-steel/35" },
+  todo: { label: "Te specificeren", color: "text-steel/70", dot: "bg-steel/35" },
+  gepauzeerd: { label: "Gepauzeerd", color: "text-muted-foreground", dot: "bg-steel/30" },
+  paused: { label: "Gepauzeerd", color: "text-muted-foreground", dot: "bg-steel/30" },
+  overdue: { label: "Te laat", color: "text-charcoal", dot: "bg-charcoal" },
+  delegated: { label: "Gedelegeerd", color: "text-powder", dot: "bg-powder/70" },
 };
 
 export const taskStatusOptions = [

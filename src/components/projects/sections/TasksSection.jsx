@@ -117,7 +117,12 @@ export default function TasksSection({ project, tasks, reload }) {
                     <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", collapsed[ond] && "-rotate-90")} />
                   </button>
                   <InlineText value={ond} placeholder="Onderdeel" onCommit={(v) => renameOnd(ond, v)} className="text-base font-display font-semibold flex-1 hover:bg-foreground/5" />
-                  <span className="text-xs text-muted-foreground tabular-nums shrink-0">{ondDone}/{ondTasks.length} klaar</span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div className="w-16 h-1.5 bg-steel/20 rounded-full overflow-hidden">
+                      <div className="h-full bg-olive rounded-full" style={{ width: `${ondTasks.length ? Math.round((ondDone / ondTasks.length) * 100) : 0}%` }} />
+                    </div>
+                    <span className="text-xs text-muted-foreground tabular-nums">{ondDone}/{ondTasks.length}</span>
+                  </div>
                   <button onClick={() => { setEditTask(null); setNewContext(`${ond} · `); }} className="h-7 w-7 rounded-lg glass-1 flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0" title="Subonderdeel toevoegen">
                     <Plus className="h-3.5 w-3.5" />
                   </button>
@@ -141,7 +146,7 @@ export default function TasksSection({ project, tasks, reload }) {
                               const meta = taskStatusMeta[task.status] || taskStatusMeta.te_specifieren;
                               return (
                                 <div key={task.id} className="group flex items-center gap-3 p-2 rounded-lg hover:bg-foreground/[0.04] transition">
-                                  <button onClick={() => toggleDone(task)} className={cn("h-5 w-5 rounded-full border flex items-center justify-center shrink-0 transition", done ? "bg-emerald-500 border-emerald-500" : "border-border/60")}>
+                                  <button onClick={() => toggleDone(task)} className={cn("h-5 w-5 rounded-full border flex items-center justify-center shrink-0 transition", done ? "bg-olive border-olive" : "border-border/60")}>
                                     {done ? <CheckCircle2 className="h-4 w-4 text-white" /> : <span className={cn("h-1.5 w-1.5 rounded-full", meta.dot)} />}
                                   </button>
                                   <span className={cn("text-sm flex-1 leading-snug", done ? "line-through text-muted-foreground" : "text-foreground")}>{task.title}</span>
@@ -174,23 +179,26 @@ export default function TasksSection({ project, tasks, reload }) {
         <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-3">
           {BOARD_COLUMNS.map((col) => {
             const colTasks = tasks.filter((t) => normalizeStatus(t.status) === col.key);
+            const accent = col.key === "klaar" ? "bg-olive" : col.key === "actief" ? "bg-powder" : col.key === "gepland" ? "bg-powder/55" : col.key === "wacht" ? "bg-steel" : "bg-steel/40";
             return (
-              <div key={col.key} className="glass rounded-2xl p-3">
-                <div className="flex items-center justify-between mb-3 px-1">
-                  <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">{col.label}</span>
+              <div key={col.key} className="glass rounded-2xl p-3 flex flex-col">
+                <div className="flex items-center gap-2 mb-3 px-1">
+                  <span className={cn("h-2.5 w-2.5 rounded-full", accent)} />
+                  <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground flex-1">{col.label}</span>
                   <span className="text-xs text-muted-foreground tabular-nums">{colTasks.length}</span>
                 </div>
                 <div className="space-y-2">
                   {colTasks.map((task) => {
                     const done = isTaskDone(task);
                     return (
-                      <div key={task.id} onClick={() => { setNewContext(null); setEditTask(task); }} className="cursor-pointer rounded-xl bg-foreground/[0.03] hover:bg-foreground/[0.06] p-3 transition">
+                      <div key={task.id} onClick={() => { setNewContext(null); setEditTask(task); }} className="cursor-pointer rounded-xl bg-foreground/[0.03] hover:bg-foreground/[0.06] p-3 border-l-2 border-transparent hover:border-olive/50 transition">
                         <p className={cn("text-sm leading-snug", done && "line-through text-muted-foreground")}>{task.title}</p>
                         <p className="text-[11px] text-muted-foreground mt-1 truncate">{parseContext(task.context).sub}</p>
+                        {task.deadline && <p className="text-[10px] text-muted-foreground mt-1.5 tabular-nums">{new Date(task.deadline).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}</p>}
                       </div>
                     );
                   })}
-                  {colTasks.length === 0 && <p className="text-[11px] text-muted-foreground/60 text-center py-4">—</p>}
+                  {colTasks.length === 0 && <p className="text-[11px] text-muted-foreground/50 text-center py-4">—</p>}
                 </div>
               </div>
             );
@@ -217,7 +225,7 @@ export default function TasksSection({ project, tasks, reload }) {
               const { ond, sub } = parseContext(task.context);
               return (
                 <div key={task.id} onClick={() => { setNewContext(null); setEditTask(task); }} className="group flex items-center gap-3 px-4 py-3 hover:bg-foreground/[0.03] cursor-pointer transition">
-                  <button onClick={(e) => { e.stopPropagation(); toggleDone(task); }} className={cn("h-4 w-4 rounded-full border flex items-center justify-center shrink-0", done ? "bg-emerald-500 border-emerald-500" : "border-border/60")}>
+                  <button onClick={(e) => { e.stopPropagation(); toggleDone(task); }} className={cn("h-4 w-4 rounded-full border flex items-center justify-center shrink-0", done ? "bg-olive border-olive" : "border-border/60")}>
                     {done && <CheckCircle2 className="h-3 w-3 text-white" />}
                   </button>
                   <span className={cn("text-sm flex-1", done && "line-through text-muted-foreground")}>{task.title}</span>
