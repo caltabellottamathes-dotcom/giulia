@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePanel } from "@/lib/PanelContext";
 import { WIDGETS } from "@/lib/widgetRegistry";
+import { MODULE_FUNCTIONS } from "@/lib/moduleFunctions";
+import { WidgetThemeProvider } from "@/lib/WidgetThemeContext";
 import { IMAGES } from "@/lib/images";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
@@ -187,15 +189,31 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/35 to-transparent" />
       </div>
 
-      {/* Panel name — large, where the greeting sits, shown when a panel is open */}
-      <div className={cn("hidden lg:block fixed top-10 left-10 z-20 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]", panelOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none")}>
+      {/* Panel name + function links — where the greeting sits, shown when a panel is open */}
+      <div className={cn("hidden lg:block fixed top-24 left-10 z-20 max-w-[34rem] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]", panelOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none")}>
         <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/70 mb-3 font-semibold">
           {new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}
         </p>
-        <h1 className="text-5xl lg:text-6xl font-display font-semibold tracking-[-0.02em] leading-[1.0] text-foreground">
+        <h1 className="text-5xl lg:text-6xl font-display font-semibold tracking-[-0.02em] leading-[1.0] text-foreground mb-5">
           {MODULES[activeModule]?.label}
         </h1>
+        <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+          {(MODULE_FUNCTIONS[activeModule] || []).map((f) => (
+            <Link key={f.label} to={f.to} className="text-sm text-foreground/70 hover:text-foreground transition-colors underline underline-offset-4 decoration-foreground/20">
+              {f.label}
+            </Link>
+          ))}
+        </div>
       </div>
+
+      {/* Floating widget — the active module's widget, left of the panel over the photo's left side */}
+      {panelOpen && WIDGETS[activeModule] && (() => { const W = WIDGETS[activeModule].Component; return (
+        <div className="hidden lg:block fixed left-[22%] top-[45vh] z-20 w-[300px] animate-fade-up">
+          <WidgetThemeProvider value={{ theme: "glass", color: "", opacity: 1, blur: 0 }}>
+            <W />
+          </WidgetThemeProvider>
+        </div>
+      ); })()}
 
       {/* Content */}
       <div
