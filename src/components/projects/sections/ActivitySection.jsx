@@ -9,7 +9,11 @@ export default function ActivitySection({ project }) {
   useEffect(() => {
     (async () => {
       const all = await base44.entities.Activity.list("-timestamp", 100);
-      setItems(all);
+      const t = (project.title || "").toLowerCase();
+      setItems(all.filter((a) =>
+        a.project_id === project.id ||
+        (t && ((a.description || "").toLowerCase().includes(t) || (a.source || "").toLowerCase().includes(t)))
+      ));
     })();
   }, [project.id]);
 

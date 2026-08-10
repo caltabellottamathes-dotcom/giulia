@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
-const sections = ["Overview", "Tasks", "Timeline", "Milestones", "Files", "Notes", "People", "Communication", "Decisions", "Activity"];
+const sections = ["Overview", "Tasks", "Timeline", "Milestones", "Files", "Notes", "People", "Communication", "Decisions", "Activity", "Giulia"];
 
 export default function ProjectNav({ active, onChange }) {
   return (

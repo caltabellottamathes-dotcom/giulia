@@ -21,14 +21,19 @@ const viewTabs = [
   { key: "list", label: "Lijst" },
 ];
 
+const tierColor = (pct) => {
+  if (pct >= 100) return "bg-olive";
+  if (pct >= 50) return "bg-powder";
+  if (pct > 0) return "bg-steel";
+  return "bg-steel/30";
+};
+
 export default function TasksSection({ project, tasks, reload }) {
   const [view, setView] = useState("hierarchy");
-  const [collapsed, setCollapsed] = useState({});
+  const [expanded, setExpanded] = useState(null);
   const [editTask, setEditTask] = useState(null);   // existing task
   const [newContext, setNewContext] = useState(null); // context for new task
   const [listSort, setListSort] = useState("context");
-
-  const toggle = (k) => setCollapsed((c) => ({ ...c, [k]: !c[k] }));
 
   const toggleDone = async (task) => {
     const next = isTaskDone(task) ? "actief" : "klaar";
@@ -106,29 +111,32 @@ export default function TasksSection({ project, tasks, reload }) {
       </div>
 
       {view === "hierarchy" && (
-        <div className="space-y-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
           {Object.entries(hierarchy).map(([ond, subs]) => {
             const ondTasks = Object.values(subs).flat();
             const ondDone = ondTasks.filter(isTaskDone).length;
+            const pct = ondTasks.length ? Math.round((ondDone / ondTasks.length) * 100) : 0;
+            const isOpen = expanded === ond;
+            const complete = ondTasks.length > 0 && ondDone === ondTasks.length;
             return (
-              <div key={ond} className="glass rounded-2xl p-5">
-                <div className="flex items-center gap-3 mb-3">
-                  <button onClick={() => toggle(ond)} className="h-6 w-6 rounded-lg glass-1 flex items-center justify-center shrink-0">
-                    <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", collapsed[ond] && "-rotate-90")} />
-                  </button>
-                  <InlineText value={ond} placeholder="Onderdeel" onCommit={(v) => renameOnd(ond, v)} className="text-base font-display font-semibold flex-1 hover:bg-foreground/5" />
-                  <div className="flex items-center gap-2 shrink-0">
-                    <div className="w-16 h-1.5 bg-steel/20 rounded-full overflow-hidden">
-                      <div className="h-full bg-olive rounded-full" style={{ width: `${ondTasks.length ? Math.round((ondDone / ondTasks.length) * 100) : 0}%` }} />
-                    </div>
-                    <span className="text-xs text-muted-foreground tabular-nums">{ondDone}/{ondTasks.length}</span>
+              <div key={ond} className={cn("glass rounded-2xl overflow-hidden transition-all duration-300", isOpen && "sm:col-span-2 xl:col-span-3")}>
+                <button onClick={() => setExpanded(isOpen ? null : ond)} className="w-full p-5 flex items-center gap-3 text-left">
+                  <span className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-colors", isOpen ? "bg-olive text-ivory" : "bg-foreground/[0.04] text-muted-foreground")}>
+                    {complete ? <CheckCircle2 className="h-5 w-5" /> : <span className="text-sm font-display font-bold tabular-nums">{pct}%</span>}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <InlineText value={ond} placeholder="Onderdeel" onCommit={(v) => renameOnd(ond, v)} className="text-base font-display font-semibold hover:bg-foreground/5" />
+                    <p className="text-[11px] text-muted-foreground mt-0.5 tabular-nums">{ondDone}/{ondTasks.length} klaar · {Object.keys(subs).length} subonderdelen</p>
                   </div>
-                  <button onClick={() => { setEditTask(null); setNewContext(`${ond} · `); }} className="h-7 w-7 rounded-lg glass-1 flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0" title="Subonderdeel toevoegen">
-                    <Plus className="h-3.5 w-3.5" />
-                  </button>
+                  <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform shrink-0", isOpen && "rotate-180")} />
+                </button>
+                <div className="px-5 pb-4">
+                  <div className="h-1.5 rounded-full bg-muted/60 overflow-hidden">
+                    <div className={cn("h-full rounded-full transition-all duration-700", tierColor(pct))} style={{ width: `${pct}%` }} />
+                  </div>
                 </div>
-                {!collapsed[ond] && (
-                  <div className="space-y-4 pl-9">
+                {isOpen && (
+                  <div className="p-5 pt-3 space-y-4 border-t border-border/40">
                     {Object.entries(subs).map(([sub, subTasks]) => {
                       const d = subTasks.filter(isTaskDone).length;
                       return (
@@ -147,7 +155,7 @@ export default function TasksSection({ project, tasks, reload }) {
                               return (
                                 <div key={task.id} className="group flex items-center gap-3 p-2 rounded-lg hover:bg-foreground/[0.04] transition">
                                   <button onClick={() => toggleDone(task)} className={cn("h-5 w-5 rounded-full border flex items-center justify-center shrink-0 transition", done ? "bg-olive border-olive" : "border-border/60")}>
-                                    {done ? <CheckCircle2 className="h-4 w-4 text-white" /> : <span className={cn("h-1.5 w-1.5 rounded-full", meta.dot)} />}
+                                    {done ? <CheckCircle2 className="h-4 w-4 text-ivory" /> : <span className={cn("h-1.5 w-1.5 rounded-full", meta.dot)} />}
                                   </button>
                                   <span className={cn("text-sm flex-1 leading-snug", done ? "line-through text-muted-foreground" : "text-foreground")}>{task.title}</span>
                                   <select value={task.status} onChange={(e) => setStatus(task, e.target.value)} className="text-[10px] uppercase tracking-wider bg-transparent border border-border/40 rounded-lg px-1.5 py-0.5 outline-none cursor-pointer shrink-0">
@@ -166,12 +174,15 @@ export default function TasksSection({ project, tasks, reload }) {
                         </div>
                       );
                     })}
+                    <button onClick={() => { setEditTask(null); setNewContext(`${ond} · `); }} className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs text-muted-foreground hover:text-foreground hover:bg-foreground/[0.03] transition border border-dashed border-border/50">
+                      <Plus className="h-3.5 w-3.5" /> Subonderdeel toevoegen
+                    </button>
                   </div>
                 )}
               </div>
             );
           })}
-          {Object.keys(hierarchy).length === 0 && <p className="text-sm text-muted-foreground py-8 text-center">Nog geen taken. Voeg er een toe.</p>}
+          {Object.keys(hierarchy).length === 0 && <p className="text-sm text-muted-foreground py-8 text-center col-span-full">Nog geen taken. Voeg er een toe.</p>}
         </div>
       )}
 

@@ -81,34 +81,28 @@ export default function OverviewSection({ project, tasks, onNavigate, reload }) 
 
   return (
     <div className="space-y-4">
-      {/* Top bento: progress · distribution · Giulia */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Progress hero — brand photo as design element */}
-        <GlassPanel level={2} className="lg:col-span-4 relative overflow-hidden p-0 min-h-[280px] flex flex-col justify-end">
+      {/* Playful bento: progress (top) + onderdeel (stacked) · taakverdeling · giulia */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 lg:grid-rows-2 gap-4">
+        {/* Progress hero — vertical, top of the left column */}
+        <GlassPanel level={2} className="lg:col-span-4 lg:col-start-1 lg:row-start-1 relative overflow-hidden p-0 min-h-[200px] flex flex-col justify-end">
           <img src={IMAGES.walkTowardChair} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/45 to-charcoal/10" />
-          <div className="relative p-6">
+          <div className="relative p-5">
             <div className="flex items-end gap-1">
-              <span className="text-[64px] font-display font-bold leading-none tabular-nums text-ivory">{progress}</span>
-              <span className="text-2xl font-display text-ivory/65 mb-1.5">%</span>
+              <span className="text-[56px] font-display font-bold leading-none tabular-nums text-ivory">{progress}</span>
+              <span className="text-xl font-display text-ivory/65 mb-1">%</span>
             </div>
             <div className="mt-3 h-1.5 w-full bg-ivory/20 rounded-full overflow-hidden">
               <div className="h-full bg-powder rounded-full transition-all duration-700" style={{ width: `${Math.max(progress, 2)}%` }} />
             </div>
-            <div className="mt-4 flex items-center gap-2">
+            <div className="mt-3 flex items-center gap-2">
               <StatusBadge variant={ps.variant}>{ps.label}</StatusBadge>
             </div>
-            {giulia.nextStep && (
-              <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-ivory/12 border border-ivory/25 px-3 py-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-powder" />
-                <span className="text-[11px] font-medium text-ivory">{giulia.nextStep}</span>
-              </div>
-            )}
           </div>
         </GlassPanel>
 
-        {/* Status distribution */}
-        <GlassPanel level={2} className="lg:col-span-4 p-6 flex flex-col">
+        {/* Taakverdeling — tall, spans both rows */}
+        <GlassPanel level={2} className="lg:col-span-4 lg:col-start-5 lg:row-start-1 lg:row-span-2 p-6 flex flex-col">
           <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-5">Takenverdeling</p>
           <div className="flex-1 flex flex-col justify-center">
             <StatusDistribution tasks={tasks} />
@@ -119,81 +113,93 @@ export default function OverviewSection({ project, tasks, onNavigate, reload }) 
           </div>
         </GlassPanel>
 
-        {/* Giulia insight + add */}
-        <GlassPanel level={3} className="lg:col-span-4 p-6 flex flex-col">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="h-7 w-7 rounded-xl glass-1 flex items-center justify-center">
-              <Sparkles className="h-4 w-4 text-olive" />
-            </span>
-            <h3 className="text-sm font-display font-semibold">Giulia</h3>
-          </div>
-          <p className="text-sm leading-relaxed flex-1">{giulia.insight}</p>
-
-          <div className="mt-4 pt-4 border-t border-border/40">
-            {!addOpen ? (
-              <button onClick={() => setAddOpen(true)} className="w-full flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition">
-                <Plus className="h-3.5 w-3.5" /> Laat Giulia meedenken
-              </button>
-            ) : (
+        {/* Giulia — stronger, function-first */}
+        <GlassPanel level={3} className="lg:col-span-4 lg:col-start-9 lg:row-start-1 lg:row-span-2 p-0 flex flex-col overflow-hidden">
+          <div className="h-1.5 bg-olive" />
+          <div className="p-6 flex-1 flex flex-col">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="h-10 w-10 rounded-2xl bg-olive/15 ring-1 ring-olive/25 flex items-center justify-center">
+                <Sparkles className="h-5 w-5 text-olive" />
+              </span>
               <div>
-                <textarea
-                  value={addText}
-                  onChange={(e) => setAddText(e.target.value)}
-                  rows={2}
-                  placeholder="bv. Na de afspraak met Sarah het moodboard aanpassen en de nieuwe versie sturen"
-                  className="w-full text-xs bg-foreground/[0.03] border border-border/50 rounded-xl px-3 py-2.5 resize-none outline-none focus:border-olive leading-relaxed"
-                  autoFocus
-                />
-                <div className="flex gap-2 mt-2">
-                  <button onClick={() => { setAddOpen(false); setAddText(""); }} className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition">Annuleer</button>
-                  <GlassButton variant="primary" size="sm" className="flex-1" onClick={handleAdd} disabled={adding || !addText.trim()}>
-                    {adding ? "Toevoegen…" : "Voeg taken toe"}
-                  </GlassButton>
-                </div>
+                <h3 className="text-base font-display font-bold leading-none">Giulia</h3>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">Project-assistent</p>
+              </div>
+            </div>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Interpretatie</p>
+            <p className="text-sm leading-relaxed flex-1">{giulia.insight}</p>
+            {giulia.nextStep && (
+              <div className="mt-3 inline-flex items-start gap-1.5 rounded-xl bg-powder/15 border border-powder/30 px-3 py-2">
+                <Sparkles className="h-3.5 w-3.5 text-steel shrink-0 mt-0.5" />
+                <span className="text-[11px] font-medium text-steel leading-snug">{giulia.nextStep}</span>
               </div>
             )}
+            <div className="mt-4 pt-4 border-t border-border/40">
+              {!addOpen ? (
+                <button onClick={() => setAddOpen(true)} className="w-full flex items-center justify-center gap-2 rounded-xl bg-olive text-ivory py-2.5 text-xs font-medium hover:bg-olive/90 transition">
+                  <Plus className="h-3.5 w-3.5" /> Delegeer aan Giulia
+                </button>
+              ) : (
+                <div>
+                  <textarea
+                    value={addText}
+                    onChange={(e) => setAddText(e.target.value)}
+                    rows={3}
+                    placeholder="Beschrijf wat Giulia moet oppakken — zij splitst het in taken."
+                    className="w-full text-xs bg-foreground/[0.03] border border-border/50 rounded-xl px-3 py-2.5 resize-none outline-none focus:border-olive leading-relaxed"
+                    autoFocus
+                  />
+                  <div className="flex gap-2 mt-2">
+                    <button onClick={() => { setAddOpen(false); setAddText(""); }} className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition">Annuleer</button>
+                    <GlassButton variant="primary" size="sm" className="flex-1" onClick={handleAdd} disabled={adding || !addText.trim()}>
+                      {adding ? "Toevoegen…" : "Voeg taken toe"}
+                    </GlassButton>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </GlassPanel>
+
+        {/* Voortgang per onderdeel — stacked under the progress card */}
+        <GlassPanel level={2} className="lg:col-span-4 lg:col-start-1 lg:row-start-2 p-5 flex flex-col overflow-hidden">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-4">Voortgang per onderdeel</p>
+          <div className="flex-1 overflow-y-auto pr-1 -mr-1 space-y-3">
+            {breakdown.map((o) => {
+              const open = expanded === o.name;
+              return (
+                <div key={o.name}>
+                  <button onClick={() => setExpanded(open ? null : o.name)} className="w-full group">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform shrink-0 ${open ? "rotate-180" : ""}`} />
+                      <span className="text-xs text-foreground/70 flex-1 text-left truncate group-hover:text-foreground transition-colors">{o.name}</span>
+                      <span className="text-[11px] text-muted-foreground tabular-nums">{o.done}/{o.total}</span>
+                      <span className="text-sm font-display font-semibold tabular-nums leading-none w-9 text-right">{o.pct}%</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-muted/60 overflow-hidden">
+                      <div className={`h-full rounded-full transition-all duration-700 ${tierColor(o.pct)}`} style={{ width: `${Math.max(o.pct, 1)}%` }} />
+                    </div>
+                  </button>
+                  {open && o.subs.length > 1 && (
+                    <div className="ml-6 mt-2 space-y-1.5">
+                      {o.subs.map((s) => (
+                        <div key={s.name} className="flex items-center gap-3">
+                          <span className="text-[11px] text-muted-foreground flex-1 truncate">{s.name}</span>
+                          <div className="w-20 h-1 bg-muted rounded-full overflow-hidden">
+                            <div className={`h-full rounded-full ${tierColor(s.pct)}`} style={{ width: `${s.pct}%` }} />
+                          </div>
+                          <span className="text-[10px] tabular-nums text-muted-foreground w-7 text-right">{s.pct}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {breakdown.length === 0 && <p className="text-sm text-muted-foreground">Nog geen onderdelen — voeg taken toe op het Tasks-tabblad.</p>}
           </div>
         </GlassPanel>
       </div>
-
-      {/* Onderdeel infographic */}
-      <GlassPanel level={2} className="p-6">
-        <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-5">Voortgang per onderdeel</p>
-        <div className="space-y-3.5">
-          {breakdown.map((o) => {
-            const open = expanded === o.name;
-            return (
-              <div key={o.name}>
-                <button onClick={() => setExpanded(open ? null : o.name)} className="w-full group">
-                  <div className="flex items-center gap-3 mb-1.5">
-                    <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform shrink-0 ${open ? "rotate-180" : ""}`} />
-                    <span className="text-xs text-foreground/70 flex-1 text-left truncate group-hover:text-foreground transition-colors">{o.name}</span>
-                    <span className="text-[11px] text-muted-foreground tabular-nums">{o.done}/{o.total}</span>
-                    <span className="text-sm font-display font-semibold tabular-nums leading-none w-9 text-right">{o.pct}%</span>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-muted/60 overflow-hidden">
-                    <div className={`h-full rounded-full transition-all duration-700 ${tierColor(o.pct)}`} style={{ width: `${Math.max(o.pct, 1)}%` }} />
-                  </div>
-                </button>
-                {open && o.subs.length > 1 && (
-                  <div className="ml-6 mt-2 space-y-1.5">
-                    {o.subs.map((s) => (
-                      <div key={s.name} className="flex items-center gap-3">
-                        <span className="text-[11px] text-muted-foreground flex-1 truncate">{s.name}</span>
-                        <div className="w-24 h-1 bg-muted rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full ${tierColor(s.pct)}`} style={{ width: `${s.pct}%` }} />
-                        </div>
-                        <span className="text-[10px] tabular-nums text-muted-foreground w-7 text-right">{s.pct}%</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-          {breakdown.length === 0 && <p className="text-sm text-muted-foreground">Nog geen onderdelen — voeg taken toe op het Tasks-tabblad.</p>}
-        </div>
-      </GlassPanel>
 
       {/* Bottom bento: deadlines · people · knowledge */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
