@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import AddWidgetPicker from "@/components/panels/AddWidgetPicker";
 import WidgetCell from "@/components/widgets/WidgetCell";
+import GiuliaIntroOverlay from "@/components/widgets/GiuliaIntroOverlay";
 
 import { Link } from "react-router-dom";
 import { MODULES } from "@/lib/moduleRegistry";
@@ -270,6 +271,8 @@ export default function Home() {
           )}
         </div>
       </div>
+
+      <GiuliaIntroOverlay />
 
       <AddWidgetPicker
         open={pickerOpen}

@@ -48,21 +48,15 @@ const MODULE_ACCENT = {
   agents: "hsl(var(--olive))",
 };
 
+// Modules without a widget keep an editorial photo; modules WITH a widget
+// inherit the widget's branding image (WIDGETS[module].image) so the panel
+// header, the widget and the page hero all share one photo.
 const MODULE_IMAGE = {
-  agenda: IMAGES.sittingChairs,
-  projects: IMAGES.feetChair,
-  tasks: IMAGES.topDownWalk,
-  email: IMAGES.walkingChairs,
-  whatsapp: IMAGES.walkingChairs,
-  knowledge: IMAGES.portraitThinking,
-  documents: IMAGES.topDownWalk,
-  people: IMAGES.sittingChairs,
-  approvals: IMAGES.feetChair,
-  activity: IMAGES.walkingChairs,
-  memory: IMAGES.portraitThinking,
-  insights: IMAGES.portraitBootHands,
   chat: IMAGES.portraitBootFace,
   voice: IMAGES.portraitBootFace,
+  settings: IMAGES.walkingChairs,
+  profile: IMAGES.portraitBootHands,
+  integrations: IMAGES.sittingChairs,
   agents: IMAGES.feetChair,
 };
 
@@ -114,7 +108,7 @@ export default function ModulePanel() {
           <div className="h-[3px] w-full shrink-0" style={{ background: MODULE_ACCENT[activeModule] || "hsl(var(--sand))" }} />
           {/* Clean header photo — no overlay */}
           <div className="relative shrink-0 h-44 overflow-hidden">
-            <img src={MODULE_IMAGE[activeModule] || IMAGES.walkingChairs} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
+            <img src={WIDGETS[activeModule]?.image || MODULE_IMAGE[activeModule] || IMAGES.walkingChairs} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
           </div>
 
           {/* Floating glass content card — overlaps the header photo with rounded corners */}
