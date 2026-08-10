@@ -9,8 +9,9 @@ import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import {
   Inbox, Star, Send, FileText, Archive, Sparkles,
-  Search, Mail, Check, Edit3, X, RefreshCw,
+  Search, Mail, Check, Edit3, X, RefreshCw, Trash2,
 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const folders = [
   { id: "inbox", label: "Inbox", icon: Inbox },
@@ -27,6 +28,11 @@ export default function Email() {
   const [showDraftPanel, setShowDraftPanel] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [sending, setSending] = useState(false);
+  const [showCompose, setShowCompose] = useState(false);
+  const [compose, setCompose] = useState({ to: "", subject: "", body: "" });
+  const [sendingCompose, setSendingCompose] = useState(false);
+  const [draftBody, setDraftBody] = useState("");
+  const { toast } = useToast();
 
   const { data: emails, loading, reload } = useEntityList("Email");
 
@@ -57,16 +63,60 @@ export default function Email() {
       await base44.functions.invoke("sendGmail", {
         to: selectedEmail.sender_email,
         subject: selectedEmail.subject,
-        message: selectedEmail.body,
+        message: draftBody || selectedEmail.body,
       });
-      await base44.entities.Email.update(selectedEmail.id, { status: "sent", folder: "sent" });
+      await base44.entities.Email.update(selectedEmail.id, { body: draftBody || selectedEmail.body, status: "sent", folder: "sent" });
       setShowDraftPanel(false);
       reload();
     } catch (e) {
-      /* ignore */
+      toast({ title: "Versturen mislukt", description: "Controleer je integratie-credits.", variant: "destructive" });
     } finally {
       setSending(false);
     }
+  };
+
+  const openCompose = () => { setCompose({ to: "", subject: "", body: "" }); setShowCompose(true); };
+  const openReply = () => {
+    if (!selectedEmail) return;
+    setCompose({ to: selectedEmail.sender_email || "", subject: selectedEmail.subject || "", body: "" });
+    setShowCompose(true);
+  };
+  const saveComposeDraft = async () => {
+    if (!compose.subject.trim() && !compose.body.trim()) return;
+    await base44.entities.Email.create({
+      subject: compose.subject || "(geen onderwerp)", body: compose.body,
+      sender: "Jij", sender_email: "mail@salvatorecaltabellotta.com",
+      recipients: compose.to ? [compose.to] : [], status: "draft", folder: "drafts",
+    });
+    setCompose({ to: "", subject: "", body: "" }); setShowCompose(false); reload();
+  };
+  const sendCompose = async () => {
+    if (!compose.to.trim()) { toast({ title: "Vul een geadresseerde in" }); return; }
+    setSendingCompose(true);
+    try {
+      await base44.functions.invoke("sendGmail", { to: compose.to, subject: compose.subject, message: compose.body });
+      await base44.entities.Email.create({
+        subject: compose.subject || "(geen onderwerp)", body: compose.body,
+        sender: "Jij", sender_email: "mail@salvatorecaltabellotta.com",
+        recipients: [compose.to], status: "sent", folder: "sent",
+      });
+      setCompose({ to: "", subject: "", body: "" }); setShowCompose(false); reload();
+      toast({ title: "Verzonden" });
+    } catch (e) {
+      toast({ title: "Versturen mislukt", description: "Controleer je integratie-credits.", variant: "destructive" });
+    } finally { setSendingCompose(false); }
+  };
+  const delEmail = async () => {
+    if (!selectedEmail) return;
+    if (!window.confirm("Email verwijderen?")) return;
+    await base44.entities.Email.delete(selectedEmail.id);
+    setSelectedEmail(null); reload();
+  };
+  const toggleRead = async () => {
+    if (!selectedEmail) return;
+    const status = selectedEmail.status === "unread" ? "read" : "unread";
+    await base44.entities.Email.update(selectedEmail.id, { status });
+    setSelectedEmail({ ...selectedEmail, status }); reload();
   };
 
   return (
@@ -81,7 +131,7 @@ export default function Email() {
           <GlassButton variant="outline" size="sm" onClick={sync} disabled={syncing}>
             <RefreshCw className={cn("h-4 w-4", syncing && "animate-spin")} /> {syncing ? "Synchroniseert..." : "Sync"}
           </GlassButton>
-          <GlassButton variant="primary" size="md"><Mail className="h-4 w-4" /> Opstellen</GlassButton>
+          <GlassButton variant="primary" size="md" onClick={openCompose}><Mail className="h-4 w-4" /> Opstellen</GlassButton>
         </>}
       />
 
@@ -187,15 +237,15 @@ export default function Email() {
                 <div className="flex flex-wrap gap-2 pt-2 border-t border-border/40">
                   {(selectedEmail.giulia_draft || selectedEmail.folder === "giulia_drafts") ? (
                     <>
-                      <GlassButton variant="primary" size="sm" onClick={() => setShowDraftPanel(true)}><Check className="h-4 w-4" /> Goedkeuren & Versturen</GlassButton>
-                      <GlassButton variant="outline" size="sm"><Edit3 className="h-4 w-4" /> Bewerk</GlassButton>
+                      <GlassButton variant="primary" size="sm" onClick={() => { setDraftBody(selectedEmail.body || ""); setShowDraftPanel(true); }}><Check className="h-4 w-4" /> Goedkeuren & Versturen</GlassButton>
                     </>
                   ) : (
                     <>
-                      <GlassButton variant="primary" size="sm"><Send className="h-4 w-4" /> Beantwoord</GlassButton>
-                      <GlassButton variant="outline" size="sm"><Sparkles className="h-4 w-4" /> Giulia stelt reactie voor</GlassButton>
+                      <GlassButton variant="primary" size="sm" onClick={openReply}><Send className="h-4 w-4" /> Beantwoord</GlassButton>
+                      <GlassButton variant="outline" size="sm" onClick={toggleRead}>{selectedEmail.status === "unread" ? "Markeer gelezen" : "Markeer ongelezen"}</GlassButton>
                     </>
                   )}
+                  <GlassButton variant="outline" size="sm" onClick={delEmail}><Trash2 className="h-4 w-4" /> Verwijder</GlassButton>
                 </div>
               </div>
             )}
@@ -213,7 +263,10 @@ export default function Email() {
             <div className="glass-1 rounded-xl p-4 space-y-3">
               <div><p className="text-[10px] uppercase tracking-wider text-muted-foreground">Aan</p><p className="text-sm">{selectedEmail.sender} ({selectedEmail.sender_email})</p></div>
               <div><p className="text-[10px] uppercase tracking-wider text-muted-foreground">Onderwerp</p><p className="text-sm">{selectedEmail.subject}</p></div>
-              <div><p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Bericht</p><p className="text-sm text-muted-foreground leading-relaxed">{selectedEmail.body}</p></div>
+              <div>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Bericht (bewerkbaar)</p>
+                <textarea value={draftBody} onChange={(e) => setDraftBody(e.target.value)} className="w-full glass-1 rounded-xl px-3 py-2 text-sm focus:outline-none min-h-[160px] resize-none" />
+              </div>
             </div>
             <div className="flex gap-2">
               <GlassButton variant="primary" size="md" className="flex-1" onClick={approveAndSend} disabled={sending}>
@@ -223,6 +276,29 @@ export default function Email() {
             </div>
           </div>
         )}
+      </FloatingPanel>
+
+      <FloatingPanel open={showCompose} onClose={() => setShowCompose(false)} position="right">
+        <div className="space-y-4">
+          <h2 className="text-xl font-display font-semibold">Nieuwe email</h2>
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Aan</label>
+            <input value={compose.to} onChange={(e) => setCompose({ ...compose, to: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" placeholder="naam@voorbeeld.com" />
+          </div>
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Onderwerp</label>
+            <input value={compose.subject} onChange={(e) => setCompose({ ...compose, subject: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
+          </div>
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Bericht</label>
+            <textarea value={compose.body} onChange={(e) => setCompose({ ...compose, body: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none min-h-[160px] resize-none" />
+          </div>
+          <div className="flex gap-2 pt-2">
+            <GlassButton variant="primary" size="md" className="flex-1" onClick={sendCompose} disabled={sendingCompose}>{sendingCompose ? "Versturen…" : "Verstuur"}</GlassButton>
+            <GlassButton variant="outline" size="md" onClick={saveComposeDraft}>Concept</GlassButton>
+            <GlassButton variant="ghost" size="md" onClick={() => setShowCompose(false)}>Annuleer</GlassButton>
+          </div>
+        </div>
       </FloatingPanel>
     </div>
   );

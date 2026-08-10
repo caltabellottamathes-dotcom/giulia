@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useEntityList } from "@/hooks/useEntity";
 import { useToast } from "@/components/ui/use-toast";
-import { Telescope, Sparkles, Check, Archive, RefreshCw } from "lucide-react";
+import { Telescope, Sparkles, Check, Archive, RefreshCw, Plus, Trash2 } from "lucide-react";
+import FloatingPanel from "@/components/glass/FloatingPanel";
+import GlassButton from "@/components/glass/GlassButton";
 import { cn } from "@/lib/utils";
 import PageHero from "@/components/glass/PageHero";
 
@@ -25,6 +27,8 @@ export default function Insights() {
   const [topic, setTopic] = useState("");
   const [busy, setBusy] = useState(false);
   const [filter, setFilter] = useState("all");
+  const [showNew, setShowNew] = useState(false);
+  const [draft, setDraft] = useState({ title: "", content: "", category: "Suggestion", confidence: 0.6 });
   const { toast } = useToast();
 
   const filtered = filter === "all" ? insights : insights.filter((i) => i.category === filter);
@@ -85,6 +89,18 @@ export default function Insights() {
     await base44.entities.Insight.update(ins.id, { status });
     reload();
   };
+  const createInsight = async () => {
+    if (!draft.title.trim()) return;
+    await base44.entities.Insight.create({ ...draft, title: draft.title.trim(), source: "Handmatig", status: "new" });
+    setDraft({ title: "", content: "", category: "Suggestion", confidence: 0.6 });
+    setShowNew(false);
+    reload();
+  };
+  const delInsight = async (ins) => {
+    if (!window.confirm("Inzicht verwijderen?")) return;
+    await base44.entities.Insight.delete(ins.id);
+    reload();
+  };
 
   return (
     <div className="space-y-6">
@@ -94,6 +110,7 @@ export default function Insights() {
         eyebrow="Giulia"
         title="Inzichten"
         subtitle="Proactief onderzoek & signalen"
+        actions={<GlassButton variant="primary" size="md" onClick={() => setShowNew(true)}><Plus className="h-4 w-4" /> Nieuw inzicht</GlassButton>}
       />
 
       {/* Research composer */}
@@ -190,6 +207,12 @@ export default function Insights() {
                 >
                   <Archive className="h-3 w-3" /> Archiveer
                 </button>
+                <button
+                  onClick={() => delInsight(ins)}
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-foreground/40 hover:text-destructive hover:underline"
+                >
+                  <Trash2 className="h-3 w-3" /> Verwijder
+                </button>
               </div>
             </div>
           ))}
@@ -199,6 +222,30 @@ export default function Insights() {
           Nog geen inzichten. Vraag Giulia om onderzoek te doen.
         </div>
       )}
+
+      <FloatingPanel open={showNew} onClose={() => setShowNew(false)} position="right">
+        <div className="space-y-4">
+          <h2 className="text-xl font-display font-semibold">Nieuw inzicht</h2>
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Titel</label>
+            <input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
+          </div>
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Categorie</label>
+            <select value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+              {CATS.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Inhoud</label>
+            <textarea value={draft.content} onChange={(e) => setDraft({ ...draft, content: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none min-h-[120px] resize-none" />
+          </div>
+          <div className="flex gap-2 pt-2">
+            <GlassButton variant="primary" size="md" className="flex-1" onClick={createInsight}>Maak aan</GlassButton>
+            <GlassButton variant="outline" size="md" onClick={() => setShowNew(false)}>Annuleer</GlassButton>
+          </div>
+        </div>
+      </FloatingPanel>
     </div>
   );
 }

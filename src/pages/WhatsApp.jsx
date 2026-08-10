@@ -7,7 +7,7 @@ import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
-import { Search, Send, Sparkles, Check, Edit3, RefreshCw, X, Phone, Video, MessageCircle } from "lucide-react";
+import { Search, Send, Sparkles, Check, Edit3, RefreshCw, X, Phone, Video, MessageCircle, Trash2 } from "lucide-react";
 
 /**
  * WhatsApp — Giulia has full access: unread & unanswered messages are
@@ -70,6 +70,11 @@ export default function WhatsApp() {
       status: "delivered",
     });
     setDraft("");
+    reloadMsgs();
+  };
+  const delMsg = async (id) => {
+    if (!window.confirm("Bericht verwijderen?")) return;
+    await base44.entities.WhatsAppMessage.delete(id);
     reloadMsgs();
   };
 
@@ -215,11 +220,17 @@ export default function WhatsApp() {
                 <p className="text-sm text-muted-foreground text-center py-8">Start het gesprek — typ hieronder.</p>
               )}
               {conversationMessages.map((msg) => (
-                <div key={msg.id} className={cn("flex", msg.direction === "sent" ? "justify-end" : "justify-start")}>
+                <div key={msg.id} className={cn("group flex items-center gap-2", msg.direction === "sent" ? "justify-end" : "justify-start")}>
+                  {msg.direction === "sent" && (
+                    <button onClick={() => delMsg(msg.id)} className="opacity-0 group-hover:opacity-100 transition h-7 w-7 rounded-full glass-1 flex items-center justify-center text-muted-foreground hover:text-destructive shrink-0" aria-label="Verwijder"><Trash2 className="h-3.5 w-3.5" /></button>
+                  )}
                   <div className={cn("max-w-[70%] rounded-2xl px-4 py-2.5 text-sm", msg.direction === "sent" ? "bg-olive/15 border border-olive/20" : "glass-1")}>
                     <p>{msg.message}</p>
                     {msg.timestamp && <p className="text-[9px] text-muted-foreground mt-1">{new Date(msg.timestamp).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}</p>}
                   </div>
+                  {msg.direction === "received" && (
+                    <button onClick={() => delMsg(msg.id)} className="opacity-0 group-hover:opacity-100 transition h-7 w-7 rounded-full glass-1 flex items-center justify-center text-muted-foreground hover:text-destructive shrink-0" aria-label="Verwijder"><Trash2 className="h-3.5 w-3.5" /></button>
+                  )}
                 </div>
               ))}
 

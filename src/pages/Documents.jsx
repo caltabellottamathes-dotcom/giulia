@@ -7,8 +7,9 @@ import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import {
   FileText, Image as ImageIcon, FileSpreadsheet, FileType, Plus, Search,
-  Star, Sparkles, Folder,
+  Star, Sparkles, Folder, Pencil, Trash2,
 } from "lucide-react";
+import FloatingPanel from "@/components/glass/FloatingPanel";
 
 const categories = ["recent", "project", "shared", "favorite", "giulia"];
 const categoryLabel = { recent: "Recent", project: "Projecten", shared: "Gedeeld", favorite: "Favorieten", giulia: "Giulia gegenereerd" };
@@ -23,6 +24,8 @@ export default function Documents() {
   const [search, setSearch] = useState("");
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef(null);
+  const [editDoc, setEditDoc] = useState(null);
+  const [editDraft, setEditDraft] = useState({});
 
   const { data: documents, loading, reload } = useEntityList("Document");
   const { data: projects } = useEntityList("Project");
@@ -51,6 +54,14 @@ export default function Documents() {
       if (fileRef.current) fileRef.current.value = "";
     }
   };
+
+  const startEdit = (d) => { setEditDoc(d); setEditDraft({ name: d.name, owner: d.owner || "", status: d.status || "recent", type: d.type || "other", project_id: d.project_id || "" }); };
+  const saveEdit = async () => {
+    if (!editDoc) return;
+    await base44.entities.Document.update(editDoc.id, { ...editDraft, project_id: editDraft.project_id || undefined });
+    setEditDoc(null); reload();
+  };
+  const delDoc = async (d) => { if (!window.confirm("Document verwijderen?")) return; await base44.entities.Document.delete(d.id); reload(); };
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -96,7 +107,11 @@ export default function Documents() {
         {!loading && filtered.map((doc) => {
           const Icon = fileIcons[doc.type] || FileText;
           return (
-            <GlassPanel key={doc.id} level={2} className="p-5 cursor-pointer hover:scale-[1.01] transition-transform group" >
+            <GlassPanel key={doc.id} level={2} className="p-5 cursor-pointer hover:scale-[1.01] transition-transform group relative">
+              <div className="absolute top-3 right-3 flex gap-1.5 z-10">
+                <button onClick={(e) => { e.stopPropagation(); startEdit(doc); }} className="h-7 w-7 rounded-full glass-1 flex items-center justify-center text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition" aria-label="Bewerk"><Pencil className="h-3.5 w-3.5" /></button>
+                <button onClick={(e) => { e.stopPropagation(); delDoc(doc); }} className="h-7 w-7 rounded-full glass-1 flex items-center justify-center text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition" aria-label="Verwijder"><Trash2 className="h-3.5 w-3.5" /></button>
+              </div>
               <div className="flex items-start justify-between mb-4">
                 <div className="h-12 w-12 rounded-xl glass-1 flex items-center justify-center"><Icon className="h-5 w-5 text-muted-foreground" /></div>
                 {doc.status === "favorite" && <Star className="h-4 w-4 text-olive fill-olive/30" />}
@@ -121,6 +136,45 @@ export default function Documents() {
           <GlassButton variant="primary" size="sm" className="mt-4" onClick={() => fileRef.current?.click()}><Plus className="h-4 w-4" /> Upload</GlassButton>
         </GlassPanel>
       )}
+
+      <FloatingPanel open={!!editDoc} onClose={() => setEditDoc(null)} position="right">
+        <div className="space-y-4">
+          <h2 className="text-xl font-display font-semibold">Document bewerken</h2>
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Naam</label>
+            <input value={editDraft.name || ""} onChange={(e) => setEditDraft({ ...editDraft, name: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Eigenaar</label>
+              <input value={editDraft.owner || ""} onChange={(e) => setEditDraft({ ...editDraft, owner: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
+            </div>
+            <div>
+              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Type</label>
+              <select value={editDraft.type} onChange={(e) => setEditDraft({ ...editDraft, type: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+                <option value="pdf">pdf</option><option value="image">image</option><option value="sheet">sheet</option><option value="figma">figma</option><option value="doc">doc</option><option value="other">other</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Categorie</label>
+            <select value={editDraft.status} onChange={(e) => setEditDraft({ ...editDraft, status: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+              {categories.map((c) => <option key={c} value={c}>{categoryLabel[c]}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Project</label>
+            <select value={editDraft.project_id || ""} onChange={(e) => setEditDraft({ ...editDraft, project_id: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+              <option value="">— geen —</option>
+              {projects.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
+            </select>
+          </div>
+          <div className="flex gap-2 pt-2">
+            <GlassButton variant="primary" size="md" className="flex-1" onClick={saveEdit}>Opslaan</GlassButton>
+            <GlassButton variant="outline" size="md" onClick={() => setEditDoc(null)}>Annuleer</GlassButton>
+          </div>
+        </div>
+      </FloatingPanel>
     </div>
   );
 }
