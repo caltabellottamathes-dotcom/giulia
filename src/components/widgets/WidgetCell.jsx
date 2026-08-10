@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { WidgetThemeProvider } from "@/lib/WidgetThemeContext";
 import { cn } from "@/lib/utils";
@@ -13,8 +14,9 @@ const OPTIONS = [
 ];
 
 /**
- * WidgetCell — grid cell hosting one widget, with hover controls to remove it
- * and to style it: glass / a palette color, plus transparency and blur.
+ * WidgetCell — grid cell hosting one widget. Hover controls to restyle/remove
+ * it, and a swipe-left gesture (drag) to dismiss it once you've read it.
+ * Fixed widgets (Je dag) pass no onRemove and so aren't swipeable.
  */
 export default function WidgetCell({ def, widget, onRemove, onThemeChange }) {
   const Comp = def.Component;
@@ -40,8 +42,19 @@ export default function WidgetCell({ def, widget, onRemove, onThemeChange }) {
     try { await base44.entities.DashboardWidget.update(widget.id, patch); onThemeChange?.(widget.id, patch); } catch {}
   };
 
+  const handleDragEnd = (_e, info) => {
+    if (onRemove && (info.offset.x < -120 || info.velocity.x < -500)) onRemove();
+  };
+
   return (
-    <div className="relative group h-full">
+    <motion.div
+      drag={!!onRemove && !open}
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={{ left: 0.6, right: 0 }}
+      onDragEnd={handleDragEnd}
+      whileDrag={{ scale: 0.97 }}
+      className="relative group h-full"
+    >
       <div className="absolute top-2 right-2 z-30 flex gap-1.5">
         <button
           onClick={() => setOpen((o) => !o)}
@@ -110,6 +123,6 @@ export default function WidgetCell({ def, widget, onRemove, onThemeChange }) {
       <WidgetThemeProvider value={{ theme, color, opacity: op, blur: bl }}>
         <Comp />
       </WidgetThemeProvider>
-    </div>
+    </motion.div>
   );
 }

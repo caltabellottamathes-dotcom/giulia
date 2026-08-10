@@ -65,17 +65,19 @@ export default function GiuliaWidget() {
   return (
     <WidgetShell size="2x2" radius="large" className="min-h-[320px]">
       <div className="flex flex-row h-full">
-        {/* Layered editorial photo */}
-        <div className="relative w-[34%] shrink-0 overflow-hidden">
-          <img src={IMAGES.portraitBootFace} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/75 via-charcoal/10 to-transparent" />
-          {/* Inset second photo — layered */}
-          <div className="absolute bottom-3 right-3 w-16 h-20 rounded-xl overflow-hidden border border-ivory/30 shadow-lg">
-            <img src={IMAGES.walkChairsBeach} alt="" draggable={false} className="h-full w-full object-cover" />
-          </div>
-          <div className="absolute left-3 bottom-3">
-            <p className="text-[9px] uppercase tracking-[0.3em] font-semibold text-ivory/75">Giulia</p>
-            <p className="text-[11px] text-ivory/60">je dag</p>
+        {/* Layered editorial photo — rounded card floating in the glass */}
+        <div className="relative w-[34%] shrink-0 p-2.5">
+          <div className="relative h-full rounded-[20px] overflow-hidden">
+            <img src={IMAGES.portraitBootFace} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-charcoal/75 via-charcoal/10 to-transparent" />
+            {/* Inset second photo — layered */}
+            <div className="absolute bottom-3 right-3 w-16 h-20 rounded-xl overflow-hidden border border-ivory/30 shadow-lg">
+              <img src={IMAGES.walkChairsBeach} alt="" draggable={false} className="h-full w-full object-cover" />
+            </div>
+            <div className="absolute left-3 bottom-3">
+              <p className="text-[9px] uppercase tracking-[0.3em] font-semibold text-ivory/75">Giulia</p>
+              <p className="text-[11px] text-ivory/60">je dag</p>
+            </div>
           </div>
         </div>
 

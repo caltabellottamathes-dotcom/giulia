@@ -12,10 +12,10 @@ import { useWidgetTheme } from "@/lib/WidgetThemeContext";
 const sizeMap = {
   "1x1": "min-h-[150px]",
   "2x1": "min-h-[150px]",
-  "1x2": "min-h-[320px]",
-  "2x2": "min-h-[320px]",
-  "3x2": "min-h-[320px]",
-  wide: "min-h-[320px]",
+  "1x2": "min-h-[280px]",
+  "2x2": "min-h-[280px]",
+  "3x2": "min-h-[280px]",
+  wide: "min-h-[280px]",
   full: "min-h-[150px]",
 };
 
