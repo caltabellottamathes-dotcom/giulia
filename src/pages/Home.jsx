@@ -157,7 +157,7 @@ export default function Home() {
         className={cn(
           "hidden lg:block fixed z-0 overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[left,right,top]",
           panelOpen
-            ? "left-[24%] right-[14%] top-[40vh] bottom-0 rounded-[28px]"
+            ? "left-[16%] right-[12%] top-[40vh] bottom-0 rounded-[28px]"
             : "left-[42%] right-0 top-14 bottom-0 rounded-l-[32px]"
         )}
       >
@@ -187,9 +187,14 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/35 to-transparent" />
       </div>
 
-      {/* Panel name — top-left corner when a panel is open */}
-      <div className={cn("hidden lg:block fixed top-8 left-10 z-20 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]", panelOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none")}>
-        <p className="text-[11px] uppercase tracking-[0.3em] text-foreground/60 font-semibold">{MODULES[activeModule]?.label}</p>
+      {/* Panel name — large, where the greeting sits, shown when a panel is open */}
+      <div className={cn("hidden lg:block fixed top-10 left-10 z-20 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]", panelOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none")}>
+        <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/70 mb-3 font-semibold">
+          {new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}
+        </p>
+        <h1 className="text-5xl lg:text-6xl font-display font-semibold tracking-[-0.02em] leading-[1.0] text-foreground">
+          {MODULES[activeModule]?.label}
+        </h1>
       </div>
 
       {/* Content */}
@@ -217,7 +222,7 @@ export default function Home() {
         </header>
 
         {/* Tidy sorted bento grid */}
-        <div className="px-5 lg:px-10 pb-10 lg:pl-[36%]">
+        <div className="px-5 lg:px-10 pb-10">
           {loading ? (
             <div className="grid grid-cols-12 gap-4">
               {[0, 1, 2, 3].map((i) => (
@@ -225,7 +230,7 @@ export default function Home() {
               ))}
             </div>
           ) : sorted.length > 0 ? (
-            <div className="grid grid-cols-12 gap-3 lg:gap-4 auto-rows-auto">
+            <div className="grid grid-cols-12 gap-4 lg:gap-5 auto-rows-auto">
               {sorted.map((w) => {
                 const def = WIDGETS[w.widget_type];
                 if (!def) return null;
