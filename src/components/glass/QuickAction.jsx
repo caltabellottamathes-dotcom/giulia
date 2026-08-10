@@ -64,7 +64,7 @@ export default function QuickAction() {
       {/* Floating plus button — bottom center, opens the navigation menu */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-5 left-1/2 -translate-x-1/2 z-30 h-12 w-12 lg:h-14 lg:w-14 rounded-full glass-2 float-shadow flex items-center justify-center text-ivory transition-all duration-300 hover:scale-105 group"
+        className="fixed bottom-5 right-5 lg:bottom-7 lg:right-7 z-30 h-12 w-12 lg:h-14 lg:w-14 rounded-full glass-2 float-shadow flex items-center justify-center text-ivory transition-all duration-300 hover:scale-105 group"
         aria-label="Menu openen"
       >
         <Plus className="h-5 w-5 lg:h-6 lg:w-6 group-hover:rotate-90 transition-transform duration-500" />

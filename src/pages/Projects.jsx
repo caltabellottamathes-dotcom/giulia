@@ -56,8 +56,8 @@ export default function Projects() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        {loading && [0, 1, 2].map((i) => <div key={i} className="aspect-[4/3] rounded-2xl shimmer" />)}
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {loading && [0, 1, 2, 3].map((i) => <div key={i} className="aspect-[4/3] rounded-2xl shimmer" />)}
         {!loading && filteredProjects.map((project) => (
           <div key={project.id} onClick={() => navigate(`/projects/${project.id}`)} className="cursor-pointer group relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-[1.01]">
             <div className="absolute top-3 right-3 z-20">
@@ -71,10 +71,10 @@ export default function Projects() {
                   {(project.status || "planning").replace(/_/g, " ")}
                 </StatusBadge>
               </div>
-              <div className="absolute bottom-0 left-0 right-0 p-5">
+              <div className="absolute bottom-0 left-0 right-0 p-4">
                 {project.category && <p className="text-[10px] uppercase tracking-wider text-white/60 mb-1">{project.category}</p>}
-                <h3 className="text-white font-display font-semibold text-lg mb-2">{project.title}</h3>
-                {project.description && <p className="text-xs text-white/70 line-clamp-2 mb-3">{project.description}</p>}
+                <h3 className="text-white font-display font-semibold text-base mb-1.5 line-clamp-2">{project.title}</h3>
+                {project.description && <p className="text-xs text-white/70 line-clamp-2 mb-2.5">{project.description}</p>}
                 <div className="flex items-center justify-between text-xs text-white/60">
                   <span>{project.progress || 0}% voltooid</span>
                   {project.deadline && <span>{new Date(project.deadline).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}</span>}
