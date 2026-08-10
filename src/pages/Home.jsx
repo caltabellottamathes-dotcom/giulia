@@ -7,26 +7,16 @@ import { WidgetThemeProvider } from "@/lib/WidgetThemeContext";
 import { IMAGES } from "@/lib/images";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
-import { Plus, MessageCircle, BookOpen, FileText, Users, Telescope, ClipboardCheck, Activity, Brain } from "lucide-react";
+import { Plus } from "lucide-react";
 import AddWidgetPicker from "@/components/panels/AddWidgetPicker";
 import WidgetCell from "@/components/widgets/WidgetCell";
 import GiuliaIntroOverlay from "@/components/widgets/GiuliaIntroOverlay";
+import MobileHome from "@/components/mobile/MobileHome";
 
 import { Link } from "react-router-dom";
 import { MODULES } from "@/lib/moduleRegistry";
 
 const DEFAULT_WIDGETS = ["giulia", "agenda", "tasks", "approvals", "email", "projects"];
-
-const MOBILE_SHORTCUTS = [
-  { key: "whatsapp", label: "WhatsApp", icon: MessageCircle },
-  { key: "knowledge", label: "Kennis", icon: BookOpen },
-  { key: "documents", label: "Docs", icon: FileText },
-  { key: "people", label: "Mensen", icon: Users },
-  { key: "insights", label: "Inzichten", icon: Telescope },
-  { key: "approvals", label: "Goedkeuring", icon: ClipboardCheck },
-  { key: "activity", label: "Activiteit", icon: Activity },
-  { key: "memory", label: "Geheugen", icon: Brain },
-];
 
 const SPAN_COL = {
   3: "lg:col-span-3",
@@ -43,7 +33,7 @@ const SPAN_COL = {
  * automatically. Giulia always leads.
  */
 export default function Home() {
-  const { activeModule, openModule } = usePanel();
+  const { activeModule } = usePanel();
   const panelOpen = !!activeModule;
   const [widgets, setWidgets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -205,7 +195,7 @@ export default function Home() {
       {/* Content */}
       <div
         className={cn(
-          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-2 lg:pt-0",
+          "hidden lg:block relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-2 lg:pt-0",
           panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100"
         )}
       >
@@ -228,19 +218,6 @@ export default function Home() {
 
         {/* Tidy sorted bento grid */}
         <div className="px-5 lg:px-10 pb-10">
-          {/* Mobile quick access */}
-          <div className="lg:hidden mb-5">
-            <p className="text-[10px] uppercase tracking-[0.22em] text-foreground/55 font-semibold mb-2.5">Snelle toegang</p>
-            <div className="grid grid-cols-4 gap-2.5">
-              {MOBILE_SHORTCUTS.map((s) => (
-                <button key={s.key} onClick={() => openModule(s.key)} className="flex flex-col items-center gap-1.5 glass-1 rounded-2xl py-3 px-1 text-foreground/80 hover:text-foreground hover:bg-foreground/[0.04] transition-colors">
-                  <s.icon className="h-5 w-5" strokeWidth={1.6} />
-                  <span className="text-[10px] font-medium leading-none">{s.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
           {loading ? (
             <div className="grid grid-cols-12 gap-4">
               {[0, 1, 2, 3].map((i) => (
@@ -273,6 +250,9 @@ export default function Home() {
           )}
         </div>
       </div>
+
+      {/* Mobile — iOS-style widget home */}
+      <MobileHome />
 
       <GiuliaIntroOverlay />
 
