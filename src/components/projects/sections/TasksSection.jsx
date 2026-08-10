@@ -28,6 +28,15 @@ const tierColor = (pct) => {
   return "bg-steel/30";
 };
 
+const deriveOndStatus = (ondTasks) => {
+  if (!ondTasks.length) return "te_specifieren";
+  if (ondTasks.every(isTaskDone)) return "klaar";
+  if (ondTasks.some((t) => t.status === "actief")) return "actief";
+  if (ondTasks.some((t) => t.status === "wacht")) return "wacht";
+  if (ondTasks.every((t) => t.status === "gepland")) return "gepland";
+  return "gepland";
+};
+
 export default function TasksSection({ project, tasks, reload }) {
   const [view, setView] = useState("hierarchy");
   const [expanded, setExpanded] = useState(null);
@@ -187,29 +196,69 @@ export default function TasksSection({ project, tasks, reload }) {
       )}
 
       {view === "board" && (
-        <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-3 items-start">
           {BOARD_COLUMNS.map((col) => {
-            const colTasks = tasks.filter((t) => normalizeStatus(t.status) === col.key);
+            const ondList = Object.entries(hierarchy).map(([ond, subs]) => {
+              const ondTasks = Object.values(subs).flat();
+              const ondDone = ondTasks.filter(isTaskDone).length;
+              const pct = ondTasks.length ? Math.round((ondDone / ondTasks.length) * 100) : 0;
+              return { ond, subs, ondTasks, ondDone, pct, status: deriveOndStatus(ondTasks) };
+            }).filter((o) => o.status === col.key);
             const accent = col.key === "klaar" ? "bg-olive" : col.key === "actief" ? "bg-powder" : col.key === "gepland" ? "bg-powder/55" : col.key === "wacht" ? "bg-steel" : "bg-steel/40";
             return (
               <div key={col.key} className="glass rounded-2xl p-3 flex flex-col">
                 <div className="flex items-center gap-2 mb-3 px-1">
                   <span className={cn("h-2.5 w-2.5 rounded-full", accent)} />
                   <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground flex-1">{col.label}</span>
-                  <span className="text-xs text-muted-foreground tabular-nums">{colTasks.length}</span>
+                  <span className="text-xs text-muted-foreground tabular-nums">{ondList.length}</span>
                 </div>
                 <div className="space-y-2">
-                  {colTasks.map((task) => {
-                    const done = isTaskDone(task);
+                  {ondList.map((o) => {
+                    const isOpen = expanded === o.ond;
+                    const complete = o.ondTasks.length > 0 && o.ondDone === o.ondTasks.length;
                     return (
-                      <div key={task.id} onClick={() => { setNewContext(null); setEditTask(task); }} className="cursor-pointer rounded-xl bg-foreground/[0.03] hover:bg-foreground/[0.06] p-3 border-l-2 border-transparent hover:border-olive/50 transition">
-                        <p className={cn("text-sm leading-snug", done && "line-through text-muted-foreground")}>{task.title}</p>
-                        <p className="text-[11px] text-muted-foreground mt-1 truncate">{parseContext(task.context).sub}</p>
-                        {task.deadline && <p className="text-[10px] text-muted-foreground mt-1.5 tabular-nums">{new Date(task.deadline).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}</p>}
+                      <div key={o.ond} className="rounded-xl bg-foreground/[0.03] overflow-hidden">
+                        <button onClick={() => setExpanded(isOpen ? null : o.ond)} className="w-full p-3 text-left">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className={cn("h-4 w-4 rounded-full flex items-center justify-center shrink-0", complete ? "bg-olive text-ivory" : "bg-muted text-muted-foreground")}>
+                              {complete && <CheckCircle2 className="h-3 w-3" />}
+                            </span>
+                            <span className="text-sm font-medium flex-1 truncate">{o.ond}</span>
+                            <span className="text-[11px] text-muted-foreground tabular-nums">{o.ondDone}/{o.ondTasks.length}</span>
+                          </div>
+                          <div className="h-1 rounded-full bg-muted/60 overflow-hidden">
+                            <div className={cn("h-full rounded-full transition-all duration-700", tierColor(o.pct))} style={{ width: `${o.pct}%` }} />
+                          </div>
+                        </button>
+                        {isOpen && (
+                          <div className="px-3 pb-3 pt-1 space-y-2.5 border-t border-border/30">
+                            {Object.entries(o.subs).map(([sub, subTasks]) => {
+                              const d = subTasks.filter(isTaskDone).length;
+                              return (
+                                <div key={sub}>
+                                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 tabular-nums">{sub} · {d}/{subTasks.length}</p>
+                                  <div className="space-y-1">
+                                    {subTasks.map((t) => {
+                                      const done = isTaskDone(t);
+                                      return (
+                                        <div key={t.id} className="flex items-center gap-2">
+                                          <span className={cn("h-3.5 w-3.5 rounded-full border flex items-center justify-center shrink-0", done ? "bg-olive border-olive" : "border-border/60")}>
+                                            {done && <CheckCircle2 className="h-2.5 w-2.5 text-ivory" />}
+                                          </span>
+                                          <span className={cn("text-[11px] flex-1 truncate", done && "line-through text-muted-foreground")}>{t.title}</span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
-                  {colTasks.length === 0 && <p className="text-[11px] text-muted-foreground/50 text-center py-4">—</p>}
+                  {ondList.length === 0 && <p className="text-[11px] text-muted-foreground/50 text-center py-4">—</p>}
                 </div>
               </div>
             );

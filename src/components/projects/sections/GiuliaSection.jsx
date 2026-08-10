@@ -8,7 +8,7 @@ import { base44 } from "@/api/base44Client";
 import { isTaskDone, taskStatusOptions } from "@/lib/projectStatus";
 import { parseTasksFromText } from "@/lib/projectEngine";
 import { cn } from "@/lib/utils";
-import { Sparkles, Plus, CheckCircle2, Circle, Clock, Send } from "lucide-react";
+import { Bot, Plus, CheckCircle2, Circle, Clock, Send } from "lucide-react";
 
 const QUICK = [
   "Plan een opvolgmoment deze week",
@@ -63,7 +63,7 @@ export default function GiuliaSection({ project, reload }) {
       <PhotoCard src={IMAGES.giuliaConcierge} stripHeight="h-24">
         <div className="flex items-center gap-3">
           <span className="h-11 w-11 rounded-2xl bg-olive/15 ring-1 ring-olive/25 flex items-center justify-center -mt-8 shrink-0">
-            <Sparkles className="h-5 w-5 text-olive" />
+            <Bot className="h-5 w-5 text-olive" />
           </span>
           <div className="min-w-0">
             <h2 className="text-lg font-display font-bold leading-none">Giulia</h2>
@@ -149,7 +149,7 @@ export default function GiuliaSection({ project, reload }) {
               ))}
             </div>
           ) : (
-            <EmptyState icon={Sparkles} title="Nog niets afgerond" hint="Gemaakte Giulia-taken verschijnen hier zodra ze klaar zijn." />
+            <EmptyState icon={CheckCircle2} title="Nog niets afgerond" hint="Gemaakte Giulia-taken verschijnen hier zodra ze klaar zijn." />
           )}
         </GlassPanel>
       </div>

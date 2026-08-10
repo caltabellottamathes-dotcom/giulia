@@ -10,7 +10,7 @@ import { base44 } from "@/api/base44Client";
 import { projectStatusMeta, isTaskDone } from "@/lib/projectStatus";
 import { buildBreakdown, weightedProgress, giuliaInterpret, parseTasksFromText } from "@/lib/projectEngine";
 import {
-  ChevronDown, Sparkles, ArrowRight, Calendar, Users, Mail, Gavel, FileText, Plus,
+  ChevronDown, Bot, ArrowRight, Calendar, Users, Mail, Gavel, FileText, Plus,
 } from "lucide-react";
 
 /** Overview — visual bento dashboard. Big graphic elements carry the
@@ -81,45 +81,48 @@ export default function OverviewSection({ project, tasks, onNavigate, reload }) 
 
   return (
     <div className="space-y-4">
-      {/* Playful bento: progress (top) + onderdeel (stacked) · taakverdeling · giulia */}
+      {/* Editorial bento: progress (tall left) · takenverdeling + giulia (top right) · onderdeel (bottom right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 lg:grid-rows-2 gap-4">
-        {/* Progress hero — vertical, top of the left column */}
-        <GlassPanel level={2} className="lg:col-span-4 lg:col-start-1 lg:row-start-1 relative overflow-hidden p-0 min-h-[200px] flex flex-col justify-end">
+        {/* Progress hero — tall vertical, full height left */}
+        <GlassPanel level={2} className="lg:col-span-4 lg:col-start-1 lg:row-start-1 lg:row-span-2 relative overflow-hidden p-0 min-h-[340px] flex flex-col justify-end">
           <img src={IMAGES.walkTowardChair} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/45 to-charcoal/10" />
-          <div className="relative p-5">
-            <div className="flex items-end gap-1">
-              <span className="text-[56px] font-display font-bold leading-none tabular-nums text-ivory">{progress}</span>
-              <span className="text-xl font-display text-ivory/65 mb-1">%</span>
+          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/95 via-charcoal/35 to-charcoal/5" />
+          <div className="relative p-6">
+            <div className="flex items-end gap-1.5">
+              <span className="text-[112px] font-display font-bold leading-[0.78] tabular-nums text-ivory">{progress}</span>
+              <span className="text-3xl font-display text-ivory/55 mb-3">%</span>
             </div>
-            <div className="mt-3 h-1.5 w-full bg-ivory/20 rounded-full overflow-hidden">
+            <div className="mt-5 h-1.5 w-full bg-ivory/20 rounded-full overflow-hidden">
               <div className="h-full bg-powder rounded-full transition-all duration-700" style={{ width: `${Math.max(progress, 2)}%` }} />
             </div>
-            <div className="mt-3 flex items-center gap-2">
+            <div className="mt-4 flex items-center gap-2">
               <StatusBadge variant={ps.variant}>{ps.label}</StatusBadge>
             </div>
           </div>
         </GlassPanel>
 
-        {/* Taakverdeling — tall, spans both rows */}
-        <GlassPanel level={2} className="lg:col-span-4 lg:col-start-5 lg:row-start-1 lg:row-span-2 p-6 flex flex-col">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-5">Takenverdeling</p>
-          <div className="flex-1 flex flex-col justify-center">
-            <StatusDistribution tasks={tasks} />
-          </div>
-          <div className="grid grid-cols-2 gap-3 mt-5 pt-5 border-t border-border/40">
-            <Metric value={activeCount} label="Actief" onClick={() => onNavigate("Tasks")} />
-            <Metric value={blockerCount} label="Blokkades" onClick={() => onNavigate("Tasks")} />
+        {/* Taakverdeling — top middle */}
+        <GlassPanel level={3} className="lg:col-span-4 lg:col-start-5 lg:row-start-1 p-0 flex flex-col overflow-hidden">
+          <div className="h-1.5 bg-powder" />
+          <div className="p-6 flex-1 flex flex-col">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-5">Takenverdeling</p>
+            <div className="flex-1 flex flex-col justify-center">
+              <StatusDistribution tasks={tasks} />
+            </div>
+            <div className="grid grid-cols-2 gap-3 mt-5 pt-5 border-t border-border/40">
+              <Metric value={activeCount} label="Actief" onClick={() => onNavigate("Tasks")} />
+              <Metric value={blockerCount} label="Blokkades" onClick={() => onNavigate("Tasks")} />
+            </div>
           </div>
         </GlassPanel>
 
-        {/* Giulia — stronger, function-first */}
-        <GlassPanel level={3} className="lg:col-span-4 lg:col-start-9 lg:row-start-1 lg:row-span-2 p-0 flex flex-col overflow-hidden">
+        {/* Giulia — top right */}
+        <GlassPanel level={3} className="lg:col-span-4 lg:col-start-9 lg:row-start-1 p-0 flex flex-col overflow-hidden">
           <div className="h-1.5 bg-olive" />
           <div className="p-6 flex-1 flex flex-col">
             <div className="flex items-center gap-3 mb-4">
               <span className="h-10 w-10 rounded-2xl bg-olive/15 ring-1 ring-olive/25 flex items-center justify-center">
-                <Sparkles className="h-5 w-5 text-olive" />
+                <Bot className="h-5 w-5 text-olive" />
               </span>
               <div>
                 <h3 className="text-base font-display font-bold leading-none">Giulia</h3>
@@ -129,8 +132,8 @@ export default function OverviewSection({ project, tasks, onNavigate, reload }) 
             <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Interpretatie</p>
             <p className="text-sm leading-relaxed flex-1">{giulia.insight}</p>
             {giulia.nextStep && (
-              <div className="mt-3 inline-flex items-start gap-1.5 rounded-xl bg-powder/15 border border-powder/30 px-3 py-2">
-                <Sparkles className="h-3.5 w-3.5 text-steel shrink-0 mt-0.5" />
+              <div className="mt-3 inline-flex items-start gap-2 rounded-xl bg-powder/15 border border-powder/30 px-3 py-2">
+                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-steel shrink-0" />
                 <span className="text-[11px] font-medium text-steel leading-snug">{giulia.nextStep}</span>
               </div>
             )}
@@ -161,8 +164,8 @@ export default function OverviewSection({ project, tasks, onNavigate, reload }) 
           </div>
         </GlassPanel>
 
-        {/* Voortgang per onderdeel — stacked under the progress card */}
-        <GlassPanel level={2} className="lg:col-span-4 lg:col-start-1 lg:row-start-2 p-5 flex flex-col overflow-hidden">
+        {/* Voortgang per onderdeel — bottom, next to the progress card */}
+        <GlassPanel level={2} className="lg:col-span-8 lg:col-start-5 lg:row-start-2 p-5 flex flex-col overflow-hidden">
           <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-4">Voortgang per onderdeel</p>
           <div className="flex-1 overflow-y-auto pr-1 -mr-1 space-y-3">
             {breakdown.map((o) => {

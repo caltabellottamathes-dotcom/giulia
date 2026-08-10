@@ -61,27 +61,29 @@ export default function ProjectDetail() {
   );
 
   return (
-    <div className="space-y-6 animate-fade-up">
-      <button onClick={() => navigate("/projects")} className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
+    <div className="animate-fade-up">
+      <button onClick={() => navigate("/projects")} className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors mb-6">
         <ArrowLeft className="h-3.5 w-3.5" /> Terug naar projecten
       </button>
 
       <ProjectHeader project={project} onUpdate={updateProject} onEdit={() => setEditorOpen(true)} onDelete={delProject} />
-      <ProjectNav active={section} onChange={setSection} />
+      <div className="relative z-10 bg-background rounded-t-[28px] -mt-16 pt-6 space-y-6">
+        <ProjectNav active={section} onChange={setSection} />
 
-      {section === "Overview" && <OverviewSection project={project} tasks={tasks} onNavigate={setSection} reload={load} />}
-      {section === "Tasks" && <TasksSection project={project} tasks={tasks} reload={load} />}
-      {section === "Timeline" && <TimelineSection project={project} tasks={tasks} />}
-      {section === "Milestones" && <MilestonesSection project={project} />}
-      {section === "Files" && <FilesSection project={project} tasks={tasks} />}
-      {section === "Notes" && <NotesSection project={project} />}
-      {section === "People" && <PeopleSection project={project} />}
-      {section === "Communication" && <CommunicationSection project={project} />}
-      {section === "Decisions" && <DecisionsSection project={project} />}
-      {section === "Activity" && <ActivitySection project={project} />}
-      {section === "Giulia" && <GiuliaSection project={project} tasks={tasks} reload={load} />}
+        {section === "Overview" && <OverviewSection project={project} tasks={tasks} onNavigate={setSection} reload={load} />}
+        {section === "Tasks" && <TasksSection project={project} tasks={tasks} reload={load} />}
+        {section === "Timeline" && <TimelineSection project={project} tasks={tasks} />}
+        {section === "Milestones" && <MilestonesSection project={project} />}
+        {section === "Files" && <FilesSection project={project} tasks={tasks} />}
+        {section === "Notes" && <NotesSection project={project} />}
+        {section === "People" && <PeopleSection project={project} />}
+        {section === "Communication" && <CommunicationSection project={project} />}
+        {section === "Decisions" && <DecisionsSection project={project} />}
+        {section === "Activity" && <ActivitySection project={project} />}
+        {section === "Giulia" && <GiuliaSection project={project} tasks={tasks} reload={load} />}
 
-      <ProjectEditorPanel open={editorOpen} onClose={() => setEditorOpen(false)} project={project} onSaved={load} />
+        <ProjectEditorPanel open={editorOpen} onClose={() => setEditorOpen(false)} project={project} onSaved={load} />
+      </div>
     </div>
   );
 }
