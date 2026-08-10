@@ -50,31 +50,8 @@ function LayoutInner() {
       <AmbientBloom />
       {/* Full-width workspace — navigation lives in the bottom plus-button menu */}
       <div className="flex flex-col min-h-screen relative">
-        {/* Header — mobile app bar */}
-        <header className="lg:hidden sticky top-0 z-20 h-14 flex items-center justify-between px-4 bg-background/70 backdrop-blur-xl border-b border-border/20">
-          <button onClick={() => navigate("/")} className="flex items-center gap-2" aria-label="Naar dashboard">
-            <span className="h-2.5 w-2.5 rounded-sm bg-charcoal" />
-            <span className="font-display font-semibold tracking-[0.22em] text-[13px] uppercase">Giulia</span>
-          </button>
-          <div className="flex items-center gap-1.5">
-            <button onClick={() => navigate("/search")} className="h-9 w-9 rounded-full glass-1 flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors" aria-label="Zoeken">
-              <Search className="h-4 w-4" />
-            </button>
-            <button onClick={() => openModule("voice")} className="h-9 w-9 rounded-full glass-1 flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors" aria-label="Bel Giulia">
-              <Phone className="h-4 w-4" />
-            </button>
-            <button onClick={() => openModule("approvals")} className="h-9 w-9 rounded-full glass-1 flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors relative" aria-label="Meldingen">
-              <Bell className="h-4 w-4" />
-              <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-olive" />
-            </button>
-            <button onClick={() => openModule("profile")} className="h-9 w-9 rounded-full overflow-hidden shrink-0" aria-label="Profiel">
-              <img src={IMAGES.portraitThinking} alt="" className="h-full w-full object-cover" />
-            </button>
-          </div>
-        </header>
-
-        {/* Header — desktop */}
-        <header className="hidden lg:flex sticky top-0 z-20 h-14 items-center justify-between px-5 lg:px-10 bg-transparent">
+        {/* Header */}
+        <header className="sticky top-0 z-20 h-14 flex items-center justify-between px-5 lg:px-10 bg-transparent">
           <div className="flex items-center gap-3 flex-1">
             <button
               onClick={() => navigate("/")}
@@ -153,7 +130,7 @@ function LayoutInner() {
         </header>
 
         {/* Workspace content */}
-        <main className="flex-1 px-5 lg:px-10 pt-4 lg:pt-8 pb-32 lg:pb-24 w-full">
+        <main className="flex-1 px-5 lg:px-10 pt-6 lg:pt-8 pb-24 w-full">
           <div key={location.pathname} className="animate-route-fade">
             <Outlet />
           </div>

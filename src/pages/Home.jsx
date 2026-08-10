@@ -11,7 +11,6 @@ import { Plus } from "lucide-react";
 import AddWidgetPicker from "@/components/panels/AddWidgetPicker";
 import WidgetCell from "@/components/widgets/WidgetCell";
 import GiuliaIntroOverlay from "@/components/widgets/GiuliaIntroOverlay";
-import MobileHome from "@/components/mobile/MobileHome";
 
 import { Link } from "react-router-dom";
 import { MODULES } from "@/lib/moduleRegistry";
@@ -166,6 +165,28 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 via-charcoal/10 to-transparent" />
       </div>
 
+      {/* Photo — mobile banner (closed) */}
+      <div
+        className={cn(
+          "lg:hidden fixed top-14 left-0 right-0 h-[26vh] overflow-hidden z-0 rounded-b-[28px] transition-all duration-700",
+          panelOpen ? "opacity-0 -translate-y-4 pointer-events-none" : "opacity-100"
+        )}
+      >
+        <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
+        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/10 to-background/25" />
+      </div>
+
+      {/* Photo — mobile bottom card (open) */}
+      <div
+        className={cn(
+          "lg:hidden fixed left-0 bottom-0 z-0 w-full h-[40vh] overflow-hidden rounded-t-[28px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+          panelOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6 pointer-events-none"
+        )}
+      >
+        <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/35 to-transparent" />
+      </div>
+
       {/* Panel name + function links — where the greeting sits, shown when a panel is open */}
       <div className={cn("hidden lg:block fixed top-24 left-10 z-20 max-w-[34rem] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]", panelOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none")}>
         <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/70 mb-3 font-semibold">
@@ -195,7 +216,7 @@ export default function Home() {
       {/* Content */}
       <div
         className={cn(
-          "hidden lg:block relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-2 lg:pt-0",
+          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[26vh] lg:pt-0",
           panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100"
         )}
       >
@@ -250,9 +271,6 @@ export default function Home() {
           )}
         </div>
       </div>
-
-      {/* Mobile — iOS-style widget home */}
-      <MobileHome />
 
       <GiuliaIntroOverlay />
 

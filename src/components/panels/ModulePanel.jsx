@@ -6,7 +6,7 @@ import { WIDGETS } from "@/lib/widgetRegistry";
 import { IMAGES } from "@/lib/images";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, LayoutGrid, ArrowUpRight, ArrowLeft } from "lucide-react";
+import { Plus, LayoutGrid, ArrowUpRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AgendaPreview from "@/components/panels/previews/AgendaPreview";
 import TasksPreview from "@/components/panels/previews/TasksPreview";
@@ -106,17 +106,6 @@ export default function ModulePanel() {
       {mod && (
         <div className="flex flex-col h-full">
           <div className="h-[3px] w-full shrink-0" style={{ background: MODULE_ACCENT[activeModule] || "hsl(var(--sand))" }} />
-          {/* Mobile top bar — native back + title */}
-          <div className="lg:hidden sticky top-0 z-20 flex items-center justify-between px-4 h-12 bg-charcoal/45 backdrop-blur-xl border-b border-white/10 text-ivory shrink-0">
-            <button onClick={closeModule} className="flex items-center gap-1 text-ivory/85 hover:text-ivory transition-colors">
-              <ArrowLeft className="h-4 w-4" />
-              <span className="text-xs font-medium">Terug</span>
-            </button>
-            <span className="text-xs font-display font-semibold text-ivory truncate max-w-[12rem]">{mod.label}</span>
-            {MODULE_ROUTE[activeModule] ? (
-              <button onClick={() => { navigate(MODULE_ROUTE[activeModule]); closeModule(); }} className="text-xs font-medium text-ivory/85 hover:text-ivory transition-colors">Openen</button>
-            ) : <span className="w-10" />}
-          </div>
           {/* Clean header photo — no overlay */}
           <div className="relative shrink-0 h-44 overflow-hidden">
             <img src={WIDGETS[activeModule]?.image || MODULE_IMAGE[activeModule] || IMAGES.walkingChairs} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
