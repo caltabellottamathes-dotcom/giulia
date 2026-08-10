@@ -17,8 +17,8 @@ export default async function (req) {
     // Query Gmail directly for the custom domain so we only ever pull mail
     // involving mail@salvatorecaltabellotta.com (ignores the Gmail mailbox).
     const listRes = await fetch(
-      'https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=100&q=' +
-        encodeURIComponent('from:salvatorecaltabellotta.com OR to:salvatorecaltabellotta.com'),
+      'https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=50&q=' +
+        encodeURIComponent('in:inbox'),
       { headers: h }
     );
     if (!listRes.ok) {
@@ -46,12 +46,6 @@ export default async function (req) {
       const subject = get('subject') || '(geen onderwerp)';
       const senderName = from.replace(/<.*>/, '').trim().replace(/"/g, '') || from;
       const senderEmail = (from.match(/<([^>]+)>/) || [, from])[1];
-      const toHdr = get('to');
-      const deliveredTo = get('delivered-to');
-      // Only sync mail for the custom domain — ignore the Gmail mailbox entirely.
-      const isOurs = [from, toHdr, deliveredTo].some((v) => /salvatorecaltabellotta\.com/i.test(v || ''));
-      if (!isOurs) continue;
-
       await ent.Email.create({
         sender: senderName,
         sender_email: senderEmail,

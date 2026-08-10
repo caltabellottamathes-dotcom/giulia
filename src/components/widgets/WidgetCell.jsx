@@ -50,13 +50,15 @@ export default function WidgetCell({ def, widget, onRemove, onThemeChange }) {
         >
           Stijl
         </button>
-        <button
-          onClick={onRemove}
-          className="h-7 w-7 rounded-full bg-ivory text-charcoal shadow-md text-base leading-none opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all hover:-translate-y-0.5"
-          aria-label="Verwijderen"
-        >
-          ×
-        </button>
+        {onRemove && (
+          <button
+            onClick={onRemove}
+            className="h-7 w-7 rounded-full bg-ivory text-charcoal shadow-md text-base leading-none opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all hover:-translate-y-0.5"
+            aria-label="Verwijderen"
+          >
+            ×
+          </button>
+        )}
       </div>
 
       {open && (

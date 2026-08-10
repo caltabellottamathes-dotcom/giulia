@@ -17,6 +17,20 @@ const weekDays = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
 const monthNames = ["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"];
 const HOURS = Array.from({ length: 16 }, (_, i) => i + 6); // 6 .. 21
 
+const EVENT_PALETTES = [
+  { bg: "bg-olive/15", border: "border-olive/30", dot: "bg-olive", bar: "bg-olive" },
+  { bg: "bg-sand/20", border: "border-sand/40", dot: "bg-sand", bar: "bg-sand" },
+  { bg: "bg-ridge/25", border: "border-ridge/50", dot: "bg-ridge", bar: "bg-ridge" },
+  { bg: "bg-powder/25", border: "border-powder/50", dot: "bg-powder", bar: "bg-powder" },
+  { bg: "bg-steel/20", border: "border-steel/40", dot: "bg-steel", bar: "bg-steel" },
+  { bg: "bg-stone/30", border: "border-stone/50", dot: "bg-stone", bar: "bg-stone" },
+];
+const colorFor = (ev) => {
+  const s = (ev.title || ev.id || "") + "";
+  let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return EVENT_PALETTES[h % EVENT_PALETTES.length];
+};
+
 const sameDay = (a, b) => a.toDateString() === b.toDateString();
 const mondayOf = (d) => {
   const m = new Date(d);
@@ -164,12 +178,18 @@ export default function Agenda() {
                       <div key={h} className="flex gap-3 min-h-[56px]">
                         <div className="w-12 pt-2 text-right text-[11px] text-muted-foreground tabular-nums shrink-0">{String(h).padStart(2, "0")}:00</div>
                         <div className="flex-1 border-t border-border/30 pt-1.5 space-y-1.5">
-                          {hourEvents.map((ev) => (
-                            <button key={ev.id} onClick={() => setSelectedEvent(ev)} className="w-full text-left rounded-xl bg-olive/10 border border-olive/20 hover:bg-olive/15 px-3 py-2 transition">
-                              <p className="text-sm font-medium">{ev.title}</p>
-                              <p className="text-[11px] text-muted-foreground">{new Date(ev.start).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}{ev.location ? ` · ${ev.location}` : ""}</p>
-                            </button>
-                          ))}
+                          {hourEvents.map((ev) => {
+                            const c = colorFor(ev);
+                            return (
+                              <button key={ev.id} onClick={() => setSelectedEvent(ev)} className={cn("w-full text-left rounded-xl border px-3 py-2 transition flex items-stretch gap-2.5 hover:brightness-105", c.bg, c.border)}>
+                                <span className={cn("w-1 rounded-full", c.bar)} />
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-medium truncate">{ev.title}</p>
+                                  <p className="text-[11px] text-muted-foreground">{new Date(ev.start).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}{ev.location ? ` · ${ev.location}` : ""}</p>
+                                </div>
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     );
@@ -202,12 +222,18 @@ export default function Agenda() {
                         const dayEvents = eventsForDay(date).filter((e) => new Date(e.start).getHours() === h);
                         return (
                           <div key={di} className="min-h-[44px] border border-border/20 rounded-lg p-1 hover:bg-foreground/[0.02] transition-colors">
-                            {dayEvents.map((ev) => (
-                              <button key={ev.id} onClick={() => setSelectedEvent(ev)} className="w-full text-left p-1.5 rounded-md bg-olive/10 border border-olive/20 hover:bg-olive/15 transition-colors">
-                                <p className="text-[10px] font-medium truncate">{ev.title}</p>
-                                <p className="text-[9px] text-muted-foreground">{new Date(ev.start).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}</p>
-                              </button>
-                            ))}
+                            {dayEvents.map((ev) => {
+                              const c = colorFor(ev);
+                              return (
+                                <button key={ev.id} onClick={() => setSelectedEvent(ev)} className={cn("w-full text-left p-1.5 rounded-md border transition-colors flex items-center gap-1.5", c.bg, c.border)}>
+                                  <span className={cn("h-2 w-2 rounded-full shrink-0", c.dot)} />
+                                  <div className="min-w-0">
+                                    <p className="text-[10px] font-medium truncate">{ev.title}</p>
+                                    <p className="text-[9px] text-muted-foreground">{new Date(ev.start).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}</p>
+                                  </div>
+                                </button>
+                              );
+                            })}
                           </div>
                         );
                       })}
@@ -232,9 +258,15 @@ export default function Agenda() {
                       <button key={i} onClick={() => openDay(date)} className={cn("rounded-xl p-2 min-h-[72px] text-left border transition-all", inMonth ? "border-border/20 glass-1 hover:bg-foreground/5" : "border-transparent text-muted-foreground/40", isToday && "ring-1 ring-olive/40")}>
                         <span className={cn("text-xs font-medium", isToday && "text-olive font-bold")}>{date.getDate()}</span>
                         <div className="mt-1 space-y-0.5">
-                          {dayEvents.slice(0, 3).map((ev) => (
-                            <div key={ev.id} className="text-[10px] truncate rounded bg-olive/10 px-1 py-0.5">{ev.title}</div>
-                          ))}
+                          {dayEvents.slice(0, 3).map((ev) => {
+                            const c = colorFor(ev);
+                            return (
+                              <div key={ev.id} className={cn("text-[10px] truncate rounded px-1.5 py-0.5 flex items-center gap-1", c.bg)}>
+                                <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", c.dot)} />
+                                <span className="truncate">{ev.title}</span>
+                              </div>
+                            );
+                          })}
                           {dayEvents.length > 3 && <div className="text-[9px] text-muted-foreground">+{dayEvents.length - 3}</div>}
                         </div>
                       </button>

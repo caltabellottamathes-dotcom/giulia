@@ -81,6 +81,12 @@ export default function Home() {
         saved = [...saved, ...created];
       }
 
+      // "Je dag" is a fixed widget — always present, never removable
+      if (!existingTypes.has("giulia")) {
+        const g = await base44.entities.DashboardWidget.create({ widget_type: "giulia", position: 0, visible: true }).catch(() => null);
+        if (g) saved = [g, ...saved];
+      }
+
       setWidgets(saved);
     } catch (e) {
       setWidgets([]);
@@ -241,7 +247,7 @@ export default function Home() {
                 if (!def) return null;
                 return (
                   <div key={w.id} className={cn("col-span-12 md:col-span-6 scale-95 origin-top-left", SPAN_COL[def.span] || "lg:col-span-4")}>
-                    <WidgetCell def={def} widget={w} onRemove={() => removeWidget(w.id)} onThemeChange={setWidgetTheme} />
+                    <WidgetCell def={def} widget={w} onRemove={w.widget_type === "giulia" ? undefined : () => removeWidget(w.id)} onThemeChange={setWidgetTheme} />
                   </div>
                 );
               })}

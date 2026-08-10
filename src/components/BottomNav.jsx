@@ -25,7 +25,7 @@ export default function BottomNav() {
             end={l.to === "/"}
             className={({ isActive }) =>
               `text-[11px] uppercase tracking-[0.18em] font-medium whitespace-nowrap transition-colors ${
-                isActive ? "text-emerald-600" : "text-foreground/50 hover:text-foreground"
+                isActive ? "text-olive" : "text-foreground/50 hover:text-foreground"
               }`
             }
           >

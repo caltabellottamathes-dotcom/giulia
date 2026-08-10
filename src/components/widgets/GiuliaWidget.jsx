@@ -1,169 +1,150 @@
 import React, { useState, useEffect, useCallback } from "react";
 import WidgetShell from "./WidgetShell";
+import BrandPhoto from "./BrandPhoto";
 import { base44 } from "@/api/base44Client";
-import { Link } from "react-router-dom";
+import { IMAGES } from "@/lib/images";
+import { cn } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
 
 /**
- * GiuliaWidget — "je dag", redesigned.
- * One dominant graphic: a full day-ring plotting today's events as colour-coded
- * dots with a "now" marker. In its centre: a bold number of things waiting on
- * you. Below: the next action card + a tiny waiting legend.
+ * GiuliaWidget — "Je dag". A fixed widget: every morning Giulia compiles a
+ * concrete day plan based on the actual situation, and adapts it through the
+ * day. Layered photo header + glass body, expandable to the full time-block
+ * context. Pulls today's DailyPlan; if none exists yet, synthesises a plan
+ * from the live task/event/email/approval situation so it's never empty.
  */
-const TYPE_COLOR = {
-  task: "hsl(var(--olive))",
-  event: "hsl(var(--sand))",
-  approval: "hsl(var(--ridge))",
-  email: "hsl(16 45% 47%)",
-};
-const TYPE_ON = {
-  task: "hsl(var(--ivory))",
-  event: "hsl(var(--charcoal))",
-  approval: "hsl(var(--charcoal))",
-  email: "hsl(var(--ivory))",
-};
-
-const ringAngle = (date) => {
-  const h = (date.getHours() + date.getMinutes() / 60) % 24;
-  return (2 * Math.PI * h) / 24 - Math.PI / 2;
-};
-const ringPt = (date, r = 42) => {
-  const a = ringAngle(date);
-  return { x: 50 + r * Math.cos(a), y: 50 + r * Math.sin(a) };
+const greetingWord = () => {
+  const h = new Date().getHours();
+  return h < 12 ? "Goedemorgen" : h < 18 ? "Goedemiddag" : "Goedenavond";
 };
 
 export default function GiuliaWidget() {
-  const [steps, setSteps] = useState([]);
   const [priorities, setPriorities] = useState([]);
-  const [waiting, setWaiting] = useState({ approvals: 0, emails: 0, whatsapp: 0 });
+  const [summary, setSummary] = useState("");
+  const [timeBlocks, setTimeBlocks] = useState([]);
+  const [updated, setUpdated] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [index, setIndex] = useState(0);
+  const [expanded, setExpanded] = useState(false);
 
   const load = useCallback(async () => {
     const today = new Date().toLocaleDateString("sv-SE");
-    const [tasks, events, approvals, emails, plans, wa] = await Promise.all([
+    const [plans, tasks, events, emails, approvals] = await Promise.all([
+      base44.entities.DailyPlan.filter({ date: today }).catch(() => []),
       base44.entities.Task.list().catch(() => []),
       base44.entities.Event.list().catch(() => []),
-      base44.entities.Approval.filter({ status: "pending" }).catch(() => []),
       base44.entities.Email.filter({ status: "unread" }).catch(() => []),
-      base44.entities.DailyPlan.filter({ date: today }).catch(() => []),
-      base44.entities.WhatsAppMessage.filter({ direction: "received", status: "unread" }).catch(() => []),
+      base44.entities.Approval.filter({ status: "pending" }).catch(() => []),
     ]);
-    const s = [];
-    tasks.filter((t) => t.status === "overdue").sort((a, b) => new Date(a.deadline || 0) - new Date(b.deadline || 0)).slice(0, 3)
-      .forEach((t) => s.push({ id: t.id, type: "task", kind: "Te laat", title: t.title, meta: t.deadline ? `Deadline ${t.deadline}` : "Geen deadline" }));
-    events.filter((e) => (e.start || "").slice(0, 10) === today).sort((a, b) => new Date(a.start) - new Date(b.start)).slice(0, 6)
-      .forEach((e) => s.push({ id: e.id, type: "event", kind: "Vandaag", title: e.title, start: e.start, meta: new Date(e.start).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" }) + (e.location ? " · " + e.location : "") }));
-    tasks.filter((t) => t.status === "today").slice(0, 3)
-      .forEach((t) => s.push({ id: t.id, type: "task", kind: "Taak vandaag", title: t.title, meta: t.deadline ? `Deadline ${t.deadline}` : "Vandaag" }));
-    emails.slice(0, 2).forEach((m) => s.push({ id: m.id, type: "email", kind: "Ongelezen", title: m.subject || "Email", meta: m.sender ? `Van ${m.sender}` : "Inbox" }));
-    approvals.slice(0, 2).forEach((a) => s.push({ id: a.id, type: "approval", kind: "Goedkeuring", title: a.description || a.action_type || "Actie", meta: "Wacht op jou" }));
-    setSteps(s.slice(0, 7));
-    setIndex(0);
-    setPriorities((plans[0]?.priorities || []).slice(0, 3));
-    setWaiting({ approvals: approvals.length, emails: emails.length, whatsapp: wa.length });
+    const p = plans[0];
+    if (p && (p.priorities?.length || p.plan_data?.summary)) {
+      setPriorities((p.priorities || []).slice(0, 3));
+      setSummary(p.plan_data?.summary || "Ik heb je dag heringericht op wat veranderd is.");
+      setTimeBlocks(Array.isArray(p.plan_data?.plan) ? p.plan_data.plan : []);
+      setUpdated(p.last_updated || p.updated_date || null);
+    } else {
+      const todayEvents = events
+        .filter((e) => (e.start || "").slice(0, 10) === today)
+        .sort((a, b) => new Date(a.start) - new Date(b.start));
+      const overdue = tasks
+        .filter((t) => t.status === "overdue")
+        .sort((a, b) => new Date(a.deadline || 0) - new Date(b.deadline || 0));
+      const todayTasks = tasks.filter((t) => t.status === "today");
+      const prio = [];
+      overdue.slice(0, 2).forEach((t) => prio.push(`Afronden — ${t.title}`));
+      todayEvents.slice(0, 1).forEach((e) => prio.push(`Voorbereiden — ${e.title}`));
+      todayTasks.slice(0, 2).forEach((t) => prio.push(t.title));
+      if (emails.length && prio.length < 3) prio.push(`${emails.length} belangrijke berichten beantwoorden`);
+      if (approvals.length && prio.length < 3) prio.push(`${approvals.length} goedkeuringen afhandelen`);
+      setPriorities(prio.slice(0, 3));
+      setSummary("Ik heb je dag opgebouwd op basis van wat er nu speelt.");
+      setTimeBlocks(
+        todayEvents.map((e) => ({
+          time: new Date(e.start).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" }),
+          item: e.title,
+        }))
+      );
+      setUpdated(null);
+    }
     setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
-  const step = steps[index];
-  const total = waiting.approvals + waiting.emails + waiting.whatsapp;
-  const complete = async () => { if (!step) return; try { await base44.entities.Task.update(step.id, { status: "completed" }); } catch {} load(); };
-  const approve = async () => { if (!step) return; try { await base44.entities.Approval.update(step.id, { status: "approved" }); } catch {} load(); };
-  const reject = async () => { if (!step) return; try { await base44.entities.Approval.update(step.id, { status: "rejected" }); } catch {} load(); };
-  const skip = () => setIndex((i) => (i + 1 < steps.length ? i + 1 : 0));
-  const dateStr = new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" });
-
-  const now = ringPt(new Date());
-  const nowInner = ringPt(new Date(), 30);
-  const arcEvents = steps.filter((s) => s.type === "event" && s.start);
+  const n = priorities.length;
+  const updatedStr = updated
+    ? new Date(updated).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })
+    : "";
 
   return (
     <WidgetShell size="2x2" radius="large" className="min-h-[400px]">
-      <div className="relative p-5 lg:p-6 flex flex-col h-full">
-        {loading ? (
-          <div className="flex-1 flex items-center justify-center"><div className="h-8 w-8 border-2 border-current/20 border-t-current rounded-full animate-spin" /></div>
-        ) : (
-          <>
-            {/* Header */}
-            <div className="flex items-start justify-between mb-1">
-              <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-[0.28em] font-bold text-current opacity-55 mb-1">Giulia · je dag</p>
-                <p className="text-xs text-current opacity-45 truncate">{dateStr}</p>
+      <div className="flex flex-col h-full">
+        <BrandPhoto
+          src={IMAGES.hourglassJacket}
+          className="h-36 shrink-0 rounded-b-[24px] shadow-[0_14px_28px_-12px_rgba(0,0,0,0.3)] relative z-10"
+          overlay="bg-gradient-to-t from-charcoal/85 via-charcoal/40 to-charcoal/15"
+        >
+          <div className="absolute inset-0 p-5 flex flex-col justify-between">
+            <p className="text-[10px] uppercase tracking-[0.28em] font-semibold text-ivory/80">Giulia · je dag</p>
+            <div>
+              <p className="text-2xl font-display font-semibold text-ivory leading-tight" style={{ textShadow: "0 1px 10px rgba(0,0,0,0.5)" }}>{greetingWord()}.</p>
+              <p className="text-[11px] text-ivory/70 mt-1">{new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}</p>
+            </div>
+          </div>
+        </BrandPhoto>
+
+        <div className="flex-1 p-5 pt-6 flex flex-col text-current min-h-0">
+          {loading ? (
+            <div className="flex-1 flex items-center justify-center"><div className="h-7 w-7 border-2 border-current/20 border-t-current rounded-full animate-spin" /></div>
+          ) : (
+            <>
+              <p className="text-sm leading-relaxed text-current/90 text-balance">{summary}</p>
+
+              <div className="mt-4 mb-2 flex items-baseline gap-2">
+                <span className="text-3xl font-display font-bold text-current tabular-nums leading-none">{n}</span>
+                <span className="text-[11px] uppercase tracking-[0.2em] text-current/65 font-semibold">dingen doen er vandaag toe</span>
               </div>
-              {steps.length > 0 && (
-                <span className="text-[11px] font-bold tabular-nums px-2.5 py-1 rounded-full shrink-0" style={{ background: "var(--tile-accent)", color: "var(--tile-on-accent)" }}>{index + 1}/{steps.length}</span>
+
+              <ol className="space-y-2.5">
+                {priorities.map((p, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="text-sm font-display font-bold text-current/45 tabular-nums leading-snug pt-0.5">{String(i + 1).padStart(2, "0")} —</span>
+                    <span className="text-sm leading-snug text-current/95">{p}</span>
+                  </li>
+                ))}
+                {n === 0 && <li className="text-sm text-current/55">Een rustige dag — niets dringends.</li>}
+              </ol>
+
+              <p className="text-xs leading-relaxed text-current/60 mt-4">Ik heb alles eromheen geplaatst rond deze prioriteiten.</p>
+
+              {timeBlocks.length > 0 && (
+                <button
+                  onClick={() => setExpanded((x) => !x)}
+                  className="mt-3 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-current/70 hover:text-current transition self-start"
+                >
+                  {expanded ? "Minder" : "Volledige context"}
+                  <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", expanded && "rotate-180")} />
+                </button>
               )}
-            </div>
 
-            {/* Hero — full day-ring with bold centre number */}
-            <div className="relative flex-1 flex items-center justify-center min-h-0 my-1">
-              <svg viewBox="0 0 100 100" className="w-full max-w-[230px] aspect-square">
-                <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" strokeWidth="1" className="opacity-15" />
-                {[0, 6, 12, 18].map((h) => {
-                  const a = (2 * Math.PI * h) / 24 - Math.PI / 2;
-                  return <line key={h} x1={50 + 38 * Math.cos(a)} y1={50 + 38 * Math.sin(a)} x2={50 + 42 * Math.cos(a)} y2={50 + 42 * Math.sin(a)} stroke="currentColor" strokeWidth="0.6" className="opacity-25" />;
-                })}
-                <line x1={nowInner.x} y1={nowInner.y} x2={now.x} y2={now.y} stroke="var(--tile-accent)" strokeWidth="0.9" opacity="0.75" />
-                <circle cx={now.x} cy={now.y} r="1.7" fill="var(--tile-accent)" />
-                {arcEvents.map((s) => {
-                  const p = ringPt(new Date(s.start));
-                  const isCur = step?.id === s.id;
-                  return <circle key={s.id} cx={p.x} cy={p.y} r={isCur ? 3 : 2.2} fill={TYPE_COLOR.event} stroke="currentColor" strokeWidth={isCur ? 0.6 : 0} strokeOpacity={0.3} />;
-                })}
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-[44px] leading-none font-display font-bold tabular-nums text-current">{total}</span>
-                <span className="text-[9px] uppercase tracking-[0.22em] text-current opacity-55 mt-1">wachten op jou</span>
-              </div>
-            </div>
-
-            {/* Next action */}
-            {step ? (
-              <div className="mt-2 rounded-2xl border border-current/10 p-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-[10px] uppercase tracking-[0.18em] font-bold mb-0.5" style={{ color: TYPE_COLOR[step.type] }}>{step.kind}</p>
-                    <p className="text-sm font-display font-semibold text-current leading-tight truncate">{step.title}</p>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    {step.type === "task" && <button onClick={complete} className="h-8 px-3 rounded-lg text-[11px] font-bold transition hover:-translate-y-0.5" style={{ background: TYPE_COLOR.task, color: TYPE_ON.task }}>Klaar</button>}
-                    {step.type === "approval" && (
-                      <>
-                        <button onClick={approve} className="h-8 px-3 rounded-lg text-[11px] font-bold" style={{ background: TYPE_COLOR.approval, color: TYPE_ON.approval }}>Ja</button>
-                        <button onClick={reject} className="h-8 px-3 rounded-lg text-[11px] font-bold border border-current/20 text-current">Nee</button>
-                      </>
-                    )}
-                    {step.type === "event" && <Link to="/agenda" className="h-8 px-3 rounded-lg text-[11px] font-bold flex items-center" style={{ background: TYPE_COLOR.event, color: TYPE_ON.event }}>Open</Link>}
-                    {step.type === "email" && <Link to="/email" className="h-8 px-3 rounded-lg text-[11px] font-bold flex items-center" style={{ background: TYPE_COLOR.email, color: TYPE_ON.email }}>Open</Link>}
-                    <button onClick={skip} className="h-8 w-8 rounded-lg text-current opacity-50 hover:opacity-100 border border-current/10" aria-label="Volgende">›</button>
-                  </div>
-                </div>
-              </div>
-            ) : priorities.length ? (
-              <div className="mt-2 rounded-2xl border border-current/10 p-3">
-                <p className="text-[9px] uppercase tracking-[0.22em] font-bold text-current opacity-55 mb-1.5">Prioriteiten vandaag</p>
-                <ol className="space-y-1">
-                  {priorities.map((p, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <span className="text-sm font-display font-bold text-current opacity-30 leading-none">{i + 1}</span>
-                      <span className="text-[11px] leading-snug text-current opacity-85">{p}</span>
-                    </li>
+              {expanded && timeBlocks.length > 0 && (
+                <div className="mt-3 space-y-1.5 max-h-32 overflow-y-auto pr-1">
+                  {timeBlocks.map((b, i) => (
+                    <div key={i} className="flex items-center gap-3 text-xs">
+                      <span className="tabular-nums text-current/55 w-12 shrink-0">{b.time}</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-current/40 shrink-0" />
+                      <span className="text-current/85 truncate">{b.item}</span>
+                    </div>
                   ))}
-                </ol>
-              </div>
-            ) : (
-              <p className="mt-2 text-[11px] text-current opacity-45 text-center">Rustige dag.</p>
-            )}
+                </div>
+              )}
 
-            {/* Waiting legend */}
-            <div className="mt-3 flex items-center justify-center gap-4 text-[10px] text-current opacity-65">
-              <Link to="/approvals" className="flex items-center gap-1.5 hover:opacity-100"><span className="h-1.5 w-1.5 rounded-full" style={{ background: TYPE_COLOR.approval }} /><b className="tabular-nums">{waiting.approvals}</b> Goedkeuringen</Link>
-              <Link to="/email" className="flex items-center gap-1.5 hover:opacity-100"><span className="h-1.5 w-1.5 rounded-full" style={{ background: TYPE_COLOR.email }} /><b className="tabular-nums">{waiting.emails}</b> Email</Link>
-              <Link to="/whatsapp" className="flex items-center gap-1.5 hover:opacity-100"><span className="h-1.5 w-1.5 rounded-full" style={{ background: "hsl(var(--sand))" }} /><b className="tabular-nums">{waiting.whatsapp}</b> WhatsApp</Link>
-            </div>
-          </>
-        )}
+              <div className="mt-auto pt-3 flex items-center justify-between">
+                <span className="text-[10px] text-current/45">{updatedStr ? `Bijgewerkt om ${updatedStr}` : "Nog geen planning vandaag"}</span>
+                <span className="text-[10px] uppercase tracking-wider text-current/45">Giulia</span>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </WidgetShell>
   );

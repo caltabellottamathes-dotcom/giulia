@@ -4,6 +4,19 @@ import { Row, Empty, SectionLabel, HeroStat } from "./previewParts";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 
+const PALETTE = [
+  "hsl(var(--olive))",
+  "hsl(var(--sand))",
+  "hsl(var(--ridge))",
+  "hsl(var(--powder))",
+  "hsl(var(--steel))",
+  "hsl(var(--stone))",
+];
+const accentFor = (s = "") => {
+  let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return PALETTE[h % PALETTE.length];
+};
+
 export default function AgendaPreview({ onOpen }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,9 +24,9 @@ export default function AgendaPreview({ onOpen }) {
   useEffect(() => {
     (async () => {
       try {
-        const now = new Date().toISOString();
-        const data = await base44.entities.CalendarEvent.filter({ start: { $gte: now } }, "start", 6);
-        setEvents(data || []);
+        const data = await base44.entities.Event.list("start").catch(() => []);
+        const now = Date.now();
+        setEvents((data || []).filter((e) => new Date(e.start).getTime() >= now - 24 * 3600 * 1000).slice(0, 6));
       } catch (e) {
       } finally {
         setLoading(false);
@@ -25,7 +38,7 @@ export default function AgendaPreview({ onOpen }) {
 
   return (
     <div className="space-y-4">
-      <HeroStat value={today.length} label="Vandaag" accent="hsl(var(--sand))" sub={`${events.length} afspraken in de pipeline`} />
+      <HeroStat value={today.length} label="Vandaag" accent="hsl(var(--olive))" sub={`${events.length} afspraken in de pipeline`} />
       <SectionLabel>Volgende afspraken</SectionLabel>
       {loading ? (
         <Empty text="Laden…" />
@@ -37,7 +50,7 @@ export default function AgendaPreview({ onOpen }) {
               title={e.title}
               sub={`${format(new Date(e.start), "EEE d MMM · HH:mm", { locale: nl })}${e.location ? " · " + e.location : ""}`}
               onClick={onOpen}
-              accent="hsl(var(--sand))"
+              accent={accentFor(e.title)}
             />
           ))}
         </div>
