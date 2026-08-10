@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Stat, Card, Empty, SectionLabel, Pill } from "./previewParts";
+import { Card, Empty, SectionLabel, Pill, HeroStat, RingMini } from "./previewParts";
 
 const CAT_COLOR = {
   Opportunity: "hsl(var(--olive))",
@@ -25,15 +25,17 @@ export default function InsightsPreview({ onOpen }) {
     })();
   }, []);
 
-  const avg = items.length
-    ? Math.round((items.reduce((s, i) => s + (i.confidence || 0), 0) / items.length) * 100) + "%"
-    : "—";
+  const avgNum = items.length ? Math.round((items.reduce((s, i) => s + (i.confidence || 0), 0) / items.length) * 100) : 0;
+  const avg = items.length ? avgNum + "%" : "—";
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <Stat label="Nieuw" value={items.length} accent="hsl(var(--sand))" />
-        <Stat label="Gem. vertrouwen" value={avg} accent="hsl(var(--olive))" />
+      <div className="grid grid-cols-[1fr_auto] gap-3 items-stretch">
+        <HeroStat value={items.length} label="Nieuw" accent="hsl(var(--sand))" sub={`${avg} gem. vertrouwen`} />
+        <div className="animate-fade-up rounded-2xl bg-foreground/[0.03] border border-foreground/[0.06] p-4 flex flex-col items-center justify-center gap-1">
+          <RingMini value={avgNum} accent="hsl(var(--olive))" size={64} />
+          <span className="text-[10px] uppercase tracking-wider text-foreground/50">vertrouwen</span>
+        </div>
       </div>
       <SectionLabel>Inzichten om te bekijken</SectionLabel>
       {loading ? (

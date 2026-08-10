@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Stat, Row, Empty, SectionLabel } from "./previewParts";
+import { Row, Empty, SectionLabel, HeroStat } from "./previewParts";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 
@@ -25,10 +25,7 @@ export default function AgendaPreview({ onOpen }) {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <Stat label="Vandaag" value={today.length} accent="hsl(var(--sand))" />
-        <Stat label="Komend" value={events.length} />
-      </div>
+      <HeroStat value={today.length} label="Vandaag" accent="hsl(var(--sand))" sub={`${events.length} afspraken in de pipeline`} />
       <SectionLabel>Volgende afspraken</SectionLabel>
       {loading ? (
         <Empty text="Laden…" />
@@ -40,6 +37,7 @@ export default function AgendaPreview({ onOpen }) {
               title={e.title}
               sub={`${format(new Date(e.start), "EEE d MMM · HH:mm", { locale: nl })}${e.location ? " · " + e.location : ""}`}
               onClick={onOpen}
+              accent="hsl(var(--sand))"
             />
           ))}
         </div>

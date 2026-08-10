@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Stat, Row, Empty, SectionLabel, ActionBtn } from "./previewParts";
+import { Row, Empty, SectionLabel, ActionBtn, HeroStat, BarDistribution } from "./previewParts";
 import { format } from "date-fns";
 import { RefreshCw, Check } from "lucide-react";
 
@@ -45,19 +45,32 @@ export default function EmailPreview({ onOpen }) {
 
   const unread = emails.filter((e) => e.status === "unread");
   const important = emails.filter((e) => e.important);
+  const read = emails.length - unread.length;
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-3">
-        <Stat label="Ongelezen" value={unread.length} accent="hsl(var(--blue-grey))" />
-        <Stat label="Belangrijk" value={important.length} accent="hsl(var(--sand))" />
+      <div className="grid grid-cols-[1fr_auto] gap-3 items-stretch">
+        <HeroStat
+          value={unread.length}
+          label="Ongelezen"
+          accent="hsl(var(--blue-grey))"
+          sub={`${important.length} belangrijk`}
+          visual={
+            <BarDistribution
+              segments={[
+                { value: unread.length, color: "hsl(var(--blue-grey))" },
+                { value: important.length, color: "hsl(var(--sand))" },
+                { value: read, color: "hsl(var(--foreground) / 0.15)" },
+              ]}
+            />
+          }
+        />
         <button
           onClick={sync}
           disabled={syncing}
-          className="relative animate-fade-up glass-1 rounded-2xl px-4 py-3.5 flex flex-col items-start gap-1.5 hover:bg-foreground/5 transition disabled:opacity-50 overflow-hidden"
+          className="animate-fade-up rounded-2xl bg-foreground/[0.03] border border-foreground/[0.06] px-4 py-3 flex flex-col items-center justify-center gap-1.5 hover:bg-foreground/[0.06] transition disabled:opacity-50"
         >
-          <span className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full bg-steel" />
-          <span className="text-[10px] uppercase tracking-[0.2em] text-foreground/50 font-semibold">Sync</span>
+          <span className="text-[10px] uppercase tracking-[0.18em] text-foreground/50 font-semibold">Sync</span>
           <RefreshCw className={"h-5 w-5 text-foreground " + (syncing ? "animate-spin" : "")} />
         </button>
       </div>

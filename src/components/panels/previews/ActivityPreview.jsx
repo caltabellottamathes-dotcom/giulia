@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Stat, Card, Empty, SectionLabel } from "./previewParts";
+import { Card, Empty, SectionLabel, HeroStat, BarDistribution } from "./previewParts";
 import { format } from "date-fns";
 
 const SRC_COLOR = {
@@ -26,12 +26,21 @@ export default function ActivityPreview({ onOpen }) {
     })();
   }, []);
 
+  const sources = new Set(items.map((i) => i.source));
+  const segments = [...sources].map((s) => ({
+    value: items.filter((i) => i.source === s).length,
+    color: SRC_COLOR[s] || "hsl(var(--smoke))",
+  }));
+
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <Stat label="Recent" value={items.length} accent="hsl(var(--sand))" />
-        <Stat label="Bronnen" value={new Set(items.map((i) => i.source)).size} accent="hsl(var(--olive))" />
-      </div>
+      <HeroStat
+        value={items.length}
+        label="Recent"
+        accent="hsl(var(--sand))"
+        sub={`${sources.size} bronnen`}
+        visual={items.length > 0 ? <BarDistribution segments={segments} /> : undefined}
+      />
       <SectionLabel>Laatste gebeurtenissen</SectionLabel>
       {loading ? (
         <Empty text="Laden…" />

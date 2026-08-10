@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Stat, Card, Empty, SectionLabel, Progress, ActionBtn } from "./previewParts";
+import { Card, Empty, SectionLabel, ActionBtn, HeroStat, RingMini } from "./previewParts";
 import { ArrowUpRight, Plus, Pencil } from "lucide-react";
 import ProjectEditorPanel from "@/components/projects/ProjectEditorPanel";
 
@@ -32,7 +32,6 @@ export default function ProjectsPreview({ onOpen }) {
   };
 
   useEffect(() => { load(); }, []);
-
   const openNew = () => { setEditorProject(null); setEditorOpen(true); };
   const openEdit = (p) => { setEditorProject(p); setEditorOpen(true); };
 
@@ -40,18 +39,17 @@ export default function ProjectsPreview({ onOpen }) {
     <div className="space-y-4">
       <button
         onClick={openNew}
-        className="w-full animate-fade-up inline-flex items-center justify-center gap-2 rounded-2xl glass-1 px-4 py-3 text-sm font-semibold text-foreground hover:bg-foreground/5 transition"
+        className="w-full animate-fade-up inline-flex items-center justify-center gap-2 rounded-2xl bg-foreground/[0.03] border border-foreground/[0.06] px-4 py-3 text-sm font-semibold text-foreground hover:bg-foreground/[0.06] transition"
       >
         <Plus className="h-4 w-4" /> Nieuw project
       </button>
-
-      <div className="grid grid-cols-2 gap-3">
-        <Stat label="Actief" value={projects.length} accent="hsl(var(--olive))" />
-        <Stat label="Mijlpaal open" value={projects.filter((p) => p.next_milestone).length} accent="hsl(var(--sand))" />
-      </div>
-
+      <HeroStat
+        value={projects.length}
+        label="Actief"
+        accent="hsl(var(--olive))"
+        sub={`${projects.filter((p) => p.next_milestone).length} met open mijlpaal`}
+      />
       <SectionLabel>Projecten die nu lopen</SectionLabel>
-
       {loading ? (
         <Empty text="Laden…" />
       ) : projects.length ? (
@@ -63,13 +61,13 @@ export default function ProjectsPreview({ onOpen }) {
               accent={HEALTH[p.health] || "hsl(var(--smoke))"}
               trailing={<ActionBtn icon={Pencil} label="Bewerk project" onClick={() => openEdit(p)} />}
             >
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-foreground truncate flex-1">{p.title}</span>
+              <div className="flex items-center gap-3">
+                <RingMini value={p.progress} accent="hsl(var(--olive))" size={48} />
+                <div className="min-w-0 flex-1">
+                  <span className="block text-sm font-medium text-foreground truncate">{p.title}</span>
+                  <span className="block text-[11px] text-foreground/50 mt-0.5">{p.progress || 0}% · {p.next_milestone || "geen mijlpaal"}</span>
+                </div>
                 <ArrowUpRight className="h-3.5 w-3.5 text-foreground/30 shrink-0" />
-              </div>
-              <div className="mt-2 flex items-center gap-2">
-                <Progress value={p.progress} accent="hsl(var(--olive))" />
-                <span className="text-[10px] tabular-nums text-foreground/45 shrink-0">{p.progress || 0}%</span>
               </div>
             </Card>
           ))}
@@ -77,7 +75,6 @@ export default function ProjectsPreview({ onOpen }) {
       ) : (
         <Empty text="Geen actieve projecten" />
       )}
-
       <ProjectEditorPanel open={editorOpen} onClose={() => setEditorOpen(false)} project={editorProject} onSaved={load} />
     </div>
   );

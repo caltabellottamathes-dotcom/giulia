@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Stat, Card, Empty, SectionLabel, Pill } from "./previewParts";
+import { Card, Empty, SectionLabel, Pill, HeroStat } from "./previewParts";
 
 export default function KnowledgePreview({ onOpen }) {
   const [items, setItems] = useState([]);
@@ -20,10 +20,12 @@ export default function KnowledgePreview({ onOpen }) {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <Stat label="Notities" value={items.length} accent="hsl(var(--olive))" />
-        <Stat label="Categorieën" value={new Set(items.map((i) => i.category)).size} accent="hsl(var(--sand))" />
-      </div>
+      <HeroStat
+        value={items.length}
+        label="Notities"
+        accent="hsl(var(--olive))"
+        sub={`${new Set(items.map((i) => i.category)).size} categorieën`}
+      />
       <SectionLabel>Recente kennis</SectionLabel>
       {loading ? (
         <Empty text="Laden…" />

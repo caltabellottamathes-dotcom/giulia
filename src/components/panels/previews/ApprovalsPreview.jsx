@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Stat, Card, Empty, SectionLabel } from "./previewParts";
+import { Card, Empty, SectionLabel, HeroStat } from "./previewParts";
 import { Check, X, ArrowUpRight } from "lucide-react";
 
 export default function ApprovalsPreview({ onOpen }) {
@@ -32,10 +32,12 @@ export default function ApprovalsPreview({ onOpen }) {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <Stat label="Wacht op jou" value={items.length} accent="hsl(var(--olive))" />
-        <Stat label="Categorie" value={items[0]?.category || "—"} accent="hsl(var(--sand))" />
-      </div>
+      <HeroStat
+        value={items.length}
+        label="Wacht op jou"
+        accent="hsl(var(--olive))"
+        sub={items[0]?.category ? `meest recent: ${items[0].category}` : "niets open"}
+      />
       <SectionLabel>Wacht op goedkeuring</SectionLabel>
       {loading ? (
         <Empty text="Laden…" />
@@ -56,7 +58,7 @@ export default function ApprovalsPreview({ onOpen }) {
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); decide(a, "rejected"); }}
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full glass-1 px-3 py-1.5 text-xs font-semibold text-foreground/70 hover:bg-foreground/5 transition"
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full bg-foreground/[0.04] border border-foreground/[0.08] px-3 py-1.5 text-xs font-semibold text-foreground/70 hover:bg-foreground/[0.08] transition"
                   >
                     <X className="h-3.5 w-3.5" /> Af
                   </button>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Stat, Card, Empty, SectionLabel, Pill } from "./previewParts";
+import { Card, Empty, SectionLabel, Pill, HeroStat } from "./previewParts";
 
 export default function MemoryPreview({ onOpen }) {
   const [items, setItems] = useState([]);
@@ -20,10 +20,12 @@ export default function MemoryPreview({ onOpen }) {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <Stat label="Herinneringen" value={items.length} accent="hsl(var(--charcoal))" />
-        <Stat label="Categorieën" value={new Set(items.map((i) => i.category)).size} accent="hsl(var(--olive))" />
-      </div>
+      <HeroStat
+        value={items.length}
+        label="Herinneringen"
+        accent="hsl(var(--charcoal))"
+        sub={`${new Set(items.map((i) => i.category)).size} categorieën`}
+      />
       <SectionLabel>Wat Giulia onthoudt</SectionLabel>
       {loading ? (
         <Empty text="Laden…" />

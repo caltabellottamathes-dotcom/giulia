@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Stat, Row, Empty, SectionLabel, ActionBtn } from "./previewParts";
+import { Row, Empty, SectionLabel, ActionBtn, HeroStat } from "./previewParts";
 import { Check, X } from "lucide-react";
 
 export default function WhatsAppPreview({ onOpen }) {
@@ -35,13 +35,10 @@ export default function WhatsAppPreview({ onOpen }) {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <Stat label="Ongelezen" value={msgs.length} accent="hsl(var(--sand))" />
-        <Stat label="Drafts" value={drafts.length} accent="hsl(var(--olive))" />
-      </div>
+      <HeroStat value={drafts.length} label="Concepten ter goedkeuring" accent="hsl(var(--olive))" sub={`${msgs.length} ongelezen berichten`} />
       {drafts.length > 0 && (
         <>
-          <SectionLabel>Giulia-koncepten ter goedkeuring</SectionLabel>
+          <SectionLabel>Giulia-koncepten</SectionLabel>
           <div className="space-y-2">
             {drafts.map((d) => (
               <Row

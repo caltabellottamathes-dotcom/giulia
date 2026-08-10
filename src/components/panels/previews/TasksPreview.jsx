@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Stat, Row, Empty, SectionLabel, ActionBtn } from "./previewParts";
+import { Row, Empty, SectionLabel, ActionBtn, HeroStat, BarDistribution } from "./previewParts";
 import { Check } from "lucide-react";
 
 const PRIORITY_COLOR = {
@@ -41,14 +41,29 @@ export default function TasksPreview({ onOpen }) {
   };
 
   const today = tasks.filter((t) => t.status === "today" || t.status === "overdue");
+  const overdue = tasks.filter((t) => t.status === "overdue").length;
+  const upcoming = tasks.filter((t) => t.status === "upcoming").length;
+  const waiting = tasks.filter((t) => t.status === "waiting").length;
   const ordered = [...today, ...tasks.filter((t) => !today.includes(t))].slice(0, 6);
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <Stat label="Vandaag" value={today.length} accent="hsl(var(--sand))" />
-        <Stat label="Open" value={tasks.length} accent="hsl(var(--charcoal))" />
-      </div>
+      <HeroStat
+        value={today.length}
+        label="Focus vandaag"
+        accent="hsl(var(--sand))"
+        sub={`${tasks.length} open · ${overdue} te laat · ${waiting} wacht`}
+        visual={
+          <BarDistribution
+            segments={[
+              { value: overdue, color: "hsl(var(--destructive))" },
+              { value: today.length - overdue, color: "hsl(var(--sand))" },
+              { value: upcoming, color: "hsl(var(--blue-grey))" },
+              { value: waiting, color: "hsl(var(--smoke))" },
+            ]}
+          />
+        }
+      />
       <SectionLabel>Focus · volgorde op prioriteit</SectionLabel>
       {loading ? (
         <Empty text="Laden…" />
