@@ -16,7 +16,7 @@ const LINKS = [
 
 export default function BottomNav() {
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-20 border-t border-border/30 bg-background/70 backdrop-blur-xl">
+    <nav className="fixed bottom-0 inset-x-0 z-20">
       <div className="px-5 lg:px-10 py-3 pr-20 lg:pr-28 flex items-center gap-x-5 gap-y-1.5 overflow-x-auto lg:overflow-visible lg:flex-wrap">
         {LINKS.map((l) => (
           <NavLink
@@ -24,8 +24,8 @@ export default function BottomNav() {
             to={l.to}
             end={l.to === "/"}
             className={({ isActive }) =>
-              `text-[11px] uppercase tracking-[0.18em] font-semibold whitespace-nowrap transition-colors ${
-                isActive ? "text-foreground" : "text-foreground/55 hover:text-foreground"
+              `text-[11px] uppercase tracking-[0.18em] font-medium whitespace-nowrap transition-colors ${
+                isActive ? "text-emerald-600" : "text-foreground/50 hover:text-foreground"
               }`
             }
           >
