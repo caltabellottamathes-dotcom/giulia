@@ -1,11 +1,13 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { IMAGES } from "@/lib/images";
+import { ArrowLeft } from "lucide-react";
 
 /**
- * PageHero — bold, editorial full-bleed header for every app page.
- * Large display title, iconographic badge, eyebrow label and an ivory
- * subtitle over a darkened branding photo. Actions render in a row beneath
- * on the light surface so buttons keep full contrast.
+ * PageHero — bold, editorial full-bleed header for every app page (LEVEL 03 · Space).
+ * A "Terug" control sits above the hero to move back to the previous screen
+ * (or home if there is no history). Large display title, iconographic badge,
+ * eyebrow label and an ivory subtitle over a darkened branding photo.
  */
 const HERO_IMG = {
   email: IMAGES.portraitBoot,
@@ -29,10 +31,27 @@ const HERO_IMG = {
   search: IMAGES.topDownWalk,
 };
 
-export default function PageHero({ page, image, icon: Icon, eyebrow = "Onderdeel", title, subtitle, actions }) {
+export default function PageHero({ page, image, icon: Icon, eyebrow = "Space", title, subtitle, actions, showBack = true }) {
+  const navigate = useNavigate();
   const src = image || HERO_IMG[page] || IMAGES.walkingChairs;
+  const back = () => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate("/");
+  };
   return (
     <>
+      {showBack && (
+        <button
+          onClick={back}
+          className="group inline-flex items-center gap-2 mb-4 text-[12px] font-medium text-foreground/60 hover:text-foreground transition-colors"
+          aria-label="Terug"
+        >
+          <span className="h-6 w-6 rounded-full glass-1 flex items-center justify-center transition-transform group-hover:-translate-x-0.5">
+            <ArrowLeft className="h-3.5 w-3.5" />
+          </span>
+          Terug
+        </button>
+      )}
       <div className="relative h-40 lg:h-48 overflow-hidden rounded-[24px] mb-5 float-shadow">
         <img src={src} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-charcoal/90 via-charcoal/55 to-charcoal/25" />

@@ -186,12 +186,16 @@ function LayoutInner() {
             >
               <Menu className="h-5 w-5" />
             </button>
-            <div className="flex items-center gap-2 shrink-0 pr-1">
-              <span className="h-2.5 w-2.5 rounded-sm bg-charcoal" />
-              <span className="font-display font-semibold tracking-[0.22em] text-[13px] uppercase">
+            <button
+              onClick={() => navigate("/")}
+              className="flex items-center gap-2 shrink-0 pr-1 group"
+              aria-label="Naar dashboard"
+            >
+              <span className="h-2.5 w-2.5 rounded-sm bg-charcoal transition-transform group-hover:scale-110" />
+              <span className="font-display font-semibold tracking-[0.22em] text-[13px] uppercase group-hover:text-foreground transition-colors">
                 Giulia
               </span>
-            </div>
+            </button>
             <div className="hidden sm:flex items-center gap-2 glass-1 rounded-full px-4 py-1.5 flex-1 max-w-sm">
               <Search className="h-3.5 w-3.5 text-foreground/55 shrink-0" />
               <input
