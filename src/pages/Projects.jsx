@@ -10,24 +10,37 @@ import { useEntityList } from "@/hooks/useEntity";
 import { IMAGES } from "@/lib/images";
 import { Plus, Briefcase, Pencil } from "lucide-react";
 
-const filters = ["Active", "planning", "in_progress", "waiting", "completed", "archived"];
+const filters = ["Alle", "Active", "planning", "in_progress", "waiting", "completed", "archived"];
 
 const statusVariantMap = {
   planning: "waiting", in_progress: "active", waiting: "waiting",
   completed: "completed", archived: "muted",
 };
 
+// Palette-colored category pill — visually clear on the card.
+const CATEGORY_PALETTE = ["olive", "powder", "steel"];
+const categoryStyle = (cat) => {
+  if (!cat) return "";
+  const h = cat.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  const c = CATEGORY_PALETTE[h % CATEGORY_PALETTE.length];
+  return c === "olive" ? "bg-olive text-ivory" : c === "powder" ? "bg-powder text-charcoal" : "bg-steel text-ivory";
+};
+
 export default function Projects() {
   const navigate = useNavigate();
-  const [filter, setFilter] = useState("Active");
+  const [filter, setFilter] = useState("Alle");
+  const [category, setCategory] = useState("Alle");
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorProject, setEditorProject] = useState(null);
 
   const { data: projects, loading, reload } = useEntityList("Project");
 
+  const categories = ["Alle", ...Array.from(new Set(projects.map((p) => p.category).filter(Boolean)))];
+
   const filteredProjects = projects.filter((p) => {
-    if (filter === "Active") return p.status === "in_progress" || p.status === "planning";
-    return p.status === filter;
+    const byStatus = filter === "Alle" ? true : filter === "Active" ? (p.status === "in_progress" || p.status === "planning") : p.status === filter;
+    const byCategory = category === "Alle" ? true : p.category === category;
+    return byStatus && byCategory;
   });
 
   const openNew = () => { setEditorProject(null); setEditorOpen(true); };
@@ -48,7 +61,22 @@ export default function Projects() {
         }
       />
 
+      <div className="flex items-end justify-between gap-3">
+        <h2 className="text-lg font-display font-semibold">Alle projecten</h2>
+        <p className="text-xs text-muted-foreground tabular-nums">{filteredProjects.length} projecten</p>
+      </div>
+
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground shrink-0 mr-1">Categorie</span>
+        {categories.map((c) => (
+          <button key={c} onClick={() => setCategory(c)} className={cn("px-3 py-1.5 text-xs rounded-full whitespace-nowrap transition-all", category === c ? "bg-foreground text-background font-medium" : "glass-1 text-muted-foreground hover:text-foreground")}>
+            {c}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        <span className="text-[10px] uppercase tracking-wider text-muted-foreground shrink-0 mr-1">Status</span>
         {filters.map((f) => (
           <button key={f} onClick={() => setFilter(f)} className={cn("px-3 py-1.5 text-xs rounded-full whitespace-nowrap transition-all capitalize", filter === f ? "bg-foreground text-background font-medium" : "glass-1 text-muted-foreground hover:text-foreground")}>
             {f.replace(/_/g, " ")}
@@ -72,7 +100,11 @@ export default function Projects() {
                 </StatusBadge>
               </div>
               <div className="absolute bottom-0 left-0 right-0 p-4">
-                {project.category && <p className="text-[10px] uppercase tracking-wider text-white/60 mb-1">{project.category}</p>}
+                {project.category && (
+                  <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] uppercase tracking-wider font-semibold mb-2 ${categoryStyle(project.category)}`}>
+                    {project.category}
+                  </span>
+                )}
                 <h3 className="text-white font-display font-semibold text-base mb-1.5 line-clamp-2">{project.title}</h3>
                 {project.description && <p className="text-xs text-white/70 line-clamp-2 mb-2.5">{project.description}</p>}
                 <div className="flex items-center justify-between text-xs text-white/60">

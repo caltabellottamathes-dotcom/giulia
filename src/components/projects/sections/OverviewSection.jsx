@@ -15,6 +15,14 @@ import {
 
 /** Overview — visual bento dashboard. Big graphic elements carry the
  *  status; text stays minimal. Understand the project in under 10s. */
+
+const tierColor = (pct) => {
+  if (pct >= 100) return "bg-olive";
+  if (pct >= 50) return "bg-powder";
+  if (pct > 0) return "bg-steel";
+  return "bg-steel/30";
+};
+
 export default function OverviewSection({ project, tasks, onNavigate, reload }) {
   const [emails, setEmails] = useState([]);
   const [events, setEvents] = useState([]);
@@ -151,7 +159,7 @@ export default function OverviewSection({ project, tasks, onNavigate, reload }) 
       {/* Onderdeel infographic */}
       <GlassPanel level={2} className="p-6">
         <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-5">Voortgang per onderdeel</p>
-        <div className="space-y-3">
+        <div className="space-y-3.5">
           {breakdown.map((o) => {
             const open = expanded === o.name;
             return (
@@ -160,12 +168,11 @@ export default function OverviewSection({ project, tasks, onNavigate, reload }) 
                   <div className="flex items-center gap-3 mb-1.5">
                     <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground transition-transform shrink-0 ${open ? "rotate-180" : ""}`} />
                     <span className="text-xs text-foreground/70 flex-1 text-left truncate group-hover:text-foreground transition-colors">{o.name}</span>
-                    <span className="text-2xl font-display font-bold tabular-nums leading-none">{o.pct}<span className="text-sm text-muted-foreground ml-0.5">%</span></span>
+                    <span className="text-[11px] text-muted-foreground tabular-nums">{o.done}/{o.total}</span>
+                    <span className="text-sm font-display font-semibold tabular-nums leading-none w-9 text-right">{o.pct}%</span>
                   </div>
-                  <div className="h-7 rounded-lg bg-muted/70 overflow-hidden">
-                    <div className="h-full bg-olive rounded-lg transition-all duration-700 flex items-center justify-end pr-2" style={{ width: `${Math.max(o.pct, 4)}%` }}>
-                      {o.pct > 18 && <span className="text-[10px] text-white/90 font-medium tabular-nums">{o.done}/{o.total}</span>}
-                    </div>
+                  <div className="h-1.5 rounded-full bg-muted/60 overflow-hidden">
+                    <div className={`h-full rounded-full transition-all duration-700 ${tierColor(o.pct)}`} style={{ width: `${Math.max(o.pct, 1)}%` }} />
                   </div>
                 </button>
                 {open && o.subs.length > 1 && (
@@ -173,8 +180,8 @@ export default function OverviewSection({ project, tasks, onNavigate, reload }) 
                     {o.subs.map((s) => (
                       <div key={s.name} className="flex items-center gap-3">
                         <span className="text-[11px] text-muted-foreground flex-1 truncate">{s.name}</span>
-                        <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
-                          <div className="h-full bg-olive/50 rounded-full" style={{ width: `${s.pct}%` }} />
+                        <div className="w-24 h-1 bg-muted rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full ${tierColor(s.pct)}`} style={{ width: `${s.pct}%` }} />
                         </div>
                         <span className="text-[10px] tabular-nums text-muted-foreground w-7 text-right">{s.pct}%</span>
                       </div>
