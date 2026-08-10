@@ -67,7 +67,7 @@ export default function ProjectDetail() {
       </button>
 
       <ProjectHeader project={project} onUpdate={updateProject} onEdit={() => setEditorOpen(true)} onDelete={delProject} />
-      <div className="relative z-10 bg-background rounded-t-[28px] -mt-16 pt-6 space-y-6">
+      <div className="relative z-10 bg-background rounded-t-[28px] -mt-16 px-4 lg:px-6 pt-8 pb-12 space-y-6 min-h-[calc(100vh-13rem)] lg:min-h-[calc(100vh-38rem)]">
         <ProjectNav active={section} onChange={setSection} />
 
         {section === "Overview" && <OverviewSection project={project} tasks={tasks} onNavigate={setSection} reload={load} />}

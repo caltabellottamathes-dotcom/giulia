@@ -19,7 +19,7 @@ export default function ProjectHeader({ project, onUpdate, onEdit, onDelete }) {
         <img src={project.image || IMAGES.walkingChairs} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-charcoal/92 via-charcoal/62 to-charcoal/25" />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/85 via-charcoal/10 to-transparent" />
-        <div className="absolute top-4 right-4 flex gap-2 z-10">
+        <div className="absolute top-20 right-4 flex gap-2 z-10">
           <button onClick={onEdit} className="inline-flex items-center gap-1.5 rounded-full bg-white/15 border border-white/25 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/25 transition">
             <Pencil className="h-3.5 w-3.5" /> Bewerk
           </button>
@@ -27,7 +27,7 @@ export default function ProjectHeader({ project, onUpdate, onEdit, onDelete }) {
             <Trash2 className="h-3.5 w-3.5" /> Verwijder
           </button>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8 max-w-4xl">
+        <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8 pb-24 lg:pb-28 max-w-4xl">
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <StatusBadge variant={ps.variant} className="bg-white/20 border-white/30 text-white">{ps.label}</StatusBadge>
             <span className="text-[11px] uppercase tracking-wider text-white/40">·</span>

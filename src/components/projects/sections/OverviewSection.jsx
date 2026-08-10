@@ -87,6 +87,10 @@ export default function OverviewSection({ project, tasks, onNavigate, reload }) 
         <GlassPanel level={2} className="lg:col-span-4 lg:col-start-1 lg:row-start-1 lg:row-span-2 relative overflow-hidden p-0 min-h-[340px] flex flex-col justify-end">
           <img src={IMAGES.walkTowardChair} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-charcoal/95 via-charcoal/35 to-charcoal/5" />
+          <div className="absolute top-6 left-6 right-6 z-10">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-ivory/70 mb-1.5">Voortgang</p>
+            <p className="text-[11px] text-ivory/55 leading-snug max-w-[220px]">Gewogen over alle onderdelen en subonderdelen.</p>
+          </div>
           <div className="relative p-6">
             <div className="flex items-end gap-1.5">
               <span className="text-[112px] font-display font-bold leading-[0.78] tabular-nums text-ivory">{progress}</span>
@@ -101,43 +105,45 @@ export default function OverviewSection({ project, tasks, onNavigate, reload }) 
           </div>
         </GlassPanel>
 
-        {/* Taakverdeling — top middle */}
-        <GlassPanel level={3} className="lg:col-span-4 lg:col-start-5 lg:row-start-1 p-0 flex flex-col overflow-hidden">
+        {/* Taakverdeling — top middle · nav-glass */}
+        <div className="lg:col-span-4 lg:col-start-5 lg:row-start-1 glass-dark float-shadow rounded-[28px] text-ivory flex flex-col overflow-hidden">
           <div className="h-1.5 bg-powder" />
           <div className="p-6 flex-1 flex flex-col">
-            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-5">Takenverdeling</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-ivory/55 mb-5">Takenverdeling</p>
             <div className="flex-1 flex flex-col justify-center">
-              <StatusDistribution tasks={tasks} />
+              <div className="rounded-2xl bg-warm-white/90 p-4">
+                <StatusDistribution tasks={tasks} />
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 mt-5 pt-5 border-t border-border/40">
+            <div className="grid grid-cols-2 gap-3 mt-5 pt-5 border-t border-ivory/15">
               <Metric value={activeCount} label="Actief" onClick={() => onNavigate("Tasks")} />
               <Metric value={blockerCount} label="Blokkades" onClick={() => onNavigate("Tasks")} />
             </div>
           </div>
-        </GlassPanel>
+        </div>
 
-        {/* Giulia — top right */}
-        <GlassPanel level={3} className="lg:col-span-4 lg:col-start-9 lg:row-start-1 p-0 flex flex-col overflow-hidden">
+        {/* Giulia — top right · nav-glass */}
+        <div className="lg:col-span-4 lg:col-start-9 lg:row-start-1 glass-dark float-shadow rounded-[28px] text-ivory flex flex-col overflow-hidden">
           <div className="h-1.5 bg-olive" />
           <div className="p-6 flex-1 flex flex-col">
             <div className="flex items-center gap-3 mb-4">
-              <span className="h-10 w-10 rounded-2xl bg-olive/15 ring-1 ring-olive/25 flex items-center justify-center">
-                <Bot className="h-5 w-5 text-olive" />
+              <span className="h-10 w-10 rounded-2xl bg-olive/20 ring-1 ring-olive/40 flex items-center justify-center">
+                <Bot className="h-5 w-5 text-ivory" />
               </span>
               <div>
-                <h3 className="text-base font-display font-bold leading-none">Giulia</h3>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">Project-assistent</p>
+                <h3 className="text-base font-display font-bold leading-none text-ivory">Giulia</h3>
+                <p className="text-[10px] uppercase tracking-wider text-ivory/55 mt-1">Project-assistent</p>
               </div>
             </div>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Interpretatie</p>
-            <p className="text-sm leading-relaxed flex-1">{giulia.insight}</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-ivory/55 mb-2">Interpretatie</p>
+            <p className="text-sm leading-relaxed flex-1 text-ivory/90">{giulia.insight}</p>
             {giulia.nextStep && (
-              <div className="mt-3 inline-flex items-start gap-2 rounded-xl bg-powder/15 border border-powder/30 px-3 py-2">
-                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-steel shrink-0" />
-                <span className="text-[11px] font-medium text-steel leading-snug">{giulia.nextStep}</span>
+              <div className="mt-3 inline-flex items-start gap-2 rounded-xl bg-ivory/10 border border-ivory/20 px-3 py-2">
+                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-powder shrink-0" />
+                <span className="text-[11px] font-medium text-ivory/90 leading-snug">{giulia.nextStep}</span>
               </div>
             )}
-            <div className="mt-4 pt-4 border-t border-border/40">
+            <div className="mt-4 pt-4 border-t border-ivory/15">
               {!addOpen ? (
                 <button onClick={() => setAddOpen(true)} className="w-full flex items-center justify-center gap-2 rounded-xl bg-olive text-ivory py-2.5 text-xs font-medium hover:bg-olive/90 transition">
                   <Plus className="h-3.5 w-3.5" /> Delegeer aan Giulia
@@ -149,11 +155,11 @@ export default function OverviewSection({ project, tasks, onNavigate, reload }) 
                     onChange={(e) => setAddText(e.target.value)}
                     rows={3}
                     placeholder="Beschrijf wat Giulia moet oppakken — zij splitst het in taken."
-                    className="w-full text-xs bg-foreground/[0.03] border border-border/50 rounded-xl px-3 py-2.5 resize-none outline-none focus:border-olive leading-relaxed"
+                    className="w-full text-xs bg-ivory/10 border border-ivory/20 rounded-xl px-3 py-2.5 resize-none outline-none focus:border-olive leading-relaxed text-ivory placeholder:text-ivory/40"
                     autoFocus
                   />
                   <div className="flex gap-2 mt-2">
-                    <button onClick={() => { setAddOpen(false); setAddText(""); }} className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition">Annuleer</button>
+                    <button onClick={() => { setAddOpen(false); setAddText(""); }} className="px-3 py-1.5 text-xs text-ivory/60 hover:text-ivory transition">Annuleer</button>
                     <GlassButton variant="primary" size="sm" className="flex-1" onClick={handleAdd} disabled={adding || !addText.trim()}>
                       {adding ? "Toevoegen…" : "Voeg taken toe"}
                     </GlassButton>
@@ -162,7 +168,7 @@ export default function OverviewSection({ project, tasks, onNavigate, reload }) 
               )}
             </div>
           </div>
-        </GlassPanel>
+        </div>
 
         {/* Voortgang per onderdeel — bottom, next to the progress card */}
         <GlassPanel level={2} className="lg:col-span-8 lg:col-start-5 lg:row-start-2 p-5 flex flex-col overflow-hidden">
@@ -263,8 +269,8 @@ export default function OverviewSection({ project, tasks, onNavigate, reload }) 
 function Metric({ value, label, onClick }) {
   return (
     <button onClick={onClick} className="text-left group">
-      <p className="text-3xl font-display font-bold tabular-nums leading-none group-hover:text-olive transition-colors">{value}</p>
-      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1.5">{label}</p>
+      <p className="text-3xl font-display font-bold tabular-nums leading-none text-ivory group-hover:text-powder transition-colors">{value}</p>
+      <p className="text-[10px] uppercase tracking-wider text-ivory/55 mt-1.5">{label}</p>
     </button>
   );
 }
