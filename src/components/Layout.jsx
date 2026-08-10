@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { IMAGES } from "@/lib/images";
 import QuickAction from "@/components/glass/QuickAction";
 import ModulePanel from "@/components/panels/ModulePanel";
@@ -10,6 +10,7 @@ import AmbientBloom from "@/components/glass/AmbientBloom";
 import { GiuliaAgentProvider } from "@/lib/GiuliaAgentContext";
 import GiuliaAgentButton from "@/components/giulia/GiuliaAgentButton";
 import GiuliaAgentPanel from "@/components/giulia/GiuliaAgentPanel";
+import BottomNav from "@/components/BottomNav";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
@@ -39,6 +40,7 @@ export default function Layout() {
 
 function LayoutInner() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [search, setSearch] = useState("");
   const { openModule } = usePanel();
   const { logout } = useAuth();
@@ -128,8 +130,10 @@ function LayoutInner() {
         </header>
 
         {/* Workspace content */}
-        <main className="flex-1 px-5 lg:px-10 py-6 lg:py-8 w-full">
-          <Outlet />
+        <main className="flex-1 px-5 lg:px-10 pt-6 lg:pt-8 pb-24 w-full">
+          <div key={location.pathname} className="animate-route-fade">
+            <Outlet />
+          </div>
         </main>
       </div>
 
@@ -145,6 +149,9 @@ function LayoutInner() {
       {/* Platform agent — floating conversational panel with tool access */}
       <GiuliaAgentButton />
       <GiuliaAgentPanel />
+
+      {/* Bottom page navigation — always visible on every page */}
+      <BottomNav />
     </div>
   );
 }

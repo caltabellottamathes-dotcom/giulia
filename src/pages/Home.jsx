@@ -14,19 +14,6 @@ import GiuliaIntroOverlay from "@/components/widgets/GiuliaIntroOverlay";
 import { Link } from "react-router-dom";
 import { MODULES } from "@/lib/moduleRegistry";
 
-const PAGE_LINKS = [
-  { label: "Agenda", to: "/agenda" },
-  { label: "Projecten", to: "/projects" },
-  { label: "Taken", to: "/tasks" },
-  { label: "Email", to: "/email" },
-  { label: "WhatsApp", to: "/whatsapp" },
-  { label: "Kennisbank", to: "/knowledge" },
-  { label: "Documenten", to: "/documents" },
-  { label: "Mensen", to: "/people" },
-  { label: "Inzichten", to: "/insights" },
-  { label: "Backdesk", to: "/settings" },
-];
-
 const DEFAULT_WIDGETS = ["giulia", "agenda", "tasks", "approvals", "email", "projects"];
 
 const SPAN_COL = {
@@ -208,7 +195,7 @@ export default function Home() {
 
       {/* Floating widget — the active module's widget, left of the panel over the photo's left side */}
       {panelOpen && WIDGETS[activeModule] && (() => { const W = WIDGETS[activeModule].Component; return (
-        <div className="hidden lg:block fixed left-10 top-[24rem] z-20 w-[480px] animate-fade-up">
+        <div className="hidden lg:block fixed left-10 bottom-[5.5rem] z-20 w-[560px] animate-fade-up">
           <WidgetThemeProvider value={{ theme: "glass", color: "", opacity: 1, blur: 0 }}>
             <W />
           </WidgetThemeProvider>
@@ -273,19 +260,6 @@ export default function Home() {
           )}
         </div>
       </div>
-
-      {/* Fixed bottom word-links — stay on the background, navigate to pages */}
-      <nav className="hidden lg:flex fixed bottom-5 left-10 right-10 z-10 flex-wrap gap-x-6 gap-y-2">
-        {PAGE_LINKS.map((l) => (
-          <Link
-            key={l.to}
-            to={l.to}
-            className="text-[12px] text-foreground/75 hover:text-foreground transition-colors tracking-wide font-medium"
-          >
-            {l.label}
-          </Link>
-        ))}
-      </nav>
 
       <AddWidgetPicker
         open={pickerOpen}
