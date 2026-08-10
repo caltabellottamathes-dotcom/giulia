@@ -19,25 +19,6 @@ export const taskStatusMeta = {
   delegated: { label: "Gedelegeerd", color: "text-purple-500", dot: "bg-purple-500" },
 };
 
-export const statusBlockColor = {
-  klaar: "bg-emerald-500",
-  done: "bg-emerald-500",
-  completed: "bg-emerald-500",
-  actief: "bg-olive",
-  in_progress: "bg-olive",
-  today: "bg-olive",
-  gepland: "bg-blue-500",
-  upcoming: "bg-blue-500",
-  wacht: "bg-amber-500",
-  waiting: "bg-amber-500",
-  te_specifieren: "bg-foreground/25",
-  todo: "bg-foreground/25",
-  gepauzeerd: "bg-muted-foreground/40",
-  paused: "bg-muted-foreground/40",
-  overdue: "bg-red-500",
-  delegated: "bg-purple-500",
-};
-
 export const taskStatusOptions = [
   { value: "klaar", label: "Klaar" },
   { value: "actief", label: "Actief" },
