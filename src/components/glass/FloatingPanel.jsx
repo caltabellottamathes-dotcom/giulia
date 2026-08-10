@@ -92,7 +92,7 @@ export default function FloatingPanel({
         <div
           className={cn(
             glassLevels[level] || "glass-3",
-            "float-shadow rounded-[28px] overflow-hidden relative flex flex-col",
+            "float-shadow rounded-[28px] overflow-y-auto overflow-x-hidden relative flex flex-col",
             isCenter ? "w-full max-w-lg max-h-[85vh]" : "h-full"
           )}
         >

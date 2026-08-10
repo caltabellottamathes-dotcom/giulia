@@ -178,7 +178,7 @@ function LayoutInner() {
       {/* Full-width workspace — the nav now lives in a sliding panel */}
       <div className="flex flex-col min-h-screen relative">
         {/* Header */}
-        <header className="sticky top-0 z-20 h-14 flex items-center justify-between px-5 lg:px-10">
+        <header className="sticky top-0 z-20 h-14 flex items-center justify-between px-5 lg:px-10 bg-transparent">
           <div className="flex items-center gap-3 flex-1">
             <button
               onClick={() => setNavOpen(true)}
@@ -264,7 +264,7 @@ function LayoutInner() {
         </header>
 
         {/* Workspace content */}
-        <main className="flex-1 px-5 lg:px-10 py-6 lg:py-8 max-w-[1440px] mx-auto w-full">
+        <main className="flex-1 px-5 lg:px-10 py-6 lg:py-8 w-full">
           <Outlet />
         </main>
       </div>
