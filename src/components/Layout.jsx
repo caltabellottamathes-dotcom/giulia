@@ -7,7 +7,6 @@ import ChatWindow from "@/components/panels/ChatWindow";
 import { PanelProvider, usePanel } from "@/lib/PanelContext";
 import { GiuliaVoiceProvider } from "@/lib/GiuliaVoiceContext";
 import AmbientBloom from "@/components/glass/AmbientBloom";
-import SectionNavLinks from "@/components/glass/SectionNavLinks";
 import { GiuliaAgentProvider } from "@/lib/GiuliaAgentContext";
 import GiuliaAgentButton from "@/components/giulia/GiuliaAgentButton";
 import GiuliaAgentPanel from "@/components/giulia/GiuliaAgentPanel";
@@ -47,7 +46,6 @@ function LayoutInner() {
   return (
     <div className="min-h-screen relative">
       <AmbientBloom />
-      <SectionNavLinks />
       {/* Full-width workspace — navigation lives in the bottom plus-button menu */}
       <div className="flex flex-col min-h-screen relative">
         {/* Header */}

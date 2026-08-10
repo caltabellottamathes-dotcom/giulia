@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePanel } from "@/lib/PanelContext";
 import { WIDGETS } from "@/lib/widgetRegistry";
+import { MODULE_FUNCTIONS } from "@/lib/moduleFunctions";
 import { WidgetThemeProvider } from "@/lib/WidgetThemeContext";
 import { IMAGES } from "@/lib/images";
 import { useToast } from "@/components/ui/use-toast";
@@ -193,14 +194,21 @@ export default function Home() {
         <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/70 mb-3 font-semibold">
           {new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}
         </p>
-        <h1 className="text-5xl lg:text-6xl font-display font-semibold tracking-[-0.02em] leading-[1.0] text-foreground">
+        <h1 className="text-5xl lg:text-6xl font-display font-semibold tracking-[-0.02em] leading-[1.0] text-foreground mb-5">
           {MODULES[activeModule]?.label}
         </h1>
+        <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+          {(MODULE_FUNCTIONS[activeModule] || []).map((f) => (
+            <Link key={f.label} to={f.to} className="text-sm text-foreground/70 hover:text-foreground transition-colors underline underline-offset-4 decoration-foreground/20">
+              {f.label}
+            </Link>
+          ))}
+        </div>
       </div>
 
       {/* Floating widget — the active module's widget, left of the panel over the photo's left side */}
       {panelOpen && WIDGETS[activeModule] && (() => { const W = WIDGETS[activeModule].Component; return (
-        <div className="hidden lg:block fixed left-10 top-[32rem] z-20 w-[480px] animate-fade-up">
+        <div className="hidden lg:block fixed left-10 top-[24rem] z-20 w-[480px] animate-fade-up">
           <WidgetThemeProvider value={{ theme: "glass", color: "", opacity: 1, blur: 0 }}>
             <W />
           </WidgetThemeProvider>
