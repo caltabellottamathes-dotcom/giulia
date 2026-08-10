@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 
@@ -75,7 +76,7 @@ export default function FloatingPanel({
       ? `fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 w-[calc(100%-2rem)] ${widthClass[width] || widthClass[720]} z-50`
       : positions[position];
 
-  return (
+  return createPortal(
     <>
       {showOverlay && (
         <div
@@ -107,6 +108,7 @@ export default function FloatingPanel({
           {children}
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }
