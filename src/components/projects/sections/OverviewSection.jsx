@@ -1,15 +1,32 @@
 import React, { useState, useEffect } from "react";
 import GlassPanel from "@/components/glass/GlassPanel";
 import Avatar from "@/components/glass/Avatar";
+import ProgressArc from "@/components/projects/ProgressArc";
 import { base44 } from "@/api/base44Client";
-import { Mail, Calendar, FileText, AlertCircle, HelpCircle } from "lucide-react";
 import { isTaskDone, parseContext } from "@/lib/projectStatus";
 
-/** Overview — the project dashboard: progress, onderdeel breakdown, Giulia context, sidebar. */
+const STATUS_COLORS = {
+  klaar: "hsl(152 56% 42%)",
+  actief: "hsl(var(--olive))",
+  gepland: "hsl(211 86% 52%)",
+  wacht: "hsl(38 92% 48%)",
+  te_specifieren: "hsl(var(--foreground) / 0.22)",
+};
+const STATUS_LABEL = { klaar: "Klaar", actief: "Actief", gepland: "Gepland", wacht: "Wacht", te_specifieren: "Open" };
+
+const statusKey = (s) => {
+  if (["klaar", "done", "completed"].includes(s)) return "klaar";
+  if (["actief", "in_progress", "today"].includes(s)) return "actief";
+  if (["gepland", "upcoming"].includes(s)) return "gepland";
+  if (["wacht", "waiting"].includes(s)) return "wacht";
+  return "te_specifieren";
+};
+
+/** Overview — bold, graphic project dashboard built as bespoke infographics. */
 export default function OverviewSection({ project, tasks, onNavigate }) {
   const [emails, setEmails] = useState([]);
   const [events, setEvents] = useState([]);
-  const [documents, setDocuments] = useState([]);
+  const [docs, setDocs] = useState([]);
   const [contacts, setContacts] = useState([]);
 
   useEffect(() => {
@@ -22,8 +39,8 @@ export default function OverviewSection({ project, tasks, onNavigate }) {
       ]);
       setEmails(e.filter((x) => x.project_id === project.id));
       setEvents(ev.filter((x) => x.project_id === project.id));
-      setDocuments(d.filter((x) => x.project_id === project.id));
-      setContacts(c);
+      setDocs(d.filter((x) => x.project_id === project.id));
+      setContacts(c.filter((x) => (x.project_ids || []).includes(project.id)));
     })();
   }, [project.id]);
 
@@ -36,93 +53,124 @@ export default function OverviewSection({ project, tasks, onNavigate }) {
 
   const doneCount = tasks.filter(isTaskDone).length;
   const progress = tasks.length ? Math.round((doneCount / tasks.length) * 100) : 0;
-  const activeCount = tasks.filter((t) => ["actief", "in_progress", "today"].includes(t.status)).length;
-  const waitCount = tasks.filter((t) => ["wacht", "waiting"].includes(t.status)).length;
-  const specCount = tasks.filter((t) => ["te_specifieren", "todo"].includes(t.status)).length;
+
+  const dist = { klaar: 0, actief: 0, gepland: 0, wacht: 0, te_specifieren: 0 };
+  tasks.forEach((t) => { dist[statusKey(t.status)]++; });
+  const distEntries = Object.entries(dist).filter(([, n]) => n > 0);
 
   const giuliaContext = [
     `${project.title} staat op ${progress}% — ${doneCount} van ${tasks.length} taken klaar.`,
-    activeCount > 0 ? `${activeCount} taken zijn momenteel actief.` : "",
-    waitCount > 0 ? `${waitCount} taken wachten op vervolg.` : "",
-    specCount > 0 ? `${specCount} onderdelen moeten nog worden gespecificeerd.` : "",
+    dist.actief > 0 ? `${dist.actief} taken momenteel actief.` : "",
+    dist.wacht > 0 ? `${dist.wacht} taken wachten op vervolg.` : "",
+    dist.te_specifieren > 0 ? `${dist.te_specifieren} onderdelen nog open.` : "",
     project.next_milestone ? `Volgende stap: ${project.next_milestone}.` : "",
   ].filter(Boolean).join(" ");
 
+  const SegmentedBar = ({ items, total, height = "h-3" }) => (
+    <div className={`${height} w-full flex rounded-full overflow-hidden bg-muted/50`}>
+      {items.map(([k, n]) => (
+        <div
+          key={k}
+          style={{ width: `${total ? (n / total) * 100 : 0}%`, background: STATUS_COLORS[k] }}
+          className="h-full transition-all duration-700 ease-out"
+          title={`${STATUS_LABEL[k]}: ${n}`}
+        />
+      ))}
+    </div>
+  );
+
+  const StatTile = ({ value, label, onClick, children }) => (
+    <button onClick={onClick} className="glass rounded-2xl p-5 text-left hover:scale-[1.02] hover:shadow-lg transition-all duration-300">
+      {children || <p className="text-4xl font-display font-bold tabular-nums leading-none">{value}</p>}
+      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground mt-2.5 font-medium">{label}</p>
+    </button>
+  );
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-2 space-y-6">
-        <GlassPanel level={2} className="p-6">
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Projectvoortgang</p>
-          <div className="flex items-end gap-1.5 mb-3">
-            <span className="text-5xl font-display font-bold leading-none">{progress}</span>
-            <span className="text-xl text-muted-foreground mb-0.5">%</span>
-            <span className="text-xs text-muted-foreground ml-auto mb-1.5">{doneCount}/{tasks.length} taken</span>
+    <div className="space-y-6 animate-fade-up">
+      {/* Hero — progress arc + status legend */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <GlassPanel level={2} className="lg:col-span-2 p-7">
+          <div className="flex items-center justify-between mb-5">
+            <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground font-semibold">Projectvoortgang</p>
+            <span className="text-xs text-muted-foreground tabular-nums">{doneCount}/{tasks.length} taken</span>
           </div>
-          <div className="h-2 bg-muted rounded-full overflow-hidden mb-6">
-            <div className="h-full bg-olive rounded-full transition-all duration-700" style={{ width: `${progress}%` }} />
-          </div>
-          <div className="space-y-3">
-            {Object.entries(onderdelen).map(([ond, ts]) => {
-              const d = ts.filter(isTaskDone).length;
-              const p = ts.length ? Math.round((d / ts.length) * 100) : 0;
-              return (
-                <div key={ond}>
-                  <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="text-muted-foreground">{ond}</span>
-                    <span className="tabular-nums">{p}%</span>
-                  </div>
-                  <div className="h-1 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-olive/70 rounded-full transition-all duration-500" style={{ width: `${p}%` }} />
-                  </div>
+          <div className="flex items-center gap-6 lg:gap-10">
+            <ProgressArc value={progress} size={188} />
+            <div className="flex-1 space-y-3.5">
+              {distEntries.map(([k, n]) => (
+                <div key={k} className="flex items-center gap-3">
+                  <span className="h-3 w-3 rounded-[3px]" style={{ background: STATUS_COLORS[k] }} />
+                  <span className="text-sm font-medium">{STATUS_LABEL[k]}</span>
+                  <span className="text-2xl font-display font-bold tabular-nums ml-auto">{n}</span>
                 </div>
-              );
-            })}
-            {Object.keys(onderdelen).length === 0 && <p className="text-sm text-muted-foreground">Nog geen onderdelen.</p>}
+              ))}
+            </div>
           </div>
+        </GlassPanel>
+
+        {/* Giulia context — live status dot, bespoke graphic card */}
+        <GlassPanel level={3} className="p-6 flex flex-col">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-olive opacity-60 animate-ping" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-olive" />
+            </span>
+            <p className="text-[11px] uppercase tracking-[0.24em] text-muted-foreground font-semibold">Giulia context</p>
+          </div>
+          <p className="text-sm leading-relaxed text-foreground/85 flex-1">{giuliaContext}</p>
+          <button onClick={() => onNavigate("Tasks")} className="mt-4 self-start rounded-full bg-foreground text-background px-4 py-2 text-xs font-semibold hover:bg-foreground/90 transition">
+            Naar taken
+          </button>
         </GlassPanel>
       </div>
 
-      <div className="space-y-4">
-        <GlassPanel level={3} className="p-5">
-          <h3 className="text-sm font-display font-semibold mb-2">Giulia context</h3>
-          <p className="text-xs text-muted-foreground leading-relaxed">{giuliaContext}</p>
-        </GlassPanel>
-
-        <GlassPanel level={1} className="p-5">
-          <h3 className="text-xs uppercase tracking-wider text-muted-foreground mb-3">Snelle informatie</h3>
-          <div className="space-y-1.5 text-sm">
-            <button onClick={() => onNavigate("Communication")} className="w-full flex items-center gap-2 p-1.5 rounded-lg hover:bg-foreground/[0.03] transition">
-              <Mail className="h-4 w-4 text-muted-foreground" /> <span className="flex-1 text-left">E-mails</span>
-              <span className="text-xs text-muted-foreground tabular-nums">{emails.length}</span>
-            </button>
-            <button onClick={() => onNavigate("Timeline")} className="w-full flex items-center gap-2 p-1.5 rounded-lg hover:bg-foreground/[0.03] transition">
-              <Calendar className="h-4 w-4 text-muted-foreground" /> <span className="flex-1 text-left">Afspraken</span>
-              <span className="text-xs text-muted-foreground tabular-nums">{events.length}</span>
-            </button>
-            <button onClick={() => onNavigate("Files")} className="w-full flex items-center gap-2 p-1.5 rounded-lg hover:bg-foreground/[0.03] transition">
-              <FileText className="h-4 w-4 text-muted-foreground" /> <span className="flex-1 text-left">Bestanden</span>
-              <span className="text-xs text-muted-foreground tabular-nums">{documents.length}</span>
-            </button>
-            <div className="flex items-center gap-2 p-1.5"><AlertCircle className="h-4 w-4 text-amber-500" /><span className="flex-1">Wachtend</span><span className="text-xs tabular-nums">{waitCount}</span></div>
-            <div className="flex items-center gap-2 p-1.5"><HelpCircle className="h-4 w-4 text-muted-foreground" /><span className="flex-1">Te specificeren</span><span className="text-xs tabular-nums">{specCount}</span></div>
-          </div>
-        </GlassPanel>
-
-        <GlassPanel level={1} className="p-5">
-          <h3 className="text-xs uppercase tracking-wider text-muted-foreground mb-3">Betrokkenen</h3>
-          <div className="space-y-2">
-            {contacts.slice(0, 4).map((c) => (
-              <div key={c.id} className="flex items-center gap-3 cursor-pointer" onClick={() => onNavigate("People")}>
-                <Avatar src={c.avatar} name={c.name} size="sm" />
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{c.name}</p>
-                  {c.role && <p className="text-[11px] text-muted-foreground truncate">{c.role}</p>}
+      {/* Onderdeel breakdown — segmented infographic bars */}
+      <GlassPanel level={2} className="p-7">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-sm font-display font-semibold">Onderdelen</h2>
+          <button onClick={() => onNavigate("Tasks")} className="text-xs text-muted-foreground hover:text-foreground transition">Alle taken →</button>
+        </div>
+        <div className="space-y-4">
+          {Object.entries(onderdelen).map(([ond, ts]) => {
+            const d = ts.filter(isTaskDone).length;
+            const p = ts.length ? Math.round((d / ts.length) * 100) : 0;
+            const od = { klaar: 0, actief: 0, gepland: 0, wacht: 0, te_specifieren: 0 };
+            ts.forEach((t) => { od[statusKey(t.status)]++; });
+            const items = Object.entries(od).filter(([, n]) => n > 0);
+            return (
+              <button key={ond} onClick={() => onNavigate("Tasks")} className="block w-full text-left group">
+                <div className="flex items-baseline gap-3 mb-1.5">
+                  <span className="text-sm font-medium truncate flex-1 group-hover:text-olive transition-colors">{ond}</span>
+                  <span className="text-2xl font-display font-bold tabular-nums leading-none">{p}<span className="text-sm text-muted-foreground font-medium">%</span></span>
                 </div>
+                <SegmentedBar items={items} total={ts.length} />
+              </button>
+            );
+          })}
+          {Object.keys(onderdelen).length === 0 && <p className="text-sm text-muted-foreground">Nog geen onderdelen.</p>}
+        </div>
+      </GlassPanel>
+
+      {/* Quick info — big-number graphic tiles */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatTile value={emails.length} label="E-mails" onClick={() => onNavigate("Communication")} />
+        <StatTile value={events.length} label="Afspraken" onClick={() => onNavigate("Timeline")} />
+        <StatTile value={docs.length} label="Bestanden" onClick={() => onNavigate("Files")} />
+        <StatTile label="Betrokkenen" onClick={() => onNavigate("People")}>
+          {contacts.length > 0 ? (
+            <div className="flex items-center">
+              <div className="flex -space-x-2.5">
+                {contacts.slice(0, 5).map((c) => (
+                  <Avatar key={c.id} src={c.avatar} name={c.name} size="sm" className="ring-2 ring-background" />
+                ))}
               </div>
-            ))}
-            {contacts.length === 0 && <p className="text-xs text-muted-foreground">Nog geen contacten.</p>}
-          </div>
-        </GlassPanel>
+              <span className="text-4xl font-display font-bold tabular-nums leading-none ml-3">{contacts.length}</span>
+            </div>
+          ) : (
+            <p className="text-4xl font-display font-bold tabular-nums leading-none">0</p>
+          )}
+        </StatTile>
       </div>
     </div>
   );

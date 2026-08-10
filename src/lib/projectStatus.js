@@ -35,7 +35,7 @@ export const projectStatusMeta = {
   planning: { label: "Planning", variant: "waiting" },
   in_progress: { label: "Actief", variant: "active" },
   waiting: { label: "Wacht op klant", variant: "waiting" },
-  afwerking: { label: "Afwerving", variant: "active" },
+  afwerking: { label: "Afwerking", variant: "active" },
   completed: { label: "Klaar", variant: "completed" },
   archived: { label: "Gearchiveerd", variant: "muted" },
 };
