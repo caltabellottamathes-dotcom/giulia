@@ -10,6 +10,7 @@ import AddWidgetPicker from "@/components/panels/AddWidgetPicker";
 import WidgetCell from "@/components/widgets/WidgetCell";
 import GiuliaIntroOverlay from "@/components/widgets/GiuliaIntroOverlay";
 import { Link } from "react-router-dom";
+import { MODULES } from "@/lib/moduleRegistry";
 
 const PAGE_LINKS = [
   { label: "Agenda", to: "/agenda" },
@@ -156,7 +157,7 @@ export default function Home() {
         className={cn(
           "hidden lg:block fixed z-0 overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[left,right,top]",
           panelOpen
-            ? "left-0 right-[32%] top-[38vh] bottom-0 rounded-tr-[32px]"
+            ? "left-[24%] right-[14%] top-[40vh] bottom-0 rounded-[28px]"
             : "left-[42%] right-0 top-14 bottom-0 rounded-l-[32px]"
         )}
       >
@@ -186,6 +187,11 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/35 to-transparent" />
       </div>
 
+      {/* Panel name — top-left corner when a panel is open */}
+      <div className={cn("hidden lg:block fixed top-8 left-10 z-20 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]", panelOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none")}>
+        <p className="text-[11px] uppercase tracking-[0.3em] text-foreground/60 font-semibold">{MODULES[activeModule]?.label}</p>
+      </div>
+
       {/* Content */}
       <div
         className={cn(
@@ -211,7 +217,7 @@ export default function Home() {
         </header>
 
         {/* Tidy sorted bento grid */}
-        <div className="px-5 lg:px-10 pb-10">
+        <div className="px-5 lg:px-10 pb-10 lg:pl-[36%]">
           {loading ? (
             <div className="grid grid-cols-12 gap-4">
               {[0, 1, 2, 3].map((i) => (
@@ -219,12 +225,12 @@ export default function Home() {
               ))}
             </div>
           ) : sorted.length > 0 ? (
-            <div className="grid grid-cols-12 gap-4 lg:gap-5 auto-rows-auto">
+            <div className="grid grid-cols-12 gap-3 lg:gap-4 auto-rows-auto">
               {sorted.map((w) => {
                 const def = WIDGETS[w.widget_type];
                 if (!def) return null;
                 return (
-                  <div key={w.id} className={cn("col-span-12 md:col-span-6", SPAN_COL[def.span] || "lg:col-span-4")}>
+                  <div key={w.id} className={cn("col-span-12 md:col-span-6 scale-95 origin-top-left", SPAN_COL[def.span] || "lg:col-span-4")}>
                     <WidgetCell def={def} widget={w} onRemove={() => removeWidget(w.id)} onThemeChange={setWidgetTheme} />
                   </div>
                 );

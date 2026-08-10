@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 import { safeReturnTo } from "@/lib/authReturnTo";
@@ -7,24 +7,11 @@ import { Link } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("mail@salvatorecaltabellotta.com");
-  const [password, setPassword] = useState("S@lvatore1");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const returnTo = safeReturnTo();
-
-  useEffect(() => {
-    (async () => {
-      try {
-        await base44.auth.loginViaEmailPassword(email, password);
-        window.location.href = returnTo;
-      } catch (err) {
-        setError(err.message || "Onjuist e-mail of wachtwoord");
-        setLoading(false);
-      }
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

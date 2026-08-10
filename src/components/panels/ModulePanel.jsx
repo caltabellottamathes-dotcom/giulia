@@ -88,8 +88,6 @@ export default function ModulePanel() {
   const widgetDef = activeModule ? WIDGETS[activeModule] : null;
   const { toast } = useToast();
   const [adding, setAdding] = useState(false);
-  const hr = new Date().getHours();
-  const greeting = hr < 12 ? "Goedemorgen" : hr < 18 ? "Goedemiddag" : "Goedenavond";
 
   const addToDashboard = async () => {
     if (!widgetDef) return;
@@ -122,7 +120,6 @@ export default function ModulePanel() {
           {/* Floating glass content card — overlaps the header photo with rounded corners */}
           <div className="flex-1 -mt-10 rounded-t-[28px] glass-3 overflow-y-auto">
             <div className="px-7 lg:px-9 pt-7 pb-5">
-              <p className="text-sm text-ivory/75 font-medium mb-4">{greeting}, Salvo.</p>
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/55 font-medium mb-1.5">Snelle context · Niveau 02</p>
