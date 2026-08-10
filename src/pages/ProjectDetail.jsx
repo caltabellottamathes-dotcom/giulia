@@ -10,8 +10,7 @@ import { IMAGES } from "@/lib/images";
 import {
   ArrowLeft, CheckSquare, Calendar, Mail, FileText, Sparkles, Pencil, Trash2,
 } from "lucide-react";
-import FloatingPanel from "@/components/glass/FloatingPanel";
-import ImageInput from "@/components/glass/ImageInput";
+import ProjectEditorPanel from "@/components/projects/ProjectEditorPanel";
 
 const sections = ["Overview", "Tasks", "Timeline", "Files", "Communication"];
 
@@ -31,8 +30,7 @@ export default function ProjectDetail() {
   const [documents, setDocuments] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
-  const [editDraft, setEditDraft] = useState({});
+  const [editorOpen, setEditorOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -59,25 +57,11 @@ export default function ProjectDetail() {
     })();
   }, [id]);
 
-  const startEdit = () => {
-    setEditDraft({
-      title: project.title || "", description: project.description || "",
-      category: project.category || "", status: project.status || "planning",
-      progress: project.progress || 0, deadline: project.deadline || "",
-      image: project.image || "", next_milestone: project.next_milestone || "",
-      color: project.color || "",
-    });
-    setEditing(true);
-  };
-  const saveEdit = async () => {
-    await base44.entities.Project.update(id, {
-      ...editDraft,
-      progress: Number(editDraft.progress) || 0,
-      deadline: editDraft.deadline || undefined,
-    });
+  const reloadProject = async () => {
     const p = await base44.entities.Project.get(id);
     setProject(p);
-    setEditing(false);
+    const allTasks = await base44.entities.Task.list();
+    setTasks(allTasks.filter((t) => t.project_id === id));
   };
   const delProject = async () => {
     if (!window.confirm("Project verwijderen?")) return;
@@ -99,7 +83,7 @@ export default function ProjectDetail() {
           <img src={project.image || IMAGES.walkingChairs} alt={project.title} className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/40 to-transparent" />
           <div className="absolute top-4 right-4 flex gap-2 z-10">
-            <button onClick={startEdit} className="inline-flex items-center gap-1.5 rounded-full bg-white/15 border border-white/25 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/25 transition"><Pencil className="h-3.5 w-3.5" /> Bewerk</button>
+            <button onClick={() => setEditorOpen(true)} className="inline-flex items-center gap-1.5 rounded-full bg-white/15 border border-white/25 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/25 transition"><Pencil className="h-3.5 w-3.5" /> Bewerk</button>
             <button onClick={delProject} className="inline-flex items-center gap-1.5 rounded-full bg-white/15 border border-white/25 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-500/40 transition"><Trash2 className="h-3.5 w-3.5" /> Verwijder</button>
           </div>
           <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
@@ -259,54 +243,7 @@ export default function ProjectDetail() {
         </div>
       </div>
 
-      <FloatingPanel open={editing} onClose={() => setEditing(false)} position="right" width={460}>
-        <div className="space-y-5">
-          <h2 className="text-xl font-display font-semibold">Project bewerken</h2>
-          <div>
-            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Titel</label>
-            <input value={editDraft.title || ""} onChange={(e) => setEditDraft({ ...editDraft, title: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
-          </div>
-          <div>
-            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Beschrijving</label>
-            <textarea value={editDraft.description || ""} onChange={(e) => setEditDraft({ ...editDraft, description: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none min-h-[80px] resize-none" />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Categorie</label>
-              <input value={editDraft.category || ""} onChange={(e) => setEditDraft({ ...editDraft, category: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
-            </div>
-            <div>
-              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Status</label>
-              <select value={editDraft.status} onChange={(e) => setEditDraft({ ...editDraft, status: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
-                <option value="planning">Planning</option>
-                <option value="in_progress">In progress</option>
-                <option value="waiting">Waiting</option>
-                <option value="completed">Completed</option>
-                <option value="archived">Archived</option>
-              </select>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Voortgang %</label>
-              <input type="number" min="0" max="100" value={editDraft.progress ?? 0} onChange={(e) => setEditDraft({ ...editDraft, progress: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
-            </div>
-            <div>
-              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Deadline</label>
-              <input type="date" value={editDraft.deadline || ""} onChange={(e) => setEditDraft({ ...editDraft, deadline: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
-            </div>
-          </div>
-          <div>
-            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Volgende milestone</label>
-            <input value={editDraft.next_milestone || ""} onChange={(e) => setEditDraft({ ...editDraft, next_milestone: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
-          </div>
-          <ImageInput label="Cover-foto" value={editDraft.image || ""} onChange={(url) => setEditDraft({ ...editDraft, image: url })} />
-          <div className="flex gap-2 pt-2">
-            <GlassButton variant="primary" size="md" className="flex-1" onClick={saveEdit}>Opslaan</GlassButton>
-            <GlassButton variant="outline" size="md" onClick={() => setEditing(false)}>Annuleer</GlassButton>
-          </div>
-        </div>
-      </FloatingPanel>
+      <ProjectEditorPanel open={editorOpen} onClose={() => setEditorOpen(false)} project={project} onSaved={reloadProject} />
     </div>
   );
 }
