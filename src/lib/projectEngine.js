@@ -78,7 +78,12 @@ export function giuliaInterpret(project, tasks) {
   else if (active.length) nextStep = `${active.length} actieve taken oppakken`;
   else if (waiting.length) nextStep = `Vervolg geven aan ${waiting.length} wachtende taken`;
 
-  return { progress, done, total: tasks.length, active: active.length, waiting: waiting.length, spec: spec.length, summary: parts.join(" "), nextStep };
+  const insight = note
+    || (laggard && laggard.pct < 50 ? `${laggard.name} heeft prioriteit.`
+    : (active.length ? `${active.length} taken lopen nu.`
+    : (tasks.length ? `${done} van ${tasks.length} taken klaar.` : "Project staat klaar om te starten.")));
+
+  return { progress, done, total: tasks.length, active: active.length, waiting: waiting.length, spec: spec.length, summary: parts.join(" "), insight, nextStep };
 }
 
 /** Deterministic "Laat GIULIA dit toevoegen" parser — splits free text into
