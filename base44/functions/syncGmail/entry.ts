@@ -14,8 +14,11 @@ export default async function (req) {
     const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
     const h = { Authorization: `Bearer ${accessToken}` };
 
+    // Query Gmail directly for the custom domain so we only ever pull mail
+    // involving mail@salvatorecaltabellotta.com (ignores the Gmail mailbox).
     const listRes = await fetch(
-      'https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=25',
+      'https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=100&q=' +
+        encodeURIComponent('from:salvatorecaltabellotta.com OR to:salvatorecaltabellotta.com'),
       { headers: h }
     );
     if (!listRes.ok) {
