@@ -6,9 +6,9 @@ import GlassButton from "@/components/glass/GlassButton";
 import StatusBadge from "@/components/glass/StatusBadge";
 import PageHero from "@/components/glass/PageHero";
 import ProjectEditorPanel from "@/components/projects/ProjectEditorPanel";
+import ProjectCard from "@/components/projects/ProjectCard";
 import { useEntityList } from "@/hooks/useEntity";
-import { IMAGES } from "@/lib/images";
-import { Plus, Briefcase, Pencil } from "lucide-react";
+import { Plus, Briefcase } from "lucide-react";
 
 const filters = ["Alle", "Active", "planning", "in_progress", "waiting", "completed", "archived"];
 
@@ -61,21 +61,10 @@ export default function Projects() {
         ))}
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {loading && [0, 1, 2, 3].map((i) => <div key={i} className="aspect-[4/3] rounded-2xl shimmer" />)}
-        {!loading && filteredProjects.map((project) => (
-          <div key={project.id} onClick={() => navigate(`/projects/${project.id}`)} className="cursor-pointer group relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-[1.01]">
-            <div className="absolute top-3 right-3 z-20">
-              <button onClick={(e) => openEdit(project, e)} className="h-9 w-9 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white/90 hover:bg-black/50 transition" aria-label="Bewerk"><Pencil className="h-4 w-4" /></button>
-            </div>
-            <div className="aspect-[4/3] relative">
-              <img src={project.image || IMAGES.walkingChairs} alt={project.title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-gradient-to-t from-charcoal/45 via-transparent to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-4 pt-10 bg-gradient-to-t from-charcoal/60 via-charcoal/10 to-transparent">
-                <h3 className="text-white font-display font-semibold text-base line-clamp-2 drop-shadow-sm">{project.title}</h3>
-              </div>
-            </div>
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {loading && [0, 1, 2, 3].map((i) => <div key={i} className="h-64 rounded-2xl shimmer" />)}
+        {!loading && filteredProjects.map((project, i) => (
+          <ProjectCard key={project.id} project={project} index={i} onOpen={(p) => navigate(`/projects/${p.id}`)} onEdit={openEdit} />
         ))}
       </div>
 

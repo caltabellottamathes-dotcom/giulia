@@ -186,7 +186,7 @@ export default function Email() {
         </>}
       />
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[calc(100svh-30rem)] lg:overflow-hidden">
         <div className="lg:col-span-2 space-y-1">
           {folders.map((f) => {
             const count = f.id === "inbox"

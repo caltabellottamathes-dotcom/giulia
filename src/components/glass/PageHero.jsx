@@ -42,7 +42,7 @@ export default function PageHero({ page, image, icon: Icon, eyebrow = "Space", t
     <>
       {/* Fixed full-bleed hero — sits behind the transparent app header,
           matching the project pages and Home. */}
-      <div className="fixed top-0 left-0 right-0 z-0 h-40 lg:h-48 overflow-hidden lg:left-10 lg:right-10 lg:rounded-[24px]">
+      <div className="fixed top-0 left-0 right-0 z-0 h-56 lg:h-72 overflow-hidden lg:left-10 lg:right-10 lg:rounded-[24px]">
         <img src={src} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/65 via-charcoal/10 to-transparent" />
         {showBack && (
@@ -73,7 +73,7 @@ export default function PageHero({ page, image, icon: Icon, eyebrow = "Space", t
         </div>
       </div>
       {/* Spacer — pushes page content below the fixed hero (hero H − header h). */}
-      <div className="-mt-6 lg:-mt-8 h-[104px] lg:h-[136px]" aria-hidden />
+      <div className="-mt-6 lg:-mt-8 h-[168px] lg:h-[232px]" aria-hidden />
       {actions && <div className="flex items-center justify-end gap-2 mb-5">{actions}</div>}
     </>
   );

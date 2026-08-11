@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 
 const WEEKDAYS_SHORT = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
+const DAY_ACCENTS = ["bg-olive", "bg-powder", "bg-ridge", "bg-steel", "bg-urgent", "bg-sand", "bg-olive/60"];
 
 const mondayOf = (d = new Date()) => {
   const m = new Date(d);
@@ -201,7 +202,8 @@ export default function PlanningContent() {
                 const isToday = isoDate(date) === today;
                 return (
                   <div key={i} className={cn("rounded-2xl p-4 min-h-[160px] flex flex-col", isToday ? "glass-2 ring-1 ring-olive/30" : "glass-1")}>
-                    <div className="mb-3">
+                    <div className="mb-3 flex items-center gap-2">
+                      <span className={cn("h-2 w-2 rounded-full shrink-0", DAY_ACCENTS[i % DAY_ACCENTS.length])} />
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{WEEKDAYS_SHORT[i]}</p>
                       <p className={cn("text-sm font-semibold", isToday && "text-olive")}>{date.getDate()}</p>
                     </div>
