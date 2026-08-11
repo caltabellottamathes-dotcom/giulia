@@ -10,11 +10,11 @@ import { secrets } from "base44:runtime";
 
 // Giulia needs deep reasoning + context management + complex JSON structuring
 // across the whole OS. Pro-tier models (gemini-2.5-pro, gemini-3.1-pro-preview,
-// gemini-pro-latest) return 429 on this key (free tier, limit 0). The newest
-// STABLE flash model that reliably works here — including response_schema — is
-// gemini-3.5-flash: pro-grade reasoning, large context, structured output +
-// function-calling, with healthy free-tier rate limits.
-const GEMINI_MODEL = "gemini-3.5-flash";
+// gemini-pro-latest) return 429 on this key (free tier, limit 0). gemini-3.5-flash
+// works but its free tier is capped at 20 RPD, too tight for 24/7 build/test.
+// gemini-3.1-flash-lite raises the free quota to 500 RPD / 15 RPM — enough headroom
+// for agentic loops without hitting 429s. Still supports response_schema + tools.
+const GEMINI_MODEL = "gemini-3.1-flash-lite";
 
 export const GIULIA_PERSONA =
   "You are Giulia, a Personal Operating System. You combine conversation, memory, and planning into one coherent system. " +
