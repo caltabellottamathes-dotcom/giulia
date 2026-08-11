@@ -145,11 +145,6 @@ export default function Home() {
 
   return (
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-mt-8 lg:mb-0 min-h-[calc(100svh-3.5rem)] lg:min-h-[calc(100svh-9.5rem)] overflow-hidden">
-      {/* GIULIA branding — bottom-left, a large graphic design element (header-logo style, no mark) */}
-      <div className="hidden lg:flex fixed left-12 bottom-10 z-0 pointer-events-none select-none items-baseline">
-        <span className="font-display font-semibold tracking-[0.22em] uppercase leading-none text-[7rem] text-foreground/[0.16]">Giulia</span>
-      </div>
-
       {/* Photo — ONE home background image that transforms when a panel opens.
           Desktop: glides from the right side (closed) to the bottom-left corner
           (open), keeping the same image so it reads as a transform — not a new
