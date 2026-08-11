@@ -144,9 +144,10 @@ export default function Home() {
 
   return (
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-my-8 min-h-[calc(100svh-3.5rem)] overflow-hidden">
-      {/* Large GIULIA branding wordmark — bottom-left corner of the background */}
-      <div className="hidden lg:block fixed left-6 bottom-4 z-0 pointer-events-none select-none">
-        <span className="font-display font-bold tracking-[-0.05em] leading-none text-foreground/[0.05]" style={{ fontSize: "11rem" }}>GIULIA</span>
+      {/* GIULIA branding — bottom-left, elegant like the header mark */}
+      <div className="hidden lg:flex fixed left-8 bottom-6 z-0 pointer-events-none select-none items-center gap-2">
+        <span className="h-2 w-2 rounded-sm bg-foreground/25" />
+        <span className="font-display font-semibold tracking-[0.3em] text-[11px] uppercase text-foreground/25">Giulia</span>
       </div>
 
       {/* Photo — ONE home background image that transforms when a panel opens.
