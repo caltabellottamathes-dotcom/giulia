@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import FloatingPanel from "@/components/glass/FloatingPanel";
 import { usePanel } from "@/lib/PanelContext";
 import { cn } from "@/lib/utils";
 import {
-  Plus, Phone, MessageSquare, Home, Calendar, CalendarDays, Briefcase, CheckSquare,
+  Search, Plus, Phone, MessageSquare, Home, Calendar, CalendarDays, Briefcase, CheckSquare,
   Mail, MessageCircle, BookOpen, FileText, Users, Mic, ClipboardCheck,
   Activity, Brain, Plug, Settings, User,
 } from "lucide-react";
@@ -42,30 +42,48 @@ const navSections = [
 ];
 
 const actionBtn =
-  "h-11 w-11 rounded-full flex items-center justify-center text-ivory/90 hover:bg-ivory/15 hover:text-ivory transition-colors";
+  "h-11 w-11 rounded-full flex items-center justify-center text-ivory/90 hover:bg-ivory/15 hover:text-ivory transition-colors shrink-0";
 
 /**
  * InteractionBar — a permanent, minimal glass command bar anchored to the
- * bottom-right. Three integrated actions: ＋ (quick navigation), Telefoon
- * (voice call with Giulia), Chat (textual interaction). Replaces the loose
- * floating round buttons. The ＋ opens the same navigation grid as before.
+ * bottom-right. A text search field plus three integrated actions: ＋ (quick
+ * navigation), Telefoon (voice call with Giulia), Chat (textual interaction).
  */
 export default function InteractionBar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const { openModule, openChat } = usePanel();
+  const navigate = useNavigate();
 
   const handleNav = (key) => {
     setMenuOpen(false);
     openModule(key);
   };
 
+  const submitSearch = (e) => {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    setQuery("");
+    navigate(`/search?q=${encodeURIComponent(q)}`);
+  };
+
   return (
     <>
-      <div className="fixed bottom-5 right-5 lg:bottom-8 lg:right-8 z-30 flex items-center gap-1 glass-2 float-shadow rounded-full p-1.5">
+      <div className="fixed bottom-5 right-5 lg:bottom-8 lg:right-8 z-30 flex items-center gap-1 glass-2 float-shadow rounded-full p-2 pl-4 w-[min(92vw,540px)]">
+        <form onSubmit={submitSearch} className="flex items-center gap-2 flex-1 min-w-0 pl-2">
+          <Search className="h-4 w-4 text-ivory/55 shrink-0" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Zoek in alles…"
+            className="flex-1 min-w-0 bg-transparent text-sm text-ivory placeholder:text-ivory/45 focus:outline-none"
+          />
+        </form>
+        <span className="h-7 w-px bg-ivory/15 shrink-0" />
         <button onClick={() => setMenuOpen(true)} aria-label="Snelle acties" className={actionBtn}>
           <Plus className="h-5 w-5" />
         </button>
-        <span className="h-6 w-px bg-ivory/15" />
         <button onClick={() => openModule("voice")} aria-label="Bel Giulia" className={actionBtn}>
           <Phone className="h-5 w-5" />
         </button>

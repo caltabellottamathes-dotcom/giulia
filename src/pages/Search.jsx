@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import GlassPanel from "@/components/glass/GlassPanel";
 import Avatar from "@/components/glass/Avatar";
@@ -15,7 +15,8 @@ import {
 
 export default function SearchPage() {
   const navigate = useNavigate();
-  const [query, setQuery] = React.useState("");
+  const [searchParams] = useSearchParams();
+  const [query, setQuery] = React.useState(searchParams.get("q") || "");
 
   const results = React.useMemo(() => {
     if (!query.trim()) return { projects: [], tasks: [], emails: [], contacts: [], events: [], knowledge: [], documents: [] };

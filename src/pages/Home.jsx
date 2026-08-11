@@ -242,7 +242,7 @@ export default function Home() {
               ))}
             </div>
           ) : sorted.length > 0 ? (
-            <div className="grid grid-cols-12 lg:grid-cols-10 gap-3 lg:gap-4 auto-rows-auto">
+            <div className="max-w-[1150px] grid grid-cols-12 lg:grid-cols-10 gap-3 lg:gap-4 auto-rows-auto">
               {sorted.map((w) => {
                 const def = WIDGETS[w.widget_type];
                 if (!def) return null;
