@@ -63,7 +63,7 @@ function LayoutInner() {
                 Giulia
               </span>
             </button>
-            <div className="hidden sm:flex items-center gap-2 rounded-full border border-foreground/10 px-4 py-1.5 flex-1 max-w-sm">
+            <div className="hidden sm:flex items-center gap-2 glass-1 rounded-full px-4 py-1.5 flex-1 max-w-sm">
               <Search className="h-3.5 w-3.5 text-foreground/55 shrink-0" />
               <input
                 value={search}
@@ -82,14 +82,14 @@ function LayoutInner() {
             </div>
             <button
               onClick={() => openModule("voice")}
-              className="h-9 w-9 rounded-full flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors border border-foreground/10"
+              className="h-9 w-9 rounded-full glass-1 flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors"
               aria-label="Bel Giulia"
             >
               <Phone className="h-4 w-4" />
             </button>
             <button
               onClick={() => openModule("approvals")}
-              className="h-9 w-9 rounded-full flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors relative border border-foreground/10"
+              className="h-9 w-9 rounded-full glass-1 flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors relative"
               aria-label="Meldingen"
             >
               <Bell className="h-4 w-4" />
@@ -97,7 +97,7 @@ function LayoutInner() {
             </button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-1.5 pl-0.5 pr-1 h-9 rounded-full border border-foreground/10 hover:ring-2 hover:ring-ring/20 transition-all">
+                <button className="flex items-center gap-1.5 pl-0.5 pr-1 h-9 rounded-full border border-border/40 hover:ring-2 hover:ring-ring/20 transition-all glass-1">
                   <span className="h-8 w-8 rounded-full overflow-hidden shrink-0">
                     <img
                       src={IMAGES.portraitThinking}

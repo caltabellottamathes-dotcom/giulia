@@ -17,12 +17,12 @@ import { MODULES } from "@/lib/moduleRegistry";
 
 const DEFAULT_WIDGETS = ["giulia", "agenda", "tasks", "approvals", "email", "projects"];
 
-const SPAN_MAP = {
-  3: "col-span-1 lg:col-span-3",
-  4: "col-span-1 lg:col-span-4",
-  5: "col-span-2 lg:col-span-5",
-  6: "col-span-2 lg:col-span-6",
-  8: "col-span-2 lg:col-span-8",
+const SPAN_COL = {
+  3: "lg:col-span-3",
+  4: "lg:col-span-3",
+  5: "lg:col-span-4",
+  6: "lg:col-span-4",
+  8: "lg:col-span-6",
 };
 
 /**
@@ -143,7 +143,7 @@ export default function Home() {
   const sorted = [...widgets].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
 
   return (
-    <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-mt-8 lg:mb-0 min-h-[calc(100svh-3.5rem)] lg:h-[calc(100svh-9.5rem)] lg:min-h-0 overflow-hidden">
+    <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-mt-8 lg:mb-0 min-h-[calc(100svh-3.5rem)] lg:min-h-[calc(100svh-9.5rem)] overflow-hidden">
       {/* GIULIA branding — bottom-left, a large graphic design element (header-logo style, no mark) */}
       <div className="hidden lg:flex fixed left-12 bottom-10 z-0 pointer-events-none select-none items-baseline">
         <span className="font-display font-semibold tracking-[0.22em] uppercase leading-none text-[7rem] text-foreground/[0.16]">Giulia</span>
@@ -216,11 +216,11 @@ export default function Home() {
       {/* Content */}
       <div
         className={cn(
-          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[28vh] lg:pt-0 lg:h-full lg:flex lg:flex-col",
+          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[28vh] lg:pt-0",
           panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100"
         )}
       >
-        <header className="px-5 lg:px-10 pt-8 lg:pt-8 pb-6 lg:pb-4 flex items-end justify-between gap-4 shrink-0">
+        <header className="px-5 lg:px-10 pt-8 lg:pt-8 pb-6 lg:pb-4 flex items-end justify-between gap-4 lg:shrink-0">
           <div>
             <p className="text-[11px] uppercase tracking-[0.28em] text-ivory/80 lg:text-foreground/80 mb-3 font-semibold">
               {new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}
@@ -238,20 +238,20 @@ export default function Home() {
         </header>
 
         {/* Tidy sorted bento grid */}
-        <div className="px-5 lg:px-10 pb-16 lg:pb-0 lg:flex-1 lg:min-h-0">
+        <div className="px-5 lg:px-10 pb-10 lg:pb-0">
           {loading ? (
-            <div className="max-w-[920px] grid grid-cols-2 lg:grid-cols-12 gap-2.5 lg:gap-4 auto-rows-auto lg:auto-rows-fr lg:h-full">
+            <div className="grid grid-cols-12 gap-4">
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="col-span-1 lg:col-span-4 h-[220px] lg:h-full rounded-[24px] shimmer" />
+                <div key={i} className="col-span-12 md:col-span-6 lg:col-span-4 h-[240px] rounded-[24px] shimmer" />
               ))}
             </div>
           ) : sorted.length > 0 ? (
-            <div className="max-w-[920px] grid grid-cols-2 lg:grid-cols-12 gap-2.5 lg:gap-4 auto-rows-auto lg:auto-rows-fr lg:h-full">
+            <div className="max-w-[920px] grid grid-cols-12 gap-3 lg:gap-4 auto-rows-auto">
               {sorted.map((w) => {
                 const def = WIDGETS[w.widget_type];
                 if (!def) return null;
                 return (
-                  <div key={w.id} className={cn("h-full", SPAN_MAP[def.span] || "col-span-1 lg:col-span-4")}>
+                  <div key={w.id} className={cn("col-span-12 md:col-span-6", SPAN_COL[def.span] || "lg:col-span-4")}>
                     <WidgetCell def={def} widget={w} onRemove={w.widget_type === "giulia" ? undefined : () => removeWidget(w.id)} onThemeChange={setWidgetTheme} />
                   </div>
                 );
