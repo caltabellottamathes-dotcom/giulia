@@ -17,12 +17,12 @@ import { MODULES } from "@/lib/moduleRegistry";
 
 const DEFAULT_WIDGETS = ["giulia", "agenda", "tasks", "approvals", "email", "projects"];
 
-const SPAN_WIDTH = {
-  3: "w-[260px]",
-  4: "w-[300px]",
-  5: "w-[340px]",
-  6: "w-[380px]",
-  8: "w-[480px]",
+const SPAN_MAP = {
+  3: "col-span-1 lg:col-span-3",
+  4: "col-span-1 lg:col-span-4",
+  5: "col-span-2 lg:col-span-5",
+  6: "col-span-2 lg:col-span-6",
+  8: "col-span-2 lg:col-span-8",
 };
 
 /**
@@ -143,7 +143,7 @@ export default function Home() {
   const sorted = [...widgets].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
 
   return (
-    <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-mt-8 lg:mb-0 h-[calc(100svh-3.5rem)] lg:h-[calc(100svh-9.5rem)] overflow-hidden">
+    <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-mt-8 lg:mb-0 min-h-[calc(100svh-3.5rem)] lg:h-[calc(100svh-9.5rem)] lg:min-h-0 overflow-hidden">
       {/* GIULIA branding — bottom-left, a large graphic design element (header-logo style, no mark) */}
       <div className="hidden lg:flex fixed left-12 bottom-10 z-0 pointer-events-none select-none items-baseline">
         <span className="font-display font-semibold tracking-[0.22em] uppercase leading-none text-[7rem] text-foreground/[0.16]">Giulia</span>
@@ -216,7 +216,7 @@ export default function Home() {
       {/* Content */}
       <div
         className={cn(
-          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[28vh] lg:pt-0 h-full flex flex-col",
+          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[28vh] lg:pt-0 lg:h-full lg:flex lg:flex-col",
           panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100"
         )}
       >
@@ -238,20 +238,20 @@ export default function Home() {
         </header>
 
         {/* Tidy sorted bento grid */}
-        <div className="px-5 lg:px-10 pb-16 lg:pb-0 flex-1 min-h-0">
+        <div className="px-5 lg:px-10 pb-16 lg:pb-0 lg:flex-1 lg:min-h-0">
           {loading ? (
-            <div className="flex gap-4 overflow-x-auto overflow-y-hidden h-full">
+            <div className="max-w-[920px] grid grid-cols-2 lg:grid-cols-12 gap-2.5 lg:gap-4 auto-rows-auto lg:auto-rows-fr lg:h-full">
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="shrink-0 w-[300px] h-full rounded-[24px] shimmer" />
+                <div key={i} className="col-span-1 lg:col-span-4 h-[220px] lg:h-full rounded-[24px] shimmer" />
               ))}
             </div>
           ) : sorted.length > 0 ? (
-            <div className="flex flex-row gap-3 lg:gap-4 overflow-x-auto overflow-y-hidden h-full">
+            <div className="max-w-[920px] grid grid-cols-2 lg:grid-cols-12 gap-2.5 lg:gap-4 auto-rows-auto lg:auto-rows-fr lg:h-full">
               {sorted.map((w) => {
                 const def = WIDGETS[w.widget_type];
                 if (!def) return null;
                 return (
-                  <div key={w.id} className={cn("shrink-0 h-full", SPAN_WIDTH[def.span] || "w-[300px]")}>
+                  <div key={w.id} className={cn("h-full", SPAN_MAP[def.span] || "col-span-1 lg:col-span-4")}>
                     <WidgetCell def={def} widget={w} onRemove={w.widget_type === "giulia" ? undefined : () => removeWidget(w.id)} onThemeChange={setWidgetTheme} />
                   </div>
                 );

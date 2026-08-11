@@ -78,7 +78,7 @@ export default function WidgetShell({
         zIndex,
       }}
       className={cn(
-        "relative overflow-hidden flex flex-col h-full animate-fade-up border border-current/10 ring-1 ring-inset ring-white/10",
+        "relative overflow-hidden flex flex-col h-full lg:min-h-0 animate-fade-up border border-current/10 ring-1 ring-inset ring-white/10",
         tile.text,
         sizeMap[size] || sizeMap["1x1"],
         radiusMap[radius] || radiusMap.medium,
