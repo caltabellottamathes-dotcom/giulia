@@ -44,6 +44,7 @@ export default function Email() {
   const [sendingCompose, setSendingCompose] = useState(false);
   const [draftBody, setDraftBody] = useState("");
   const [triaging, setTriaging] = useState(false);
+  const [bodyLoading, setBodyLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
   const { toast } = useToast();
 
@@ -150,7 +151,9 @@ export default function Email() {
 
   const selectEmail = async (email) => {
     setSelectedEmail(email);
-    if (!email.body && email.gmail_message_id) {
+    const needsBody = !email.body || email.body === "(geen inhoud)";
+    if (needsBody && email.gmail_message_id) {
+      setBodyLoading(true);
       try {
         const body = await base44.functions.invoke("fetchPrivateEmailBody", { uid: email.gmail_message_id });
         const text = body.text || body.html || "(geen inhoud)";
@@ -158,6 +161,8 @@ export default function Email() {
         await base44.entities.Email.update(email.id, { body: text });
       } catch (e) {
         /* ignore */
+      } finally {
+        setBodyLoading(false);
       }
     }
   };
@@ -242,7 +247,7 @@ export default function Email() {
                     {email.category && email.category !== "important" && <CategoryBadge category={email.category} />}
                     {email.project_id && <span title="Aan project gekoppeld" className="text-[10px] text-olive shrink-0">◆</span>}
                   </div>
-                  {email.body && <p className="text-xs text-muted-foreground truncate mt-1">{email.body}</p>}
+                  {email.body && email.body !== "(geen inhoud)" && <p className="text-xs text-muted-foreground truncate mt-1">{email.body}</p>}
                   {(email.giulia_draft || email.folder === "giulia_drafts") && (
                     <StatusBadge variant="draft" className="mt-2"><Sparkles className="h-2.5 w-2.5" /> Door Giulia</StatusBadge>
                   )}
@@ -287,7 +292,7 @@ export default function Email() {
                   </div>
                 )}
 
-                <div className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">{selectedEmail.body || "(geen inhoud)"}</div>
+                <div className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">{bodyLoading ? "Inhoud laden…" : (selectedEmail.body || "(geen inhoud)")}</div>
 
                 <div className="flex flex-wrap gap-2 pt-2 border-t border-border/40">
                   {(selectedEmail.giulia_draft || selectedEmail.folder === "giulia_drafts") ? (
