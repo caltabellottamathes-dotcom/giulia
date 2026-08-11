@@ -53,6 +53,7 @@ app.post('/emails', auth, async (req, res) => {
     const lock = await client.getMailboxLock('INBOX');
     try {
       const uids = await client.search({ all: true });
+      const total = client.mailbox ? client.mailbox.exists : null;
       const last = uids.slice(-limit).reverse();
       const emails = [];
       for (const uid of last) {
@@ -72,7 +73,7 @@ app.post('/emails', auth, async (req, res) => {
           unread: !seen,
         });
       }
-      res.json({ emails });
+      res.json({ emails, debug: { mailbox: 'INBOX', total, uidsCount: uids.length } });
     } finally {
       lock.release();
       await client.logout().catch(() => {});
