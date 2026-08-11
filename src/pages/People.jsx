@@ -9,6 +9,7 @@ import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import { Search, Plus, Mail, Phone, Users, Pencil, Trash2 } from "lucide-react";
 import ImageInput from "@/components/glass/ImageInput";
+import { groupByLetter } from "@/lib/contacts";
 
 export default function People() {
   const navigate = useNavigate();
@@ -73,41 +74,60 @@ export default function People() {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {loading && [0, 1, 2].map((i) => <div key={i} className="h-44 rounded-2xl shimmer" />)}
-        {!loading && filtered.map((contact) => (
-          <GlassPanel key={contact.id} level={2} className="p-5 cursor-pointer hover:scale-[1.01] transition-transform group relative">
-            <div className="absolute top-3 right-3 flex gap-1.5 z-10">
-              <button onClick={(e) => { e.stopPropagation(); startEdit(contact); }} className="h-7 w-7 rounded-full glass-1 flex items-center justify-center text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition" aria-label="Bewerk"><Pencil className="h-3.5 w-3.5" /></button>
-              <button onClick={(e) => { e.stopPropagation(); delContact(contact); }} className="h-7 w-7 rounded-full glass-1 flex items-center justify-center text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition" aria-label="Verwijder"><Trash2 className="h-3.5 w-3.5" /></button>
-            </div>
-            <div className="flex items-start gap-4 mb-4" onClick={() => navigate(`/people/${contact.id}`)}>
-              <Avatar src={contact.avatar} name={contact.name} size="xl" />
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-display font-semibold group-hover:text-foreground transition-colors">{contact.name}</h3>
-                {contact.role && <p className="text-xs text-muted-foreground mt-0.5">{contact.role}</p>}
-                {contact.company && <p className="text-xs text-muted-foreground">{contact.company}</p>}
+      {loading ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
+          {[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="h-24 rounded-2xl shimmer" />)}
+        </div>
+      ) : filtered.length === 0 ? (
+        <GlassPanel level={2} className="p-12 text-center">
+          <p className="text-sm text-muted-foreground">Geen contacten gevonden{search ? ` voor "${search}"` : ""}</p>
+          <GlassButton variant="primary" size="sm" className="mt-4" onClick={() => setShowNew(true)}>
+            <Plus className="h-4 w-4" /> Voeg een contact toe
+          </GlassButton>
+        </GlassPanel>
+      ) : (
+        <div className="space-y-5">
+          {groupByLetter(filtered).map(({ letter, items }) => (
+            <div key={letter}>
+              <div className="sticky top-0 z-10 -mx-1 px-3 py-1.5 bg-background/75 backdrop-blur-md flex items-baseline gap-2">
+                <span className="text-xs font-display font-bold text-muted-foreground tracking-wider">{letter}</span>
+                <span className="text-[11px] text-muted-foreground/70">{items.length}</span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 mt-2">
+                {items.map((contact) => (
+                  <GlassPanel key={contact.id} level={1} className="p-3 cursor-pointer hover:scale-[1.02] transition-transform group relative">
+                    <div className="absolute top-1.5 right-1.5 flex gap-1 z-10">
+                      <button onClick={(e) => { e.stopPropagation(); startEdit(contact); }} className="h-6 w-6 rounded-full glass-1 flex items-center justify-center text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition" aria-label="Bewerk"><Pencil className="h-3 w-3" /></button>
+                      <button onClick={(e) => { e.stopPropagation(); delContact(contact); }} className="h-6 w-6 rounded-full glass-1 flex items-center justify-center text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition" aria-label="Verwijder"><Trash2 className="h-3 w-3" /></button>
+                    </div>
+                    <div onClick={() => navigate(`/people/${contact.id}`)} className="flex items-center gap-3">
+                      <Avatar src={contact.avatar} name={contact.name} size="sm" />
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-sm font-display font-semibold truncate">{contact.name}</h3>
+                        <p className="text-[11px] text-muted-foreground truncate">{[contact.role, contact.company].filter(Boolean).join(" · ") || "—"}</p>
+                      </div>
+                    </div>
+                    {(contact.phone || contact.email) && (
+                      <div className="flex items-center gap-3 mt-2.5 pt-2.5 border-t border-border/30">
+                        {contact.phone && (
+                          <a href={`tel:${contact.phone}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition shrink-0">
+                            <Phone className="h-3 w-3" /> <span className="truncate max-w-[90px]">{contact.phone}</span>
+                          </a>
+                        )}
+                        {contact.email && (
+                          <a href={`mailto:${contact.email}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition min-w-0">
+                            <Mail className="h-3 w-3" /> <span className="truncate">{contact.email}</span>
+                          </a>
+                        )}
+                      </div>
+                    )}
+                  </GlassPanel>
+                ))}
               </div>
             </div>
-            <div className="space-y-1.5 pt-3 border-t border-border/40">
-              {contact.email && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground"><Mail className="h-3 w-3" /> <span className="truncate">{contact.email}</span></div>
-              )}
-              {contact.phone && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground"><Phone className="h-3 w-3" /> {contact.phone}</div>
-              )}
-            </div>
-          </GlassPanel>
-        ))}
-        {!loading && filtered.length === 0 && (
-          <GlassPanel level={2} className="p-12 text-center md:col-span-2 lg:col-span-3">
-            <p className="text-sm text-muted-foreground">Nog geen contacten</p>
-            <GlassButton variant="primary" size="sm" className="mt-4" onClick={() => setShowNew(true)}>
-              <Plus className="h-4 w-4" /> Voeg je eerste contact toe
-            </GlassButton>
-          </GlassPanel>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
 
       <PanelForm
         open={showNew}

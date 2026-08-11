@@ -95,7 +95,9 @@ export default function Experiment() {
       />
       <div className="max-w-[760px] mx-auto grid md:grid-cols-2 gap-6 items-start">
         <ProgressGauge
+          image={IMAGES.feetChairs}
           label="Vandaag"
+          count={loading ? "—" : `${pct}%`}
           percent={loading ? 0 : pct}
           title="Dagvoortgang"
           subtitle={loading ? "Laden…" : (total ? `${completed} / ${total} voltooid` : "Geen taken vandaag")}
@@ -103,15 +105,20 @@ export default function Experiment() {
           onPillClick={() => navigate("/tasks")}
           actionIcon={Share2}
           onAction={() => navigate("/tasks")}
+          onClick={() => navigate("/tasks")}
         />
         <StorageGauge
+          image={IMAGES.portraitBoot}
+          label="Inbox"
+          count={loading ? "—" : `${emailPct}%`}
           heading="Inbox gesorteerd"
           percent={emailPct}
           detail={`${triaged} van ${emailTotal} emails`}
+          onClick={() => navigate("/email")}
         />
       </div>
-      <div className="max-w-[400px] mx-auto">
-        <StatCardSet cards={cards} />
+      <div className="max-w-[360px] mx-auto">
+        <StatCardSet cards={cards} image={IMAGES.notebookChair} label="Productiviteit" onClick={() => navigate("/tasks")} />
       </div>
     </div>
   );

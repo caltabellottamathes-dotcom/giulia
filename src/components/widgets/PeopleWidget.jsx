@@ -10,8 +10,11 @@ import { cn } from "@/lib/utils";
 export default function PeopleWidget() {
   const { openModule } = usePanel();
   const { data: contacts, loading } = useEntityList("Contact");
-  const top = contacts[0];
-  const cluster = contacts.slice(0, 5);
+  const sorted = [...contacts].sort((a, b) =>
+    (a.name || "").trim().toLowerCase().localeCompare((b.name || "").trim().toLowerCase(), "nl")
+  );
+  const top = sorted.find((c) => c.phone) || sorted[0];
+  const cluster = sorted.slice(0, 5);
 
   return (
     <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("people")} className="min-h-[208px]">

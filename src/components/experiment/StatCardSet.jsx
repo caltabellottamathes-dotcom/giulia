@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Plus, ArrowUp, ArrowDown } from "lucide-react";
+import WidgetPhotoHeader from "./WidgetPhotoHeader";
 
 /**
- * StatCard — app-aligned version of the "Stat Card 3" glass expand/collapse
- * card. Light translucent glass (glass-2) with charcoal text on the ivory
- * page, olive progress fill, olive/destructive trend chips. The body
- * expands/collapses via a CSS grid-rows 0fr→1fr transition (no height
- * measurement needed). First card open by default.
+ * StatCard — compact expand/collapse row that lives inside the stat-set
+ * widget tile. Subtle foreground tint (not a second glass layer) so it reads
+ * as a row within the tile. First card open by default.
  */
 function StatCard({ data, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -15,24 +14,24 @@ function StatCard({ data, defaultOpen = false }) {
 
   return (
     <div
-      className="glass-2 rounded-3xl text-foreground transition-[padding] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
-      style={{ padding: open ? "20px" : "14px 18px" }}
+      className="rounded-2xl bg-foreground/[0.04] border border-foreground/10 text-foreground transition-[padding] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+      style={{ padding: open ? "16px" : "12px 14px" }}
     >
       <button
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         className="w-full flex items-center gap-3"
       >
-        <span className="rounded-full bg-foreground text-background px-3 py-1 text-[13px] font-medium tracking-tight whitespace-nowrap">
+        <span className="rounded-full bg-foreground text-background px-2.5 py-0.5 text-[12px] font-medium tracking-tight whitespace-nowrap">
           {data.chip}
         </span>
         <span
           className={cn(
-            "ml-auto h-8 w-8 rounded-full border border-foreground/20 bg-foreground/5 flex items-center justify-center transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            "ml-auto h-7 w-7 rounded-full border border-foreground/20 bg-foreground/5 flex items-center justify-center transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
             open && "rotate-45"
           )}
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-3.5 w-3.5" />
         </span>
       </button>
 
@@ -41,12 +40,9 @@ function StatCard({ data, defaultOpen = false }) {
         style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
       >
         <div className="overflow-hidden">
-          <div
-            className="pt-5"
-            style={{ opacity: open ? 1 : 0, transition: "opacity 0.4s ease" }}
-          >
-            <div className="flex items-baseline gap-2 mb-5">
-              <span className="text-4xl font-display font-semibold tabular-nums tracking-tight leading-none">
+          <div className="pt-4" style={{ opacity: open ? 1 : 0, transition: "opacity 0.4s ease" }}>
+            <div className="flex items-baseline gap-2 mb-4">
+              <span className="text-3xl font-display font-semibold tabular-nums tracking-tight leading-none">
                 {data.value}
               </span>
               <span className="text-sm font-light text-muted-foreground">{data.unit}</span>
@@ -78,12 +74,15 @@ function StatCard({ data, defaultOpen = false }) {
   );
 }
 
-export default function StatCardSet({ cards }) {
+export default function StatCardSet({ cards, image, label, count, onClick }) {
   return (
-    <div className="flex flex-col gap-2.5 max-w-[360px] w-full mx-auto">
-      {cards.map((c, i) => (
-        <StatCard key={i} data={c} defaultOpen={i === 0} />
-      ))}
+    <div className="glass-2 rounded-3xl overflow-hidden text-foreground w-full max-w-[360px] mx-auto">
+      <WidgetPhotoHeader image={image} label={label} count={count} onClick={onClick} />
+      <div className="p-3 flex flex-col gap-2">
+        {cards.map((c, i) => (
+          <StatCard key={i} data={c} defaultOpen={i === 0} />
+        ))}
+      </div>
     </div>
   );
 }
