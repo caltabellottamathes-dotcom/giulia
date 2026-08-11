@@ -10,10 +10,11 @@ import { secrets } from "base44:runtime";
 
 // Giulia needs deep reasoning + context management + complex JSON structuring
 // across the whole OS. Pro-tier models (gemini-2.5-pro, gemini-3.1-pro-preview,
-// gemini-pro-latest) are unavailable on this key — see notes — so we use the
-// highest-capability model the key CAN call: gemini-flash-latest (currently
-// resolves to a 3.x-flash generation with strong reasoning + structured output).
-const GEMINI_MODEL = "gemini-flash-latest";
+// gemini-pro-latest) return 429 on this key (free tier, limit 0). The newest
+// STABLE flash model that reliably works here — including response_schema — is
+// gemini-3.5-flash: pro-grade reasoning, large context, structured output +
+// function-calling, with healthy free-tier rate limits.
+const GEMINI_MODEL = "gemini-3.5-flash";
 
 export const GIULIA_PERSONA =
   "You are Giulia, a Personal Operating System. You combine conversation, memory, and planning into one coherent system. " +
