@@ -144,9 +144,9 @@ export default function Home() {
 
   return (
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-mt-8 lg:mb-0 min-h-[calc(100svh-3.5rem)] lg:h-[calc(100svh-9.5rem)] lg:min-h-0 overflow-hidden">
-      {/* GIULIA branding — bottom-left, a large graphic design element */}
-      <div className="hidden lg:flex fixed left-12 bottom-5 z-0 pointer-events-none select-none items-baseline">
-        <span className="font-display font-bold tracking-[-0.03em] leading-none text-[9rem] text-foreground/[0.16]">Giulia</span>
+      {/* GIULIA branding — bottom-left, a large graphic design element (header-logo style, no mark) */}
+      <div className="hidden lg:flex fixed left-12 bottom-10 z-0 pointer-events-none select-none items-baseline">
+        <span className="font-display font-semibold tracking-[0.22em] uppercase leading-none text-[7rem] text-foreground/[0.16]">Giulia</span>
       </div>
 
       {/* Photo — ONE home background image that transforms when a panel opens.
@@ -246,7 +246,7 @@ export default function Home() {
               ))}
             </div>
           ) : sorted.length > 0 ? (
-            <div className="max-w-[920px] grid grid-cols-12 gap-3 lg:gap-4 auto-rows-auto lg:auto-rows-fr lg:h-full">
+            <div className="max-w-[920px] grid grid-cols-12 gap-3 lg:gap-4 auto-rows-auto lg:auto-rows-[200px]">
               {sorted.map((w) => {
                 const def = WIDGETS[w.widget_type];
                 if (!def) return null;
