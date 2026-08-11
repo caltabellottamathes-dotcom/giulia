@@ -88,6 +88,23 @@
     "gmail_thread_id": {
       "type": "string",
       "title": "Gmail Thread ID"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "important",
+        "advertising",
+        "newsletter",
+        "junk",
+        "spam",
+        "other"
+      ],
+      "title": "Category"
+    },
+    "triaged": {
+      "type": "boolean",
+      "default": false,
+      "title": "Triaged"
     }
   },
   "required": [
@@ -96,11 +113,7 @@
   "rls": {
     "create": true,
     "read": true,
-    "update": {
-      "created_by_id": "{{user.id}}"
-    },
-    "delete": {
-      "created_by_id": "{{user.id}}"
-    }
+    "update": true,
+    "delete": true
   }
 }
