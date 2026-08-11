@@ -130,8 +130,9 @@ function LayoutInner() {
       {/* Dedicated chat window — the Giulia agent */}
       <ChatWindow />
 
-      {/* Permanent glass interaction bar — bottom-right */}
-      <InteractionBar />
+      {/* Permanent glass interaction bar — bottom-right (hidden on project
+          detail pages, which have their own bottom tab navigation) */}
+      {!/^\/projects\/[^/]+/.test(location.pathname) && <InteractionBar />}
 
       {/* Bottom page navigation — always visible on every page */}
       <BottomNav />
