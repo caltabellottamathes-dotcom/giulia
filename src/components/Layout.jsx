@@ -1,15 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { IMAGES } from "@/lib/images";
-import QuickAction from "@/components/glass/QuickAction";
 import ModulePanel from "@/components/panels/ModulePanel";
 import ChatWindow from "@/components/panels/ChatWindow";
+import InteractionBar from "@/components/glass/InteractionBar";
 import { PanelProvider, usePanel } from "@/lib/PanelContext";
 import { GiuliaVoiceProvider } from "@/lib/GiuliaVoiceContext";
 import AmbientBloom from "@/components/glass/AmbientBloom";
 import { GiuliaAgentProvider } from "@/lib/GiuliaAgentContext";
-import GiuliaAgentButton from "@/components/giulia/GiuliaAgentButton";
-import GiuliaAgentPanel from "@/components/giulia/GiuliaAgentPanel";
 import BottomNav from "@/components/BottomNav";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -17,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/lib/AuthContext";
 import {
-  Plug, Settings, User, Search, Bell, ChevronDown, LogOut, Phone,
+  Plug, Settings, User, Bell, ChevronDown, LogOut, Phone,
 } from "lucide-react";
 
 const userMenuItems = [
@@ -41,7 +39,6 @@ export default function Layout() {
 function LayoutInner() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [search, setSearch] = useState("");
   const { openModule } = usePanel();
   const { logout } = useAuth();
 
@@ -63,16 +60,6 @@ function LayoutInner() {
                 Giulia
               </span>
             </button>
-            <div className="hidden sm:flex items-center gap-2  rounded-full px-4 py-1.5 flex-1 max-w-sm">
-              <Search className="h-3.5 w-3.5 text-foreground/55 shrink-0" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && search.trim() && navigate("/search")}
-                placeholder="Zoek in alles..."
-                className="bg-transparent text-sm placeholder:text-foreground/45 focus:outline-none flex-1 min-w-0"
-              />
-            </div>
           </div>
 
           <div className="flex items-center gap-3">
@@ -137,18 +124,14 @@ function LayoutInner() {
         </main>
       </div>
 
-      {/* Bottom plus-button — opens the navigation menu */}
-      <QuickAction />
-
       {/* The single sliding glass panel that hosts every module */}
       <ModulePanel />
 
       {/* Dedicated chat window — the Giulia agent */}
       <ChatWindow />
 
-      {/* Platform agent — floating conversational panel with tool access */}
-      <GiuliaAgentButton />
-      <GiuliaAgentPanel />
+      {/* Permanent glass interaction bar — bottom-right */}
+      <InteractionBar />
 
       {/* Bottom page navigation — always visible on every page */}
       <BottomNav />

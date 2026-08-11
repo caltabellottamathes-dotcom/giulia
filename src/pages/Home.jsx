@@ -18,9 +18,9 @@ import { MODULES } from "@/lib/moduleRegistry";
 const DEFAULT_WIDGETS = ["giulia", "agenda", "tasks", "approvals", "email", "projects"];
 
 const SPAN_COL = {
-  3: "lg:col-span-3",
-  4: "lg:col-span-3",
-  5: "lg:col-span-4",
+  3: "lg:col-span-2",
+  4: "lg:col-span-2",
+  5: "lg:col-span-3",
   6: "lg:col-span-4",
   8: "lg:col-span-6",
 };
@@ -227,7 +227,7 @@ export default function Home() {
           </div>
           <button
             onClick={() => setPickerOpen(true)}
-            className="shrink-0 inline-flex items-center gap-2 rounded-full glass-1 px-4 py-2.5 text-xs font-semibold text-ivory hover:bg-ivory/10 transition"
+            className="fixed top-20 right-6 lg:right-10 z-30 inline-flex items-center gap-2 rounded-full glass-1 px-4 py-2.5 text-xs font-semibold text-ivory hover:bg-ivory/10 transition"
           >
             <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Widget</span>
           </button>
@@ -242,7 +242,7 @@ export default function Home() {
               ))}
             </div>
           ) : sorted.length > 0 ? (
-            <div className="max-w-[920px] grid grid-cols-12 gap-3 lg:gap-4 auto-rows-auto">
+            <div className="grid grid-cols-12 lg:grid-cols-10 gap-3 lg:gap-4 auto-rows-auto">
               {sorted.map((w) => {
                 const def = WIDGETS[w.widget_type];
                 if (!def) return null;
