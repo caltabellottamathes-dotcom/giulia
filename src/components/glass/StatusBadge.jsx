@@ -7,7 +7,7 @@ const variants = {
   waiting: "bg-steel/15 text-steel border-steel/25",
   completed: "bg-olive/15 text-olive border-olive/25",
   draft: "bg-steel/10 text-steel border-steel/20",
-  urgent: "bg-charcoal/10 text-charcoal border-charcoal/25",
+  urgent: "bg-urgent text-charcoal border-urgent/40",
   muted: "bg-muted text-muted-foreground border-border",
 };
 

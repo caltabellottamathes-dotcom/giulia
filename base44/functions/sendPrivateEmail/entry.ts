@@ -1,10 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import nodemailer from 'npm:nodemailer@6.9.14';
 import { secrets } from 'base44:runtime';
 
 /**
- * sendPrivateEmail — sends an email via SMTP. Never called automatically;
- * only after explicit approval from the app. SMTP secrets are in the app.
+ * sendPrivateEmail — proxy to the external email bridge (which sends via
+ * SMTP). Never called automatically — only after explicit approval in the
+ * app. SMTP runs on the bridge host; this function only speaks HTTPS to it.
  */
 export default async function (req) {
   try {
@@ -16,24 +16,20 @@ export default async function (req) {
     const { to, subject, message, html, replyTo } = body;
     if (!to || !subject) return Response.json({ error: 'to and subject required' }, { status: 400 });
 
-    const port = Number(secrets.get('SMTP_PORT')) || 465;
-    const transporter = nodemailer.createTransport({
-      host: secrets.get('SMTP_HOST'),
-      port,
-      secure: port === 465,
-      auth: { user: secrets.get('EMAIL_USER'), pass: secrets.get('EMAIL_PASS') },
-    });
+    const base = (secrets.get('BRIDGE_URL') || '').replace(/\/$/, '');
+    if (!base) return Response.json({ error: 'BRIDGE_URL not set' }, { status: 500 });
 
-    const info = await transporter.sendMail({
-      from: secrets.get('EMAIL_USER'),
-      to,
-      replyTo: replyTo || undefined,
-      subject,
-      text: message || '',
-      html: html || undefined,
+    const res = await fetch(base + '/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + (secrets.get('BRIDGE_TOKEN') || ''),
+      },
+      body: JSON.stringify({ to, subject, message, html, replyTo }),
     });
-
-    return Response.json({ sent: true, messageId: info.messageId });
+    const data = await res.json();
+    if (!res.ok) return Response.json({ error: data.error || 'bridge error' }, { status: res.status });
+    return Response.json(data);
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

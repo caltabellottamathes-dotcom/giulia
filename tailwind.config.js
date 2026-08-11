@@ -60,6 +60,7 @@ module.exports = {
   			powder: 'hsl(var(--powder))',
   			steel: 'hsl(var(--steel))',
   			linen: 'hsl(var(--linen))',
+  			urgent: 'hsl(var(--urgent))',
   		},
   		fontFamily: {
   			heading: ['var(--font-heading)'],

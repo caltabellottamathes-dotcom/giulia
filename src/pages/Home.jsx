@@ -74,8 +74,9 @@ export default function Home() {
         saved = saved.filter((w) => !extras.has(w));
       }
       if (!recs || recs.length === 0) {
+        const urgent = ["giulia", ...Object.keys(attention).filter((k) => attention[k])];
         saved = await base44.entities.DashboardWidget.bulkCreate(
-          DEFAULT_WIDGETS.map((t, i) => ({ widget_type: t, position: i, visible: true }))
+          urgent.map((t, i) => ({ widget_type: t, position: i, visible: true }))
         );
       }
 
@@ -154,7 +155,7 @@ export default function Home() {
           "hidden lg:block fixed z-0 overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[left,right,top]",
           panelOpen
             ? "left-[16%] right-[12%] top-[40vh] bottom-0 rounded-[28px]"
-            : "left-[42%] right-0 top-14 bottom-0 rounded-l-[32px]"
+            : "left-[42%] right-0 top-0 bottom-0 rounded-l-[32px]"
         )}
       >
         <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
@@ -164,7 +165,7 @@ export default function Home() {
       {/* Photo — mobile banner (closed) */}
       <div
         className={cn(
-          "lg:hidden fixed top-14 left-0 right-0 h-[44vh] overflow-hidden z-0 rounded-b-[32px] transition-all duration-700",
+          "lg:hidden fixed top-0 left-0 right-0 h-[44vh] overflow-hidden z-0 rounded-b-[32px] transition-all duration-700",
           panelOpen ? "opacity-0 -translate-y-4 pointer-events-none" : "opacity-100"
         )}
       >

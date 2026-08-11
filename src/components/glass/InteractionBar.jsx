@@ -41,16 +41,11 @@ const navSections = [
   ] },
 ];
 
+// Mobile: a small transparent pill with the 3 icons only.
+// Desktop: the full bottom-anchored glass panel with the Giulia text input.
 const actionBtn =
-  "h-10 w-10 rounded-full flex items-center justify-center text-ivory/85 hover:bg-ivory/15 hover:text-ivory transition-colors shrink-0";
+  "h-9 w-9 lg:h-10 lg:w-10 rounded-full flex items-center justify-center text-foreground/70 lg:text-ivory/85 hover:bg-foreground/10 lg:hover:bg-ivory/15 hover:text-foreground lg:hover:text-ivory transition-colors shrink-0";
 
-/**
- * InteractionBar — a permanent glass command panel anchored to the bottom.
- * Uses the exact widget glass treatment (rgba(48,50,55,0.18) + blur + accent
- * strip) so it reads as part of the same material as the dashboard tiles.
- * A subtle text field sends what you type straight into the Giulia chat, plus
- * three integrated actions: ＋ (quick navigation), Telefoon (voice), Chat.
- */
 export default function InteractionBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -73,19 +68,17 @@ export default function InteractionBar() {
   return (
     <>
       <div
-        className="fixed z-30 bottom-[4.75rem] inset-x-3 lg:bottom-0 lg:inset-x-auto lg:right-10 lg:w-[560px] flex items-center gap-2 px-4 py-3 text-ivory overflow-hidden border border-current/10 ring-1 ring-inset ring-white/10 rounded-[24px] lg:rounded-t-[24px] lg:rounded-b-none animate-fade-up"
-        style={{
-          background: "rgba(48,50,55,0.18)",
-          backdropFilter: "blur(22px) saturate(1.35)",
-          WebkitBackdropFilter: "blur(22px) saturate(1.35)",
-          boxShadow: "0 28px 64px -26px rgba(0,0,0,0.42), inset 0 1px 0 0 rgba(255,255,255,0.14)",
-        }}
+        className={cn(
+          "fixed z-30 flex items-center gap-1.5 lg:gap-2 overflow-hidden animate-fade-up",
+          "bottom-5 right-4 px-2 py-1.5",
+          "lg:bottom-0 lg:right-10 lg:w-[560px] lg:px-4 lg:py-3",
+          "rounded-full lg:rounded-t-[24px] lg:rounded-b-none",
+          "bg-transparent border border-foreground/15 ring-1 ring-inset ring-foreground/5",
+          "lg:bg-[rgba(48,50,55,0.18)] lg:backdrop-blur-[22px] lg:backdrop-saturate-[1.35] lg:border-white/15 lg:ring-white/10 lg:shadow-[0_28px_64px_-26px_rgba(0,0,0,0.42),inset_0_1px_0_0_rgba(255,255,255,0.14)]"
+        )}
       >
-        <span
-          className="pointer-events-none absolute inset-x-0 top-0 h-[3px]"
-          style={{ background: "hsl(var(--sand))" }}
-        />
-        <form onSubmit={submit} className="flex items-center gap-2.5 flex-1 min-w-0">
+        <span className="hidden lg:block pointer-events-none absolute inset-x-0 top-0 h-[3px]" style={{ background: "hsl(var(--sand))" }} />
+        <form onSubmit={submit} className="hidden lg:flex items-center gap-2.5 flex-1 min-w-0">
           <span className="h-1.5 w-1.5 rounded-full bg-olive animate-pulse-soft shrink-0" />
           <input
             value={query}
@@ -94,7 +87,7 @@ export default function InteractionBar() {
             className="flex-1 min-w-0 bg-transparent text-sm text-ivory placeholder:text-ivory/45 focus:outline-none"
           />
         </form>
-        <span className="h-6 w-px bg-ivory/15 shrink-0" />
+        <span className="hidden lg:block h-6 w-px bg-ivory/15 shrink-0" />
         <button onClick={() => setMenuOpen(true)} aria-label="Snelle acties" className={actionBtn}>
           <Plus className="h-5 w-5" />
         </button>
