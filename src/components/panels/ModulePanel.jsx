@@ -69,6 +69,29 @@ const MODULE_ROUTE = {
   agents: "/activity",
 };
 
+// Topic-related subtitles per module — replaces the bare label so the panel
+// header isn't a duplicate of the title shown on the dashboard.
+const MODULE_TOPIC = {
+  agenda: "Vandaag en wat eraan komt",
+  tasks: "Wat nu op je ligt",
+  projects: "Werk dat loopt",
+  email: "Je inbox op orde",
+  whatsapp: "Gesprekken die wachten",
+  people: "Wie je kent en waarom",
+  approvals: "Wacht op jouw ja",
+  activity: "Wat Giulia deed",
+  insights: "Signalen die ertoe doen",
+  memory: "Wat Giulia onthoudt",
+  knowledge: "Je verzamelde kennis",
+  documents: "Bestanden bij de hand",
+  agents: "Giulia's agents aan het werk",
+  chat: "Praat met Giulia",
+  voice: "Spreek met Giulia",
+  settings: "Jouw voorkeuren",
+  profile: "Jij in Giulia",
+  integrations: "Verbindingen van Giulia",
+};
+
 export default function ModulePanel() {
   const { activeModule, closeModule } = usePanel();
   const navigate = useNavigate();
@@ -117,9 +140,9 @@ export default function ModulePanel() {
             <div className="px-7 lg:px-9 pt-7 pb-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/55 font-medium mb-1.5">Snelle context · Niveau 02</p>
+                  <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/55 font-medium mb-1.5">Snelle context</p>
                   <h2 className="text-[24px] lg:text-[28px] font-display font-semibold tracking-tight leading-none text-ivory">
-                    {mod.label}
+                    {MODULE_TOPIC[activeModule] || mod.label}
                   </h2>
                 </div>
               <div className="flex items-center gap-2 shrink-0 mt-0.5">

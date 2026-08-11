@@ -1,12 +1,25 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { usePanel } from "@/lib/PanelContext";
 import { Card, Empty, SectionLabel, ActionBtn, HeroStat, RingMini } from "./previewParts";
 import { ArrowUpRight, Plus, Pencil } from "lucide-react";
 import ProjectEditorPanel from "@/components/projects/ProjectEditorPanel";
 
 const HEALTH = { good: "hsl(var(--olive))", attention: "hsl(var(--sand))", critical: "hsl(var(--destructive))" };
 
+const PROJECT_COLORS = [
+  "hsl(var(--olive))",
+  "hsl(var(--sand))",
+  "hsl(var(--powder))",
+  "hsl(var(--steel))",
+  "hsl(var(--ridge))",
+  "hsl(var(--charcoal))",
+];
+
 export default function ProjectsPreview({ onOpen }) {
+  const navigate = useNavigate();
+  const { closeModule } = usePanel();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editorOpen, setEditorOpen] = useState(false);
@@ -35,18 +48,21 @@ export default function ProjectsPreview({ onOpen }) {
         <Empty text="Laden…" />
       ) : projects.length ? (
         <div className="space-y-2">
-          {projects.map((p) => (
-            <Card key={p.id} onClick={onOpen} accent={HEALTH[p.health] || "hsl(var(--smoke))"} trailing={<ActionBtn icon={Pencil} label="Bewerk project" onClick={() => openEdit(p)} />}>
-              <div className="flex items-center gap-3">
-                <RingMini value={p.progress} accent="hsl(var(--olive))" size={48} />
-                <div className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium text-ivory truncate">{p.title}</span>
-                  <span className="block text-[11px] text-ivory/50 mt-0.5">{p.progress || 0}% · {p.next_milestone || "geen mijlpaal"}</span>
+          {projects.map((p, i) => {
+            const color = PROJECT_COLORS[i % PROJECT_COLORS.length];
+            return (
+              <Card key={p.id} onClick={() => { navigate(`/projects/${p.id}`); closeModule(); }} accent={color} trailing={<ActionBtn icon={Pencil} label="Bewerk project" onClick={() => openEdit(p)} />}>
+                <div className="flex items-center gap-3">
+                  <RingMini value={p.progress} accent={color} size={48} />
+                  <div className="min-w-0 flex-1">
+                    <span className="block text-sm font-medium text-ivory truncate">{p.title}</span>
+                    <span className="block text-[11px] text-ivory/50 mt-0.5">{p.progress || 0}% · {p.next_milestone || "geen mijlpaal"}</span>
+                  </div>
+                  <ArrowUpRight className="h-3.5 w-3.5 text-ivory/40 shrink-0" />
                 </div>
-                <ArrowUpRight className="h-3.5 w-3.5 text-ivory/40 shrink-0" />
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       ) : (
         <Empty text="Geen actieve projecten" />

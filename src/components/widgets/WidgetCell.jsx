@@ -48,9 +48,10 @@ export default function WidgetCell({ def, widget, onRemove, onThemeChange }) {
 
   return (
     <motion.div
-      drag={!!onRemove && !open}
+      drag={!!onRemove && !open ? "x" : false}
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={0}
+      dragDirectionLock
       onDragEnd={handleDragEnd}
       whileDrag={{ opacity: 0.85 }}
       className="relative group h-full"

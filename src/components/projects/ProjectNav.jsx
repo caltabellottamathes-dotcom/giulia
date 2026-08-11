@@ -9,7 +9,7 @@ export default function ProjectNav({ active, onChange, variant = "top" }) {
     <div
       className={cn(
         "flex items-center gap-1 overflow-x-auto",
-        isBottom ? "py-2 px-4 lg:px-10" : "pb-1 border-b border-border/40 -mx-1 px-1"
+        isBottom ? "py-1.5 px-3" : "pb-1 border-b border-border/40 -mx-1 px-1"
       )}
     >
       {sections.map((s) => (
@@ -17,7 +17,8 @@ export default function ProjectNav({ active, onChange, variant = "top" }) {
           key={s}
           onClick={() => onChange(s)}
           className={cn(
-            "px-4 py-2 text-sm whitespace-nowrap transition-all",
+            "whitespace-nowrap transition-all",
+            isBottom ? "px-3 py-1 text-xs" : "px-4 py-2 text-sm",
             isBottom
               ? active === s
                 ? "text-olive font-medium"
