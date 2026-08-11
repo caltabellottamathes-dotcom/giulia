@@ -6,8 +6,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { base44 } from "@/api/base44Client";
 import {
   Settings as SettingsIcon, Palette, Bell, Brain, Lock, Mic,
-  Database, Zap, Plug, Bot, RefreshCw,
+  Database, Zap, Plug, Bot, RefreshCw, Image as ImageIcon,
 } from "lucide-react";
+import MediaSection from "@/components/settings/MediaSection";
 
 const sections = [
   { id: "general", label: "General", icon: SettingsIcon },
@@ -17,6 +18,7 @@ const sections = [
   { id: "privacy", label: "Privacy", icon: Lock },
   { id: "voice", label: "Voice", icon: Mic },
   { id: "agents", label: "Agents", icon: Bot },
+  { id: "media", label: "Media", icon: ImageIcon },
 ];
 
 const NOTIF_KEYS = ["Email notificaties", "WhatsApp notificaties", "Agenda herinneringen", "Giulia suggesties", "Goedkeuring verzoeken"];
@@ -283,6 +285,8 @@ export default function Settings() {
                 </div>
               </div>
             )}
+
+            {active === "media" && <MediaSection />}
 
             <div className="pt-6 border-t border-border/40 mt-6">
               <button

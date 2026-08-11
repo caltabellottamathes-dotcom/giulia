@@ -36,6 +36,7 @@ import ResetPassword from '@/pages/ResetPassword';
 import OAuthConsent from '@/pages/OAuthConsent';
 import Insights from '@/pages/Insights';
 import Planning from '@/pages/Planning';
+import Experiment from '@/pages/Experiment';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -92,6 +93,7 @@ const AuthenticatedApp = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/insights" element={<Insights />} />
+          <Route path="/experiment" element={<Experiment />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

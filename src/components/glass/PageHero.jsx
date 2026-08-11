@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { IMAGES } from "@/lib/images";
+import { useImageOverrides } from "@/lib/useImageOverrides";
 import { ArrowLeft } from "lucide-react";
 
 /**
@@ -9,7 +10,7 @@ import { ArrowLeft } from "lucide-react";
  * (or home if there is no history). Large display title, iconographic badge,
  * eyebrow label and an ivory subtitle over a darkened branding photo.
  */
-const HERO_IMG = {
+export const HERO_IMG = {
   email: IMAGES.portraitBoot,
   tasks: IMAGES.feetChairs,
   projects: IMAGES.walkChairsHigh,
@@ -33,7 +34,8 @@ const HERO_IMG = {
 
 export default function PageHero({ page, image, icon: Icon, eyebrow = "Space", title, subtitle, actions, showBack = true }) {
   const navigate = useNavigate();
-  const src = image || HERO_IMG[page] || IMAGES.walkingChairs;
+  const { overrides } = useImageOverrides();
+  const src = overrides[page] || image || HERO_IMG[page] || IMAGES.walkingChairs;
   const back = () => {
     if (window.history.length > 1) navigate(-1);
     else navigate("/");

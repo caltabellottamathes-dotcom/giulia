@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import {
   Plus, Phone, MessageSquare, Home, Calendar, CalendarDays, Briefcase, CheckSquare,
   Mail, MessageCircle, BookOpen, FileText, Users, Mic, ClipboardCheck,
-  Activity, Brain, Plug, Settings, User,
+  Activity, Brain, Plug, Settings, User, FlaskConical,
 } from "lucide-react";
 
 const navSections = [
@@ -23,6 +23,7 @@ const navSections = [
       { key: "knowledge", icon: BookOpen, label: "Knowledge" },
       { key: "documents", icon: FileText, label: "Documents" },
       { key: "people", icon: Users, label: "People" },
+      { key: "experiment", to: "/experiment", icon: FlaskConical, label: "Experiment" },
     ],
   },
   { label: "Giulia", items: [
