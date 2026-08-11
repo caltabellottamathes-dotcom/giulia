@@ -10,6 +10,7 @@ const PanelContext = createContext(null);
 export function PanelProvider({ children }) {
   const [activeModule, setActiveModule] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
+  const [pendingMessage, setPendingMessage] = useState(null);
 
   // "chat" opens the dedicated chat window instead of a module panel.
   const openModule = (key) => {
@@ -25,7 +26,7 @@ export function PanelProvider({ children }) {
 
   return (
     <PanelContext.Provider
-      value={{ activeModule, openModule, closeModule, chatOpen, openChat, closeChat }}
+      value={{ activeModule, openModule, closeModule, chatOpen, openChat, closeChat, pendingMessage, setPendingMessage }}
     >
       {children}
     </PanelContext.Provider>

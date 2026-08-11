@@ -17,7 +17,7 @@ const SUGGESTIONS = [
 ];
 
 export default function ChatWindow() {
-  const { chatOpen, closeChat, openModule } = usePanel();
+  const { chatOpen, closeChat, openModule, pendingMessage, setPendingMessage } = usePanel();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
@@ -66,6 +66,15 @@ export default function ChatWindow() {
       requestAnimationFrame(scrollToBottom);
     }
   };
+
+  // Messages entered in the interaction bar are handed off here on open.
+  useEffect(() => {
+    if (chatOpen && pendingMessage) {
+      const msg = pendingMessage;
+      setPendingMessage(null);
+      send(msg);
+    }
+  }, [chatOpen, pendingMessage, setPendingMessage]);
 
   if (!chatOpen) return null;
 

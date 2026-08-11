@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import FloatingPanel from "@/components/glass/FloatingPanel";
 import { usePanel } from "@/lib/PanelContext";
 import { cn } from "@/lib/utils";
 import {
-  Search, Plus, Phone, MessageSquare, Home, Calendar, CalendarDays, Briefcase, CheckSquare,
+  Plus, Phone, MessageSquare, Home, Calendar, CalendarDays, Briefcase, CheckSquare,
   Mail, MessageCircle, BookOpen, FileText, Users, Mic, ClipboardCheck,
   Activity, Brain, Plug, Settings, User,
 } from "lucide-react";
@@ -42,45 +42,59 @@ const navSections = [
 ];
 
 const actionBtn =
-  "h-11 w-11 rounded-full flex items-center justify-center text-ivory/90 hover:bg-ivory/15 hover:text-ivory transition-colors shrink-0";
+  "h-10 w-10 rounded-full flex items-center justify-center text-ivory/85 hover:bg-ivory/15 hover:text-ivory transition-colors shrink-0";
 
 /**
- * InteractionBar — a permanent, minimal glass command bar anchored to the
- * bottom-right. A text search field plus three integrated actions: ＋ (quick
- * navigation), Telefoon (voice call with Giulia), Chat (textual interaction).
+ * InteractionBar — a permanent glass command panel anchored to the bottom.
+ * Uses the exact widget glass treatment (rgba(48,50,55,0.18) + blur + accent
+ * strip) so it reads as part of the same material as the dashboard tiles.
+ * A subtle text field sends what you type straight into the Giulia chat, plus
+ * three integrated actions: ＋ (quick navigation), Telefoon (voice), Chat.
  */
 export default function InteractionBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const { openModule, openChat } = usePanel();
-  const navigate = useNavigate();
+  const { openModule, openChat, setPendingMessage } = usePanel();
 
   const handleNav = (key) => {
     setMenuOpen(false);
     openModule(key);
   };
 
-  const submitSearch = (e) => {
+  const submit = (e) => {
     e.preventDefault();
-    const q = query.trim();
-    if (!q) return;
+    const text = query.trim();
+    if (!text) return;
     setQuery("");
-    navigate(`/search?q=${encodeURIComponent(q)}`);
+    setPendingMessage(text);
+    openChat();
   };
 
   return (
     <>
-      <div className="fixed bottom-5 right-5 lg:bottom-8 lg:right-8 z-30 flex items-center gap-1 glass-2 float-shadow rounded-full p-2 pl-4 w-[min(92vw,540px)]">
-        <form onSubmit={submitSearch} className="flex items-center gap-2 flex-1 min-w-0 pl-2">
-          <Search className="h-4 w-4 text-ivory/55 shrink-0" />
+      <div
+        className="fixed z-30 bottom-[4.75rem] inset-x-3 lg:bottom-0 lg:inset-x-auto lg:right-10 lg:w-[560px] flex items-center gap-2 px-4 py-3 text-ivory overflow-hidden border border-current/10 ring-1 ring-inset ring-white/10 rounded-[24px] lg:rounded-t-[24px] lg:rounded-b-none animate-fade-up"
+        style={{
+          background: "rgba(48,50,55,0.18)",
+          backdropFilter: "blur(22px) saturate(1.35)",
+          WebkitBackdropFilter: "blur(22px) saturate(1.35)",
+          boxShadow: "0 28px 64px -26px rgba(0,0,0,0.42), inset 0 1px 0 0 rgba(255,255,255,0.14)",
+        }}
+      >
+        <span
+          className="pointer-events-none absolute inset-x-0 top-0 h-[3px]"
+          style={{ background: "hsl(var(--sand))" }}
+        />
+        <form onSubmit={submit} className="flex items-center gap-2.5 flex-1 min-w-0">
+          <span className="h-1.5 w-1.5 rounded-full bg-olive animate-pulse-soft shrink-0" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Zoek in alles…"
+            placeholder="Vraag Giulia anything…"
             className="flex-1 min-w-0 bg-transparent text-sm text-ivory placeholder:text-ivory/45 focus:outline-none"
           />
         </form>
-        <span className="h-7 w-px bg-ivory/15 shrink-0" />
+        <span className="h-6 w-px bg-ivory/15 shrink-0" />
         <button onClick={() => setMenuOpen(true)} aria-label="Snelle acties" className={actionBtn}>
           <Plus className="h-5 w-5" />
         </button>
