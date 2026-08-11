@@ -1,7 +1,7 @@
 import {
   Calendar, Briefcase, CheckSquare, Mail, MessageCircle,
   BookOpen, FileText, Users, MessageSquare, Mic, ClipboardCheck,
-  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu,
+  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu, Timer,
 } from "lucide-react";
 
 import Agenda from "@/pages/Agenda";
@@ -21,6 +21,8 @@ import Integrations from "@/pages/Integrations";
 import SettingsPage from "@/pages/Settings";
 import Profile from "@/pages/Profile";
 import Insights from "@/pages/Insights";
+import TimeTracker from "@/pages/TimeTracker";
+import Agents from "@/pages/Agents";
 
 /**
  * Single source of truth for every module that opens as a sliding glass
@@ -45,5 +47,6 @@ export const MODULES = {
   settings:    { label: "Settings",      icon: SettingsIcon,   Component: SettingsPage, panelWidth: 720 },
   profile:     { label: "Profile",       icon: User,           Component: Profile,     panelWidth: 560 },
   insights:    { label: "Insights",      icon: Telescope,      Component: Insights,    panelWidth: 720 },
-  agents:      { label: "Agenten",       icon: Cpu,             Component: ActivityPage, panelWidth: 860 },
+  timetracker: { label: "Tijd",         icon: Timer,           Component: TimeTracker,  panelWidth: 720 },
+  agents:      { label: "Agenten",       icon: Cpu,             Component: Agents,        panelWidth: 860 },
 };

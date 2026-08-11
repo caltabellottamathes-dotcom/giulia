@@ -21,6 +21,7 @@ import MemoryPreview from "@/components/panels/previews/MemoryPreview";
 import KnowledgePreview from "@/components/panels/previews/KnowledgePreview";
 import DocumentsPreview from "@/components/panels/previews/DocumentsPreview";
 import AgentsPreview from "@/components/panels/previews/AgentsPreview";
+import TimeTrackerPreview from "@/components/panels/previews/TimeTrackerPreview";
 import { AnimatedPicto } from "@/components/panels/previews/previewParts";
 
 /** LEVEL 02 quick-context previews — one per data module. Modules without
@@ -32,6 +33,7 @@ const PREVIEWS = {
   approvals: ApprovalsPreview, activity: ActivityPreview, insights: InsightsPreview,
   memory: MemoryPreview, knowledge: KnowledgePreview, documents: DocumentsPreview,
   agents: AgentsPreview,
+  timetracker: TimeTrackerPreview,
 };
 
 /**
@@ -46,6 +48,7 @@ const MODULE_ACCENT = {
   activity: "hsl(var(--sand))", memory: "hsl(var(--charcoal))", insights: "hsl(var(--sand))",
   chat: "hsl(var(--olive))", voice: "hsl(var(--charcoal))",
   agents: "hsl(var(--olive))",
+  timetracker: "hsl(var(--olive))",
 };
 
 // Modules without a widget keep an editorial photo; modules WITH a widget
@@ -66,7 +69,8 @@ const MODULE_ROUTE = {
   people: "/people", chat: "/chat", voice: "/voice", approvals: "/approvals",
   activity: "/activity", memory: "/memory", integrations: "/integrations",
   settings: "/settings", profile: "/profile", insights: "/insights",
-  agents: "/activity",
+  agents: "/agents",
+  timetracker: "/timetracker",
 };
 
 // Topic-related subtitles per module — replaces the bare label so the panel
@@ -85,6 +89,7 @@ const MODULE_TOPIC = {
   knowledge: "Je verzamelde kennis",
   documents: "Bestanden bij de hand",
   agents: "Giulia's agents aan het werk",
+  timetracker: "Uren per taak en project",
   chat: "Praat met Giulia",
   voice: "Spreek met Giulia",
   settings: "Jouw voorkeuren",

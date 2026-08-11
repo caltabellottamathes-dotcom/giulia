@@ -1,6 +1,6 @@
 import {
   Sparkles, Calendar, CheckSquare, ClipboardCheck, Mail, MessageCircle,
-  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu, MessageSquare,
+  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu, MessageSquare, Timer,
 } from "lucide-react";
 import { IMAGES } from "@/lib/images";
 
@@ -19,6 +19,7 @@ import InsightsWidget from "@/components/widgets/InsightsWidget";
 import ActivityWidget from "@/components/widgets/ActivityWidget";
 import AgentActivityWidget from "@/components/widgets/AgentActivityWidget";
 import ConciergeWidget from "@/components/concierge/ConciergeWidget";
+import TimeTrackerWidget from "@/components/widgets/TimeTrackerWidget";
 
 /**
  * Single source of truth for every dashboard widget. `image` is a branding
@@ -39,6 +40,7 @@ export const WIDGETS = {
   activity:   { type: "activity",   label: "Activiteit",          icon: ActivityIcon,   Component: ActivityWidget,   image: IMAGES.topDownWalk,     span: 6, category: "intelligence" },
   agentactivity: { type: "agentactivity", label: "Giulia · Agenten", icon: Cpu,             Component: AgentActivityWidget, image: IMAGES.feetChair,        span: 4, category: "intelligence" },
   insights:   { type: "insights",   label: "Giulia · Inzichten",  icon: Telescope,      Component: InsightsWidget,   image: IMAGES.feetChair,        span: 4, category: "intelligence" },
+  timetracker: { type: "timetracker", label: "Tijd · Timer",     icon: Timer,          Component: TimeTrackerWidget, image: IMAGES.hourglassJacket,  span: 4, category: "work" },
   concierge:  { type: "concierge",  label: "Giulia · Concierge",  icon: MessageSquare,  Component: ConciergeWidget,   image: IMAGES.feetChair,        span: 3, category: "core" },
 };
 

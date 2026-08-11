@@ -4,6 +4,7 @@ import PageHero from "@/components/glass/PageHero";
 import ProgressGauge from "@/components/experiment/ProgressGauge";
 import StorageGauge from "@/components/experiment/StorageGauge";
 import StatCardSet from "@/components/experiment/StatCardSet";
+import TimeTrackerWidget from "@/components/widgets/TimeTrackerWidget";
 import { useEntityList } from "@/hooks/useEntity";
 import { IMAGES } from "@/lib/images";
 import { FlaskConical, Share2 } from "lucide-react";
@@ -93,11 +94,11 @@ export default function Experiment() {
         title="Experiment"
         subtitle="Visuele proeven en prototypes"
       />
-      <div className="max-w-[760px] mx-auto grid md:grid-cols-2 gap-6 items-start">
+      <div className="max-w-[820px] mx-auto grid md:grid-cols-2 gap-6 items-start">
         <ProgressGauge
           image={IMAGES.feetChairs}
           label="Vandaag"
-          count={loading ? "—" : `${pct}%`}
+          count={loading ? "—" : `${completed}/${total}`}
           percent={loading ? 0 : pct}
           title="Dagvoortgang"
           subtitle={loading ? "Laden…" : (total ? `${completed} / ${total} voltooid` : "Geen taken vandaag")}
@@ -110,15 +111,20 @@ export default function Experiment() {
         <StorageGauge
           image={IMAGES.portraitBoot}
           label="Inbox"
-          count={loading ? "—" : `${emailPct}%`}
+          count={loading ? "—" : `${triaged}/${emailTotal}`}
           heading="Inbox gesorteerd"
           percent={emailPct}
           detail={`${triaged} van ${emailTotal} emails`}
           onClick={() => navigate("/email")}
         />
-      </div>
-      <div className="max-w-[360px] mx-auto">
-        <StatCardSet cards={cards} image={IMAGES.notebookChair} label="Productiviteit" onClick={() => navigate("/tasks")} />
+        <TimeTrackerWidget />
+        <StatCardSet
+          cards={cards}
+          image={IMAGES.notebookChair}
+          label="Productiviteit"
+          count={`${activeProj}`}
+          onHeaderClick={() => navigate("/planning")}
+        />
       </div>
     </div>
   );

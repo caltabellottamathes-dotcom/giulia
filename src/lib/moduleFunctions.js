@@ -58,6 +58,14 @@ export const MODULE_FUNCTIONS = {
     { label: "Inzichten", to: "/insights" },
     { label: "Kansen", to: "/insights" },
   ],
+  timetracker: [
+    { label: "Timer", to: "/timetracker" },
+    { label: "Uren", to: "/timetracker" },
+  ],
+  agents: [
+    { label: "Agenten", to: "/agents" },
+    { label: "Activeer alle", to: "/agents" },
+  ],
   chat: [{ label: "Gesprek met Giulia", to: "/chat" }],
   voice: [{ label: "Voice", to: "/voice" }],
   settings: [{ label: "Instellingen", to: "/settings" }],

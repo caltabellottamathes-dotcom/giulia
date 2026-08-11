@@ -37,6 +37,8 @@ import OAuthConsent from '@/pages/OAuthConsent';
 import Insights from '@/pages/Insights';
 import Planning from '@/pages/Planning';
 import Experiment from '@/pages/Experiment';
+import TimeTracker from '@/pages/TimeTracker';
+import Agents from '@/pages/Agents';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -94,6 +96,8 @@ const AuthenticatedApp = () => {
           <Route path="/search" element={<SearchPage />} />
           <Route path="/insights" element={<Insights />} />
           <Route path="/experiment" element={<Experiment />} />
+          <Route path="/timetracker" element={<TimeTracker />} />
+          <Route path="/agents" element={<Agents />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />
