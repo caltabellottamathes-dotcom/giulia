@@ -63,7 +63,7 @@ export default function GiuliaWidget() {
     : "";
 
   return (
-    <WidgetShell size="2x2" radius="large" className="min-h-[320px]">
+    <WidgetShell size="2x2" radius="large" className="min-h-[280px]">
       <div className="flex flex-row h-full">
         {/* Layered editorial photo — rounded card floating in the glass */}
         <div className="relative w-[34%] shrink-0 p-2.5">
