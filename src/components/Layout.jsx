@@ -49,9 +49,9 @@ function LayoutInner() {
     <div className="min-h-screen relative">
       <AmbientBloom />
       {/* Full-width workspace — navigation lives in the bottom plus-button menu */}
-      <div className="flex flex-col min-h-screen relative">
+      <div className="flex flex-col h-screen relative overflow-hidden">
         {/* Header */}
-        <header className="sticky top-0 z-20 h-14 flex items-center justify-between px-5 lg:px-10 bg-transparent">
+        <header className="sticky top-0 z-20 h-14 shrink-0 flex items-center justify-between px-5 lg:px-10 bg-transparent">
           <div className="flex items-center gap-3 flex-1">
             <button
               onClick={() => navigate("/")}
@@ -130,7 +130,7 @@ function LayoutInner() {
         </header>
 
         {/* Workspace content */}
-        <main className="flex-1 px-5 lg:px-10 pt-6 lg:pt-8 pb-24 w-full">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden px-5 lg:px-10 pt-6 lg:pt-8 pb-24 w-full">
           <div key={location.pathname} className="animate-route-fade">
             <Outlet />
           </div>

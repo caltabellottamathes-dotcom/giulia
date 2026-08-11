@@ -12,10 +12,10 @@ import { useWidgetTheme } from "@/lib/WidgetThemeContext";
 const sizeMap = {
   "1x1": "min-h-[150px]",
   "2x1": "min-h-[150px]",
-  "1x2": "min-h-[280px]",
-  "2x2": "min-h-[280px]",
-  "3x2": "min-h-[280px]",
-  wide: "min-h-[280px]",
+  "1x2": "min-h-[220px]",
+  "2x2": "min-h-[220px]",
+  "3x2": "min-h-[220px]",
+  wide: "min-h-[220px]",
   full: "min-h-[150px]",
 };
 
@@ -78,7 +78,7 @@ export default function WidgetShell({
         zIndex,
       }}
       className={cn(
-        "relative overflow-hidden flex flex-col h-full animate-fade-up border border-current/10 ring-1 ring-inset ring-white/10",
+        "relative overflow-hidden flex flex-col h-full lg:min-h-0 animate-fade-up border border-current/10 ring-1 ring-inset ring-white/10",
         tile.text,
         sizeMap[size] || sizeMap["1x1"],
         radiusMap[radius] || radiusMap.medium,
