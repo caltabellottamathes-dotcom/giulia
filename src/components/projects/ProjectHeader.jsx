@@ -25,7 +25,7 @@ export default function ProjectHeader({ project, onUpdate, onEdit, onDelete, onB
     <div
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
-      className="overflow-hidden float-shadow fixed top-0 left-0 right-0 z-0 rounded-none lg:left-10 lg:right-10 lg:rounded-[24px]"
+      className="overflow-hidden float-shadow -mx-5 lg:-mx-10 rounded-none"
     >
       <div className="h-[50vh] lg:h-[52vh] relative">
         <img src={project.image || IMAGES.walkingChairs} alt="" className="absolute inset-0 h-full w-full object-cover" />
