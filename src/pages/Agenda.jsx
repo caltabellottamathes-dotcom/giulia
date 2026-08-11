@@ -7,6 +7,7 @@ import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import PlanningContent from "@/components/agenda/PlanningContent";
+import { plannedBlocksForDate } from "@/lib/weekPlan";
 import {
   ChevronLeft, ChevronRight, Clock, MapPin, Sparkles, Plus, RefreshCw, Calendar,
 } from "lucide-react";
@@ -52,6 +53,7 @@ export default function Agenda() {
   const { data: events, loading, reload } = useEntityList("Event", { sort: "start" });
   const { data: projects } = useEntityList("Project");
   const { data: tasks } = useEntityList("Task");
+  const { data: weeklyPlans } = useEntityList("WeeklyPlan");
   const [syncing, setSyncing] = useState(false);
   const projTitle = (id) => projects.find((p) => p.id === id)?.title;
 
@@ -67,6 +69,8 @@ export default function Agenda() {
   const todayCount = events.filter((e) => sameDay(new Date(e.start), new Date())).length;
   const weekStart = mondayOf(currentDate);
   const weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate() + 6);
+  const weekStartIso = weekStart.toLocaleDateString("sv-SE");
+  const weekly = (weeklyPlans || []).find((p) => p.week_start === weekStartIso) || null;
   const inWeek = (d) => { const x = new Date(d); x.setHours(0,0,0,0); return x >= weekStart && x <= weekEnd; };
   const weekCount = events.filter((e) => inWeek(new Date(e.start))).length;
   const openDeadlines = tasks.filter((t) => t.deadline && t.status !== "completed").length;
@@ -165,6 +169,11 @@ export default function Agenda() {
               <span className="opacity-80">{s.label}</span>
             </div>
           ))}
+          {weekly && (
+            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium bg-olive/15 text-olive">
+              <Sparkles className="h-3.5 w-3.5" /> Weekplanning actief
+            </div>
+          )}
           <div className="inline-flex items-center gap-2 rounded-full glass-1 px-3 py-1.5 text-xs text-muted-foreground">
             <Sparkles className="h-3.5 w-3.5 text-olive" />
             {todayCount > 0 ? `${todayCount} afspraak${todayCount === 1 ? "" : "en"} vandaag` : "Ruimte voor focus vandaag"}
@@ -181,6 +190,7 @@ export default function Agenda() {
             <div className="space-y-1">
               {HOURS.map((h) => {
                 const hourEvents = eventsForDay(currentDate).filter((e) => new Date(e.start).getHours() === h);
+                const hourPlanned = plannedBlocksForDate(weekly, currentDate).filter((b) => b.startHour === h);
                 return (
                   <div key={h} className="flex gap-3 min-h-[44px]">
                     <div className="w-10 pt-1.5 text-right text-[10px] text-muted-foreground tabular-nums shrink-0">{String(h).padStart(2,"0")}:00</div>
@@ -194,6 +204,13 @@ export default function Agenda() {
                           </button>
                         );
                       })}
+                      {hourPlanned.map((b, pi) => (
+                        <div key={`p${pi}`} className="w-full text-left rounded-lg px-3 py-1.5 flex items-center gap-2 border border-dashed border-olive/50 bg-olive/10 text-olive">
+                          <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                          <span className="text-sm font-medium truncate flex-1">{b.title}</span>
+                          {b.startHour != null && <span className="text-[10px] opacity-80 tabular-nums shrink-0">{String(b.startHour).padStart(2,"0")}:{String(b.startMin).padStart(2,"0")}</span>}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 );
@@ -223,6 +240,7 @@ export default function Agenda() {
                     <div className="text-right pr-1 pt-0.5 text-[9px] text-muted-foreground tabular-nums">{String(h).padStart(2,"0")}</div>
                     {weekDates.map((date, di) => {
                       const dayEvents = eventsForDay(date).filter((e) => new Date(e.start).getHours() === h);
+                      const dayPlanned = plannedBlocksForDate(weekly, date).filter((b) => b.startHour === h);
                       return (
                         <div key={di} className="min-h-[22px] rounded-md hover:bg-foreground/[0.02] transition-colors p-0.5 space-y-0.5">
                           {dayEvents.map((ev) => {
@@ -233,6 +251,11 @@ export default function Agenda() {
                               </button>
                             );
                           })}
+                          {dayPlanned.map((b, pi) => (
+                            <div key={`p${pi}`} className="w-full text-left px-1.5 py-0.5 rounded text-[10px] font-medium truncate border border-dashed border-olive/50 bg-olive/10 text-olive" title={`Giulia · ${b.title}`}>
+                              {b.title}
+                            </div>
+                          ))}
                         </div>
                       );
                     })}

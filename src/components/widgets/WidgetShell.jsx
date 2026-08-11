@@ -10,13 +10,13 @@ import { useWidgetTheme } from "@/lib/WidgetThemeContext";
  * stay readable on every option — including the light Sky and Storm tiles.
  */
 const sizeMap = {
-  "1x1": "min-h-[150px]",
-  "2x1": "min-h-[150px]",
-  "1x2": "min-h-[220px]",
-  "2x2": "min-h-[220px]",
-  "3x2": "min-h-[220px]",
-  wide: "min-h-[220px]",
-  full: "min-h-[150px]",
+  "1x1": "min-h-[124px]",
+  "2x1": "min-h-[124px]",
+  "1x2": "min-h-[176px]",
+  "2x2": "min-h-[176px]",
+  "3x2": "min-h-[176px]",
+  wide: "min-h-[176px]",
+  full: "min-h-[124px]",
 };
 
 const radiusMap = {
