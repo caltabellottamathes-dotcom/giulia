@@ -1,63 +1,83 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
-import LayeredWidgetTile from "@/components/experiment/LayeredWidgetTile";
+import WidgetShell from "./WidgetShell";
+import WidgetHeader from "./WidgetHeader";
+import BrandPhoto from "./BrandPhoto";
+import TaskSelect from "./TaskSelect";
+import { usePanel } from "@/lib/PanelContext";
 import { useTimeTracker, formatDuration, formatMinutes } from "@/lib/useTimeTracker";
 import { IMAGES } from "@/lib/images";
 import { Play, Pause, Square, Timer } from "lucide-react";
 
 /**
- * TimeTrackerWidget — layered widget tile to track time per task. Pick a task,
- * press start/pauze/stop; on stop a TimeEntry is logged against the task's
- * project. Header opens the full time-registration page.
+ * TimeTrackerWidget — "Tijd · Tracker". A photo floats over the top of the
+ * glass; an elegant TaskSelect + a bold timer display + start/pauze/stop
+ * controls. On stop a TimeEntry is logged against the task's project.
+ * Tap → timetracker paneel.
  */
 export default function TimeTrackerWidget() {
-  const navigate = useNavigate();
+  const { openModule } = usePanel();
   const { tasks, taskId, setTaskId, running, paused, elapsed, start, pause, resume, stop, todayMin } = useTimeTracker();
 
   return (
-    <LayeredWidgetTile image={IMAGES.hourglassJacket} label="Tijd" count={formatMinutes(todayMin)} onHeaderClick={() => navigate("/timetracker")}>
-      <div className="space-y-4">
-        <div>
-          <label className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Taak</label>
-          <select
-            value={taskId}
-            onChange={(e) => setTaskId(e.target.value)}
-            disabled={running || paused}
-            className="mt-1 w-full glass-1 rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none disabled:opacity-60"
-          >
-            <option value="">Kies een taak…</option>
-            {tasks.map((t) => (
-              <option key={t.id} value={t.id}>{t.title}</option>
-            ))}
-          </select>
-        </div>
-        <div className="flex items-center gap-3 rounded-2xl bg-foreground/[0.04] border border-foreground/10 px-4 py-3">
-          <Timer className="h-5 w-5 text-olive shrink-0" />
-          <span className="text-3xl font-display font-semibold tabular-nums tracking-tight">{formatDuration(elapsed)}</span>
-        </div>
-        <div className="flex gap-2">
-          {!running && !paused && (
-            <button onClick={start} disabled={!taskId} className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-olive text-ivory px-4 py-2.5 text-sm font-semibold disabled:opacity-50 hover:bg-olive/90 transition">
-              <Play className="h-4 w-4" /> Start
-            </button>
-          )}
-          {running && (
-            <button onClick={pause} className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-foreground/10 text-foreground px-4 py-2.5 text-sm font-semibold hover:bg-foreground/15 transition">
-              <Pause className="h-4 w-4" /> Pauze
-            </button>
-          )}
-          {paused && (
-            <button onClick={resume} className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-olive text-ivory px-4 py-2.5 text-sm font-semibold hover:bg-olive/90 transition">
-              <Play className="h-4 w-4" /> Hervat
-            </button>
-          )}
-          {(running || paused) && (
-            <button onClick={stop} className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-foreground text-background px-4 py-2.5 text-sm font-semibold hover:bg-foreground/90 transition">
-              <Square className="h-4 w-4" /> Stop
-            </button>
-          )}
+    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("timetracker")} className="min-h-[360px]">
+      <div className="flex flex-col h-full">
+        <BrandPhoto
+          src={IMAGES.hourglassJacket}
+          className="h-24 -mb-8 rounded-b-[24px] z-10 shadow-[0_14px_28px_-12px_rgba(0,0,0,0.3)]"
+          overlay="bg-gradient-to-t from-charcoal/70 via-charcoal/30 to-transparent"
+        >
+          <div className="absolute inset-0 p-5 flex items-end justify-between">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.28em] font-semibold text-ivory/80">Tijd · Tracker</p>
+              <p className="text-lg font-display font-semibold text-ivory mt-0.5" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>Vandaag {formatMinutes(todayMin)}</p>
+            </div>
+            <Timer className="h-6 w-6 text-ivory/70" />
+          </div>
+        </BrandPhoto>
+
+        <div className="flex-1 p-5 pt-10 flex flex-col text-current min-h-0" onClick={(e) => e.stopPropagation()}>
+          <WidgetHeader label="Tracker" count={formatMinutes(todayMin)} />
+
+          <TaskSelect tasks={tasks} value={taskId} onChange={setTaskId} disabled={running || paused} />
+
+          <div className="mt-5 flex items-center justify-center gap-3 py-3">
+            <Timer className="h-5 w-5 opacity-60" style={{ color: "var(--tile-accent)" }} />
+            <span className="text-4xl font-display font-semibold tabular-nums tracking-tight">{formatDuration(elapsed)}</span>
+          </div>
+
+          <div className="mt-auto flex gap-2">
+            {!running && !paused && (
+              <button
+                onClick={start}
+                disabled={!taskId}
+                className="flex-1 inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5 active:scale-95 disabled:opacity-50"
+                style={{ background: "var(--tile-accent)", color: "var(--tile-on-accent)" }}
+              >
+                <Play className="h-4 w-4" /> Start
+              </button>
+            )}
+            {running && (
+              <button onClick={pause} className="flex-1 inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold glass-1 hover:bg-white/10 transition">
+                <Pause className="h-4 w-4" /> Pauze
+              </button>
+            )}
+            {paused && (
+              <button
+                onClick={resume}
+                className="flex-1 inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition"
+                style={{ background: "var(--tile-accent)", color: "var(--tile-on-accent)" }}
+              >
+                <Play className="h-4 w-4" /> Hervat
+              </button>
+            )}
+            {(running || paused) && (
+              <button onClick={stop} className="flex-1 inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold border border-current/20 hover:bg-current/5 transition">
+                <Square className="h-4 w-4" /> Stop
+              </button>
+            )}
+          </div>
         </div>
       </div>
-    </LayeredWidgetTile>
+    </WidgetShell>
   );
 }
