@@ -25,12 +25,12 @@ export default function ProjectHeader({ project, onUpdate, onEdit, onDelete, onB
     <div
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
-      className="relative overflow-hidden rounded-[24px] float-shadow sticky top-14 z-0"
+      className="relative overflow-hidden rounded-[24px] float-shadow sticky top-14 z-0 lg:fixed lg:top-0 lg:left-0 lg:right-0 lg:z-0 lg:rounded-none lg:shadow-none"
     >
       <div className="h-[42vh] lg:h-[52vh] relative">
         <img src={project.image || IMAGES.walkingChairs} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/55 via-charcoal/10 to-transparent" />
-        <div className="absolute top-5 right-4 flex gap-2 z-10">
+        <div className="absolute top-5 right-4 lg:top-20 flex gap-2 z-10">
           <button onClick={onEdit} className="inline-flex items-center gap-1.5 rounded-full bg-white/15 border border-white/25 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/25 transition">
             <Pencil className="h-3.5 w-3.5" /> Bewerk
           </button>

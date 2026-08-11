@@ -60,9 +60,9 @@ export default function ProjectDetail() {
   );
 
   return (
-    <div className="animate-fade-up -mt-6 lg:-mt-8">
+    <div className="-mt-6 lg:-mt-8">
       <ProjectHeader project={project} onUpdate={updateProject} onEdit={() => setEditorOpen(true)} onDelete={delProject} onBack={() => navigate("/projects")} />
-      <div className="relative z-10 rounded-t-[28px] -mt-4 px-4 lg:px-6 pt-4 pb-28 space-y-6 min-h-[60vh]">
+      <div className="relative z-10 rounded-t-[28px] -mt-4 lg:mt-[calc(52vh-4.5rem)] px-4 lg:px-6 pt-4 pb-28 space-y-6 min-h-[60vh]">
         <div className="hidden lg:block">
           <ProjectNav active={section} onChange={setSection} variant="top" />
         </div>
