@@ -8,11 +8,21 @@ import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import { syncInbox } from "@/lib/emailSync";
+import CategoryBadge from "@/components/email/CategoryBadge";
 import {
   Inbox, Star, Send, FileText, Archive, Sparkles,
   Search, Mail, Check, Edit3, X, RefreshCw, Trash2,
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+
+const categoryChips = [
+  { id: "all", label: "Alle" },
+  { id: "important", label: "Belangrijk" },
+  { id: "advertising", label: "Reclame" },
+  { id: "newsletter", label: "Nieuwsbrief" },
+  { id: "junk", label: "Onbelangrijk" },
+  { id: "spam", label: "Spam" },
+];
 
 const folders = [
   { id: "inbox", label: "Inbox", icon: Inbox },
@@ -33,6 +43,8 @@ export default function Email() {
   const [compose, setCompose] = useState({ to: "", subject: "", body: "" });
   const [sendingCompose, setSendingCompose] = useState(false);
   const [draftBody, setDraftBody] = useState("");
+  const [triaging, setTriaging] = useState(false);
+  const [activeCategory, setActiveCategory] = useState("all");
   const { toast } = useToast();
 
   const { data: emails, loading, reload } = useEntityList("Email");
@@ -51,12 +63,26 @@ export default function Email() {
     }
   };
 
+  const triage = async () => {
+    setTriaging(true);
+    try {
+      const res = await base44.functions.invoke("triageEmails", {});
+      reload();
+      const n = res?.triaged || 0;
+      toast({ title: n > 0 ? `${n} email${n === 1 ? "" : "s"} gesorteerd door Giulia` : "Alles al gesorteerd" });
+    } catch (e) {
+      toast({ title: "Sorteren mislukt", description: String(e?.message || e), variant: "destructive" });
+    } finally {
+      setTriaging(false);
+    }
+  };
+
   useEffect(() => {
     sync();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const folderEmails = emails.filter((m) => m.folder === folder);
+  const folderEmails = emails.filter((m) => m.folder === folder && (activeCategory === "all" || m.category === activeCategory));
   const giuliaDrafts = emails.filter((m) => m.folder === "giulia_drafts" || m.giulia_draft);
 
   const approveAndSend = async () => {
@@ -145,6 +171,9 @@ export default function Email() {
         title="Email"
         subtitle="mail@salvatorecaltabellotta.com · met Giulia's hulp"
         actions={<>
+          <GlassButton variant="outline" size="sm" onClick={triage} disabled={triaging}>
+            <Sparkles className="h-4 w-4" /> {triaging ? "Sorteert..." : "Sorteer"}
+          </GlassButton>
           <GlassButton variant="outline" size="sm" onClick={sync} disabled={syncing}>
             <RefreshCw className={cn("h-4 w-4", syncing && "animate-spin")} /> {syncing ? "Synchroniseert..." : "Sync"}
           </GlassButton>
@@ -181,10 +210,15 @@ export default function Email() {
 
         <div className="lg:col-span-4 min-h-0">
           <GlassPanel level={2} className="h-full flex flex-col">
-            <div className="p-4 border-b border-border/40">
+            <div className="p-4 border-b border-border/40 space-y-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input placeholder="Zoek email..." className="w-full glass-1 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none" />
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {categoryChips.map((c) => (
+                  <button key={c.id} onClick={() => setActiveCategory(c.id)} className={cn("px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors", activeCategory === c.id ? "bg-charcoal text-ivory" : "glass-1 text-muted-foreground hover:text-foreground")}>{c.label}</button>
+                ))}
               </div>
             </div>
             <div className="flex-1 overflow-y-auto">
@@ -203,7 +237,11 @@ export default function Email() {
                     <span className={cn("text-sm", email.status === "unread" ? "font-semibold" : "text-muted-foreground")}>{email.sender}</span>
                     {email.timestamp && <span className="text-[10px] text-muted-foreground">{new Date(email.timestamp).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}</span>}
                   </div>
-                  <p className={cn("text-xs truncate", email.status === "unread" ? "text-foreground" : "text-muted-foreground")}>{email.subject}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className={cn("text-xs truncate flex-1", email.status === "unread" ? "text-foreground" : "text-muted-foreground")}>{email.subject}</p>
+                    {email.category && email.category !== "important" && <CategoryBadge category={email.category} />}
+                    {email.project_id && <span title="Aan project gekoppeld" className="text-[10px] text-olive shrink-0">◆</span>}
+                  </div>
                   {email.body && <p className="text-xs text-muted-foreground truncate mt-1">{email.body}</p>}
                   {(email.giulia_draft || email.folder === "giulia_drafts") && (
                     <StatusBadge variant="draft" className="mt-2"><Sparkles className="h-2.5 w-2.5" /> Door Giulia</StatusBadge>
