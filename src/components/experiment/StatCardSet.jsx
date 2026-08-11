@@ -46,7 +46,7 @@ function StatCard({ data, defaultOpen = false }) {
             style={{ opacity: open ? 1 : 0, transition: "opacity 0.4s ease" }}
           >
             <div className="flex items-baseline gap-2 mb-5">
-              <span className="text-4xl font-light tabular-nums tracking-tight leading-none">
+              <span className="text-4xl font-display font-semibold tabular-nums tracking-tight leading-none">
                 {data.value}
               </span>
               <span className="text-sm font-light text-muted-foreground">{data.unit}</span>

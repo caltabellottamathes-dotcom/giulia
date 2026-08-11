@@ -21,7 +21,7 @@ export default function StorageGauge({ heading = "Inbox gesorteerd", percent = 0
 
   return (
     <section className="sg-section" role="img" aria-label={`${heading}: ${pct} procent, ${detail}`}>
-      <div className="sg-card">
+      <div className="sg-card glass-2">
         <h3 className="sg-heading">{heading}</h3>
         <div className="sg-dial">
           <svg className="sg-svg" viewBox="0 0 240 240" aria-hidden="true" focusable="false">

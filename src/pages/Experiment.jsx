@@ -95,7 +95,6 @@ export default function Experiment() {
       />
       <div className="max-w-[760px] mx-auto grid md:grid-cols-2 gap-6 items-start">
         <ProgressGauge
-          image={IMAGES.feetChair}
           label="Vandaag"
           percent={loading ? 0 : pct}
           title="Dagvoortgang"

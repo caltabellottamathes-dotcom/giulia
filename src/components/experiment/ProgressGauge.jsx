@@ -1,91 +1,54 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Image } from "@/components/ui/image";
-import { cn } from "@/lib/utils";
+import React, { useEffect, useState } from "react";
 
-const CIRC = 2 * Math.PI * 31; // r = 31
+const CIRC = 2 * Math.PI * 34; // r = 34
 
 /**
- * ProgressGauge — editorial photo-card with an animated progress ring.
- * The ring appears small at the top-right corner, then grows and travels
- * to the card centre (responsive measurement via JS). App-aligned: ivory
- * on a darkened photo, Inter body font, charcoal/ivory tokens.
+ * ProgressGauge — widget-family glass card with an olive progress ring.
+ * Same glass-2 material, app fonts (Space Grotesk display / Inter body) and
+ * palette as the dashboard widgets.
  */
-export default function ProgressGauge({
-  image, label, percent = 0, title, subtitle, pillLabel, onPillClick, actionIcon: ActionIcon, onAction,
-}) {
-  const cardRef = useRef(null);
-  const wrapRef = useRef(null);
-  const [go, setGo] = useState(false);
+export default function ProgressGauge({ label, percent = 0, title, subtitle, pillLabel, onPillClick, actionIcon: ActionIcon, onAction }) {
+  const [on, setOn] = useState(false);
   const pct = Math.max(0, Math.min(100, Math.round(percent || 0)));
-  const offset = CIRC * (1 - pct / 100);
+  const offset = on ? CIRC * (1 - pct / 100) : CIRC;
 
   useEffect(() => {
-    const fire = () => {
-      const card = cardRef.current, wrap = wrapRef.current;
-      if (!card || !wrap) return;
-      const cr = card.getBoundingClientRect();
-      const wr = wrap.getBoundingClientRect();
-      const cx = cr.left + cr.width / 2;
-      let targetDia, cy;
-      if (cr.width < 340) {
-        const labelEl = card.querySelector("[data-g2-label]");
-        const titleEl = card.querySelector("[data-g2-title]");
-        const top = (labelEl ? labelEl.getBoundingClientRect().bottom : cr.top) + 14;
-        const bottom = (titleEl ? titleEl.getBoundingClientRect().top : cr.bottom) - 14;
-        const band = Math.max(40, bottom - top);
-        targetDia = Math.min(cr.width * 0.56, band);
-        cy = (top + bottom) / 2;
-      } else {
-        targetDia = 230;
-        cy = cr.top + cr.height * 0.40;
-      }
-      const scale = Math.max(1.4, targetDia / wr.width);
-      const dx = cx - (wr.left + wr.width / 2);
-      const dy = cy - (wr.top + wr.height / 2);
-      wrap.style.setProperty("--g2-dx", dx + "px");
-      wrap.style.setProperty("--g2-dy", dy + "px");
-      wrap.style.setProperty("--g2-scale", scale);
-      requestAnimationFrame(() => setGo(true));
-    };
-    const t = setTimeout(() => requestAnimationFrame(() => requestAnimationFrame(fire)), 120);
+    const t = setTimeout(() => setOn(true), 80);
     return () => clearTimeout(t);
-  }, [percent]);
+  }, []);
 
   return (
-    <section data-g2 className="g2-section">
-      <div ref={cardRef} className="g2-card">
-        <div className="absolute inset-0">
-          <Image src={image} alt="" fittingType="fill" focalPointY={0.2} className="h-full w-full" />
-        </div>
-        <div className="g2-gradient" aria-hidden />
-        <div className="g2-top">
-          <span className="g2-label" data-g2-label>{label}</span>
-          <div ref={wrapRef} className={cn("g2-ring-wrap", go && "g2-go")} role="img" aria-label={`${pct} procent voltooid`}>
-            <svg className="g2-ring-svg" viewBox="0 0 76 76" aria-hidden>
-              <circle className="g2-ring-backdrop" cx="38" cy="38" r="34" />
-              <circle className="g2-ring-track" cx="38" cy="38" r="31" />
-              <circle className="g2-ring-fill" cx="38" cy="38" r="31" style={{ strokeDasharray: CIRC, strokeDashoffset: go ? offset : CIRC }} />
-            </svg>
-            <span className="g2-ring-pct">{pct}%</span>
-          </div>
-        </div>
-        <div className="g2-bottom">
-          <h2 className="g2-title" data-g2-title>{title}</h2>
-          <p className="g2-subtitle">{subtitle}</p>
-          <div className="g2-actions">
-            <div className="g2-icon-group">
-              {ActionIcon && (
-                <button className="g2-icon-btn" onClick={onAction} aria-label="Actie">
-                  <ActionIcon />
-                </button>
-              )}
-            </div>
-            <button className="g2-pill" onClick={onPillClick}>
-              {pillLabel} <span className="g2-pill-arrow" aria-hidden="true"><span className="g2-arrow-glyph">→</span></span>
-            </button>
-          </div>
+    <div className="glass-2 rounded-3xl p-6 text-foreground w-full max-w-[360px] mx-auto">
+      <div className="flex items-start justify-between gap-4">
+        <span className="text-[11px] uppercase tracking-[0.2em] font-semibold text-muted-foreground pt-1">{label}</span>
+        <div className="relative h-[76px] w-[76px] shrink-0">
+          <svg className="h-full w-full -rotate-90" viewBox="0 0 80 80" aria-hidden="true">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="hsl(var(--foreground) / 0.12)" strokeWidth="6" />
+            <circle
+              cx="40" cy="40" r="34" fill="none"
+              stroke="hsl(var(--olive))" strokeWidth="6" strokeLinecap="round"
+              style={{ strokeDasharray: CIRC, strokeDashoffset: offset, transition: "stroke-dashoffset 1.4s cubic-bezier(0.16,1,0.3,1)" }}
+            />
+          </svg>
+          <span className="absolute inset-0 flex items-center justify-center text-sm font-display font-semibold tabular-nums">{pct}%</span>
         </div>
       </div>
-    </section>
+      <div className="pt-6">
+        <h3 className="font-display text-xl font-semibold tracking-tight leading-tight">{title}</h3>
+        <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+        <div className="flex items-center justify-between gap-2 mt-4">
+          <div className="flex gap-2">
+            {ActionIcon && (
+              <button onClick={onAction} className="h-9 w-9 rounded-full border border-foreground/15 bg-foreground/5 flex items-center justify-center hover:bg-foreground/10 transition" aria-label="Actie">
+                <ActionIcon className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+          <button onClick={onPillClick} className="inline-flex items-center gap-1.5 rounded-full bg-foreground text-background px-4 py-2 text-xs font-medium hover:bg-foreground/90 transition">
+            {pillLabel} <span aria-hidden="true">→</span>
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

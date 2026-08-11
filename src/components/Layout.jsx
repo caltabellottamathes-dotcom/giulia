@@ -99,7 +99,7 @@ function LayoutInner() {
                 {userMenuItems.map((item) => (
                   <DropdownMenuItem
                     key={item.key}
-                    onClick={() => openModule(item.key)}
+                    onClick={() => (item.key === "profile" ? navigate("/profile") : openModule(item.key))}
                     className="gap-2.5 text-[13px]"
                   >
                     <item.icon className="h-3.5 w-3.5 text-foreground/60" />
