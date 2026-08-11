@@ -168,7 +168,7 @@ export default function Home() {
       {/* Photo — mobile banner (closed) */}
       <div
         className={cn(
-          "lg:hidden fixed top-14 left-0 right-0 h-[42vh] overflow-hidden z-0 rounded-b-[32px] transition-all duration-700",
+          "lg:hidden fixed top-14 left-0 right-0 h-[44vh] overflow-hidden z-0 rounded-b-[32px] transition-all duration-700",
           panelOpen ? "opacity-0 -translate-y-4 pointer-events-none" : "opacity-100"
         )}
       >
@@ -216,7 +216,7 @@ export default function Home() {
       {/* Content */}
       <div
         className={cn(
-          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[34vh] lg:pt-0",
+          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[28vh] lg:pt-0",
           panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100"
         )}
       >

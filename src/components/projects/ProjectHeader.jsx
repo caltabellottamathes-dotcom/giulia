@@ -14,8 +14,8 @@ export default function ProjectHeader({ project, onUpdate, onEdit, onDelete }) {
   const fmtDate = (d) => (d ? new Date(d).toLocaleDateString("nl-NL", { day: "numeric", month: "long" }) : "");
 
   return (
-    <div className="relative overflow-hidden rounded-[24px] float-shadow z-0">
-      <div className="h-[44vh] lg:h-[54vh] relative">
+    <div className="relative overflow-hidden rounded-[24px] float-shadow sticky top-14 z-0">
+      <div className="h-[42vh] lg:h-[52vh] relative">
         <img src={project.image || IMAGES.walkingChairs} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/55 via-charcoal/10 to-transparent" />
         <div className="absolute top-20 right-4 flex gap-2 z-10">

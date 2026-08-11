@@ -67,7 +67,7 @@ export default function ProjectDetail() {
       </button>
 
       <ProjectHeader project={project} onUpdate={updateProject} onEdit={() => setEditorOpen(true)} onDelete={delProject} />
-      <div className="relative z-10 rounded-t-[28px] -mt-6 px-4 lg:px-6 pt-8 pb-28 space-y-6 min-h-[60vh] bg-background/55 backdrop-blur-xl">
+      <div className="relative z-10 rounded-t-[28px] -mt-4 px-4 lg:px-6 pt-7 pb-28 space-y-6 min-h-[60vh] bg-background/45 backdrop-blur-2xl">
         {section === "Overview" && <OverviewSection project={project} tasks={tasks} onNavigate={setSection} reload={load} />}
         {section === "Tasks" && <TasksSection project={project} tasks={tasks} reload={load} />}
         {section === "Timeline" && <TimelineSection project={project} tasks={tasks} />}
