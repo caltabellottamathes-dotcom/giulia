@@ -1,9 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { ImapFlow } from 'npm:imapflow@1.0.182';
+import { simpleParser } from 'npm:mailparser@3.7.1';
 import { secrets } from 'base44:runtime';
 
 /**
- * fetchPrivateEmailBody — proxy to the external email bridge. Fetches the
- * full content of one email (by uid) via IMAP, returning plain text + HTML.
+ * fetchPrivateEmailBody — fetches the full content of one email directly via
+ * IMAP by uid, returning the plain-text and HTML body. IMAP secrets live in
+ * the app.
  */
 export default async function (req) {
   try {
@@ -15,20 +18,32 @@ export default async function (req) {
     const uid = String(body?.uid || '');
     if (!uid) return Response.json({ error: 'uid required' }, { status: 400 });
 
-    const base = (secrets.get('BRIDGE_URL') || '').replace(/\/$/, '');
-    if (!base) return Response.json({ error: 'BRIDGE_URL not set' }, { status: 500 });
-
-    const res = await fetch(base + '/email-body', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + (secrets.get('BRIDGE_TOKEN') || ''),
-      },
-      body: JSON.stringify({ uid }),
+    const client = new ImapFlow({
+      host: secrets.get('IMAP_HOST'),
+      port: Number(secrets.get('IMAP_PORT')) || 993,
+      secure: true,
+      auth: { user: secrets.get('EMAIL_USER'), pass: secrets.get('EMAIL_PASS') },
+      logger: false,
     });
-    const data = await res.json();
-    if (!res.ok) return Response.json({ error: data.error || 'bridge error' }, { status: res.status });
-    return Response.json(data);
+
+    await client.connect();
+    const lock = await client.getMailboxLock('INBOX');
+    try {
+      const msg = await client.fetchOne(uid, { source: true }, { uid: true });
+      if (!msg || !msg.source) return Response.json({ error: 'not found' }, { status: 404 });
+      const parsed = await simpleParser(msg.source);
+      return Response.json({
+        uid,
+        subject: parsed.subject || '',
+        text: parsed.text || '',
+        html: parsed.html || '',
+        from: parsed.from && parsed.from.text ? parsed.from.text : '',
+        date: parsed.date ? parsed.date.toISOString() : '',
+      });
+    } finally {
+      lock.release();
+      await client.logout().catch(() => {});
+    }
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
