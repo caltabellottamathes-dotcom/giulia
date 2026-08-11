@@ -39,7 +39,26 @@ export default function Email() {
   const sync = async () => {
     setSyncing(true);
     try {
-      await base44.functions.invoke("syncGmail", {});
+      const res = await base44.functions.invoke("fetchPrivateEmails", { limit: 30 });
+      const fetched = res.emails || [];
+      if (fetched.length) {
+        const existing = await base44.entities.Email.filter({ folder: "inbox" });
+        const existingUids = new Set(existing.map((e) => e.gmail_message_id).filter(Boolean));
+        const newOnes = fetched.filter((e) => !existingUids.has(e.uid));
+        if (newOnes.length) {
+          await base44.entities.Email.bulkCreate(
+            newOnes.map((e) => ({
+              sender: e.sender || "(onbekend)",
+              sender_email: e.sender_email || "",
+              subject: e.subject || "(geen onderwerp)",
+              timestamp: e.timestamp,
+              status: e.unread ? "unread" : "read",
+              folder: "inbox",
+              gmail_message_id: e.uid,
+            }))
+          );
+        }
+      }
       reload();
     } catch (e) {
       /* ignore */
@@ -60,7 +79,7 @@ export default function Email() {
     if (!selectedEmail) return;
     setSending(true);
     try {
-      await base44.functions.invoke("sendGmail", {
+      await base44.functions.invoke("sendPrivateEmail", {
         to: selectedEmail.sender_email,
         subject: selectedEmail.subject,
         message: draftBody || selectedEmail.body,
@@ -69,7 +88,7 @@ export default function Email() {
       setShowDraftPanel(false);
       reload();
     } catch (e) {
-      toast({ title: "Versturen mislukt", description: "Controleer je integratie-credits.", variant: "destructive" });
+      toast({ title: "Versturen mislukt", description: "Controleer de email-bridge op Render.", variant: "destructive" });
     } finally {
       setSending(false);
     }
@@ -94,7 +113,7 @@ export default function Email() {
     if (!compose.to.trim()) { toast({ title: "Vul een geadresseerde in" }); return; }
     setSendingCompose(true);
     try {
-      await base44.functions.invoke("sendGmail", { to: compose.to, subject: compose.subject, message: compose.body });
+      await base44.functions.invoke("sendPrivateEmail", { to: compose.to, subject: compose.subject, message: compose.body });
       await base44.entities.Email.create({
         subject: compose.subject || "(geen onderwerp)", body: compose.body,
         sender: "Jij", sender_email: "mail@salvatorecaltabellotta.com",
@@ -103,7 +122,7 @@ export default function Email() {
       setCompose({ to: "", subject: "", body: "" }); setShowCompose(false); reload();
       toast({ title: "Verzonden" });
     } catch (e) {
-      toast({ title: "Versturen mislukt", description: "Controleer je integratie-credits.", variant: "destructive" });
+      toast({ title: "Versturen mislukt", description: "Controleer de email-bridge op Render.", variant: "destructive" });
     } finally { setSendingCompose(false); }
   };
   const delEmail = async () => {
@@ -117,6 +136,20 @@ export default function Email() {
     const status = selectedEmail.status === "unread" ? "read" : "unread";
     await base44.entities.Email.update(selectedEmail.id, { status });
     setSelectedEmail({ ...selectedEmail, status }); reload();
+  };
+
+  const selectEmail = async (email) => {
+    setSelectedEmail(email);
+    if (!email.body && email.gmail_message_id) {
+      try {
+        const body = await base44.functions.invoke("fetchPrivateEmailBody", { uid: email.gmail_message_id });
+        const text = body.text || body.html || "(geen inhoud)";
+        setSelectedEmail({ ...email, body: text });
+        await base44.entities.Email.update(email.id, { body: text });
+      } catch (e) {
+        /* ignore */
+      }
+    }
   };
 
   return (
@@ -175,7 +208,7 @@ export default function Email() {
               {!loading && folderEmails.map((email) => (
                 <button
                   key={email.id}
-                  onClick={() => setSelectedEmail(email)}
+                  onClick={() => selectEmail(email)}
                   className={cn(
                     "w-full text-left p-4 border-b border-border/30 transition-colors hover:bg-foreground/[0.02]",
                     selectedEmail?.id === email.id && "bg-foreground/[0.04]",
