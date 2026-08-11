@@ -155,8 +155,10 @@ export default function Home() {
           photo entering from another side. Stays the same size as before on open. */}
       <div
         className={cn(
-          "hidden lg:block fixed left-[42%] right-0 top-14 bottom-0 z-0 overflow-hidden rounded-l-[32px] transition-opacity duration-500",
-          panelOpen ? "opacity-0 pointer-events-none" : "opacity-100"
+          "hidden lg:block fixed z-0 overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[left,right,top]",
+          panelOpen
+            ? "left-[16%] right-[12%] top-[40vh] bottom-0 rounded-[28px]"
+            : "left-[42%] right-0 top-14 bottom-0 rounded-l-[32px]"
         )}
       >
         <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
@@ -166,17 +168,14 @@ export default function Home() {
       {/* Photo — mobile banner (closed) */}
       <div
         className={cn(
-          "lg:hidden fixed top-14 left-0 right-0 h-[50vh] overflow-hidden z-0 rounded-b-[40px] transition-all duration-700",
+          "lg:hidden fixed top-14 left-0 right-0 h-[34vh] overflow-hidden z-0 rounded-b-[32px] transition-all duration-700",
           panelOpen ? "opacity-0 -translate-y-4 pointer-events-none" : "opacity-100"
         )}
       >
-        <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover object-[30%_32%]" draggable={false} />
-        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/15 via-transparent to-background/40" />
-        <div className="absolute right-5 top-5 z-10">
-          <span className="font-display font-semibold tracking-[0.3em] text-[11px] uppercase text-ivory/80">Giulia</span>
-        </div>
-        <div className="absolute left-5 bottom-5 z-10">
-          <span className="glass-1 inline-block rounded-full px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-ivory font-semibold">
+        <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
+        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/15 via-transparent to-background/30" />
+        <div className="absolute left-5 bottom-4 z-10">
+          <span className="glass-1 rounded-full px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] text-ivory font-semibold">
             {new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}
           </span>
         </div>
@@ -219,18 +218,10 @@ export default function Home() {
         </div>
       ); })()}
 
-      {/* Floating theme photo — slides up from below into the seam between the panel and the widget.
-          Different cut of the title-theme image, no overlay, rounded card. */}
-      {panelOpen && WIDGETS[activeModule] && (
-        <div className="hidden lg:block fixed left-[38%] bottom-[7rem] z-[55] w-56 h-80 rounded-[24px] overflow-hidden shadow-2xl border border-white/20 animate-slide-up">
-          <img src={WIDGETS[activeModule].image} alt="" className="h-full w-full object-cover object-[20%_25%]" draggable={false} />
-        </div>
-      )}
-
       {/* Content */}
       <div
         className={cn(
-          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[50vh] lg:pt-0",
+          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[34vh] lg:pt-0",
           panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100"
         )}
       >
