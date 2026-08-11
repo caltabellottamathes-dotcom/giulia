@@ -143,7 +143,7 @@ export default function Home() {
   const sorted = [...widgets].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
 
   return (
-    <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-mt-8 lg:mb-0 min-h-[calc(100svh-3.5rem)] lg:h-[calc(100svh-9.5rem)] lg:min-h-0 overflow-hidden">
+    <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-mt-8 lg:mb-0 min-h-[calc(100svh-3.5rem)] lg:min-h-[calc(100svh-9.5rem)] overflow-hidden">
       {/* GIULIA branding — bottom-left, a large graphic design element (header-logo style, no mark) */}
       <div className="hidden lg:flex fixed left-12 bottom-10 z-0 pointer-events-none select-none items-baseline">
         <span className="font-display font-semibold tracking-[0.22em] uppercase leading-none text-[7rem] text-foreground/[0.16]">Giulia</span>
@@ -216,7 +216,7 @@ export default function Home() {
       {/* Content */}
       <div
         className={cn(
-          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[28vh] lg:pt-0 lg:h-full lg:flex lg:flex-col",
+          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[28vh] lg:pt-0",
           panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100"
         )}
       >
@@ -238,7 +238,7 @@ export default function Home() {
         </header>
 
         {/* Tidy sorted bento grid */}
-        <div className="px-5 lg:px-10 pb-10 lg:pb-0 lg:flex-1 lg:min-h-0">
+        <div className="px-5 lg:px-10 pb-10 lg:pb-0">
           {loading ? (
             <div className="grid grid-cols-12 gap-4">
               {[0, 1, 2, 3].map((i) => (
@@ -246,7 +246,7 @@ export default function Home() {
               ))}
             </div>
           ) : sorted.length > 0 ? (
-            <div className="max-w-[920px] grid grid-cols-12 gap-3 lg:gap-4 auto-rows-auto lg:auto-rows-[minmax(200px,260px)] lg:h-full">
+            <div className="max-w-[920px] grid grid-cols-12 gap-3 lg:gap-4 auto-rows-auto">
               {sorted.map((w) => {
                 const def = WIDGETS[w.widget_type];
                 if (!def) return null;
