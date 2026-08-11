@@ -26,7 +26,7 @@ export default function AgendaWidget() {
   return (
     <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("agenda")} className="min-h-[260px]">
       <div className="flex flex-col h-full">
-        <div className="relative h-52 shrink-0 overflow-hidden">
+        <div className="relative h-48 shrink-0 overflow-hidden rounded-b-[24px]">
           <BrandPhoto src={IMAGES.walkChairsBeach} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/45 via-transparent to-transparent" />
           <div className="absolute inset-0 p-5 flex flex-col justify-between">
             <div className="flex items-center justify-between">
@@ -56,7 +56,7 @@ export default function AgendaWidget() {
           </div>
         </div>
 
-        <div className="flex-1 -mt-12 rounded-t-[28px] glass-3 p-5 relative z-10 shadow-[0_-14px_30px_-12px_rgba(0,0,0,0.35)] text-ivory flex flex-col">
+        <div className="flex-1 px-5 py-4 text-ivory flex flex-col">
           {loading ? (
             <div className="flex-1 flex items-center"><div className="h-8 w-8 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" /></div>
           ) : (

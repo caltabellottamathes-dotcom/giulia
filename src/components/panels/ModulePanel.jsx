@@ -109,6 +109,7 @@ export default function ModulePanel() {
           {/* Clean header photo — no overlay */}
           <div className="relative shrink-0 h-44 overflow-hidden">
             <img src={WIDGETS[activeModule]?.image || MODULE_IMAGE[activeModule] || IMAGES.walkingChairs} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
+            <div className="absolute inset-0 bg-gradient-to-t from-charcoal/55 via-transparent to-transparent" />
           </div>
 
           {/* Floating glass content card — overlaps the header photo with rounded corners */}

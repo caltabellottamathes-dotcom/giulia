@@ -67,7 +67,7 @@ export default function GiuliaWidget() {
     <WidgetShell size="2x2" radius="large" className="min-h-[320px]">
       <div className="flex flex-row h-full">
         {/* Editorial photo — touches the glass edges */}
-        <div className="relative w-[34%] shrink-0 overflow-hidden">
+        <div className="relative w-[34%] shrink-0 overflow-hidden rounded-r-[24px]">
           <img src={IMAGES.portraitBootFace} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 via-transparent to-transparent" />
           <div className="absolute left-3 bottom-3">

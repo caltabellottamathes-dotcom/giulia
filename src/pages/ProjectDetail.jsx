@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import GlassPanel from "@/components/glass/GlassPanel";
-import { InlineText, InlineDate } from "@/components/projects/InlineEdit";
 import GlassButton from "@/components/glass/GlassButton";
 import { base44 } from "@/api/base44Client";
 import ProjectEditorPanel from "@/components/projects/ProjectEditorPanel";
@@ -62,24 +61,10 @@ export default function ProjectDetail() {
 
   return (
     <div className="animate-fade-up">
-      <ProjectHeader project={project} onEdit={() => setEditorOpen(true)} onDelete={delProject} onBack={() => navigate("/projects")} />
-      <div className="relative z-10 rounded-t-[28px] -mt-4 px-4 lg:px-6 pt-6 pb-28 space-y-6 min-h-[60vh]">
-        <div className="glass-1 rounded-2xl p-4 space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Categorie</span>
-            <InlineText value={project.category} placeholder="Categorie" onCommit={(v) => updateProject({ category: v })} className="text-xs font-medium" />
-          </div>
-          <InlineText multiline value={project.description} placeholder="Voeg een korte projectbeschrijving toe…" onCommit={(v) => updateProject({ description: v })} className="block text-sm text-muted-foreground leading-relaxed" inputClassName="text-sm leading-relaxed" />
-          <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
-            <span className="inline-flex items-center gap-2">
-              <span className="text-[10px] uppercase tracking-wider">Deadline</span>
-              <InlineDate value={project.deadline} onCommit={(v) => updateProject({ deadline: v })} />
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <span className="text-[10px] uppercase tracking-wider">Volgende</span>
-              <InlineText value={project.next_milestone} placeholder="Volgende stap" onCommit={(v) => updateProject({ next_milestone: v })} className="text-xs" />
-            </span>
-          </div>
+      <ProjectHeader project={project} onUpdate={updateProject} onEdit={() => setEditorOpen(true)} onDelete={delProject} onBack={() => navigate("/projects")} />
+      <div className="relative z-10 rounded-t-[28px] -mt-4 px-4 lg:px-6 pt-4 pb-28 space-y-6 min-h-[60vh]">
+        <div className="hidden lg:block">
+          <ProjectNav active={section} onChange={setSection} variant="top" />
         </div>
 
         {section === "Overview" && <OverviewSection project={project} tasks={tasks} onNavigate={setSection} reload={load} />}
@@ -97,7 +82,7 @@ export default function ProjectDetail() {
         <ProjectEditorPanel open={editorOpen} onClose={() => setEditorOpen(false)} project={project} onSaved={load} />
       </div>
 
-      <div className="fixed bottom-0 inset-x-0 z-30 glass-2 border-t border-border/40">
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-30 glass-2 border-t border-border/40">
         <ProjectNav active={section} onChange={setSection} variant="bottom" />
       </div>
     </div>
