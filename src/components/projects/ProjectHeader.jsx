@@ -14,11 +14,10 @@ export default function ProjectHeader({ project, onUpdate, onEdit, onDelete }) {
   const fmtDate = (d) => (d ? new Date(d).toLocaleDateString("nl-NL", { day: "numeric", month: "long" }) : "");
 
   return (
-    <div className="relative overflow-hidden rounded-[24px] float-shadow sticky top-0 z-0">
-      <div className="aspect-[21/8] relative">
+    <div className="relative overflow-hidden rounded-[24px] float-shadow z-0">
+      <div className="h-[44vh] lg:h-[54vh] relative">
         <img src={project.image || IMAGES.walkingChairs} alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-r from-charcoal/92 via-charcoal/62 to-charcoal/25" />
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/85 via-charcoal/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/55 via-charcoal/10 to-transparent" />
         <div className="absolute top-20 right-4 flex gap-2 z-10">
           <button onClick={onEdit} className="inline-flex items-center gap-1.5 rounded-full bg-white/15 border border-white/25 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/25 transition">
             <Pencil className="h-3.5 w-3.5" /> Bewerk

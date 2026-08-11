@@ -67,9 +67,7 @@ export default function ProjectDetail() {
       </button>
 
       <ProjectHeader project={project} onUpdate={updateProject} onEdit={() => setEditorOpen(true)} onDelete={delProject} />
-      <div className="relative z-10 bg-background rounded-t-[28px] -mt-16 px-4 lg:px-6 pt-8 pb-12 space-y-6 min-h-[calc(100vh-13rem)] lg:min-h-[calc(100vh-38rem)]">
-        <ProjectNav active={section} onChange={setSection} />
-
+      <div className="relative z-10 rounded-t-[28px] -mt-6 px-4 lg:px-6 pt-8 pb-28 space-y-6 min-h-[60vh] bg-background/55 backdrop-blur-xl">
         {section === "Overview" && <OverviewSection project={project} tasks={tasks} onNavigate={setSection} reload={load} />}
         {section === "Tasks" && <TasksSection project={project} tasks={tasks} reload={load} />}
         {section === "Timeline" && <TimelineSection project={project} tasks={tasks} />}
@@ -83,6 +81,10 @@ export default function ProjectDetail() {
         {section === "Giulia" && <GiuliaSection project={project} tasks={tasks} reload={load} />}
 
         <ProjectEditorPanel open={editorOpen} onClose={() => setEditorOpen(false)} project={project} onSaved={load} />
+      </div>
+
+      <div className="fixed bottom-0 inset-x-0 z-30 glass-2 border-t border-border/40">
+        <ProjectNav active={section} onChange={setSection} variant="bottom" />
       </div>
     </div>
   );

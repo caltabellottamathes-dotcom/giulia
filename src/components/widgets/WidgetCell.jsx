@@ -43,16 +43,16 @@ export default function WidgetCell({ def, widget, onRemove, onThemeChange }) {
   };
 
   const handleDragEnd = (_e, info) => {
-    if (onRemove && (info.offset.x < -120 || info.velocity.x < -500)) onRemove();
+    if (onRemove && (Math.abs(info.offset.x) > 120 || Math.abs(info.velocity.x) > 500)) onRemove();
   };
 
   return (
     <motion.div
       drag={!!onRemove && !open}
       dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={{ left: 0.6, right: 0 }}
+      dragElastic={0}
       onDragEnd={handleDragEnd}
-      whileDrag={{ scale: 0.97 }}
+      whileDrag={{ opacity: 0.85 }}
       className="relative group h-full"
     >
       <div className="absolute top-2 right-2 z-30 flex gap-1.5">

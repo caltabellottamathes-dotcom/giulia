@@ -26,8 +26,8 @@ export default function AgendaWidget() {
   return (
     <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("agenda")} className="min-h-[260px]">
       <div className="flex flex-col h-full">
-        <div className="relative h-52 shrink-0 overflow-hidden">
-          <BrandPhoto src={IMAGES.walkChairsBeach} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/80 via-charcoal/30 to-charcoal/10" />
+        <div className="relative h-48 m-2.5 mb-0 shrink-0 rounded-[18px] overflow-hidden">
+          <BrandPhoto src={IMAGES.walkChairsBeach} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/45 via-transparent to-transparent" />
           <div className="absolute inset-0 p-5 flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">Agenda</h3>

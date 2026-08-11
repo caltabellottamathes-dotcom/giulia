@@ -20,7 +20,7 @@ export default function ProjectsWidget() {
   return (
     <WidgetShell size="2x2" radius="medium" interactive onClick={() => openModule("projects")} className="min-h-[260px]">
       <div className="flex flex-col h-full">
-        <BrandPhoto src={IMAGES.walkChairsHigh} className="h-24 -mb-8 rounded-b-[24px] shadow-[0_14px_28px_-12px_rgba(0,0,0,0.3)] relative z-10" overlay="bg-gradient-to-t from-charcoal/85 via-charcoal/35 to-charcoal/10">
+        <BrandPhoto src={IMAGES.walkChairsHigh} className="h-24 -mb-8 mx-2.5 mt-2.5 rounded-[16px] shadow-[0_14px_28px_-12px_rgba(0,0,0,0.3)] relative z-10" overlay="bg-gradient-to-t from-charcoal/45 via-transparent to-transparent">
           <div className="absolute inset-0 px-4 pb-3 flex items-end">
             <div className="flex items-end gap-2">
               <CountUp value={avg} className="text-4xl font-display font-semibold tracking-[-0.03em] leading-none text-ivory" />

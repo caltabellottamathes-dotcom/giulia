@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 
 const LINKS = [
   { label: "Home", to: "/" },
@@ -15,6 +15,9 @@ const LINKS = [
 ];
 
 export default function BottomNav() {
+  const { pathname } = useLocation();
+  // On individual project pages the project's own tabs take over the bottom bar.
+  if (/^\/projects\/[^/]+/.test(pathname)) return null;
   return (
     <nav className="fixed bottom-0 inset-x-0 z-20">
       <div className="px-5 lg:px-10 py-3 pr-20 lg:pr-28 flex items-center gap-x-5 gap-y-1.5 overflow-x-auto lg:overflow-visible lg:flex-wrap">

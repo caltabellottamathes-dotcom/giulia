@@ -168,17 +168,12 @@ export default function Home() {
       {/* Photo — mobile banner (closed) */}
       <div
         className={cn(
-          "lg:hidden fixed top-14 left-0 right-0 h-[34vh] overflow-hidden z-0 rounded-b-[32px] transition-all duration-700",
+          "lg:hidden fixed top-14 left-0 right-0 h-[42vh] overflow-hidden z-0 rounded-b-[32px] transition-all duration-700",
           panelOpen ? "opacity-0 -translate-y-4 pointer-events-none" : "opacity-100"
         )}
       >
         <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
-        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/15 via-transparent to-background/30" />
-        <div className="absolute left-5 bottom-4 z-10">
-          <span className="glass-1 rounded-full px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] text-ivory font-semibold">
-            {new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}
-          </span>
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/10 via-transparent to-charcoal/55" />
       </div>
 
       {/* Photo — mobile bottom card (open) */}
@@ -227,10 +222,10 @@ export default function Home() {
       >
         <header className="px-5 lg:px-10 pt-8 lg:pt-10 pb-6 lg:pb-8 flex items-end justify-between gap-4">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/80 mb-3 font-semibold">
+            <p className="text-[11px] uppercase tracking-[0.28em] text-ivory/80 lg:text-foreground/80 mb-3 font-semibold">
               {new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}
             </p>
-            <h1 className="text-[40px] sm:text-5xl lg:text-6xl font-display font-semibold tracking-[-0.02em] leading-[1.0] text-foreground text-balance">
+            <h1 className="text-[40px] sm:text-5xl lg:text-6xl font-display font-semibold tracking-[-0.02em] leading-[1.0] text-ivory lg:text-foreground text-shadow-soft lg:[text-shadow:none] text-balance">
               {greeting}.
             </h1>
           </div>

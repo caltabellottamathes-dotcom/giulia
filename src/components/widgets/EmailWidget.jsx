@@ -47,8 +47,8 @@ export default function EmailWidget() {
       {!loading && (
         <BrandPhoto
           src={IMAGES.portraitBoot}
-          className="h-24 w-full -mt-8 rounded-t-[24px] relative z-10 shadow-[0_-12px_28px_-12px_rgba(0,0,0,0.28)]"
-          overlay="bg-gradient-to-r from-charcoal/85 via-charcoal/40 to-transparent"
+          className="h-24 mx-2.5 -mt-8 mb-2.5 rounded-[16px] relative z-10 shadow-[0_-12px_28px_-12px_rgba(0,0,0,0.28)]"
+          overlay="bg-gradient-to-t from-charcoal/40 via-transparent to-transparent"
         >
           <div className="absolute inset-0 flex items-center justify-between px-6">
             <p className="text-sm font-semibold text-ivory truncate" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.6)" }}>{next ? next.sender || "Onbekend" : "Inbox rustig"}</p>

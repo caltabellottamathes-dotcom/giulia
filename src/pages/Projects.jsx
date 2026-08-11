@@ -93,27 +93,9 @@ export default function Projects() {
             </div>
             <div className="aspect-[4/3] relative">
               <img src={project.image || IMAGES.walkingChairs} alt={project.title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-gradient-to-t from-charcoal/85 via-charcoal/30 to-transparent" />
-              <div className="absolute top-4 left-4">
-                <StatusBadge variant={statusVariantMap[project.status]} className="bg-white/20 border-white/30 text-white">
-                  {(project.status || "planning").replace(/_/g, " ")}
-                </StatusBadge>
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                {project.category && (
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] uppercase tracking-wider font-semibold mb-2 ${categoryStyle(project.category)}`}>
-                    {project.category}
-                  </span>
-                )}
-                <h3 className="text-white font-display font-semibold text-base mb-1.5 line-clamp-2">{project.title}</h3>
-                {project.description && <p className="text-xs text-white/70 line-clamp-2 mb-2.5">{project.description}</p>}
-                <div className="flex items-center justify-between text-xs text-white/60">
-                  <span>{project.progress || 0}% voltooid</span>
-                  {project.deadline && <span>{new Date(project.deadline).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}</span>}
-                </div>
-                <div className="mt-2 h-0.5 bg-white/20 rounded-full overflow-hidden">
-                  <div className="h-full bg-white/60 rounded-full transition-all duration-700" style={{ width: `${project.progress || 0}%` }} />
-                </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-charcoal/45 via-transparent to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 pt-10 bg-gradient-to-t from-charcoal/60 via-charcoal/10 to-transparent">
+                <h3 className="text-white font-display font-semibold text-base line-clamp-2 drop-shadow-sm">{project.title}</h3>
               </div>
             </div>
           </div>

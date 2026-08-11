@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
 import WidgetShell from "./WidgetShell";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
@@ -32,7 +33,7 @@ export default function GiuliaWidget() {
     ]);
     const p = plans[0];
     if (p && (p.priorities?.length || p.plan_data?.summary)) {
-      setPriorities((p.priorities || []).slice(0, 3));
+      setPriorities((p.priorities || []).slice(0, 3).map((s) => (typeof s === "string" ? { label: s, to: "/tasks" } : s)));
       setSummary(p.plan_data?.summary || "Ik heb je dag heringericht op wat veranderd is.");
       setUpdated(p.last_updated || p.updated_date || null);
     } else {
@@ -44,11 +45,11 @@ export default function GiuliaWidget() {
         .sort((a, b) => new Date(a.deadline || 0) - new Date(b.deadline || 0));
       const todayTasks = tasks.filter((t) => t.status === "today");
       const prio = [];
-      overdue.slice(0, 2).forEach((t) => prio.push(`Afronden — ${t.title}`));
-      todayEvents.slice(0, 1).forEach((e) => prio.push(`Voorbereiden — ${e.title}`));
-      todayTasks.slice(0, 2).forEach((t) => prio.push(t.title));
-      if (emails.length && prio.length < 3) prio.push(`${emails.length} belangrijke berichten beantwoorden`);
-      if (approvals.length && prio.length < 3) prio.push(`${approvals.length} goedkeuringen afhandelen`);
+      overdue.slice(0, 2).forEach((t) => prio.push({ label: `Afronden — ${t.title}`, to: t.project_id ? `/projects/${t.project_id}` : "/tasks" }));
+      todayEvents.slice(0, 1).forEach((e) => prio.push({ label: `Voorbereiden — ${e.title}`, to: "/agenda" }));
+      todayTasks.slice(0, 2).forEach((t) => prio.push({ label: t.title, to: t.project_id ? `/projects/${t.project_id}` : "/tasks" }));
+      if (emails.length && prio.length < 3) prio.push({ label: `${emails.length} belangrijke berichten beantwoorden`, to: "/email" });
+      if (approvals.length && prio.length < 3) prio.push({ label: `${approvals.length} goedkeuringen afhandelen`, to: "/approvals" });
       setPriorities(prio.slice(0, 3));
       setSummary("Ik heb je dag opgebouwd op basis van wat er nu speelt.");
       setUpdated(null);
@@ -69,7 +70,7 @@ export default function GiuliaWidget() {
         <div className="relative w-[34%] shrink-0 p-2.5">
           <div className="relative h-full rounded-[20px] overflow-hidden">
             <img src={IMAGES.portraitBootFace} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-charcoal/75 via-charcoal/10 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 via-transparent to-transparent" />
             {/* Inset second photo — layered */}
             <div className="absolute bottom-3 right-3 w-16 h-20 rounded-xl overflow-hidden border border-ivory/30 shadow-lg">
               <img src={IMAGES.walkChairsBeach} alt="" draggable={false} className="h-full w-full object-cover" />
@@ -95,9 +96,11 @@ export default function GiuliaWidget() {
 
               <ol className="mt-3.5 space-y-2 flex-1">
                 {priorities.map((p, i) => (
-                  <li key={i} className="flex items-stretch gap-3 glass-1 rounded-xl px-3 py-2 animate-fade-up" style={{ animationDelay: `${0.1 + i * 0.08}s` }}>
-                    <span className="text-[24px] leading-none font-display font-bold tabular-nums w-7 shrink-0" style={{ color: "var(--tile-accent)" }}>{String(i + 1).padStart(2, "0")}</span>
-                    <span className="text-[12px] leading-snug text-current/90 pt-1 text-left">{p}</span>
+                  <li key={i} className="animate-fade-up" style={{ animationDelay: `${0.1 + i * 0.08}s` }}>
+                    <Link to={p.to} className="flex items-stretch gap-3 glass-1 rounded-xl px-3 py-2 hover:bg-white/5 transition text-left">
+                      <span className="text-[24px] leading-none font-display font-bold tabular-nums w-7 shrink-0" style={{ color: "var(--tile-accent)" }}>{String(i + 1).padStart(2, "0")}</span>
+                      <span className="text-[12px] leading-snug text-current/90 pt-1">{p.label}</span>
+                    </Link>
                   </li>
                 ))}
                 {priorities.length === 0 && (
