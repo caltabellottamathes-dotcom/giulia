@@ -2,14 +2,17 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import PageHero from "@/components/glass/PageHero";
 import ProgressGauge from "@/components/experiment/ProgressGauge";
+import StatCardSet from "@/components/experiment/StatCardSet";
 import { useEntityList } from "@/hooks/useEntity";
 import { IMAGES } from "@/lib/images";
 import { FlaskConical, Share2 } from "lucide-react";
 
 const DONE = ["completed", "done", "klaar"];
+const ACTIVE_PROJ = ["in_progress", "planning", "afwerking", "review"];
 
 export default function Experiment() {
   const { data: tasks, loading } = useEntityList("Task");
+  const { data: projects } = useEntityList("Project");
   const navigate = useNavigate();
 
   const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -18,11 +21,62 @@ export default function Experiment() {
     if (t.deadline) { const d = new Date(t.deadline); d.setHours(0, 0, 0, 0); return d.getTime() === today.getTime(); }
     return false;
   };
+  const isDone = (t) => DONE.includes(t.status);
+  const isOverdue = (t) => {
+    if (isDone(t)) return false;
+    if (!t.deadline) return false;
+    const d = new Date(t.deadline); d.setHours(0, 0, 0, 0);
+    return d.getTime() < today.getTime();
+  };
+
+  // Gauge — today's task completion
   const todays = tasks.filter(isToday);
-  const completed = todays.filter((t) => DONE.includes(t.status)).length;
+  const completed = todays.filter(isDone).length;
   const total = todays.length;
   const pct = total ? Math.round((completed / total) * 100) : 0;
   const open = Math.max(0, total - completed);
+
+  // Stat cards — real productivity metrics
+  const totalTasks = tasks.length;
+  const openTasks = tasks.filter((t) => !isDone(t)).length;
+  const overdue = tasks.filter(isOverdue).length;
+
+  const totalProj = projects.length;
+  const activeProj = projects.filter((p) => ACTIVE_PROJ.includes(p.status)).length;
+  const planningProj = projects.filter((p) => p.status === "planning").length;
+
+  const cards = [
+    {
+      chip: "Taken vandaag",
+      value: completed,
+      unit: "voltooid",
+      pct,
+      goalStrong: `${pct}%`,
+      goal: `van ${total} vandaag`,
+      trend: `${open} open`,
+      trendUp: open === 0,
+    },
+    {
+      chip: "Projecten",
+      value: activeProj,
+      unit: "actief",
+      pct: totalProj ? Math.round((activeProj / totalProj) * 100) : 0,
+      goalStrong: `${totalProj ? Math.round((activeProj / totalProj) * 100) : 0}%`,
+      goal: `van ${totalProj} projecten`,
+      trend: `${planningProj} in planning`,
+      trendUp: activeProj > 0,
+    },
+    {
+      chip: "Te laat",
+      value: overdue,
+      unit: "taken",
+      pct: totalTasks ? Math.round((overdue / totalTasks) * 100) : 0,
+      goalStrong: `${totalTasks ? Math.round((overdue / totalTasks) * 100) : 0}%`,
+      goal: `van ${totalTasks} taken`,
+      trend: overdue > 0 ? "aandacht" : "op schema",
+      trendUp: overdue === 0,
+    },
+  ];
 
   return (
     <div className="space-y-8 animate-fade-up">
@@ -34,7 +88,7 @@ export default function Experiment() {
         title="Experiment"
         subtitle="Visuele proeven en prototypes"
       />
-      <div className="flex justify-center">
+      <div className="max-w-[400px] mx-auto space-y-8">
         <ProgressGauge
           image={IMAGES.feetChair}
           label="Vandaag"
@@ -46,6 +100,7 @@ export default function Experiment() {
           actionIcon={Share2}
           onAction={() => navigate("/tasks")}
         />
+        <StatCardSet cards={cards} />
       </div>
     </div>
   );
