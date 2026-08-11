@@ -44,6 +44,7 @@ export default function Email() {
   const [sendingCompose, setSendingCompose] = useState(false);
   const [draftBody, setDraftBody] = useState("");
   const [triaging, setTriaging] = useState(false);
+  const [drafting, setDrafting] = useState(false);
   const [bodyLoading, setBodyLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
   const { toast } = useToast();
@@ -85,6 +86,26 @@ export default function Email() {
 
   const folderEmails = emails.filter((m) => m.folder === folder && (activeCategory === "all" || m.category === activeCategory));
   const giuliaDrafts = emails.filter((m) => m.folder === "giulia_drafts" || m.giulia_draft);
+
+  const draftReply = async () => {
+    if (!selectedEmail) return;
+    setDrafting(true);
+    try {
+      const res = await base44.functions.invoke("draftEmailReply", { email_id: selectedEmail.id });
+      if (res?.ok) {
+        await reload();
+        setFolder("giulia_drafts");
+        setSelectedEmail(null);
+        toast({ title: "Giulia heeft een concept geschreven" });
+      } else {
+        toast({ title: "Concept mislukt", variant: "destructive" });
+      }
+    } catch (e) {
+      toast({ title: "Concept mislukt", description: String(e?.message || e), variant: "destructive" });
+    } finally {
+      setDrafting(false);
+    }
+  };
 
   const approveAndSend = async () => {
     if (!selectedEmail) return;
@@ -301,6 +322,9 @@ export default function Email() {
                     </>
                   ) : (
                     <>
+                      <GlassButton variant="outline" size="sm" onClick={draftReply} disabled={drafting}>
+                        <Sparkles className="h-4 w-4" /> {drafting ? "Giulia denkt..." : "Laat Giulia antwoorden"}
+                      </GlassButton>
                       <GlassButton variant="primary" size="sm" onClick={openReply}><Send className="h-4 w-4" /> Beantwoord</GlassButton>
                       <GlassButton variant="outline" size="sm" onClick={toggleRead}>{selectedEmail.status === "unread" ? "Markeer gelezen" : "Markeer ongelezen"}</GlassButton>
                     </>

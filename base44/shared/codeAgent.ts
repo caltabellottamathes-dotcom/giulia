@@ -68,7 +68,7 @@ async function buildDossier(sr) {
   return lines.join("\n");
 }
 
-export async function runGiuliaAgent(base44, agentName, task, tools, stopAfter = 6) {
+export async function runGiuliaAgent(base44, agentName, task, tools, stopAfter = 6, onToolCall) {
   const sr = base44.asServiceRole;
 
   const builtIn = {
@@ -128,6 +128,7 @@ export async function runGiuliaAgent(base44, agentName, task, tools, stopAfter =
       const t = all[name];
       let result;
       try { result = t ? await t.execute(args) : { error: "unknown tool" }; } catch (e) { result = { error: String(e) }; }
+      try { onToolCall?.({ name, args, result }); } catch { /* ignore */ }
       const response = (result && typeof result === "object" && !Array.isArray(result)) ? result : { value: result };
       respParts.push({ functionResponse: { name, response } });
     }
