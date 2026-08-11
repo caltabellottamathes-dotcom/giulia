@@ -8,8 +8,11 @@
  */
 import { secrets } from "base44:runtime";
 
-// gemini-1.5-flash / 2.5-flash are retired for new keys; gemini-flash-latest
-// is the stable alias that supports function calling + structured (json) output.
+// Giulia needs deep reasoning + context management + complex JSON structuring
+// across the whole OS. Pro-tier models (gemini-2.5-pro, gemini-3.1-pro-preview,
+// gemini-pro-latest) are unavailable on this key — see notes — so we use the
+// highest-capability model the key CAN call: gemini-flash-latest (currently
+// resolves to a 3.x-flash generation with strong reasoning + structured output).
 const GEMINI_MODEL = "gemini-flash-latest";
 
 export const GIULIA_PERSONA =
