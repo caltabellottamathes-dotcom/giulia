@@ -66,6 +66,13 @@ export default function Home() {
       };
 
       let saved = recs && recs.length ? recs.filter((r) => r.visible !== false) : [];
+      // Dedup "giulia" — never more than one Je dag widget
+      const gRecs = saved.filter((w) => w.widget_type === "giulia");
+      if (gRecs.length > 1) {
+        const extras = new Set(gRecs.slice(1));
+        extras.forEach((w) => base44.entities.DashboardWidget.delete(w.id).catch(() => {}));
+        saved = saved.filter((w) => !extras.has(w));
+      }
       if (!recs || recs.length === 0) {
         saved = await base44.entities.DashboardWidget.bulkCreate(
           DEFAULT_WIDGETS.map((t, i) => ({ widget_type: t, position: i, visible: true }))
@@ -80,12 +87,6 @@ export default function Home() {
           toAdd.map((t, i) => ({ widget_type: t, position: saved.length + i, visible: true }))
         );
         saved = [...saved, ...created];
-      }
-
-      // "Je dag" is a fixed widget — always present, never removable
-      if (!existingTypes.has("giulia")) {
-        const g = await base44.entities.DashboardWidget.create({ widget_type: "giulia", position: 0, visible: true }).catch(() => null);
-        if (g) saved = [g, ...saved];
       }
 
       setWidgets(saved);
@@ -252,7 +253,7 @@ export default function Home() {
                 if (!def) return null;
                 return (
                   <div key={w.id} className={cn("col-span-12 md:col-span-6", SPAN_COL[def.span] || "lg:col-span-4")}>
-                    <WidgetCell def={def} widget={w} onRemove={w.widget_type === "giulia" ? undefined : () => removeWidget(w.id)} onThemeChange={setWidgetTheme} />
+                    <WidgetCell def={def} widget={w} onRemove={() => removeWidget(w.id)} onThemeChange={setWidgetTheme} />
                   </div>
                 );
               })}

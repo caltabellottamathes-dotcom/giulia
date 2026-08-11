@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import WidgetShell from "./WidgetShell";
+import { usePanel } from "@/lib/PanelContext";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 
@@ -17,6 +18,7 @@ const greetingWord = () => {
  * from the live situation when none exists.
  */
 export default function GiuliaWidget() {
+  const { openModule } = usePanel();
   const [priorities, setPriorities] = useState([]);
   const [summary, setSummary] = useState("");
   const [updated, setUpdated] = useState(null);
@@ -64,7 +66,7 @@ export default function GiuliaWidget() {
     : "";
 
   return (
-    <WidgetShell size="2x2" radius="large" className="min-h-[320px]">
+    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("chat")} className="min-h-[320px]">
       <div className="flex flex-row h-full">
         {/* Editorial photo — touches the glass edges */}
         <div className="relative w-[34%] shrink-0 overflow-hidden rounded-r-[24px]">
@@ -91,7 +93,7 @@ export default function GiuliaWidget() {
               <ol className="mt-3.5 space-y-2 flex-1">
                 {priorities.map((p, i) => (
                   <li key={i} className="animate-fade-up" style={{ animationDelay: `${0.1 + i * 0.08}s` }}>
-                    <Link to={p.to} className="flex items-stretch gap-3 glass-1 rounded-xl px-3 py-2 hover:bg-white/5 transition text-left">
+                    <Link to={p.to} onClick={(e) => e.stopPropagation()} className="flex items-stretch gap-3 glass-1 rounded-xl px-3 py-2 hover:bg-white/5 transition text-left">
                       <span className="text-[24px] leading-none font-display font-bold tabular-nums w-7 shrink-0" style={{ color: "var(--tile-accent)" }}>{String(i + 1).padStart(2, "0")}</span>
                       <span className="text-[12px] leading-snug text-current/90 pt-1">{p.label}</span>
                     </Link>

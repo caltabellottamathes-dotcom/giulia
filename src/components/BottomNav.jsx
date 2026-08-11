@@ -19,15 +19,15 @@ export default function BottomNav() {
   // On individual project pages the project's own tabs take over the bottom bar.
   if (/^\/projects\/[^/]+/.test(pathname)) return null;
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-20">
-      <div className="px-5 lg:px-10 py-3 pr-20 lg:pr-28 flex items-center gap-x-5 gap-y-1.5 overflow-x-auto lg:overflow-visible lg:flex-wrap">
+    <nav className="fixed bottom-3 left-5 lg:bottom-4 lg:left-10 z-20">
+      <div className="flex items-center gap-x-4 overflow-x-auto max-w-[calc(100vw-2.5rem)] pb-1">
         {LINKS.map((l) => (
           <NavLink
             key={l.to}
             to={l.to}
             end={l.to === "/"}
             className={({ isActive }) =>
-              `text-[11px] uppercase tracking-[0.18em] font-medium whitespace-nowrap transition-colors ${
+              `text-[10px] uppercase tracking-[0.16em] font-medium whitespace-nowrap transition-colors ${
                 isActive ? "text-olive" : "text-foreground/50 hover:text-foreground"
               }`
             }
