@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { syncInbox } from "@/lib/emailSync";
 import { Row, Empty, SectionLabel, ActionBtn, HeroStat, MiniBars } from "./previewParts";
 import { format } from "date-fns";
 import { RefreshCw, Check } from "lucide-react";
@@ -23,7 +24,7 @@ export default function EmailPreview({ onOpen }) {
 
   const sync = async () => {
     setSyncing(true);
-    try { await base44.functions.syncGmail.invoke({}); await load(); } catch (e) {} finally { setSyncing(false); }
+    try { await syncInbox({ limit: 30 }); await load(); } catch (e) {} finally { setSyncing(false); }
   };
 
   const markRead = async (e) => {

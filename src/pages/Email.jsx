@@ -7,6 +7,7 @@ import PanelForm from "@/components/glass/PanelForm";
 import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
+import { syncInbox } from "@/lib/emailSync";
 import {
   Inbox, Star, Send, FileText, Archive, Sparkles,
   Search, Mail, Check, Edit3, X, RefreshCw, Trash2,
@@ -39,29 +40,12 @@ export default function Email() {
   const sync = async () => {
     setSyncing(true);
     try {
-      const res = await base44.functions.invoke("fetchPrivateEmails", { limit: 30 });
-      const fetched = res.emails || [];
-      if (fetched.length) {
-        const existing = await base44.entities.Email.filter({ folder: "inbox" });
-        const existingUids = new Set(existing.map((e) => e.gmail_message_id).filter(Boolean));
-        const newOnes = fetched.filter((e) => !existingUids.has(e.uid));
-        if (newOnes.length) {
-          await base44.entities.Email.bulkCreate(
-            newOnes.map((e) => ({
-              sender: e.sender || "(onbekend)",
-              sender_email: e.sender_email || "",
-              subject: e.subject || "(geen onderwerp)",
-              timestamp: e.timestamp,
-              status: e.unread ? "unread" : "read",
-              folder: "inbox",
-              gmail_message_id: e.uid,
-            }))
-          );
-        }
-      }
+      const { created } = await syncInbox({ limit: 30 });
       reload();
+      if (created) toast({ title: `${created} nieuwe email${created === 1 ? "" : "s"} opgehaald` });
     } catch (e) {
-      /* ignore */
+      console.error("Email sync fout:", e);
+      toast({ title: "Sync mislukt", description: e?.message || String(e), variant: "destructive" });
     } finally {
       setSyncing(false);
     }
