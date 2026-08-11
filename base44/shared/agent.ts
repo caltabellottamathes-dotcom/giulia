@@ -1,28 +1,19 @@
 /**
- * agent.ts — shared protocol for all GIULIA OS agents.
+ * agent.ts — shared protocol for GIULIA OS agents (single-shot decision path).
  *
- * Every agent follows the same loop:
- *   1. Read relevant entities (current state)
- *   2. Decide via chatWithGiulia (integration credits, NOT agent/message credits)
- *   3. Execute: read/write entities
- *   4. Report: write a proactive in-app Message (channel: in-app, agent_source set)
- *   5. Notify: push via sendPushNotifications when Salvo's attention is needed
- *
- * Anything with an external consequence is an Approval (status: pending) —
- * never sent automatically.
+ * agentDecide now uses BYOK Gemini with structured output (response_schema).
+ * reportToSalvo / notifySalvo / createApproval persist via Base44 entities &
+ * functions. Anything with an external consequence is an Approval (pending).
  */
-const PERSONA =
-  "Je bent Giulia, de persoonlijke AI-assistent van Salvo (Salvatore Caltabellotta). " +
-  "Toon: kalm, concreet, proactief, Nederlands. Houd advies kort en actiegericht. " +
-  "Denk in beslissingen en concrete volgende stappen.";
+import { geminiDecide } from "./gemini.ts";
 
 /**
  * agentDecide — ask Giulia (as a specific agent) for a structured decision.
- * Returns a parsed object (per schema) or null on failure. Uses integration credits.
+ * Returns a parsed object (per schema) or null. BYOK Gemini, no credits.
  */
 export async function agentDecide(base44, agentName, task, context, schema) {
   const prompt =
-    `${PERSONA}\n\nJe werkt nu als de "${agentName}" agent binnen GIULIA OS.\n\n` +
+    `Je werkt nu als de "${agentName}" agent binnen GIULIA OS.\n\n` +
     `Taak: ${task}\n\nHuidige state:\n${context}\n\n` +
     `Geef je beslissing als geldige JSON volgens het schema. Geen markdown, geen uitleg eromheen.`;
   const fallbackSchema = {
@@ -39,19 +30,11 @@ export async function agentDecide(base44, agentName, task, context, schema) {
     },
     required: ["message"],
   };
-  try {
-    const res = await base44.functions.invoke("chatWithGiulia", { message: prompt, persist: false });
-    const text = (res && (res.response || res.content)) || "";
-    if (!text) return null;
-    const m = text.match(/\{[\s\S]*\}/);
-    if (m) {
-      try { return JSON.parse(m[0]); } catch {}
-    }
-    try { return JSON.parse(text); } catch {}
-    return { message: text };
-  } catch (e) {
-    return null;
-  }
+  return await geminiDecide({
+    prompt,
+    schema: schema || fallbackSchema,
+    systemText: `Je bent agent "${agentName}" binnen GIULIA OS. Denk in beslissingen en concrete volgende stappen.`,
+  });
 }
 
 /** reportToSalvo — persist a proactive in-app Message from this agent. */

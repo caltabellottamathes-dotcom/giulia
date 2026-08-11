@@ -1,20 +1,14 @@
 /**
  * codeAgent.ts — shared framework for the real GIULIA OS agents.
  *
- * A "real agent" = a manual OpenAI-compatible tool-calling loop over Base44's
- * AI gateway (integration credits). The agent reasons, calls tools (entity CRUD,
- * signaling other agents, reporting, push, approvals), and stops when it has no
- * more tool calls or hits the step cap. No third-party agent SDK — fully owned,
- * no recursion risk. Each agent function defines task-specific tools and calls
- * runGiuliaAgent().
+ * A "real agent" = a manual Gemini function-calling loop (BYOK — no Base44
+ * integration credits). The agent reasons, calls tools (entity CRUD,
+ * signaling other agents, reporting, push, approvals), and stops when it has
+ * no more tool calls or hits the step cap. No third-party agent SDK — fully
+ * owned, no recursion risk. Each agent function defines task-specific tools
+ * and calls runGiuliaAgent().
  */
-const PERSONA =
-  "Je bent Giulia, de persoonlijke AI-assistent van Salvo (Salvatore Caltabellotta). " +
-  "Toon: kalm, concreet, proactief, Nederlands. Houd advies kort en actiegericht. " +
-  "Denk in beslissingen en concrete volgende stappen. " +
-  "Externe acties (email, whatsapp, calendar) gaan ALTIJD via create_approval — je stuurt nooit zelf. " +
-  "Gebruik report_to_salvo om acties te loggen in de Activity-feed (widgets & panelen) — niet in de chat. " +
-  "Gebruik notify_salvo (push) alleen als Salvo's aandacht echt nodig is.";
+import { geminiGenerate } from "./gemini.ts";
 
 export function todayStr() {
   return new Date().toLocaleDateString("sv-SE");
@@ -76,9 +70,6 @@ async function buildDossier(sr) {
 
 export async function runGiuliaAgent(base44, agentName, task, tools, stopAfter = 6) {
   const sr = base44.asServiceRole;
-  const { baseURL, token } = sr.aiGateway.connection();
-  const url = baseURL.replace(/\/$/, "") + "/chat/completions";
-  const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
 
   const builtIn = {
     report_to_salvo: {
@@ -104,42 +95,43 @@ export async function runGiuliaAgent(base44, agentName, task, tools, stopAfter =
   };
 
   const all = { ...builtIn, ...tools };
-  const functions = Object.entries(all).map(([name, t]) => ({
-    type: "function",
-    function: { name, description: t.description || "", parameters: t.inputSchema || { type: "object", properties: {} } },
+  const functionDeclarations = Object.entries(all).map(([name, t]) => ({
+    name,
+    description: t.description || "",
+    parameters: t.inputSchema || { type: "object", properties: {} },
   }));
 
   const dossier = await buildDossier(sr).catch(() => "");
-  const sys = `${PERSONA}\n\nJe werkt nu als de "${agentName}" agent binnen GIULIA OS.` +
+  const systemText =
+    `Je werkt nu als de "${agentName}" agent binnen GIULIA OS.\n` +
+    "Externe acties (email, whatsapp, calendar) gaan ALTIJD via create_approval — je stuurt nooit zelf. " +
+    "Gebruik report_to_salvo om acties te loggen in de Activity-feed (widgets & panelen) — niet in de chat. " +
+    "Gebruik notify_salvo (push) alleen als Salvo's aandacht echt nodig is." +
     (dossier ? `\n\n=== WAT JE WEET OVER SALVO & GIULIA ===\n${dossier}` : "");
-  const messages = [
-    { role: "system", content: sys },
-    { role: "user", content: task },
-  ];
 
-  const safeStr = (v) => { try { return JSON.stringify(v); } catch { try { return JSON.stringify(String(v)); } catch { return "null"; } } };
+  const contents = [{ role: "user", parts: [{ text: task }] }];
+  const genTools = [{ functionDeclarations }];
 
   for (let step = 0; step < stopAfter; step++) {
-    const bodyStr = safeStr({ model: "automatic", messages, tools: functions, tool_choice: "auto" });
-    const res = await fetch(url, { method: "POST", headers, body: bodyStr });
-    if (!res.ok) return null;
-    const data = await res.json().catch(() => null);
-    const msg = data?.choices?.[0]?.message;
-    if (!msg) return null;
-    const toolCalls = Array.isArray(msg.tool_calls)
-      ? msg.tool_calls.map(tc => ({ id: tc.id, type: "function", function: { name: tc.function?.name, arguments: tc.function?.arguments || "{}" } }))
-      : [];
-    messages.push({ role: "assistant", content: msg.content || "", ...(toolCalls.length ? { tool_calls: toolCalls } : {}) });
-    if (!toolCalls.length) return msg.content || null;
-    for (const tc of toolCalls) {
-      const name = tc.function.name;
-      let args = {};
-      try { args = JSON.parse(tc.function.arguments); } catch {}
+    const parts = await geminiGenerate({ contents, tools: genTools, systemText });
+    if (!parts || !parts.length) return null;
+    contents.push({ role: "model", parts });
+    const fnCalls = parts.filter((p) => p.functionCall);
+    if (!fnCalls.length) {
+      const textPart = parts.find((p) => p.text);
+      return textPart?.text || null;
+    }
+    const respParts = [];
+    for (const p of fnCalls) {
+      const name = p.functionCall.name;
+      const args = p.functionCall.args || {};
       const t = all[name];
       let result;
       try { result = t ? await t.execute(args) : { error: "unknown tool" }; } catch (e) { result = { error: String(e) }; }
-      messages.push({ role: "tool", tool_call_id: tc.id, content: safeStr(result).slice(0, 4000) });
+      const response = (result && typeof result === "object" && !Array.isArray(result)) ? result : { value: result };
+      respParts.push({ functionResponse: { name, response } });
     }
+    contents.push({ role: "user", parts: respParts });
   }
   return null;
 }

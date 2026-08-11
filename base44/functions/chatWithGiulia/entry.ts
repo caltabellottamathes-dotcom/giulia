@@ -1,15 +1,24 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { secrets } from "base44:runtime";
+import { geminiDecide } from "../../shared/gemini.ts";
 
 /**
- * chatWithGiulia — bridge from the app (UI/skin) to the external Giulia
- * Superagent. All app→Giulia chat traffic flows through this function.
- * Persists both the user's message and Giulia's reply to the Message entity
- * so the conversation history and Giulia's proactive messages show in-app.
+ * chatWithGiulia — the app→Giulia chat bridge, now on BYOK Gemini (no Base44
+ * AI credits / Superagent). Persists the user's message and Giulia's reply to
+ * the Message entity. Gemini returns a structured object (intent, action,
+ * person, deadline, giulia_response) via response_schema; the response is
+ * inserted into collections (reply as Message; action+deadline as a Task).
  */
-const AGENT_ID = "6a6cc0011ab9e3b32cfc1057";
-const DEFAULT_CONVERSATION = "6a6cc0034bc0607c481f1602";
-const BASE_URL = "https://app.base44.com/api/agents";
+const CHAT_SCHEMA = {
+  type: "object",
+  properties: {
+    intent: { type: "string", description: "Wat Salvo wil (korte label, bijv. 'taak aanmaken', 'vraag', 'afspraak', 'update')." },
+    action: { type: "string", description: "Concrete actie/taak die voortkomt uit het bericht, of leeg." },
+    person: { type: "string", description: "Naam van betrokken persoon, of leeg." },
+    deadline: { type: "string", description: "ISO datum yyyy-mm-dd als genoemd, of leeg." },
+    giulia_response: { type: "string", description: "Giulia's antwoord aan Salvo in zijn stijl (Nederlands, kort, concreet)." },
+  },
+  required: ["intent", "giulia_response"],
+};
 
 export default async function (req) {
   try {
@@ -18,7 +27,6 @@ export default async function (req) {
 
     const body = await req.json();
     const message = body.message || body.content || "";
-    const conversationId = body.conversation_id || DEFAULT_CONVERSATION;
     const persist = body.persist !== false;
 
     if (!message) {
@@ -36,38 +44,15 @@ export default async function (req) {
     } catch (e) { /* ignore persistence errors */ }
 
     const today = new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-    const context = `Context: vandaag is ${today}.${user?.full_name ? ` Je spreekt met ${user.full_name}.` : ""}\n\n`;
+    const contextLine = `Context: vandaag is ${today}.${user?.full_name ? ` Je spreekt met ${user.full_name}.` : ""}`;
+    const prompt = `${contextLine}\n\nBericht van Salvo: "${message}"\n\nBegrijp het bericht. Bepaal intent, eventuele action, betrokken person en deadline. Schrijf giulia_response als Giulia's antwoord.`;
 
-    const apiKey = secrets.get("BASE44_SERVICE_TOKEN");
-    if (!apiKey) {
-      return Response.json(
-        { error: "BASE44_SERVICE_TOKEN not configured" },
-        { status: 500 }
-      );
-    }
-
-    const response = await fetch(
-      `${BASE_URL}/${AGENT_ID}/conversations/${conversationId}/messages`,
-      {
-        method: "POST",
-        headers: {
-          api_key: apiKey,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ content: context + message }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      return Response.json(
-        { error: `API error: ${response.status}`, detail: errorText },
-        { status: response.status }
-      );
-    }
-
-    const data = await response.json();
-    const reply = data.content || "";
+    const result = await geminiDecide({
+      prompt,
+      schema: CHAT_SCHEMA,
+      systemText: "Je spreekt met Salvo (Salvatore Caltabellotta). Antwoord in helder Nederlands, kort en concreet.",
+    });
+    const reply = result?.giulia_response || "Ik kon dat even niet verwerken — probeer het opnieuw.";
 
     // Persist Giulia's reply (best-effort)
     if (persist) try {
@@ -79,11 +64,29 @@ export default async function (req) {
       });
     } catch (e) { /* ignore */ }
 
+    // Insert the structured extraction into collections (light-touch)
+    if (result && persist && result.action && String(result.action).trim()) {
+      try {
+        let contact_id = "";
+        if (result.person) {
+          const contacts = await base44.entities.Contact.list().catch(() => []);
+          const found = contacts.find((c) => (c.name || "").toLowerCase().includes(String(result.person).toLowerCase()));
+          if (found) contact_id = found.id;
+        }
+        await base44.entities.Task.create({
+          title: String(result.action).slice(0, 200),
+          deadline: result.deadline || undefined,
+          contact_id: contact_id || undefined,
+          status: "today",
+          agent_source: "chatWithGiulia",
+        });
+      } catch (e) { /* ignore */ }
+    }
+
     return Response.json({
       response: reply,
-      conversation_id: conversationId,
-      message_id: data.id || null,
-      credits_charged: data.usage?.credits_charged || 0,
+      structured: result,
+      conversation_id: body.conversation_id || null,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
