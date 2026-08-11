@@ -52,18 +52,15 @@ app.post('/emails', auth, async (req, res) => {
     await client.connect();
     const lock = await client.getMailboxLock('INBOX');
     try {
-      const uids = await client.search({ all: true });
+      const uids = await client.search({ all: true }, { uid: true });
       const total = client.mailbox ? client.mailbox.exists : null;
-      const last = uids.slice(-limit).reverse();
-      const emails = [];
-      for (const uid of last) {
-        const msg = await client.fetchOne(uid, { envelope: true, flags: true, internalDate: true }, { uid: true });
-        if (!msg) continue;
+      const last = uids.slice(-limit);
+      const fetched = [];
+      for await (const msg of client.fetch(last, { envelope: true, flags: true, internalDate: true, uid: true }, { uid: true })) {
         const from = (msg.envelope && msg.envelope.from && msg.envelope.from[0]) || {};
-        const flags = msg.flags || [];
-        const seen = flags.has ? flags.has('\\Seen') : Array.from(flags).includes('\\Seen');
-        emails.push({
-          uid: String(uid),
+        const seen = msg.flags && msg.flags.has ? msg.flags.has('\\Seen') : false;
+        fetched.push({
+          uid: String(msg.uid),
           sender: from.name || from.address || '',
           sender_email: from.address || '',
           subject: (msg.envelope && msg.envelope.subject) || '(geen onderwerp)',
@@ -73,7 +70,8 @@ app.post('/emails', auth, async (req, res) => {
           unread: !seen,
         });
       }
-      res.json({ emails, debug: { mailbox: 'INBOX', total, uidsCount: uids.length } });
+      fetched.sort((a, b) => (a.uid < b.uid ? 1 : -1));
+      res.json({ emails: fetched, debug: { mailbox: 'INBOX', total, uidsCount: uids.length } });
     } finally {
       lock.release();
       await client.logout().catch(() => {});
