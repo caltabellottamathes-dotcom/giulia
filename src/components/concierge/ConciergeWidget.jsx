@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import ConciergeAvatar from "./ConciergeAvatar";
 import ConciergePanel from "./ConciergePanel";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, X } from "lucide-react";
 
 /**
  * ConciergeWidget — the fixed anchor point for the Giulia communication
  * system. Lives in the dashboard layout, not a modal. The avatar is
  * tap-to-talk; the chat-bubble toggle opens the text panel.
  */
-export default function ConciergeWidget() {
+export default function ConciergeWidget({ onRemove }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -23,6 +23,15 @@ export default function ConciergeWidget() {
         >
           <MessageSquare className="h-4 w-4" />
         </button>
+        {onRemove && (
+          <button
+            onClick={onRemove}
+            className="h-9 w-9 rounded-full bg-ivory/10 border border-ivory/20 backdrop-blur-md flex items-center justify-center text-ivory/80 hover:text-ivory transition-colors"
+            aria-label="Verwijder concierge"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
       </div>
     </div>
   );

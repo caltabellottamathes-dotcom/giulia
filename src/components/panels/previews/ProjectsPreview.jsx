@@ -28,8 +28,8 @@ export default function ProjectsPreview({ onOpen }) {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await base44.entities.Project.filter({ status: { $in: ["planning", "in_progress", "waiting"] } }, "-last_activity_date", 6);
-      setProjects(data || []);
+      const data = await base44.entities.Project.list("-last_activity_date", 100);
+      setProjects((data || []).filter((p) => !["completed", "archived", "paused"].includes(p.status)));
     } catch (e) {} finally { setLoading(false); }
   };
 

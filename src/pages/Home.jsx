@@ -11,6 +11,7 @@ import { Plus } from "lucide-react";
 import AddWidgetPicker from "@/components/panels/AddWidgetPicker";
 import WidgetCell from "@/components/widgets/WidgetCell";
 import GiuliaIntroOverlay from "@/components/widgets/GiuliaIntroOverlay";
+import ConciergeWidget from "@/components/concierge/ConciergeWidget";
 
 import { Link } from "react-router-dom";
 import { MODULES } from "@/lib/moduleRegistry";
@@ -247,6 +248,9 @@ export default function Home() {
               {sorted.map((w) => {
                 const def = WIDGETS[w.widget_type];
                 if (!def) return null;
+                if (w.widget_type === "concierge") {
+                  return <ConciergeWidget key={w.id} onRemove={() => removeWidget(w.id)} />;
+                }
                 return (
                   <div key={w.id} className={cn("col-span-12 md:col-span-6", SPAN_COL[def.span] || "lg:col-span-4")}>
                     <WidgetCell def={def} widget={w} onRemove={() => removeWidget(w.id)} onThemeChange={setWidgetTheme} />
