@@ -38,7 +38,20 @@ const APPROVAL_CATEGORY = { email: "email", whatsapp: "whatsapp", calendar: "cal
 export async function createApproval(base44, type, title, content, context, assignee, meta) {
   try {
     const m = meta || {};
-    return await base44.asServiceRole.entities.Approval.create({
+    const sr = base44.asServiceRole;
+
+    // Dedup — voorkom tientallen approvals over exact hetzelfde onderwerp
+    // (bv. dezelfde mail die elke cyclus opnieuw wordt aangeboden). Match op
+    // thread_id of target (meest betrouwbaar per gesprek/mail), anders op titel.
+    const dupQuery = m.thread_id
+      ? { status: "pending", type, thread_id: m.thread_id }
+      : m.target
+      ? { status: "pending", type, target: String(m.target) }
+      : { status: "pending", type, title: title || type };
+    const existing = await sr.entities.Approval.filter(dupQuery).catch(() => []);
+    if (existing && existing.length) return existing[0];
+
+    return await sr.entities.Approval.create({
       title: title || type,
       description: title || type,
       action_type: type,

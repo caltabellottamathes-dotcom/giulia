@@ -60,6 +60,14 @@ export default async function (req) {
       return Response.json({ ok: true, executed: "discarded" });
     }
 
+    // ALREADY_DONE — Salvo heeft dit zelf al afgehandeld, buiten Giulia om.
+    // Geen actie uitvoeren, alleen markeren zodat het niet blijft terugkomen.
+    if (action === "already_done") {
+      await sr.entities.Approval.update(approval_id, { status: "already_done" }).catch(() => {});
+      if (ap.thread_id) await sr.entities.Thread.update(ap.thread_id, { status: "resolved", needs_info: false }).catch(() => {});
+      return Response.json({ ok: true, executed: "already_done" });
+    }
+
     // action === approve (of edit→approve)
     if (ap.type === "email") {
       const to = meta.to || ap.target || "";

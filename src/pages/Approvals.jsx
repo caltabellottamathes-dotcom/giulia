@@ -11,13 +11,13 @@ import { base44 } from "@/api/base44Client";
 import { haptic } from "@/lib/nativeBridge";
 import {
   Check, X, Edit3, Mail, MessageCircle, Calendar, CheckSquare,
-  FileText, Sparkles, ClipboardCheck, AlertCircle,
+  FileText, Sparkles, ClipboardCheck, AlertCircle, CheckCheck,
 } from "lucide-react";
 
 const categories = ["All", "email", "whatsapp", "calendar", "tasks", "projects", "documents", "other"];
 const categoryLabel = { email: "Email", whatsapp: "WhatsApp", calendar: "Calendar", tasks: "Tasks", projects: "Projects", documents: "Documents", other: "Other" };
-const statuses = ["pending", "approved", "executed", "edited", "rejected", "discarded", "all"];
-const statusLabel = { pending: "Wachtend", approved: "Goedgekeurd", executed: "Uitgevoerd", edited: "Bewerkt", rejected: "Verworpen", discarded: "Verworpen (oud)", all: "Alles" };
+const statuses = ["pending", "approved", "executed", "edited", "already_done", "rejected", "discarded", "all"];
+const statusLabel = { pending: "Wachtend", approved: "Goedgekeurd", executed: "Uitgevoerd", edited: "Bewerkt", already_done: "Al gebeurd", rejected: "Verworpen", discarded: "Verworpen (oud)", all: "Alles" };
 
 const categoryIcons = {
   email: Mail, whatsapp: MessageCircle, calendar: Calendar,
@@ -48,7 +48,8 @@ export default function Approvals() {
       });
       if (res?.ok) {
         haptic(action === "reject" ? "warning" : "success");
-        toast({ title: action === "reject" ? "Verworpen" : "Uitgevoerd", description: res.detail || "" });
+        const title = action === "reject" ? "Verworpen" : action === "already_done" ? "Al gebeurd" : "Uitgevoerd";
+        toast({ title, description: res.detail || "" });
       } else {
         haptic("warning");
         toast({
@@ -163,6 +164,7 @@ export default function Approvals() {
                 <div className="flex gap-2 mt-4 pt-4 border-t border-border/40">
                   <GlassButton variant="primary" size="sm" onClick={() => decide(approval, "approve")}><Check className="h-4 w-4" /> Goedkeuren</GlassButton>
                   <GlassButton variant="outline" size="sm" onClick={() => { setSelected(approval); setEditText(approval.content || approval.proposed_action || ""); }}><Edit3 className="h-4 w-4" /> Bewerk</GlassButton>
+                  <GlassButton variant="outline" size="sm" onClick={() => decide(approval, "already_done")}><CheckCheck className="h-4 w-4" /> Al gebeurd</GlassButton>
                   <GlassButton variant="ghost" size="sm" onClick={() => decide(approval, "reject")}><X className="h-4 w-4" /> Verwerpen</GlassButton>
                 </div>
               )}

@@ -30,7 +30,8 @@
         "rejected",
         "executed",
         "discarded",
-        "edited"
+        "edited",
+        "already_done"
       ],
       "default": "pending",
       "title": "Status"
