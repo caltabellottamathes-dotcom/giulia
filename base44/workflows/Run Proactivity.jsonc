@@ -16,21 +16,21 @@
           },
           "then": "end",
           "x-base44": {
-            "title": "Proactiviteit draaien",
-            "description": "Elke 30 min"
+            "title": "Living schedule check",
+            "description": "Dagelijks 12:00 & 16:00"
           }
         }
       }
     ]
   },
-  "description": "Verzamelt alle agent-status elke 30 minuten en stuurt \u00e9\u00e9n proactief bericht + push als Salvo's aandacht nodig is.",
+  "description": "Living schedule: controleert elke dag om 12:00 en 16:00 of de focus-taken van vandaag nog lopen en verschuift laag-prioritaire taken om kern-deadlines te beschermen; scant op dead-end threads (>3 dagen wachten) en stelt follow-up approvals voor.",
   "trigger": {
     "condition": null,
     "config": {
       "trigger_type": "scheduled",
       "events": [],
       "schedule_mode": "recurring",
-      "cron_expression": "*/30 * * * *",
+      "cron_expression": "0 12,16 * * *",
       "one_time_date": null,
       "timezone": "Europe/Amsterdam",
       "interval_value": null,

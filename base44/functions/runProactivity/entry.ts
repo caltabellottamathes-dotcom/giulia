@@ -1,38 +1,146 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { tool, runGiuliaAgent, todayStr, createTaskWithApproval } from "../../shared/codeAgent.ts";
 
 /**
- * runProactivity (Agent 9 — Proactivity Agent). Real code agent.
- * Trigger: every 30 min + on signals from other agents.
+ * runProactivity (Phase 4 — Dynamic Replanning / "the living schedule").
+ *
+ * Controleert de werkelijkheid tegen de planning. Lopen de focus-taken van
+ * vandaag nog (todo/in_progress) terwijl het later op de dag is? Dan zijn we
+ * off-track. Om kern-deadlines te beschermen worden laag-prioritaire taken
+ * (priority=low, status=todo, geen directe deadline) +2 dagen verschoven.
+ * Per verschuiving wordt een Insight ("Plan Recalibrated") aangemaakt.
+ *
+ * Daarna (Step 2.5): achtergrond-scan op dead-ends — open threads die al >3
+ * dagen op info wachten → er wordt een Approval voorgesteld om een follow-up
+ * te sturen.
+ *
+ * Volledig deterministisch — geen LLM, geen integration credits.
+ * Trigger: scheduled cron 12:00 & 16:00 Europe/Amsterdam (zie workflow),
+ *          of handmatig / bij een gemiste deep-work taak.
  */
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
     const sr = base44.asServiceRole;
-    const t = todayStr();
 
-    const tools = {
-      list_tasks: tool({ description: "Taken.", inputSchema: { type: "object", properties: {} }, execute: () => sr.entities.Task.list().catch(() => []).then(l => l.map(x => ({ id: x.id, title: x.title, status: x.status, deadline: x.deadline }))) }),
-      list_events: tool({ description: "Agenda vandaag.", inputSchema: { type: "object", properties: {} }, execute: () => sr.entities.Event.list().catch(() => []).then(l => l.filter(e => (e.start || "").slice(0, 10) === t).map(e => ({ id: e.id, title: e.title, start: e.start }))) }),
-      list_approvals: tool({ description: "Pending approvals.", inputSchema: { type: "object", properties: {} }, execute: () => sr.entities.Approval.filter({ status: "pending" }).catch(() => []).then(l => l.map(a => ({ id: a.id, title: a.title, type: a.type }))) }),
-      list_threads: tool({ description: "Open threads.", inputSchema: { type: "object", properties: {} }, execute: () => sr.entities.Thread.filter({ status: "open" }).catch(() => []).then(l => l.map(th => ({ id: th.id, needs_info: th.needs_info }))) }),
-      list_projects: tool({ description: "Projecten (stilstand).", inputSchema: { type: "object", properties: {} }, execute: () => sr.entities.Project.list().catch(() => []).then(l => l.map(p => ({ id: p.id, title: p.title, health: p.health, status: p.status }))) }),
-      list_emails: tool({ description: "Ongelezen email.", inputSchema: { type: "object", properties: {} }, execute: () => sr.entities.Email.filter({ status: "unread" }).catch(() => []).then(l => l.map(e => ({ id: e.id, subject: e.subject }))) }),
-      propose_task: tool({ description: "Stel proactief een taak voor. assignee='salvo' = een taak die Salvo moet doen; assignee='giulia' = een taak die Giulia zelf oppakt en uitvoert. Giulia legt BEIDE ter goedkeuring voor bij Salvo via het Goedkeuringspaneel/widget/pagina.", inputSchema: { type: "object", properties: { title: { type: "string" }, priority: { type: "string", enum: ["low", "medium", "high"] }, deadline: { type: "string" }, project_id: { type: "string" }, description: { type: "string" }, assignee: { type: "string", enum: ["salvo", "giulia"] } }, required: ["title", "assignee"] }, execute: async ({ title, priority, deadline, project_id, description, assignee }) => { const t = await createTaskWithApproval(base44, { title, priority, deadline, project_id, description, source: "runProactivity", delegated_to_giulia: assignee === "giulia" }); return t ? { id: t.id, title: t.title, assignee } : { error: "create failed" }; } }),
-    };
+    const now = new Date();
+    const todayString = now.toISOString().split("T")[0];
 
-    const task = `Verzamel de status van alle agents (gebruik list_* tools). Bepaal wat NU aandacht verdient. Signaleer vergeten dingen en vastlopende processen.
+    // ── Step 2.1: Assess current state ───────────────────────────────
+    const dailyPlans = await sr.entities.DailyPlan.filter({ date: todayString }).catch(() => []);
+    if (!dailyPlans || dailyPlans.length === 0) {
+      return Response.json({ ok: true, skipped: "no_plan_for_today" });
+    }
+    const todaysPlan = dailyPlans[0];
+    const priorityTaskIds = Array.isArray(todaysPlan.priorities) ? todaysPlan.priorities : [];
 
-Daarna: stel proactief CONCRETE taken voor met propose_task. Maak het onderscheid strikt:
-- assignee='salvo': dingen die Salvo zélf moet doen (bv. iemand terugbellen, document goedkeuren, afspraak bevestigen). Maximaal 3.
-- assignee='giulia': dingen die Giulia zélf kan oppakken en uitvoeren (bv. email-concept voorbereiden, kennisbank bijwerken, samenvatting maken, bestand ordenen, herinnering instellen). Maximaal 3.
-Giulia voert haar eigen taken proactief uit, maar legt ELKE taak ter goedkeuring voor — Salvo manageert alles via het Goedkeuringspaneel, -widget en -pagina.
+    // ── Step 2.2: Detect plan failure ────────────────────────────────
+    let planIsOffTrack = false;
+    const stalledPriorityTasks = [];
 
-Stuur één kort, concreet proactief bericht aan Salvo (report_to_salvo) en een push (notify_salvo) als het aandacht verdient. Pas planning aan bij veranderingen (call_agent dailyPlanning) indien nodig.`;
+    for (const taskId of priorityTaskIds) {
+      const task = await sr.entities.Task.get(taskId).catch(() => null);
+      if (!task) continue;
+      if (task.status === "todo" || task.status === "in_progress") {
+        stalledPriorityTasks.push(task);
+      }
+    }
 
-    await runGiuliaAgent(base44, "runProactivity", task, tools, 6);
-    return Response.json({ ok: true });
+    // "Laat op de dag" guard — alleen verschuiven als het >= 12:00 is,
+    // zodat een vroege handmatige run niet onnodig herschikt.
+    const lateInDay = now.getHours() >= 12;
+    if (lateInDay && stalledPriorityTasks.length > 0) {
+      planIsOffTrack = true;
+    }
+
+    // ── Step 2.3 + 2.4: Recalibration (the shift) + notify ───────────
+    let shiftedTasksCount = 0;
+
+    if (planIsOffTrack) {
+      // Non-critical: low priority, open, geen directe deadline (>24u of geen).
+      const nonCriticalTasks = await sr.entities.Task.filter({
+        status: "todo",
+        priority: "low",
+      }).catch(() => []);
+
+      const dayMs = 24 * 60 * 60 * 1000;
+      const shiftDate = (deadline) => {
+        const base = deadline ? new Date(deadline) : new Date(now.getTime() + 2 * dayMs);
+        return new Date(base.getTime() + 2 * dayMs).toISOString().split("T")[0];
+      };
+
+      for (const task of nonCriticalTasks) {
+        // Bescherm directe deadlines — alleen verschuiven als geen deadline
+        // óf deadline ligt verder dan 24u in de toekomst.
+        const hasImmediateDeadline =
+          task.deadline && (now.getTime() - new Date(task.deadline).getTime()) / dayMs < 1 &&
+          new Date(task.deadline).getTime() > now.getTime() - dayMs &&
+          new Date(task.deadline).getTime() <= now.getTime() + dayMs;
+
+        if (hasImmediateDeadline) continue;
+
+        await sr.entities.Task.update(task.id, {
+          deadline: shiftDate(task.deadline),
+        }).catch(() => null);
+        shiftedTasksCount++;
+      }
+
+      if (shiftedTasksCount > 0) {
+        await sr.entities.Insight.create({
+          title: "Plan Recalibrated",
+          content: `Ik merk dat de focus-taken langer duren. Ik heb automatisch ${shiftedTasksCount} laag-prioritaire taken naar later deze week verschoven om je focus te beschermen.`,
+          category: "Suggestion",
+          status: "new",
+          confidence: 90,
+          source: "runProactivity",
+        }).catch(() => null);
+      }
+    }
+
+    // ── Step 2.5: Background automation checks (dead-ends) ──────────
+    const openThreads = await sr.entities.Thread.filter({
+      status: "open",
+      needs_info: true,
+    }).catch(() => []);
+
+    const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
+    const deadEndThreads = openThreads.filter((th) => {
+      if (!th.last_message_date) return true; // geen activiteit ooit → dead-end
+      return now.getTime() - new Date(th.last_message_date).getTime() > threeDaysMs;
+    });
+
+    let followUpsProposed = 0;
+    for (const th of deadEndThreads.slice(0, 5)) {
+      const threadType = (th.type || "").toLowerCase();
+      const approvalType = ["email", "whatsapp", "calendar", "task", "file"].includes(threadType)
+        ? threadType
+        : "other";
+      const approvalCategory = ["email", "whatsapp", "calendar", "tasks", "projects", "documents"].includes(threadType)
+        ? threadType === "tasks" ? "tasks" : threadType
+        : "other";
+
+      await sr.entities.Approval.create({
+        title: `Follow-up: ${th.title || "openstaande thread"}`,
+        action_type: "send_followup",
+        description: `Deze thread wacht al >3 dagen op een reactie. Giulia stelt voor een herinnering/follow-up te sturen.`,
+        status: "pending",
+        category: approvalCategory,
+        type: approvalType,
+        thread_id: th.id,
+        agent_source: "runProactivity",
+        assignee: "salvo",
+      }).catch(() => null);
+      followUpsProposed++;
+    }
+
+    return Response.json({
+      ok: true,
+      date: todayString,
+      off_track: planIsOffTrack,
+      stalled_priorities: stalledPriorityTasks.length,
+      shifted_tasks: shiftedTasksCount,
+      followups_proposed: followUpsProposed,
+    });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
 }
