@@ -102,6 +102,9 @@ export default function Home() {
   useEffect(() => {
     load();
     base44.auth.me().then((u) => setUserName(u?.full_name || "")).catch(() => {});
+    // Opstart-procedure: start de enkele leider + alle agent-domeinen bij app-load,
+    // zodat na kort laden alle updates real-time zichtbaar zijn. Fire-and-forget.
+    base44.functions.invoke("startGiulia", {}).catch(() => {});
   }, []);
 
   const removeWidget = async (id) => {

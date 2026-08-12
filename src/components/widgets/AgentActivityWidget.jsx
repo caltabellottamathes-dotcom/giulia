@@ -27,8 +27,8 @@ export default function AgentActivityWidget() {
     if (running) return;
     setRunning(true);
     setProgress(0);
-    // probeer de echte cyclus op de achtergrond (kan falen als credits uitgeput zijn)
-    base44.functions.invoke("runGiuliaCycle", {}).catch(() => {});
+    // opstart-procedure: de enkele leider (giuliaLeader) initieert alle agents intern
+    base44.functions.invoke("startGiulia", {}).catch(() => {});
     const start = Date.now();
     timer.current = setInterval(() => {
       const p = Math.min(100, Math.round(((Date.now() - start) / DURATION) * 100));
