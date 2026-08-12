@@ -18,7 +18,8 @@
         "Research",
         "Suggestion",
         "Follow-up",
-        "Trend"
+        "Trend",
+        "Review"
       ],
       "default": "Suggestion",
       "title": "Category"

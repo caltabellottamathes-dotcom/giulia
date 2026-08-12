@@ -17,20 +17,20 @@
           "then": "end",
           "x-base44": {
             "title": "Week evaluatie",
-            "description": "Vrijdag 17:00"
+            "description": "Zondag 18:00"
           }
         }
       }
     ]
   },
-  "description": "Analyseert elke vrijdag 17:00 de week: voltooid, verschoven, open commitments, input voor nieuwe week.",
+  "description": "Zelflerende loop: analyseert elke zondag 18:00 de afgelopen week met Gemini, schrijft planningsregels naar Memory en een samenvatting naar Insights, en herstart de planningscyclus.",
   "trigger": {
     "condition": null,
     "config": {
       "trigger_type": "scheduled",
       "events": [],
       "schedule_mode": "recurring",
-      "cron_expression": "0 17 * * 5",
+      "cron_expression": "0 18 * * 0",
       "one_time_date": null,
       "timezone": "Europe/Amsterdam",
       "interval_value": null,

@@ -10,7 +10,8 @@
         "Projects",
         "Routines",
         "Important information",
-        "Conversation-derived"
+        "Conversation-derived",
+        "Insights"
       ],
       "default": "User preferences",
       "title": "Category"
