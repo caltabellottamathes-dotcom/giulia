@@ -44,6 +44,7 @@ import Updates from '@/pages/Updates';
 import WidgetGallery from '@/pages/WidgetGallery';
 import WidgetGallery2 from '@/pages/WidgetGallery2';
 import WidgetGallery3 from '@/pages/WidgetGallery3';
+import WidgetGallery4 from '@/pages/WidgetGallery4';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -106,6 +107,7 @@ const AuthenticatedApp = () => {
           <Route path="/updates" element={<Updates />} />
           <Route path="/widget-gallery-2" element={<WidgetGallery2 />} />
           <Route path="/widget-gallery-3" element={<WidgetGallery3 />} />
+          <Route path="/widget-gallery-4" element={<WidgetGallery4 />} />
         </Route>
         <Route path="/quick" element={<QuickCommand />} />
         <Route path="/widget-gallery" element={<WidgetGallery />} />
