@@ -17,20 +17,20 @@
           "then": "end",
           "x-base44": {
             "title": "Dagplanning maken",
-            "description": "Dagelijks 07:00"
+            "description": "Dagelijks 05:00 \u2014 Attention Engine"
           }
         }
       }
     ]
   },
-  "description": "Compileert elke ochtend om 07:00 een concrete dagplanning (DailyPlan) uit agenda, taken, deadlines en communicatie.",
+  "description": "Attention Engine: compileert elke ochtend om 05:00 een Gravity-gebaseerde dagplanning (DailyPlan) uit agenda, openstaande taken, deadlines, project-gezondheid en approvals.",
   "trigger": {
     "condition": null,
     "config": {
       "trigger_type": "scheduled",
       "events": [],
       "schedule_mode": "recurring",
-      "cron_expression": "0 7 * * *",
+      "cron_expression": "0 5 * * *",
       "one_time_date": null,
       "timezone": "Europe/Amsterdam",
       "interval_value": null,

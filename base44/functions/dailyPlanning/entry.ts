@@ -1,43 +1,125 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { tool, runGiuliaAgent, todayStr } from "../../shared/codeAgent.ts";
 
 /**
- * dailyPlanning (Agent 10 — Daily Planning Agent). Real code agent.
- * Trigger: daily 07:00 Europe/Amsterdam.
+ * dailyPlanning (Phase 3 — The Attention Engine).
+ *
+ * Vervangt statische lijsten door een dynamisch "Gravity"-systeem: elke actieve
+ * taak krijgt een Gravity Score op basis van deadline-nabijheid, expliciete
+ * prioriteit en project-gezondheid. De top 3 wordt de focus van de dag; de rest
+ * wordt secundair. Resultaat wordt als DailyPlan opgeslagen (upsert op datum).
+ *
+ * Volledig deterministisch — geen LLM, geen integration credits.
+ * Trigger: scheduled cron 05:00 Europe/Amsterdam (zie workflow Daily Planning)
+ *          of handmatige her-aanroep.
  */
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
     const sr = base44.asServiceRole;
-    const t = todayStr();
 
-    const tools = {
-      list_tasks: tool({ description: "Taken.", inputSchema: { type: "object", properties: {} }, execute: () => sr.entities.Task.list().catch(() => []).then(l => l.map(x => ({ id: x.id, title: x.title, status: x.status, deadline: x.deadline, priority: x.priority }))) }),
-      list_events: tool({ description: "Agenda vandaag.", inputSchema: { type: "object", properties: {} }, execute: () => sr.entities.Event.list().catch(() => []).then(l => l.filter(e => (e.start || "").slice(0, 10) === t).map(e => ({ title: e.title, start: e.start, location: e.location }))) }),
-      list_projects: tool({ description: "Actieve projecten.", inputSchema: { type: "object", properties: {} }, execute: () => sr.entities.Project.list().catch(() => []).then(l => l.filter(p => p.status === "in_progress").map(p => ({ id: p.id, title: p.title, next_milestone: p.next_milestone }))) }),
-      list_emails: tool({ description: "Ongelezen email (aantal).", inputSchema: { type: "object", properties: {} }, execute: () => sr.entities.Email.filter({ status: "unread" }).catch(() => []).then(l => l.length) }),
-      list_approvals: tool({ description: "Pending approvals (aantal).", inputSchema: { type: "object", properties: {} }, execute: () => sr.entities.Approval.filter({ status: "pending" }).catch(() => []).then(l => l.length) }),
-      save_daily_plan: tool({ description: "Sla de dagplanning op (upsert op datum).", inputSchema: { type: "object", properties: { date: { type: "string" }, priorities: { type: "array", items: { type: "string" } }, plan: { type: "array", items: { type: "object", properties: { time: { type: "string" }, item: { type: "string" } } } }, summary: { type: "string" } }, required: ["date", "priorities", "plan"] }, execute: async ({ date, priorities, plan, summary }) => { const existing = await sr.entities.DailyPlan.filter({ date }).catch(() => []); const plan_data = { plan, summary }; const now = new Date().toISOString(); if (existing.length) return sr.entities.DailyPlan.update(existing[0].id, { plan_data, priorities, status: "active", last_updated: now, agent_source: "dailyPlanning" }).catch(() => null); return sr.entities.DailyPlan.create({ date, plan_data, priorities, status: "active", last_updated: now, agent_source: "dailyPlanning" }).catch(() => null); } }),
+    const now = new Date();
+    const todayString = now.toISOString().split("T")[0];
+
+    // ── Step 2.1: Fetch all active entities ──────────────────────────
+    const pendingTasks = await sr.entities.Task.filter({
+      status: { $in: ["todo", "in_progress"] },
+      delegated_to_giulia: false,
+    }).catch(() => []);
+
+    const pendingApprovals = await sr.entities.Approval.filter({
+      status: "pending",
+    }).catch(() => []);
+
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(now);
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const todayEvents = await sr.entities.CalendarEvent.filter({
+      start: { $gte: todayStart.toISOString(), $lt: todayEnd.toISOString() },
+    }).catch(() => []);
+
+    // Project-gezondheid voor de dependency/context-bonus (health === "critical").
+    const projects = await sr.entities.Project.list("-created_date", 200).catch(() => []);
+    const healthById = new Map(projects.map((p) => [p.id, p.health]));
+
+    // ── Step 2.2: Gravity Scoring Algorithm ─────────────────────────
+    const scoredTasks = pendingTasks.map((task) => {
+      let score = 0;
+
+      // 1. Deadline-nabijheid
+      if (task.deadline) {
+        const hoursUntilDeadline = (new Date(task.deadline).getTime() - now.getTime()) / (1000 * 60 * 60);
+        if (hoursUntilDeadline < 0) score += 100;        // Overdue
+        else if (hoursUntilDeadline <= 24) score += 60;  // Vandaag
+        else if (hoursUntilDeadline <= 72) score += 30;  // Binnenkort
+      }
+
+      // 2. Expliciete prioriteit
+      if (task.priority === "high") score += 40;
+      else if (task.priority === "medium") score += 20;
+
+      // 3. Dependency / Context — kritiek project geeft +20
+      const health = task.project_id ? healthById.get(task.project_id) : null;
+      if (health === "critical") score += 20;
+
+      return { ...task, gravity_score: score };
+    });
+
+    scoredTasks.sort((a, b) => b.gravity_score - a.gravity_score);
+
+    // ── Step 2.3: Generate the Daily Plan structure ─────────────────
+    const topPriorities = scoredTasks.slice(0, 3);
+    const secondaryTasks = scoredTasks.slice(3);
+
+    const planData = {
+      focus_items: topPriorities.map((t) => ({
+        id: t.id,
+        title: t.title,
+        score: t.gravity_score,
+      })),
+      secondary_items: secondaryTasks.map((t) => ({
+        id: t.id,
+        title: t.title,
+        energy: t.energy_level || null,
+      })),
+      pending_approvals_count: pendingApprovals.length,
+      events_today: todayEvents.map((e) => ({
+        id: e.id,
+        title: e.title,
+        start: e.start,
+      })),
     };
 
-    const task = `Compileer een concrete dagplanning voor ${t}. Gebruik list_* voor de actuele situatie.
+    // ── Step 2.4: Save the DailyPlan (upsert op datum) ──────────────
+    const existing = await sr.entities.DailyPlan.filter({ date: todayString }).catch(() => []);
+    const isoNow = now.toISOString();
+    const payload = {
+      date: todayString,
+      priorities: topPriorities.map((t) => t.id),
+      plan_data: planData,
+      status: "active",
+      last_updated: isoNow,
+      agent_source: "dailyPlanning_engine",
+    };
 
-Beantwoord expliciet:
-- Wat moet vandaag?
-- Wat is belangrijk?
-- Wat is veranderd sinds gisteren?
-- Wat wacht op mij?
-- Wat heb ik mogelijk vergeten?
+    let saved = null;
+    if (existing.length) {
+      saved = await sr.entities.DailyPlan.update(existing[0].id, payload).catch(() => null);
+    } else {
+      saved = await sr.entities.DailyPlan.create(payload).catch(() => null);
+    }
 
-Bepaal de 3 dingen die vandaag het meest ertoe doen — niet alleen urgent, maar op belangrijkheid, afhankelijkheden en wat daadwerkelijk oplevert. Dat zijn de priorities.
-
-Maak een tijdblok-planning (plan = [{time, item}]) die deze prioriteiten in de beste momenten plaatst: deep work 's ochtends, admin/shallow werk in laag-energie momenten, rekening houdend met vaste afspraken uit list_events. Plaats een 15-min taak niet in een diep-focus blok.
-
-Sla op via save_daily_plan (priorities = top 3, plan = tijdblokken, summary = korte boodschap). Rapporteer aan Salvo (report_to_salvo + notify_salvo) in de stijl: "Goedemorgen. Ik heb je dag heringericht op wat veranderd is. 3 dingen doen er vandaag toe: 01 … 02 … 03 …" met daarna wat er verder omheen is geplaatst.`;
-
-    await runGiuliaAgent(base44, "dailyPlanning", task, tools, 8);
-    return Response.json({ ok: true, date: t });
+    return Response.json({
+      ok: true,
+      date: todayString,
+      focus_count: topPriorities.length,
+      secondary_count: secondaryTasks.length,
+      pending_approvals: pendingApprovals.length,
+      events_today: todayEvents.length,
+      plan_id: saved?.id || null,
+    });
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
 }
