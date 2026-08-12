@@ -41,11 +41,11 @@ export default function AgentActivityWidget() {
   const done = progress >= 100 && !running;
 
   return (
-    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("agents")} className="min-h-[180px]">
+    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("agents")} className="min-h-[340px]">
       <div className="flex flex-col h-full">
         <BrandPhoto
           src={IMAGES.feetChair}
-          className="h-20 -mb-8 rounded-b-[24px] z-10 shadow-[0_14px_28px_-12px_rgba(0,0,0,0.3)]"
+          className="h-28 -mb-8 rounded-b-[24px] z-10 shadow-[0_14px_28px_-12px_rgba(0,0,0,0.3)]"
           overlay="bg-gradient-to-t from-charcoal/70 via-charcoal/30 to-transparent"
         >
           <div className="absolute inset-0 p-5 flex items-end justify-between">
@@ -54,14 +54,14 @@ export default function AgentActivityWidget() {
               <p className="text-lg font-display font-semibold text-ivory mt-0.5" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>{done ? "Klaar" : running ? "Activeren…" : "Klaar om te starten"}</p>
             </div>
             <div className="text-right">
-              <span className="text-2xl font-display font-bold text-ivory tabular-nums leading-none">{progress}%</span>
+              <span className="text-3xl font-display font-bold text-ivory tabular-nums leading-none">{progress}%</span>
               <p className="text-[10px] uppercase tracking-wider text-ivory/60 mt-1">actief</p>
             </div>
           </div>
         </BrandPhoto>
 
-        <div className="flex-1 p-4 pt-8 flex flex-col items-center justify-center text-current min-h-0" onClick={(e) => e.stopPropagation()}>
-          <Ring value={progress} max={100} size={104} stroke={12}>
+        <div className="flex-1 p-5 pt-10 flex flex-col items-center justify-center text-current min-h-0" onClick={(e) => e.stopPropagation()}>
+          <Ring value={progress} max={100} size={150} stroke={14}>
             <div className="text-center">
               {done
                 ? <Check className="h-7 w-7 mx-auto" style={{ color: "var(--tile-accent)" }} />

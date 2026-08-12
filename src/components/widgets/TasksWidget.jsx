@@ -22,15 +22,15 @@ export default function TasksWidget() {
   const complete = async (e, task) => { e.stopPropagation(); try { await base44.entities.Task.update(task.id, { status: "completed" }); reload(); } catch {} };
 
   return (
-    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("tasks")} className="min-h-[150px]">
+    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("tasks")} className="min-h-[224px]">
       <div className="flex flex-col h-full">
-        <div className="flex-1 -mb-8 rounded-b-[24px] glass-3 p-4 relative z-10 shadow-[0_14px_30px_-12px_rgba(0,0,0,0.35)] text-ivory flex flex-col">
+        <div className="flex-1 -mb-8 rounded-b-[24px] glass-3 p-5 relative z-10 shadow-[0_14px_30px_-12px_rgba(0,0,0,0.35)] text-ivory flex flex-col">
           <WidgetHeader label="Taken" count={active.length ? `${active.length} open` : "alles klaar"} />
           {loading ? (
             <div className="flex-1 flex items-center justify-center"><div className="h-8 w-8 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" /></div>
           ) : (
-            <div className="flex-1 flex items-center gap-4">
-              <Ring value={done.length} max={total || 1} size={80} stroke={10}>
+            <div className="flex-1 flex items-center gap-5">
+              <Ring value={done.length} max={total || 1} size={104} stroke={12}>
                 <div className="text-center">
                   <CountUp value={active.length} className="text-2xl font-display font-semibold leading-none text-ivory" />
                   <p className="text-[9px] uppercase tracking-wider text-ivory/45 mt-1">open</p>
@@ -55,7 +55,7 @@ export default function TasksWidget() {
             </div>
           )}
         </div>
-        <div className="relative h-14 shrink-0 overflow-hidden">
+        <div className="relative h-20 shrink-0 overflow-hidden">
           <BrandPhoto src={IMAGES.feetChairs} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/70 to-charcoal/20" />
         </div>
       </div>

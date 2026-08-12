@@ -22,13 +22,13 @@ export default function UpdatesWidget() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <WidgetShell size="1x2" radius="medium" interactive onClick={() => openModule("updates")} className="min-h-[132px]">
-      <div className="p-4 flex flex-col h-full">
+    <WidgetShell size="1x2" radius="medium" interactive onClick={() => openModule("updates")} className="min-h-[176px]">
+      <div className="p-5 flex flex-col h-full">
         <div className="flex items-center justify-between mb-2">
           <p className="text-[10px] uppercase tracking-[0.26em] font-semibold text-current/60">Achter de schermen</p>
           <Sparkles className="h-4 w-4" style={{ color: "var(--tile-accent)" }} />
         </div>
-        <h3 className="text-base font-display font-semibold text-current leading-tight mb-1">Wat er nieuw is</h3>
+        <h3 className="text-lg font-display font-semibold text-current leading-tight mb-2">Wat er nieuw is</h3>
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="h-5 w-5 border-2 border-current/20 border-t-current rounded-full animate-spin" />

@@ -19,11 +19,11 @@ import { MODULES } from "@/lib/moduleRegistry";
 const DEFAULT_WIDGETS = ["giulia", "agenda", "tasks", "approvals", "email", "projects"];
 
 const SPAN_COL = {
-  3: "lg:col-span-3",
-  4: "lg:col-span-4",
-  5: "lg:col-span-4",
-  6: "lg:col-span-6",
-  8: "lg:col-span-8",
+  3: "lg:col-span-2",
+  4: "lg:col-span-2",
+  5: "lg:col-span-3",
+  6: "lg:col-span-4",
+  8: "lg:col-span-6",
 };
 
 /**
@@ -223,12 +223,12 @@ export default function Home() {
           panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100"
         )}
       >
-        <header className="px-5 lg:px-10 pt-6 lg:pt-6 pb-3 lg:pb-2 flex items-end justify-between gap-4 lg:shrink-0">
+        <header className="px-5 lg:px-10 pt-8 lg:pt-8 pb-6 lg:pb-4 flex items-end justify-between gap-4 lg:shrink-0">
           <div>
             <p className="text-[11px] uppercase tracking-[0.28em] text-ivory/80 lg:text-foreground/80 mb-3 font-semibold">
               {new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}
             </p>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display font-semibold tracking-[-0.02em] leading-[1.0] text-ivory lg:text-foreground text-shadow-soft lg:[text-shadow:none] text-balance">
+            <h1 className="text-[40px] sm:text-5xl lg:text-6xl font-display font-semibold tracking-[-0.02em] leading-[1.0] text-ivory lg:text-foreground text-shadow-soft lg:[text-shadow:none] text-balance">
               {greeting}.
             </h1>
           </div>
@@ -245,11 +245,11 @@ export default function Home() {
           {loading ? (
             <div className="grid grid-cols-12 gap-4">
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="col-span-12 md:col-span-6 lg:col-span-4 h-[150px] rounded-[24px] shimmer" />
+                <div key={i} className="col-span-12 md:col-span-6 lg:col-span-4 h-[240px] rounded-[24px] shimmer" />
               ))}
             </div>
           ) : sorted.length > 0 ? (
-            <div className="max-w-[1150px] grid grid-cols-12 lg:grid-cols-12 gap-3 lg:gap-3 auto-rows-auto">
+            <div className="max-w-[1150px] grid grid-cols-12 lg:grid-cols-10 gap-3 lg:gap-4 auto-rows-auto">
               {sorted.map((w) => {
                 const def = WIDGETS[w.widget_type];
                 if (!def) return null;
