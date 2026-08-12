@@ -38,6 +38,11 @@ export default async function (req) {
     const ap = await sr.entities.Approval.get(approval_id).catch(() => null);
     if (!ap) return Response.json({ error: "approval not found" }, { status: 404 });
 
+    // Guard: alleen pending of edited mogen nog worden uitgevoerd.
+    if (ap.status !== "pending" && ap.status !== "edited") {
+      return Response.json({ ok: false, executed: "skipped", detail: "Approval already processed." });
+    }
+
     // EDIT — pas de concept-body aan, daarna direct uitvoeren (approve-pad).
     if (action === "edit" && edit?.body != null) {
       await sr.entities.Approval.update(approval_id, { content: edit.body, status: "edited" }).catch(() => {});
@@ -68,6 +73,7 @@ export default async function (req) {
         const sent = await base44.functions.invoke("sendGmail", { to, subject, message: messageBody });
         if (sent && sent.sent) {
           await sr.entities.Approval.update(approval_id, { status: "executed" }).catch(() => {});
+          if (ap.thread_id) await sr.entities.Thread.update(ap.thread_id, { status: "resolved", needs_info: false }).catch(() => {});
           return Response.json({ ok: true, executed: "email", detail: `Verstuurd aan ${to}` });
         }
         // sendGmail faalde — bewaar goedkeuring maar markeer niet als uitgevoerd.
@@ -102,7 +108,36 @@ export default async function (req) {
       return Response.json({ ok: true, executed: "task", detail: "Taak goedgekeurd" });
     }
 
-    // whatsapp / calendar / other — alleen status wijzigen.
+    // calendar_invite — maak een CalendarEvent aan (echte uitvoering).
+    if (ap.type === "calendar") {
+      const title = meta.title || ap.title || "Afspraak";
+      const start = meta.start || meta.date || "";
+      if (!start) {
+        await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
+        return Response.json({ ok: false, executed: "calendar", error: "geen starttijd", detail: "Approval goedgekeurd, maar geen starttijd bekend — plan handmatig." });
+      }
+      try {
+        await sr.entities.CalendarEvent.create({
+          title,
+          description: ap.content || meta.description || "",
+          start,
+          end: meta.end || start,
+          location: meta.location || "",
+          participants: meta.participants || "",
+          project_id: ap.project_id || meta.project_id || undefined,
+          status: "confirmed",
+          agent_source: "executeApproval",
+        });
+        await sr.entities.Approval.update(approval_id, { status: "executed" }).catch(() => {});
+        if (ap.thread_id) await sr.entities.Thread.update(ap.thread_id, { status: "resolved", needs_info: false }).catch(() => {});
+        return Response.json({ ok: true, executed: "calendar", detail: "Agendagedeelte toegevoegd" });
+      } catch (e) {
+        await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
+        return Response.json({ ok: false, executed: "calendar", error: String(e.message || e) });
+      }
+    }
+
+    // whatsapp / other — alleen status wijzigen (geen directe send-API beschikbaar).
     await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
     return Response.json({ ok: true, executed: ap.type || "other", detail: "Goedgekeurd" });
   } catch (error) {
