@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { safeReturnTo, markInternalNavigation } from "@/lib/authReturnTo";
 import { useAuth } from "@/lib/AuthContext";
-import { IMAGES, VIDEOS } from "@/lib/images";
+import { IMAGES } from "@/lib/images";
 import { Loader2 } from "lucide-react";
 
 // Vast, gedeeld toegangsaccount — de ingevoerde code is het wachtwoord van dit account.
@@ -38,18 +38,10 @@ export default function Login() {
     <div className="relative min-h-screen overflow-hidden bg-charcoal">
       {/* Backdrop — Giulia opening video on desktop/tablet, still photo on mobile */}
       <div className="absolute inset-0">
-        <video
-          src={VIDEOS.giuliaOpening}
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="hidden md:block h-full w-full object-cover"
-        />
         <img
           src={IMAGES.feetChair}
           alt=""
-          className="md:hidden h-full w-full object-cover"
+          className="h-full w-full object-cover"
           draggable={false}
         />
         {/* Readability gradients — darken the left where the card floats */}

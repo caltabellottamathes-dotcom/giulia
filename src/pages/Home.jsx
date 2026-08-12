@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import AddWidgetPicker from "@/components/panels/AddWidgetPicker";
 import WidgetCell from "@/components/widgets/WidgetCell";
+import MasonryGrid from "@/components/widgets/MasonryGrid";
 import GiuliaIntroOverlay from "@/components/widgets/GiuliaIntroOverlay";
 import ConciergeWidget from "@/components/concierge/ConciergeWidget";
 
@@ -241,7 +242,7 @@ export default function Home() {
               ))}
             </div>
           ) : sorted.length > 0 ? (
-            <div className="max-w-[1150px] columns-1 sm:columns-2 lg:columns-3 gap-3 lg:gap-4">
+            <MasonryGrid className="max-w-[1150px]" gap={16}>
               {sorted.map((w) => {
                 const def = WIDGETS[w.widget_type];
                 if (!def) return null;
@@ -249,12 +250,10 @@ export default function Home() {
                   return <ConciergeWidget key={w.id} onRemove={() => removeWidget(w.id)} />;
                 }
                 return (
-                  <div key={w.id} className="mb-3 lg:mb-4 break-inside-avoid">
-                    <WidgetCell def={def} widget={w} onRemove={() => removeWidget(w.id)} onThemeChange={setWidgetTheme} />
-                  </div>
+                  <WidgetCell key={w.id} def={def} widget={w} onRemove={() => removeWidget(w.id)} onThemeChange={setWidgetTheme} />
                 );
               })}
-            </div>
+            </MasonryGrid>
           ) : (
             <div className="glass-card rounded-[28px] p-12 flex flex-col items-center text-center max-w-md mx-auto">
               <p className="text-lg font-display font-semibold mb-2">Je dashboard is leeg</p>

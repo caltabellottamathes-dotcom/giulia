@@ -62,15 +62,15 @@ export default function WhatsApp() {
 
   const sendMessage = async (text) => {
     if (!text.trim() || !selectedId) return;
-    await base44.entities.WhatsAppMessage.create({
-      contact_id: selectedId,
-      message: text.trim(),
-      direction: "sent",
-      timestamp: new Date().toISOString(),
-      status: "delivered",
-    });
-    setDraft("");
-    reloadMsgs();
+    setBusy(true);
+    try {
+      const res = await base44.functions.invoke("sendWhatsApp", { contact_id: selectedId, message: text.trim() });
+      if (res?.ok) { setDraft(""); reloadMsgs(); toast({ title: "Verzonden" }); }
+      else toast({ title: "Verzenden mislukt", description: res?.error || "", variant: "destructive" });
+    } catch (e) {
+      toast({ title: "Verzenden mislukt", variant: "destructive" });
+    }
+    setBusy(false);
   };
   const delMsg = async (id) => {
     if (!window.confirm("Bericht verwijderen?")) return;
@@ -79,17 +79,20 @@ export default function WhatsApp() {
   };
 
   const approveDraft = async (d) => {
-    await base44.entities.WhatsAppMessage.create({
-      contact_id: d.thread_id || d.contact_id,
-      message: d.content,
-      direction: "sent",
-      timestamp: new Date().toISOString(),
-      status: "delivered",
-    });
-    await base44.entities.Approval.update(d.id, { status: "executed" }).catch(() => {});
-    toast({ title: "Verzonden" });
-    reloadMsgs();
-    reloadDrafts();
+    setBusy(true);
+    try {
+      const res = await base44.functions.invoke("sendWhatsApp", { contact_id: d.thread_id || d.contact_id, message: d.content });
+      if (res?.ok) {
+        await base44.entities.Approval.update(d.id, { status: "executed" }).catch(() => {});
+        toast({ title: "Verzonden" });
+        reloadMsgs(); reloadDrafts();
+      } else {
+        toast({ title: "Verzenden mislukt", description: res?.error || "", variant: "destructive" });
+      }
+    } catch (e) {
+      toast({ title: "Verzenden mislukt", variant: "destructive" });
+    }
+    setBusy(false);
   };
 
   const rejectDraft = async (d) => {

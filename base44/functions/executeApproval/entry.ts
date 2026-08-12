@@ -145,7 +145,30 @@ export default async function (req) {
       }
     }
 
-    // whatsapp / other — alleen status wijzigen (geen directe send-API beschikbaar).
+    if (ap.type === "whatsapp") {
+      const to = meta.to || ap.target || "";
+      const messageBody = ap.content || meta.body || "";
+      const contactId = ap.thread_id || meta.contact_id || "";
+      if (!messageBody) {
+        await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
+        return Response.json({ ok: false, executed: "whatsapp", error: "geen bericht", detail: "Approval goedgekeurd, maar geen berichtinhoud." });
+      }
+      try {
+        const sent = await base44.functions.invoke("sendWhatsApp", { to, contact_id: contactId, message: messageBody });
+        if (sent && sent.ok) {
+          await sr.entities.Approval.update(approval_id, { status: "executed" }).catch(() => {});
+          if (ap.thread_id) await sr.entities.Thread.update(ap.thread_id, { status: "resolved", needs_info: false }).catch(() => {});
+          return Response.json({ ok: true, executed: "whatsapp", detail: "Verzonden" });
+        }
+        await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
+        return Response.json({ ok: false, executed: "whatsapp", error: "send failed", detail: (sent && sent.error) || "Verzenden via WhatsApp mislukt." });
+      } catch (e) {
+        await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
+        return Response.json({ ok: false, executed: "whatsapp", error: String(e.message || e) });
+      }
+    }
+
+    // other — alleen status wijzigen.
     await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
     return Response.json({ ok: true, executed: ap.type || "other", detail: "Goedgekeurd" });
   } catch (error) {

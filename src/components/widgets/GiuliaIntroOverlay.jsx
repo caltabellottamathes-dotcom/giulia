@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { X, Play, Loader2, Check, Sparkles, Rocket } from "lucide-react";
+import { IMAGES } from "@/lib/images";
 
 const INTRO_VIDEO =
-  "https://media.base44.com/videos/public/6a7608690d4ea2c9edc3d59b/82b6ea8ba_Create_an_introduction_video_f.mp4";
+  "https://media.base44.com/videos/public/6a7608690d4ea2c9edc3d59b/df1828cc2_Please_now_you_just_cropped_it.mp4";
 const SEEN_KEY = "giulia_boot_seen";
 
 /** Wake-reeks — runGiuliaCycle (sync + alle agenten) is de volledige proactivity run. */
@@ -77,6 +78,15 @@ export default function GiuliaIntroOverlay() {
     v.play().catch(() => setNeedsTap(true));
   }, [visible]);
 
+  // Mobiel (geen video) — start de proactivity-run automatisch na 2s.
+  useEffect(() => {
+    if (!visible) return;
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches) {
+      const t = setTimeout(startRun, 2000);
+      return () => clearTimeout(t);
+    }
+  }, [visible, startRun]);
+
   const tapToPlay = () => {
     setNeedsTap(false);
     videoRef.current?.play().catch(() => {});
@@ -93,7 +103,13 @@ export default function GiuliaIntroOverlay() {
         playsInline
         autoPlay
         onEnded={startRun}
-        className="absolute inset-0 h-full w-full object-contain"
+        className="hidden md:block absolute inset-0 h-full w-full object-contain"
+      />
+      <img
+        src={IMAGES.feetChair}
+        alt=""
+        className="md:hidden absolute inset-0 h-full w-full object-cover"
+        draggable={false}
       />
 
       {/* Overslaan — sluit de overlay op elk moment, los van de run */}

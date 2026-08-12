@@ -161,6 +161,31 @@ export default async function (req) {
           return l.map(e => ({ id: e.id, sender: e.sender, subject: e.subject, status: e.status, timestamp: e.timestamp }));
         },
       }),
+      list_whatsapp: tool({
+        description: "Lijst recente binnenkomende WhatsApp-berichten met contactnaam en telefoonnummer, zodat je ze kunt lezen en beantwoorden.",
+        inputSchema: { type: "object", properties: {} },
+        execute: async () => {
+          const [msgs, contacts] = await Promise.all([
+            sr.entities.WhatsAppMessage.filter({ direction: "received" }, "-timestamp", 20).catch(() => []),
+            sr.entities.Contact.list().catch(() => []),
+          ]);
+          const byId = new Map(contacts.map((c) => [c.id, c]));
+          return msgs.map((m) => {
+            const c = m.contact_id ? byId.get(m.contact_id) : null;
+            return { id: m.id, from: c?.name || "(onbekend)", phone: c?.phone || "", message: String(m.message || "").slice(0, 200), time: m.timestamp, contact_id: m.contact_id };
+          });
+        },
+      }),
+      send_whatsapp: tool({
+        description: "Stuur een WhatsApp-bericht namens Salvo. Geef contact_id (uit list_whatsapp) OF een telefoonnummer in to (E.164, bijv. 31612345678), plus message. Het bericht wordt echt verzonden. Gebruik dit om een binnenkomend bericht te beantwoorden als Salvo daarom vraagt.",
+        inputSchema: { type: "object", properties: { contact_id: { type: "string" }, to: { type: "string" }, message: { type: "string" } }, required: ["message"] },
+        execute: async ({ contact_id, to, message }) => {
+          try {
+            const res = await base44.functions.invoke("sendWhatsApp", { contact_id: contact_id || undefined, to: to || undefined, message });
+            return res && res.ok ? { sent: true, to: res.to } : { error: (res && res.error) || "send failed" };
+          } catch (e) { return { error: String((e && e.message) || e) }; }
+        },
+      }),
       list_knowledge: tool({
         description: "Kennisbank-items.",
         inputSchema: { type: "object", properties: {} },
@@ -265,7 +290,7 @@ export default async function (req) {
         ? "Opstartprocedure: je initialiseert GIULIA OS. Roep os_query aan voor tasks, projects, events, emails, approvals, contacts, activity, notes, ideas, memory om een volledig beeld te krijgen. Bepaal daarna wat NU aandacht verdient. MAAK CONCRETE TAKEN aan via create_task met de juiste assignee ('salvo' voor dingen die Salvo moet doen, 'giulia' voor dingen die Giulia zelf oppakt en uitvoert) — verdeel en wijs toe, maximaal 5 nieuwe taken als er echte gaten zijn. Voltooi Giulia's eigen administratieve/quick taken die afgehandeld kunnen worden (complete_task) zodat het archief opbouwt — voltooi NOOIT Salvo's taken automatisch. Leg externe acties vast via create_approval. Geef per domein één korte status (report_to_salvo). Start geen externe acties zelf."
         : source === "task_agent"
         ? "Task-agent cyclus. Je herziet ALLE open taken — zowel Salvo's als aan Giulia gedelegeerde. Herprioriteer op belangrijkheid, urgentie, afhankelijkheden en opbrengst (niet alleen deadline). Werk statussen en deadlines bij via update_task. Deel grote taken op. MAAK nieuwe taken aan (create_task) met de juiste assignee als er gaten zijn — maximaal 3. Voltooi Giulia's eigen administratieve/quick taken die afgehandeld kunnen worden (complete_task) zodat het archief opbouwt — voltooi NOOIT Salvo's taken automatisch. Leg externe acties vast via create_approval. Rapporteer EEN korte samenvatting via report_to_salvo (Activity-feed). Stuur geen chat-bericht en geen push."
-        : `Je praat met Salvo via de in-app chat en kunt door de HELE GIULIA OS-app navigeren. Je MAG zelfstandig taken, projecten, contacten, notities, ideeën en herinneringen aanmaken en bijwerken via je tools — doe dat direct als het past. Je MAG ook direct emails verwijderen (delete_emails), emails bijwerken (update_email), taken verwijderen (delete_tasks) en integraties loskoppelen (disconnect_integration) — voer deze direct uit zodra Salvo erom vraagt, zonder goedkeuring. Lees met os_query data uit elk onderdeel. Gebruik navigate om Salvo in real time naar de juiste plek te brengen. Alleen het NIEUW opstellen of versturen van email/whatsapp gaat via create_approval, nooit zelf versturen. BELANGRIJK: als je in je antwoord een taak of goedkeuring noemt die je zojuist hebt aangemaakt of gevonden (create_task, create_approval, list_tasks, os_query resultaten met een id), maak die verwijzing dan een klikbare markdown-link naar de detailpagina: [titel](/tasks?open=<id>) voor taken, [titel](/approvals?open=<id>) voor goedkeuringen — zodat Salvo er direct op door kan klikken.`;
+        : `Je praat met Salvo via de in-app chat en kunt door de HELE GIULIA OS-app navigeren. Je MAG zelfstandig taken, projecten, contacten, notities, ideeën en herinneringen aanmaken en bijwerken via je tools — doe dat direct als het past. Je MAG ook direct emails verwijderen (delete_emails), emails bijwerken (update_email), taken verwijderen (delete_tasks) en integraties loskoppelen (disconnect_integration) — voer deze direct uit zodra Salvo erom vraagt, zonder goedkeuring. Lees met os_query data uit elk onderdeel. Gebruik navigate om Salvo in real time naar de juiste plek te brengen. Je MAG WhatsApp-antwoorden direct versturen via send_whatsapp als Salvo je vraagt een bericht te beantwoorden of te versturen — lees binnenkomende berichten eerst met list_whatsapp. Voor email blijft opstellen/versturen via create_approval. BELANGRIJK: als je in je antwoord een taak of goedkeuring noemt die je zojuist hebt aangemaakt of gevonden (create_task, create_approval, list_tasks, os_query resultaten met een id), maak die verwijzing dan een klikbare markdown-link naar de detailpagina: [titel](/tasks?open=<id>) voor taken, [titel](/approvals?open=<id>) voor goedkeuringen — zodat Salvo er direct op door kan klikken.`;
     const contextLine = `Context: vandaag is ${today}.${user?.full_name ? ` Je spreekt met ${user.full_name}.` : ""}\n${persona}`;
     const task =
       `${contextLine}\n\nSignaal (bron: ${source}): "${signal}"\n\n` +
