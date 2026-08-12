@@ -65,23 +65,26 @@ export async function createApproval(base44, type, title, content, context, assi
 export async function createTaskWithApproval(base44, { title, priority, deadline, project_id, description, source, delegated_to_giulia, assignee }) {
   const sr = base44.asServiceRole;
   const forGiulia = delegated_to_giulia || assignee === "giulia";
-  const t = await sr.entities.Task.create({
-    title, priority: priority || "medium", deadline, project_id, description,
-    status: forGiulia ? "gepland" : "today",
-    delegated_to_giulia: forGiulia,
-    agent_source: source || "giulia",
-  }).catch(() => null);
-  if (t) {
-    await createApproval(
+
+  if (forGiulia) {
+    // Giulia-taak: uitsluitend ter goedkeuring — NIET in Taken. Wacht op Salvo's ja.
+    return await createApproval(
       base44, "task",
-      `Taak ${forGiulia ? "voor Giulia" : "voor Salvo"}: ${t.title}`,
-      t.description || "",
-      `Automatisch door Giulia (${source || "giulia"}) ${forGiulia ? "als eigen taak om zelf uit te voeren" : "uit een bericht gehaald"}. Goedkeuren om te behouden, verwerpen om te wissen.`,
-      forGiulia ? "giulia" : "salvo",
-      { target: t.id }
+      title,
+      description || "",
+      `Voorstel van Giulia (${source || "giulia"}) — Giulia voert dit zelf uit na jouw goedkeuring. Goedkeuren om te laten voltooien, verwerpen om te laten vervallen.`,
+      "giulia",
+      { proposed_action: { title, priority: priority || "medium", deadline, project_id, description: description || "" } }
     );
   }
-  return t;
+
+  // Salvo-taak: direct in Taken — geen goedkeuring nodig.
+  return await sr.entities.Task.create({
+    title, priority: priority || "medium", deadline, project_id, description,
+    status: "today",
+    delegated_to_giulia: false,
+    agent_source: source || "giulia",
+  }).catch(() => null);
 }
 
 /**

@@ -24,6 +24,8 @@ export default function AgentsPreview() {
   const [active, setActive] = useState(GIULIA_AGENTS[0].key);
   const [running, setRunning] = useState(false);
   const [lastRun, setLastRun] = useState(null);
+  const [msg, setMsg] = useState("");
+  const [addrRun, setAddrRun] = useState(false);
 
   const load = async () => {
     try {
@@ -59,6 +61,19 @@ export default function AgentsPreview() {
     } catch (e) {
       toast({ title: "Cyclus mislukt", variant: "destructive" });
     } finally { setRunning(false); }
+  };
+
+  const addressAgent = async () => {
+    const m = msg.trim();
+    setAddrRun(true);
+    try {
+      await base44.functions.invoke(active, m ? { message: m } : {});
+      toast({ title: `${current?.label || "Agent"} aangesproken` });
+      setMsg("");
+      await load();
+    } catch (e) {
+      toast({ title: "Aanspreken mislukt", variant: "destructive" });
+    } finally { setAddrRun(false); }
   };
 
   const current = GIULIA_AGENTS.find((a) => a.key === active);
@@ -122,6 +137,22 @@ export default function AgentsPreview() {
         </div>
 
         <div className="space-y-3 overflow-y-auto pr-1 max-h-[460px]">
+          <div className="flex items-center gap-2 mb-1">
+            <input
+              value={msg}
+              onChange={(e) => setMsg(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") addressAgent(); }}
+              placeholder={`Spreek ${current?.label || "agent"} aan…`}
+              className="flex-1 rounded-xl border border-border/40 bg-background/60 px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-olive/40"
+            />
+            <button
+              onClick={addressAgent}
+              disabled={addrRun}
+              className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-charcoal text-ivory px-3.5 py-2 text-[11px] font-semibold disabled:opacity-60 hover:bg-charcoal/90 transition"
+            >
+              {addrRun ? "Bezig…" : "Spreek aan"}
+            </button>
+          </div>
           <SectionLabel>{current?.label} · wat deze agent deed</SectionLabel>
           {loading ? (
             <Empty text="Laden…" />

@@ -60,8 +60,9 @@ export default async function (req) {
         description: "Maak een nieuwe taak aan (voor Salvo of Giulia). assignee='giulia' delegateert aan Giulia zelf.",
         inputSchema: { type: "object", properties: { title: { type: "string" }, priority: { type: "string" }, deadline: { type: "string", description: "ISO yyyy-mm-dd" }, project_id: { type: "string" }, description: { type: "string" }, assignee: { type: "string", enum: ["salvo", "giulia"] } }, required: ["title"] },
         execute: async ({ title, priority, deadline, project_id, description, assignee }) => {
-          const t = await createTaskWithApproval(base44, { title, priority, deadline, project_id, description, source: "giuliaLeader", delegated_to_giulia: assignee === "giulia" });
-          return t ? { id: t.id, title: t.title, approval: true } : { error: "create failed" };
+          const forGiulia = assignee === "giulia";
+          const r = await createTaskWithApproval(base44, { title, priority, deadline, project_id, description, source: "giuliaLeader", delegated_to_giulia: forGiulia });
+          return r ? { id: r.id, title: r.title, kind: forGiulia ? "approval" : "task" } : { error: "create failed" };
         },
       }),
       update_task: tool({
@@ -197,20 +198,15 @@ export default async function (req) {
     const reply = await runGiuliaAgent(base44, "giuliaLeader", task, tools, 8, onToolCall);
     const finalReply = reply || "Ik kon dat even niet verwerken — probeer het opnieuw.";
 
-    const executed = toolCalls.map(c => TOOL_LABELS[c.name]).filter(Boolean);
-    const unique = [...new Set(executed)];
-    const fullContent = unique.length
-      ? `${finalReply}\n\n**Uitgevoerd:** ${unique.join(" · ")}`
-      : finalReply;
-
-    if (persist) try {
+    // Chat is alleen voor echte gesprekken — geen actie-rapportage, geen logs.
+    if (source === "chat") try {
       await base44.entities.Message.create({
-        role: "giulia", content: fullContent, channel: "in-app", status: "sent", agent_source: "giuliaLeader",
+        role: "giulia", content: finalReply, channel: "in-app", status: "sent", agent_source: "giuliaLeader",
       });
     } catch { /* ignore */ }
 
     return Response.json({
-      response: fullContent,
+      response: finalReply,
       tool_calls: toolCalls,
       source,
     });

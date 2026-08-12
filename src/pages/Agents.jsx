@@ -22,6 +22,7 @@ export default function Agents() {
   const { data: acts, loading, reload } = useEntityList("Activity", { sort: "-created_date" });
   const [running, setRunning] = useState(false);
   const [activeKey, setActiveKey] = useState(null);
+  const [msg, setMsg] = useState({});
 
   const lastByAgent = {};
   (acts || []).forEach((a) => { if (a.source && !lastByAgent[a.source]) lastByAgent[a.source] = a; });
@@ -29,14 +30,16 @@ export default function Agents() {
   const todayCount = (acts || []).filter((a) => (a.created_date || "").slice(0, 10) === todayStr).length;
   const when = (a) => { try { return formatDistanceToNowStrict(new Date(a.created_date), { addSuffix: true }); } catch { return "—"; } };
 
-  const runAgent = async (key) => {
+  const addressAgent = async (key) => {
+    const m = (msg[key] || "").trim();
     setActiveKey(key);
     try {
-      await base44.functions.invoke(key, {});
-      toast({ title: `${GIULIA_AGENTS.find((a) => a.key === key)?.label || "Agent"} voltooid` });
+      await base44.functions.invoke(key, m ? { message: m } : {});
+      toast({ title: `${GIULIA_AGENTS.find((a) => a.key === key)?.label || "Agent"} aangesproken` });
+      setMsg((s) => ({ ...s, [key]: "" }));
       reload();
     } catch (e) {
-      toast({ title: "Agent uitvoeren mislukt", description: "Mogelijk zijn er geen credits beschikbaar.", variant: "destructive" });
+      toast({ title: "Aanspreken mislukt", description: "Mogelijk zijn er geen credits beschikbaar.", variant: "destructive" });
     } finally { setActiveKey(null); }
   };
 
@@ -95,9 +98,16 @@ export default function Agents() {
                 {isRunning && <Loader2 className="h-3.5 w-3.5 animate-spin text-olive" />}
               </div>
               <p className="text-xs text-muted-foreground mb-1">{g.role}</p>
-              <p className="text-[11px] text-muted-foreground/70 mb-4">{last ? `Laatst: ${when(last)}` : "Nog niet gedraaid"}</p>
-              <GlassButton variant="outline" size="sm" onClick={() => runAgent(g.key)} disabled={isRunning || running} className="mt-auto">
-                <Play className="h-3.5 w-3.5" /> {isRunning ? "Bezig…" : "Start"}
+              <p className="text-[11px] text-muted-foreground/70 mb-3">{last ? `Laatst: ${when(last)}` : "Nog niet gedraaid"}</p>
+              <input
+                value={msg[g.key] || ""}
+                onChange={(e) => setMsg((s) => ({ ...s, [g.key]: e.target.value }))}
+                onKeyDown={(e) => { if (e.key === "Enter") addressAgent(g.key); }}
+                placeholder={`Spreek ${g.label} aan…`}
+                className="mb-2 w-full rounded-xl border border-border/40 bg-background/60 px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-olive/40"
+              />
+              <GlassButton variant="outline" size="sm" onClick={() => addressAgent(g.key)} disabled={isRunning || running} className="mt-auto">
+                <Play className="h-3.5 w-3.5" /> {isRunning ? "Bezig…" : "Spreek aan"}
               </GlassButton>
             </GlassPanel>
           );

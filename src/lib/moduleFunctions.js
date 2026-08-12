@@ -1,71 +1,36 @@
 /**
  * Per-module function summaries. Each entry is a clear text label that links
  * to the corresponding page/section. Shown under the large panel name when a
- * module panel is open.
+ * module panel is open. Every `to` is a real route — clicking closes the panel.
  */
 export const MODULE_FUNCTIONS = {
   agenda: [
-    { label: "Agenda overzicht", to: "/agenda" },
-    { label: "Vandaag", to: "/agenda" },
+    { label: "Agenda", to: "/agenda" },
     { label: "Weekplanning", to: "/planning" },
-    { label: "Afspraak toevoegen", to: "/agenda" },
+    { label: "Tijdtracker", to: "/timetracker" },
   ],
   projects: [
     { label: "Projecten", to: "/projects" },
-    { label: "Nieuw project", to: "/projects" },
-    { label: "Takenbord", to: "/tasks" },
-    { label: "Mijlpalen", to: "/projects" },
+    { label: "Taken", to: "/tasks" },
+    { label: "Mensen", to: "/people" },
   ],
   tasks: [
     { label: "Taken", to: "/tasks" },
     { label: "Projecten", to: "/projects" },
     { label: "Goedkeuringen", to: "/approvals" },
+    { label: "Tijdtracker", to: "/timetracker" },
   ],
-  email: [
-    { label: "Postvak", to: "/email" },
-    { label: "Concepten", to: "/email" },
-    { label: "Giulia concepten", to: "/email" },
-  ],
-  whatsapp: [
-    { label: "Gesprekken", to: "/whatsapp" },
-    { label: "Concepten", to: "/whatsapp" },
-  ],
-  knowledge: [
-    { label: "Kennisbank", to: "/knowledge" },
-    { label: "Notities", to: "/knowledge" },
-  ],
-  documents: [
-    { label: "Documenten", to: "/documents" },
-    { label: "Uploads", to: "/documents" },
-  ],
-  people: [
-    { label: "Mensen", to: "/people" },
-    { label: "Relaties", to: "/people" },
-  ],
-  approvals: [
-    { label: "Goedkeuringen", to: "/approvals" },
-    { label: "Activering", to: "/approvals" },
-  ],
-  activity: [
-    { label: "Activiteit", to: "/activity" },
-    { label: "Tijdlijn", to: "/activity" },
-  ],
-  memory: [
-    { label: "Geheugen", to: "/memory" },
-    { label: "Context", to: "/memory" },
-  ],
-  insights: [
-    { label: "Inzichten", to: "/insights" },
-    { label: "Kansen", to: "/insights" },
-  ],
-  timetracker: [
-    { label: "Timer", to: "/timetracker" },
-    { label: "Uren", to: "/timetracker" },
-  ],
-  agents: [
-    { label: "Agenten", to: "/agents" },
-    { label: "Activeer alle", to: "/agents" },
-  ],
+  email: [{ label: "Postvak", to: "/email" }],
+  whatsapp: [{ label: "Gesprekken", to: "/whatsapp" }],
+  knowledge: [{ label: "Kennisbank", to: "/knowledge" }],
+  documents: [{ label: "Documenten", to: "/documents" }],
+  people: [{ label: "Mensen", to: "/people" }],
+  approvals: [{ label: "Goedkeuringen", to: "/approvals" }],
+  activity: [{ label: "Activiteit", to: "/activity" }],
+  memory: [{ label: "Geheugen", to: "/memory" }],
+  insights: [{ label: "Inzichten", to: "/insights" }],
+  timetracker: [{ label: "Tijdtracker", to: "/timetracker" }],
+  agents: [{ label: "Agenten", to: "/agents" }],
   chat: [{ label: "Gesprek met Giulia", to: "/chat" }],
   voice: [{ label: "Voice", to: "/voice" }],
   settings: [{ label: "Instellingen", to: "/settings" }],

@@ -80,9 +80,26 @@ export default async function (req) {
     }
 
     if (ap.type === "task") {
-      // Taak bestaat al (aangemaakt bij voorstel). Goedkeuren = behouden.
+      if (ap.assignee === "giulia") {
+        // Giulia voert uit → voltooide taak voor het archief, approval uitgevoerd.
+        try {
+          await sr.entities.Task.create({
+            title: meta.title || ap.title || "Giulia-taak",
+            description: meta.description || ap.content || "",
+            priority: meta.priority || "medium",
+            ...(meta.deadline ? { deadline: meta.deadline } : {}),
+            ...(meta.project_id ? { project_id: meta.project_id } : {}),
+            status: "completed",
+            delegated_to_giulia: true,
+            agent_source: "giulia",
+          });
+        } catch { /* ignore */ }
+        await sr.entities.Approval.update(approval_id, { status: "executed" }).catch(() => {});
+        return Response.json({ ok: true, executed: "task", detail: "Giulia heeft het voltooid" });
+      }
+      // Salvo-taak-goedkeuring (oud pad met target-taak): behoud.
       await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
-      return Response.json({ ok: true, executed: "task", detail: "Taak goedgekeurd en behouden" });
+      return Response.json({ ok: true, executed: "task", detail: "Taak goedgekeurd" });
     }
 
     // whatsapp / calendar / other — alleen status wijzigen.

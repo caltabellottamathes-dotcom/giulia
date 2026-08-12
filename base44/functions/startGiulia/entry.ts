@@ -44,7 +44,7 @@ export default async function (req) {
       `Leg concrete acties vast via create_task (assignee salvo of giulia) en create_approval voor externe acties — maar stuur niets zelf. ` +
       `Sluit af met één korte start-samenvatting aan Salvo (report_to_salvo) over de staat van het OS.`;
 
-    const leader = await runOne(base44, "giuliaLeader", { signal: startupSignal, source: "startup", persist: true });
+    const leader = await runOne(base44, "giuliaLeader", { signal: startupSignal, source: "startup", persist: false });
 
     // 3) Task-agent — de zichtbare agent die alle taken laat lopen (Salvo's +
     //    Giulia's) en proactief aanmaakt/toewijst. Geen eigen Gemini-loop:

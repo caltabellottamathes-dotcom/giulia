@@ -18,6 +18,15 @@ export const AuthProvider = ({ children }) => {
     checkAppState();
   }, []);
 
+  // Bij sluiten van de app → token wissen, zodat de volgende keer eerst ingelogd moet worden.
+  useEffect(() => {
+    const onUnload = () => {
+      try { localStorage.removeItem("base44_access_token"); } catch { /* ignore */ }
+    };
+    window.addEventListener("beforeunload", onUnload);
+    return () => window.removeEventListener("beforeunload", onUnload);
+  }, []);
+
   const checkAppState = async () => {
     try {
       setIsLoadingPublicSettings(true);

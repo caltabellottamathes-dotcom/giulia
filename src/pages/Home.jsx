@@ -34,7 +34,7 @@ const SPAN_COL = {
  * automatically. Giulia always leads.
  */
 export default function Home() {
-  const { activeModule } = usePanel();
+  const { activeModule, closeModule } = usePanel();
   const panelOpen = !!activeModule;
   const [widgets, setWidgets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -201,7 +201,7 @@ export default function Home() {
         </h1>
         <div className="flex flex-wrap gap-x-5 gap-y-1.5">
           {(MODULE_FUNCTIONS[activeModule] || []).map((f) => (
-            <Link key={f.label} to={f.to} className="text-sm text-foreground/70 hover:text-foreground transition-colors underline underline-offset-4 decoration-foreground/20">
+            <Link key={f.label} to={f.to} onClick={() => closeModule()} className="text-sm text-foreground/70 hover:text-foreground transition-colors underline underline-offset-4 decoration-foreground/20">
               {f.label}
             </Link>
           ))}

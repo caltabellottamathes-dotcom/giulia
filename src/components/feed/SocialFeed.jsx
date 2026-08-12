@@ -38,7 +38,6 @@ function timeAgo(iso) {
  * update wegvegen). Tap-knoppen voor goedkeuringen werken ook.
  */
 export default function SocialFeed() {
-  const [activity, setActivity] = useState([]);
   const [approvals, setApprovals] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [completed, setCompleted] = useState([]);
@@ -47,8 +46,7 @@ export default function SocialFeed() {
   const { toast } = useToast();
 
   const load = useCallback(async () => {
-    const [a, ap, t, done] = await Promise.all([
-      base44.entities.Activity.list("-created_date", 24).catch(() => []),
+    const [ap, t, done] = await Promise.all([
       base44.entities.Approval.filter({ status: "pending" }, "-created_date", 8).catch(() => []),
       base44.entities.Task.filter(
         { status: { $in: ["today", "upcoming", "overdue", "waiting", "todo", "in_progress", "gepland", "actief"] } },
@@ -56,7 +54,6 @@ export default function SocialFeed() {
       ).catch(() => []),
       base44.entities.Task.filter({ status: "completed" }, "-updated_date", 10).catch(() => []),
     ]);
-    setActivity(a || []);
     setApprovals(ap || []);
     setTasks(t || []);
     setCompleted(done || []);
@@ -65,7 +62,7 @@ export default function SocialFeed() {
   useEffect(() => {
     load();
     const unsubs = [];
-    ["Activity", "Approval", "Task"].forEach((n) => {
+    ["Approval", "Task"].forEach((n) => {
       try {
         const u = base44.entities[n]?.subscribe?.(() => load());
         if (u) unsubs.push(u);
@@ -78,10 +75,9 @@ export default function SocialFeed() {
     const items = [];
     approvals.forEach((a) => items.push({ kind: "approval", id: "ap" + a.id, date: a.created_date, data: a }));
     tasks.forEach((t) => items.push({ kind: "task", id: "tk" + t.id, date: t.created_date, data: t }));
-    activity.forEach((a) => items.push({ kind: "activity", id: "ac" + a.id, date: a.created_date || a.timestamp, data: a }));
     items.sort((x, y) => new Date(y.date || 0) - new Date(x.date || 0));
     return items.filter((it) => !dismissed.has(it.id));
-  }, [activity, approvals, tasks, dismissed]);
+  }, [approvals, tasks, dismissed]);
 
   const decide = useCallback(async (ap, action) => {
     if (busy) return;
@@ -255,32 +251,5 @@ function FeedCard({ item, onDragEnd, onApprove, onReject, onComplete, busy }) {
     );
   }
 
-  const a = item.data;
-  const meta = SOURCE_META[a.source] || { icon: Sparkles, label: a.source || "Giulia" };
-  const Icon = meta.icon;
-  return (
-    <motion.div
-      layout
-      exit={{ opacity: 0, x: -300, transition: { duration: 0.25 } }}
-      drag="x"
-      dragDirectionLock
-      dragConstraints={{ left: -160, right: 160 }}
-      dragElastic={0.6}
-      onDragEnd={(e, info) => onDragEnd(item, info)}
-      className="relative glass-1 rounded-2xl p-4 cursor-grab active:cursor-grabbing overflow-hidden"
-    >
-      <div className="flex items-start gap-3">
-        <div className="h-9 w-9 rounded-xl glass-1 flex items-center justify-center shrink-0">
-          <Icon className="h-4 w-4 text-olive" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-0.5">
-            <p className="text-[10px] uppercase tracking-wider text-olive font-semibold">{meta.label}</p>
-            <span className="text-[10px] text-muted-foreground ml-auto">{timeAgo(a.created_date || a.timestamp)}</span>
-          </div>
-          <p className="text-sm text-foreground/85">{a.description}</p>
-        </div>
-      </div>
-    </motion.div>
-  );
+  return null;
 }
