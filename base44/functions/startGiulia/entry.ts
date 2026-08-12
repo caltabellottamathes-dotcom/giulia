@@ -47,7 +47,9 @@ export default async function (req) {
     const leader = await runOne(base44, "giuliaLeader", { signal: startupSignal, source: "startup", persist: true });
 
     // 3) Task-agent — de zichtbare agent die alle taken laat lopen (Salvo's +
-    //    Giulia's). Geen eigen Gemini-loop: delegeert naar de leider.
+    //    Giulia's) en proactief aanmaakt/toewijst. Geen eigen Gemini-loop:
+    //    delegeert naar de leider. (runProactivity draait op zijn eigen
+    //    ingeplande workflow — niet synchroon hier, anders rate-limit op free tier.)
     const taskAgent = await runOne(base44, "manageTasks", {});
 
     // 4) Activity-log → zichtbaar in widgets & panelen

@@ -41,22 +41,25 @@ export default function SocialFeed() {
   const [activity, setActivity] = useState([]);
   const [approvals, setApprovals] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [completed, setCompleted] = useState([]);
   const [dismissed, setDismissed] = useState(() => new Set());
   const [busy, setBusy] = useState(false);
   const { toast } = useToast();
 
   const load = useCallback(async () => {
-    const [a, ap, t] = await Promise.all([
+    const [a, ap, t, done] = await Promise.all([
       base44.entities.Activity.list("-created_date", 24).catch(() => []),
       base44.entities.Approval.filter({ status: "pending" }, "-created_date", 8).catch(() => []),
       base44.entities.Task.filter(
         { status: { $in: ["today", "upcoming", "overdue", "waiting", "todo", "in_progress", "gepland", "actief"] } },
         "-created_date", 12
       ).catch(() => []),
+      base44.entities.Task.filter({ status: "completed" }, "-updated_date", 10).catch(() => []),
     ]);
     setActivity(a || []);
     setApprovals(ap || []);
     setTasks(t || []);
+    setCompleted(done || []);
   }, []);
 
   useEffect(() => {
@@ -154,6 +157,23 @@ export default function SocialFeed() {
               />
             ))}
           </AnimatePresence>
+        </div>
+      )}
+
+      {completed.length > 0 && (
+        <div className="pt-2">
+          <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-2">
+            Archief · {completed.length} voltooid
+          </p>
+          <div className="space-y-1.5">
+            {completed.slice(0, 8).map((t) => (
+              <div key={t.id} className="flex items-center gap-3 glass-1 rounded-xl px-3 py-2 opacity-70">
+                <Check className="h-3.5 w-3.5 text-olive shrink-0" />
+                <p className="text-sm line-through truncate flex-1">{t.title}</p>
+                <span className="text-[10px] text-muted-foreground">{timeAgo(t.updated_date || t.created_date)}</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </section>
