@@ -8,7 +8,7 @@ import TaskAgentRunner from "@/components/tasks/TaskAgentRunner";
 import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
-import { Plus, Sparkles, CheckSquare, Clock, Pencil, Trash2 } from "lucide-react";
+import { Plus, Sparkles, CheckSquare, Clock, Pencil, Trash2, CheckCheck, Hourglass, Bot } from "lucide-react";
 
 const categories = ["today", "upcoming", "overdue", "waiting", "delegated", "completed"];
 const categoryLabel = {
@@ -37,6 +37,11 @@ export default function Tasks() {
     reload();
   };
 
+  const setStatus = async (task, status, extra) => {
+    await base44.entities.Task.update(task.id, { status, ...(extra || {}) });
+    reload();
+  };
+
   const createTask = async () => {
     if (!newTitle.trim()) return;
     await base44.entities.Task.create({ title: newTitle.trim(), status: "today", priority: "medium" });
@@ -47,11 +52,15 @@ export default function Tasks() {
 
   const startEdit = (t) => {
     setEditTask(t);
-    setEditDraft({ title: t.title, priority: t.priority || "medium", status: t.status, deadline: t.deadline || "" });
+    setEditDraft({ title: t.title, description: t.description || "", priority: t.priority || "medium", status: t.status, deadline: t.deadline || "" });
   };
   const saveEdit = async () => {
     if (!editTask) return;
-    await base44.entities.Task.update(editTask.id, { ...editDraft, deadline: editDraft.deadline || undefined });
+    await base44.entities.Task.update(editTask.id, {
+      ...editDraft,
+      deadline: editDraft.deadline || undefined,
+      ...(editDraft.status === "delegated" ? { delegated_to_giulia: true } : {}),
+    });
     setEditTask(null);
     reload();
   };
@@ -132,7 +141,7 @@ export default function Tasks() {
               >
                 {task.status === "completed" && <CheckSquare className="h-3 w-3 text-white" />}
               </button>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 cursor-pointer" onClick={() => startEdit(task)}>
                 <p className={cn("text-sm font-medium", task.status === "completed" && "line-through text-muted-foreground")}>
                   {task.title}
                 </p>
@@ -151,6 +160,9 @@ export default function Tasks() {
                 {task.status === "delegated" && (
                   <StatusBadge variant="draft"><Sparkles className="h-2.5 w-2.5" /> Giulia</StatusBadge>
                 )}
+                <button onClick={() => setStatus(task, "completed")} title="Gedaan" className="h-7 w-7 rounded-lg glass-1 flex items-center justify-center text-muted-foreground hover:text-olive opacity-0 group-hover:opacity-100 transition"><CheckCheck className="h-3.5 w-3.5" /></button>
+                <button onClick={() => setStatus(task, "waiting")} title="Wachten" className="h-7 w-7 rounded-lg glass-1 flex items-center justify-center text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition"><Hourglass className="h-3.5 w-3.5" /></button>
+                <button onClick={() => setStatus(task, "delegated", { delegated_to_giulia: true })} title="Voor Giulia" className="h-7 w-7 rounded-lg glass-1 flex items-center justify-center text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition"><Bot className="h-3.5 w-3.5" /></button>
                 <button onClick={() => startEdit(task)} className="h-7 w-7 rounded-lg glass-1 flex items-center justify-center text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition" aria-label="Bewerk"><Pencil className="h-3.5 w-3.5" /></button>
                 <button onClick={() => delTask(task)} className="h-7 w-7 rounded-lg glass-1 flex items-center justify-center text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition" aria-label="Verwijder"><Trash2 className="h-3.5 w-3.5" /></button>
               </div>
@@ -189,12 +201,22 @@ export default function Tasks() {
         eyebrow="Taken"
         footer={<>
           <GlassButton variant="primary" size="md" className="flex-1" onClick={saveEdit}>Opslaan</GlassButton>
+          <GlassButton variant="outline" size="md" onClick={() => { delTask(editTask); setEditTask(null); }}><Trash2 className="h-4 w-4" /> Verwijder</GlassButton>
           <GlassButton variant="outline" size="md" onClick={() => setEditTask(null)}>Annuleer</GlassButton>
         </>}
       >
         <div>
           <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Titel</label>
           <input value={editDraft.title || ""} onChange={(e) => setEditDraft({ ...editDraft, title: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
+        </div>
+        <div>
+          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Meer info</label>
+          <textarea value={editDraft.description || ""} onChange={(e) => setEditDraft({ ...editDraft, description: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none min-h-[90px] resize-none" placeholder="Extra details over deze taak" />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <GlassButton variant="outline" size="sm" onClick={() => setEditDraft({ ...editDraft, status: "completed" })}><CheckCheck className="h-3.5 w-3.5" /> Gedaan</GlassButton>
+          <GlassButton variant="outline" size="sm" onClick={() => setEditDraft({ ...editDraft, status: "waiting" })}><Hourglass className="h-3.5 w-3.5" /> Wachten</GlassButton>
+          <GlassButton variant="outline" size="sm" onClick={() => setEditDraft({ ...editDraft, status: "delegated" })}><Bot className="h-3.5 w-3.5" /> Voor Giulia</GlassButton>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>

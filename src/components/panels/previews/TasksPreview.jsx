@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Row, Empty, SectionLabel, ActionBtn, HeroStat, MiniBars } from "./previewParts";
-import { Check } from "lucide-react";
+import { Check, Hourglass, Bot, Trash2 } from "lucide-react";
 
 const PRIORITY_COLOR = {
   high: "hsl(var(--destructive))",
@@ -33,13 +33,18 @@ export default function TasksPreview({ onOpen }) {
     return () => { try { unsub && unsub(); } catch { /* ignore */ } };
   }, []);
 
-  const complete = async (t) => {
+  const setStatus = async (t, status, extra) => {
     setTasks((prev) => prev.filter((x) => x.id !== t.id));
     try {
-      await base44.entities.Task.update(t.id, { status: "completed" });
+      await base44.entities.Task.update(t.id, { status, ...(extra || {}) });
     } catch (e) {
       load();
     }
+  };
+  const complete = (t) => setStatus(t, "completed");
+  const remove = async (t) => {
+    setTasks((prev) => prev.filter((x) => x.id !== t.id));
+    try { await base44.entities.Task.delete(t.id); } catch (e) { load(); }
   };
 
   const today = tasks.filter((t) => t.status === "today" || t.status === "overdue");
@@ -79,7 +84,14 @@ export default function TasksPreview({ onOpen }) {
               sub={t.deadline ? `Uiterlijk ${new Date(t.deadline).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}` : undefined}
               onClick={onOpen}
               accent={PRIORITY_COLOR[t.priority] || "hsl(var(--smoke))"}
-              action={<ActionBtn icon={Check} label="Afronden" tone="olive" onClick={() => complete(t)} />}
+              action={
+                <div className="flex items-center gap-1">
+                  <ActionBtn icon={Check} label="Afronden" tone="olive" onClick={() => complete(t)} />
+                  <ActionBtn icon={Hourglass} label="Wachten" onClick={() => setStatus(t, "waiting")} />
+                  <ActionBtn icon={Bot} label="Voor Giulia" onClick={() => setStatus(t, "delegated", { delegated_to_giulia: true })} />
+                  <ActionBtn icon={Trash2} label="Verwijder" onClick={() => remove(t)} />
+                </div>
+              }
             />
           ))}
         </div>
