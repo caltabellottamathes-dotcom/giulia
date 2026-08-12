@@ -18,14 +18,6 @@ import { MODULES } from "@/lib/moduleRegistry";
 
 const DEFAULT_WIDGETS = ["giulia", "agenda", "tasks", "approvals", "email", "projects"];
 
-const SPAN_COL = {
-  3: "lg:col-span-2",
-  4: "lg:col-span-2",
-  5: "lg:col-span-3",
-  6: "lg:col-span-4",
-  8: "lg:col-span-6",
-};
-
 /**
  * Home — a tidy, sorted bento grid. The user's chosen widgets persist and are
  * laid out cleanly on open; widgets that need attention right now (unread
@@ -243,13 +235,13 @@ export default function Home() {
         {/* Tidy sorted bento grid */}
         <div className="px-5 lg:px-10 pb-10 lg:pb-0">
           {loading ? (
-            <div className="grid grid-cols-12 gap-4">
+            <div className="max-w-[1150px] columns-1 sm:columns-2 lg:columns-3 gap-3 lg:gap-4">
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="col-span-12 md:col-span-6 lg:col-span-4 h-[240px] rounded-[24px] shimmer" />
+                <div key={i} className="mb-3 lg:mb-4 break-inside-avoid h-[220px] rounded-[24px] shimmer" />
               ))}
             </div>
           ) : sorted.length > 0 ? (
-            <div className="max-w-[1150px] grid grid-cols-12 lg:grid-cols-10 gap-3 lg:gap-4 auto-rows-auto">
+            <div className="max-w-[1150px] columns-1 sm:columns-2 lg:columns-3 gap-3 lg:gap-4">
               {sorted.map((w) => {
                 const def = WIDGETS[w.widget_type];
                 if (!def) return null;
@@ -257,7 +249,7 @@ export default function Home() {
                   return <ConciergeWidget key={w.id} onRemove={() => removeWidget(w.id)} />;
                 }
                 return (
-                  <div key={w.id} className={cn("col-span-12 md:col-span-6", SPAN_COL[def.span] || "lg:col-span-4")}>
+                  <div key={w.id} className="mb-3 lg:mb-4 break-inside-avoid">
                     <WidgetCell def={def} widget={w} onRemove={() => removeWidget(w.id)} onThemeChange={setWidgetTheme} />
                   </div>
                 );

@@ -43,6 +43,10 @@ export const IMAGES = {
   bagJacket: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/c8916d9bd_Leather_handbag_and_quilted_jacket_202608101729.jpg",
 };
 
+export const VIDEOS = {
+  giuliaOpening: "https://media.base44.com/videos/public/6a7608690d4ea2c9edc3d59b/df1828cc2_Please_now_you_just_cropped_it.mp4",
+};;
+
 export const editorialImages = [
   IMAGES.portraitThinking,
   IMAGES.portraitBootHands,
