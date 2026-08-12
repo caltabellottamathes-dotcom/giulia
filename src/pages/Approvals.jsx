@@ -16,6 +16,8 @@ import {
 
 const categories = ["All", "email", "whatsapp", "calendar", "tasks", "projects", "documents", "other"];
 const categoryLabel = { email: "Email", whatsapp: "WhatsApp", calendar: "Calendar", tasks: "Tasks", projects: "Projects", documents: "Documents", other: "Other" };
+const statuses = ["pending", "approved", "executed", "edited", "rejected", "discarded", "all"];
+const statusLabel = { pending: "Wachtend", approved: "Goedgekeurd", executed: "Uitgevoerd", edited: "Bewerkt", rejected: "Verworpen", discarded: "Verworpen (oud)", all: "Alles" };
 
 const categoryIcons = {
   email: Mail, whatsapp: MessageCircle, calendar: Calendar,
@@ -24,6 +26,7 @@ const categoryIcons = {
 
 export default function Approvals() {
   const [category, setCategory] = useState("All");
+  const [status, setStatus] = useState("pending");
   const [selected, setSelected] = useState(null);
   const [editText, setEditText] = useState("");
 
@@ -33,7 +36,7 @@ export default function Approvals() {
   const projTitle = (id) => projects.find((p) => p.id === id)?.title;
 
   const filtered = approvals.filter((a) => category === "All" || a.category === category);
-  const pending = filtered.filter((a) => a.status === "pending");
+  const pending = filtered.filter((a) => status === "all" || a.status === status);
 
   // Voert de goedgekeurde/verworpen actie écht uit via de executeApproval-functie.
   const decide = async (approval, action, edit) => {
@@ -87,6 +90,21 @@ export default function Approvals() {
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        {statuses.map((s) => (
+          <button
+            key={s}
+            onClick={() => setStatus(s)}
+            className={cn(
+              "px-3 py-1.5 text-xs rounded-full whitespace-nowrap transition-all",
+              status === s ? "bg-olive text-ivory font-medium" : "glass-1 text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {statusLabel[s]}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-2 overflow-x-auto pb-1">
         {categories.map((cat) => (
           <button
             key={cat}
@@ -114,6 +132,7 @@ export default function Approvals() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <StatusBadge variant="urgent">{approval.type || approval.category}</StatusBadge>
+                    <StatusBadge variant="muted">{statusLabel[approval.status] || approval.status}</StatusBadge>
                     {approval.action_type && <StatusBadge variant="muted">{approval.action_type.replace(/_/g, " ")}</StatusBadge>}
                     {approval.assignee && (
                       <StatusBadge variant={approval.assignee === "giulia" ? "waiting" : "active"}>
@@ -140,11 +159,13 @@ export default function Approvals() {
                   )}
                 </div>
               </div>
-              <div className="flex gap-2 mt-4 pt-4 border-t border-border/40">
-                <GlassButton variant="primary" size="sm" onClick={() => decide(approval, "approve")}><Check className="h-4 w-4" /> Goedkeuren</GlassButton>
-                <GlassButton variant="outline" size="sm" onClick={() => { setSelected(approval); setEditText(approval.content || approval.proposed_action || ""); }}><Edit3 className="h-4 w-4" /> Bewerk</GlassButton>
-                <GlassButton variant="ghost" size="sm" onClick={() => decide(approval, "reject")}><X className="h-4 w-4" /> Verwerpen</GlassButton>
-              </div>
+              {approval.status === "pending" && (
+                <div className="flex gap-2 mt-4 pt-4 border-t border-border/40">
+                  <GlassButton variant="primary" size="sm" onClick={() => decide(approval, "approve")}><Check className="h-4 w-4" /> Goedkeuren</GlassButton>
+                  <GlassButton variant="outline" size="sm" onClick={() => { setSelected(approval); setEditText(approval.content || approval.proposed_action || ""); }}><Edit3 className="h-4 w-4" /> Bewerk</GlassButton>
+                  <GlassButton variant="ghost" size="sm" onClick={() => decide(approval, "reject")}><X className="h-4 w-4" /> Verwerpen</GlassButton>
+                </div>
+              )}
             </GlassPanel>
           );
         })}
@@ -152,7 +173,9 @@ export default function Approvals() {
         {!loading && pending.length === 0 && (
           <GlassPanel level={2} className="p-12 text-center">
             <ClipboardCheck className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">Geen acties wachten op goedkeuring</p>
+            <p className="text-sm text-muted-foreground">
+              {status === "pending" ? "Geen acties wachten op goedkeuring" : `Niets met status "${statusLabel[status]}"`}
+            </p>
             <p className="text-xs text-muted-foreground mt-1">Giulia werkt autonoom verder</p>
           </GlassPanel>
         )}
