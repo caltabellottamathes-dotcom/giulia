@@ -6,18 +6,14 @@
  * is injected at the root level via `system_instruction`. Supports structured
  * JSON output (response_schema) and raw tool-calling turns for the agent loop.
  *
- * BELANGRIJK: eerdere versies gebruikten "gemini-3.1-flash-lite" — dat model
- * bestaat niet in de v1beta API, dus élke aanroep faalde stil en de agents
- * deden niets. We gebruiken nu geldige modellen met een fallback-chain, en
- * fouten worden NIET meer doorgeslikt maar gegooid zodat ze zichtbaar zijn in
- * de testlogs / Activity-feed.
+ * ENKEL gemini-3.1-flash-lite wordt gebruikt — géén automatische fallback naar
+ * andere modellen. Fouten worden doorgeslikt naar null bij geminiDecide/Chat
+ * (single-shot), maar gegooid bij geminiGenerate (agent-loop) zodat ze
+ * zichtbaar zijn in de testlogs / Activity-feed.
  */
 import { secrets } from "base44:runtime";
 
-// Geldige v1beta-modellen, van capabel naar hoog-quota fallback.
-// gemini-2.5-flash: tools + response_schema, goede gratis tier.
-// gemini-2.0-flash-lite: zeer hoge gratis quota, ondersteunt tools + schema.
-// gemini-1.5-flash: brede compatibiliteit als laatste redmiddel.
+// Het enige gebruikte model — géén fallback-chain.
 const MODELS = ["gemini-3.1-flash-lite"];
 
 export const GIULIA_PERSONA =

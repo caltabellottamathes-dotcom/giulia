@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { geminiDecide, GIULIA_PERSONA } from '../../shared/gemini.ts';
 
 /**
  * runProactivity (Phase 4 — Dynamic Replanning / "the living schedule").
@@ -132,6 +133,12 @@ export default async function (req) {
       followUpsProposed++;
     }
 
+    // ── Step 3.1: Project Radar (stall detection) ─────────────────────
+    const radar = await runProjectRadar(sr, now);
+
+    // ── Step 3.2: Dependency unblocking ───────────────────────────────
+    const unblocked = await unblockDependencies(sr);
+
     return Response.json({
       ok: true,
       date: todayString,
@@ -139,8 +146,90 @@ export default async function (req) {
       stalled_priorities: stalledPriorityTasks.length,
       shifted_tasks: shiftedTasksCount,
       followups_proposed: followUpsProposed,
+      project_radar: radar,
+      dependencies_unblocked: unblocked,
     });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
+}
+
+// ── Phase 7 · Step 3.1: Project Radar — stall detection ─────────────────
+// Scant actieve projects (in_progress/planning). Bij > STAGNANT_DAYS dagen
+// zonder last_activity_date: health → "attention", Risk Insight, en een
+// Gemini-gedraftete follow-up → Gatekeeper (ENKEL gemini-3.1-flash-lite).
+async function runProjectRadar(sr, now) {
+  const STAGNANT_DAYS = 11;
+  const dayMs = 24 * 60 * 60 * 1000;
+  const projects = await sr.entities.Project.list("-created_date", 200).catch(() => []);
+  const active = projects.filter((p) => ["in_progress", "planning"].includes(p.status));
+  let flagged = 0;
+  let drafts = 0;
+  for (const p of active) {
+    const last = p.last_activity_date ? new Date(p.last_activity_date) : null;
+    const stale = !last || (now.getTime() - last.getTime()) >= STAGNANT_DAYS * dayMs;
+    if (!stale) continue;
+    if (p.health !== "attention") {
+      await sr.entities.Project.update(p.id, { health: "attention" }).catch(() => null);
+    }
+    await sr.entities.Insight.create({
+      title: `Project inactive: ${p.title}`,
+      content: `Je hebt ${STAGNANT_DAYS} dagen niets aan dit project gedaan. Wacht je op iemand? Of is er simpelweg geen volgende actie gedefinieerd?`,
+      category: "Risk",
+      status: "new",
+      confidence: 0.7,
+      source: "runProactivity · Project Radar",
+      project_id: p.id,
+    }).catch(() => null);
+    flagged++;
+    const draft = await geminiDecide({
+      model: "gemini-3.1-flash-lite",
+      prompt: `Project "${p.title}" is al ${STAGNANT_DAYS} dagen inactief. Schrijf een korte, professionele Nederlandse follow-up e-mail (max 120 woorden) aan de betrokken contactpersoon om te vragen wat de volgende stap is. Geef alleen de e-mailbody terug in JSON {body: string}.`,
+      schema: { type: "object", properties: { body: { type: "string" } }, required: ["body"] },
+      systemText: GIULIA_PERSONA,
+      temperature: 0.5,
+    });
+    if (draft && draft.body) {
+      await sr.entities.Approval.create({
+        title: `Follow-up: ${p.title}`,
+        action_type: "send_followup",
+        description: `Project Radar: ${STAGNANT_DAYS} dagen geen activiteit. Giulia stelt een follow-up voor.`,
+        content: draft.body,
+        status: "pending",
+        category: "email",
+        type: "email",
+        project_id: p.id,
+        agent_source: "runProactivity · Project Radar",
+        assignee: "salvo",
+      }).catch(() => null);
+      drafts++;
+    }
+  }
+  return { flagged, drafts };
+}
+
+// ── Phase 7 · Step 3.2: Dependency unblocking ───────────────────────────
+// Taken met status "waiting" wiens parent_task voltooid is → activeer naar
+// "todo" + Opportunity Insight. Idempotent: eenmaal ontgrendeld zijn ze niet
+// langer "waiting", dus geen duplicaten bij volgende runs.
+async function unblockDependencies(sr) {
+  const waiting = await sr.entities.Task.filter({ status: "waiting" }, "-created_date", 200).catch(() => []);
+  let count = 0;
+  for (const w of waiting) {
+    if (!w.parent_task_id) continue;
+    const parent = await sr.entities.Task.get(w.parent_task_id).catch(() => null);
+    if (!parent || parent.status !== "completed") continue;
+    await sr.entities.Task.update(w.id, { status: "todo" }).catch(() => null);
+    await sr.entities.Insight.create({
+      title: "Vervolgtaak geactiveerd",
+      content: `Omdat '${parent.title}' klaar is, kan '${w.title}' nu starten. Ik heb de vervolgtaak geactiveerd.`,
+      category: "Opportunity",
+      status: "new",
+      confidence: 0.8,
+      source: "runProactivity · Dependency Unblock",
+      project_id: w.project_id || undefined,
+    }).catch(() => null);
+    count++;
+  }
+  return count;
 }
