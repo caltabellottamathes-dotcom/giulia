@@ -18,7 +18,7 @@ import { secrets } from "base44:runtime";
 // gemini-2.5-flash: tools + response_schema, goede gratis tier.
 // gemini-2.0-flash-lite: zeer hoge gratis quota, ondersteunt tools + schema.
 // gemini-1.5-flash: brede compatibiliteit als laatste redmiddel.
-const MODELS = ["gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-flash-lite-latest"];
+const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash"];
 
 export const GIULIA_PERSONA =
   "You are Giulia, a Personal Operating System. You combine conversation, memory, and planning into one coherent system. " +
@@ -119,4 +119,65 @@ export async function geminiGenerate({ contents, tools, model, systemText, gener
     ? await rawCall(model, body)
     : await callWithFallback(body);
   return data?.candidates?.[0]?.content?.parts || null;
+}
+
+/** Probeert een opgegeven lijst modellen (voor tools die niet elk model ondersteunt). */
+async function callWithModelList(models, body) {
+  let lastErr = null;
+  for (const model of models) {
+    try { return await rawCall(model, body); }
+    catch (e) {
+      lastErr = e;
+      if (!/HTTP 4(29|04|00)|HTTP 400/.test(String(e.message))) throw e;
+    }
+  }
+  throw lastErr || new Error("Alle modellen faalden");
+}
+
+/**
+ * geminiResearch — eenmalig onderzoek met Google Search-grounding (actuele
+ * webcontext) via de eigen Gemini-sleutel. Geen integration credits. Vraagt
+ * strict JSON terug en parseert het eerste {...} blok. Robuust over modellen.
+ */
+export async function geminiResearch({ prompt, systemText, temperature = 0.5 }) {
+  const body = {
+    system_instruction: systemInstruction(systemText),
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+    tools: [{ google_search: {} }],
+    generationConfig: { temperature },
+  };
+  try {
+    const data = await callWithModelList(["gemini-2.5-flash", "gemini-2.0-flash"], body);
+    const text = (data?.candidates?.[0]?.content?.parts || [])
+      .map((p) => p.text || "")
+      .join("")
+      .trim();
+    if (!text) return null;
+    const m = text.match(/\{[\s\S]*\}/);
+    return m ? JSON.parse(m[0]) : null;
+  } catch { return null; }
+}
+
+/**
+ * geminiTranscribe — transcriptie van een audio-opname (inline base64) via de
+ * multimodale Gemini API. Vervangt Core.TranscribeAudio (integration credits).
+ * Geeft platte tekst terug.
+ */
+export async function geminiTranscribe({ audioBase64, mimeType, prompt }) {
+  const body = {
+    contents: [{
+      role: "user",
+      parts: [
+        { inlineData: { mimeType: mimeType || "audio/webm", data: audioBase64 } },
+        { text: prompt || "Transcribeer deze audio nauwkeurig in de oorspronkelijke taal. Geef alleen de letterlijke transcriptie, zonder aanhalingstekens, labels of commentaar." },
+      ],
+    }],
+  };
+  try {
+    const data = await callWithModelList(["gemini-2.5-flash", "gemini-1.5-flash"], body);
+    return (data?.candidates?.[0]?.content?.parts || [])
+      .map((p) => p.text || "")
+      .join("")
+      .trim();
+  } catch { return ""; }
 }

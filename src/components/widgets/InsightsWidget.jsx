@@ -22,12 +22,10 @@ export default function InsightsWidget() {
   const research = async (e) => {
     e.stopPropagation(); setBusy(true);
     try {
-      const res = await base44.integrations.Core.InvokeLLM({
-        prompt: "Je bent Giulia, een proactieve AI-assistent voor een drukke professional. Onderzoek actuele ontwikkelingen en geef één kort, actionable inzicht of suggestie (een opportuniteit, risico of opvolging). Schrijf in het Nederlands, beknopt.",
-        add_context_from_internet: true,
-        response_json_schema: { type: "object", properties: { title: { type: "string" }, content: { type: "string" }, category: { type: "string" }, confidence: { type: "number" } } },
-      });
-      await base44.entities.Insight.create({ title: res.title || "Nieuw inzicht", content: res.content || "", category: CATS.includes(res.category) ? res.category : "Suggestion", confidence: typeof res.confidence === "number" ? res.confidence : 0.6, source: "Giulia · web onderzoek", status: "new" });
+      const out = await base44.functions.invoke("researchInsights", { topic: "", count: 1 });
+      const d = out?.data ?? out ?? {};
+      const x = (d.insights || [])[0] || {};
+      await base44.entities.Insight.create({ title: x.title || "Nieuw inzicht", content: x.content || "", category: CATS.includes(x.category) ? x.category : "Suggestion", confidence: typeof x.confidence === "number" ? x.confidence : 0.6, source: "Giulia · web onderzoek", status: "new" });
       reload();
     } catch { /* ignore */ }
     setBusy(false);

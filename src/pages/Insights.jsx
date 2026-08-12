@@ -39,28 +39,9 @@ export default function Insights() {
       const prompt = topic
         ? `Je bent Giulia. Onderzoek het onderwerp "${topic}" met actuele context. Geef 3 actionable inzichten of suggesties (opportuniteit, risico, opvolging). Schrijf in het Nederlands.`
         : `Je bent Giulia, proactieve AI-assistent voor een drukke professional. Geef 3 proactieve inzichten of suggesties voor vandaag. Schrijf in het Nederlands.`;
-      const res = await base44.integrations.Core.InvokeLLM({
-        prompt,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            insights: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  title: { type: "string" },
-                  content: { type: "string" },
-                  category: { type: "string" },
-                  confidence: { type: "number" },
-                },
-              },
-            },
-          },
-        },
-      });
-      const arr = res.insights || [];
+      const out = await base44.functions.invoke("researchInsights", { topic, count: 3 });
+      const d = out?.data ?? out ?? {};
+      const arr = d.insights || [];
       if (arr.length) {
         await base44.entities.Insight.bulkCreate(
           arr.map((x) => ({

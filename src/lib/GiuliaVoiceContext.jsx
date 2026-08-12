@@ -4,8 +4,9 @@ import { base44 } from "@/api/base44Client";
 /**
  * GiuliaVoiceContext — the state machine behind the Concierge system.
  * States: idle | listening | thinking | speaking.
- * Voice flow: record (MediaRecorder) -> upload -> transcribe -> chatWithGiulia
- * -> speak the reply back (GenerateSpeech). Text flow bypasses recording.
+ * Voice flow: record (MediaRecorder) -> base64 -> transcribeVoice (eigen Gemini)
+ * -> chatWithGiulia -> speak the reply back (browser speechSynthesis).
+ * Text flow bypasses recording.
  */
 const Ctx = createContext(null);
 
@@ -30,12 +31,15 @@ export function GiuliaVoiceProvider({ children }) {
       if (replyText) {
         setState("speaking");
         try {
-          const { url } = await base44.integrations.Core.GenerateSpeech({ text: replyText.slice(0, 900) });
-          const audio = new Audio(url);
-          audioRef.current = audio;
-          audio.onended = () => setState("idle");
-          audio.onerror = () => setState("idle");
-          await audio.play();
+          // Browser TTS — geen integration credits, werkt lokaal.
+          const synth = window.speechSynthesis;
+          const u = new SpeechSynthesisUtterance(replyText.slice(0, 900));
+          u.lang = "nl-NL";
+          u.onend = () => setState("idle");
+          u.onerror = () => setState("idle");
+          audioRef.current = u;
+          synth.cancel();
+          synth.speak(u);
         } catch {
           setState("idle");
         }
@@ -81,9 +85,16 @@ export function GiuliaVoiceProvider({ children }) {
     if (!blob.size) { setState("idle"); return; }
     setState("thinking");
     try {
-      const file = new File([blob], "voice.webm", { type: "audio/webm" });
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      const text = (await base44.integrations.Core.TranscribeAudio({ audio_url: file_url }) || "").trim();
+      // Audio → base64 → eigen Gemini-sleutel (geen UploadFile/TranscribeAudio credits).
+      const dataUrl = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onloadend = () => resolve(r.result);
+        r.onerror = reject;
+        r.readAsDataURL(blob);
+      });
+      const out = await base44.functions.invoke("transcribeVoice", { audio: dataUrl });
+      const d = out?.data ?? out ?? {};
+      const text = (d.text || "").trim();
       if (!text) { setState("idle"); return; }
       await ask(text);
     } catch {
