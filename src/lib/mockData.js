@@ -129,13 +129,6 @@ export const mockWhatsApp = [
   { id: "w8", contact_id: "c6", conversation_id: "conv4", message: "Ja, ik stuur deze week een samenvatting.", timestamp: "2026-08-04T14:15", direction: "sent", status: "read" },
 ];
 
-export const mockGiuliaDrafts = [
-  { id: "d1", type: "email", source: "Sarah's email over concept", content: "Reactie op Sarah over marktanalyse concept", status: "awaiting_approval", created_at: "2026-08-07T08:35", project_id: "p1" },
-  { id: "d2", type: "whatsapp", source: "Sarah's WhatsApp bericht", content: "Bevestiging belafspraak morgen", status: "awaiting_approval", created_at: "2026-08-07T08:43", project_id: "p1" },
-  { id: "d3", type: "email", source: "Geen update aan Lucas in 2 weken", content: "Update aan Lucas over onderzoek voortgang", status: "awaiting_approval", created_at: "2026-08-06T17:00", project_id: "p5" },
-  { id: "d4", type: "calendar", source: "Conflictdetectie agenda", content: "Verplaats wireframe review naar vrijdag", status: "awaiting_approval", created_at: "2026-08-07T07:00" },
-];
-
 export const mockApprovals = [
   { id: "a1", action_type: "send_email", target: "Sarah Lindeman", description: "Reactie sturen op concept marktanalyse", proposed_action: "Email verzenden met voorgestelde belafspraak", status: "pending", created_at: "2026-08-07T08:35", category: "email", context: "Sarah vroeg om een belafspraak over het concept." },
   { id: "a2", action_type: "send_whatsapp", target: "Sarah Lindeman", description: "WhatsApp reactie sturen", proposed_action: "Bevestigen dat je morgen kunt bellen", status: "pending", created_at: "2026-08-07T08:43", category: "whatsapp", context: "Sarah vroeg via WhatsApp of je morgen kunt bellen." },

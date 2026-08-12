@@ -165,15 +165,6 @@
       ]
     },
     {
-      "entity_name": "GiuliaDraft",
-      "allowed_operations": [
-        "create",
-        "update",
-        "delete",
-        "read"
-      ]
-    },
-    {
       "entity_name": "WeeklyPlan",
       "allowed_operations": [
         "create",
