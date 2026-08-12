@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
@@ -29,6 +29,17 @@ export default function Tasks() {
 
   const projTitle = (id) => projects.find((p) => p.id === id)?.title;
   const filtered = tasks.filter((t) => t.status === category);
+
+  // Deep-link — chat-notificaties kunnen naar /tasks?open=<id> linken.
+  useEffect(() => {
+    const openId = new URLSearchParams(window.location.search).get("open");
+    if (!openId || !tasks.length) return;
+    const t = tasks.find((x) => x.id === openId);
+    if (t) {
+      setCategory(t.status);
+      startEdit(t);
+    }
+  }, [tasks]);
 
   const toggleComplete = async (task) => {
     await base44.entities.Task.update(task.id, {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
@@ -37,6 +37,18 @@ export default function Approvals() {
 
   const filtered = approvals.filter((a) => category === "All" || a.category === category);
   const pending = filtered.filter((a) => status === "all" || a.status === status);
+
+  // Deep-link — chat-notificaties kunnen naar /approvals?open=<id> linken.
+  useEffect(() => {
+    const openId = new URLSearchParams(window.location.search).get("open");
+    if (!openId || !approvals.length) return;
+    const a = approvals.find((x) => x.id === openId);
+    if (a) {
+      setStatus("all");
+      setSelected(a);
+      setEditText(a.content || a.proposed_action || "");
+    }
+  }, [approvals]);
 
   // Voert de goedgekeurde/verworpen actie écht uit via de executeApproval-functie.
   const decide = async (approval, action, edit) => {
@@ -125,7 +137,12 @@ export default function Approvals() {
         {!loading && pending.map((approval) => {
           const Icon = categoryIcons[approval.category] || categoryIcons[approval.type] || AlertCircle;
           return (
-            <GlassPanel key={approval.id} level={2} className="p-5">
+            <GlassPanel
+              key={approval.id}
+              level={2}
+              className="p-5 cursor-pointer"
+              onClick={() => { setSelected(approval); setEditText(approval.content || approval.proposed_action || ""); }}
+            >
               <div className="flex items-start gap-4">
                 <div className="h-10 w-10 rounded-xl glass-1 flex items-center justify-center shrink-0">
                   <Icon className="h-5 w-5 text-olive" />
@@ -161,7 +178,7 @@ export default function Approvals() {
                 </div>
               </div>
               {approval.status === "pending" && (
-                <div className="flex gap-2 mt-4 pt-4 border-t border-border/40">
+                <div className="flex gap-2 mt-4 pt-4 border-t border-border/40" onClick={(e) => e.stopPropagation()}>
                   <GlassButton variant="primary" size="sm" onClick={() => decide(approval, "approve")}><Check className="h-4 w-4" /> Goedkeuren</GlassButton>
                   <GlassButton variant="outline" size="sm" onClick={() => { setSelected(approval); setEditText(approval.content || approval.proposed_action || ""); }}><Edit3 className="h-4 w-4" /> Bewerk</GlassButton>
                   <GlassButton variant="outline" size="sm" onClick={() => decide(approval, "already_done")}><CheckCheck className="h-4 w-4" /> Al gebeurd</GlassButton>
