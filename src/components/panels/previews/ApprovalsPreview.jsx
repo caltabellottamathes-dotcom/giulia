@@ -12,8 +12,8 @@ export default function ApprovalsPreview({ onOpen }) {
     realtime: true,
   });
 
-  const decide = async (a, status) => {
-    try { await base44.entities.Approval.update(a.id, { status }); } catch (e) {}
+  const decide = async (a, action) => {
+    try { await base44.functions.invoke("executeApproval", { approval_id: a.id, action }); } catch (e) {}
     reload();
   };
 
@@ -28,10 +28,10 @@ export default function ApprovalsPreview({ onOpen }) {
           {items.map((a) => (
             <Card key={a.id} onClick={onOpen} accent="hsl(var(--olive))" action={
               <>
-                <button onClick={(e) => { e.stopPropagation(); decide(a, "approved"); }} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full bg-olive text-ivory px-3 py-1.5 text-xs font-semibold hover:bg-olive/90 transition">
+                <button onClick={(e) => { e.stopPropagation(); decide(a, "approve"); }} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full bg-olive text-ivory px-3 py-1.5 text-xs font-semibold hover:bg-olive/90 transition">
                   <Check className="h-3.5 w-3.5" /> Goed
                 </button>
-                <button onClick={(e) => { e.stopPropagation(); decide(a, "rejected"); }} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full glass-button text-ivory px-3 py-1.5 text-xs font-semibold hover:bg-white/15 transition">
+                <button onClick={(e) => { e.stopPropagation(); decide(a, "reject"); }} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full glass-button text-ivory px-3 py-1.5 text-xs font-semibold hover:bg-white/15 transition">
                   <X className="h-3.5 w-3.5" /> Af
                 </button>
               </>

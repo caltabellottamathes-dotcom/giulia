@@ -29,6 +29,8 @@ export default function TasksPreview({ onOpen }) {
 
   useEffect(() => {
     load();
+    const unsub = base44.entities.Task?.subscribe?.((ev) => { if (ev?.type) load(); });
+    return () => { try { unsub && unsub(); } catch { /* ignore */ } };
   }, []);
 
   const complete = async (t) => {

@@ -4,6 +4,7 @@ import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
 import StatusBadge from "@/components/glass/StatusBadge";
 import PanelForm from "@/components/glass/PanelForm";
+import TaskAgentRunner from "@/components/tasks/TaskAgentRunner";
 import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
@@ -19,7 +20,7 @@ const priorityVariantMap = { high: "urgent", medium: "waiting", low: "muted" };
 
 export default function Tasks() {
   const [category, setCategory] = useState("today");
-  const { data: tasks, loading, reload } = useEntityList("Task");
+  const { data: tasks, loading, reload } = useEntityList("Task", { realtime: true });
   const { data: projects } = useEntityList("Project");
   const [showNew, setShowNew] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -59,8 +60,6 @@ export default function Tasks() {
     reload();
   };
 
-  const overdueCount = tasks.filter((t) => t.status === "overdue").length;
-
   return (
     <div className="space-y-6 animate-fade-up">
       <PageHero
@@ -76,24 +75,7 @@ export default function Tasks() {
         }
       />
 
-      {overdueCount > 0 && (
-        <GlassPanel level={3} className="p-5">
-          <div className="flex items-start gap-3">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-olive/30 to-blue-grey/20 flex items-center justify-center shrink-0">
-              <Sparkles className="h-4 w-4 text-foreground/70" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm">
-                <span className="font-semibold">Giulia stelt voor:</span> Je hebt {overdueCount} te late taak{overdueCount !== 1 ? "en" : ""}. Zal ik herinneringen sturen of de taken opnieuw inplannen?
-              </p>
-              <div className="flex gap-2 mt-3">
-                <GlassButton variant="primary" size="sm" onClick={() => setCategory("overdue")}>Bekijk te late</GlassButton>
-                <GlassButton variant="ghost" size="sm">Vraag Giulia</GlassButton>
-              </div>
-            </div>
-          </div>
-        </GlassPanel>
-      )}
+      <TaskAgentRunner />
 
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
         {categories.map((cat) => {

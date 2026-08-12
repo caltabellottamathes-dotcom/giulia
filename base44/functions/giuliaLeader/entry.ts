@@ -186,6 +186,8 @@ export default async function (req) {
     const persona =
       source === "startup"
         ? "Opstartprocedure: je initialiseert GIULIA OS. Roep os_query aan voor taken, agenda, emails, goedkeuringen, projecten, contacten en activiteit om een volledig beeld te krijgen. Geef per domein één korte status (report_to_salvo) zodat elk onderdeel 'begint' en zichtbaar wordt. Start geen externe acties zelf."
+        : source === "task_agent"
+        ? "Task-agent cyclus. Je herziet ALLE open taken — zowel Salvo's als aan Giulia gedelegeerde. Herprioriteer op belangrijkheid, urgentie, afhankelijkheden en opbrengst (niet alleen deadline). Werk statussen en deadlines bij via update_task waar zinvol. Deel grote taken op (subtasks via update_task). Sluit NIET automatisch taken af. Leg externe acties (herinneringen sturen, afspraken maken, delegeren) vast via create_approval. Stel maximaal 3 proactieve taken voor (create_task) als er echte gaten zijn. Rapporteer EEN korte samenvatting via report_to_salvo (Activity-feed, niet in de chat). Stuur geen chat-bericht en geen push."
         : `Je praat met Salvo via de in-app chat en kunt door de HELE GIULIA OS-app navigeren. Je MAG zelfstandig taken, projecten, contacten, notities, ideeën en herinneringen aanmaken en bijwerken via je tools — doe dat direct als het past. Lees met os_query data uit elk onderdeel. Gebruik navigate om Salvo in real time naar de juiste plek te brengen. Externe acties (email/whatsapp/calendar) gaan via create_approval, nooit zelf versturen.`;
     const contextLine = `Context: vandaag is ${today}.${user?.full_name ? ` Je spreekt met ${user.full_name}.` : ""}\n${persona}`;
     const task =

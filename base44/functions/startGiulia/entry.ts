@@ -46,11 +46,15 @@ export default async function (req) {
 
     const leader = await runOne(base44, "giuliaLeader", { signal: startupSignal, source: "startup", persist: true });
 
-    // 3) Activity-log → zichtbaar in widgets & panelen
+    // 3) Task-agent — de zichtbare agent die alle taken laat lopen (Salvo's +
+    //    Giulia's). Geen eigen Gemini-loop: delegeert naar de leider.
+    const taskAgent = await runOne(base44, "manageTasks", {});
+
+    // 4) Activity-log → zichtbaar in widgets & panelen
     try {
       await base44.entities.Activity.create({
         action: "start_giulia",
-        description: `Opstart voltooid · sync ${okSync}/${SYNC.length} · leider ${leader.ok ? "actief" : "fout"}`,
+        description: `Opstart voltooid · sync ${okSync}/${SYNC.length} · leider ${leader.ok ? "actief" : "fout"} · task-agent ${taskAgent.ok ? "actief" : "fout"}`,
         source: "startGiulia",
         timestamp: new Date().toISOString(),
       });
@@ -60,7 +64,12 @@ export default async function (req) {
       ok: true,
       sync: syncResults,
       leader,
-      summary: { sync: `${okSync}/${SYNC.length}`, leader: leader.ok ? "active" : "error" },
+      taskAgent,
+      summary: {
+        sync: `${okSync}/${SYNC.length}`,
+        leader: leader.ok ? "active" : "error",
+        taskAgent: taskAgent.ok ? "active" : "error",
+      },
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

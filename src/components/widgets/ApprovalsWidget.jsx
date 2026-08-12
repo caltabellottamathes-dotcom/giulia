@@ -44,8 +44,8 @@ export default function ApprovalsWidget() {
                 </span>
               )}
               <div className="mt-auto pt-3 flex gap-2">
-                <button onClick={(e) => decide(e, top.id, "approved")} className="flex-1 h-11 rounded-2xl font-semibold text-sm transition hover:-translate-y-0.5 active:scale-95" style={{ background: "var(--tile-accent)", color: "var(--tile-on-accent)" }}>Goedkeuren</button>
-                <button onClick={(e) => decide(e, top.id, "rejected")} className="flex-1 h-11 rounded-2xl font-semibold text-sm border border-ivory/20 text-ivory transition hover:bg-ivory/10">Afwijzen</button>
+                <button onClick={(e) => decide(e, top, "approve")} className="flex-1 h-11 rounded-2xl font-semibold text-sm transition hover:-translate-y-0.5 active:scale-95" style={{ background: "var(--tile-accent)", color: "var(--tile-on-accent)" }}>Goedkeuren</button>
+                <button onClick={(e) => decide(e, top, "reject")} className="flex-1 h-11 rounded-2xl font-semibold text-sm border border-ivory/20 text-ivory transition hover:bg-ivory/10">Afwijzen</button>
               </div>
             </>
           ) : (
