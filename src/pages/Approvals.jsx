@@ -8,6 +8,7 @@ import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { useToast } from "@/components/ui/use-toast";
 import { base44 } from "@/api/base44Client";
+import { haptic } from "@/lib/nativeBridge";
 import {
   Check, X, Edit3, Mail, MessageCircle, Calendar, CheckSquare,
   FileText, Sparkles, ClipboardCheck, AlertCircle,
@@ -43,8 +44,10 @@ export default function Approvals() {
         edit: edit || null,
       });
       if (res?.ok) {
+        haptic(action === "reject" ? "warning" : "success");
         toast({ title: action === "reject" ? "Verworpen" : "Uitgevoerd", description: res.detail || "" });
       } else {
+        haptic("warning");
         toast({
           title: "Gedeeltelijk",
           description: res?.detail || res?.error || "Actie kon niet volledig worden uitgevoerd.",
@@ -52,6 +55,7 @@ export default function Approvals() {
         });
       }
     } catch (e) {
+      haptic("error");
       toast({ title: "Mislukt", description: String(e.message || e), variant: "destructive" });
     }
     setSelected(null);

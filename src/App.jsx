@@ -39,6 +39,7 @@ import Planning from '@/pages/Planning';
 import Experiment from '@/pages/Experiment';
 import TimeTracker from '@/pages/TimeTracker';
 import Agents from '@/pages/Agents';
+import QuickCommand from '@/pages/QuickCommand';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -99,6 +100,7 @@ const AuthenticatedApp = () => {
           <Route path="/timetracker" element={<TimeTracker />} />
           <Route path="/agents" element={<Agents />} />
         </Route>
+        <Route path="/quick" element={<QuickCommand />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

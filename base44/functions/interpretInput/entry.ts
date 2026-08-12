@@ -31,28 +31,36 @@ export default async function (req) {
       else if (body.email_id || body.entity === "Email") source = "email";
     }
 
+    // ── Quick command (Tauri command-palette): free-text direct ──────────
     let record = null;
-    if (source === "whatsapp" && sourceId) record = await sr.entities.WhatsAppMessage.get(sourceId).catch(() => null);
-    else if (source === "email" && sourceId) record = await sr.entities.Email.get(sourceId).catch(() => null);
+    let rawText = "";
+    let isCommand = source === "command" && body.text && String(body.text).trim() !== "";
+    if (isCommand) {
+      rawText = String(body.text).trim().slice(0, 4000);
+    } else {
+      if (source === "whatsapp" && sourceId) record = await sr.entities.WhatsAppMessage.get(sourceId).catch(() => null);
+      else if (source === "email" && sourceId) record = await sr.entities.Email.get(sourceId).catch(() => null);
 
-    // Geen id? Pak laatste ongelezen bericht (per bron) als fallback.
-    if (!record) {
-      if (!source || source === "whatsapp") {
-        const list = await sr.entities.WhatsAppMessage.filter({ status: "unread" }, "-created_date", 1).catch(() => []);
-        if (list[0]) { record = list[0]; source = "whatsapp"; }
+      // Geen id? Pak laatste ongelezen bericht (per bron) als fallback.
+      if (!record) {
+        if (!source || source === "whatsapp") {
+          const list = await sr.entities.WhatsAppMessage.filter({ status: "unread" }, "-created_date", 1).catch(() => []);
+          if (list[0]) { record = list[0]; source = "whatsapp"; }
+        }
+        if (!record && (!source || source === "email")) {
+          const list = await sr.entities.Email.filter({ status: "unread", category: "important" }, "-created_date", 1).catch(() => []);
+          if (list[0]) { record = list[0]; source = "email"; }
+        }
       }
-      if (!record && (!source || source === "email")) {
-        const list = await sr.entities.Email.filter({ status: "unread", category: "important" }, "-created_date", 1).catch(() => []);
-        if (list[0]) { record = list[0]; source = "email"; }
-      }
+      if (!record) return Response.json({ ok: true, reason: "no unprocessed message" });
+
+      rawText = source === "email"
+        ? `${record.subject || ""}\n\n${record.body || ""}`.trim()
+        : (record.message || "").trim();
     }
-    if (!record) return Response.json({ ok: true, reason: "no unprocessed message" });
 
-    const rawText = source === "email"
-      ? `${record.subject || ""}\n\n${record.body || ""}`.trim()
-      : (record.message || "").trim();
     if (!rawText) {
-      await markProcessed(sr, source, record.id);
+      if (!isCommand) await markProcessed(sr, source, record.id);
       return Response.json({ ok: true, reason: "empty message" });
     }
 
@@ -93,12 +101,12 @@ export default async function (req) {
 
     const out = await geminiDecide({
       model: "gemini-3.1-flash-lite",
-      prompt: `Extract structured entities from this incoming ${source === "email" ? "email" : "WhatsApp message"}.\n\nMessage:\n"""${rawText.slice(0, 4000)}"""`,
+      prompt: `Extract structured entities from this incoming ${source === "email" ? "email" : source === "command" ? "quick command" : "WhatsApp message"}.\n\nMessage:\n"""${rawText.slice(0, 4000)}"""`,
       schema,
       systemText: `${GIULIA_PERSONA}\n\n${systemText}`,
       temperature: 0.2,
     });
-    if (!out) return Response.json({ ok: false, error: "LLM extraction failed", source, id: record.id }, { status: 500 });
+    if (!out) return Response.json({ ok: false, error: "LLM extraction failed", source, id: record?.id || null }, { status: 500 });
 
     const intent = (out.intent || "").trim();
     const ents = out.entities || {};
@@ -129,8 +137,8 @@ export default async function (req) {
         status: "sent",
         agent_source: "interpretInput",
       }).catch(() => null);
-      await markProcessed(sr, source, record.id, { contact_id: contactId, project_id: projectId });
-      return Response.json({ ok: true, source, id: record.id, intent, clarification: question });
+      await markProcessed(sr, source, record?.id, { contact_id: contactId, project_id: projectId });
+      return Response.json({ ok: true, source, id: record?.id || null, intent, clarification: question });
     }
 
     // ── Step 2.4b: Conflict resolution (calendar change) ─────────────
@@ -196,8 +204,8 @@ export default async function (req) {
       if (ins) created.push({ type: "insight", id: ins.id });
     }
 
-    // Gatekeeper / Approval: als een reply voorgesteld wordt
-    if (reply) {
+    // Gatekeeper / Approval: als een reply voorgesteld wordt (niet bij quick command)
+    if (reply && !isCommand) {
       const actionType = source === "email" ? "email_reply" : "whatsapp_reply";
       const cat = source === "email" ? "email" : "whatsapp";
       const ap = await sr.entities.Approval.create({
@@ -216,9 +224,9 @@ export default async function (req) {
     }
 
     // ── Step 2.5: Mark as Processed ──────────────────────────────────
-    await markProcessed(sr, source, record.id, { contact_id: contactId, project_id: projectId });
+    if (!isCommand) await markProcessed(sr, source, record.id, { contact_id: contactId, project_id: projectId });
 
-    return Response.json({ ok: true, source, id: record.id, intent, created });
+    return Response.json({ ok: true, source, id: isCommand ? null : record?.id, intent, created });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }

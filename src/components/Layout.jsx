@@ -7,6 +7,7 @@ import InteractionBar from "@/components/glass/InteractionBar";
 import { PanelProvider, usePanel } from "@/lib/PanelContext";
 import { GiuliaVoiceProvider } from "@/lib/GiuliaVoiceContext";
 import AmbientBloom from "@/components/glass/AmbientBloom";
+import TauriFocusSync from "@/components/native/TauriFocusSync";
 import { GiuliaAgentProvider } from "@/lib/GiuliaAgentContext";
 import BottomNav from "@/components/BottomNav";
 import { useAgentNavigation } from "@/lib/useAgentNavigation";
@@ -47,6 +48,7 @@ function LayoutInner() {
   return (
     <div className="min-h-screen relative">
       <AmbientBloom />
+      <TauriFocusSync />
       {/* Full-width workspace — navigation lives in the bottom plus-button menu */}
       <div className="flex flex-col h-screen relative overflow-hidden">
         {/* Header */}
