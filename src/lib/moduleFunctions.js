@@ -36,4 +36,5 @@ export const MODULE_FUNCTIONS = {
   settings: [{ label: "Instellingen", to: "/settings" }],
   profile: [{ label: "Profiel", to: "/profile" }],
   integrations: [{ label: "Integraties", to: "/integrations" }],
+  updates: [{ label: "Wat er nieuw is", to: "/updates" }],
 };

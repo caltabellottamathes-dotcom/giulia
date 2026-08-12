@@ -11,7 +11,6 @@ import { Plus } from "lucide-react";
 import AddWidgetPicker from "@/components/panels/AddWidgetPicker";
 import WidgetCell from "@/components/widgets/WidgetCell";
 import GiuliaIntroOverlay from "@/components/widgets/GiuliaIntroOverlay";
-import SocialFeed from "@/components/feed/SocialFeed";
 import ConciergeWidget from "@/components/concierge/ConciergeWidget";
 
 import { Link } from "react-router-dom";
@@ -240,11 +239,6 @@ export default function Home() {
             <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Widget</span>
           </button>
         </header>
-
-        {/* Social feed — alles wat achter de schermen is afgespoeld + todos + goedkeuringen */}
-        <div className="px-5 lg:px-10 pb-6 lg:pb-4">
-          <SocialFeed />
-        </div>
 
         {/* Tidy sorted bento grid */}
         <div className="px-5 lg:px-10 pb-10 lg:pb-0">

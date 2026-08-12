@@ -34,9 +34,10 @@ export default function GiuliaWidget() {
       base44.entities.Approval.filter({ status: "pending" }).catch(() => []),
     ]);
     const p = plans[0];
-    if (p && (p.priorities?.length || p.plan_data?.summary)) {
-      setPriorities((p.priorities || []).slice(0, 3).map((s) => (typeof s === "string" ? { label: s, to: "/tasks" } : s)));
-      setSummary(p.plan_data?.summary || "Ik heb je dag heringericht op wat veranderd is.");
+    const focusItems = Array.isArray(p?.plan_data?.focus_items) ? p.plan_data.focus_items : [];
+    if (p && focusItems.length) {
+      setPriorities(focusItems.slice(0, 3).map((f) => ({ label: f?.title || "Taak", to: "/tasks" })));
+      setSummary("Ik heb je dag heringericht op wat vandaag telt.");
       setUpdated(p.last_updated || p.updated_date || null);
     } else {
       const todayEvents = events

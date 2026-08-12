@@ -20,6 +20,7 @@ import ActivityWidget from "@/components/widgets/ActivityWidget";
 import AgentActivityWidget from "@/components/widgets/AgentActivityWidget";
 import ConciergeWidget from "@/components/concierge/ConciergeWidget";
 import TimeTrackerWidget from "@/components/widgets/TimeTrackerWidget";
+import UpdatesWidget from "@/components/widgets/UpdatesWidget";
 
 /**
  * Single source of truth for every dashboard widget. `image` is a branding
@@ -42,6 +43,7 @@ export const WIDGETS = {
   insights:   { type: "insights",   label: "Giulia · Inzichten",  icon: Telescope,      Component: InsightsWidget,   image: IMAGES.feetChair,        span: 4, category: "intelligence" },
   timetracker: { type: "timetracker", label: "Tijd · Timer",     icon: Timer,          Component: TimeTrackerWidget, image: IMAGES.hourglassJacket,  span: 4, category: "work" },
   concierge:  { type: "concierge",  label: "Giulia · Concierge",  icon: MessageSquare,  Component: ConciergeWidget,   image: IMAGES.feetChair,        span: 3, category: "core" },
+  updates:    { type: "updates",    label: "Giulia · Updates",    icon: Sparkles,       Component: UpdatesWidget,     image: IMAGES.feetChair,        span: 3, category: "intelligence" },
 };
 
 export const WIDGET_LIST = Object.values(WIDGETS);
