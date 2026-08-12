@@ -56,7 +56,12 @@ export default async function (req) {
       contact_id: email.contact_id || undefined,
     }).catch(() => null);
 
-    await createApproval(base44, "email", `Concept antwoord aan ${email.sender || "?"}`, reply, result?.note || "Concept door Giulia — wacht op goedkeuring.");
+    await createApproval(base44, "email", `Concept antwoord aan ${email.sender || "?"}`, reply, result?.note || "Concept door Giulia — wacht op goedkeuring.", "salvo", {
+      target: email.sender_email || email.sender || "",
+      proposed_action: { to: email.sender_email || "", subject: email.subject || "(geen onderwerp)", body: reply, original_email_id: email.id || "" },
+      thread_id: email.thread_id || "",
+      project_id: email.project_id || "",
+    });
 
     return Response.json({ ok: !!draft, draft_id: draft?.id || null, reply, note: result?.note || "" });
   } catch (error) {

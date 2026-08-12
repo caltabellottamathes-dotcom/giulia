@@ -6,6 +6,7 @@ import StatusBadge from "@/components/glass/StatusBadge";
 import FloatingPanel from "@/components/glass/FloatingPanel";
 import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
+import { useToast } from "@/components/ui/use-toast";
 import { base44 } from "@/api/base44Client";
 import {
   Check, X, Edit3, Mail, MessageCircle, Calendar, CheckSquare,
@@ -25,6 +26,7 @@ export default function Approvals() {
   const [selected, setSelected] = useState(null);
   const [editText, setEditText] = useState("");
 
+  const { toast } = useToast();
   const { data: approvals, loading, reload } = useEntityList("Approval", { realtime: true });
   const { data: projects } = useEntityList("Project");
   const projTitle = (id) => projects.find((p) => p.id === id)?.title;
@@ -32,8 +34,26 @@ export default function Approvals() {
   const filtered = approvals.filter((a) => category === "All" || a.category === category);
   const pending = filtered.filter((a) => a.status === "pending");
 
-  const setStatus = async (id, status) => {
-    await base44.entities.Approval.update(id, { status });
+  // Voert de goedgekeurde/verworpen actie écht uit via de executeApproval-functie.
+  const decide = async (approval, action, edit) => {
+    try {
+      const res = await base44.functions.invoke("executeApproval", {
+        approval_id: approval.id,
+        action,
+        edit: edit || null,
+      });
+      if (res?.ok) {
+        toast({ title: action === "reject" ? "Verworpen" : "Uitgevoerd", description: res.detail || "" });
+      } else {
+        toast({
+          title: "Gedeeltelijk",
+          description: res?.detail || res?.error || "Actie kon niet volledig worden uitgevoerd.",
+          variant: "destructive",
+        });
+      }
+    } catch (e) {
+      toast({ title: "Mislukt", description: String(e.message || e), variant: "destructive" });
+    }
     setSelected(null);
     reload();
   };
@@ -117,9 +137,9 @@ export default function Approvals() {
                 </div>
               </div>
               <div className="flex gap-2 mt-4 pt-4 border-t border-border/40">
-                <GlassButton variant="primary" size="sm" onClick={() => setStatus(approval.id, "approved")}><Check className="h-4 w-4" /> Goedkeuren</GlassButton>
+                <GlassButton variant="primary" size="sm" onClick={() => decide(approval, "approve")}><Check className="h-4 w-4" /> Goedkeuren</GlassButton>
                 <GlassButton variant="outline" size="sm" onClick={() => { setSelected(approval); setEditText(approval.content || approval.proposed_action || ""); }}><Edit3 className="h-4 w-4" /> Bewerk</GlassButton>
-                <GlassButton variant="ghost" size="sm" onClick={() => setStatus(approval.id, "discarded")}><X className="h-4 w-4" /> Verwerpen</GlassButton>
+                <GlassButton variant="ghost" size="sm" onClick={() => decide(approval, "reject")}><X className="h-4 w-4" /> Verwerpen</GlassButton>
               </div>
             </GlassPanel>
           );
@@ -151,7 +171,7 @@ export default function Approvals() {
               />
             </div>
             <div className="flex gap-2">
-              <GlassButton variant="primary" size="md" className="flex-1" onClick={async () => { await base44.entities.Approval.update(selected.id, { content: editText, status: "edited" }); setStatus(selected.id, "approved"); }}>
+              <GlassButton variant="primary" size="md" className="flex-1" onClick={() => decide(selected, "edit", { body: editText })}>
                 <Check className="h-4 w-4" /> Goedkeuren & Uitvoeren
               </GlassButton>
               <GlassButton variant="outline" size="md" onClick={() => setSelected(null)}>Annuleer</GlassButton>

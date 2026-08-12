@@ -35,8 +35,9 @@ export async function reportToSalvo(base44, agentName, message, threadId) {
 
 const APPROVAL_CATEGORY = { email: "email", whatsapp: "whatsapp", calendar: "calendar", task: "tasks", tasks: "tasks", file: "documents" };
 
-export async function createApproval(base44, type, title, content, context, assignee) {
+export async function createApproval(base44, type, title, content, context, assignee, meta) {
   try {
+    const m = meta || {};
     return await base44.asServiceRole.entities.Approval.create({
       title: title || type,
       description: title || type,
@@ -48,6 +49,10 @@ export async function createApproval(base44, type, title, content, context, assi
       agent_source: "giulia",
       assignee: assignee || "salvo",
       ...(context ? { context } : {}),
+      ...(m.target ? { target: String(m.target) } : {}),
+      ...(m.proposed_action ? { proposed_action: typeof m.proposed_action === "string" ? m.proposed_action : JSON.stringify(m.proposed_action) } : {}),
+      ...(m.thread_id ? { thread_id: m.thread_id } : {}),
+      ...(m.project_id ? { project_id: m.project_id } : {}),
     });
   } catch { return null; }
 }
@@ -72,7 +77,8 @@ export async function createTaskWithApproval(base44, { title, priority, deadline
       `Taak ${forGiulia ? "voor Giulia" : "voor Salvo"}: ${t.title}`,
       t.description || "",
       `Automatisch door Giulia (${source || "giulia"}) ${forGiulia ? "als eigen taak om zelf uit te voeren" : "uit een bericht gehaald"}. Goedkeuren om te behouden, verwerpen om te wissen.`,
-      forGiulia ? "giulia" : "salvo"
+      forGiulia ? "giulia" : "salvo",
+      { target: t.id }
     );
   }
   return t;
@@ -96,6 +102,31 @@ export async function navigateApp(base44, route, params, label, source) {
 
 /** tool() — passthrough; a tool is { description, inputSchema (JSON schema), execute }. */
 export function tool(def) { return def; }
+
+/**
+ * sanitizeResult — forceert een tool-resultaat naar een vlak, JSON-veilig
+ * object vóór het de Gemini tool-calling loop in gaat. Voorkomt
+ * "Converting circular structure to JSON" wanneer een tool een base44-entity
+ * of request-object retourneert.
+ */
+function sanitizeResult(r) {
+  if (r == null) return { ok: true };
+  if (typeof r !== "object") return { value: String(r).slice(0, 500) };
+  if (Array.isArray(r)) return { count: r.length, items: r.slice(0, 10).map((x) => sanitizeResult(x)) };
+  const out = {};
+  try {
+    for (const k of Object.keys(r)) {
+      const v = r[k];
+      if (v == null || typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
+        if (typeof v === "string") out[k] = v.slice(0, 300);
+        else out[k] = v;
+      } else if (Array.isArray(v)) out[k] = `array[${v.length}]`;
+      else if (typeof v === "object") out[k] = "[object]";
+      if (Object.keys(out).length >= 12) break;
+    }
+  } catch { /* ignore */ }
+  return out;
+}
 
 /**
  * buildDossier — compiles everything GIULIA knows about Salvo & the current
@@ -186,7 +217,7 @@ export async function runGiuliaAgent(base44, agentName, task, tools, stopAfter =
       let result;
       try { result = t ? await t.execute(args) : { error: "unknown tool" }; } catch (e) { result = { error: String(e) }; }
       try { onToolCall?.({ name, args, result }); } catch { /* ignore */ }
-      const response = (result && typeof result === "object" && !Array.isArray(result)) ? result : { value: result };
+      const response = sanitizeResult(result);
       respParts.push({ functionResponse: { name, response } });
     }
     contents.push({ role: "user", parts: respParts });

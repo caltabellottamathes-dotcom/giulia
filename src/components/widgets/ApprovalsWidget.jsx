@@ -12,7 +12,12 @@ export default function ApprovalsWidget() {
   const { openModule } = usePanel();
   const { data: approvals, loading, reload } = useEntityList("Approval", { filter: { status: "pending" }, realtime: true });
   const top = approvals[0];
-  const decide = async (e, id, status) => { e.stopPropagation(); try { await base44.entities.Approval.update(id, { status }); reload(); } catch {} };
+  const decide = async (e, approval, action) => {
+    e.stopPropagation();
+    try { await base44.functions.invoke("executeApproval", { approval_id: approval.id, action }); }
+    catch { /* ignore */ }
+    reload();
+  };
 
   return (
     <WidgetShell size="2x1" radius="soft" interactive onClick={() => openModule("approvals")} className="min-h-[208px]">
