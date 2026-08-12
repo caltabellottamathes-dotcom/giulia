@@ -18,7 +18,7 @@ import { secrets } from "base44:runtime";
 // gemini-2.5-flash: tools + response_schema, goede gratis tier.
 // gemini-2.0-flash-lite: zeer hoge gratis quota, ondersteunt tools + schema.
 // gemini-1.5-flash: brede compatibiliteit als laatste redmiddel.
-const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash"];
+const MODELS = ["gemini-3.1-flash-lite"];
 
 export const GIULIA_PERSONA =
   "You are Giulia, a Personal Operating System. You combine conversation, memory, and planning into one coherent system. " +
@@ -147,7 +147,7 @@ export async function geminiResearch({ prompt, systemText, temperature = 0.5 }) 
     generationConfig: { temperature },
   };
   try {
-    const data = await callWithModelList(["gemini-2.5-flash", "gemini-2.0-flash"], body);
+    const data = await callWithFallback(body);
     const text = (data?.candidates?.[0]?.content?.parts || [])
       .map((p) => p.text || "")
       .join("")
@@ -174,7 +174,7 @@ export async function geminiTranscribe({ audioBase64, mimeType, prompt }) {
     }],
   };
   try {
-    const data = await callWithModelList(["gemini-2.5-flash", "gemini-1.5-flash"], body);
+    const data = await callWithFallback(body);
     return (data?.candidates?.[0]?.content?.parts || [])
       .map((p) => p.text || "")
       .join("")
