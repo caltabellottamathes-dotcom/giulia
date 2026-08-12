@@ -71,6 +71,22 @@ export async function createTaskWithApproval(base44, { title, priority, deadline
   return t;
 }
 
+/**
+ * navigateApp — schrijf een AgentNavigation-record. De frontend abonneert zich
+ * (useAgentNavigation) en navigeert in real time naar de route. Hiermee kan
+ * Giulia (of elke agent) Salvo door de hele OS-app sturen.
+ */
+export async function navigateApp(base44, route, params, label, source) {
+  try {
+    return await base44.asServiceRole.entities.AgentNavigation.create({
+      route: String(route || "/"),
+      params: params || {},
+      label: label || "",
+      source: source || "giulia",
+    });
+  } catch { return null; }
+}
+
 /** tool() — passthrough; a tool is { description, inputSchema (JSON schema), execute }. */
 export function tool(def) { return def; }
 
@@ -120,6 +136,11 @@ export async function runGiuliaAgent(base44, agentName, task, tools, stopAfter =
       description: "Signaleer een andere Giulia-agent om aan te vallen: 'manageTasks','managePeople','syncCalendar','manageIdeas','manageProjects','dailyPlanning','weeklyPlanning','runProactivity'.",
       inputSchema: { type: "object", properties: { name: { type: "string" }, payload: { type: "object" } }, required: ["name"] },
       execute: ({ name, payload }) => base44.functions.invoke(name, payload || {}).catch(() => null),
+    },
+    navigate: {
+      description: "Navigeer Salvo's app in real time naar een route, bv. /tasks, /email, /agenda, /projects, /projects/<id>, /people, /approvals, /whatsapp, /knowledge, /insights, /memory, /documents. Gebruik dit om Salvo ergens heen te brengen dat relevant is voor het gesprek.",
+      inputSchema: { type: "object", properties: { route: { type: "string" }, label: { type: "string" }, params: { type: "object" } }, required: ["route"] },
+      execute: ({ route, label, params }) => navigateApp(base44, route, params, label, agentName),
     },
   };
 

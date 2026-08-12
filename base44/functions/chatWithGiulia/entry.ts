@@ -26,6 +26,8 @@ const TOOL_LABELS = {
   create_memory: "geheugen bijgewerkt",
   create_approval: "concept ter goedkeuring voorgelegd",
   call_agent: "agent ingeschakeld",
+  os_query: "OS-data opgehaald",
+  navigate: "app geopend",
 };
 
 export default async function (req) {
@@ -170,12 +172,24 @@ export default async function (req) {
           return l.map(k => ({ id: k.id, title: k.title }));
         },
       }),
+      os_query: tool({
+        description: "Lees data uit ELK onderdeel van GIULIA OS in real time. entity is één van: tasks, projects, contacts, emails, whatsapp, notes, ideas, memory, insights, approvals, documents, events, milestones, decisions, time_entries, weekly_plan, daily_plan, threads, meetings, activity, knowledge. Geeft de laatste 20 records met de belangrijkste velden.",
+        inputSchema: { type: "object", properties: { entity: { type: "string" } }, required: ["entity"] },
+        execute: async ({ entity }) => {
+          const MAP = { tasks:"Task", projects:"Project", contacts:"Contact", emails:"Email", whatsapp:"WhatsAppMessage", notes:"Note", ideas:"Idea", memory:"Memory", insights:"Insight", approvals:"Approval", documents:"Upload", events:"CalendarEvent", milestones:"Milestone", decisions:"Decision", time_entries:"TimeEntry", weekly_plan:"WeeklyPlan", daily_plan:"DailyPlan", threads:"Thread", meetings:"Meeting", activity:"Activity", knowledge:"Knowledge" };
+          const name = MAP[entity];
+          if (!name || !sr.entities[name]) return { error: "unknown entity", valid: Object.keys(MAP) };
+          const l = await sr.entities[name].list("-created_date", 20).catch(() => []);
+          const FIELDS = ["id","title","name","subject","sender","status","deadline","start","priority","category","content","description","created_date"];
+          return l.map(r => { const o = {}; FIELDS.forEach(k => { if (r[k] != null) o[k] = typeof r[k] === "string" ? r[k].slice(0, 160) : r[k]; }); return o; });
+        },
+      }),
     };
 
     const today = new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
     const contextLine =
       `Context: vandaag is ${today}.${user?.full_name ? ` Je spreekt met ${user.full_name}.` : ""}\n` +
-      `Je praat met Salvo via de in-app chat. Je MAG zelfstandig taken, projecten, contacten, notities, ideeën en herinneringen aanmaken en bijwerken via je tools — doe dat direct als het past. Externe acties (email/whatsapp/calendar versturen) gaan via create_approval, nooit zelf versturen.`;
+      `Je praat met Salvo via de in-app chat en kunt door de HELE GIULIA OS-app navigeren. Je MAG zelfstandig taken, projecten, contacten, notities, ideeën en herinneringen aanmaken en bijwerken via je tools — doe dat direct als het past. Lees met os_query data uit elk onderdeel (email, whatsapp, agenda, documenten, goedkeuringen, tijdregistratie, etc.). Gebruik navigate om Salvo in real time naar de juiste plek in de app te brengen als dat helpt. Externe acties (email/whatsapp/calendar versturen) gaan via create_approval, nooit zelf versturen.`;
     const task =
       `${contextLine}\n\nBericht van Salvo: "${message}"\n\n` +
       `Begrijp het bericht. Voer direct de juiste interne acties uit via je tools. Geef daarna één kort, concreet antwoord in Salvo's stijl (Nederlands, geen opsiering).`;

@@ -9,6 +9,7 @@ import { GiuliaVoiceProvider } from "@/lib/GiuliaVoiceContext";
 import AmbientBloom from "@/components/glass/AmbientBloom";
 import { GiuliaAgentProvider } from "@/lib/GiuliaAgentContext";
 import BottomNav from "@/components/BottomNav";
+import { useAgentNavigation } from "@/lib/useAgentNavigation";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
@@ -41,6 +42,7 @@ function LayoutInner() {
   const location = useLocation();
   const { openModule } = usePanel();
   const { logout } = useAuth();
+  useAgentNavigation();
 
   return (
     <div className="min-h-screen relative">

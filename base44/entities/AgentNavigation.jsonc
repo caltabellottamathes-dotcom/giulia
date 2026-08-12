@@ -1,0 +1,31 @@
+{
+  "name": "AgentNavigation",
+  "type": "object",
+  "properties": {
+    "route": {
+      "type": "string",
+      "title": "Route"
+    },
+    "params": {
+      "type": "object",
+      "title": "Params"
+    },
+    "label": {
+      "type": "string",
+      "title": "Label"
+    },
+    "source": {
+      "type": "string",
+      "title": "Source"
+    }
+  },
+  "required": [
+    "route"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}
