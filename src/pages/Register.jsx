@@ -9,7 +9,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { toast } from "@/components/ui/use-toast";
-import { safeReturnTo } from "@/lib/authReturnTo";
+import { safeReturnTo, markInternalNavigation } from "@/lib/authReturnTo";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -46,6 +46,7 @@ export default function Register() {
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
       }
+      markInternalNavigation();
       window.location.href = safeReturnTo();
     } catch (err) {
       setError(err.message || "Invalid verification code");

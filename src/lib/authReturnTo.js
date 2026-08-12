@@ -2,6 +2,16 @@
 // after sign-in, e.g. the MCP OAuth consent page). Keep the redirect
 // validation in one place — it is security-sensitive and easy to drift.
 
+// Call right before an intentional `window.location.href = ...` redirect that
+// follows a fresh login/token-set (Login, Register OTP verify, ResetPassword).
+// A hard redirect fires the same "beforeunload" event as a real tab/app close,
+// so the auto-logout-on-close listener in AuthContext would otherwise wipe the
+// just-issued token before the destination page can read it. This flag tells
+// that listener to skip clearing exactly once.
+export function markInternalNavigation() {
+  try { sessionStorage.setItem("giulia_internal_nav", "1"); } catch { /* ignore */ }
+}
+
 // Resolve ?returnTo= to a safe same-origin path, else "/".
 //
 // The same-origin check alone is not enough: a value like /.//evil.com or
