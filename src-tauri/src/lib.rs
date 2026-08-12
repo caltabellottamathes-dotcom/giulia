@@ -77,8 +77,13 @@ pub fn run() {
             let _ = app.autostart().enable();
 
             let menu = build_tray_menu(app.handle(), &[])?;
-            let _tray = TrayIconBuilder::with_id("main")
-                .icon(app.default_window_icon().unwrap().clone())
+            let mut tray_builder = TrayIconBuilder::with_id("main");
+            // Tauri v2 note: default_window_icon() can be None if icons weren't generated
+            // yet (e.g. first CI run before `tauri icon` ran) — guard instead of unwrap().
+            if let Some(icon) = app.default_window_icon() {
+                tray_builder = tray_builder.icon(icon.clone());
+            }
+            let _tray = tray_builder
                 .menu(&menu)
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id().as_ref() {

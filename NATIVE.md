@@ -1,5 +1,31 @@
 # Giulia — Native wrappers (Tauri + Capacitor)
 
+## 0. Zero-touch cloud builds (GitHub Actions) — geen lokale Rust/Xcode nodig
+
+De klaargezette workflows staan in `ci-workflows/` (niet in `.github/workflows/`
+— Base44's GitHub-sync mag dat pad zelf niet beschrijven). Eenmalige stap:
+
+1. Zorg dat deze app gesynchroniseerd is met een GitHub-repo (Base44 → GitHub-sync).
+2. Open de repo op GitHub.com → **Add file → Create new file**.
+3. Naam: `.github/workflows/tauri-build.yml` → plak de inhoud van
+   `ci-workflows/tauri-build.yml` → **Commit**.
+4. Herhaal voor `.github/workflows/android-build.yml` met de inhoud van
+   `ci-workflows/android-build.yml`.
+5. Ga naar de **Actions**-tab van de repo → kies de workflow → **Run workflow**.
+6. Wacht tot de run groen is (Windows-build ~5-10 min, Android-build ~5 min) →
+   open de run → onderaan bij **Artifacts** staat `giulia-windows-installers`
+   (.msi/.exe) of `giulia-android-apk` (.apk) → download de zip.
+
+Beide workflows draaien volledig op GitHub's cloud-runners; je installeert
+zelf niets. Ze bouwen automatisch ook opnieuw bij elke push naar `main` die
+`src/`, `src-tauri/` of `capacitor.config.ts` raakt.
+
+> App-iconen: `public/icons/icon.svg` (SVG, tekstueel — vereist geen
+> image-generatie-credits). De Tauri-workflow rasterized deze automatisch naar
+> `.ico`/`.png` via `@tauri-apps/cli icon`. Wil je een eigen logo? Vervang de
+> inhoud van dat SVG-bestand.
+
+
 Deze map bevat de scaffold om de Base44 web-app als native apps te draaien:
 - **Windows** via Tauri (global shortcut, system tray, autostart)
 - **Android & iPad (iOS)** via Capacitor (push notifications, haptics, Split View)

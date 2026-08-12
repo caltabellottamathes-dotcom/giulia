@@ -1,0 +1,19 @@
+{
+  "name": "Giulia",
+  "short_name": "Giulia",
+  "description": "GIULIA — persoonlijk AI-besturingssysteem voor agenda, communicatie, projecten en documenten.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#F1EEE3",
+  "theme_color": "#2A2823",
+  "lang": "nl",
+  "dir": "ltr",
+  "icons": [
+    { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
