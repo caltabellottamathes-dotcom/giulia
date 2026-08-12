@@ -74,7 +74,7 @@ pub fn run() {
         })
         .setup(|app| {
             // Start with Windows (background, via --hidden arg). Reuses the tray.
-            let _ = app.handle().autostart().enable();
+            let _ = app.handle().enable_autostart();
             
             let menu = build_tray_menu(app.handle(), &[])?;
             let mut tray_builder = TrayIconBuilder::with_id("main");
