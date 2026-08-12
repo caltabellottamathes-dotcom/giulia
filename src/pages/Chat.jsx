@@ -32,7 +32,11 @@ export default function Chat() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, sending]);
+  const didInit = useRef(false);
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: didInit.current ? "smooth" : "auto" });
+    if (messages.length) didInit.current = true;
+  }, [messages, sending]);
 
   const send = async (text) => {
     const msg = (text ?? input).trim();

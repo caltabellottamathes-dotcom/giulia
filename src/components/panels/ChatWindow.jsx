@@ -36,8 +36,8 @@ export default function ChatWindow() {
     return () => window.removeEventListener("keydown", handler);
   }, [chatOpen, closeChat]);
 
-  const scrollToBottom = () =>
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  const scrollToBottom = (behavior = "smooth") =>
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior });
 
   const load = useCallback(async () => {
     try {
@@ -48,11 +48,18 @@ export default function ChatWindow() {
   }, []);
 
   // Bij openen altijd het laatst verstuurde bericht meteen tonen — niet het
-  // allereerste. Wacht op de render van de geladen berichten.
+  // allereerste. Spring direct (geen smooth) naar de bodem zodra de berichten
+  // geladen zijn, en opnieuw ná de slide-in animatie (0.4s), zodat de laatste
+  // bubble altijd boven de invoer staat — op elke pagina.
   useEffect(() => {
-    if (chatOpen) {
-      load().then(() => requestAnimationFrame(scrollToBottom));
-    }
+    if (!chatOpen) return;
+    const timers = [];
+    load().then(() => {
+      timers.push(setTimeout(() => scrollToBottom("auto"), 40));
+      timers.push(setTimeout(() => scrollToBottom("auto"), 220));
+      timers.push(setTimeout(() => scrollToBottom("auto"), 460));
+    });
+    return () => timers.forEach(clearTimeout);
   }, [chatOpen, load]);
 
   const send = async (text) => {
@@ -69,7 +76,8 @@ export default function ChatWindow() {
       setMessages((prev) => [...prev, { id: `e${Date.now()}`, role: "giulia", content: "Er ging iets mis bij het bereiken van Giulia. Probeer het opnieuw." }]);
     } finally {
       setThinking(false);
-      requestAnimationFrame(scrollToBottom);
+      requestAnimationFrame(() => scrollToBottom("auto"));
+      setTimeout(() => scrollToBottom("smooth"), 120);
     }
   };
 

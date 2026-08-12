@@ -169,6 +169,82 @@ export default async function (req) {
           return l.map(k => ({ id: k.id, title: k.title }));
         },
       }),
+      delete_emails: tool({
+        description: "Verwijder emails bulksgewijs. filter='all' verwijdert alles; 'gmail' verwijdert alle emails die via Gmail binnenkwamen (gmail_thread_id of gmail_message_id gevuld); 'sender' verwijdert alles van sender_email; 'folder' verwijdert een hele folder. Rapporteer het aantal verwijderde emails.",
+        inputSchema: { type: "object", properties: { filter: { type: "string", enum: ["all", "gmail", "sender", "folder"] }, sender_email: { type: "string" }, folder: { type: "string", enum: ["inbox", "important", "sent", "drafts", "archived", "giulia_drafts"] } }, required: ["filter"] },
+        execute: async ({ filter, sender_email, folder }) => {
+          let list = [];
+          if (filter === "all") list = await sr.entities.Email.list("-created_date", 2000).catch(() => []);
+          else if (filter === "gmail") {
+            const all = await sr.entities.Email.list("-created_date", 2000).catch(() => []);
+            list = all.filter((e) => e.gmail_thread_id || e.gmail_message_id);
+          } else if (filter === "sender") list = await sr.entities.Email.filter({ sender_email }, "-created_date", 2000).catch(() => []);
+          else if (filter === "folder") list = await sr.entities.Email.filter({ folder }, "-created_date", 2000).catch(() => []);
+          const ids = list.map((e) => e.id).filter(Boolean);
+          if (!ids.length) return { deleted: 0 };
+          let deleted = 0;
+          for (let i = 0; i < ids.length; i += 100) {
+            const batch = ids.slice(i, i + 100);
+            await sr.entities.Email.deleteMany({ id: { $in: batch } }).catch(() => {});
+            deleted += batch.length;
+          }
+          return { deleted };
+        },
+      }),
+      update_email: tool({
+        description: "Werk één email bij (status, folder, important). status: unread|read|draft|sent|archived.",
+        inputSchema: { type: "object", properties: { id: { type: "string" }, status: { type: "string" }, folder: { type: "string" }, important: { type: "boolean" } }, required: ["id"] },
+        execute: async ({ id, status, folder, important }) => {
+          const upd = {};
+          if (status) upd.status = status;
+          if (folder) upd.folder = folder;
+          if (important != null) upd.important = important;
+          const e = await sr.entities.Email.update(id, upd).catch(() => null);
+          return e ? { ok: true } : { error: "not found" };
+        },
+      }),
+      delete_tasks: tool({
+        description: "Verwijder taken bulksgewijs op status (bijv. 'completed' of 'archived'). Handig om voltooide taken op te ruimen.",
+        inputSchema: { type: "object", properties: { status: { type: "string" } }, required: ["status"] },
+        execute: async ({ status }) => {
+          const list = await sr.entities.Task.filter({ status }, "-created_date", 500).catch(() => []);
+          const ids = list.map((t) => t.id).filter(Boolean);
+          if (!ids.length) return { deleted: 0 };
+          for (let i = 0; i < ids.length; i += 100) {
+            await sr.entities.Task.deleteMany({ id: { $in: ids.slice(i, i + 100) } }).catch(() => {});
+          }
+          return { deleted: ids.length };
+        },
+      }),
+      disconnect_integration: tool({
+        description: "Koppel een integratie los en verwijder alle bijbehorende gesyncte data. name='gmail' verwijdert alle Gmail-emails; 'whatsapp' verwijdert alle WhatsApp-berichten; 'calendar' verwijdert agenda-items die via sync binnenkwamen; 'drive' verwijdert Drive-bestanden. Rapporteer wat is verwijderd en stel voor om de OAuth-toegang in Integrations in te trekken voor een volledige loskoppeling.",
+        inputSchema: { type: "object", properties: { name: { type: "string", enum: ["gmail", "whatsapp", "calendar", "drive"] } }, required: ["name"] },
+        execute: async ({ name }) => {
+          let removed = 0;
+          if (name === "gmail") {
+            const all = await sr.entities.Email.list("-created_date", 2000).catch(() => []);
+            const ids = all.filter((e) => e.gmail_thread_id || e.gmail_message_id).map((e) => e.id).filter(Boolean);
+            for (let i = 0; i < ids.length; i += 100) await sr.entities.Email.deleteMany({ id: { $in: ids.slice(i, i + 100) } }).catch(() => {});
+            removed = ids.length;
+          } else if (name === "whatsapp") {
+            const all = await sr.entities.WhatsAppMessage.list("-created_date", 2000).catch(() => []);
+            const ids = all.map((m) => m.id).filter(Boolean);
+            for (let i = 0; i < ids.length; i += 100) await sr.entities.WhatsAppMessage.deleteMany({ id: { $in: ids.slice(i, i + 100) } }).catch(() => {});
+            removed = ids.length;
+          } else if (name === "calendar") {
+            const all = await sr.entities.CalendarEvent.list("-created_date", 2000).catch(() => []);
+            const ids = all.filter((e) => e.agent_source === "sync" || e.agent_source === "googlecalendar").map((e) => e.id).filter(Boolean);
+            for (let i = 0; i < ids.length; i += 100) await sr.entities.CalendarEvent.deleteMany({ id: { $in: ids.slice(i, i + 100) } }).catch(() => {});
+            removed = ids.length;
+          } else if (name === "drive") {
+            const all = await sr.entities.Upload.list("-created_date", 2000).catch(() => []);
+            const ids = all.filter((u) => u.agent_source === "sync" || u.agent_source === "googledrive").map((u) => u.id).filter(Boolean);
+            for (let i = 0; i < ids.length; i += 100) await sr.entities.Upload.deleteMany({ id: { $in: ids.slice(i, i + 100) } }).catch(() => {});
+            removed = ids.length;
+          }
+          return { disconnected: name, removed };
+        },
+      }),
       os_query: tool({
         description: "Lees data uit ELK onderdeel van GIULIA OS in real time. entity is één van: tasks, projects, contacts, emails, whatsapp, notes, ideas, memory, insights, approvals, documents, events, milestones, decisions, time_entries, weekly_plan, daily_plan, threads, meetings, activity, knowledge. Geeft de laatste 20 records met de belangrijkste velden. Gebruik dit om bij opstart elk domein te initialiseren.",
         inputSchema: { type: "object", properties: { entity: { type: "string" } }, required: ["entity"] },
@@ -189,7 +265,7 @@ export default async function (req) {
         ? "Opstartprocedure: je initialiseert GIULIA OS. Roep os_query aan voor tasks, projects, events, emails, approvals, contacts, activity, notes, ideas, memory om een volledig beeld te krijgen. Bepaal daarna wat NU aandacht verdient. MAAK CONCRETE TAKEN aan via create_task met de juiste assignee ('salvo' voor dingen die Salvo moet doen, 'giulia' voor dingen die Giulia zelf oppakt en uitvoert) — verdeel en wijs toe, maximaal 5 nieuwe taken als er echte gaten zijn. Voltooi Giulia's eigen administratieve/quick taken die afgehandeld kunnen worden (complete_task) zodat het archief opbouwt — voltooi NOOIT Salvo's taken automatisch. Leg externe acties vast via create_approval. Geef per domein één korte status (report_to_salvo). Start geen externe acties zelf."
         : source === "task_agent"
         ? "Task-agent cyclus. Je herziet ALLE open taken — zowel Salvo's als aan Giulia gedelegeerde. Herprioriteer op belangrijkheid, urgentie, afhankelijkheden en opbrengst (niet alleen deadline). Werk statussen en deadlines bij via update_task. Deel grote taken op. MAAK nieuwe taken aan (create_task) met de juiste assignee als er gaten zijn — maximaal 3. Voltooi Giulia's eigen administratieve/quick taken die afgehandeld kunnen worden (complete_task) zodat het archief opbouwt — voltooi NOOIT Salvo's taken automatisch. Leg externe acties vast via create_approval. Rapporteer EEN korte samenvatting via report_to_salvo (Activity-feed). Stuur geen chat-bericht en geen push."
-        : `Je praat met Salvo via de in-app chat en kunt door de HELE GIULIA OS-app navigeren. Je MAG zelfstandig taken, projecten, contacten, notities, ideeën en herinneringen aanmaken en bijwerken via je tools — doe dat direct als het past. Lees met os_query data uit elk onderdeel. Gebruik navigate om Salvo in real time naar de juiste plek te brengen. Externe acties (email/whatsapp/calendar) gaan via create_approval, nooit zelf versturen. BELANGRIJK: als je in je antwoord een taak of goedkeuring noemt die je zojuist hebt aangemaakt of gevonden (create_task, create_approval, list_tasks, os_query resultaten met een id), maak die verwijzing dan een klikbare markdown-link naar de detailpagina: [titel](/tasks?open=<id>) voor taken, [titel](/approvals?open=<id>) voor goedkeuringen — zodat Salvo er direct op door kan klikken.`;
+        : `Je praat met Salvo via de in-app chat en kunt door de HELE GIULIA OS-app navigeren. Je MAG zelfstandig taken, projecten, contacten, notities, ideeën en herinneringen aanmaken en bijwerken via je tools — doe dat direct als het past. Je MAG ook direct emails verwijderen (delete_emails), emails bijwerken (update_email), taken verwijderen (delete_tasks) en integraties loskoppelen (disconnect_integration) — voer deze direct uit zodra Salvo erom vraagt, zonder goedkeuring. Lees met os_query data uit elk onderdeel. Gebruik navigate om Salvo in real time naar de juiste plek te brengen. Alleen het NIEUW opstellen of versturen van email/whatsapp gaat via create_approval, nooit zelf versturen. BELANGRIJK: als je in je antwoord een taak of goedkeuring noemt die je zojuist hebt aangemaakt of gevonden (create_task, create_approval, list_tasks, os_query resultaten met een id), maak die verwijzing dan een klikbare markdown-link naar de detailpagina: [titel](/tasks?open=<id>) voor taken, [titel](/approvals?open=<id>) voor goedkeuringen — zodat Salvo er direct op door kan klikken.`;
     const contextLine = `Context: vandaag is ${today}.${user?.full_name ? ` Je spreekt met ${user.full_name}.` : ""}\n${persona}`;
     const task =
       `${contextLine}\n\nSignaal (bron: ${source}): "${signal}"\n\n` +
