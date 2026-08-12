@@ -26,14 +26,14 @@ export default function DocumentsWidget() {
   const toggleFav = async (e, d) => { e.stopPropagation(); try { await base44.entities.Document.update(d.id, { status: d.status === "favorite" ? "recent" : "favorite" }); reload(); } catch {} };
 
   return (
-    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("documents")} className="min-h-[208px]">
-      <div className="p-5 flex flex-col h-full">
+    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("documents")} className="min-h-[150px]">
+      <div className="p-4 flex flex-col h-full">
         <WidgetHeader label="Documenten" count={`${docs.length}`} />
         {loading ? (
           <div className="flex-1 flex items-center justify-center"><div className="h-8 w-8 border-2 border-current/20 border-t-current rounded-full animate-spin" /></div>
         ) : docs.length > 0 ? (
           <div className="flex-1 flex items-center gap-5">
-            <div className="relative w-24 h-28 shrink-0">
+            <div className="relative w-20 h-24 shrink-0">
               {stack.map((d, i) => (
                 <div key={d.id} className={cn("absolute inset-0 rounded-2xl overflow-hidden border border-ivory/15 float-shadow", i === 0 ? "z-30" : "z-20")} style={{ transform: `translate(${i * 6}px, ${i * 6}px) rotate(${i * 4}deg)` }}>
                   {i === 0 && (d.type === "image" && d.url

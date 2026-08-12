@@ -11,7 +11,7 @@ export default function TimeTrackerWidget() {
 
   return (
     <LayeredWidgetTile image={IMAGES.hourglassJacket} label="Tijd" count={formatMinutes(todayMin)} onHeaderClick={() => navigate("/timetracker")}>
-      <div className="space-y-4">
+      <div className="space-y-2">
         <div>
           <label className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Taak</label>
           <select
@@ -28,7 +28,7 @@ export default function TimeTrackerWidget() {
         </div>
         <div className="flex items-center gap-3 rounded-2xl bg-foreground/[0.04] border border-foreground/10 px-4 py-3">
           <Timer className="h-5 w-5 text-olive shrink-0" />
-          <span className="text-3xl font-display font-semibold tabular-nums tracking-tight">{formatDuration(elapsed)}</span>
+          <span className="text-2xl font-display font-semibold tabular-nums tracking-tight">{formatDuration(elapsed)}</span>
         </div>
         <div className="flex gap-2">
           {!running && !paused && (

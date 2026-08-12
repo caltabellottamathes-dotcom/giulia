@@ -31,15 +31,15 @@ export default function ActivityWidget() {
   const clearCat = async (k) => { const ids = groups[k].map((g) => g.id); try { await base44.entities.Activity.deleteMany({ id: { $in: ids } }); reload(); } catch {} };
 
   return (
-    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("activity")} className="min-h-[200px]">
+    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("activity")} className="min-h-[150px]">
       <div className="flex flex-col h-full">
-        <BrandPhoto src={IMAGES.topDownWalk} className="h-20 -mb-8 rounded-b-[20px] shadow-[0_14px_24px_-12px_rgba(0,0,0,0.3)] relative z-10" overlay="bg-gradient-to-t from-charcoal/85 to-charcoal/30">
+        <BrandPhoto src={IMAGES.topDownWalk} className="h-14 -mb-8 rounded-b-[20px] shadow-[0_14px_24px_-12px_rgba(0,0,0,0.3)] relative z-10" overlay="bg-gradient-to-t from-charcoal/85 to-charcoal/30">
           <div className="absolute inset-0 px-5 flex items-end justify-between pb-2">
             <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">Activiteit</h3>
-            <span className="text-2xl font-display font-semibold text-ivory tabular-nums">{items.length}</span>
+            <span className="text-xl font-display font-semibold text-ivory tabular-nums">{items.length}</span>
           </div>
         </BrandPhoto>
-        <div className="p-4 pt-9 flex-1 flex flex-col">
+        <div className="p-4 pt-7 flex-1 flex flex-col">
           {loading ? (
             <div className="flex-1 flex items-center"><div className="h-7 w-7 border-2 border-current/20 border-t-current rounded-full animate-spin" /></div>
           ) : keys.length ? (

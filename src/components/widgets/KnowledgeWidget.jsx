@@ -18,16 +18,16 @@ export default function KnowledgeWidget() {
   const maxC = Math.max(1, ...Object.values(counts));
 
   return (
-    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("knowledge")} className="min-h-[240px]">
+    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("knowledge")} className="min-h-[160px]">
       <div className="flex flex-col h-full">
-        <div className="flex-1 -mb-8 rounded-b-[24px] glass-3 p-5 relative z-10 shadow-[0_14px_28px_-12px_rgba(0,0,0,0.35)] text-ivory flex flex-col">
+        <div className="flex-1 -mb-8 rounded-b-[24px] glass-3 p-4 relative z-10 shadow-[0_14px_28px_-12px_rgba(0,0,0,0.35)] text-ivory flex flex-col">
           <WidgetHeader label="Kennisbank" count={`${items.length} notities`} />
           {loading ? (
             <div className="flex-1 flex items-center justify-center"><div className="h-8 w-8 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" /></div>
           ) : items.length > 0 ? (
             <div className="flex-1 flex flex-col">
-              <div className="flex items-end gap-3 mb-4">
-                <CountUp value={items.length} className="text-5xl font-display font-semibold tracking-[-0.03em] leading-none text-ivory" />
+              <div className="flex items-end gap-3 mb-2">
+                <CountUp value={items.length} className="text-3xl font-display font-semibold tracking-[-0.03em] leading-none text-ivory" />
                 <p className="text-[11px] uppercase tracking-[0.2em] text-ivory/50 mb-1.5">notities</p>
               </div>
               <div className="flex items-end gap-2 flex-1 min-h-0" onClick={(e) => e.stopPropagation()}>
@@ -43,7 +43,7 @@ export default function KnowledgeWidget() {
             <div className="flex-1 flex items-center justify-center"><p className="text-xs text-ivory/45">Nog niets opgeslagen</p></div>
           )}
         </div>
-        <div className="relative h-20 shrink-0 overflow-hidden">
+        <div className="relative h-14 shrink-0 overflow-hidden">
           <BrandPhoto src={IMAGES.chairWater} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/70 to-charcoal/20" />
         </div>
       </div>
