@@ -1,110 +1,51 @@
 import React, { useState } from "react";
 import ColorToggle from "./ColorToggle";
+import ActionRow from "./ActionRow";
+import Pager from "./Pager";
+import WidgetHero from "./WidgetHero";
+import WidgetHeader from "@/components/widgets/WidgetHeader";
+import BrandPhoto from "@/components/widgets/BrandPhoto";
+import { accentBg } from "@/lib/widgetAccent";
 
 /**
- * Design 1 — "Ivory Editorial": light warm-white card, a thin colored
- * accent bar, and one oversized graphic hero per widget kind. Charcoal type,
- * airy and quiet — the OS's editorial register.
+ * Design 1 — "Glass Over Photo": the real TasksWidget/GiuliaWidget pattern —
+ * a glass-3 card fills most of the tile and overlaps down onto a photo strip
+ * that peeks below it. Pager flips between the hero graphic and a detail
+ * page; the action row carries the widget's real actions.
  */
-const accentBg = { olive: "bg-olive", sand: "bg-sand", ridge: "bg-ridge", storm: "bg-storm", charcoal: "bg-charcoal" };
-const accentText = { olive: "text-olive", sand: "text-sand", ridge: "text-ridge", storm: "text-storm", charcoal: "text-charcoal" };
-const tint = { transparent: "", olive: "bg-olive/[0.06]", sand: "bg-sand/[0.08]", charcoal: "bg-charcoal/[0.04]", ridge: "bg-ridge/[0.10]" };
-
 export default function VariantEditorial({ widget }) {
   const [color, setColor] = useState("transparent");
-  const ab = accentBg[widget.accent];
-  const at = accentText[widget.accent];
+  const [page, setPage] = useState(0);
 
   return (
-    <div className={`relative aspect-[4/3] rounded-[20px] bg-warm-white border border-border/60 p-5 flex flex-col justify-between overflow-hidden cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-[0_20px_44px_-22px_rgba(0,0,0,0.16)] ${tint[color]}`}>
-      <span className={`absolute top-0 left-6 right-6 h-[3px] rounded-b-full ${ab}`} />
-      <div className="pt-1.5">
-        <Hero widget={widget} ab={ab} at={at} />
+    <div className="relative rounded-[28px] overflow-hidden flex flex-col shadow-[0_28px_60px_-26px_rgba(0,0,0,0.35)] transition-transform hover:-translate-y-1 cursor-pointer" style={{ minHeight: 340 }}>
+      <div className="flex-1 -mb-8 rounded-b-[24px] glass-3 p-5 relative z-10 shadow-[0_14px_30px_-12px_rgba(0,0,0,0.35)] text-ivory flex flex-col">
+        {color !== "transparent" && <span className={`pointer-events-none absolute inset-0 z-0 ${accentBg[color]} opacity-[0.16]`} />}
+        <div className="relative z-10 flex flex-col flex-1 min-h-0">
+          <WidgetHeader label={widget.label} count={page === 1 ? "detail" : undefined} />
+          <div className="flex-1 flex flex-col justify-center min-h-[92px]">
+            {page === 0 ? (
+              <WidgetHero widget={widget} tone="ivory" />
+            ) : (
+              <div className="animate-fade-up">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-ivory/55 mb-1.5">{widget.page2.title}</p>
+                <p className="text-sm text-ivory/85 leading-snug">{widget.page2.text}</p>
+              </div>
+            )}
+          </div>
+          <p className="text-[11px] text-ivory/55 mt-2 mb-3 line-clamp-1">{widget.sub}</p>
+          <div className="flex items-center justify-between gap-2">
+            <ActionRow actions={widget.actions} accent={widget.accent} tone="ivory" />
+            <div className="flex items-center gap-2 shrink-0">
+              <Pager page={page} setPage={setPage} dark />
+              <ColorToggle value={color} onChange={setColor} dark />
+            </div>
+          </div>
+        </div>
       </div>
-      <div className="flex items-end justify-between gap-3">
-        <p className="text-[11px] text-muted-foreground leading-snug">{widget.sub}</p>
-        <ColorToggle value={color} onChange={setColor} />
+      <div className="relative h-24 shrink-0 overflow-hidden">
+        <BrandPhoto src={widget.photo} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/70 to-charcoal/10" />
       </div>
     </div>
   );
-}
-
-function Hero({ widget, ab, at }) {
-  switch (widget.kind) {
-    case "stat":
-      return (
-        <div>
-          <p className="text-5xl font-display font-bold tracking-tight text-charcoal leading-none">{widget.value}</p>
-          <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground mt-2">{widget.unit}</p>
-        </div>
-      );
-    case "chat":
-      return (
-        <div className="flex items-center gap-3">
-          <span className={`h-12 w-12 rounded-full ${ab} text-ivory flex items-center justify-center font-display font-semibold text-sm shrink-0`}>
-            {widget.name.slice(0, 2).toUpperCase()}
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-charcoal">{widget.name}</p>
-            <p className="text-xs text-muted-foreground truncate">{widget.message}</p>
-          </div>
-          {widget.unread > 0 && <span className={`h-2 w-2 rounded-full ${ab} animate-pulse-soft shrink-0`} />}
-        </div>
-      );
-    case "timeline":
-      return (
-        <div className="space-y-2.5">
-          {widget.items.map((it, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <span className="text-[10px] font-mono text-muted-foreground w-9 shrink-0">{it.time}</span>
-              <span className={`h-1.5 w-1.5 rounded-full ${ab} shrink-0`} />
-              <span className="text-xs text-charcoal truncate">{it.label}</span>
-            </div>
-          ))}
-        </div>
-      );
-    case "ring": {
-      const r = 32, c = 2 * Math.PI * r, off = c - (widget.value / 100) * c;
-      return (
-        <div className="flex items-center gap-4">
-          <svg width="78" height="78" viewBox="0 0 78 78" className="-rotate-90">
-            <circle cx="39" cy="39" r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="7" />
-            <circle cx="39" cy="39" r={r} fill="none" className={at} stroke="currentColor" strokeWidth="7" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={off} />
-          </svg>
-          <p className="text-3xl font-display font-bold text-charcoal">{widget.value}<span className="text-sm text-muted-foreground">%</span></p>
-        </div>
-      );
-    }
-    case "avatars":
-      return (
-        <div className="flex items-center">
-          {widget.initials.map((n, i) => (
-            <span
-              key={i}
-              style={{ marginLeft: i === 0 ? 0 : -10, zIndex: widget.initials.length - i }}
-              className={`h-11 w-11 rounded-full ${ab} text-ivory text-[11px] font-semibold flex items-center justify-center border-2 border-warm-white`}
-            >
-              {n}
-            </span>
-          ))}
-        </div>
-      );
-    case "preview":
-      return (
-        <div className={`relative h-20 rounded-xl ${ab} overflow-hidden flex items-end p-3`}>
-          <span className="absolute top-2 right-2 h-6 min-w-6 px-1.5 rounded-full bg-ivory text-charcoal text-[10px] font-bold flex items-center justify-center">{widget.count}</span>
-          <p className="text-xs text-ivory font-medium truncate">{widget.sub}</p>
-        </div>
-      );
-    case "route":
-      return (
-        <div className="flex items-end gap-1.5 h-20">
-          {widget.bars.map((b, i) => (
-            <span key={i} className={`w-3 rounded-full ${ab}`} style={{ height: `${b * 10}px`, opacity: 0.45 + (i / widget.bars.length) * 0.55 }} />
-          ))}
-        </div>
-      );
-    default:
-      return null;
-  }
 }

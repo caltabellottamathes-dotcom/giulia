@@ -8,13 +8,14 @@ import VariantGlassDepth from "@/components/widgetgallery/VariantGlassDepth";
 
 /**
  * WidgetGallery — private comparison page, not part of the OS navigation.
- * Shows all 17 widget types in 3 design directions so Salvo can pick a winner
- * per widget (or per whole design language).
+ * All 17 widget types in 3 design directions, each rooted in the OS's real
+ * widget aesthetic (glass + editorial photo, layered both ways — see
+ * WIDGET_DESIGN_BRIEF.md at the project root for the full brief).
  */
 const DESIGNS = [
-  { key: "editorial", title: "Design 1 — Ivory Editorial", desc: "Licht, rustig, redactioneel. Charcoal typografie op warm ivoor.", Variant: VariantEditorial, wrapBg: "" },
-  { key: "bento", title: "Design 2 — Solid Bento", desc: "Vol paletkleur per widget, ivoren type, posterachtig en zelfverzekerd.", Variant: VariantBento, wrapBg: "" },
-  { key: "glass", title: "Design 3 — Glass Depth", desc: "Donker refractieglas met een gloed achter elke graphic.", Variant: VariantGlassDepth, wrapBg: "bg-charcoal rounded-[28px]" },
+  { key: "editorial", title: "Design 1 — Glass Over Photo", desc: "Glas overlapt naar beneden op een fotostrip — zoals Taken nu al doet.", Variant: VariantEditorial },
+  { key: "bento", title: "Design 2 — Photo Over Glass", desc: "Een fotoband zweeft bovenop de glasrand — zoals Email nu al doet, met bold cijfers.", Variant: VariantBento },
+  { key: "glass", title: "Design 3 — Side-by-Side Editorial", desc: "Foto en glas naast elkaar — zoals Giulia's widget, met tabs voor meer diepte.", Variant: VariantGlassDepth },
 ];
 
 export default function WidgetGallery() {
@@ -26,23 +27,21 @@ export default function WidgetGallery() {
         </Link>
         <h1 className="text-3xl font-display font-bold tracking-tight">Widget Gallery</h1>
         <p className="text-sm text-muted-foreground mt-2 max-w-xl">
-          17 widgets, elk in 3 designrichtingen — alleen voor jou, geen deel van de OS. Kies per widget of per stijl welke je het beste vindt.
+          17 widgets, elk in 3 designrichtingen, allemaal gebouwd op de echte OS-esthetiek — alleen voor jou. Klik op de pagina-stippen/tabs en probeer de actieknoppen.
         </p>
       </div>
 
-      {DESIGNS.map(({ key, title, desc, Variant, wrapBg }) => (
-        <section key={key} className={wrapBg ? `${wrapBg} p-6 lg:p-10` : ""}>
+      {DESIGNS.map(({ key, title, desc, Variant }) => (
+        <section key={key}>
           <div className="mb-6">
-            <h2 className={`text-xl font-display font-semibold ${wrapBg ? "text-ivory" : ""}`}>{title}</h2>
-            <p className={`text-sm mt-1 ${wrapBg ? "text-ivory/60" : "text-muted-foreground"}`}>{desc}</p>
+            <h2 className="text-xl font-display font-semibold">{title}</h2>
+            <p className="text-sm mt-1 text-muted-foreground">{desc}</p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
-            {WIDGETS.map((widget) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {WIDGETS.map((widget, i) => (
               <div key={widget.key} className="space-y-2">
-                <Variant widget={widget} />
-                <p className={`text-[11px] uppercase tracking-[0.14em] text-center ${wrapBg ? "text-ivory/50" : "text-muted-foreground"}`}>
-                  {widget.label}
-                </p>
+                <Variant widget={widget} index={i} />
+                <p className="text-[11px] uppercase tracking-[0.14em] text-center text-muted-foreground">{widget.label}</p>
               </div>
             ))}
           </div>
