@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePanel } from "@/lib/PanelContext";
 import { X, ArrowUp, Loader2, Phone } from "lucide-react";
-import ReactMarkdown from "react-markdown";
+import ChatMarkdown from "@/components/glass/ChatMarkdown";
 
 /**
  * ChatWindow — Giulia's conversation panel. Slides in from the right edge
@@ -47,7 +47,13 @@ export default function ChatWindow() {
     } catch { setMessages([]); }
   }, []);
 
-  useEffect(() => { if (chatOpen) load(); }, [chatOpen, load]);
+  // Bij openen altijd het laatst verstuurde bericht meteen tonen — niet het
+  // allereerste. Wacht op de render van de geladen berichten.
+  useEffect(() => {
+    if (chatOpen) {
+      load().then(() => requestAnimationFrame(scrollToBottom));
+    }
+  }, [chatOpen, load]);
 
   const send = async (text) => {
     const content = (text ?? input).trim();
@@ -192,7 +198,7 @@ function MessageBubble({ message }) {
   return (
     <div className="flex justify-start">
       <div className="max-w-[85%] chat-bubble px-[18px] py-3 text-sm text-ivory leading-relaxed">
-        <ReactMarkdown>{message.content}</ReactMarkdown>
+        <ChatMarkdown>{message.content}</ChatMarkdown>
       </div>
     </div>
   );

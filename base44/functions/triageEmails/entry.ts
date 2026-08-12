@@ -1,17 +1,21 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { tool, runGiuliaAgent, createTaskWithApproval, createApproval } from "../../shared/codeAgent.ts";
+import { tool, runGiuliaAgent, createTaskWithApproval } from "../../shared/codeAgent.ts";
 
 /**
  * triageEmails — sorteert de inbox in categorieën (important / advertising /
  * newsletter / junk / spam), koppelt projectgerelateerde mails aan het juiste
- * project (email.project_id), en bereidt concept-antwoorden voor die Salvo
- * moet goedkeuren (Email folder=giulia_drafts). NOOIT zelf verzenden.
+ * project (email.project_id), en zet alles wat geen persoonlijk gerichte mail
+ * is (reclame, nieuwsbrieven, notificaties, spam) direct in "archived" zodat
+ * de inbox alleen echte mail toont.
+ *
+ * Giulia stelt GEEN concept-antwoorden meer proactief voor — dat gebeurt
+ * alleen nog als Salvo zelf op "Door Giulia" klikt bij een email (draftEmailReply).
  *
  * Werkt in twee lagen:
- *  1. Heuristische pre-pass (geen credits) — classificatie + project-koppeling.
- *  2. LLM-agent (runGiuliaAgent) — verfijning + concept-antwoorden. Slaat
- *     stil door als integratie-credits uitgeput zijn; de heuristische laag
- *     blijft dan geldig.
+ *  1. Heuristische pre-pass (geen credits) — classificatie + archivering + project-koppeling.
+ *  2. LLM-agent (runGiuliaAgent) — haalt alleen acties/deadlines/commitments uit
+ *     belangrijke mail (create_task). Slaat stil door als dit faalt; de
+ *     heuristische laag blijft dan geldig.
  */
 export default async function (req) {
   try {
@@ -32,10 +36,13 @@ export default async function (req) {
     const SPAM = /(winner|lottery|crypto|bitcoin|investment opportunity|urgent fund|claim your|congratulations you|viagra|casino|loan offer|prize|secured link|verify your account|suspended)/i;
     const NEWSLETTER = /(newsletter|nieuwsbrief|weekly digest|this week in|issue #|vol \d|digest|roundup|the edition)/i;
     const JUNK = /(no-?reply|noreply|donotreply|notifications|notify|mailer|updates@|team@)/i;
+    // Bekende mass-mail afzenders die zelden persoonlijk gericht zijn.
+    const MASS_SENDER_DOMAINS = /(linkedin\.com|dezeen\.com|substack\.com|mailchimp|sendgrid|hubspot|medium\.com|eventbrite|meetup\.com|glassdoor|indeed\.com)/i;
 
     const heurCategory = (e) => {
       const text = `${e.subject || ''} ${e.body || ''} ${e.sender || ''} ${e.sender_email || ''}`.toLowerCase();
       if (SPAM.test(text)) return 'spam';
+      if (MASS_SENDER_DOMAINS.test(e.sender_email || '')) return 'advertising';
       if (NEWSLETTER.test(text) || /newsletter|nieuwsbrief/.test(e.sender_email || '')) return 'newsletter';
       if (ADVERTISING.test(text)) return 'advertising';
       if (JUNK.test(e.sender_email || '')) return 'junk';
@@ -55,12 +62,13 @@ export default async function (req) {
     for (const e of untriaged) {
       const category = heurCategory(e);
       const projectId = projectMatch(e);
+      const isNoise = category !== 'important';
       updates.push(
         sr.entities.Email.update(e.id, {
           category,
           project_id: projectId || null,
           triaged: true,
-          ...(category === 'important' ? { important: true } : {}),
+          ...(isNoise ? { folder: 'archived' } : { important: true }),
         }).catch(() => null)
       );
     }
@@ -84,36 +92,13 @@ export default async function (req) {
           return t ? { id: t.id, title: t.title } : { error: 'create failed' };
         },
       }),
-      draft_reply: tool({
-        description: 'Maak een concept-antwoord (Email folder=giulia_drafts) voor een email die Salvo moet beantwoorden. NOOIT zelf verzenden. Leg het concept ook ter goedkeuring voor via de Approval die automatisch wordt aangemaakt.',
-        inputSchema: { type: 'object', properties: { email_id: { type: 'string' }, reply: { type: 'string' }, reason: { type: 'string' } }, required: ['email_id', 'reply'] },
-        execute: async ({ email_id, reply, reason }) => {
-          const e = await sr.entities.Email.get(email_id).catch(() => null);
-          if (!e) return null;
-          const draft = await sr.entities.Email.create({
-            sender: e.sender || '(onbekend)',
-            sender_email: e.sender_email || '',
-            subject: e.subject ? 'RE: ' + e.subject : 'Concept antwoord',
-            body: reply,
-            folder: 'giulia_drafts',
-            giulia_draft: true,
-            status: 'draft',
-            context: reason || 'Concept antwoord — wacht op goedkeuring van Salvo.',
-            project_id: e.project_id || null,
-            timestamp: new Date().toISOString(),
-          }).catch(() => null);
-          await createApproval(base44, 'email', `Concept antwoord aan ${e.sender || '?'}`, reply, reason || 'Concept door Giulia uit triage — wacht op goedkeuring.');
-          return draft;
-        },
-      }),
     };
 
     const task =
       'Sorteer de inbox is al heuristisch gedaan. Jouw taak: gebruik list_important om emails met category "important" te bekijken. ' +
-      'Voor elke email die een persoonlijk antwoord nodig heeft, schrijf een concept-antwoord in Salvo\'s stijl (kort, warm, concreet, Nederlands of match de taal van de afzender) via draft_reply. ' +
-      'Haal daarnaast acties, afspraken, deadlines en commitments uit de emails en VOER ze direct uit via create_task (Giulia maakt de taak aan én legt deze ter goedkeuring voor bij Salvo). ' +
-      'Sla emails over die duidelijk geen antwoord nodig hebben (bevestigingen, notificaties). ' +
-      'Rapporteer via report_to_salvo hoeveel concept-antwoorden en taken klaarstaan voor goedkeuring.';
+      'Haal acties, afspraken, deadlines en commitments uit deze emails en VOER ze direct uit via create_task (Giulia maakt de taak aan én legt deze ter goedkeuring voor bij Salvo). ' +
+      'Schrijf ZELF GEEN concept-antwoorden en maak GEEN Approval voor een email-antwoord — Salvo vraagt dat zelf aan via de "Door Giulia"-knop bij een email. ' +
+      'Rapporteer via report_to_salvo kort hoeveel taken je hebt aangemaakt.';
 
     await runGiuliaAgent(base44, 'triageEmails', task, tools, 10).catch(() => null);
 

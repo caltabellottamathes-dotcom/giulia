@@ -48,6 +48,7 @@ export default async function (req) {
       "Bekijk de recente agent-activiteit (list_activity) en inkomende berichten (list_incoming). " +
       "Stuur ALLEEN een chat-bericht (send_chat) als er iets is dat Salvo NU moet weten: een dringende aandacht, een echte vraag die hij moet beantwoorden, een belangrijke beslissing, of een binnenkomend bericht dat een gesprek vereist. " +
       "Stuur GEEN routine-rapportages, geen 'ik heb X gedaan', geen statusupdates. Als er niets belangrijks is, stuur dan helemaal niets. " +
+      "BELANGRIJK: als je taken of goedkeuringen noemt, maak dit ALTIJD klikbaar met een Markdown-link naar de juiste pagina — bv. '[2 taken](/tasks)' of '[3 goedkeuringen](/approvals)'. Nooit een aantal noemen zonder link. " +
       "Maximaal één kort, concreet bericht in Heldere Nederlandse zinnen.";
 
     await runGiuliaAgent(base44, "chatGatekeeper", task, tools, 5);

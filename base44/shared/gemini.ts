@@ -26,7 +26,9 @@ function systemInstruction(extra) {
   return { parts: [{ text }] };
 }
 
-async function rawCall(model, body) {
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function rawCall(model, body, retried) {
   const key = secrets.get("GEMINI_API_KEY");
   if (!key) throw new Error("GEMINI_API_KEY niet ingesteld — check app secrets.");
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
@@ -36,6 +38,12 @@ async function rawCall(model, body) {
     body: JSON.stringify(body),
   });
   if (!res.ok) {
+    // Eén keer terugvallen op een korte pauze bij 429 (rate limit) — een live
+    // chatvraag mag niet mislukken puur omdat er net een achtergrondtaak liep.
+    if (res.status === 429 && !retried) {
+      await sleep(3500);
+      return rawCall(model, body, true);
+    }
     const detail = await res.text().catch(() => "");
     throw new Error(`Gemini ${model} HTTP ${res.status}: ${detail.slice(0, 300)}`);
   }

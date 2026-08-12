@@ -2,11 +2,11 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 import { useToast } from "@/components/ui/use-toast";
-import ReactMarkdown from "react-markdown";
 import { Send, Mic, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import PageHero from "@/components/glass/PageHero";
+import ChatMarkdown from "@/components/glass/ChatMarkdown";
 
 const GIULIA_AVATAR = IMAGES.giuliaConcierge;
 const PILLS = ["Wat staat er vandaag?", "Openstaande taken?", "Check mijn email", "Wat is veranderd?"];
@@ -99,7 +99,7 @@ export default function Chat() {
                       "rounded-2xl px-4 py-3 text-sm leading-relaxed",
                       isUser ? "bg-foreground/8 text-foreground" : "glass-1 text-foreground"
                     )}>
-                      {isUser ? m.content : <ReactMarkdown className="prose prose-sm max-w-none">{m.content}</ReactMarkdown>}
+                      {isUser ? m.content : <ChatMarkdown className="prose prose-sm max-w-none">{m.content}</ChatMarkdown>}
                     </div>
                   </div>
                 </div>

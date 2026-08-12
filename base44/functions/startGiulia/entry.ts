@@ -13,7 +13,10 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
  *
  * Hiermee "begint" elke agent-domein en zijn alle updates real-time zichtbaar.
  */
-const SYNC = ["syncGmail", "syncCalendar", "syncDrive"];
+// Email loopt uitsluitend via de IMAP-bridge (fetchPrivateEmails) — geen Gmail-API sync meer.
+const SYNC = ["syncCalendar", "syncDrive"];
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function runOne(base44, name, payload) {
   try {
@@ -24,14 +27,24 @@ async function runOne(base44, name, payload) {
   }
 }
 
+// Sequentieel met pauze — blijft ruim onder de Gemini RPM-limiet.
+async function runSequential(base44, names, delayMs = 4000) {
+  const results = [];
+  for (const n of names) {
+    results.push(await runOne(base44, n));
+    await sleep(delayMs);
+  }
+  return results;
+}
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
 
-    // 1) synchroniseer alle bronnen (parallel, faalt zacht)
-    const syncResults = await Promise.all(SYNC.map((n) => runOne(base44, n)));
+    // 1) synchroniseer alle bronnen — sequentieel, faalt zacht
+    const syncResults = await runSequential(base44, SYNC);
     const okSync = syncResults.filter((r) => r.ok).length;
 
     // 2) de leider — EEN Gemini-aanroep — initialiseert elk domein intern
@@ -50,6 +63,7 @@ export default async function (req) {
     //    Giulia's) en proactief aanmaakt/toewijst. Geen eigen Gemini-loop:
     //    delegeert naar de leider. (runProactivity draait op zijn eigen
     //    ingeplande workflow — niet synchroon hier, anders rate-limit op free tier.)
+    await sleep(4000);
     const taskAgent = await runOne(base44, "manageTasks", {});
 
     // 4) Activity-log → zichtbaar in widgets & panelen
