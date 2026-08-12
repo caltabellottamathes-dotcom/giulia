@@ -10,7 +10,7 @@ import { IMAGES } from "@/lib/images";
 /** ApprovalsWidget — glass floats over a header photo that carries the count. */
 export default function ApprovalsWidget() {
   const { openModule } = usePanel();
-  const { data: approvals, loading, reload } = useEntityList("Approval", { filter: { status: "pending" } });
+  const { data: approvals, loading, reload } = useEntityList("Approval", { filter: { status: "pending" }, realtime: true });
   const top = approvals[0];
   const decide = async (e, id, status) => { e.stopPropagation(); try { await base44.entities.Approval.update(id, { status }); reload(); } catch {} };
 

@@ -1,24 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { base44 } from "@/api/base44Client";
+import { useEntityList } from "@/hooks/useEntity";
 import { Card, Empty, SectionLabel, HeroStat } from "./previewParts";
 import { Check, X, ArrowUpRight } from "lucide-react";
 
 export default function ApprovalsPreview({ onOpen }) {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const load = async () => {
-    try {
-      const data = await base44.entities.Approval.filter({ status: "pending" }, "-created_date", 6);
-      setItems(data || []);
-    } catch (e) {} finally { setLoading(false); }
-  };
-
-  useEffect(() => { load(); }, []);
+  const { data: items, loading, reload } = useEntityList("Approval", {
+    filter: { status: "pending" },
+    sort: "-created_date",
+    limit: 6,
+    realtime: true,
+  });
 
   const decide = async (a, status) => {
-    setItems((prev) => prev.filter((x) => x.id !== a.id));
-    try { await base44.entities.Approval.update(a.id, { status }); } catch (e) { load(); }
+    try { await base44.entities.Approval.update(a.id, { status }); } catch (e) {}
+    reload();
   };
 
   return (

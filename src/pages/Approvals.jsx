@@ -25,7 +25,7 @@ export default function Approvals() {
   const [selected, setSelected] = useState(null);
   const [editText, setEditText] = useState("");
 
-  const { data: approvals, loading, reload } = useEntityList("Approval");
+  const { data: approvals, loading, reload } = useEntityList("Approval", { realtime: true });
   const { data: projects } = useEntityList("Project");
   const projTitle = (id) => projects.find((p) => p.id === id)?.title;
 
