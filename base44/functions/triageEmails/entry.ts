@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { tool, runGiuliaAgent } from "../../shared/codeAgent.ts";
+import { tool, runGiuliaAgent, createTaskWithApproval, createApproval } from "../../shared/codeAgent.ts";
 
 /**
  * triageEmails — sorteert de inbox in categorieën (important / advertising /
@@ -76,13 +76,21 @@ export default async function (req) {
             .then((l) => l.filter((e) => e.category === 'important').slice(0, 30)
               .map((e) => ({ id: e.id, sender: e.sender, sender_email: e.sender_email, subject: e.subject, body: String(e.body || '').slice(0, 500), project_id: e.project_id }))),
       }),
+      create_task: tool({
+        description: 'Voer een actie/afspraak uit een email direct uit: maak een taak aan. Giulia legt deze meteen ter goedkeuring bij Salvo.',
+        inputSchema: { type: 'object', properties: { title: { type: 'string' }, priority: { type: 'string' }, deadline: { type: 'string' }, project_id: { type: 'string' }, description: { type: 'string' } }, required: ['title'] },
+        execute: async ({ title, priority, deadline, project_id, description }) => {
+          const t = await createTaskWithApproval(base44, { title, priority, deadline, project_id, description, source: 'triageEmails' });
+          return t ? { id: t.id, title: t.title } : { error: 'create failed' };
+        },
+      }),
       draft_reply: tool({
-        description: 'Maak een concept-antwoord (Email folder=giulia_drafts) voor een email die Salvo moet beantwoorden. NOOIT zelf verzenden.',
+        description: 'Maak een concept-antwoord (Email folder=giulia_drafts) voor een email die Salvo moet beantwoorden. NOOIT zelf verzenden. Leg het concept ook ter goedkeuring voor via de Approval die automatisch wordt aangemaakt.',
         inputSchema: { type: 'object', properties: { email_id: { type: 'string' }, reply: { type: 'string' }, reason: { type: 'string' } }, required: ['email_id', 'reply'] },
         execute: async ({ email_id, reply, reason }) => {
           const e = await sr.entities.Email.get(email_id).catch(() => null);
           if (!e) return null;
-          return sr.entities.Email.create({
+          const draft = await sr.entities.Email.create({
             sender: e.sender || '(onbekend)',
             sender_email: e.sender_email || '',
             subject: e.subject ? 'RE: ' + e.subject : 'Concept antwoord',
@@ -94,6 +102,8 @@ export default async function (req) {
             project_id: e.project_id || null,
             timestamp: new Date().toISOString(),
           }).catch(() => null);
+          await createApproval(base44, 'email', `Concept antwoord aan ${e.sender || '?'}`, reply, reason || 'Concept door Giulia uit triage — wacht op goedkeuring.');
+          return draft;
         },
       }),
     };
@@ -101,8 +111,9 @@ export default async function (req) {
     const task =
       'Sorteer de inbox is al heuristisch gedaan. Jouw taak: gebruik list_important om emails met category "important" te bekijken. ' +
       'Voor elke email die een persoonlijk antwoord nodig heeft, schrijf een concept-antwoord in Salvo\'s stijl (kort, warm, concreet, Nederlands of match de taal van de afzender) via draft_reply. ' +
+      'Haal daarnaast acties, afspraken, deadlines en commitments uit de emails en VOER ze direct uit via create_task (Giulia maakt de taak aan én legt deze ter goedkeuring voor bij Salvo). ' +
       'Sla emails over die duidelijk geen antwoord nodig hebben (bevestigingen, notificaties). ' +
-      'Rapporteer via report_to_salvo hoeveel concept-antwoorden klaarstaan voor goedkeuring.';
+      'Rapporteer via report_to_salvo hoeveel concept-antwoorden en taken klaarstaan voor goedkeuring.';
 
     await runGiuliaAgent(base44, 'triageEmails', task, tools, 10).catch(() => null);
 

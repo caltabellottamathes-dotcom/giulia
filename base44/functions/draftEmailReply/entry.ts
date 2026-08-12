@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { geminiDecide } from "../../shared/gemini.ts";
+import { createApproval } from "../../shared/codeAgent.ts";
 
 /**
  * draftEmailReply — laat Giulia een concept-antwoord schrijven op een email.
@@ -54,6 +55,8 @@ export default async function (req) {
       project_id: email.project_id || undefined,
       contact_id: email.contact_id || undefined,
     }).catch(() => null);
+
+    await createApproval(base44, "email", `Concept antwoord aan ${email.sender || "?"}`, reply, result?.note || "Concept door Giulia — wacht op goedkeuring.");
 
     return Response.json({ ok: !!draft, draft_id: draft?.id || null, reply, note: result?.note || "" });
   } catch (error) {

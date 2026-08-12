@@ -33,13 +33,42 @@ export async function reportToSalvo(base44, agentName, message, threadId) {
   } catch { return null; }
 }
 
+const APPROVAL_CATEGORY = { email: "email", whatsapp: "whatsapp", calendar: "calendar", task: "tasks", tasks: "tasks", file: "documents" };
+
 export async function createApproval(base44, type, title, content, context) {
   try {
     return await base44.asServiceRole.entities.Approval.create({
-      title: title || type, action_type: type, type, content: content || "",
-      status: "pending", agent_source: "giulia", ...(context ? { context } : {}),
+      title: title || type,
+      description: title || type,
+      action_type: type,
+      type,
+      category: APPROVAL_CATEGORY[type] || "other",
+      content: content || "",
+      status: "pending",
+      agent_source: "giulia",
+      ...(context ? { context } : {}),
     });
   } catch { return null; }
+}
+
+/**
+ * createTaskWithApproval — Giulia voert een actie direct uit (maakt de taak aan)
+ * EN legt deze ter goedkeuring voor bij Salvo. Zo verschijnt alles wat Giulia
+ * uit een mail of gesprek haalt zowel in Taken als in Ter Goedkeuring.
+ */
+export async function createTaskWithApproval(base44, { title, priority, deadline, project_id, description, source }) {
+  const sr = base44.asServiceRole;
+  const t = await sr.entities.Task.create({
+    title, priority: priority || "medium", deadline, project_id, description,
+    status: "today", agent_source: source || "giulia",
+  }).catch(() => null);
+  if (t) {
+    await createApproval(
+      base44, "task", `Taak aangemaakt: ${t.title}`, t.description || "",
+      `Automatisch door Giulia (${source || "giulia"}) uit een bericht gehaald. Goedkeuren om te behouden, verwerpen om te wissen.`
+    );
+  }
+  return t;
 }
 
 /** tool() — passthrough; a tool is { description, inputSchema (JSON schema), execute }. */

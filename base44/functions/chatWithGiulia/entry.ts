@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { runGiuliaAgent, tool } from "../../shared/codeAgent.ts";
+import { runGiuliaAgent, tool, createTaskWithApproval } from "../../shared/codeAgent.ts";
 
 /**
  * chatWithGiulia — de in-app Giulia-chat, nu een ECHTE tool-calling agent op
@@ -62,8 +62,8 @@ export default async function (req) {
         description: "Maak een nieuwe taak voor Salvo aan.",
         inputSchema: { type: "object", properties: { title: { type: "string" }, priority: { type: "string" }, deadline: { type: "string", description: "ISO yyyy-mm-dd" }, project_id: { type: "string" }, description: { type: "string" } }, required: ["title"] },
         execute: async ({ title, priority, deadline, project_id, description }) => {
-          const t = await sr.entities.Task.create({ title, priority: priority || "medium", deadline, project_id, description, status: "today", agent_source: "chatWithGiulia" }).catch(() => null);
-          return t ? { id: t.id, title: t.title } : { error: "create failed" };
+          const t = await createTaskWithApproval(base44, { title, priority, deadline, project_id, description, source: "chatWithGiulia" });
+          return t ? { id: t.id, title: t.title, approval: true } : { error: "create failed" };
         },
       }),
       update_task: tool({
