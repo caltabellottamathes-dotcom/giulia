@@ -22,7 +22,7 @@ export default function UpdatesWidget() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <WidgetShell size="1x2" radius="medium" interactive onClick={() => openModule("updates")} className="h-[176px]">
+    <WidgetShell size="1x2" radius="medium" interactive onClick={() => openModule("updates")} className="min-h-[176px]">
       <div className="p-5 flex flex-col h-full">
         <div className="flex items-center justify-between mb-2">
           <p className="text-[10px] uppercase tracking-[0.26em] font-semibold text-current/60">Achter de schermen</p>

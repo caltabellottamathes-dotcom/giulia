@@ -67,7 +67,7 @@ export default function GiuliaWidget() {
     : "";
 
   return (
-    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("chat")} className="h-[320px]">
+    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("chat")} className="min-h-[320px]">
       <div className="flex flex-row h-full">
         {/* Editorial photo — touches the glass edges */}
         <div className="relative w-[34%] shrink-0 overflow-hidden rounded-r-[24px]">

@@ -17,7 +17,7 @@ export default function PeopleWidget() {
   const cluster = sorted.slice(0, 5);
 
   return (
-    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("people")} className="h-[208px]">
+    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("people")} className="min-h-[208px]">
       <div className="flex flex-col h-full">
         <div className="relative h-20 shrink-0 overflow-hidden">
           <BrandPhoto src={IMAGES.portraitThinking} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/80 to-transparent" />

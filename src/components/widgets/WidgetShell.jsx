@@ -9,17 +9,14 @@ import { useWidgetTheme } from "@/lib/WidgetThemeContext";
  * Text color adapts per tile so widget internals (which use currentColor tints)
  * stay readable on every option — including the light Sky and Storm tiles.
  */
-// Fixed heights (not min-h) — every widget of a given size keeps the exact
-// same proportions regardless of how much content it has, so the bento grid
-// stays tidy. Content overflow is clipped (WidgetShell has overflow-hidden).
 const sizeMap = {
-  "1x1": "h-[124px]",
-  "2x1": "h-[124px]",
-  "1x2": "h-[176px]",
-  "2x2": "h-[176px]",
-  "3x2": "h-[176px]",
-  wide: "h-[176px]",
-  full: "h-[124px]",
+  "1x1": "min-h-[124px]",
+  "2x1": "min-h-[124px]",
+  "1x2": "min-h-[176px]",
+  "2x2": "min-h-[176px]",
+  "3x2": "min-h-[176px]",
+  wide: "min-h-[176px]",
+  full: "min-h-[124px]",
 };
 
 const radiusMap = {

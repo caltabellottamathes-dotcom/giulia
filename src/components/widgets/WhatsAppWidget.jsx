@@ -36,7 +36,7 @@ export default function WhatsAppWidget() {
   const send = async (e) => { e.stopPropagation(); if (!reply.trim() || !top) return; try { await base44.entities.WhatsAppMessage.create({ contact_id: top.contact_id, message: reply.trim(), direction: "sent", status: "delivered" }); setReply(""); reload(); } catch {} };
 
   return (
-    <WidgetShell size="2x2" radius="medium" interactive onClick={() => openModule("whatsapp")} className="h-[240px]">
+    <WidgetShell size="2x2" radius="medium" interactive onClick={() => openModule("whatsapp")} className="min-h-[240px]">
       <div className="flex flex-col h-full">
         <BrandPhoto src={IMAGES.stilettoHead} className="h-24 -mb-8 rounded-b-[24px] shadow-[0_14px_28px_-12px_rgba(0,0,0,0.3)] relative z-10" overlay="bg-gradient-to-t from-charcoal/85 to-charcoal/30">
           <div className="absolute inset-0 px-5 flex items-end justify-between pb-3">

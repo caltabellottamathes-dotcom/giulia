@@ -41,7 +41,7 @@ export default function AgentActivityWidget() {
   const done = progress >= 100 && !running;
 
   return (
-    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("agents")} className="h-[340px]">
+    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("agents")} className="min-h-[340px]">
       <div className="flex flex-col h-full">
         <BrandPhoto
           src={IMAGES.feetChair}

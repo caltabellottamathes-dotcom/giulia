@@ -18,7 +18,7 @@ export default function ProjectsWidget() {
   const nudge = async (e, p, delta) => { e.stopPropagation(); const np = Math.max(0, Math.min(100, Math.round((p.progress || 0) + delta))); try { await base44.entities.Project.update(p.id, { progress: np }); reload(); } catch {} };
 
   return (
-    <WidgetShell size="2x2" radius="medium" interactive onClick={() => openModule("projects")} className="h-[260px]">
+    <WidgetShell size="2x2" radius="medium" interactive onClick={() => openModule("projects")} className="min-h-[260px]">
       <div className="flex flex-col h-full">
         <BrandPhoto src={IMAGES.walkChairsHigh} className="h-24 -mb-8 rounded-b-[24px] shadow-[0_14px_28px_-12px_rgba(0,0,0,0.3)] relative z-10" overlay="bg-gradient-to-t from-charcoal/45 via-transparent to-transparent">
           <div className="absolute inset-0 px-4 pb-3 flex items-end">
