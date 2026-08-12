@@ -19,7 +19,9 @@ export default async function (req) {
     const m = String(raw).match(/^data:([^;]+);base64,(.*)$/);
     if (m) { mime = m[1]; base64 = m[2]; }
 
-    const text = await geminiTranscribe({ audioBase64: base64, mimeType: mime });
+    // Voice/call gaat via de tweede sleutel (Gemini_Flash_API_Key) — gescheiden
+    // van de achtergrond-agents zodat een live gesprek nooit op hun rate-limit botst.
+    const text = await geminiTranscribe({ audioBase64: base64, mimeType: mime, keyName: "Gemini_Flash_API_Key" });
     return Response.json({ text: text || "" });
   } catch (error) {
     return Response.json({ error: error.message, text: "" }, { status: 500 });

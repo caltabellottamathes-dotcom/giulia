@@ -28,9 +28,16 @@ function systemInstruction(extra) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function rawCall(model, body, retried) {
-  const key = secrets.get("GEMINI_API_KEY");
-  if (!key) throw new Error("GEMINI_API_KEY niet ingesteld — check app secrets.");
+// Twee eigen Gemini-sleutels, verdeeld over gebruik, om rate-limits te
+// spreiden: GEMINI_API_KEY voor de achtergrond-agents (cycli, triage, planning)
+// en Gemini_Flash_API_Key voor live gebruik (chat + voice/call) — zo botsen
+// een chatvraag en een achtergrondcyclus niet op dezelfde 15-20 RPM-limiet.
+const DEFAULT_KEY_NAME = "GEMINI_API_KEY";
+
+async function rawCall(model, body, retried, keyName) {
+  const name = keyName || DEFAULT_KEY_NAME;
+  const key = secrets.get(name);
+  if (!key) throw new Error(`${name} niet ingesteld — check app secrets.`);
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
   const res = await fetch(url, {
     method: "POST",
@@ -42,7 +49,7 @@ async function rawCall(model, body, retried) {
     // chatvraag mag niet mislukken puur omdat er net een achtergrondtaak liep.
     if (res.status === 429 && !retried) {
       await sleep(3500);
-      return rawCall(model, body, true);
+      return rawCall(model, body, true, keyName);
     }
     const detail = await res.text().catch(() => "");
     throw new Error(`Gemini ${model} HTTP ${res.status}: ${detail.slice(0, 300)}`);
@@ -51,11 +58,11 @@ async function rawCall(model, body, retried) {
 }
 
 /** Probeekt elk model tot er één slaagt; gooit anders de laatste fout. */
-async function callWithFallback(body) {
+async function callWithFallback(body, keyName) {
   let lastErr = null;
   for (const model of MODELS) {
     try {
-      return await rawCall(model, body);
+      return await rawCall(model, body, false, keyName);
     } catch (e) {
       lastErr = e;
       // 429 / 404 op dit model → probeer de volgende; andere fouten → gooi direct.
@@ -70,7 +77,7 @@ async function callWithFallback(body) {
  * `schema` (or null on failure). Uses response_mime_type: application/json +
  * response_schema so the result can be inserted directly into collections.
  */
-export async function geminiDecide({ prompt, schema, model, systemText, temperature = 0.4 }) {
+export async function geminiDecide({ prompt, schema, model, systemText, temperature = 0.4, keyName }) {
   const body = {
     system_instruction: systemInstruction(systemText),
     contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -82,8 +89,8 @@ export async function geminiDecide({ prompt, schema, model, systemText, temperat
   };
   try {
     const data = model
-      ? await rawCall(model, body)
-      : await callWithFallback(body);
+      ? await rawCall(model, body, false, keyName)
+      : await callWithFallback(body, keyName);
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
     if (!text) return null;
     try { return JSON.parse(text); } catch { return null; }
@@ -91,7 +98,7 @@ export async function geminiDecide({ prompt, schema, model, systemText, temperat
 }
 
 /** geminiChat — free-form text reply (no schema). Returns text or null. */
-export async function geminiChat({ prompt, contents, model, systemText, temperature = 0.6 }) {
+export async function geminiChat({ prompt, contents, model, systemText, temperature = 0.6, keyName }) {
   const body = {
     system_instruction: systemInstruction(systemText),
     contents: contents || [{ role: "user", parts: [{ text: prompt }] }],
@@ -99,8 +106,8 @@ export async function geminiChat({ prompt, contents, model, systemText, temperat
   };
   try {
     const data = model
-      ? await rawCall(model, body)
-      : await callWithFallback(body);
+      ? await rawCall(model, body, false, keyName)
+      : await callWithFallback(body, keyName);
     return data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
   } catch { return null; }
 }
@@ -111,7 +118,7 @@ export async function geminiChat({ prompt, contents, model, systemText, temperat
  * (geen stil null meer) zodat runGiuliaAgent en de aanroepende functie de fout
  * zichtbaar teruggeven.
  */
-export async function geminiGenerate({ contents, tools, model, systemText, generationConfig }) {
+export async function geminiGenerate({ contents, tools, model, systemText, generationConfig, keyName }) {
   const body = {
     system_instruction: systemInstruction(systemText),
     contents,
@@ -120,16 +127,16 @@ export async function geminiGenerate({ contents, tools, model, systemText, gener
     ...(generationConfig ? { generationConfig } : {}),
   };
   const data = model
-    ? await rawCall(model, body)
-    : await callWithFallback(body);
+    ? await rawCall(model, body, false, keyName)
+    : await callWithFallback(body, keyName);
   return data?.candidates?.[0]?.content?.parts || null;
 }
 
 /** Probeert een opgegeven lijst modellen (voor tools die niet elk model ondersteunt). */
-async function callWithModelList(models, body) {
+async function callWithModelList(models, body, keyName) {
   let lastErr = null;
   for (const model of models) {
-    try { return await rawCall(model, body); }
+    try { return await rawCall(model, body, false, keyName); }
     catch (e) {
       lastErr = e;
       if (!/HTTP 4(29|04|00)|HTTP 400/.test(String(e.message))) throw e;
@@ -143,7 +150,7 @@ async function callWithModelList(models, body) {
  * webcontext) via de eigen Gemini-sleutel. Geen integration credits. Vraagt
  * strict JSON terug en parseert het eerste {...} blok. Robuust over modellen.
  */
-export async function geminiResearch({ prompt, systemText, temperature = 0.5 }) {
+export async function geminiResearch({ prompt, systemText, temperature = 0.5, keyName }) {
   const body = {
     system_instruction: systemInstruction(systemText),
     contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -151,7 +158,7 @@ export async function geminiResearch({ prompt, systemText, temperature = 0.5 }) 
     generationConfig: { temperature },
   };
   try {
-    const data = await callWithFallback(body);
+    const data = await callWithFallback(body, keyName);
     const text = (data?.candidates?.[0]?.content?.parts || [])
       .map((p) => p.text || "")
       .join("")
@@ -167,7 +174,7 @@ export async function geminiResearch({ prompt, systemText, temperature = 0.5 }) 
  * multimodale Gemini API. Vervangt Core.TranscribeAudio (integration credits).
  * Geeft platte tekst terug.
  */
-export async function geminiTranscribe({ audioBase64, mimeType, prompt }) {
+export async function geminiTranscribe({ audioBase64, mimeType, prompt, keyName }) {
   const body = {
     contents: [{
       role: "user",
@@ -178,7 +185,7 @@ export async function geminiTranscribe({ audioBase64, mimeType, prompt }) {
     }],
   };
   try {
-    const data = await callWithFallback(body);
+    const data = await callWithFallback(body, keyName);
     return (data?.candidates?.[0]?.content?.parts || [])
       .map((p) => p.text || "")
       .join("")

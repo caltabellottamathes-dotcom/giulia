@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePanel } from "@/lib/PanelContext";
-import { X, ArrowUp, Loader2, Phone, BrainCircuit, Send as SendIcon } from "lucide-react";
+import { X, ArrowUp, Loader2, Phone } from "lucide-react";
 import ChatMarkdown from "@/components/glass/ChatMarkdown";
 
 /**
@@ -21,23 +21,7 @@ export default function ChatWindow() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
-  const [contextOpen, setContextOpen] = useState(false);
-  const [contextText, setContextText] = useState("");
-  const [savingContext, setSavingContext] = useState(false);
   const scrollRef = useRef(null);
-
-  const saveContext = async () => {
-    const content = contextText.trim();
-    if (!content) return;
-    setSavingContext(true);
-    try {
-      await base44.entities.Memory.create({ content, category: "Important information", source: "manual_context" });
-      setContextText("");
-      setContextOpen(false);
-    } finally {
-      setSavingContext(false);
-    }
-  };
 
   useEffect(() => {
     if (chatOpen) {
@@ -126,42 +110,13 @@ export default function ChatWindow() {
                 <p className="text-[11px] text-ivory/50 mt-1.5 tracking-wide">Actief · vraag me anything</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setContextOpen((v) => !v)}
-                title="Voeg context toe aan Giulia's geheugen"
-                className="flex items-center gap-2 rounded-full h-9 w-9 justify-center bg-ivory/10 border border-ivory/15 text-ivory/80 hover:bg-ivory/15 transition-all"
-              >
-                <BrainCircuit className="h-3.5 w-3.5" />
-              </button>
-              <button
-                onClick={() => openModule("voice")}
-                className="flex items-center gap-2 rounded-full pl-3 pr-4 py-2 bg-ivory/10 border border-ivory/15 text-ivory/80 text-[12px] font-medium hover:bg-ivory/15 transition-all"
-              >
-                <Phone className="h-3.5 w-3.5" /> Bel
-              </button>
-            </div>
+            <button
+              onClick={() => openModule("voice")}
+              className="flex items-center gap-2 rounded-full pl-3 pr-4 py-2 bg-ivory/10 border border-ivory/15 text-ivory/80 text-[12px] font-medium hover:bg-ivory/15 transition-all"
+            >
+              <Phone className="h-3.5 w-3.5" /> Bel
+            </button>
           </div>
-
-          {contextOpen && (
-            <div className="shrink-0 px-7 pb-4 -mt-2 animate-fade-up">
-              <div className="chat-bubble p-3 space-y-2">
-                <p className="text-[10px] uppercase tracking-wider text-ivory/50 font-semibold">Context voor Giulia's geheugen</p>
-                <textarea
-                  value={contextText}
-                  onChange={(e) => setContextText(e.target.value)}
-                  placeholder="bv. Jasper werkt bij de Kredietbank en regelt onze financiering."
-                  className="w-full bg-transparent text-sm text-ivory placeholder:text-ivory/40 focus:outline-none resize-none min-h-[60px]"
-                />
-                <div className="flex justify-end gap-2">
-                  <button onClick={() => setContextOpen(false)} className="text-[11px] text-ivory/50 hover:text-ivory px-2">Annuleer</button>
-                  <button onClick={saveContext} disabled={savingContext || !contextText.trim()} className="inline-flex items-center gap-1.5 rounded-full bg-ivory text-charcoal px-3 py-1.5 text-[11px] font-semibold disabled:opacity-40">
-                    <SendIcon className="h-3 w-3" /> Onthoud dit
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Messages — generous whitespace, bubbles breathe */}
           <div ref={scrollRef} className="relative flex-1 overflow-y-auto px-7 py-4 space-y-4">

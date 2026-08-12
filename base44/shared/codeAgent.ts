@@ -167,7 +167,7 @@ async function buildDossier(sr) {
   return lines.join("\n");
 }
 
-export async function runGiuliaAgent(base44, agentName, task, tools, stopAfter = 6, onToolCall) {
+export async function runGiuliaAgent(base44, agentName, task, tools, stopAfter = 6, onToolCall, keyName) {
   const sr = base44.asServiceRole;
 
   const builtIn = {
@@ -217,7 +217,7 @@ export async function runGiuliaAgent(base44, agentName, task, tools, stopAfter =
   const genTools = [{ functionDeclarations }];
 
   for (let step = 0; step < stopAfter; step++) {
-    const parts = await geminiGenerate({ contents, tools: genTools, systemText });
+    const parts = await geminiGenerate({ contents, tools: genTools, systemText, keyName });
     if (!parts || !parts.length) return null;
     contents.push({ role: "model", parts });
     const fnCalls = parts.filter((p) => p.functionCall);

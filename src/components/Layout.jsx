@@ -5,6 +5,8 @@ import ModulePanel from "@/components/panels/ModulePanel";
 import ChatWindow from "@/components/panels/ChatWindow";
 import InteractionBar from "@/components/glass/InteractionBar";
 import { PanelProvider, usePanel } from "@/lib/PanelContext";
+import { ContextCaptureProvider } from "@/lib/ContextCaptureContext";
+import ContextCaptureLayer from "@/components/context/ContextCaptureLayer";
 import { GiuliaVoiceProvider } from "@/lib/GiuliaVoiceContext";
 import AmbientBloom from "@/components/glass/AmbientBloom";
 import TauriFocusSync from "@/components/native/TauriFocusSync";
@@ -31,7 +33,9 @@ export default function Layout() {
     <PanelProvider>
       <GiuliaVoiceProvider>
         <GiuliaAgentProvider>
-          <LayoutInner />
+          <ContextCaptureProvider>
+            <LayoutInner />
+          </ContextCaptureProvider>
         </GiuliaAgentProvider>
       </GiuliaVoiceProvider>
     </PanelProvider>
@@ -139,6 +143,9 @@ function LayoutInner() {
 
       {/* Bottom page navigation — always visible on every page */}
       <BottomNav />
+
+      {/* Click-to-remember — capture context from any element, anywhere */}
+      <ContextCaptureLayer />
     </div>
   );
 }
