@@ -20,7 +20,7 @@ export default function ApprovalsWidget() {
   };
 
   return (
-    <WidgetShell size="2x1" radius="soft" interactive onClick={() => openModule("approvals")} className="min-h-[208px]">
+    <WidgetShell size="2x1" radius="soft" interactive onClick={() => openModule("approvals")} className="h-[208px]">
       <div className="flex flex-col h-full">
         <div className="relative h-28 shrink-0 overflow-hidden">
           <BrandPhoto src={IMAGES.leanChair} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/85 via-charcoal/35 to-charcoal/10" />

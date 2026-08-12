@@ -26,7 +26,7 @@ export default function DocumentsWidget() {
   const toggleFav = async (e, d) => { e.stopPropagation(); try { await base44.entities.Document.update(d.id, { status: d.status === "favorite" ? "recent" : "favorite" }); reload(); } catch {} };
 
   return (
-    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("documents")} className="min-h-[208px]">
+    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("documents")} className="h-[208px]">
       <div className="p-5 flex flex-col h-full">
         <WidgetHeader label="Documenten" count={`${docs.length}`} />
         {loading ? (

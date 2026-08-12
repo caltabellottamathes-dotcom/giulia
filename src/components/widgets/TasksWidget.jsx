@@ -22,7 +22,7 @@ export default function TasksWidget() {
   const complete = async (e, task) => { e.stopPropagation(); try { await base44.entities.Task.update(task.id, { status: "completed" }); reload(); } catch {} };
 
   return (
-    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("tasks")} className="min-h-[224px]">
+    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("tasks")} className="h-[224px]">
       <div className="flex flex-col h-full">
         <div className="flex-1 -mb-8 rounded-b-[24px] glass-3 p-5 relative z-10 shadow-[0_14px_30px_-12px_rgba(0,0,0,0.35)] text-ivory flex flex-col">
           <WidgetHeader label="Taken" count={active.length ? `${active.length} open` : "alles klaar"} />

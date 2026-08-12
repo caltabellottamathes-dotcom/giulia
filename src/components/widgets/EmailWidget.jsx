@@ -20,7 +20,7 @@ export default function EmailWidget() {
   const next = unread[0];
 
   return (
-    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("email")} className="min-h-[260px]">
+    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("email")} className="h-[260px]">
       <div className="p-6 flex flex-col flex-1 min-h-0">
         <WidgetHeader label="Email" count={hero ? `${hero} ongelezen` : "alles gelezen"} />
         {loading ? (
