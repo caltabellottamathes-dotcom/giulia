@@ -13,10 +13,10 @@ export default function WhatsAppWidget() {
   const { openModule } = usePanel();
   const { data: contacts, loading } = useEntityList("Contact");
   const { data: messages, reload } = useEntityList("WhatsAppMessage", { sort: "-created_date" });
-  const { data: drafts } = useEntityList("GiuliaDraft", { filter: { type: "whatsapp" } });
+  const { data: drafts } = useEntityList("Approval", { filter: { type: "whatsapp", status: "pending" } });
   const [reply, setReply] = useState("");
 
-  const draftsReady = useMemo(() => drafts.filter((d) => d.status === "awaiting_approval"), [drafts]);
+  const draftsReady = useMemo(() => drafts.filter((d) => d.status === "pending"), [drafts]);
   const convos = useMemo(() => {
     const byContact = new Map();
     messages.forEach((m) => {
@@ -32,7 +32,7 @@ export default function WhatsAppWidget() {
   const nameOf = (id) => contacts.find((c) => c.id === id)?.name || "Onbekend";
   const top = convos[0];
   const unreadTotal = convos.reduce((s, c) => s + c.unread, 0);
-  const draftForTop = top && draftsReady.some((d) => d.contact_id === top.contact_id);
+  const draftForTop = top && draftsReady.some((d) => d.thread_id === top.contact_id);
   const send = async (e) => { e.stopPropagation(); if (!reply.trim() || !top) return; try { await base44.entities.WhatsAppMessage.create({ contact_id: top.contact_id, message: reply.trim(), direction: "sent", status: "delivered" }); setReply(""); reload(); } catch {} };
 
   return (

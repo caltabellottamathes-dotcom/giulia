@@ -7,6 +7,11 @@
         "admin",
         "user"
       ]
+    },
+    "auto_approve_rules": {
+      "type": "object",
+      "title": "Auto Approve Rules",
+      "description": "JSON trust-layer: per-category rules that Giulia may execute autonomously, plus a fail_safe default."
     }
   },
   "required": [

@@ -13,23 +13,14 @@
     "status": {
       "type": "string",
       "enum": [
-        "klaar",
-        "actief",
-        "gepland",
-        "wacht",
-        "te_specifieren",
-        "gepauzeerd",
-        "today",
-        "upcoming",
-        "overdue",
+        "todo",
+        "in_progress",
         "waiting",
         "delegated",
         "completed",
-        "todo",
-        "in_progress",
-        "done"
+        "archived"
       ],
-      "default": "gepland",
+      "default": "todo",
       "title": "Status"
     },
     "priority": {

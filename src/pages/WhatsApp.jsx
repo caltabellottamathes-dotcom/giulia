@@ -11,14 +11,14 @@ import { Search, Send, Sparkles, Check, Edit3, RefreshCw, X, Phone, Video, Messa
 
 /**
  * WhatsApp — Giulia has full access: unread & unanswered messages are
- * surfaced, and Giulia automatically prepares a reply (GiuliaDraft) for every
+ * surfaced, and Giulia automatically prepares a reply (Approval) for every
  * incoming message. Salvo approves before anything sends.
  */
 export default function WhatsApp() {
   const { toast } = useToast();
   const { data: contacts, loading: contactsLoading } = useEntityList("Contact");
   const { data: messages, loading: messagesLoading, reload: reloadMsgs } = useEntityList("WhatsAppMessage", { sort: "timestamp" });
-  const { data: drafts, reload: reloadDrafts } = useEntityList("GiuliaDraft", { filter: { type: "whatsapp" }, sort: "-created_date" });
+  const { data: drafts, reload: reloadDrafts } = useEntityList("Approval", { filter: { type: "whatsapp", status: "pending" }, sort: "-created_date" });
 
   const [selectedId, setSelectedId] = useState(null);
   const [draft, setDraft] = useState("");
@@ -38,12 +38,12 @@ export default function WhatsApp() {
   const conversationMessages = messages
     .filter((m) => m.contact_id === selectedId)
     .sort((a, b) => new Date(a.timestamp || a.created_date) - new Date(b.timestamp || b.created_date));
-  const conversationDrafts = drafts.filter((d) => d.contact_id === selectedId && d.status === "awaiting_approval");
+  const conversationDrafts = drafts.filter((d) => d.thread_id === selectedId);
 
   const conversations = contacts.filter((c) => messages.some((m) => m.contact_id === selectedId ? false : m.contact_id === c.id) || messages.some((m) => m.contact_id === c.id));
 
-  const awaitingAll = drafts.filter((d) => d.status === "awaiting_approval");
-  const draftFor = (id) => awaitingAll.some((d) => d.contact_id === id);
+  const awaitingAll = drafts;
+  const draftFor = (id) => awaitingAll.some((d) => d.thread_id === id);
   const totalUnread = messages.filter((m) => m.direction === "received" && m.status === "unread").length;
 
   const markRead = async (contactId) => {
@@ -80,20 +80,20 @@ export default function WhatsApp() {
 
   const approveDraft = async (d) => {
     await base44.entities.WhatsAppMessage.create({
-      contact_id: d.contact_id,
+      contact_id: d.thread_id || d.contact_id,
       message: d.content,
       direction: "sent",
       timestamp: new Date().toISOString(),
       status: "delivered",
     });
-    await base44.entities.GiuliaDraft.update(d.id, { status: "sent" });
+    await base44.entities.Approval.update(d.id, { status: "executed" }).catch(() => {});
     toast({ title: "Verzonden" });
     reloadMsgs();
     reloadDrafts();
   };
 
   const rejectDraft = async (d) => {
-    await base44.entities.GiuliaDraft.update(d.id, { status: "rejected" });
+    await base44.entities.Approval.update(d.id, { status: "discarded" }).catch(() => {});
     reloadDrafts();
   };
 
@@ -104,7 +104,7 @@ export default function WhatsApp() {
 
   const saveEditedDraft = async () => {
     if (!editingDraftId) return;
-    await base44.entities.GiuliaDraft.update(editingDraftId, { content: draft });
+    await base44.entities.Approval.update(editingDraftId, { content: draft }).catch(() => {});
     setEditingDraftId(null);
     setDraft("");
     reloadDrafts();
@@ -302,8 +302,8 @@ export default function WhatsApp() {
                 {awaitingAll.map((d) => (
                   <div key={d.id} className="glass-1 rounded-xl p-3">
                     <div className="flex items-center justify-between gap-2 mb-1">
-                      <p className="text-xs font-semibold truncate">{nameOf(d.contact_id)}</p>
-                      <button onClick={() => openConversation(d.contact_id)} className="text-[10px] text-olive hover:underline shrink-0">Open</button>
+                      <p className="text-xs font-semibold truncate">{nameOf(d.thread_id)}</p>
+                      <button onClick={() => openConversation(d.thread_id)} className="text-[10px] text-olive hover:underline shrink-0">Open</button>
                     </div>
                     <p className="text-[11px] text-foreground/70 line-clamp-2 mb-2">{d.content}</p>
                     <button onClick={() => approveDraft(d)} className="inline-flex items-center gap-1 text-[11px] font-semibold text-olive hover:underline"><Send className="h-3 w-3" /> Verstuur</button>

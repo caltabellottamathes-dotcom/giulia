@@ -12,7 +12,7 @@ export default function WhatsAppPreview({ onOpen }) {
     try {
       const [m, d] = await Promise.all([
         base44.entities.WhatsAppMessage.filter({ status: "unread" }, "-timestamp", 5),
-        base44.entities.GiuliaDraft.filter({ type: "whatsapp", status: "awaiting_approval" }, "-created_date", 5),
+        base44.entities.Approval.filter({ type: "whatsapp", status: "pending" }, "-created_date", 5),
       ]);
       setMsgs(m || []);
       setDrafts(d || []);
@@ -27,7 +27,7 @@ export default function WhatsAppPreview({ onOpen }) {
   const decide = async (d, status) => {
     setDrafts((prev) => prev.filter((x) => x.id !== d.id));
     try {
-      await base44.entities.GiuliaDraft.update(d.id, { status });
+      await base44.entities.Approval.update(d.id, { status: status === "approved" ? "executed" : "discarded" });
     } catch (e) {
       load();
     }

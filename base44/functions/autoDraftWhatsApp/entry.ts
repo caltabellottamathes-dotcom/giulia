@@ -9,7 +9,7 @@ import { tool, runGiuliaAgent } from "../../shared/codeAgent.ts";
  *   2. links persons/projects to existing context;
  *   3. creates Tasks for any action/deadline and Approvals for commitments
  *      that need scheduling/confirmation;
- *   4. drafts a reply in Salvo's own voice (GiuliaDraft, awaiting_approval);
+ *   4. drafts a reply in Salvo's own voice (Approval, pending);
  *   5. reports what she understood + actions taken.
  * Giulia NEVER sends WhatsApp herself — only the draft for approval.
  */
@@ -28,8 +28,8 @@ export default async function (req) {
     const contactId = incoming.contact_id || "";
 
     // Don't stack duplicate drafts for the same incoming message
-    const existing = await sr.entities.GiuliaDraft.filter({
-      type: "whatsapp", contact_id: contactId, context: messageId, status: "awaiting_approval",
+    const existing = await base44.entities.Approval.filter({
+      type: "whatsapp", context: messageId, status: "pending",
     }).catch(() => []);
     if (existing && existing.length) return Response.json({ skipped: "draft exists", draft_id: existing[0].id });
 
@@ -95,12 +95,21 @@ export default async function (req) {
           }).catch(() => null),
       }),
       save_draft: tool({
-        description: "Sla het conceptantwoord op (awaiting_approval). Eén concept per inkomend bericht.",
+        description: "Sla het conceptantwoord op als pending Approval. Eén concept per inkomend bericht.",
         inputSchema: { type: "object", properties: { content: { type: "string" } }, required: ["content"] },
         execute: ({ content }) =>
-          sr.entities.GiuliaDraft.create({
-            type: "whatsapp", source: "Giulia · auto", content, context: messageId,
-            status: "awaiting_approval", contact_id: contactId || undefined,
+          base44.entities.Approval.create({
+            action_type: "whatsapp_send",
+            type: "whatsapp",
+            title: `Concept WhatsApp-antwoord aan ${contactName}`,
+            description: "Concept door Giulia — wacht op goedkeuring.",
+            content,
+            context: messageId,
+            status: "pending",
+            assignee: "salvo",
+            thread_id: contactId || undefined,
+            target: contactName,
+            agent_source: "autoDraftWhatsApp",
           }).catch(() => null),
       }),
     };
@@ -123,8 +132,8 @@ Giulia verstuurt NOOIT zelf WhatsApp — alleen het concept ter goedkeuring.`;
 
     try { await sr.entities.WhatsAppMessage.update(messageId, { giulia_suggested: true }); } catch {}
 
-    const created = await sr.entities.GiuliaDraft.filter({ type: "whatsapp", context: messageId }).catch(() => []);
-    const draft = created.find((d) => d.status === "awaiting_approval") || created[0];
+    const created = await base44.entities.Approval.filter({ type: "whatsapp", context: messageId, status: "pending" }).catch(() => []);
+    const draft = created[0];
     return Response.json({ ok: true, draft_id: draft?.id || null });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
