@@ -1,0 +1,41 @@
+{
+  "name": "Email Ingestion",
+  "description": "Interpreteert elke nieuwe ongelezen belangrijke e-mail (status: unread, category: important) via interpretInput.",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "Email",
+      "events": [
+        "create"
+      ]
+    },
+    "condition": "${ .trigger.data.status == \"unread\" and .trigger.data.category == \"important\" }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "email_ingestion",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "interpret": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "interpretInput",
+            "args": {
+              "source": "email",
+              "message_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Interpreteer e-mail",
+            "description": "NLP-extractie \u2192 Task/Approval/Insight/CalendarEvent"
+          }
+        }
+      }
+    ]
+  }
+}
