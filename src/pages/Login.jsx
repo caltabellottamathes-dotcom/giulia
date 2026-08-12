@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { safeReturnTo } from "@/lib/authReturnTo";
+import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +17,10 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const returnTo = safeReturnTo();
+  const { isAuthenticated, authChecked } = useAuth();
+  useEffect(() => {
+    if (authChecked && isAuthenticated) window.location.href = returnTo;
+  }, [authChecked, isAuthenticated, returnTo]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
