@@ -102,9 +102,11 @@ export default function Home() {
   useEffect(() => {
     load();
     base44.auth.me().then((u) => setUserName(u?.full_name || "")).catch(() => {});
-    // Opstart-procedure: start de enkele leider + alle agent-domeinen bij app-load,
-    // zodat na kort laden alle updates real-time zichtbaar zijn. Fire-and-forget.
-    base44.functions.invoke("startGiulia", {}).catch(() => {});
+    // Opstart-procedure: bij reload (overlay overgeslagen) wekt startGiulia het OS
+    // opnieuw. Bij eerste load doet de overlay (GiuliaIntroOverlay) de bang.
+    if (sessionStorage.getItem("giulia_boot_seen")) {
+      base44.functions.invoke("startGiulia", {}).catch(() => {});
+    }
   }, []);
 
   const removeWidget = async (id) => {

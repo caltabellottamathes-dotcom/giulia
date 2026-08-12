@@ -6,25 +6,23 @@ const INTRO_VIDEO =
   "https://media.base44.com/videos/public/6a7608690d4ea2c9edc3d59b/82b6ea8ba_Create_an_introduction_video_f.mp4";
 const SEEN_KEY = "giulia_boot_seen";
 
-/** Agents die in runGiuliaCycle draaien — getoond als de 'Giulia aan het werk' reeks. */
-const AGENTS = [
-  { name: "syncGmail", label: "Gmail synchroniseren" },
-  { name: "syncCalendar", label: "Agenda synchroniseren" },
-  { name: "syncDrive", label: "Drive synchroniseren" },
-  { name: "manageCommunication", label: "Communicatie verwerken" },
-  { name: "manageTasks", label: "Taken ordenen" },
-  { name: "manageProjects", label: "Projecten bijwerken" },
-  { name: "manageIdeas", label: "Ideeën oppakken" },
-  { name: "dailyPlanning", label: "Dagplanning maken" },
-  { name: "runProactivity", label: "Proactieve taken voorstellen" },
-  { name: "checkProactivity", label: "Check-in opstellen" },
+/** Wake-reeks — de enkele leider (giuliaLeader) wekt het hele OS. Geen superagents. */
+const WAKE = [
+  { label: "Bronnen synchroniseren" },
+  { label: "Giulia wekt het OS" },
+  { label: "Taken & agenda" },
+  { label: "Communicatie & mail" },
+  { label: "Projecten & ideeën" },
+  { label: "Proactief worden" },
 ];
 
 /**
- * GiuliaIntroOverlay — fullscreen boot-reeks bij openen na inloggen (1× per
- * sessie). Speelt Giulia's intro-video full-screen EN start tegelijk
- * runGiuliaCycle (sync + alle agents + runProactivity). Hun werk streamt live
- * binnen via een Activity-feed, zichtbaar door heel het OS.
+ * GiuliaIntroOverlay — fullscreen boot bij openen na inloggen (1× per
+ * sessie). Speelt Giulia's intro-video full-screen EN vuurt "de bang":
+ * startGiulia — sync + de enkele leider (giuliaLeader) die EEN keer met
+ * Gemini alle domeinen inleest en proactief maakt. Geen autonome
+ * superagents. Hun werk streamt live binnen via een Activity-feed,
+ * zichtbaar door heel het OS.
  */
 export default function GiuliaIntroOverlay() {
   const [visible, setVisible] = useState(() => !sessionStorage.getItem(SEEN_KEY));
@@ -38,7 +36,7 @@ export default function GiuliaIntroOverlay() {
     setVisible(false);
   }, []);
 
-  // Start de cyclus + live Activity-feed zodra de overlay opent.
+  // De bang + live Activity-feed zodra de overlay opent.
   useEffect(() => {
     if (!visible) return;
     let unsub = null;
@@ -53,9 +51,9 @@ export default function GiuliaIntroOverlay() {
           base44.entities.Activity.list("-created_date", 6).then(setFeed).catch(() => {});
         });
       } catch { /* ignore */ }
-      // Alle agents + sync + runProactivity — fire & forget op de achtergrond.
+      // De bang: startGiulia — sync + de leider wekt alle domeinen intern.
       try {
-        await base44.functions.invoke("runGiuliaCycle", {});
+        await base44.functions.invoke("startGiulia", {});
         setCycle("done");
       } catch (e) {
         setCycle("error");
@@ -82,7 +80,7 @@ export default function GiuliaIntroOverlay() {
 
   return (
     <div className="fixed inset-0 z-[100] bg-charcoal animate-fade-in overflow-hidden">
-      {/* Fullscreen video */}
+      {/* Fullscreen video — de bang */}
       <video
         ref={videoRef}
         src={INTRO_VIDEO}
@@ -110,7 +108,7 @@ export default function GiuliaIntroOverlay() {
         </button>
       )}
 
-      {/* Giulia aan het werk — live reeks onderaan */}
+      {/* Giulia wekt het OS — live reeks onderaan */}
       <div className="absolute bottom-0 left-0 right-0 z-20 p-4 lg:p-8 bg-gradient-to-t from-charcoal via-charcoal/85 to-transparent">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-2.5 mb-4">
@@ -119,17 +117,17 @@ export default function GiuliaIntroOverlay() {
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-olive" />
             </span>
             <h2 className="text-ivory font-display font-semibold tracking-tight text-lg">
-              {cycle === "done" ? "Giulia is klaar om te werken" : "Giulia gaat aan het werk"}
+              {cycle === "done" ? "Giulia is wakker" : "Giulia wekt het OS"}
             </h2>
             <span className="ml-auto text-[11px] uppercase tracking-wider text-ivory/55 font-medium">
               {cycle === "done" ? "voltooid" : cycle === "error" ? "deels" : "actief"}
             </span>
           </div>
 
-          {/* Agent-reeks */}
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 mb-4">
-            {AGENTS.map((a) => (
-              <div key={a.name} className="flex items-center gap-2 rounded-xl bg-ivory/5 border border-ivory/10 px-2.5 py-2">
+          {/* Wake-reeks */}
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
+            {WAKE.map((a, i) => (
+              <div key={i} className="flex items-center gap-2 rounded-xl bg-ivory/5 border border-ivory/10 px-2.5 py-2">
                 {cycle === "done" ? (
                   <Check className="h-3.5 w-3.5 text-olive shrink-0" />
                 ) : (
