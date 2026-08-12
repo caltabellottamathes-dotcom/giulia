@@ -41,6 +41,7 @@ import TimeTracker from '@/pages/TimeTracker';
 import Agents from '@/pages/Agents';
 import QuickCommand from '@/pages/QuickCommand';
 import Updates from '@/pages/Updates';
+import WidgetGallery from '@/pages/WidgetGallery';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -103,6 +104,7 @@ const AuthenticatedApp = () => {
           <Route path="/updates" element={<Updates />} />
         </Route>
         <Route path="/quick" element={<QuickCommand />} />
+        <Route path="/widget-gallery" element={<WidgetGallery />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
