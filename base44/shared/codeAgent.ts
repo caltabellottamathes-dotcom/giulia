@@ -35,7 +35,7 @@ export async function reportToSalvo(base44, agentName, message, threadId) {
 
 const APPROVAL_CATEGORY = { email: "email", whatsapp: "whatsapp", calendar: "calendar", task: "tasks", tasks: "tasks", file: "documents" };
 
-export async function createApproval(base44, type, title, content, context) {
+export async function createApproval(base44, type, title, content, context, assignee) {
   try {
     return await base44.asServiceRole.entities.Approval.create({
       title: title || type,
@@ -46,6 +46,7 @@ export async function createApproval(base44, type, title, content, context) {
       content: content || "",
       status: "pending",
       agent_source: "giulia",
+      assignee: assignee || "salvo",
       ...(context ? { context } : {}),
     });
   } catch { return null; }
@@ -56,16 +57,22 @@ export async function createApproval(base44, type, title, content, context) {
  * EN legt deze ter goedkeuring voor bij Salvo. Zo verschijnt alles wat Giulia
  * uit een mail of gesprek haalt zowel in Taken als in Ter Goedkeuring.
  */
-export async function createTaskWithApproval(base44, { title, priority, deadline, project_id, description, source }) {
+export async function createTaskWithApproval(base44, { title, priority, deadline, project_id, description, source, delegated_to_giulia, assignee }) {
   const sr = base44.asServiceRole;
+  const forGiulia = delegated_to_giulia || assignee === "giulia";
   const t = await sr.entities.Task.create({
     title, priority: priority || "medium", deadline, project_id, description,
-    status: "today", agent_source: source || "giulia",
+    status: forGiulia ? "gepland" : "today",
+    delegated_to_giulia: forGiulia,
+    agent_source: source || "giulia",
   }).catch(() => null);
   if (t) {
     await createApproval(
-      base44, "task", `Taak aangemaakt: ${t.title}`, t.description || "",
-      `Automatisch door Giulia (${source || "giulia"}) uit een bericht gehaald. Goedkeuren om te behouden, verwerpen om te wissen.`
+      base44, "task",
+      `Taak ${forGiulia ? "voor Giulia" : "voor Salvo"}: ${t.title}`,
+      t.description || "",
+      `Automatisch door Giulia (${source || "giulia"}) ${forGiulia ? "als eigen taak om zelf uit te voeren" : "uit een bericht gehaald"}. Goedkeuren om te behouden, verwerpen om te wissen.`,
+      forGiulia ? "giulia" : "salvo"
     );
   }
   return t;

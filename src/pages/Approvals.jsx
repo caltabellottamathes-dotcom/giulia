@@ -91,6 +91,11 @@ export default function Approvals() {
                   <div className="flex items-center gap-2 mb-1">
                     <StatusBadge variant="urgent">{approval.type || approval.category}</StatusBadge>
                     {approval.action_type && <StatusBadge variant="muted">{approval.action_type.replace(/_/g, " ")}</StatusBadge>}
+                    {approval.assignee && (
+                      <StatusBadge variant={approval.assignee === "giulia" ? "waiting" : "active"}>
+                        {approval.assignee === "giulia" ? "Voor Giulia" : "Voor jou"}
+                      </StatusBadge>
+                    )}
                   </div>
                   <h3 className="text-sm font-display font-semibold">{approval.description}</h3>
                   {approval.proposed_action && <p className="text-xs text-muted-foreground mt-1">{approval.proposed_action}</p>}

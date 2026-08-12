@@ -33,6 +33,11 @@ export default function ApprovalsWidget() {
           ) : approvals.length > 0 ? (
             <>
               <p className="text-sm font-medium text-ivory line-clamp-2">{top?.description}</p>
+              {top?.assignee && (
+                <span className={`mt-2 self-start text-[9px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full ${top.assignee === "giulia" ? "bg-steel/25 text-ivory/80" : "bg-olive/30 text-ivory"}`}>
+                  {top.assignee === "giulia" ? "Voor Giulia" : "Voor jou"}
+                </span>
+              )}
               <div className="mt-auto pt-3 flex gap-2">
                 <button onClick={(e) => decide(e, top.id, "approved")} className="flex-1 h-11 rounded-2xl font-semibold text-sm transition hover:-translate-y-0.5 active:scale-95" style={{ background: "var(--tile-accent)", color: "var(--tile-on-accent)" }}>Goedkeuren</button>
                 <button onClick={(e) => decide(e, top.id, "rejected")} className="flex-1 h-11 rounded-2xl font-semibold text-sm border border-ivory/20 text-ivory transition hover:bg-ivory/10">Afwijzen</button>

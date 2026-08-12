@@ -79,6 +79,15 @@
     "agent_source": {
       "type": "string",
       "title": "Agent Source"
+    },
+    "assignee": {
+      "type": "string",
+      "enum": [
+        "salvo",
+        "giulia"
+      ],
+      "default": "salvo",
+      "title": "Assignee"
     }
   },
   "required": [

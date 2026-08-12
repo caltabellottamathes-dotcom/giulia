@@ -39,7 +39,12 @@ export default function ApprovalsPreview({ onOpen }) {
               <div className="flex items-start gap-2">
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-medium text-ivory">{a.title || a.action_type}</span>
-                  <span className="block text-xs text-ivory/50 line-clamp-2 mt-0.5">{a.description}</span>
+                  <span className="flex items-center gap-1.5 mt-1">
+                    <span className={`text-[9px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full ${a.assignee === "giulia" ? "bg-steel/25 text-ivory/80" : "bg-olive/30 text-ivory"}`}>
+                      {a.assignee === "giulia" ? "Voor Giulia" : "Voor jou"}
+                    </span>
+                  </span>
+                  <span className="block text-xs text-ivory/50 line-clamp-2 mt-1">{a.description}</span>
                 </span>
                 <ArrowUpRight className="h-3.5 w-3.5 text-ivory/40 shrink-0 mt-0.5" />
               </div>
