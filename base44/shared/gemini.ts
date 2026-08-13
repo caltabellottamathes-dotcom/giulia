@@ -28,16 +28,35 @@ function systemInstruction(extra) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// Twee eigen Gemini-sleutels, verdeeld over gebruik, om rate-limits te
-// spreiden: GEMINI_API_KEY voor de achtergrond-agents (cycli, triage, planning)
-// en Gemini_Flash_API_Key voor live gebruik (chat + voice/call) — zo botsen
-// een chatvraag en een achtergrondcyclus niet op dezelfde 15-20 RPM-limiet.
+// Rol-gebaseerde sleutelpools — elke rol heeft zijn eigen Gemini-sleutel;
+// bij quota/429/403/5xx schakelt hij automatisch door naar de werkende legacy-
+// sleutel en daarna naar RESERVE_GEMINI_API_KEY (de universele reserve met
+// alle toestemmingen). Zo blijft alles vlekkeloos werken, ook als een
+// specifieke sleutel op is of ongeldig blijkt.
+//   giulia_giulia → de chat met Salvo (interpretInput classifyChat, giuliaLeader chat)
+//   backdesk     → alle achtergrond-agents (manage*, proactivity, leader, planning)
+//   update       → dashboard/widget/paneel- en visuele updates (briefing-content)
+//   default      → legacy-sleutels + RESERVE (alles wat geen eigen rol heeft)
+const KEY_POOLS = {
+  giulia_giulia: ["GIULIA_GIULIA_GEMINI_API_KEY", "Gemini_Flash_API_Key", "RESERVE_GEMINI_API_KEY"],
+  backdesk: ["BACKDESK_GEMINI_API_KEY", "GEMINI_API_KEY", "RESERVE_GEMINI_API_KEY"],
+  update: ["UPDATE_GEMINI_API_KEY", "GEMINI_API_KEY", "RESERVE_GEMINI_API_KEY"],
+  default: ["GEMINI_API_KEY", "Gemini_Flash_API_Key", "GIULIA_API_KEY", "RESERVE_GEMINI_API_KEY"],
+};
+const KEY_ROLE = {
+  GIULIA_GIULIA_GEMINI_API_KEY: "giulia_giulia",
+  BACKDESK_GEMINI_API_KEY: "backdesk",
+  UPDATE_GEMINI_API_KEY: "update",
+};
+function poolFor(keyName) {
+  const role = KEY_ROLE[keyName];
+  return role ? KEY_POOLS[role] : KEY_POOLS.default;
+}
 const DEFAULT_KEY_NAME = "GEMINI_API_KEY";
 
-async function rawCall(model, body, retried, keyName) {
-  const name = keyName || DEFAULT_KEY_NAME;
-  const key = secrets.get(name);
-  if (!key) throw new Error(`${name} niet ingesteld — check app secrets.`);
+async function rawCallOne(model, body, keyName) {
+  const key = secrets.get(keyName);
+  if (!key) throw Object.assign(new Error(`${keyName} niet ingesteld`), { status: 0 });
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
   const res = await fetch(url, {
     method: "POST",
@@ -45,20 +64,34 @@ async function rawCall(model, body, retried, keyName) {
     body: JSON.stringify(body),
   });
   if (!res.ok) {
-    if (res.status === 429 && !retried) {
-      // Quota/RPM op deze sleutel? Probeer eerst de andere BYOK-sleutel
-      // (verspreidt de last over GEMINI_API_KEY ↔ Gemini_Flash_API_Key),
-      // anders een korte pauze en nog één poging op dezelfde sleutel.
-      const altName = (keyName || DEFAULT_KEY_NAME) === "GEMINI_API_KEY" ? "Gemini_Flash_API_Key" : "GEMINI_API_KEY";
-      const altKey = secrets.get(altName);
-      if (altKey) return rawCall(model, body, true, altName);
-      await sleep(3500);
-      return rawCall(model, body, true, keyName);
-    }
     const detail = await res.text().catch(() => "");
-    throw new Error(`Gemini ${model} HTTP ${res.status}: ${detail.slice(0, 300)}`);
+    throw Object.assign(new Error(`Gemini ${model} HTTP ${res.status}: ${detail.slice(0, 300)}`), { status: res.status });
   }
   return res.json();
+}
+
+async function rawCall(model, body, keyName) {
+  const primary = keyName || DEFAULT_KEY_NAME;
+  // Probeer eerst de eigen sleutel, daarna de rest van de pool (legacy +
+  // RESERVE altijd als laatste vangnet), bij 429/403/5xx automatisch doorsturend.
+  const pool = poolFor(primary);
+  const ordered = [primary, ...pool.filter((k) => k !== primary)];
+  if (!ordered.includes("RESERVE_GEMINI_API_KEY")) ordered.push("RESERVE_GEMINI_API_KEY");
+  let lastErr = null;
+  for (const k of ordered) {
+    try {
+      return await rawCallOne(model, body, k);
+    } catch (e) {
+      lastErr = e;
+      const status = (e && e.status) || 0;
+      if (status === 429 || status === 403 || status >= 500) continue; // → volgende sleutel
+      throw e; // 400 e.d. — andere sleutels helpen niet
+    }
+  }
+  // Alle sleutels op quota/verboden → korte pauze en nog één keer de eigen sleutel.
+  await sleep(3500);
+  try { return await rawCallOne(model, body, primary); }
+  catch (e) { throw lastErr || e; }
 }
 
 /** Probeekt elk model tot er één slaagt; gooit anders de laatste fout. */
@@ -66,7 +99,7 @@ async function callWithFallback(body, keyName) {
   let lastErr = null;
   for (const model of MODELS) {
     try {
-      return await rawCall(model, body, false, keyName);
+      return await rawCall(model, body, keyName);
     } catch (e) {
       lastErr = e;
       // 429 / 404 op dit model → probeer de volgende; andere fouten → gooi direct.
@@ -93,7 +126,7 @@ export async function geminiDecide({ prompt, schema, model, systemText, temperat
   };
   try {
     const data = model
-      ? await rawCall(model, body, false, keyName)
+      ? await rawCall(model, body, keyName)
       : await callWithFallback(body, keyName);
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
     if (!text) return null;
@@ -110,7 +143,7 @@ export async function geminiChat({ prompt, contents, model, systemText, temperat
   };
   try {
     const data = model
-      ? await rawCall(model, body, false, keyName)
+      ? await rawCall(model, body, keyName)
       : await callWithFallback(body, keyName);
     return data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
   } catch { return null; }
@@ -131,7 +164,7 @@ export async function geminiGenerate({ contents, tools, model, systemText, gener
     ...(generationConfig ? { generationConfig } : {}),
   };
   const data = model
-    ? await rawCall(model, body, false, keyName)
+    ? await rawCall(model, body, keyName)
     : await callWithFallback(body, keyName);
   return data?.candidates?.[0]?.content?.parts || null;
 }
@@ -140,7 +173,7 @@ export async function geminiGenerate({ contents, tools, model, systemText, gener
 async function callWithModelList(models, body, keyName) {
   let lastErr = null;
   for (const model of models) {
-    try { return await rawCall(model, body, false, keyName); }
+    try { return await rawCall(model, body, keyName); }
     catch (e) {
       lastErr = e;
       if (!/HTTP 4(29|04|00)|HTTP 400/.test(String(e.message))) throw e;

@@ -296,10 +296,11 @@ export default async function (req) {
       `${contextLine}\n\nSignaal (bron: ${source}): "${signal}"\n\n` +
       `Begrijp het signaal. Voer direct de juiste interne acties uit via je tools. Geef daarna één kort, concreet antwoord in Salvo's stijl (Nederlands, geen opsiering).`;
 
-    // Chat (en straks voice/call) draait op de tweede Gemini-sleutel, los van
-    // de achtergrondcycli (GEMINI_API_KEY) — zo botst een live gesprek nooit
-    // met de 15-20 RPM-limiet van de proactiviteitscycli.
-    const keyName = source === "chat" ? "Gemini_Flash_API_Key" : undefined;
+    // Chat draait op de GIULIA-GIULIA-sleutel (eigen quota, los van de
+    // achtergrondcycli); alle niet-chat bronnen (startup, task_agent,
+    // proactivity-signalen) lopen op de BACKDESK-sleutel. Bij falen valt
+    // alles automatisch terug op de legacy-sleutel en RESERVE.
+    const keyName = source === "chat" ? "GIULIA_GIULIA_GEMINI_API_KEY" : "BACKDESK_GEMINI_API_KEY";
     const reply = await runGiuliaAgent(base44, "giuliaLeader", task, tools, 8, onToolCall, keyName);
     const finalReply = reply || "Ik kon dat even niet verwerken — probeer het opnieuw.";
 

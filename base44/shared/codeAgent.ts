@@ -205,7 +205,7 @@ export async function runGiuliaAgent(base44, agentName, task, tools, stopAfter =
   const genTools = [{ functionDeclarations }];
 
   for (let step = 0; step < stopAfter; step++) {
-    const parts = await geminiGenerate({ contents, tools: genTools, systemText, keyName });
+    const parts = await geminiGenerate({ contents, tools: genTools, systemText, keyName: keyName || "BACKDESK_GEMINI_API_KEY" });
     if (!parts || !parts.length) return null;
     contents.push({ role: "model", parts });
     const fnCalls = parts.filter((p) => p.functionCall);

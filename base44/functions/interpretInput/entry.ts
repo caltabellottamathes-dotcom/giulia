@@ -389,7 +389,7 @@ async function classifyChat(base44, message, history) {
     schema,
     systemText: fullSystemText,
     temperature: 0.6,
-    keyName: "Gemini_Flash_API_Key",
+    keyName: "GIULIA_GIULIA_GEMINI_API_KEY",
   });
 
   if (!out) {

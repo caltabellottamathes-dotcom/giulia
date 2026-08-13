@@ -188,6 +188,7 @@ async function runProjectRadar(sr, now) {
       schema: { type: "object", properties: { body: { type: "string" } }, required: ["body"] },
       systemText: GIULIA_PERSONA,
       temperature: 0.5,
+      keyName: "BACKDESK_GEMINI_API_KEY",
     });
     if (draft && draft.body) {
       await sr.entities.Approval.create({
