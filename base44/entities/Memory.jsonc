@@ -28,6 +28,13 @@
     "source": {
       "type": "string",
       "title": "Source"
+    },
+    "embedding": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "title": "Embedding"
     }
   },
   "required": [

@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { geminiDecide } from '../../shared/gemini.ts';
+import { geminiDecide, geminiEmbed, cosineSimilarity } from '../../shared/gemini.ts';
 import { GIULIA_TONE, AGENT_CONTEXT } from '../../shared/agentContext.ts';
 
 /**
@@ -77,9 +77,34 @@ const EXECUTION_SCHEMA = {
 
 function todayISO() { return new Date().toISOString().slice(0, 10); }
 
-async function loadContext(sr) {
-  const [memories, recentMessages, projects, tasks, events, approvals, recentActivity] = await Promise.all([
-    sr.entities.Memory.list("-created_date", 20).catch(() => []),
+// Haalt geheugen op relevantie (semantisch) i.p.v. enkel recentheid — zo vindt
+// Giulia ook een herinnering van weken terug als die inhoudelijk aansluit bij
+// wat Salvo nu zegt. Valt terug op de laatste 20 als embeddings niet lukken.
+async function loadRelevantMemories(sr, message) {
+  const allMemories = await sr.entities.Memory.list("-created_date", 150).catch(() => []);
+  const recentFallback = allMemories.slice(0, 20);
+  const queryEmbedding = await geminiEmbed({ text: message, keyName: "GIULIA_GIULIA_MEMORY_GEMINI_API_KEY" });
+  if (!queryEmbedding) return recentFallback;
+
+  const withEmbedding = allMemories.filter((m) => Array.isArray(m.embedding) && m.embedding.length);
+  if (!withEmbedding.length) return recentFallback;
+
+  const scored = withEmbedding
+    .map((m) => ({ m, score: cosineSimilarity(queryEmbedding, m.embedding) }))
+    .sort((a, b) => b.score - a.score);
+  const mostRelevant = scored.filter((s) => s.score > 0.55).slice(0, 8).map((s) => s.m);
+
+  // Meng de meest relevante met de 5 meest recente, ontdubbeld — betekenis
+  // en actualiteit tellen allebei mee.
+  const merged = [...mostRelevant];
+  for (const r of allMemories.slice(0, 5)) {
+    if (!merged.find((x) => x.id === r.id)) merged.push(r);
+  }
+  return merged;
+}
+
+async function loadContext(sr, memories) {
+  const [recentMessages, projects, tasks, events, approvals, recentActivity] = await Promise.all([
     sr.entities.Message.filter({ channel: "in-app" }, "-created_date", 10).catch(() => []),
     sr.entities.Project.list("-created_date", 100).catch(() => []),
     sr.entities.Task.list("-created_date", 200).catch(() => []),
@@ -147,8 +172,10 @@ export default async function (req) {
       await sr.entities.Message.create({ role: "user", content: message, channel: "in-app", status: "sent" }).catch(() => null);
     }
 
-    // STAP 1 — deterministisch context laden (geen Gemini).
-    const contextBlock = await loadContext(sr);
+    // STAP 1 — context laden: geheugen op semantische relevantie t.o.v. dit
+    // bericht, rest deterministisch (geen Gemini nodig voor de rest).
+    const relevantMemories = await loadRelevantMemories(sr, message);
+    const contextBlock = await loadContext(sr, relevantMemories);
     const profile =
       `Naam: ${AGENT_CONTEXT.owner.name} (${AGENT_CONTEXT.owner.short}) · ${AGENT_CONTEXT.owner.location}\n` +
       `Werk: ${AGENT_CONTEXT.background.studio}`;

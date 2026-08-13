@@ -59,12 +59,14 @@ const KEY_POOLS = {
   ],
   backdesk: ["BACKDESK_GEMINI_API_KEY", "GEMINI_API_KEY", "GIULIA_API_KEY", "RESERVE_GEMINI_API_KEY"],
   update: ["UPDATE_GEMINI_API_KEY", "GEMINI_API_KEY", "RESERVE_GEMINI_API_KEY"],
+  memory: ["GIULIA_GIULIA_MEMORY_GEMINI_API_KEY", "GIULIA_GIULIA_GEMINI_API_KEY", "RESERVE_GEMINI_API_KEY", "GEMINI_API_KEY"],
   default: ["GEMINI_API_KEY", "Gemini_Flash_API_Key", "GIULIA_API_KEY", "RESERVE_GEMINI_API_KEY"],
 };
 const KEY_ROLE = {
   GIULIA_GIULIA_GEMINI_API_KEY: "giulia_giulia",
   BACKDESK_GEMINI_API_KEY: "backdesk",
   UPDATE_GEMINI_API_KEY: "update",
+  GIULIA_GIULIA_MEMORY_GEMINI_API_KEY: "memory",
 };
 function poolFor(keyName) {
   const role = KEY_ROLE[keyName];
@@ -222,6 +224,65 @@ export async function geminiResearch({ prompt, systemText, temperature = 0.5, ke
     const m = text.match(/\{[\s\S]*\}/);
     return m ? JSON.parse(m[0]) : null;
   } catch { return null; }
+}
+
+// ── Geheugen-embeddings ────────────────────────────────────────────────────
+// text-embedding-004 zet geheugentekst om in een vector, zodat we bij het
+// laden van context kunnen zoeken op BETEKENIS ("wanneer heeft Salvo iets
+// over zijn moeder gezegd?") in plaats van enkel op de laatste 20 records.
+const EMBED_MODEL = "gemini-embedding-001";
+
+async function rawEmbedOne(text, keyName) {
+  const key = secrets.get(keyName);
+  if (!key) throw Object.assign(new Error(`${keyName} niet ingesteld`), { status: 0 });
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${EMBED_MODEL}:embedContent?key=${key}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ content: { parts: [{ text }] } }),
+  });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw Object.assign(new Error(`Gemini embed HTTP ${res.status}: ${detail.slice(0, 300)}`), { status: res.status });
+  }
+  return res.json();
+}
+
+async function rawEmbed(text, keyName) {
+  const primary = keyName || "GIULIA_GIULIA_MEMORY_GEMINI_API_KEY";
+  const pool = poolFor(primary);
+  const ordered = [primary, ...pool.filter((k) => k !== primary)];
+  if (!ordered.includes("RESERVE_GEMINI_API_KEY")) ordered.push("RESERVE_GEMINI_API_KEY");
+  let lastErr = null;
+  for (const k of ordered) {
+    try { return await rawEmbedOne(text, k); }
+    catch (e) {
+      lastErr = e;
+      const status = (e && e.status) || 0;
+      if (status === 429 || status === 403 || status >= 500) continue;
+      throw e;
+    }
+  }
+  throw lastErr || new Error("Alle embed-sleutels faalden");
+}
+
+/** geminiEmbed — geeft een vector (number[]) terug voor een stuk tekst, of null bij falen. */
+export async function geminiEmbed({ text, keyName }) {
+  if (!text || !String(text).trim()) return null;
+  try {
+    const data = await rawEmbed(String(text).slice(0, 2000), keyName);
+    return data?.embedding?.values || null;
+  } catch { return null; }
+}
+
+
+/** cosineSimilarity — vergelijkt twee vectoren (0 = ongerelateerd, 1 = identiek). */
+export function cosineSimilarity(a, b) {
+  if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length || !a.length) return 0;
+  let dot = 0, na = 0, nb = 0;
+  for (let i = 0; i < a.length; i++) { dot += a[i] * b[i]; na += a[i] * a[i]; nb += b[i] * b[i]; }
+  if (!na || !nb) return 0;
+  return dot / (Math.sqrt(na) * Math.sqrt(nb));
 }
 
 /**

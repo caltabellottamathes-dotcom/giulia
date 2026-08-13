@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { createApproval, navigateApp } from "../../shared/codeAgent.ts";
+import { geminiEmbed } from "../../shared/gemini.ts";
 
 /**
  * giuliaLeader — GIULIA-CORE. De pure executie-engine van GIULIA OS.
@@ -102,10 +103,13 @@ async function runAction(base44, sr, action) {
         return { type, id: c?.id, ok: !!c };
       }
       case "create_memory": {
+        const content = action.content || action.title || "";
+        const embedding = await geminiEmbed({ text: content, keyName: "GIULIA_GIULIA_MEMORY_GEMINI_API_KEY" });
         const m = await sr.entities.Memory.create({
-          content: action.content || action.title || "",
+          content,
           category: action.category || "Conversation-derived",
           source: "giuliaLeader",
+          ...(embedding ? { embedding } : {}),
         });
         return { type, id: m?.id, ok: !!m };
       }
@@ -183,14 +187,26 @@ export default async function (req) {
       results.push(await runAction(base44, sr, action));
     }
 
-    // Persisteer wat GIULIA-GIULIA wilde onthouden.
+    // Persisteer wat GIULIA-GIULIA wilde onthouden — met embedding voor
+    // semantisch terugvindbaar geheugen, en zichtbare fouten (geen stille
+    // catch) zodat een mislukte opslag niet onopgemerkt blijft.
+    let memorySaved = 0;
+    const memoryErrors = [];
     for (const mu of memoryUpdates) {
       if (!mu || !mu.content) continue;
-      await sr.entities.Memory.create({
-        content: String(mu.content).slice(0, 500),
-        category: mu.category || "Conversation-derived",
-        source: agentSource,
-      }).catch(() => null);
+      const content = String(mu.content).slice(0, 500);
+      try {
+        const embedding = await geminiEmbed({ text: content, keyName: "GIULIA_GIULIA_MEMORY_GEMINI_API_KEY" });
+        const saved = await sr.entities.Memory.create({
+          content,
+          category: mu.category || "Conversation-derived",
+          source: agentSource,
+          ...(embedding ? { embedding } : {}),
+        });
+        if (saved) memorySaved++;
+      } catch (e) {
+        memoryErrors.push(String((e && e.message) || e));
+      }
     }
     const pruned = await pruneMemory(sr);
 
@@ -211,7 +227,7 @@ export default async function (req) {
       });
     } catch { /* ignore */ }
 
-    return Response.json({ ok: true, results, memory_saved: memoryUpdates.length, memory_pruned: pruned });
+    return Response.json({ ok: true, results, memory_saved: memorySaved, memory_errors: memoryErrors, memory_pruned: pruned });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
