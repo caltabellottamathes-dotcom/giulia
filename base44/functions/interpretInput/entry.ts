@@ -341,6 +341,8 @@ async function classifyChat(base44, message, history) {
     .map((m) => `${m.role === "user" ? "Salvo" : "Giulia"}: ${m.content}`)
     .join("\n");
 
+  // Live chat draait op de Flash-sleutel (los van de achtergrondcycli) en
+  // degraceert vriendelijk als het Gemini-quota is opgemaakt (geen harde 500).
   const out = await geminiDecide({
     prompt:
       `Classificeer dit bericht van Salvo en antwoord als Giulia.\n\n` +
@@ -352,13 +354,15 @@ async function classifyChat(base44, message, history) {
     schema,
     systemText: GIULIA_TONE,
     temperature: 0.5,
+    keyName: "Gemini_Flash_API_Key",
   });
 
   if (!out) {
+    const friendly = "Giulia is even bezet — ik heb mijn Gemini-quota voor nu bereikt. Probeer het over een paar minuten nog eens.";
     await sr.entities.Message.create({
-      role: "giulia", content: "Ik legde even naast me heen — probeer het nog eens.", channel: "in-app", status: "sent", agent_source: "interpretInput",
+      role: "giulia", content: friendly, channel: "in-app", status: "sent", agent_source: "interpretInput",
     }).catch(() => null);
-    return Response.json({ ok: false, error: "classification failed" }, { status: 500 });
+    return Response.json({ ok: true, giulia_response: friendly, degraded: true });
   }
 
   const created = [];

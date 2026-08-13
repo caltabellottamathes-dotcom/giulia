@@ -199,6 +199,14 @@
         "delete",
         "read"
       ]
+    },
+    {
+      "function_name": "getAgentContext",
+      "description": "Returns Salvo's profile, tone, trust model, input classification, proactivity/memory rules, design system, architecture, connectors, voice, skills, workflows and V1 boundaries."
+    },
+    {
+      "function_name": "callGemini",
+      "description": "Core Gemini wrapper. Accepts prompt, context, responseSchema, temperature. BYOK \u2014 no Base44 integration credits."
     }
   ],
   "context_files": [],
@@ -214,6 +222,9 @@
     "scope": "both",
     "include_other_conversation_context": false,
     "instructions": null
+  },
+  "voice_config": {
+    "voice_id": null
   },
   "allow_anonymous_access": false,
   "name": "giulia_assistant"

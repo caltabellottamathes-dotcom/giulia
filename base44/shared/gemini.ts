@@ -45,9 +45,13 @@ async function rawCall(model, body, retried, keyName) {
     body: JSON.stringify(body),
   });
   if (!res.ok) {
-    // Eén keer terugvallen op een korte pauze bij 429 (rate limit) — een live
-    // chatvraag mag niet mislukken puur omdat er net een achtergrondtaak liep.
     if (res.status === 429 && !retried) {
+      // Quota/RPM op deze sleutel? Probeer eerst de andere BYOK-sleutel
+      // (verspreidt de last over GEMINI_API_KEY ↔ Gemini_Flash_API_Key),
+      // anders een korte pauze en nog één poging op dezelfde sleutel.
+      const altName = (keyName || DEFAULT_KEY_NAME) === "GEMINI_API_KEY" ? "Gemini_Flash_API_Key" : "GEMINI_API_KEY";
+      const altKey = secrets.get(altName);
+      if (altKey) return rawCall(model, body, true, altName);
       await sleep(3500);
       return rawCall(model, body, true, keyName);
     }
