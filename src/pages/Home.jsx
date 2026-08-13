@@ -169,11 +169,11 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 via-charcoal/10 to-transparent" />
       </div>
 
-      {/* Photo — mobile editorial card (closed), elongated, flush against the top */}
+      {/* Photo — mobile editorial card (closed), sits lower so the greeting breathes above it */}
       <div
         className={cn(
-          "lg:hidden fixed top-0 left-3 right-3 h-[52vh] overflow-hidden z-0 rounded-b-[32px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-[0_24px_60px_-24px_rgba(0,0,0,0.35)]",
-          panelOpen ? "opacity-0 -translate-y-4 pointer-events-none" : "opacity-100"
+          "lg:hidden fixed top-[26vh] left-3 right-3 h-[40vh] overflow-hidden z-0 rounded-[28px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-[0_24px_60px_-24px_rgba(0,0,0,0.35)]",
+          panelOpen ? "opacity-0 translate-y-6 pointer-events-none" : "opacity-100"
         )}
       >
         <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
@@ -220,7 +220,7 @@ export default function Home() {
       {/* Content */}
       <div
         className={cn(
-          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[54vh] lg:pt-0",
+          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[6vh] lg:pt-0",
           panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100"
         )}
       >
