@@ -20,7 +20,7 @@ import { createApproval, navigateApp } from "../../shared/codeAgent.ts";
 const VALID_TYPES = new Set([
   "create_task", "update_task", "complete_task", "create_project", "update_project",
   "create_note", "create_idea", "create_contact", "create_memory", "create_approval",
-  "navigate", "push_notify", "delete_tasks",
+  "navigate", "push_notify", "delete_tasks", "clear_approvals",
 ]);
 
 async function runAction(base44, sr, action) {
@@ -131,6 +131,17 @@ async function runAction(base44, sr, action) {
         const ids = list.map((t) => t.id).filter(Boolean);
         for (let i = 0; i < ids.length; i += 100) {
           await sr.entities.Task.deleteMany({ id: { $in: ids.slice(i, i + 100) } }).catch(() => {});
+        }
+        return { type, ok: true, deleted: ids.length };
+      }
+      case "clear_approvals": {
+        // Interne administratieve actie op Salvo's eigen directe verzoek —
+        // géén externe verzending, dus direct uitvoeren zonder approval-loop.
+        const status = action.status || "pending";
+        const list = await sr.entities.Approval.filter({ status }, "-created_date", 500).catch(() => []);
+        const ids = list.map((a) => a.id).filter(Boolean);
+        for (let i = 0; i < ids.length; i += 100) {
+          await sr.entities.Approval.deleteMany({ id: { $in: ids.slice(i, i + 100) } }).catch(() => {});
         }
         return { type, ok: true, deleted: ids.length };
       }

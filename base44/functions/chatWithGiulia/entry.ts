@@ -32,7 +32,7 @@ const EXECUTION_SCHEMA = {
             enum: [
               "create_task", "update_task", "complete_task", "create_project", "update_project",
               "create_note", "create_idea", "create_contact", "create_memory", "create_approval",
-              "navigate", "push_notify", "delete_tasks",
+              "navigate", "push_notify", "delete_tasks", "clear_approvals",
             ],
           },
           id: { type: "string" },
@@ -156,7 +156,8 @@ export default async function (req) {
       `Zonder goedkeuring (voer direct uit): ${AGENT_CONTEXT.trust_model.without_approval.join(" · ")}\n` +
       `ALLEEN met create_approval (nooit direct uitvoeren): ${AGENT_CONTEXT.trust_model.never_without_approval.join(" · ")}\n` +
       `Jij (GIULIA-GIULIA) bepaalt zelf of iets een taak voor Salvo is (assignee: salvo) of iets dat jij zelf afhandelt (assignee: giulia, en rond het dan ook zelf af via complete_task/create_task met status completed waar mogelijk). ` +
-      `Kijk altijd naar "Recent al afgehandeld" — stel niets opnieuw voor dat al is afgerond.`;
+      `Kijk altijd naar "Recent al afgehandeld" — stel niets opnieuw voor dat al is afgerond. ` +
+      `Als Salvo rechtstreeks een interne/organisatorische opdracht geeft (bv. "verwijder alle items om goed te keuren", "ruim mijn taken op") — dat is GEEN externe verzending, dus voer dat DIRECT uit via de juiste action (bv. clear_approvals, delete_tasks) zonder create_approval.`;
     const systemText = `${GIULIA_TONE}\n\n=== OVER SALVO ===\n${profile}\n\n=== VERTROUWENSMODEL ===\n${trust}\n\n=== CONTEXT ===\n${contextBlock}`;
 
     // STAP 2 — GIULIA-GIULIA aanroepen. Chat gebruikt haar eigen pool,

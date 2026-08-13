@@ -13,8 +13,11 @@
  */
 import { secrets } from "base44:runtime";
 
-// Het enige gebruikte model — géén fallback-chain.
-const MODELS = ["gemini-3.1-flash-lite"];
+// Probeer eerst het nieuwere flash-lite model (hoge TPM, geschikt voor
+// constante flow); valt automatisch terug op de bevestigd werkende versie
+// als het nieuwere model niet bestaat (404) of geen quota heeft (429) —
+// nooit blind een onbevestigd model-ID als enige optie gebruiken.
+const MODELS = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite"];
 
 export const GIULIA_PERSONA =
   "You are Giulia, a Personal Operating System. You combine conversation, memory, and planning into one coherent system. " +
