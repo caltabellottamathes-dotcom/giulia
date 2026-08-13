@@ -1,234 +1,95 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { createApproval, navigateApp } from "../../shared/codeAgent.ts";
-import { geminiEmbed } from "../../shared/gemini.ts";
+import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
+import { geminiEmbed } from '../../shared/gemini.ts';
 
 /**
- * giuliaLeader — GIULIA-CORE. De pure executie-engine van GIULIA OS.
+ * GIULIA-CORE (giuliaLeader) - De Blinde Executie Engine.
  *
- * Naamgevingsconventie GIULIA OS:
- *   GIULIA-GIULIA   = het brein (Gemini-call in chatWithGiulia) — begrijpt,
- *                      beslist, redeneert nooit hier.
- *   GIULIA-CONNECT  = chatWithGiulia — laadt context, roept GIULIA-GIULIA aan,
- *                      stuurt de beslissing (ExecutionPayload) hierheen.
- *   GIULIA-CORE     = dit bestand — voert acties blind uit via tools
- *                      (entity CRUD, approvals, navigate, push). GEEN eigen
- *                      Gemini-call, GEEN interpretatie van intentie.
- *
- * Accepteert: { actions: [{type, ...params}], memory_updates: [{content,
- * category}], should_notify, notify_title, agent_source }.
+ * Dit script bevat NUL kunstmatige intelligentie. Geen LLM-calls, geen prompts.
+ * Het ontvangt een gestructureerde `ExecutionPayload` array vanuit GIULIA-CONNECT,
+ * mapt deze op `giuliaSkills.ts`, en voert ze direct uit op de database.
  */
-
-const VALID_TYPES = new Set([
-  "create_task", "update_task", "complete_task", "create_project", "update_project",
-  "create_note", "create_idea", "create_contact", "create_memory", "create_approval",
-  "navigate", "push_notify", "delete_tasks", "clear_approvals",
-]);
-
-async function runAction(base44, sr, action) {
-  const type = action && action.type;
-  if (!type || !VALID_TYPES.has(type)) return { type, ok: false, error: "onbekend action type" };
-  try {
-    switch (type) {
-      case "create_task": {
-        const t = await sr.entities.Task.create({
-          title: action.title || "Taak",
-          description: action.description || undefined,
-          priority: action.priority || "medium",
-          deadline: action.deadline || undefined,
-          project_id: action.project_id || undefined,
-          delegated_to_giulia: action.assignee === "giulia",
-          agent_source: "giuliaLeader",
-        });
-        return { type, id: t?.id, ok: !!t };
-      }
-      case "update_task": {
-        if (!action.id) return { type, ok: false, error: "id vereist" };
-        const patch = {};
-        if (action.status) patch.status = action.status;
-        if (action.title) patch.title = action.title;
-        if (action.deadline) patch.deadline = action.deadline;
-        const t = await sr.entities.Task.update(action.id, patch);
-        return { type, id: action.id, ok: !!t };
-      }
-      case "complete_task": {
-        if (!action.id) return { type, ok: false, error: "id vereist" };
-        const t = await sr.entities.Task.update(action.id, { status: "completed" });
-        return { type, id: action.id, ok: !!t };
-      }
-      case "create_project": {
-        const p = await sr.entities.Project.create({
-          title: action.title || "Project",
-          description: action.description || undefined,
-          category: action.category || undefined,
-          deadline: action.deadline || undefined,
-          status: "planning",
-          agent_source: "giuliaLeader",
-        });
-        return { type, id: p?.id, ok: !!p };
-      }
-      case "update_project": {
-        if (!action.id) return { type, ok: false, error: "id vereist" };
-        const patch = {};
-        if (action.status) patch.status = action.status;
-        if (action.title) patch.title = action.title;
-        const p = await sr.entities.Project.update(action.id, patch);
-        return { type, id: action.id, ok: !!p };
-      }
-      case "create_note": {
-        const n = await sr.entities.Note.create({
-          title: action.title || "Notitie",
-          content: action.content || "",
-          agent_source: "giuliaLeader",
-        });
-        return { type, id: n?.id, ok: !!n };
-      }
-      case "create_idea": {
-        const i = await sr.entities.Idea.create({
-          title: action.title || "Idee",
-          content: action.content || "",
-          category: action.category || undefined,
-          status: "new",
-          agent_source: "giuliaLeader",
-        });
-        return { type, id: i?.id, ok: !!i };
-      }
-      case "create_contact": {
-        const c = await sr.entities.Contact.create({
-          name: action.name || action.title || "Contact",
-          company: action.company || undefined,
-          email: action.email || undefined,
-          phone: action.phone || undefined,
-          agent_source: "giuliaLeader",
-        });
-        return { type, id: c?.id, ok: !!c };
-      }
-      case "create_memory": {
-        const content = action.content || action.title || "";
-        const embedding = await geminiEmbed({ text: content, keyName: "GIULIA_GIULIA_MEMORY_GEMINI_API_KEY" });
-        const m = await sr.entities.Memory.create({
-          content,
-          category: action.category || "Conversation-derived",
-          source: "giuliaLeader",
-          ...(embedding ? { embedding } : {}),
-        });
-        return { type, id: m?.id, ok: !!m };
-      }
-      case "create_approval": {
-        const a = await createApproval(base44, action.category || "other", action.title || "Actie", action.content || "", undefined, "salvo");
-        return { type, id: a?.id, ok: !!a };
-      }
-      case "navigate": {
-        if (!action.route) return { type, ok: false, error: "route vereist" };
-        const n = await navigateApp(base44, action.route, {}, action.label || "", "giuliaLeader");
-        return { type, id: n?.id, ok: !!n };
-      }
-      case "push_notify": {
-        const res = await base44.functions.invoke("sendPushNotifications", {
-          title: action.title || "Giulia",
-          message: action.content || action.title || "",
-        }).catch(() => null);
-        return { type, ok: !!res };
-      }
-      case "delete_tasks": {
-        if (!action.status) return { type, ok: false, error: "status vereist" };
-        const list = await sr.entities.Task.filter({ status: action.status }, "-created_date", 500).catch(() => []);
-        const ids = list.map((t) => t.id).filter(Boolean);
-        for (let i = 0; i < ids.length; i += 100) {
-          await sr.entities.Task.deleteMany({ id: { $in: ids.slice(i, i + 100) } }).catch(() => {});
-        }
-        return { type, ok: true, deleted: ids.length };
-      }
-      case "clear_approvals": {
-        // Interne administratieve actie op Salvo's eigen directe verzoek —
-        // géén externe verzending, dus direct uitvoeren zonder approval-loop.
-        const status = action.status || "pending";
-        const list = await sr.entities.Approval.filter({ status }, "-created_date", 500).catch(() => []);
-        const ids = list.map((a) => a.id).filter(Boolean);
-        for (let i = 0; i < ids.length; i += 100) {
-          await sr.entities.Approval.deleteMany({ id: { $in: ids.slice(i, i + 100) } }).catch(() => {});
-        }
-        return { type, ok: true, deleted: ids.length };
-      }
-      default:
-        return { type, ok: false, error: "niet geïmplementeerd" };
-    }
-  } catch (e) {
-    return { type, ok: false, error: String((e && e.message) || e) };
-  }
-}
-
-// Memory pruning — houdt het geheugen beheersbaar: boven de 200 records
-// worden de oudste 'Conversation-derived' items (laagste prioriteit) verwijderd.
-async function pruneMemory(sr) {
-  const all = await sr.entities.Memory.list("-created_date", 300).catch(() => []);
-  if (all.length <= 200) return 0;
-  const excess = all.slice(200).filter((m) => m.category === "Conversation-derived");
-  const ids = excess.map((m) => m.id).filter(Boolean);
-  if (!ids.length) return 0;
-  await sr.entities.Memory.deleteMany({ id: { $in: ids } }).catch(() => {});
-  return ids.length;
-}
-
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
-    const sr = base44.asServiceRole;
     const body = await req.json();
 
-    const actions = Array.isArray(body.actions) ? body.actions : [];
-    const memoryUpdates = Array.isArray(body.memory_updates) ? body.memory_updates : [];
-    const shouldNotify = !!body.should_notify;
-    const notifyTitle = body.notify_title || "Giulia";
-    const agentSource = body.agent_source || "unknown";
+    const actions = body.actions || [];
+    const memory_updates = body.memory_updates || [];
+    const sr = base44.asServiceRole;
 
-    // Voer elke actie deterministisch uit — geen redenering, alleen validatie.
     const results = [];
-    for (const action of actions) {
-      results.push(await runAction(base44, sr, action));
-    }
 
-    // Persisteer wat GIULIA-GIULIA wilde onthouden — met embedding voor
-    // semantisch terugvindbaar geheugen, en zichtbare fouten (geen stille
-    // catch) zodat een mislukte opslag niet onopgemerkt blijft.
-    let memorySaved = 0;
-    const memoryErrors = [];
-    for (const mu of memoryUpdates) {
-      if (!mu || !mu.content) continue;
-      const content = String(mu.content).slice(0, 500);
+    // 1. Process Tool Actions
+    for (const action of actions) {
+      const toolName = action.name;
+      const toolArgs = action.args || {};
+
+      const skill = GIULIA_SKILLS.find(s => s.name === toolName);
+
+      if (!skill) {
+        results.push({ tool: toolName, status: "error", detail: "Unknown tool" });
+        continue;
+      }
+
       try {
-        const embedding = await geminiEmbed({ text: content, keyName: "GIULIA_GIULIA_MEMORY_GEMINI_API_KEY" });
-        const saved = await sr.entities.Memory.create({
-          content,
-          category: mu.category || "Conversation-derived",
-          source: agentSource,
-          ...(embedding ? { embedding } : {}),
-        });
-        if (saved) memorySaved++;
-      } catch (e) {
-        memoryErrors.push(String((e && e.message) || e));
+        const res = await skill.execute(toolArgs, base44);
+
+        // Log executions secretly if they change state
+        if (!["os_query", "list_tasks", "report_to_salvo", "navigate"].includes(toolName) && res && !res.error) {
+           await sr.entities.Activity.create({
+             action: toolName,
+             description: `[GIULIA-CORE] Executed: ${toolName}`,
+             source: "GIULIA-CORE",
+             timestamp: new Date().toISOString()
+           }).catch(() => null);
+        }
+
+        results.push({ tool: toolName, status: "success", response: res });
+      } catch (err) {
+        results.push({ tool: toolName, status: "error", detail: String(err.message || err) });
       }
     }
-    const pruned = await pruneMemory(sr);
 
-    if (shouldNotify) {
-      await base44.functions.invoke("sendPushNotifications", {
-        title: notifyTitle,
-        message: `${actions.length} acties uitgevoerd`,
-      }).catch(() => null);
+    // 2. Process Memory Updates (met semantische embedding, luid falend)
+    const memoryErrors = [];
+    if (memory_updates && memory_updates.length > 0) {
+      for (const mem of memory_updates) {
+        if (!mem.content) continue;
+        try {
+          const embedding = await geminiEmbed({ text: String(mem.content).slice(0, 500), keyName: "GIULIA_GIULIA_MEMORY_GEMINI_API_KEY" });
+          await sr.entities.Memory.create({
+            content: String(mem.content).slice(0, 500),
+            category: mem.category || "Conversation-derived",
+            confidence: 0.9, // High confidence since it was an explicit payload
+            source: "GIULIA-CORE",
+            ...(embedding ? { embedding } : {})
+          });
+        } catch (e) {
+          memoryErrors.push(String((e && e.message) || e));
+        }
+      }
     }
 
-    const okCount = results.filter((r) => r.ok).length;
+    // Memory pruning — houdt het geheugen beheersbaar boven de 200 records.
+    let pruned = 0;
     try {
-      await sr.entities.Activity.create({
-        action: "giulia_core_execute",
-        description: `GIULIA-CORE: ${okCount}/${actions.length} acties uitgevoerd (bron: ${agentSource})`,
-        source: "giuliaLeader",
-        timestamp: new Date().toISOString(),
-      });
+      const all = await sr.entities.Memory.list("-created_date", 300).catch(() => []);
+      if (all.length > 200) {
+        const excess = all.slice(200).filter((m) => m.category === "Conversation-derived");
+        const ids = excess.map((m) => m.id).filter(Boolean);
+        if (ids.length) {
+          for (let i = 0; i < ids.length; i += 100) {
+            await sr.entities.Memory.deleteMany({ id: { $in: ids.slice(i, i + 100) } }).catch(() => {});
+          }
+          pruned = ids.length;
+        }
+      }
     } catch { /* ignore */ }
 
-    return Response.json({ ok: true, results, memory_saved: memorySaved, memory_errors: memoryErrors, memory_pruned: pruned });
+    return Response.json({ ok: true, results, memory_errors: memoryErrors, memory_pruned: pruned });
+
   } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
 }
