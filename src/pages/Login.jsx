@@ -45,13 +45,7 @@ export default function Login() {
           muted
           loop
           playsInline
-          className="hidden md:block h-full w-full object-cover"
-        />
-        <img
-          src={IMAGES.feetChair}
-          alt=""
-          className="md:hidden h-full w-full object-cover"
-          draggable={false}
+          className="h-full w-full object-cover"
         />
         {/* Readability gradients — darken the left where the card floats */}
         <div className="absolute inset-0 bg-gradient-to-r from-charcoal/75 via-charcoal/25 to-charcoal/35" />

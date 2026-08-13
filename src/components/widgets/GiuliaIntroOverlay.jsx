@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
-import { X, Play, Loader2, Check, Sparkles, Rocket } from "lucide-react";
+import { X, Loader2, Check, Sparkles, Rocket } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { IMAGES } from "@/lib/images";
 
 const INTRO_VIDEO =
   "https://media.base44.com/videos/public/6a7608690d4ea2c9edc3d59b/df1828cc2_Please_now_you_just_cropped_it.mp4";
@@ -28,7 +27,6 @@ const WAKE = [
  */
 export default function GiuliaIntroOverlay() {
   const [visible, setVisible] = useState(() => !sessionStorage.getItem(SEEN_KEY));
-  const [needsTap, setNeedsTap] = useState(false);
   const [cycle, setCycle] = useState("idle"); // idle | running | done | error
   const [feed, setFeed] = useState([]);
   const videoRef = useRef(null);
@@ -70,38 +68,26 @@ export default function GiuliaIntroOverlay() {
     });
   }, []);
 
-  // Video autoplay (unmuted — browser kan een tap eisen). Blijft na afloop
-  // gewoon op het laatste beeld staan — geen auto-close.
+  // Video autoplay — unmuted, full screen, plays immediately on every device.
   useEffect(() => {
     if (!visible) return;
     const v = videoRef.current;
     if (!v) return;
     v.muted = false;
-    v.play().catch(() => setNeedsTap(true));
+    v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });
   }, [visible]);
-
-  const tapToPlay = () => {
-    setNeedsTap(false);
-    videoRef.current?.play().catch(() => {});
-  };
 
   if (!visible) return null;
 
   return (
     <div className="fixed inset-0 z-[100] bg-charcoal animate-fade-in overflow-hidden">
-      {/* Fullscreen video — speelt en blijft staan; start de run zodra hij eindigt */}
+      {/* Fullscreen video — speelt direct op elk apparaat, zonder play-knop */}
       <video
         ref={videoRef}
         src={INTRO_VIDEO}
         playsInline
         autoPlay
-        className="hidden md:block absolute inset-0 h-full w-full object-contain"
-      />
-      <img
-        src={IMAGES.feetChair}
-        alt=""
-        className="md:hidden absolute inset-0 h-full w-full object-cover"
-        draggable={false}
+        className="absolute inset-0 h-full w-full object-cover"
       />
 
       {/* Overslaan — sluit de overlay op elk moment, los van de run */}
@@ -112,15 +98,6 @@ export default function GiuliaIntroOverlay() {
       >
         <X className="h-3.5 w-3.5" /> Overslaan
       </button>
-
-      {/* Tap om af te spelen (autoplay-block) */}
-      {needsTap && (
-        <button onClick={tapToPlay} className="absolute inset-0 z-10 flex items-center justify-center bg-charcoal/40" aria-label="Afspelen">
-          <span className="h-14 w-14 rounded-full bg-ivory/90 flex items-center justify-center">
-            <Play className="h-6 w-6 text-charcoal" />
-          </span>
-        </button>
-      )}
 
       {/* Giulia wekt het OS — live reeks onderaan */}
       <div className="absolute bottom-0 left-0 right-0 z-20 p-4 lg:p-8 bg-gradient-to-t from-charcoal via-charcoal/85 to-transparent">
