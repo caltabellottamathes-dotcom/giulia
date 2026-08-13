@@ -61,7 +61,7 @@ export default function DailyIntention() {
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Bijv. rustig beginnen, één project afmaken…"
-            className="flex-1 h-11 rounded-2xl bg-ivory/10 border border-ivory/20 px-4 text-sm text-ivory placeholder:text-ivory/40 focus:outline-none focus:border-olive/50 transition"
+            className="flex-1 h-11 rounded-2xl bg-ivory/10 border border-ivory/20 px-4 text-[16px] text-ivory placeholder:text-ivory/40 focus:outline-none focus:border-olive/50 transition"
           />
           <button
             onClick={save}

@@ -27,7 +27,9 @@ export default function Briefing() {
   const buildItems = useCallback((rawItems, answered) => {
     const pool = GIULIA_QUESTIONS.filter((q) => !answered.has(q.key));
     if (!pool.length) return rawItems;
-    const picks = pool.slice(0, 2);
+    // Shuffle so a different set of questions surfaces each briefing.
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    const picks = shuffled.slice(0, 2);
     const positions = rawItems.length > 4 ? [3, 6] : [2, 5];
     const result = [...rawItems];
     picks.forEach((q, i) => {
@@ -228,8 +230,11 @@ export default function Briefing() {
 
   return (
     <div className="fixed inset-0 z-[120] bg-warm-white text-charcoal flex flex-col animate-fade-in overflow-hidden">
-      {/* Editorial photo wash — depth behind the cards */}
-      <img src={IMAGES.salvoWalkingBeach} alt="" className="absolute inset-0 h-full w-full object-cover opacity-[0.05] pointer-events-none" />
+      {/* Mobile — full-color blurred close-up editorial backdrop */}
+      <img src={IMAGES.salvoFeetPebbles} alt="" className="lg:hidden absolute inset-0 h-full w-full object-cover scale-110 blur-2xl pointer-events-none" />
+      <div className="lg:hidden absolute inset-0 bg-warm-white/15 pointer-events-none" />
+      {/* Desktop — faint wash (unchanged) */}
+      <img src={IMAGES.salvoWalkingBeach} alt="" className="hidden lg:block absolute inset-0 h-full w-full object-cover opacity-[0.05] pointer-events-none" />
       {/* Top bar — light glass */}
       <div className="relative flex items-center justify-between px-5 py-4">
         <button onClick={() => navigate("/")} className="inline-flex items-center gap-1.5 rounded-full bg-ivory/70 backdrop-blur-xl border border-charcoal/10 px-3.5 py-1.5 text-[12px] font-semibold text-charcoal/80 hover:bg-ivory transition">
@@ -246,8 +251,8 @@ export default function Briefing() {
       </div>
 
       {/* Card stage */}
-      <div className="relative flex-1 flex items-center justify-center px-4 pb-4 min-h-0">
-        <div className="relative w-[min(90vw,440px)] h-[min(70vh,620px)]">
+      <div className="relative flex-1 flex items-center justify-center px-3 pb-4 min-h-0">
+        <div className="relative w-[min(92vw,440px)] h-[min(78vh,660px)] lg:w-[min(90vw,440px)] lg:h-[min(70vh,620px)]">
           {after && (
             <div className="absolute inset-0 scale-90 -translate-y-6 opacity-40 pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
               <BriefingCard item={after} interactive={false} />

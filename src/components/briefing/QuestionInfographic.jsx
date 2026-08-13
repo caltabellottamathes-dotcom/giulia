@@ -53,7 +53,7 @@ export default function QuestionInfographic({ item, onAnswer }) {
         onChange={(e) => setText(e.target.value)}
         placeholder="Typ je antwoord…"
         rows={2}
-        className="w-full resize-none rounded-2xl bg-charcoal/[0.06] border border-charcoal/12 px-4 py-3 text-[14px] text-charcoal placeholder:text-charcoal/35 focus:outline-none focus:border-olive/50 focus:bg-charcoal/[0.08] transition"
+        className="w-full resize-none rounded-2xl bg-charcoal/[0.06] border border-charcoal/12 px-4 py-3 text-[16px] lg:text-[14px] text-charcoal placeholder:text-charcoal/35 focus:outline-none focus:border-olive/50 focus:bg-charcoal/[0.08] transition"
       />
 
       <motion.button

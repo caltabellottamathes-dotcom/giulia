@@ -169,15 +169,15 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 via-charcoal/10 to-transparent" />
       </div>
 
-      {/* Photo — mobile banner (closed) */}
+      {/* Photo — mobile editorial card (closed), sits lower so the greeting breathes above it */}
       <div
         className={cn(
-          "lg:hidden fixed top-0 left-0 right-0 h-[44vh] overflow-hidden z-0 rounded-b-[32px] transition-all duration-700",
-          panelOpen ? "opacity-0 -translate-y-4 pointer-events-none" : "opacity-100"
+          "lg:hidden fixed top-[26vh] left-3 right-3 h-[40vh] overflow-hidden z-0 rounded-[28px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-[0_24px_60px_-24px_rgba(0,0,0,0.35)]",
+          panelOpen ? "opacity-0 translate-y-6 pointer-events-none" : "opacity-100"
         )}
       >
         <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
-        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/10 via-transparent to-charcoal/55" />
+        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/5 via-transparent to-charcoal/35" />
       </div>
 
       {/* Photo — mobile bottom card (open) */}
@@ -220,16 +220,16 @@ export default function Home() {
       {/* Content */}
       <div
         className={cn(
-          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[28vh] lg:pt-0",
+          "relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[6vh] lg:pt-0",
           panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100"
         )}
       >
         <header className="px-5 lg:px-10 pt-8 lg:pt-8 pb-6 lg:pb-4 flex items-end justify-between gap-4 lg:shrink-0">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.28em] text-ivory/80 lg:text-foreground/80 mb-3 font-semibold">
+            <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/70 mb-3 font-semibold">
               {new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}
             </p>
-            <h1 className="text-[40px] sm:text-5xl lg:text-6xl font-display font-semibold tracking-[-0.02em] leading-[1.0] text-ivory lg:text-foreground text-shadow-soft lg:[text-shadow:none] text-balance">
+            <h1 className="text-[40px] sm:text-5xl lg:text-6xl font-display font-semibold tracking-[-0.02em] leading-[1.0] text-foreground text-balance">
               {greeting}.
             </h1>
           </div>
@@ -239,7 +239,7 @@ export default function Home() {
             </Link>
             <button
               onClick={() => setPickerOpen(true)}
-              className="inline-flex items-center gap-2 rounded-full glass-1 px-4 py-2.5 text-xs font-semibold text-ivory hover:bg-ivory/10 transition"
+              className="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold transition bg-foreground/[0.06] border border-foreground/10 text-foreground hover:bg-foreground/10 lg:bg-transparent lg:border-transparent lg:glass-1 lg:text-ivory lg:hover:bg-ivory/10"
             >
               <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Widget</span>
             </button>
