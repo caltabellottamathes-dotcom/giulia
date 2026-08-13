@@ -130,12 +130,16 @@ export default function Profile() {
         </div>
       </GlassPanel>
 
-      {user?.giulia_answers && Object.keys(user.giulia_answers).length > 0 && (
-        <GlassPanel level={3} className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Brain className="h-4 w-4 text-olive" />
-            <h3 className="text-sm font-heading font-medium">Wat Giulia over je weet</h3>
-          </div>
+      {/* Persoonlijk Geheugen — wat Giulia over je heeft geleerd */}
+      <GlassPanel level={3} className="p-6">
+        <div className="flex items-center gap-2 mb-1">
+          <Brain className="h-4 w-4 text-olive" />
+          <h3 className="text-sm font-heading font-medium">Persoonlijk Geheugen</h3>
+        </div>
+        <p className="text-xs text-muted-foreground mb-4 leading-snug">
+          Antwoorden die je Giulia geeft in de briefing. Ze gebruikt ze om haar voorstellen persoonlijker te maken.
+        </p>
+        {user?.giulia_answers && Object.keys(user.giulia_answers).length > 0 ? (
           <div className="space-y-1">
             {GIULIA_QUESTIONS.filter((q) => user.giulia_answers[q.key]).map((q) => (
               <div key={q.key} className="py-3 border-b border-border/40 last:border-0">
@@ -144,8 +148,14 @@ export default function Profile() {
               </div>
             ))}
           </div>
-        </GlassPanel>
-      )}
+        ) : (
+          <div className="py-6 text-center">
+            <Brain className="h-6 w-6 text-muted-foreground/40 mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Giulia kent je nog niet.</p>
+            <p className="text-xs text-muted-foreground/70 mt-1">Beantwoord haar vragen in de briefing — ze onthoudt elk antwoord.</p>
+          </div>
+        )}
+      </GlassPanel>
     </div>
   );
 }

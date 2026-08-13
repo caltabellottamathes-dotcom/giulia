@@ -42,11 +42,29 @@ function sublineFor(awayHours, count) {
   return `${c} ${things} gebeurden terwijl je weg was.`;
 }
 
+function personalTaskNote(base, answers) {
+  let ctx = base || "Deze taak loopt achter op planning.";
+  const focus = answers.focus_window;
+  const style = answers.first_task_style;
+  if (focus) ctx += ` Giulia: je bent het scherpst ${focus.toLowerCase()} — plan dit daar.`;
+  else if (style) ctx += ` Giulia: je doet liever eerst ${style.toLowerCase()}.`;
+  return ctx;
+}
+
+function personalIntroNote(answers) {
+  const good = answers.good_day;
+  if (good) return `Een goede dag is voor jou: ${good}.`;
+  const energy = answers.morning_energy;
+  if (energy) return `Je dag start met ${energy.toLowerCase()}.`;
+  return "";
+}
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
+    const answers = ((user as any)?.giulia_answers || {}) as Record<string, string>;
 
     const safe = (p) => p.catch(() => []);
     const [emails, waMsgs, tasks, events, projects, approvals, insights, contacts, activity] = await Promise.all([
@@ -129,7 +147,7 @@ export default async function (req) {
           suggested_action: "Open taak",
           action_route: "/tasks",
           action_params: { task: t.id },
-          context: t.description || "Deze taak loopt achter op planning.",
+          context: personalTaskNote(t.description, answers),
         });
       }
     });
@@ -153,24 +171,27 @@ export default async function (req) {
       });
     });
 
-    // Projects — recent movement
-    projects.slice(0, 2).forEach((p) => {
-      const last = p.last_activity_date ? new Date(p.last_activity_date) : null;
-      const recent = last && now.getTime() - last.getTime() < 48 * 3600000;
-      if (!recent && p.status !== "review") return;
+    // Projects — one aggregated status card with animated rings/bars
+    const activeProjects = projects
+      .filter((p) => p.status && !["completed", "archived", "idea"].includes(p.status))
+      .slice(0, 4);
+    if (activeProjects.length) {
       items.push({
-        type: "project",
-        title: p.title,
-        summary: p.next_milestone ? `Volgende stap: ${p.next_milestone}.` : "Het project is verder gegaan.",
+        type: "project_status",
+        title: "Project Status",
+        summary: `${activeProjects.length} lopende projecten — dit is waar elk project staat.`,
         source: "projects",
-        related_project: p.id,
         priority: "relevant",
-        suggested_action: "Open project",
-        action_route: `/projects/${p.id}`,
-        context: p.description || "",
-        payload: { progress: p.progress, status: p.status },
+        suggested_action: "Open projecten",
+        action_route: "/projects",
+        context: "",
+        payload: {
+          projects: activeProjects.map((p) => ({
+            id: p.id, title: p.title, progress: p.progress || 0, status: p.status,
+          })),
+        },
       });
-    });
+    }
 
     // Approvals — pending
     approvals.slice(0, 3).forEach((a) => {
@@ -222,7 +243,7 @@ export default async function (req) {
       }
     } catch { /* ignore */ }
 
-    const intro = { greeting: greetingFor(awayHours), subline: sublineFor(awayHours, capped.length) };
+    const intro = { greeting: greetingFor(awayHours), subline: sublineFor(awayHours, capped.length), personal_note: personalIntroNote(answers) };
     const needAttention = capped.filter((i) => i.priority === "critical" || i.priority === "important").length;
     const upcoming = events.find((e) => e.start && new Date(e.start) > now);
     const outro = {

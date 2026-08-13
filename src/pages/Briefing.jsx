@@ -123,6 +123,18 @@ export default function Briefing() {
     swipe(1);
   }, [swipe, toast]);
 
+  // One-click task done — subtle confirmation, then auto-advance.
+  const onDone = useCallback(async (taskId) => {
+    if (!taskId) return;
+    try {
+      await base44.entities.Task.update(taskId, { status: "completed" });
+      const cur = items[index];
+      if (cur?.id) updateStatus(cur.id, "actioned");
+    } catch {}
+    toast({ title: "Taak gedaan", description: "Giulia noteert het als afgerond." });
+    setTimeout(() => swipe(1), 780);
+  }, [items, index, swipe, toast]);
+
   const askGiulia = () => navigate("/chat");
 
   /* ---------- LOADING ---------- */
@@ -154,7 +166,11 @@ export default function Briefing() {
           <h1 className="text-[clamp(2.5rem,7vw,5rem)] font-display font-bold leading-[0.95] tracking-[-0.035em] mb-5 text-balance">
             Ik heb de boel in de gaten gehouden.
           </h1>
-          <p className="text-lg text-charcoal/65 mb-10 max-w-md">{data?.intro?.subline}</p>
+          <p className="text-lg text-charcoal/65 mb-2 max-w-md">{data?.intro?.subline}</p>
+          {data?.intro?.personal_note && (
+            <p className="text-base text-olive mb-10 max-w-md italic font-medium">{data.intro.personal_note}</p>
+          )}
+          {!data?.intro?.personal_note && <div className="mb-10" />}
           <div className="flex flex-col sm:flex-row gap-3 max-w-md">
             <button
               onClick={() => setPhase("stack")}
@@ -212,6 +228,8 @@ export default function Briefing() {
 
   return (
     <div className="fixed inset-0 z-[120] bg-warm-white text-charcoal flex flex-col animate-fade-in overflow-hidden">
+      {/* Editorial photo wash — depth behind the cards */}
+      <img src={IMAGES.salvoWalkingBeach} alt="" className="absolute inset-0 h-full w-full object-cover opacity-[0.05] pointer-events-none" />
       {/* Top bar — light glass */}
       <div className="relative flex items-center justify-between px-5 py-4">
         <button onClick={() => navigate("/")} className="inline-flex items-center gap-1.5 rounded-full bg-ivory/70 backdrop-blur-xl border border-charcoal/10 px-3.5 py-1.5 text-[12px] font-semibold text-charcoal/80 hover:bg-ivory transition">
@@ -245,18 +263,19 @@ export default function Briefing() {
               className="absolute inset-0 cursor-grab active:cursor-grabbing"
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.55}
+              dragElastic={0.6}
               dragSnapToOrigin
+              whileDrag={{ scale: 1.03 }}
               onDragEnd={(e, info) => {
-                if (info.offset.x > 130 || info.velocity.x > 650) swipe(1);
-                else if (info.offset.x < -130 || info.velocity.x < -650) swipe(-1);
+                if (info.offset.x > 120 || info.velocity.x > 600) swipe(1);
+                else if (info.offset.x < -120 || info.velocity.x < -600) swipe(-1);
               }}
               animate={exitDir
-                ? { x: exitDir * 1100, rotate: exitDir * 12, opacity: 0, scale: 0.94 }
+                ? { x: exitDir * 1100, rotate: exitDir * 14, opacity: 0, scale: 0.92 }
                 : { x: 0, rotate: 0, opacity: 1, scale: 1 }}
               transition={exitDir
-                ? { duration: 0.34, ease: [0.16, 1, 0.3, 1] }
-                : { type: "spring", stiffness: 300, damping: 34 }}
+                ? { duration: 0.36, ease: [0.22, 1, 0.36, 1] }
+                : { type: "spring", stiffness: 340, damping: 32 }}
               style={{ zIndex: 3 }}
             >
               <BriefingCard
@@ -264,6 +283,7 @@ export default function Briefing() {
                 item={current}
                 onAct={() => openAction(current)}
                 onAnswer={onAnswer}
+                onDone={onDone}
                 expanded={expanded}
                 onToggleExpand={() => setExpanded((v) => !v)}
                 photoIndex={index}

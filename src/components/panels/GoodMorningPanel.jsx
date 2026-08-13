@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
 import WakeSettingsForm from "@/components/wake/WakeSettingsForm";
 import RoutineEditor from "@/components/wake/RoutineEditor";
+import DailyIntention from "@/components/wake/DailyIntention";
 import { Sunrise, Moon, ArrowRight } from "lucide-react";
 
 export default function GoodMorningPanel() {
@@ -37,6 +38,7 @@ export default function GoodMorningPanel() {
 
   return (
     <div className="space-y-6">
+      <DailyIntention />
       <div className="flex items-center gap-2 text-ivory/70">
         <Sunrise className="h-4 w-4 text-olive shrink-0" />
         <p className="text-xs leading-snug">Giulia wakes you gradually — a calm presence, not an alarm.</p>
