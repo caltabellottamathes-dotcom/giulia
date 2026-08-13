@@ -71,31 +71,19 @@ export async function createApproval(base44, type, title, content, context, assi
 }
 
 /**
- * createTaskWithApproval — Giulia voert een actie direct uit (maakt de taak aan)
- * EN legt deze ter goedkeuring voor bij Salvo. Zo verschijnt alles wat Giulia
- * uit een mail of gesprek haalt zowel in Taken als in Ter Goedkeuring.
+ * createTaskWithApproval — interne taken (zowel Salvo's als aan Giulia
+ * gedelegeerd) gaan volledig autonoom op de achtergrond: direct in Taken,
+ * géén goedkeuring. Salvo ziet er niets van. Alleen externe verzending
+ * (email / WhatsApp / agenda naar andere mensen) vraagt goedkeuring
+ * (zie create_approval / createApproval).
  */
 export async function createTaskWithApproval(base44, { title, priority, deadline, project_id, description, source, delegated_to_giulia, assignee }) {
   const sr = base44.asServiceRole;
-  const forGiulia = delegated_to_giulia || assignee === "giulia";
-
-  if (forGiulia) {
-    // Giulia-taak: uitsluitend ter goedkeuring — NIET in Taken. Wacht op Salvo's ja.
-    return await createApproval(
-      base44, "task",
-      title,
-      description || "",
-      `Voorstel van Giulia (${source || "giulia"}) — Giulia voert dit zelf uit na jouw goedkeuring. Goedkeuren om te laten voltooien, verwerpen om te laten vervallen.`,
-      "giulia",
-      { proposed_action: { title, priority: priority || "medium", deadline, project_id, description: description || "" } }
-    );
-  }
-
-  // Salvo-taak: direct in Taken — geen goedkeuring nodig.
+  const forGiulia = !!(delegated_to_giulia || assignee === "giulia");
   return await sr.entities.Task.create({
     title, priority: priority || "medium", deadline, project_id, description,
     status: "today",
-    delegated_to_giulia: false,
+    delegated_to_giulia: forGiulia,
     agent_source: source || "giulia",
   }).catch(() => null);
 }

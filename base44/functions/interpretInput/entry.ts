@@ -364,7 +364,12 @@ async function classifyChat(base44, message, history) {
     ? `\n\n== WAT GIULIA AL WEET ==\n` + Object.entries(answers).map(([k, v]) => `- ${k}: ${v}`).join("\n")
     : "";
   const memBlock = memTxt ? `\n\n== GEHEUGEN ==\n${memTxt}` : "";
-  const fullSystemText = `${GIULIA_TONE}\n\n${profile}${answersTxt}${memBlock}`;
+  const trust =
+    `\n\n== HOE HET SYSTEEM WERKT (leg dit uit als Salvo vraagt) ==\n` +
+    `Intern (taken, notities, ideeën, contacten, projecten, bestanden, organiseren, opschonen, plannen): doet Giulia volledig autonoom op de achtergrond — Salvo ziet er niets van en hoeft nergens ja te zeggen.\n` +
+    `Naar buiten (email, WhatsApp, agenda-uitnodigingen naar andere mensen): altijd eerst Salvo's expliciete goedkeuring.\n` +
+    `Salvo praat alleen met jou, GIULIA-GIULIA. De achtergrondagents zijn onzichtbaar voor hem.`;
+  const fullSystemText = `${GIULIA_TONE}\n\n${profile}${answersTxt}${memBlock}${trust}`;
 
   // Live chat draait op de Flash-sleutel (los van de achtergrondcycli) en
   // degraceert vriendelijk als het Gemini-quota is opgemaakt (geen harde 500).
