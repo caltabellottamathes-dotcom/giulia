@@ -98,7 +98,7 @@ export const GIULIA_SKILLS = [
   },
   {
     name: "create_notification",
-    description: "Voor VRAGEN aan Salvo of OPMERKINGEN die GEEN taak en GEEN approval zijn — bv. een vraag die je nodig hebt om verder te kunnen, plagen, of laten weten dat je iets op de achtergrond hebt gedaan (planning gemaakt, iets in de agenda gezet). Gebruik dit i.p.v. create_task of create_approval zodra het geen concrete actie of externe verzending is. Wordt direct als pushmelding gestuurd.",
+    description: "UITSLUITEND voor een échte vraag aan Salvo of een opmerking die hij echt moet zien. NOOIT gebruiken voor routinematige status ('systeem opgestart', 'sync gelukt', 'ochtendbriefing gedraaid', 'X mails verwerkt') — dat is ruis en gaat via report_to_salvo naar de Activity-feed, niet hierheen. Alleen aanmaken als het antwoord/aandacht van Salvo zelf vereist (requires_response=true) of echt urgent is (urgent=true). Wordt direct als pushmelding gestuurd — misbruik hiervan overspoelt Salvo.",
     inputSchema: { type: "object", properties: { title: { type: "string" }, message: { type: "string" }, kind: { type: "string", enum: ["question", "remark", "info"] }, requires_response: { type: "boolean" }, urgent: { type: "boolean" }, related_route: { type: "string" } }, required: ["message"] },
     execute: async (args, base44) => {
       const n = await base44.asServiceRole.entities.Notification.create({ ...args, agent_source: "GIULIA-CORE" }).catch(() => null);

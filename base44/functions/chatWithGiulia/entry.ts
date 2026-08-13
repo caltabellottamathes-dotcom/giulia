@@ -105,7 +105,7 @@ export default async function (req) {
 3. Soft Deletes: Als Salvo in de chat zegt "Verwijder taak X", roep je 'update_task' aan en zet je de status op 'archived'. Gebruik geen andere acties.
 4. Externe acties (email, whatsapp, kalender toevoegen met gasten) doe je NOOIT rechtstreeks, ALTIJD via 'create_approval'.
 5. Je bent de enige intelligentie. Wees proactief in je denkproces, maar conservatief in het aanmaken van database-records.
-6. STRIKT ONDERSCHEID — Taak vs Approval vs Notificatie: Een Taak ('create_task') is een concrete actie voor Salvo voor vandaag/morgen/deze week, alleen aanmaken als er ECHT iets verandert, en synchroniseer dit altijd met de agenda/planning. Een Approval ('create_approval') is UITSLUITEND een externe actie (email/whatsapp/agenda) die letterlijk verzonden moet worden — kies de category zorgvuldig (urgent/communication/projects/intern/proactive) en gebruik 'proactive' bijna nooit, nooit twee keer over hetzelfde. Een vraag aan Salvo, een plagerij, of een melding over iets dat je op de achtergrond deed gaat ALTIJD via 'create_notification' — dat is geen taak en geen approval.
+6. STRIKT ONDERSCHEID — Taak vs Approval vs Notificatie: Een Taak ('create_task') is een concrete actie voor Salvo voor vandaag/morgen/deze week, alleen aanmaken als er ECHT iets verandert, en synchroniseer dit altijd met de agenda/planning. Een Approval ('create_approval') is UITSLUITEND een externe actie (email/whatsapp/agenda) die letterlijk verzonden moet worden — kies de category zorgvuldig (urgent/communication/projects/intern/proactive) en gebruik 'proactive' bijna nooit, nooit twee keer over hetzelfde. Een ECHTE vraag aan Salvo die een antwoord vereist, of iets écht belangrijks, gaat via 'create_notification' MET requires_response=true of urgent=true. Routinematige status ('opstart gelukt', 'sync gedraaid', 'ochtendbriefing', aantal mails/taken) is GEEN notificatie — dat loggen via 'report_to_salvo' naar de Activity-feed. Notificaties zijn schaars en altijd betekenisvol, nooit een statusrapport.
 `;
 
     // Tool-schema's expliciet meegeven — anders weet Gemini niet welke velden
@@ -173,11 +173,24 @@ export default async function (req) {
     }
 
     // 5. DELEGATE TO GIULIA-CORE — args_json (string) → args (object)
-    const actionsForCore = (payload.actions || []).map((a) => {
+    let actionsForCore = (payload.actions || []).map((a) => {
       let args = {};
       try { args = a.args_json ? JSON.parse(a.args_json) : {}; } catch { args = {}; }
       return { name: a.name, args };
     });
+
+    // Anti-ruis: routinematige status-updates (opstart/cyclus/achtergrondsignalen)
+    // mogen nooit als Notification eindigen — dat is voor échte vragen/opmerkingen.
+    // Zulke bronnen loggen we stil naar de Activity-feed in plaats van te droppen.
+    const isBackgroundSource = source !== "chat";
+    if (isBackgroundSource) {
+      actionsForCore = actionsForCore.map((a) => {
+        if (a.name === "create_notification" && !a.args.urgent && !a.args.requires_response) {
+          return { name: "report_to_salvo", args: { message: a.args.message || a.args.title || "Achtergrondupdate" } };
+        }
+        return a;
+      });
+    }
 
     let coreResults = [];
     if (actionsForCore.length > 0) {
