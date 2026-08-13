@@ -10,7 +10,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
  */
 
 // Email loopt uitsluitend via de IMAP-bridge (fetchPrivateEmails) — geen Gmail-API sync meer.
-const SYNC = ["syncCalendar", "syncDrive"];
+const SYNC = ["syncEmails", "syncCalendar", "syncDrive"];
 
 const AGENTS = [
   "interpretInput", "manageCommunication", "manageTasks", "manageProjects",
@@ -48,29 +48,47 @@ async function runSequential(base44, names, delayMs = 4000) {
  * 2) duplicaten: gelijke genormaliseerde titel → houd de nieuwste, rest "already_done".
  * 3) cap: max 8 pending tegelijk → oudste overschot "already_done".
  */
+// Normaliseert een titel: kleine letters, leestekens eruit, korte woorden EN
+// veelvoorkomende actiewerkwoorden (verzenden/versturen/opvolgen/bespreken…)
+// weg — zodat "Verstuur Kredietbank machtiging", "Kredietbank: Machtiging
+// versturen" en "Verzenden Kredietbank machtiging" allemaal op dezelfde sleutel
+// "kredietbank machtiging" uitkomen en als duplicaat worden herkend.
+const ACTION_VERBS = new Set([
+  "verzenden", "verzend", "versturen", "verstuur", "sturen", "stuur",
+  "opvolgen", "opvolg", "bespreken", "bespreek", "opstellen", "aanmaken",
+  "afhandelen", "afhandeld", "reviewen", "review", "versturen", "verzenden",
+]);
 function normTitle(t) {
-  return String(t || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter((w) => w.length > 2).sort().join(" ");
+  return String(t || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/).filter((w) => w.length > 2 && !ACTION_VERBS.has(w)).sort().join(" ");
 }
 async function cleanupApprovals(sr) {
-  const pending = await sr.entities.Approval.filter({ status: "pending" }).catch(() => []);
+  const all = await sr.entities.Approval.list("-created_date", 300).catch(() => []);
+  const pending = all.filter((a) => a.status === "pending");
   if (!pending.length) return { resolved: 0 };
+  const handled = all.filter((a) => ["executed", "approved", "already_done", "discarded"].includes(a.status));
+  const handledKeys = new Set(
+    handled.map((a) => (a.action_type || "") + "|" + normTitle(a.title)).filter((k) => !k.endsWith("|"))
+  );
   const now = Date.now();
   const toResolve = new Set();
   // stale > 24u
   pending.forEach((a) => {
     if (a.created_date && now - new Date(a.created_date).getTime() > 24 * 3600 * 1000) toResolve.add(a.id);
   });
-  // duplicaten op genormaliseerde titel (houd nieuwste)
+  // duplicaten + reeds-afgehandeld: per (action_type + genormaliseerde titel)
   const byKey = {};
   pending.forEach((a) => {
-    const k = normTitle(a.title);
-    if (!k) return;
+    const k = (a.action_type || "") + "|" + normTitle(a.title);
+    if (k.endsWith("|")) return;
     (byKey[k] = byKey[k] || []).push(a);
   });
-  Object.values(byKey).forEach((g) => {
+  Object.entries(byKey).forEach(([key, g]) => {
+    // al afgehandeld in het verleden → alle pending van deze sleutel weg
+    if (handledKeys.has(key)) { g.forEach((a) => toResolve.add(a.id)); return; }
     if (g.length <= 1) return;
     g.sort((x, y) => new Date(y.created_date || 0) - new Date(x.created_date || 0));
-    g.slice(1).forEach((a) => toResolve.add(a.id));
+    g.slice(1).forEach((a) => toResolve.add(a.id)); // houd nieuwste
   });
   // cap op 8
   const remaining = pending.filter((a) => !toResolve.has(a.id))

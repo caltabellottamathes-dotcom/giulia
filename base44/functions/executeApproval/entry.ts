@@ -21,6 +21,28 @@ function parseMeta(ap) {
   try { return JSON.parse(ap.proposed_action); } catch { return {}; }
 }
 
+// Markeer de bron-emails van een (uitgevoerde/afgewezen) approval als gelezen +
+// getriaged, zodat de achtergrondagent ze niet opnieuw oppikt en er geen
+// duplicaat-approval meer voor wordt aangemaakt. Matcht op thread_id én op
+// sender_email == de ontvanger van het uitgaande antwoord.
+async function markSourceEmailsHandled(sr, ap) {
+  if (!ap) return;
+  const meta = parseMeta(ap);
+  const ids = new Set();
+  if (ap.thread_id) {
+    const byThread = await sr.entities.Email.filter({ thread_id: ap.thread_id }).catch(() => []);
+    byThread.forEach((e) => ids.add(e.id));
+  }
+  const recipient = meta.to || ap.target || "";
+  if (recipient) {
+    const bySender = await sr.entities.Email.filter({ sender_email: recipient }).catch(() => []);
+    bySender.forEach((e) => ids.add(e.id));
+  }
+  for (const id of ids) {
+    await sr.entities.Email.update(id, { status: "read", triaged: true }).catch(() => null);
+  }
+}
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -64,6 +86,7 @@ export default async function (req) {
     // Geen actie uitvoeren, alleen markeren zodat het niet blijft terugkomen.
     if (action === "already_done") {
       await sr.entities.Approval.update(approval_id, { status: "already_done" }).catch(() => {});
+      await markSourceEmailsHandled(sr, ap);
       if (ap.thread_id) await sr.entities.Thread.update(ap.thread_id, { status: "resolved", needs_info: false }).catch(() => {});
       return Response.json({ ok: true, executed: "already_done" });
     }
@@ -77,16 +100,17 @@ export default async function (req) {
         await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
         return Response.json({ ok: false, executed: "email", error: "geen ontvanger", detail: "Approval gemarkeerd goedgekeurd, maar geen ontvanger bekend — verstuur handmatig." });
       }
+      // Email loopt uitsluitend via de IMAP/SMTP-bridge — géén Gmail meer.
       try {
-        const sent = await base44.functions.invoke("sendGmail", { to, subject, message: messageBody });
+        const sent = await base44.functions.invoke("sendPrivateEmail", { to, subject, message: messageBody });
         if (sent && sent.sent) {
           await sr.entities.Approval.update(approval_id, { status: "executed" }).catch(() => {});
+          await markSourceEmailsHandled(sr, ap);
           if (ap.thread_id) await sr.entities.Thread.update(ap.thread_id, { status: "resolved", needs_info: false }).catch(() => {});
-          return Response.json({ ok: true, executed: "email", detail: `Verstuurd aan ${to}` });
+          return Response.json({ ok: true, executed: "email", detail: `Verstuurd aan ${to} (via bridge)` });
         }
-        // sendGmail faalde — bewaar goedkeuring maar markeer niet als uitgevoerd.
         await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
-        return Response.json({ ok: false, executed: "email", error: "send failed", detail: sent?.error || "Verzenden via Gmail mislukt." });
+        return Response.json({ ok: false, executed: "email", error: "send failed", detail: (sent && sent.error) || "Verzenden via bridge mislukt." });
       } catch (e) {
         await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
         return Response.json({ ok: false, executed: "email", error: String(e.message || e) });

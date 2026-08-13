@@ -217,22 +217,38 @@ export default async function (req) {
       if (ins) created.push({ type: "insight", id: ins.id });
     }
 
-    // Gatekeeper / Approval: als een reply voorgesteld wordt (niet bij quick command)
+    // Gatekeeper / Approval: als een reply voorgesteld wordt (niet bij quick
+    // command). Dedup: maak GEEN nieuwe approval aan als er al een pending of
+    // uitgevoerde approval bestaat voor dezelfde actie + thread — voorkomt dat
+    // dezelfde vraag elke cyclus opnieuw terugkeert.
     if (reply && !isCommand) {
       const actionType = source === "email" ? "email_reply" : "whatsapp_reply";
       const cat = source === "email" ? "email" : "whatsapp";
-      const ap = await sr.entities.Approval.create({
-        action_type: actionType,
-        description: `Antwoorden aan ${personName || "contact"}${projectName ? ` · ${projectName}` : ""}.`,
-        content: reply,
-        status: "pending",
-        category: cat,
-        type: source === "email" ? "email" : "whatsapp",
-        project_id: projectId || undefined,
-        thread_id: record.thread_id || record.conversation_id || undefined,
-        agent_source: "interpretInput",
-        assignee: "salvo",
-      }).catch(() => null);
+      const tId = record.thread_id || record.conversation_id || undefined;
+      let ap = null;
+      if (tId) {
+        const existing = await sr.entities.Approval.filter({ action_type: actionType, thread_id: tId }).catch(() => []);
+        const dup = existing.find((a) => ["pending", "executed", "approved", "already_done"].includes(a.status));
+        if (!dup) {
+          ap = await sr.entities.Approval.create({
+            action_type: actionType,
+            description: `Antwoorden aan ${personName || "contact"}${projectName ? ` · ${projectName}` : ""}.`,
+            content: reply, status: "pending", category: cat,
+            type: source === "email" ? "email" : "whatsapp",
+            project_id: projectId || undefined, thread_id: tId,
+            agent_source: "interpretInput", assignee: "salvo",
+          }).catch(() => null);
+        }
+      } else {
+        ap = await sr.entities.Approval.create({
+          action_type: actionType,
+          description: `Antwoorden aan ${personName || "contact"}${projectName ? ` · ${projectName}` : ""}.`,
+          content: reply, status: "pending", category: cat,
+          type: source === "email" ? "email" : "whatsapp",
+          project_id: projectId || undefined,
+          agent_source: "interpretInput", assignee: "salvo",
+        }).catch(() => null);
+      }
       if (ap) created.push({ type: "approval", id: ap.id });
     }
 
