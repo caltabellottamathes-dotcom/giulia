@@ -54,7 +54,11 @@ export default function Chat() {
     const temp = { id: "tmp" + Date.now(), role: "user", content: msg, created_date: new Date().toISOString() };
     setMessages((prev) => [...prev, temp]);
     try {
-      await base44.functions.invoke("chatWithGiulia", { message: msg });
+      // interpretInput classificeert, capturet entiteiten en antwoordt als Giulia
+      await base44.functions.invoke("interpretInput", {
+        message: msg,
+        history: messages.slice(-8).map((m) => ({ role: m.role, content: m.content })),
+      });
       await load();
     } catch (e) {
       toast({ title: "Bericht niet verzonden", variant: "destructive" });

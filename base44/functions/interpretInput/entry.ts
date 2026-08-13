@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { geminiDecide, GIULIA_PERSONA } from '../../shared/gemini.ts';
+import { GIULIA_TONE } from '../../shared/agentContext.ts';
 
 /**
  * interpretInput (Phase 2 — Ingestion & Routing).
@@ -20,6 +21,12 @@ export default async function (req) {
     const base44 = createClientFromRequest(req);
     const sr = base44.asServiceRole;
     const body = await req.json().catch(() => ({}));
+
+    // ── Chat branch: free-text message from the in-app chat ────────────
+    // Classificeer, capture entiteiten, en antwoord als Giulia.
+    if (body.message && !body.source && !body.message_id && !body.id && !body.entity) {
+      return await classifyChat(base44, String(body.message).trim(), Array.isArray(body.history) ? body.history : []);
+    }
 
     // ── Step 2.1: Data Retrieval ──────────────────────────────────────
     let source = body.source;            // "whatsapp" | "email"
@@ -291,4 +298,107 @@ async function resolveCalendarConflict(sr, { contactId, projectId, dtRef, action
     assignee: "salvo",
   }).catch(() => null);
   return { removed: stale.length, created: ap ? ap.id : null };
+}
+
+// ── Chat classifier — free-text message from the in-app chat ──────────
+// Classificeert, capturet entiteiten (Task/Note/Idea/CalendarEvent/Contact/
+// Project) per flags, en antwoordt als Giulia. Persisteert zowel Salvo's
+// bericht als Giulia's antwoord als Message records. BYOK Gemini.
+async function classifyChat(base44, message, history) {
+  const sr = base44.asServiceRole;
+
+  // Persist Salvo's bericht
+  await sr.entities.Message.create({
+    role: "user", content: message, channel: "in-app", status: "sent",
+  }).catch(() => null);
+
+  const schema = {
+    type: "object",
+    properties: {
+      intent: { type: "string", enum: ["task", "idea", "note", "calendar", "question", "commitment", "thinking", "command"] },
+      priority: { type: "string", enum: ["high", "medium", "low"] },
+      person_name: { type: "string" },
+      project_name: { type: "string" },
+      deadline: { type: "string" },
+      giulia_response: { type: "string" },
+      should_create_task: { type: "boolean" },
+      task_title: { type: "string" },
+      should_create_idea: { type: "boolean" },
+      idea_title: { type: "string" },
+      should_create_note: { type: "boolean" },
+      note_title: { type: "string" },
+      should_create_event: { type: "boolean" },
+      event_title: { type: "string" },
+      event_start: { type: "string" },
+      should_create_person: { type: "boolean" },
+      should_create_project: { type: "boolean" },
+      project_title: { type: "string" },
+    },
+    required: ["intent", "giulia_response"],
+  };
+
+  const histTxt = (history || []).slice(-8)
+    .map((m) => `${m.role === "user" ? "Salvo" : "Giulia"}: ${m.content}`)
+    .join("\n");
+
+  const out = await geminiDecide({
+    prompt:
+      `Classificeer dit bericht van Salvo en antwoord als Giulia.\n\n` +
+      `Bericht:\n"""${message.slice(0, 2000)}"""\n\n` +
+      (histTxt ? `Eerder gesprek:\n${histTxt}\n\n` : "") +
+      `Geef geldige JSON volgens het schema. giulia_response is je antwoord aan Salvo in Giulia's toon ` +
+      `(vlot, menselijk, uitdagend, stout, humor, kort, geen uitroeptekens, nooit zeggen dat je een AI bent). ` +
+      `Als je een entiteit aanmaakt (should_create_*), vermeld dat kort in je antwoord. Lege strings voor afwezige waarden, nooit null.`,
+    schema,
+    systemText: GIULIA_TONE,
+    temperature: 0.5,
+  });
+
+  if (!out) {
+    await sr.entities.Message.create({
+      role: "giulia", content: "Ik legde even naast me heen — probeer het nog eens.", channel: "in-app", status: "sent", agent_source: "interpretInput",
+    }).catch(() => null);
+    return Response.json({ ok: false, error: "classification failed" }, { status: 500 });
+  }
+
+  const created = [];
+
+  if (out.should_create_task && out.task_title) {
+    const t = await sr.entities.Task.create({
+      title: out.task_title, status: "todo",
+      priority: ["high", "medium", "low"].includes(out.priority) ? out.priority : "medium",
+      deadline: out.deadline || undefined,
+      agent_source: "interpretInput",
+    }).catch(() => null);
+    if (t) created.push({ type: "task", id: t.id });
+  }
+  if (out.should_create_idea && out.idea_title) {
+    const i = await sr.entities.Idea.create({ title: out.idea_title, status: "new" }).catch(() => null);
+    if (i) created.push({ type: "idea", id: i.id });
+  }
+  if (out.should_create_note && out.note_title) {
+    const n = await sr.entities.Note.create({ title: out.note_title, kind: "note", agent_source: "interpretInput" }).catch(() => null);
+    if (n) created.push({ type: "note", id: n.id });
+  }
+  if (out.should_create_event && out.event_title) {
+    const e = await sr.entities.CalendarEvent.create({
+      title: out.event_title, start: out.event_start || out.deadline || undefined, agent_source: "interpretInput",
+    }).catch(() => null);
+    if (e) created.push({ type: "event", id: e.id });
+  }
+  if (out.should_create_person && out.person_name) {
+    const c = await sr.entities.Contact.create({ name: out.person_name, agent_source: "interpretInput" }).catch(() => null);
+    if (c) created.push({ type: "person", id: c.id });
+  }
+  if (out.should_create_project && out.project_title) {
+    const p = await sr.entities.Project.create({ title: out.project_title, status: "planning", agent_source: "interpretInput" }).catch(() => null);
+    if (p) created.push({ type: "project", id: p.id });
+  }
+
+  const reply = (out.giulia_response || "").trim() || "Got it.";
+  await sr.entities.Message.create({
+    role: "giulia", content: reply, channel: "in-app", status: "sent", agent_source: "interpretInput",
+  }).catch(() => null);
+
+  return Response.json({ ok: true, intent: out.intent, giulia_response: reply, created });
 }

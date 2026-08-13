@@ -1,0 +1,50 @@
+{
+  "name": "SyncState",
+  "type": "object",
+  "properties": {
+    "source": {
+      "type": "string",
+      "title": "Source",
+      "description": "Which integration this tracks (calendar, drive, gmail, whatsapp, imap)"
+    },
+    "last_sync": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Last Sync"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "idle",
+        "running",
+        "success",
+        "error"
+      ],
+      "default": "idle",
+      "title": "Status"
+    },
+    "last_error": {
+      "type": "string",
+      "title": "Last Error"
+    },
+    "items_processed": {
+      "type": "number",
+      "default": 0,
+      "title": "Items Processed"
+    },
+    "items_created": {
+      "type": "number",
+      "default": 0,
+      "title": "Items Created"
+    }
+  },
+  "required": [
+    "source"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}
