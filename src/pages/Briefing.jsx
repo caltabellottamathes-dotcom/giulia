@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { X, Sparkles, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import BriefingCard from "@/components/briefing/BriefingCard";
 import { IMAGES } from "@/lib/images";
+import { GIULIA_QUESTIONS } from "@/lib/giuliaQuestions";
 
 /**
  * Briefing — light, fashion-editorial catch-up. Layered glass, bold
@@ -23,37 +24,32 @@ export default function Briefing() {
   const [exitDir, setExitDir] = useState(0);
   const [expanded, setExpanded] = useState(false);
 
-  // Giulia question cards — mixed in at positions 2, 5, 9 etc.
-  const GIULIA_QUESTIONS = [
-    { type: "question", title: "Wat geeft jou 's ochtends energie voor de dag?", summary: "Koffie, muziek, stilte? Ik wil begrijpen wat jouw dag goed start.", suggested_action: "Antwoord typen", priority: "relevant" },
-    { type: "question", title: "Welk type taak doe je het liefst als eerste?", summary: "De makkelijkste om warm te draaien, of juist de zwaarste terwijl je scherp bent?", suggested_action: "Vertel het", priority: "relevant" },
-    { type: "question", title: "Is er iemand waar je vaker van hoort dan je wil?", summary: "Of juist iemand van wie je te weinig hoort? Ik leer graag je sociale landschap kennen.", suggested_action: "Vertel me", priority: "relevant" },
-    { type: "question", title: "Hoe weet jij dat een dag geslaagd was?", summary: "Een gevoel, een lijst, iets wat gedaan is? Ik wil weten wat voor jou 'goed' betekent.", suggested_action: "Vertel het", priority: "relevant" },
-    { type: "question", title: "Wat stel je het meest uit?", summary: "Niet om je te bekritiseren — ik wil er gewoon rekening mee houden.", suggested_action: "Eerlijk antwoorden", priority: "relevant" },
-  ];
-  const questionIdx = useRef(0);
-
-  const injectQuestions = useCallback((rawItems) => {
+  const buildItems = useCallback((rawItems, answered) => {
+    const pool = GIULIA_QUESTIONS.filter((q) => !answered.has(q.key));
+    if (!pool.length) return rawItems;
+    const picks = pool.slice(0, 2);
+    const positions = rawItems.length > 4 ? [3, 6] : [2, 5];
     const result = [...rawItems];
-    const positions = [2, 5, 9]; // inject at these positions
-    let qIdx = questionIdx.current % GIULIA_QUESTIONS.length;
-    positions.forEach((pos, i) => {
-      if (pos <= result.length) {
-        const q = { ...GIULIA_QUESTIONS[(qIdx + i) % GIULIA_QUESTIONS.length], id: `q-${i}`, status: "new" };
-        result.splice(pos + i, 0, q);
-      }
+    picks.forEach((q, i) => {
+      const pos = Math.min(positions[i] ?? result.length, result.length);
+      result.splice(pos, 0, {
+        ...q, type: "question", id: `q-${q.key}`, status: "new",
+        suggested_action: "Vertel het Giulia", priority: "relevant",
+      });
     });
-    questionIdx.current = (qIdx + positions.length) % GIULIA_QUESTIONS.length;
     return result;
   }, []);
 
   const load = useCallback(async () => {
     try {
+      const me = await base44.auth.me().catch(() => null);
+      const answers = me?.giulia_answers || {};
+      const answered = new Set(Object.keys(answers));
       const res = await base44.functions.invoke("compileBriefing", {});
       const d = res?.data ?? res;
       if (d?.ok) {
         setData(d);
-        const enriched = injectQuestions(d.items || []);
+        const enriched = buildItems(d.items || [], answered);
         setItems(enriched);
         setPhase(enriched.length ? "intro" : "outro");
       } else {
@@ -64,7 +60,7 @@ export default function Briefing() {
       setPhase("outro");
       setData({ outro: { head: "Je bent weer bij.", subline: "Er staat niets dringend.", next: "" } });
     }
-  }, [injectQuestions]);
+  }, [buildItems]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -115,6 +111,17 @@ export default function Briefing() {
       : "";
     navigate((item.action_route || "/") + params);
   };
+
+  const onAnswer = useCallback(async (key, text) => {
+    if (!text.trim()) return;
+    try {
+      const me = await base44.auth.me();
+      const existing = me?.giulia_answers || {};
+      await base44.auth.updateMe({ giulia_answers: { ...existing, [key]: text.trim() } });
+      toast({ title: "Giulia noteert dit", description: "Ik onthoud het voor de volgende keer." });
+    } catch {}
+    swipe(1);
+  }, [swipe, toast]);
 
   const askGiulia = () => navigate("/chat");
 
@@ -224,12 +231,12 @@ export default function Briefing() {
       <div className="relative flex-1 flex items-center justify-center px-4 pb-4 min-h-0">
         <div className="relative w-[min(90vw,440px)] h-[min(70vh,620px)]">
           {after && (
-            <div className="absolute inset-0 scale-90 -translate-y-6 opacity-40">
+            <div className="absolute inset-0 scale-90 -translate-y-6 opacity-40 pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
               <BriefingCard item={after} interactive={false} />
             </div>
           )}
           {next && (
-            <div className="absolute inset-0 scale-[0.94] -translate-y-3 opacity-65">
+            <div className="absolute inset-0 scale-[0.94] -translate-y-3 opacity-65 pointer-events-none transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
               <BriefingCard item={next} interactive={false} />
             </div>
           )}
@@ -245,16 +252,18 @@ export default function Briefing() {
                 else if (info.offset.x < -130 || info.velocity.x < -650) swipe(-1);
               }}
               animate={exitDir
-                ? { x: exitDir * 1100, rotate: exitDir * 14, opacity: 0 }
-                : { x: 0, rotate: 0, opacity: 1 }}
+                ? { x: exitDir * 1100, rotate: exitDir * 12, opacity: 0, scale: 0.94 }
+                : { x: 0, rotate: 0, opacity: 1, scale: 1 }}
               transition={exitDir
-                ? { duration: 0.3, ease: "easeOut" }
-                : { type: "spring", stiffness: 320, damping: 32 }}
+                ? { duration: 0.34, ease: [0.16, 1, 0.3, 1] }
+                : { type: "spring", stiffness: 300, damping: 34 }}
               style={{ zIndex: 3 }}
             >
               <BriefingCard
+                key={index}
                 item={current}
                 onAct={() => openAction(current)}
+                onAnswer={onAnswer}
                 expanded={expanded}
                 onToggleExpand={() => setExpanded((v) => !v)}
                 photoIndex={index}

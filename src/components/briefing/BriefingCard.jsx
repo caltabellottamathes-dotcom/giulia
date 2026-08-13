@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { IMAGES } from "@/lib/images";
 import { cn } from "@/lib/utils";
+import QuestionInfographic from "@/components/briefing/QuestionInfographic";
 
 // Full photo pool — rotated per card using index
 export const BRIEFING_PHOTOS = [
@@ -64,7 +65,7 @@ const TYPE_ICON = {
 const PRIORITY_LABEL = { critical: "Nu", important: "Vandaag", relevant: "Goed om te weten", later: "Later" };
 
 /* ── Bold infographic per type — counters, animated bars, radial dial ── */
-function Infographic({ item }) {
+function Infographic({ item, onAnswer }) {
   switch (item.type) {
     case "email": {
       const count = item.payload?.count || 0;
@@ -160,13 +161,7 @@ function Infographic({ item }) {
         </div>
       );
     case "question":
-      return (
-        <div>
-          <span className="inline-block text-[11px] uppercase tracking-[0.22em] font-bold text-olive mb-3">Giulia wil je iets vragen</span>
-          <span className="block text-[24px] font-display font-bold text-charcoal leading-[1.1] tracking-tight">{item.title}</span>
-          <p className="text-[14px] text-charcoal/65 leading-relaxed mt-2">{item.summary}</p>
-        </div>
-      );
+      return <QuestionInfographic item={item} onAnswer={onAnswer} />;
     case "important":
     default:
       return (
@@ -179,7 +174,7 @@ function Infographic({ item }) {
   }
 }
 
-export default function BriefingCard({ item, onAct, expanded, onToggleExpand, interactive = true, photoIndex = 0 }) {
+export default function BriefingCard({ item, onAct, onAnswer, expanded, onToggleExpand, interactive = true, photoIndex = 0 }) {
   if (!item) return null;
   const Icon = TYPE_ICON[item.type] || AlertTriangle;
   // Question cards always get the Giulia portrait; others rotate through the photo pool
@@ -191,7 +186,15 @@ export default function BriefingCard({ item, onAct, expanded, onToggleExpand, in
   return (
     <div className="relative w-full h-full rounded-[32px] overflow-hidden bg-warm-white shadow-[0_32px_72px_-24px_rgba(0,0,0,0.28)]">
       {/* Full-bleed editorial photo — no overlay, full colour */}
-      <img src={photo} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" />
+      <motion.img
+        src={photo}
+        alt=""
+        draggable={false}
+        className="absolute inset-0 h-full w-full object-cover"
+        initial={{ scale: 1.08 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+      />
 
       {/* Floating glass chips over the photo — type + priority */}
       <div className="absolute top-5 left-5 z-20 inline-flex items-center gap-1.5 rounded-full bg-ivory/75 backdrop-blur-xl border border-white/60 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] font-bold text-charcoal">
@@ -203,17 +206,19 @@ export default function BriefingCard({ item, onAct, expanded, onToggleExpand, in
 
       {/* Layered glass content panel — translucent ivory, heavy blur, overlaps photo */}
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute inset-x-0 bottom-0 top-[40%] rounded-t-[28px] bg-ivory/78 backdrop-blur-2xl border-t border-x border-white/55 p-6 flex flex-col"
+        initial={{ opacity: 0, y: 40, scale: 0.985 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ type: "spring", stiffness: 240, damping: 28, mass: 0.9 }}
+        className="absolute inset-x-0 bottom-0 top-[40%] rounded-t-[28px] bg-ivory/80 backdrop-blur-2xl border-t border-x border-white/55 p-6 flex flex-col shadow-[0_-12px_48px_-12px_rgba(0,0,0,0.18)]"
       >
         {/* Summary line */}
-        <p className="text-[13px] text-charcoal/60 leading-snug mb-3 line-clamp-2">{item.summary}</p>
+        {item.type !== "question" && (
+          <p className="text-[13px] text-charcoal/60 leading-snug mb-3 line-clamp-2">{item.summary}</p>
+        )}
 
         {/* Bold infographic */}
         <div className="flex-1 flex flex-col justify-center min-h-0">
-          <Infographic item={item} />
+          <Infographic item={item} onAnswer={onAnswer} />
         </div>
 
         {/* Expandable context */}
@@ -229,7 +234,7 @@ export default function BriefingCard({ item, onAct, expanded, onToggleExpand, in
         </AnimatePresence>
 
         {/* Footer */}
-        {interactive && (
+        {interactive && item.type !== "question" && (
           <div className="flex items-center gap-2 pt-1">
             <button
               onClick={(e) => { e.stopPropagation(); onAct?.(); }}

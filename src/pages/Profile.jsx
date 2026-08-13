@@ -5,7 +5,8 @@ import GlassButton from "@/components/glass/GlassButton";
 import PageHero from "@/components/glass/PageHero";
 import { base44 } from "@/api/base44Client";
 import { useEntityList } from "@/hooks/useEntity";
-import { Building2, Calendar, Sparkles, Edit3, UserCircle, Briefcase, CheckSquare, Users, FileText } from "lucide-react";
+import { Building2, Calendar, Sparkles, Edit3, UserCircle, Briefcase, CheckSquare, Users, FileText, Brain } from "lucide-react";
+import { GIULIA_QUESTIONS } from "@/lib/giuliaQuestions";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -128,6 +129,23 @@ export default function Profile() {
           ))}
         </div>
       </GlassPanel>
+
+      {user?.giulia_answers && Object.keys(user.giulia_answers).length > 0 && (
+        <GlassPanel level={3} className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Brain className="h-4 w-4 text-olive" />
+            <h3 className="text-sm font-heading font-medium">Wat Giulia over je weet</h3>
+          </div>
+          <div className="space-y-1">
+            {GIULIA_QUESTIONS.filter((q) => user.giulia_answers[q.key]).map((q) => (
+              <div key={q.key} className="py-3 border-b border-border/40 last:border-0">
+                <p className="text-xs text-muted-foreground mb-1 leading-snug">{q.title}</p>
+                <p className="text-sm leading-relaxed">{user.giulia_answers[q.key]}</p>
+              </div>
+            ))}
+          </div>
+        </GlassPanel>
+      )}
     </div>
   );
 }
