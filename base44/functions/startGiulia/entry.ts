@@ -47,17 +47,26 @@ export default async function (req) {
     const syncResults = await runSequential(base44, SYNC);
     const okSync = syncResults.filter((r) => r.ok).length;
 
-    // 2) de leider — EEN Gemini-aanroep — initialiseert elk domein intern
+    // 2) deterministisch StartupContext bouwen (geen Gemini) — dan ÉÉN keer
+    //    naar GIULIA-CONNECT, die context laadt en GIULIA-GIULIA laat beslissen.
     const today = new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" });
-    const startupSignal =
-      `Opstartprocedure GIULIA OS — ${today}. ` +
-      `Lees met os_query achtereenvolgens: tasks, events, approvals, emails, projects, contacts, activity, whatsapp, notes, ideas. ` +
-      `Dat initialiseert elk domein zodat elke agent 'begint'. ` +
-      `Bepaal daarna wat NU aandacht verdient (te late taken, open goedkeuringen, ongelezen mail, wachtende threads). ` +
-      `Leg concrete acties vast via create_task (assignee salvo of giulia) en create_approval voor externe acties — maar stuur niets zelf. ` +
-      `Sluit af met één korte start-samenvatting aan Salvo (report_to_salvo) over de staat van het OS.`;
+    const sr = base44.asServiceRole;
+    const todayIso = new Date().toISOString().slice(0, 10);
+    const [openTasks, unreadEmails, pendingApprovals, projects] = await Promise.all([
+      sr.entities.Task.filter({}, "-created_date", 200).catch(() => []),
+      sr.entities.Email.filter({ status: "unread" }).catch(() => []),
+      sr.entities.Approval.filter({ status: "pending" }).catch(() => []),
+      sr.entities.Project.list("-created_date", 100).catch(() => []),
+    ]);
+    const overdue = openTasks.filter((t) => t.status !== "completed" && t.deadline && t.deadline < todayIso);
+    const activeProjects = projects.filter((p) => ["planning", "in_progress"].includes(p.status));
+    const startupMessage =
+      `Opstartprocedure GIULIA OS — ${today}. Status: ${overdue.length} te late taken, ${unreadEmails.length} ongelezen mails, ` +
+      `${pendingApprovals.length} openstaande goedkeuringen, ${activeProjects.length} actieve projecten. ` +
+      `Bepaal wat nu aandacht verdient. Maak maximaal 3 nieuwe taken aan als er echte gaten zijn, rond simpele administratieve taken zelf af, ` +
+      `en leg externe acties vast als approval. Sluit af met één korte start-samenvatting.`;
 
-    const leader = await runOne(base44, "giuliaLeader", { signal: startupSignal, source: "startup", persist: false });
+    const leader = await runOne(base44, "chatWithGiulia", { message: startupMessage, source: "startup", persist: false });
 
     // 3) Task-agent — de zichtbare agent die alle taken laat lopen (Salvo's +
     //    Giulia's) en proactief aanmaakt/toewijst. Geen eigen Gemini-loop:

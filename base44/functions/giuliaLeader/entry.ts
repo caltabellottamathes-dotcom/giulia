@@ -1,327 +1,206 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { runGiuliaAgent, tool, createTaskWithApproval } from "../../shared/codeAgent.ts";
+import { createApproval, navigateApp } from "../../shared/codeAgent.ts";
 
 /**
- * giuliaLeader — GIULIA-CORE. DE ENIGE agent in GIULIA OS die Gemini aanroept.
+ * giuliaLeader — GIULIA-CORE. De pure executie-engine van GIULIA OS.
  *
  * Naamgevingsconventie GIULIA OS:
- *   GIULIA-SYSTEM   = workspace Superagent (platform-beheer)
- *   GIULIA-GIULIA   = in-app agent (giulia_assistant) — het gezicht
- *   GIULIA-CORE     = dit — giuliaLeader — het denkbrein (BYOK Gemini)
- *   GIULIA-CONNECT  = chatWithGiulia — het doorgeefluik van GIULIA-GIULIA naar hier
+ *   GIULIA-GIULIA   = het brein (Gemini-call in chatWithGiulia) — begrijpt,
+ *                      beslist, redeneert nooit hier.
+ *   GIULIA-CONNECT  = chatWithGiulia — laadt context, roept GIULIA-GIULIA aan,
+ *                      stuurt de beslissing (ExecutionPayload) hierheen.
+ *   GIULIA-CORE     = dit bestand — voert acties blind uit via tools
+ *                      (entity CRUD, approvals, navigate, push). GEEN eigen
+ *                      Gemini-call, GEEN interpretatie van intentie.
  *
- * Alle binnenkomende input — een chat-bericht (via GIULIA-CONNECT), een
- * proactivity-signaal, een sync-event of de opstart-procedure — stroomt door
- * hier. Giulia interpreteert EEN keer met Gemini, beslist wat er moet gebeuren,
- * en voert het vervolgens INTERN uit via deterministische tools (entity CRUD,
- * os_query, approvals, navigate, report). Sub-agents worden via call_agent
- * aangestuurd — de leider zelf start geen tweede Gemini-loop voor routine-werk.
- *
- * Andere entries (GIULIA-CONNECT / chatWithGiulia, startGiulia) doen alleen
- * persistatie + doorgeef. Dit is het absolute brein.
+ * Accepteert: { actions: [{type, ...params}], memory_updates: [{content,
+ * category}], should_notify, notify_title, agent_source }.
  */
-const TOOL_LABELS = {
-  create_task: "taak aangemaakt",
-  update_task: "taak bijgewerkt",
-  complete_task: "taak voltooid",
-  create_project: "project aangemaakt",
-  update_project: "project bijgewerkt",
-  create_contact: "contact toegevoegd",
-  create_note: "notitie opgeslagen",
-  create_idea: "idee vastgelegd",
-  create_memory: "geheugen bijgewerkt",
-  create_approval: "concept ter goedkeuring voorgelegd",
-  call_agent: "agent ingeschakeld",
-  os_query: "OS-data opgehaald",
-  navigate: "app geopend",
-  report_to_salvo: "gerapporteerd",
-  notify_salvo: "push verzonden",
-};
+
+const VALID_TYPES = new Set([
+  "create_task", "update_task", "complete_task", "create_project", "update_project",
+  "create_note", "create_idea", "create_contact", "create_memory", "create_approval",
+  "navigate", "push_notify", "delete_tasks",
+]);
+
+async function runAction(base44, sr, action) {
+  const type = action && action.type;
+  if (!type || !VALID_TYPES.has(type)) return { type, ok: false, error: "onbekend action type" };
+  try {
+    switch (type) {
+      case "create_task": {
+        const t = await sr.entities.Task.create({
+          title: action.title || "Taak",
+          description: action.description || undefined,
+          priority: action.priority || "medium",
+          deadline: action.deadline || undefined,
+          project_id: action.project_id || undefined,
+          delegated_to_giulia: action.assignee === "giulia",
+          agent_source: "giuliaLeader",
+        });
+        return { type, id: t?.id, ok: !!t };
+      }
+      case "update_task": {
+        if (!action.id) return { type, ok: false, error: "id vereist" };
+        const patch = {};
+        if (action.status) patch.status = action.status;
+        if (action.title) patch.title = action.title;
+        if (action.deadline) patch.deadline = action.deadline;
+        const t = await sr.entities.Task.update(action.id, patch);
+        return { type, id: action.id, ok: !!t };
+      }
+      case "complete_task": {
+        if (!action.id) return { type, ok: false, error: "id vereist" };
+        const t = await sr.entities.Task.update(action.id, { status: "completed" });
+        return { type, id: action.id, ok: !!t };
+      }
+      case "create_project": {
+        const p = await sr.entities.Project.create({
+          title: action.title || "Project",
+          description: action.description || undefined,
+          category: action.category || undefined,
+          deadline: action.deadline || undefined,
+          status: "planning",
+          agent_source: "giuliaLeader",
+        });
+        return { type, id: p?.id, ok: !!p };
+      }
+      case "update_project": {
+        if (!action.id) return { type, ok: false, error: "id vereist" };
+        const patch = {};
+        if (action.status) patch.status = action.status;
+        if (action.title) patch.title = action.title;
+        const p = await sr.entities.Project.update(action.id, patch);
+        return { type, id: action.id, ok: !!p };
+      }
+      case "create_note": {
+        const n = await sr.entities.Note.create({
+          title: action.title || "Notitie",
+          content: action.content || "",
+          agent_source: "giuliaLeader",
+        });
+        return { type, id: n?.id, ok: !!n };
+      }
+      case "create_idea": {
+        const i = await sr.entities.Idea.create({
+          title: action.title || "Idee",
+          content: action.content || "",
+          category: action.category || undefined,
+          status: "new",
+          agent_source: "giuliaLeader",
+        });
+        return { type, id: i?.id, ok: !!i };
+      }
+      case "create_contact": {
+        const c = await sr.entities.Contact.create({
+          name: action.name || action.title || "Contact",
+          company: action.company || undefined,
+          email: action.email || undefined,
+          phone: action.phone || undefined,
+          agent_source: "giuliaLeader",
+        });
+        return { type, id: c?.id, ok: !!c };
+      }
+      case "create_memory": {
+        const m = await sr.entities.Memory.create({
+          content: action.content || action.title || "",
+          category: action.category || "Conversation-derived",
+          source: "giuliaLeader",
+        });
+        return { type, id: m?.id, ok: !!m };
+      }
+      case "create_approval": {
+        const a = await createApproval(base44, action.category || "other", action.title || "Actie", action.content || "", undefined, "salvo");
+        return { type, id: a?.id, ok: !!a };
+      }
+      case "navigate": {
+        if (!action.route) return { type, ok: false, error: "route vereist" };
+        const n = await navigateApp(base44, action.route, {}, action.label || "", "giuliaLeader");
+        return { type, id: n?.id, ok: !!n };
+      }
+      case "push_notify": {
+        const res = await base44.functions.invoke("sendPushNotifications", {
+          title: action.title || "Giulia",
+          message: action.content || action.title || "",
+        }).catch(() => null);
+        return { type, ok: !!res };
+      }
+      case "delete_tasks": {
+        if (!action.status) return { type, ok: false, error: "status vereist" };
+        const list = await sr.entities.Task.filter({ status: action.status }, "-created_date", 500).catch(() => []);
+        const ids = list.map((t) => t.id).filter(Boolean);
+        for (let i = 0; i < ids.length; i += 100) {
+          await sr.entities.Task.deleteMany({ id: { $in: ids.slice(i, i + 100) } }).catch(() => {});
+        }
+        return { type, ok: true, deleted: ids.length };
+      }
+      default:
+        return { type, ok: false, error: "niet geïmplementeerd" };
+    }
+  } catch (e) {
+    return { type, ok: false, error: String((e && e.message) || e) };
+  }
+}
+
+// Memory pruning — houdt het geheugen beheersbaar: boven de 200 records
+// worden de oudste 'Conversation-derived' items (laagste prioriteit) verwijderd.
+async function pruneMemory(sr) {
+  const all = await sr.entities.Memory.list("-created_date", 300).catch(() => []);
+  if (all.length <= 200) return 0;
+  const excess = all.slice(200).filter((m) => m.category === "Conversation-derived");
+  const ids = excess.map((m) => m.id).filter(Boolean);
+  if (!ids.length) return 0;
+  await sr.entities.Memory.deleteMany({ id: { $in: ids } }).catch(() => {});
+  return ids.length;
+}
 
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
-    const body = await req.json();
-    const signal = body.signal || body.message || "";
-    const source = body.source || "chat";
-    const persist = body.persist !== false;
-
-    if (!signal) return Response.json({ error: "No signal provided" }, { status: 400 });
-
     const sr = base44.asServiceRole;
-    const toolCalls = [];
-    const onToolCall = (c) => toolCalls.push(c);
+    const body = await req.json();
 
-    const tools = {
-      list_tasks: tool({
-        description: "Lijst Salvo's taken (optioneel filter op status).",
-        inputSchema: { type: "object", properties: { status: { type: "string" } } },
-        execute: async ({ status }) => {
-          const l = await sr.entities.Task.filter(status ? { status } : {}, "-created_date", 30).catch(() => []);
-          return l.map(t => ({ id: t.id, title: t.title, status: t.status, deadline: t.deadline, priority: t.priority }));
-        },
-      }),
-      create_task: tool({
-        description: "Maak een nieuwe taak aan (voor Salvo of Giulia). assignee='giulia' delegateert aan Giulia zelf.",
-        inputSchema: { type: "object", properties: { title: { type: "string" }, priority: { type: "string" }, deadline: { type: "string", description: "ISO yyyy-mm-dd" }, project_id: { type: "string" }, description: { type: "string" }, assignee: { type: "string", enum: ["salvo", "giulia"] } }, required: ["title"] },
-        execute: async ({ title, priority, deadline, project_id, description, assignee }) => {
-          const forGiulia = assignee === "giulia";
-          const r = await createTaskWithApproval(base44, { title, priority, deadline, project_id, description, source: "giuliaLeader", delegated_to_giulia: forGiulia });
-          return r ? { id: r.id, title: r.title, kind: forGiulia ? "approval" : "task" } : { error: "create failed" };
-        },
-      }),
-      update_task: tool({
-        description: "Werk een taak bij (status, titel, deadline).",
-        inputSchema: { type: "object", properties: { id: { type: "string" }, status: { type: "string" }, title: { type: "string" }, deadline: { type: "string" } }, required: ["id"] },
-        execute: async ({ id, status, title, deadline }) => {
-          const t = await sr.entities.Task.update(id, { ...(status ? { status } : {}), ...(title ? { title } : {}), ...(deadline ? { deadline } : {}) }).catch(() => null);
-          return t ? { ok: true } : { error: "not found" };
-        },
-      }),
-      complete_task: tool({
-        description: "Markeer een taak als voltooid (status 'completed').",
-        inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
-        execute: async ({ id }) => {
-          const t = await sr.entities.Task.update(id, { status: "completed" }).catch(() => null);
-          return t ? { ok: true } : { error: "not found" };
-        },
-      }),
-      list_projects: tool({
-        description: "Lijst Salvo's projecten.",
-        inputSchema: { type: "object", properties: {} },
-        execute: async () => {
-          const l = await sr.entities.Project.list().catch(() => []);
-          return l.map(p => ({ id: p.id, title: p.title, status: p.status, deadline: p.deadline }));
-        },
-      }),
-      create_project: tool({
-        description: "Maak een nieuw project aan.",
-        inputSchema: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, category: { type: "string" }, deadline: { type: "string" } }, required: ["title"] },
-        execute: async ({ title, description, category, deadline }) => {
-          const p = await sr.entities.Project.create({ title, description, category, deadline, status: "planning", agent_source: "giuliaLeader" }).catch(() => null);
-          return p ? { id: p.id, title: p.title } : { error: "create failed" };
-        },
-      }),
-      update_project: tool({
-        description: "Werk een project bij (status, titel).",
-        inputSchema: { type: "object", properties: { id: { type: "string" }, status: { type: "string" }, title: { type: "string" } }, required: ["id"] },
-        execute: async ({ id, status, title }) => {
-          const p = await sr.entities.Project.update(id, { ...(status ? { status } : {}), ...(title ? { title } : {}) }).catch(() => null);
-          return p ? { ok: true } : { error: "not found" };
-        },
-      }),
-      list_contacts: tool({
-        description: "Lijst Salvo's contacten.",
-        inputSchema: { type: "object", properties: {} },
-        execute: async () => {
-          const l = await sr.entities.Contact.list().catch(() => []);
-          return l.map(c => ({ id: c.id, name: c.name, company: c.company, email: c.email }));
-        },
-      }),
-      create_contact: tool({
-        description: "Voeg een nieuw contact toe.",
-        inputSchema: { type: "object", properties: { name: { type: "string" }, company: { type: "string" }, email: { type: "string" }, phone: { type: "string" }, notes: { type: "string" } }, required: ["name"] },
-        execute: async ({ name, company, email, phone, notes }) => {
-          const c = await sr.entities.Contact.create({ name, company, email, phone, notes, agent_source: "giuliaLeader" }).catch(() => null);
-          return c ? { id: c.id, name: c.name } : { error: "create failed" };
-        },
-      }),
-      create_note: tool({
-        description: "Sla een notitie op voor Salvo.",
-        inputSchema: { type: "object", properties: { title: { type: "string" }, content: { type: "string" }, kind: { type: "string" } }, required: ["title"] },
-        execute: async ({ title, content, kind }) => {
-          const n = await sr.entities.Note.create({ title, content: content || "", kind: kind || "note", agent_source: "giuliaLeader" }).catch(() => null);
-          return n ? { id: n.id } : { error: "create failed" };
-        },
-      }),
-      create_idea: tool({
-        description: "Leg een idee vast.",
-        inputSchema: { type: "object", properties: { title: { type: "string" }, content: { type: "string" }, category: { type: "string" } }, required: ["title"] },
-        execute: async ({ title, content, category }) => {
-          const i = await sr.entities.Idea.create({ title, content: content || "", category, status: "new", agent_source: "giuliaLeader" }).catch(() => null);
-          return i ? { id: i.id } : { error: "create failed" };
-        },
-      }),
-      create_memory: tool({
-        description: "Sla een blijvende herinnering/feit op in het geheugen.",
-        inputSchema: { type: "object", properties: { content: { type: "string" }, category: { type: "string" } }, required: ["content"] },
-        execute: async ({ content, category }) => {
-          const m = await sr.entities.Memory.create({ content, category: category || "preference", agent_source: "giuliaLeader" }).catch(() => null);
-          return m ? { id: m.id } : { error: "create failed" };
-        },
-      }),
-      list_calendar: tool({
-        description: "Komende agenda-items.",
-        inputSchema: { type: "object", properties: {} },
-        execute: async () => {
-          const l = await sr.entities.CalendarEvent.filter({}, "start", 15).catch(() => []);
-          return l.map(e => ({ id: e.id, title: e.title, start: e.start, end: e.end, location: e.location }));
-        },
-      }),
-      list_emails: tool({
-        description: "Recente inbox emails.",
-        inputSchema: { type: "object", properties: {} },
-        execute: async () => {
-          const l = await sr.entities.Email.filter({ folder: "inbox" }, "-timestamp", 10).catch(() => []);
-          return l.map(e => ({ id: e.id, sender: e.sender, subject: e.subject, status: e.status, timestamp: e.timestamp }));
-        },
-      }),
-      list_whatsapp: tool({
-        description: "Lijst recente binnenkomende WhatsApp-berichten met contactnaam en telefoonnummer, zodat je ze kunt lezen en beantwoorden.",
-        inputSchema: { type: "object", properties: {} },
-        execute: async () => {
-          const [msgs, contacts] = await Promise.all([
-            sr.entities.WhatsAppMessage.filter({ direction: "received" }, "-timestamp", 20).catch(() => []),
-            sr.entities.Contact.list().catch(() => []),
-          ]);
-          const byId = new Map(contacts.map((c) => [c.id, c]));
-          return msgs.map((m) => {
-            const c = m.contact_id ? byId.get(m.contact_id) : null;
-            return { id: m.id, from: c?.name || "(onbekend)", phone: c?.phone || "", message: String(m.message || "").slice(0, 200), time: m.timestamp, contact_id: m.contact_id };
-          });
-        },
-      }),
-      send_whatsapp: tool({
-        description: "Stuur een WhatsApp-bericht namens Salvo. Geef contact_id (uit list_whatsapp) OF een telefoonnummer in to (E.164, bijv. 31612345678), plus message. Het bericht wordt echt verzonden. Gebruik dit om een binnenkomend bericht te beantwoorden als Salvo daarom vraagt.",
-        inputSchema: { type: "object", properties: { contact_id: { type: "string" }, to: { type: "string" }, message: { type: "string" } }, required: ["message"] },
-        execute: async ({ contact_id, to, message }) => {
-          try {
-            const res = await base44.functions.invoke("sendWhatsApp", { contact_id: contact_id || undefined, to: to || undefined, message });
-            return res && res.ok ? { sent: true, to: res.to } : { error: (res && res.error) || "send failed" };
-          } catch (e) { return { error: String((e && e.message) || e) }; }
-        },
-      }),
-      list_knowledge: tool({
-        description: "Kennisbank-items.",
-        inputSchema: { type: "object", properties: {} },
-        execute: async () => {
-          const l = await sr.entities.Knowledge.list("-created_date", 10).catch(() => []);
-          return l.map(k => ({ id: k.id, title: k.title }));
-        },
-      }),
-      delete_emails: tool({
-        description: "Verwijder emails bulksgewijs. filter='all' verwijdert alles; 'gmail' verwijdert alle emails die via Gmail binnenkwamen (gmail_thread_id of gmail_message_id gevuld); 'sender' verwijdert alles van sender_email; 'folder' verwijdert een hele folder. Rapporteer het aantal verwijderde emails.",
-        inputSchema: { type: "object", properties: { filter: { type: "string", enum: ["all", "gmail", "sender", "folder"] }, sender_email: { type: "string" }, folder: { type: "string", enum: ["inbox", "important", "sent", "drafts", "archived", "giulia_drafts"] } }, required: ["filter"] },
-        execute: async ({ filter, sender_email, folder }) => {
-          let list = [];
-          if (filter === "all") list = await sr.entities.Email.list("-created_date", 2000).catch(() => []);
-          else if (filter === "gmail") {
-            const all = await sr.entities.Email.list("-created_date", 2000).catch(() => []);
-            list = all.filter((e) => e.gmail_thread_id || e.gmail_message_id);
-          } else if (filter === "sender") list = await sr.entities.Email.filter({ sender_email }, "-created_date", 2000).catch(() => []);
-          else if (filter === "folder") list = await sr.entities.Email.filter({ folder }, "-created_date", 2000).catch(() => []);
-          const ids = list.map((e) => e.id).filter(Boolean);
-          if (!ids.length) return { deleted: 0 };
-          let deleted = 0;
-          for (let i = 0; i < ids.length; i += 100) {
-            const batch = ids.slice(i, i + 100);
-            await sr.entities.Email.deleteMany({ id: { $in: batch } }).catch(() => {});
-            deleted += batch.length;
-          }
-          return { deleted };
-        },
-      }),
-      update_email: tool({
-        description: "Werk één email bij (status, folder, important). status: unread|read|draft|sent|archived.",
-        inputSchema: { type: "object", properties: { id: { type: "string" }, status: { type: "string" }, folder: { type: "string" }, important: { type: "boolean" } }, required: ["id"] },
-        execute: async ({ id, status, folder, important }) => {
-          const upd = {};
-          if (status) upd.status = status;
-          if (folder) upd.folder = folder;
-          if (important != null) upd.important = important;
-          const e = await sr.entities.Email.update(id, upd).catch(() => null);
-          return e ? { ok: true } : { error: "not found" };
-        },
-      }),
-      delete_tasks: tool({
-        description: "Verwijder taken bulksgewijs op status (bijv. 'completed' of 'archived'). Handig om voltooide taken op te ruimen.",
-        inputSchema: { type: "object", properties: { status: { type: "string" } }, required: ["status"] },
-        execute: async ({ status }) => {
-          const list = await sr.entities.Task.filter({ status }, "-created_date", 500).catch(() => []);
-          const ids = list.map((t) => t.id).filter(Boolean);
-          if (!ids.length) return { deleted: 0 };
-          for (let i = 0; i < ids.length; i += 100) {
-            await sr.entities.Task.deleteMany({ id: { $in: ids.slice(i, i + 100) } }).catch(() => {});
-          }
-          return { deleted: ids.length };
-        },
-      }),
-      disconnect_integration: tool({
-        description: "Koppel een integratie los en verwijder alle bijbehorende gesyncte data. name='gmail' verwijdert alle Gmail-emails; 'whatsapp' verwijdert alle WhatsApp-berichten; 'calendar' verwijdert agenda-items die via sync binnenkwamen; 'drive' verwijdert Drive-bestanden. Rapporteer wat is verwijderd en stel voor om de OAuth-toegang in Integrations in te trekken voor een volledige loskoppeling.",
-        inputSchema: { type: "object", properties: { name: { type: "string", enum: ["gmail", "whatsapp", "calendar", "drive"] } }, required: ["name"] },
-        execute: async ({ name }) => {
-          let removed = 0;
-          if (name === "gmail") {
-            const all = await sr.entities.Email.list("-created_date", 2000).catch(() => []);
-            const ids = all.filter((e) => e.gmail_thread_id || e.gmail_message_id).map((e) => e.id).filter(Boolean);
-            for (let i = 0; i < ids.length; i += 100) await sr.entities.Email.deleteMany({ id: { $in: ids.slice(i, i + 100) } }).catch(() => {});
-            removed = ids.length;
-          } else if (name === "whatsapp") {
-            const all = await sr.entities.WhatsAppMessage.list("-created_date", 2000).catch(() => []);
-            const ids = all.map((m) => m.id).filter(Boolean);
-            for (let i = 0; i < ids.length; i += 100) await sr.entities.WhatsAppMessage.deleteMany({ id: { $in: ids.slice(i, i + 100) } }).catch(() => {});
-            removed = ids.length;
-          } else if (name === "calendar") {
-            const all = await sr.entities.CalendarEvent.list("-created_date", 2000).catch(() => []);
-            const ids = all.filter((e) => e.agent_source === "sync" || e.agent_source === "googlecalendar").map((e) => e.id).filter(Boolean);
-            for (let i = 0; i < ids.length; i += 100) await sr.entities.CalendarEvent.deleteMany({ id: { $in: ids.slice(i, i + 100) } }).catch(() => {});
-            removed = ids.length;
-          } else if (name === "drive") {
-            const all = await sr.entities.Upload.list("-created_date", 2000).catch(() => []);
-            const ids = all.filter((u) => u.agent_source === "sync" || u.agent_source === "googledrive").map((u) => u.id).filter(Boolean);
-            for (let i = 0; i < ids.length; i += 100) await sr.entities.Upload.deleteMany({ id: { $in: ids.slice(i, i + 100) } }).catch(() => {});
-            removed = ids.length;
-          }
-          return { disconnected: name, removed };
-        },
-      }),
-      os_query: tool({
-        description: "Lees data uit ELK onderdeel van GIULIA OS in real time. entity is één van: tasks, projects, contacts, emails, whatsapp, notes, ideas, memory, insights, approvals, documents, events, milestones, decisions, time_entries, weekly_plan, daily_plan, threads, meetings, activity, knowledge. Geeft de laatste 20 records met de belangrijkste velden. Gebruik dit om bij opstart elk domein te initialiseren.",
-        inputSchema: { type: "object", properties: { entity: { type: "string" } }, required: ["entity"] },
-        execute: async ({ entity }) => {
-          const MAP = { tasks:"Task", projects:"Project", contacts:"Contact", emails:"Email", whatsapp:"WhatsAppMessage", notes:"Note", ideas:"Idea", memory:"Memory", insights:"Insight", approvals:"Approval", documents:"Upload", events:"CalendarEvent", milestones:"Milestone", decisions:"Decision", time_entries:"TimeEntry", weekly_plan:"WeeklyPlan", daily_plan:"DailyPlan", threads:"Thread", meetings:"Meeting", activity:"Activity", knowledge:"Knowledge" };
-          const name = MAP[entity];
-          if (!name || !sr.entities[name]) return { error: "unknown entity", valid: Object.keys(MAP) };
-          const l = await sr.entities[name].list("-created_date", 20).catch(() => []);
-          const FIELDS = ["id","title","name","subject","sender","status","deadline","start","priority","category","content","description","created_date"];
-          return l.map(r => { const o = {}; FIELDS.forEach(k => { if (r[k] != null) o[k] = typeof r[k] === "string" ? r[k].slice(0, 160) : r[k]; }); return o; });
-        },
-      }),
-    };
+    const actions = Array.isArray(body.actions) ? body.actions : [];
+    const memoryUpdates = Array.isArray(body.memory_updates) ? body.memory_updates : [];
+    const shouldNotify = !!body.should_notify;
+    const notifyTitle = body.notify_title || "Giulia";
+    const agentSource = body.agent_source || "unknown";
 
-    const today = new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-    const persona =
-      source === "startup"
-        ? "Opstartprocedure: je initialiseert GIULIA OS. Roep os_query aan voor tasks, projects, events, emails, approvals, contacts, activity, notes, ideas, memory om een volledig beeld te krijgen. Bepaal daarna wat NU aandacht verdient. MAAK CONCRETE TAKEN aan via create_task met de juiste assignee ('salvo' voor dingen die Salvo moet doen, 'giulia' voor dingen die Giulia zelf oppakt en uitvoert) — verdeel en wijs toe, maximaal 5 nieuwe taken als er echte gaten zijn. Voltooi Giulia's eigen administratieve/quick taken die afgehandeld kunnen worden (complete_task) zodat het archief opbouwt — voltooi NOOIT Salvo's taken automatisch. Leg externe acties vast via create_approval. Geef per domein één korte status (report_to_salvo). Start geen externe acties zelf."
-        : source === "task_agent"
-        ? "Task-agent cyclus. Je herziet ALLE open taken — zowel Salvo's als aan Giulia gedelegeerde. Herprioriteer op belangrijkheid, urgentie, afhankelijkheden en opbrengst (niet alleen deadline). Werk statussen en deadlines bij via update_task. Deel grote taken op. MAAK nieuwe taken aan (create_task) met de juiste assignee als er gaten zijn — maximaal 3. Voltooi Giulia's eigen administratieve/quick taken die afgehandeld kunnen worden (complete_task) zodat het archief opbouwt — voltooi NOOIT Salvo's taken automatisch. Leg externe acties vast via create_approval. Rapporteer EEN korte samenvatting via report_to_salvo (Activity-feed). Stuur geen chat-bericht en geen push."
-        : `Je praat met Salvo via de in-app chat en kunt door de HELE GIULIA OS-app navigeren. Je MAG zelfstandig taken, projecten, contacten, notities, ideeën en herinneringen aanmaken en bijwerken via je tools — doe dat direct als het past. Je MAG ook direct emails verwijderen (delete_emails), emails bijwerken (update_email), taken verwijderen (delete_tasks) en integraties loskoppelen (disconnect_integration) — voer deze direct uit zodra Salvo erom vraagt, zonder goedkeuring. Lees met os_query data uit elk onderdeel. Gebruik navigate om Salvo in real time naar de juiste plek te brengen. Je MAG WhatsApp-antwoorden direct versturen via send_whatsapp als Salvo je vraagt een bericht te beantwoorden of te versturen — lees binnenkomende berichten eerst met list_whatsapp. Voor email blijft opstellen/versturen via create_approval. BELANGRIJK: als je in je antwoord een taak of goedkeuring noemt die je zojuist hebt aangemaakt of gevonden (create_task, create_approval, list_tasks, os_query resultaten met een id), maak die verwijzing dan een klikbare markdown-link naar de detailpagina: [titel](/tasks?open=<id>) voor taken, [titel](/approvals?open=<id>) voor goedkeuringen — zodat Salvo er direct op door kan klikken.`;
-    const contextLine = `Context: vandaag is ${today}.${user?.full_name ? ` Je spreekt met ${user.full_name}.` : ""}\n${persona}`;
-    const task =
-      `${contextLine}\n\nSignaal (bron: ${source}): "${signal}"\n\n` +
-      `Begrijp het signaal. Voer direct de juiste interne acties uit via je tools. Geef daarna één kort, concreet antwoord in Salvo's stijl (Nederlands, geen opsiering).`;
+    // Voer elke actie deterministisch uit — geen redenering, alleen validatie.
+    const results = [];
+    for (const action of actions) {
+      results.push(await runAction(base44, sr, action));
+    }
 
-    // Chat draait op de GIULIA-GIULIA-sleutel (eigen quota, los van de
-    // achtergrondcycli); alle niet-chat bronnen (startup, task_agent,
-    // proactivity-signalen) lopen op de BACKDESK-sleutel. Bij falen valt
-    // alles automatisch terug op de legacy-sleutel en RESERVE.
-    const keyName = source === "chat" ? "GIULIA_GIULIA_GEMINI_API_KEY" : "BACKDESK_GEMINI_API_KEY";
-    const reply = await runGiuliaAgent(base44, "giuliaLeader", task, tools, 8, onToolCall, keyName);
-    const finalReply = reply || "Ik kon dat even niet verwerken — probeer het opnieuw.";
+    // Persisteer wat GIULIA-GIULIA wilde onthouden.
+    for (const mu of memoryUpdates) {
+      if (!mu || !mu.content) continue;
+      await sr.entities.Memory.create({
+        content: String(mu.content).slice(0, 500),
+        category: mu.category || "Conversation-derived",
+        source: agentSource,
+      }).catch(() => null);
+    }
+    const pruned = await pruneMemory(sr);
 
-    // Chat is alleen voor echte gesprekken — geen actie-rapportage, geen logs.
-    if (source === "chat") try {
-      await base44.entities.Message.create({
-        role: "giulia", content: finalReply, channel: "in-app", status: "sent", agent_source: "giuliaLeader",
+    if (shouldNotify) {
+      await base44.functions.invoke("sendPushNotifications", {
+        title: notifyTitle,
+        message: `${actions.length} acties uitgevoerd`,
+      }).catch(() => null);
+    }
+
+    const okCount = results.filter((r) => r.ok).length;
+    try {
+      await sr.entities.Activity.create({
+        action: "giulia_core_execute",
+        description: `GIULIA-CORE: ${okCount}/${actions.length} acties uitgevoerd (bron: ${agentSource})`,
+        source: "giuliaLeader",
+        timestamp: new Date().toISOString(),
       });
     } catch { /* ignore */ }
 
-    return Response.json({
-      response: finalReply,
-      tool_calls: toolCalls,
-      source,
-    });
+    return Response.json({ ok: true, results, memory_saved: memoryUpdates.length, memory_pruned: pruned });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

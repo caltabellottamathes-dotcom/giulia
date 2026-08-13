@@ -60,7 +60,7 @@ export default async function (req) {
     let leaderOk = false;
     let leaderErr = "";
     try {
-      await base44.functions.invoke("giuliaLeader", { signal, source: "task_agent", persist: false });
+      await base44.functions.invoke("chatWithGiulia", { message: signal, source: "agent_tasks", persist: false });
       leaderOk = true;
     } catch (e) {
       leaderErr = String((e && e.message) || e);

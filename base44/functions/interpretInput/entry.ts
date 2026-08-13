@@ -1,6 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { geminiDecide, GIULIA_PERSONA } from '../../shared/gemini.ts';
-import { GIULIA_TONE, AGENT_CONTEXT } from '../../shared/agentContext.ts';
 
 /**
  * interpretInput (Phase 2 — Ingestion & Routing).
@@ -323,157 +322,14 @@ async function resolveCalendarConflict(sr, { contactId, projectId, dtRef, action
 }
 
 // ── Chat classifier — free-text message from the in-app chat ──────────
-// Classificeert, capturet entiteiten (Task/Note/Idea/CalendarEvent/Contact/
-// Project) per flags, en antwoordt als Giulia. Persisteert zowel Salvo's
-// bericht als Giulia's antwoord als Message records. BYOK Gemini.
-async function classifyChat(base44, message, history) {
-  const sr = base44.asServiceRole;
+// GEEN eigen Gemini-brein meer hier — delegeert volledig naar GIULIA-CONNECT
+// (chatWithGiulia), zodat er nog maar ÉÉN brein is (GIULIA-GIULIA) voor elk
+// chat-entry-point in de app (ChatWindow én de losse Chat-pagina).
+async function classifyChat(base44, message) {
+  const res = await base44.functions.invoke("chatWithGiulia", { message, persist: true })
+    .catch((e) => ({ error: String((e && e.message) || e) }));
 
-  // Persist Salvo's bericht
-  await sr.entities.Message.create({
-    role: "user", content: message, channel: "in-app", status: "sent",
-  }).catch(() => null);
+  if (res && res.error) return Response.json({ ok: false, error: res.error }, { status: 500 });
 
-  const schema = {
-    type: "object",
-    properties: {
-      intent: { type: "string", enum: ["task", "idea", "note", "calendar", "question", "commitment", "thinking", "command"] },
-      priority: { type: "string", enum: ["high", "medium", "low"] },
-      person_name: { type: "string" },
-      project_name: { type: "string" },
-      deadline: { type: "string" },
-      giulia_response: { type: "string" },
-      should_create_task: { type: "boolean" },
-      task_title: { type: "string" },
-      should_create_idea: { type: "boolean" },
-      idea_title: { type: "string" },
-      should_create_note: { type: "boolean" },
-      note_title: { type: "string" },
-      should_create_event: { type: "boolean" },
-      event_title: { type: "string" },
-      event_start: { type: "string" },
-      should_create_person: { type: "boolean" },
-      should_create_project: { type: "boolean" },
-      project_title: { type: "string" },
-      should_remember: { type: "boolean" },
-      memory_note: { type: "string" },
-      should_navigate: { type: "boolean" },
-      navigate_route: { type: "string" },
-      navigate_label: { type: "string" },
-    },
-    required: ["intent", "giulia_response"],
-  };
-
-  const histTxt = (history || []).slice(-8)
-    .map((m) => `${m.role === "user" ? "Salvo" : "Giulia"}: ${m.content}`)
-    .join("\n");
-
-  // GIULIA-GIULIA kent alles: profiel, wat ze al over Salvo weet, en haar geheugen.
-  const me = await base44.auth.me().catch(() => null);
-  const answers = ((me as any)?.giulia_answers || {}) as Record<string, string>;
-  const memories = await sr.entities.Memory.list("-created_date", 8).catch(() => []);
-  const memTxt = (memories || []).map((m) => `- ${m.content}`).join("\n").slice(0, 900);
-  const profile =
-    `== OVER SALVO ==\n` +
-    `Naam: ${AGENT_CONTEXT.owner.name} (${AGENT_CONTEXT.owner.short}) · ${AGENT_CONTEXT.owner.location} · ${AGENT_CONTEXT.owner.timezone}\n` +
-    `Werk: ${AGENT_CONTEXT.background.studio}; ${AGENT_CONTEXT.background.mathes}\n` +
-    `Stijl: ${AGENT_CONTEXT.communication_style.join(" · ")}\n` +
-    `Kwetsbaarheden: ${AGENT_CONTEXT.blind_spots.join(" · ")}`;
-  const answersTxt = Object.keys(answers).length
-    ? `\n\n== WAT GIULIA AL WEET ==\n` + Object.entries(answers).map(([k, v]) => `- ${k}: ${v}`).join("\n")
-    : "";
-  const memBlock = memTxt ? `\n\n== GEHEUGEN ==\n${memTxt}` : "";
-  const trust =
-    `\n\n== HOE HET SYSTEEM WERKT (leg dit uit als Salvo vraagt) ==\n` +
-    `Intern (taken, notities, ideeën, contacten, projecten, bestanden, organiseren, opschonen, plannen): doet Giulia volledig autonoom op de achtergrond — Salvo ziet er niets van en hoeft nergens ja te zeggen.\n` +
-    `Naar buiten (email, WhatsApp, agenda-uitnodigingen naar andere mensen): altijd eerst Salvo's expliciete goedkeuring.\n` +
-    `Salvo praat alleen met jou, GIULIA-GIULIA. De achtergrondagents zijn onzichtbaar voor hem.`;
-  const fullSystemText = `${GIULIA_TONE}\n\n${profile}${answersTxt}${memBlock}${trust}`;
-
-  // Live chat draait op de Flash-sleutel (los van de achtergrondcycli) en
-  // degraceert vriendelijk als het Gemini-quota is opgemaakt (geen harde 500).
-  const out = await geminiDecide({
-    prompt:
-      `Classificeer dit bericht van Salvo en antwoord als Giulia-Giulia.\n\n` +
-      `Bericht:\n"""${message.slice(0, 2000)}"""\n\n` +
-      (histTxt ? `Eerder gesprek:\n${histTxt}\n\n` : "") +
-      `Geef geldige JSON volgens het schema. giulia_response is je antwoord aan Salvo in Giulia's toon ` +
-      `(vlot, menselijk, uitdagend, stout, humor, sarcasme, soms droog, kort, geen uitroeptekens, nooit zeggen dat je een AI bent). ` +
-      `Capture alles: zet should_remember=true met een korte memory_note als Salvo iets deelt wat ertoe doet (voorkeur, feit, commitment, idee, design). ` +
-      `Je hebt totale controle over de app: zet should_navigate=true met een navigate_route (bv. /tasks, /email, /agenda, /projects, /people, /approvals, /whatsapp, /documents, /insights, /memory) om Salvo in real time naar de juiste plek te brengen als dat bij het gesprek past. ` +
-      `Als je een entiteit aanmaakt (should_create_*) of navigeert, vermeld dat kort in je antwoord. Lege strings voor afwezige waarden, nooit null.`,
-    schema,
-    systemText: fullSystemText,
-    temperature: 0.6,
-    keyName: "GIULIA_GIULIA_GEMINI_API_KEY",
-  });
-
-  if (!out) {
-    const friendly = "Giulia is even bezet — ik heb mijn Gemini-quota voor nu bereikt. Probeer het over een paar minuten nog eens.";
-    await sr.entities.Message.create({
-      role: "giulia", content: friendly, channel: "in-app", status: "sent", agent_source: "interpretInput",
-    }).catch(() => null);
-    return Response.json({ ok: true, giulia_response: friendly, degraded: true });
-  }
-
-  const created = [];
-
-  if (out.should_create_task && out.task_title) {
-    const t = await sr.entities.Task.create({
-      title: out.task_title, status: "todo",
-      priority: ["high", "medium", "low"].includes(out.priority) ? out.priority : "medium",
-      deadline: out.deadline || undefined,
-      agent_source: "interpretInput",
-    }).catch(() => null);
-    if (t) created.push({ type: "task", id: t.id });
-  }
-  if (out.should_create_idea && out.idea_title) {
-    const i = await sr.entities.Idea.create({ title: out.idea_title, status: "new" }).catch(() => null);
-    if (i) created.push({ type: "idea", id: i.id });
-  }
-  if (out.should_create_note && out.note_title) {
-    const n = await sr.entities.Note.create({ title: out.note_title, kind: "note", agent_source: "interpretInput" }).catch(() => null);
-    if (n) created.push({ type: "note", id: n.id });
-  }
-  if (out.should_create_event && out.event_title) {
-    const e = await sr.entities.CalendarEvent.create({
-      title: out.event_title, start: out.event_start || out.deadline || undefined, agent_source: "interpretInput",
-    }).catch(() => null);
-    if (e) created.push({ type: "event", id: e.id });
-  }
-  if (out.should_create_person && out.person_name) {
-    const c = await sr.entities.Contact.create({ name: out.person_name, agent_source: "interpretInput" }).catch(() => null);
-    if (c) created.push({ type: "person", id: c.id });
-  }
-  if (out.should_create_project && out.project_title) {
-    const p = await sr.entities.Project.create({ title: out.project_title, status: "planning", agent_source: "interpretInput" }).catch(() => null);
-    if (p) created.push({ type: "project", id: p.id });
-  }
-  // Registreer wat ertoe doet in het geheugen — Giulia onthoudt alles.
-  if (out.should_remember && out.memory_note) {
-    const m = await sr.entities.Memory.create({
-      content: String(out.memory_note).slice(0, 500),
-      category: "Conversation-derived",
-      confidence: 0.7,
-      source: "interpretInput · chat",
-    }).catch(() => null);
-    if (m) created.push({ type: "memory", id: m.id });
-  }
-  // GIULIA-GIULIA stuurt de app in real time naar de juiste plek.
-  if (out.should_navigate && out.navigate_route) {
-    const nav = await sr.entities.AgentNavigation.create({
-      route: String(out.navigate_route).trim(),
-      params: {},
-      label: out.navigate_label || "",
-      source: "interpretInput",
-    }).catch(() => null);
-    if (nav) created.push({ type: "navigation", id: nav.id });
-  }
-
-  const reply = (out.giulia_response || "").trim() || "Got it.";
-  await sr.entities.Message.create({
-    role: "giulia", content: reply, channel: "in-app", status: "sent", agent_source: "interpretInput",
-  }).catch(() => null);
-
-  return Response.json({ ok: true, intent: out.intent, giulia_response: reply, created });
+  return Response.json({ ok: true, giulia_response: res.response, created: res.actions_executed || [] });
 }

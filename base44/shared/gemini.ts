@@ -39,7 +39,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 //   default      → legacy-sleutels + RESERVE (alles wat geen eigen rol heeft)
 const KEY_POOLS = {
   giulia_giulia: ["GIULIA_GIULIA_GEMINI_API_KEY", "Gemini_Flash_API_Key", "RESERVE_GEMINI_API_KEY"],
-  backdesk: ["BACKDESK_GEMINI_API_KEY", "GEMINI_API_KEY", "RESERVE_GEMINI_API_KEY"],
+  backdesk: ["BACKDESK_GEMINI_API_KEY", "GEMINI_API_KEY", "GIULIA_API_KEY", "RESERVE_GEMINI_API_KEY"],
   update: ["UPDATE_GEMINI_API_KEY", "GEMINI_API_KEY", "RESERVE_GEMINI_API_KEY"],
   default: ["GEMINI_API_KEY", "Gemini_Flash_API_Key", "GIULIA_API_KEY", "RESERVE_GEMINI_API_KEY"],
 };
