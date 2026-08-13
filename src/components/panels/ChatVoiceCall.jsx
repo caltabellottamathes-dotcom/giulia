@@ -6,9 +6,9 @@ import { PhoneOff, Languages } from "lucide-react";
 /**
  * ChatVoiceCall — inline spraakgesprek in de ChatWindow. Browser
  * SpeechRecognition (NL/EN) → GIULIA-GIULIA (interpretInput, snel) óf
- * Superagent GIULIA (chatWithGiulia → giuliaLeader, vollere redenering) →
- * SpeechSynthesis. Continue luisterloop met barge-in (Giulia's eigen stem
- * wordt niet opgepakt).
+ * GIULIA-SYSTEM (GIULIA-CONNECT / chatWithGiulia → GIULIA-CORE / giuliaLeader,
+ * vollere redenering) → SpeechSynthesis. Continue luisterloop met barge-in
+ * (Giulia's eigen stem wordt niet opgepakt).
  */
 const LANGS = {
   nl: { rec: "nl-NL", tts: "nl-NL", label: "NL" },
@@ -139,7 +139,7 @@ export default function ChatVoiceCall({ superagent, onEnd }) {
           {speaking ? "GIULIA-GIULIA spreekt" : "GIULIA-GIULIA luistert"}
         </h2>
         <p className="text-xs text-ivory/55 mb-5">
-          {superagent ? "Superagent GIULIA" : "GIULIA-GIULIA"} · {LANGS[lang].label}
+          {superagent ? "GIULIA-SYSTEM" : "GIULIA-GIULIA"} · {LANGS[lang].label}
         </p>
 
         <button

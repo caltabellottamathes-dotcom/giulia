@@ -7,9 +7,13 @@ import ChatMarkdown from "@/components/glass/ChatMarkdown";
 import ChatVoiceCall from "@/components/panels/ChatVoiceCall";
 
 /**
- * ChatWindow — Giulia's conversation panel. Slides in from the right edge
- * as a full-height refraction-glass panel. All traffic flows through the
- * backend function `chatWithGiulia`.
+ * ChatWindow — GIULIA-GIULIA's conversation panel. Slides in from the right
+ * edge as a full-height refraction-glass panel. All traffic flows through
+ * GIULIA-CONNECT (chatWithGiulia) → GIULIA-CORE (giuliaLeader).
+ *
+ * Naamgevingsconventie GIULIA OS:
+ *   GIULIA-SYSTEM  = workspace Superagent · GIULIA-GIULIA = in-app agent (gezicht)
+ *   GIULIA-CORE    = giuliaLeader (denkbrein) · GIULIA-CONNECT = chatWithGiulia (luik)
  */
 const SUGGESTIONS = [
   "Wat staat er vandaag op de agenda?",
@@ -136,7 +140,7 @@ export default function ChatWindow() {
                     ? "bg-olive text-ivory border-olive"
                     : "bg-ivory/10 border-ivory/15 text-ivory/60 hover:text-ivory"
                 )}
-                title="Superagent GIULIA — vollere redenering met tools"
+                title="GIULIA-SYSTEM — vollere redenering via GIULIA-CONNECT → GIULIA-CORE"
               >
                 <Sparkles className="h-3 w-3" /> Super
               </button>

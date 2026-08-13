@@ -1,10 +1,18 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 /**
- * chatWithGiulia — de in-app chat-entry. Persisteert Salvo's bericht en
- * delegeert daarna naar giuliaLeader — DE enige agent die Gemini aanroept.
- * Giulia interpreteert, voert intern de acties uit (zonder tweede Gemini-loop)
- * en antwoordt. Dit houdt één absoluut brein over alle binnenkomende input.
+ * chatWithGiulia — GIULIA-CONNECT. De in-app chat-entry (doorgeefluik).
+ *
+ * Naamgevingsconventie GIULIA OS:
+ *   GIULIA-SYSTEM   = workspace Superagent (platform-beheer)
+ *   GIULIA-GIULIA   = in-app agent (giulia_assistant) — het gezicht
+ *   GIULIA-CORE     = giuliaLeader — het denkbrein (BYOK Gemini)
+ *   GIULIA-CONNECT  = dit — chatWithGiulia — doorgeefluik van GIULIA-GIULIA naar GIULIA-CORE
+ *
+ * Persisteert Salvo's bericht en delegeert daarna naar GIULIA-CORE
+ * (giuliaLeader) — DE enige agent die Gemini aanroept. Giulia interpreteert,
+ * voert intern de acties uit (zonder tweede Gemini-loop) en antwoordt.
+ * Dit houdt één absoluut brein over alle binnenkomende input.
  */
 export default async function (req) {
   try {

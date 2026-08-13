@@ -2,17 +2,23 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { runGiuliaAgent, tool, createTaskWithApproval } from "../../shared/codeAgent.ts";
 
 /**
- * giuliaLeader — DE ENIGE agent in GIULIA OS die Gemini aanroept.
+ * giuliaLeader — GIULIA-CORE. DE ENIGE agent in GIULIA OS die Gemini aanroept.
  *
- * Alle binnenkomende input — een chat-bericht, een proactivity-signaal, een
- * sync-event of de opstart-procedure — stroomt door hier. Giulia interpreteert
- * EEN keer met Gemini, beslist wat er moet gebeuren, en voert het vervolgens
- * INTERN uit via deterministische tools (entity CRUD, os_query, approvals,
- * navigate, report). Sub-agents worden via call_agent aangestuurdd — de leider
- * zelf start geen tweede Gemini-loop voor routine-werk.
+ * Naamgevingsconventie GIULIA OS:
+ *   GIULIA-SYSTEM   = workspace Superagent (platform-beheer)
+ *   GIULIA-GIULIA   = in-app agent (giulia_assistant) — het gezicht
+ *   GIULIA-CORE     = dit — giuliaLeader — het denkbrein (BYOK Gemini)
+ *   GIULIA-CONNECT  = chatWithGiulia — het doorgeefluik van GIULIA-GIULIA naar hier
  *
- * Andere entries (chatWithGiulia, startGiulia) doen alleen persistatie +
- * doorgeef. Dit is het absolute brein.
+ * Alle binnenkomende input — een chat-bericht (via GIULIA-CONNECT), een
+ * proactivity-signaal, een sync-event of de opstart-procedure — stroomt door
+ * hier. Giulia interpreteert EEN keer met Gemini, beslist wat er moet gebeuren,
+ * en voert het vervolgens INTERN uit via deterministische tools (entity CRUD,
+ * os_query, approvals, navigate, report). Sub-agents worden via call_agent
+ * aangestuurd — de leider zelf start geen tweede Gemini-loop voor routine-werk.
+ *
+ * Andere entries (GIULIA-CONNECT / chatWithGiulia, startGiulia) doen alleen
+ * persistatie + doorgeef. Dit is het absolute brein.
  */
 const TOOL_LABELS = {
   create_task: "taak aangemaakt",
