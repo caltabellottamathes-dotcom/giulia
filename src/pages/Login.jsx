@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 
 // Vast, gedeeld toegangsaccount — de ingevoerde code is het wachtwoord van dit account.
 const ACCESS_EMAIL = "caltabellotta.mathes@gmail.com";
+const LOGIN_VIDEO = "https://media.base44.com/videos/public/6a7608690d4ea2c9edc3d59b/12d2b2932_Make_an_intro_video_for_the_lo.mp4";
 
 export default function Login() {
   const [pin, setPin] = useState("");
@@ -38,10 +39,18 @@ export default function Login() {
     <div className="relative min-h-screen overflow-hidden bg-charcoal">
       {/* Backdrop — Giulia opening video on desktop/tablet, still photo on mobile */}
       <div className="absolute inset-0">
+        <video
+          src={LOGIN_VIDEO}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="hidden md:block h-full w-full object-cover"
+        />
         <img
           src={IMAGES.feetChair}
           alt=""
-          className="h-full w-full object-cover"
+          className="md:hidden h-full w-full object-cover"
           draggable={false}
         />
         {/* Readability gradients — darken the left where the card floats */}

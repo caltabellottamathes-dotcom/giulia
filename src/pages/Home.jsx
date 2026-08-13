@@ -236,13 +236,13 @@ export default function Home() {
         {/* Tidy sorted bento grid */}
         <div className="px-5 lg:px-10 pb-10 lg:pb-0">
           {loading ? (
-            <div className="max-w-[1150px] columns-1 sm:columns-2 lg:columns-3 gap-3 lg:gap-4">
-              {[0, 1, 2, 3].map((i) => (
+            <div className="max-w-[1280px] columns-1 sm:columns-2 lg:columns-4 xl:columns-5 gap-3 lg:gap-4">
+              {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
                 <div key={i} className="mb-3 lg:mb-4 break-inside-avoid h-[220px] rounded-[24px] shimmer" />
               ))}
             </div>
           ) : sorted.length > 0 ? (
-            <MasonryGrid className="max-w-[1150px]" gap={16}>
+            <MasonryGrid className="max-w-[1280px]" gap={16}>
               {sorted.map((w) => {
                 const def = WIDGETS[w.widget_type];
                 if (!def) return null;
