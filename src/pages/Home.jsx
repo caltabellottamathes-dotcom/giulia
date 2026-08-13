@@ -192,7 +192,7 @@ export default function Home() {
       </div>
 
       {/* Panel name + function links — where the greeting sits, shown when a panel is open */}
-      <div className={cn("hidden lg:block fixed top-24 left-10 z-20 max-w-[34rem] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]", panelOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none")}>
+      <div className={cn("hidden lg:block fixed top-24 left-10 z-50 max-w-[34rem] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]", panelOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none")}>
         <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/70 mb-3 font-semibold">
           {new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}
         </p>
@@ -250,7 +250,7 @@ export default function Home() {
               ))}
             </div>
           ) : sorted.length > 0 ? (
-            <MasonryGrid className="max-w-[1280px]" gap={16} spans={cells.map((c) => c.span)}>
+            <MasonryGrid className="max-w-[1280px]" gap={16} spans={cells.map((c) => c.span)} scale={0.9}>
               {cells.map((c) => c.node)}
             </MasonryGrid>
           ) : (

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import FloatingPanel from "@/components/glass/FloatingPanel";
 import { usePanel } from "@/lib/PanelContext";
 import { MODULES } from "@/lib/moduleRegistry";
-import { MODULE_FUNCTIONS } from "@/lib/moduleFunctions";
 import { WIDGETS } from "@/lib/widgetRegistry";
 import { IMAGES } from "@/lib/images";
 import { base44 } from "@/api/base44Client";
@@ -146,12 +145,12 @@ export default function ModulePanel() {
 
           {/* Floating glass content card — overlaps the header photo with rounded corners */}
           <div className="flex-1 -mt-10 rounded-t-[28px] glass-3 overflow-y-auto">
-            <div className="px-7 lg:px-9 pt-7 pb-4">
+            <div className="px-7 lg:px-9 pt-7 pb-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/55 font-medium mb-1.5">{MODULE_TOPIC[activeModule] || "Snelle context"}</p>
+                  <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/55 font-medium mb-1.5">Snelle context</p>
                   <h2 className="text-[24px] lg:text-[28px] font-display font-semibold tracking-tight leading-none text-ivory">
-                    {mod.label}
+                    {MODULE_TOPIC[activeModule] || mod.label}
                   </h2>
                 </div>
               <div className="flex items-center gap-2 shrink-0 mt-0.5">
@@ -178,19 +177,6 @@ export default function ModulePanel() {
                 <AnimatedPicto icon={mod.icon} accent={MODULE_ACCENT[activeModule]} />
                 </div>
               </div>
-
-              {/* Navigation menu — links to the elements of this page */}
-              <nav className="mt-4 flex flex-wrap gap-x-5 gap-y-1.5">
-                {(MODULE_FUNCTIONS[activeModule] || []).map((f) => (
-                  <button
-                    key={f.label}
-                    onClick={() => { navigate(f.to); closeModule(); }}
-                    className="text-sm text-ivory/70 hover:text-ivory transition-colors underline underline-offset-4 decoration-ivory/20 text-left"
-                  >
-                    {f.label}
-                  </button>
-                ))}
-              </nav>
             </div>
 
             {/* Content — LEVEL 02 quick-context preview, or full component for
