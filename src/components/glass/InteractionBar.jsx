@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
-import FloatingPanel from "@/components/glass/FloatingPanel";
 import { usePanel } from "@/lib/PanelContext";
 import { useContextCapture } from "@/lib/ContextCaptureContext";
 import { base44 } from "@/api/base44Client";
@@ -154,62 +153,66 @@ export default function InteractionBar() {
         </div>
       )}
 
-      <FloatingPanel open={menuOpen} onClose={() => setMenuOpen(false)} position="bottom" level={3}>
-        <div className="p-6 lg:p-8 text-ivory max-h-[78vh] overflow-y-auto">
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-ivory/60 mb-1">Menu</p>
-              <h2 className="text-lg font-heading font-light">Navigatie</h2>
-            </div>
-            <button
-              onClick={() => setMenuOpen(false)}
-              className="h-8 w-8 rounded-lg glass-1 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors"
-              aria-label="Sluiten"
-            >
-              <Plus className="h-4 w-4 rotate-45" />
-            </button>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-5 gap-y-4">
-            {navSections.map((section, si) => (
-              <div key={si} className="space-y-1">
-                {section.label && (
-                  <p className="px-2 mb-1 text-[10px] uppercase tracking-[0.24em] text-ivory/70 font-semibold">
-                    {section.label}
-                  </p>
-                )}
-                {section.items.map((item) =>
-                  item.to ? (
-                    <NavLink
-                      key={item.key}
-                      to={item.to}
-                      end
-                      onClick={() => setMenuOpen(false)}
-                      className={({ isActive }) =>
-                        cn(
-                          "flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-sm transition-all duration-300 font-medium",
-                          isActive ? "glass-1 text-ivory" : "text-ivory/85 hover:text-ivory hover:bg-ivory/[0.07]"
-                        )
-                      }
-                    >
-                      <item.icon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
-                      <span className="truncate">{item.label}</span>
-                    </NavLink>
-                  ) : (
-                    <button
-                      key={item.key}
-                      onClick={() => handleNav(item.key)}
-                      className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-sm transition-all duration-300 font-medium text-ivory/85 hover:text-ivory hover:bg-ivory/[0.07]"
-                    >
-                      <item.icon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
-                      <span className="truncate">{item.label}</span>
-                    </button>
-                  )
-                )}
+      {/* Compact editorial quick-nav — anchored just above the interaction bar */}
+      {menuOpen && (
+        <>
+          <div className="fixed inset-0 z-[38]" onClick={() => setMenuOpen(false)} />
+          <div className="fixed z-[39] bottom-[4.5rem] right-4 lg:right-10 w-[320px] animate-scale-in">
+            <div className="glass-4 rounded-[24px] overflow-hidden text-ivory border border-white/18 shadow-[0_24px_60px_-18px_rgba(0,0,0,0.55)]">
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-ivory/10">
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-olive animate-pulse-soft" />
+                  <span className="text-[11px] uppercase tracking-[0.22em] font-bold text-ivory/70">Giulia OS</span>
+                </div>
+                <button onClick={() => setMenuOpen(false)} className="text-ivory/50 hover:text-ivory transition">
+                  <Plus className="h-4 w-4 rotate-45" />
+                </button>
               </div>
-            ))}
+              {/* Nav grid — flat list, editorial style */}
+              <div className="p-4 space-y-0.5">
+                {navSections.map((section, si) => (
+                  <div key={si}>
+                    {section.label && (
+                      <p className="px-3 pt-3 pb-1 text-[9px] uppercase tracking-[0.28em] text-ivory/40 font-bold">{section.label}</p>
+                    )}
+                    <div className="grid grid-cols-2 gap-0.5">
+                      {section.items.map((item) =>
+                        item.to ? (
+                          <NavLink
+                            key={item.key}
+                            to={item.to}
+                            end
+                            onClick={() => setMenuOpen(false)}
+                            className={({ isActive }) =>
+                              cn(
+                                "flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition",
+                                isActive ? "bg-ivory/15 text-ivory" : "text-ivory/75 hover:text-ivory hover:bg-ivory/8"
+                              )
+                            }
+                          >
+                            <item.icon className="h-3.5 w-3.5 shrink-0 opacity-70" strokeWidth={1.8} />
+                            <span>{item.label}</span>
+                          </NavLink>
+                        ) : (
+                          <button
+                            key={item.key}
+                            onClick={() => handleNav(item.key)}
+                            className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium text-ivory/75 hover:text-ivory hover:bg-ivory/8 transition w-full"
+                          >
+                            <item.icon className="h-3.5 w-3.5 shrink-0 opacity-70" strokeWidth={1.8} />
+                            <span>{item.label}</span>
+                          </button>
+                        )
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-      </FloatingPanel>
+        </>
+      )}
     </>
   );
 }

@@ -13,6 +13,7 @@ import TauriFocusSync from "@/components/native/TauriFocusSync";
 import { GiuliaAgentProvider } from "@/lib/GiuliaAgentContext";
 import BottomNav from "@/components/BottomNav";
 import { useAgentNavigation } from "@/lib/useAgentNavigation";
+import GiuliaBubble from "@/components/glass/GiuliaBubble";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
@@ -146,6 +147,9 @@ function LayoutInner() {
 
       {/* Click-to-remember — capture context from any element, anywhere */}
       <ContextCaptureLayer />
+
+      {/* Giulia proactive text bubbles — appear during active OS sessions */}
+      <GiuliaBubble />
     </div>
   );
 }

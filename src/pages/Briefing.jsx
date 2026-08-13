@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
@@ -23,14 +23,39 @@ export default function Briefing() {
   const [exitDir, setExitDir] = useState(0);
   const [expanded, setExpanded] = useState(false);
 
+  // Giulia question cards — mixed in at positions 2, 5, 9 etc.
+  const GIULIA_QUESTIONS = [
+    { type: "question", title: "Wat geeft jou 's ochtends energie voor de dag?", summary: "Koffie, muziek, stilte? Ik wil begrijpen wat jouw dag goed start.", suggested_action: "Antwoord typen", priority: "relevant" },
+    { type: "question", title: "Welk type taak doe je het liefst als eerste?", summary: "De makkelijkste om warm te draaien, of juist de zwaarste terwijl je scherp bent?", suggested_action: "Vertel het", priority: "relevant" },
+    { type: "question", title: "Is er iemand waar je vaker van hoort dan je wil?", summary: "Of juist iemand van wie je te weinig hoort? Ik leer graag je sociale landschap kennen.", suggested_action: "Vertel me", priority: "relevant" },
+    { type: "question", title: "Hoe weet jij dat een dag geslaagd was?", summary: "Een gevoel, een lijst, iets wat gedaan is? Ik wil weten wat voor jou 'goed' betekent.", suggested_action: "Vertel het", priority: "relevant" },
+    { type: "question", title: "Wat stel je het meest uit?", summary: "Niet om je te bekritiseren — ik wil er gewoon rekening mee houden.", suggested_action: "Eerlijk antwoorden", priority: "relevant" },
+  ];
+  const questionIdx = useRef(0);
+
+  const injectQuestions = useCallback((rawItems) => {
+    const result = [...rawItems];
+    const positions = [2, 5, 9]; // inject at these positions
+    let qIdx = questionIdx.current % GIULIA_QUESTIONS.length;
+    positions.forEach((pos, i) => {
+      if (pos <= result.length) {
+        const q = { ...GIULIA_QUESTIONS[(qIdx + i) % GIULIA_QUESTIONS.length], id: `q-${i}`, status: "new" };
+        result.splice(pos + i, 0, q);
+      }
+    });
+    questionIdx.current = (qIdx + positions.length) % GIULIA_QUESTIONS.length;
+    return result;
+  }, []);
+
   const load = useCallback(async () => {
     try {
       const res = await base44.functions.invoke("compileBriefing", {});
       const d = res?.data ?? res;
       if (d?.ok) {
         setData(d);
-        setItems(d.items || []);
-        setPhase((d.items || []).length ? "intro" : "outro");
+        const enriched = injectQuestions(d.items || []);
+        setItems(enriched);
+        setPhase(enriched.length ? "intro" : "outro");
       } else {
         setPhase("outro");
         setData({ outro: { head: "Je bent weer bij.", subline: "Er staat niets dringend.", next: "" } });
@@ -39,7 +64,7 @@ export default function Briefing() {
       setPhase("outro");
       setData({ outro: { head: "Je bent weer bij.", subline: "Er staat niets dringend.", next: "" } });
     }
-  }, []);
+  }, [injectQuestions]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -79,6 +104,11 @@ export default function Briefing() {
 
   const openAction = (item) => {
     if (!item) return;
+    // Question cards go to chat for the user to type their answer
+    if (item.type === "question") {
+      navigate("/chat");
+      return;
+    }
     updateStatus(item.id, "actioned");
     const params = item.action_params && Object.keys(item.action_params).length
       ? "?" + new URLSearchParams(item.action_params).toString()
@@ -227,6 +257,7 @@ export default function Briefing() {
                 onAct={() => openAction(current)}
                 expanded={expanded}
                 onToggleExpand={() => setExpanded((v) => !v)}
+                photoIndex={index}
               />
             </motion.div>
           )}

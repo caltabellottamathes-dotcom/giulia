@@ -4,22 +4,49 @@ import CountUp from "@/components/widgets/CountUp";
 import Ring from "@/components/widgets/Ring";
 import {
   ArrowRight, ChevronDown, Mail, MessageCircle, Calendar, Briefcase,
-  AlertTriangle, Telescope, Clock, CheckSquare, FileText,
+  AlertTriangle, Telescope, Clock, CheckSquare, FileText, HelpCircle,
 } from "lucide-react";
 import { IMAGES } from "@/lib/images";
 import { cn } from "@/lib/utils";
 
+// Full photo pool — rotated per card using index
+export const BRIEFING_PHOTOS = [
+  IMAGES.salvoSandTopDown,
+  IMAGES.salvoChairStairs,
+  IMAGES.salvoWalkingBeach,
+  IMAGES.salvoChairsTopScattered,
+  IMAGES.salvoChairSittingMany,
+  IMAGES.salvoChairStacked,
+  IMAGES.salvoChairWater,
+  IMAGES.salvoJacketChairWater,
+  IMAGES.salvoFeetPebbles,
+  IMAGES.salvoFeetSitting,
+  IMAGES.salvoFloating,
+  IMAGES.salvoChairsCircle,
+  IMAGES.salvoStandingWater,
+  IMAGES.chairFogBeach,
+  IMAGES.chairPebbleWater,
+  IMAGES.twoChairsSandAerial,
+  IMAGES.hourglassClose,
+  IMAGES.salvoReadingBeach,
+  IMAGES.notebookChair,
+  IMAGES.walkTowardChair,
+  IMAGES.bagJacket,
+  IMAGES.womanFolder,
+];
+
 const TYPE_PHOTO = {
-  whatsapp: IMAGES.stilettoHead,
-  email: IMAGES.portraitBoot,
-  calendar: IMAGES.walkChairsBeach,
-  project: IMAGES.walkChairsHigh,
-  deadline: IMAGES.feetChairs,
-  task: IMAGES.feetChairs,
-  important: IMAGES.leanChair,
-  insight: IMAGES.chairWater,
-  document: IMAGES.chairsScattered,
-  meeting: IMAGES.loungeChairs,
+  whatsapp: IMAGES.salvoChairStairs,
+  email: IMAGES.salvoReadingBeach,
+  calendar: IMAGES.salvoChairsCircle,
+  project: IMAGES.salvoWalkingBeach,
+  deadline: IMAGES.hourglassClose,
+  task: IMAGES.notebookChair,
+  important: IMAGES.salvoSandTopDown,
+  insight: IMAGES.salvoStandingWater,
+  document: IMAGES.womanFolder,
+  meeting: IMAGES.twoChairsSandAerial,
+  question: IMAGES.giuliaPortrait2,
 };
 
 const TYPE_LABEL = {
@@ -31,7 +58,7 @@ const TYPE_LABEL = {
 const TYPE_ICON = {
   whatsapp: MessageCircle, email: Mail, calendar: Calendar, project: Briefcase,
   task: CheckSquare, deadline: Clock, important: AlertTriangle, insight: Telescope,
-  document: FileText, meeting: Calendar,
+  document: FileText, meeting: Calendar, question: HelpCircle,
 };
 
 const PRIORITY_LABEL = { critical: "Nu", important: "Vandaag", relevant: "Goed om te weten", later: "Later" };
@@ -132,6 +159,14 @@ function Infographic({ item }) {
           <p className="text-[15px] text-charcoal/70 leading-relaxed italic mt-2">{item.summary}</p>
         </div>
       );
+    case "question":
+      return (
+        <div>
+          <span className="inline-block text-[11px] uppercase tracking-[0.22em] font-bold text-olive mb-3">Giulia wil je iets vragen</span>
+          <span className="block text-[24px] font-display font-bold text-charcoal leading-[1.1] tracking-tight">{item.title}</span>
+          <p className="text-[14px] text-charcoal/65 leading-relaxed mt-2">{item.summary}</p>
+        </div>
+      );
     case "important":
     default:
       return (
@@ -144,10 +179,13 @@ function Infographic({ item }) {
   }
 }
 
-export default function BriefingCard({ item, onAct, expanded, onToggleExpand, interactive = true }) {
+export default function BriefingCard({ item, onAct, expanded, onToggleExpand, interactive = true, photoIndex = 0 }) {
   if (!item) return null;
   const Icon = TYPE_ICON[item.type] || AlertTriangle;
-  const photo = TYPE_PHOTO[item.type] || IMAGES.feetChairs;
+  // Question cards always get the Giulia portrait; others rotate through the photo pool
+  const photo = item.type === "question"
+    ? IMAGES.giuliaPortrait2
+    : (BRIEFING_PHOTOS[photoIndex % BRIEFING_PHOTOS.length] || TYPE_PHOTO[item.type] || IMAGES.feetChairs);
   const priority = item.priority || "relevant";
 
   return (
