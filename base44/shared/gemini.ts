@@ -37,11 +37,23 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 //   backdesk     → alle achtergrond-agents (manage*, proactivity, leader, planning)
 //   update       → dashboard/widget/paneel- en visuele updates (briefing-content)
 //   default      → legacy-sleutels + RESERVE (alles wat geen eigen rol heeft)
-// GIULIA-GIULIA is de kritieke, gebruiker-zichtbare chatlijn — die krijgt de
-// langste keten (eigen sleutel eerst, dan ALLE overige sleutels) zodat een
-// quota-hit op één sleutel nooit de chat blokkeert.
+// GIULIA-GIULIA is de kritieke, gebruiker-zichtbare chatlijn — die krijgt 4
+// exclusieve sleutels (vrij inwisselbaar, gewoon gelabeld per functie om
+// gestructureerd te blijven) vóór de gedeelde sleutels, zodat een quota-hit
+// op één sleutel nooit de chat blokkeert.
 const KEY_POOLS = {
-  giulia_giulia: ["GIULIA_GIULIA_GEMINI_API_KEY", "Gemini_Flash_API_Key", "RESERVE_GEMINI_API_KEY", "GEMINI_API_KEY", "UPDATE_GEMINI_API_KEY", "BACKDESK_GEMINI_API_KEY", "GIULIA_API_KEY"],
+  giulia_giulia: [
+    "GIULIA_GIULIA_GEMINI_API_KEY",
+    "GIULIA_GIULIA_CHAT_GEMINI_API_KEY",
+    "GIULIA_GIULIA_DELEGATION_GEMINI_API_KEY",
+    "GIULIA_GIULIA_MEMORY_GEMINI_API_KEY",
+    "RESERVE_GEMINI_API_KEY",
+    "GEMINI_API_KEY",
+    "Gemini_Flash_API_Key",
+    "UPDATE_GEMINI_API_KEY",
+    "BACKDESK_GEMINI_API_KEY",
+    "GIULIA_API_KEY",
+  ],
   backdesk: ["BACKDESK_GEMINI_API_KEY", "GEMINI_API_KEY", "GIULIA_API_KEY", "RESERVE_GEMINI_API_KEY"],
   update: ["UPDATE_GEMINI_API_KEY", "GEMINI_API_KEY", "RESERVE_GEMINI_API_KEY"],
   default: ["GEMINI_API_KEY", "Gemini_Flash_API_Key", "GIULIA_API_KEY", "RESERVE_GEMINI_API_KEY"],
