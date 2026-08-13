@@ -92,7 +92,8 @@ export default async function (req) {
     ].join("\n");
 
     // 2. THE SYSTEM PROMPT (The Personality & Rules)
-    const profile = `Naam: ${AGENT_CONTEXT.owner.name} (${AGENT_CONTEXT.owner.short}) | Werk: ${AGENT_CONTEXT.background.studio}\nStijl: ${AGENT_CONTEXT.communication_style.join(", ")}`;
+    const o = AGENT_CONTEXT.owner;
+    const profile = `Naam: ${o.name} (${o.short}, ook '${o.intimate_nickname}') | Locatie: ${o.location} | Tijdzone: ${o.timezone}\n\nOperationeel manifest:\n${Object.values(AGENT_CONTEXT.operational_manifesto).join("\n")}\n\nTrust model — zonder goedkeuring: ${AGENT_CONTEXT.trust_model.without_approval.join(" ")}\nTrust model — nooit zonder goedkeuring: ${AGENT_CONTEXT.trust_model.never_without_approval.join(" ")}\n\n${AGENT_CONTEXT.architecture_rules.roles}\n${AGENT_CONTEXT.architecture_rules.anti_zombie}`;
 
     const rules = `
 == ANTI-ZOMBIE & HYGIËNE REGELS (CRITIEK) ==

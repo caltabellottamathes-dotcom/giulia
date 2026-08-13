@@ -87,6 +87,7 @@ export default function GiuliaIntroOverlay() {
         src={INTRO_VIDEO}
         playsInline
         autoPlay
+        onEnded={startRun}
         className="absolute inset-0 h-full w-full object-cover"
       />
 
