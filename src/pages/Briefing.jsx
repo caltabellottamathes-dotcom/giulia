@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { usePanel } from "@/lib/PanelContext";
 import { useToast } from "@/components/ui/use-toast";
 import { X, Sparkles, Mic, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import BriefingCard from "@/components/briefing/BriefingCard";
@@ -14,7 +13,6 @@ import { IMAGES } from "@/lib/images";
  */
 export default function Briefing() {
   const navigate = useNavigate();
-  const { openChat } = usePanel();
   const { toast } = useToast();
 
   const [phase, setPhase] = useState("loading"); // loading | intro | stack | outro
@@ -88,7 +86,7 @@ export default function Briefing() {
     navigate((item.action_route || "/") + params);
   };
 
-  const askGiulia = () => openChat();
+  const askGiulia = () => navigate("/chat");
 
   /* ---------- LOADING ---------- */
   if (phase === "loading") {
