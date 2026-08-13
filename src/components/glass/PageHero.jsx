@@ -21,6 +21,7 @@ export const HERO_IMG = {
   documents: IMAGES.chairsScattered,
   people: IMAGES.portraitThinking,
   approvals: IMAGES.leanChair,
+  notifications: IMAGES.feetChair,
   insights: IMAGES.feetChair,
   memory: IMAGES.loungeChairs,
   activity: IMAGES.topDownWalk,

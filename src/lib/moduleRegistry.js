@@ -1,7 +1,7 @@
 import {
   Calendar, Briefcase, CheckSquare, Mail, MessageCircle,
   BookOpen, FileText, Users, MessageSquare, Mic, ClipboardCheck,
-  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu, Timer, Sparkles, Sunrise,
+  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu, Timer, Sparkles, Sunrise, Bell,
 } from "lucide-react";
 
 import Agenda from "@/pages/Agenda";
@@ -15,6 +15,7 @@ import People from "@/pages/People";
 import Chat from "@/pages/Chat";
 import Voice from "@/pages/Voice";
 import Approvals from "@/pages/Approvals";
+import Notifications from "@/pages/Notifications";
 import ActivityPage from "@/pages/Activity";
 import Memory from "@/pages/Memory";
 import Integrations from "@/pages/Integrations";
@@ -43,6 +44,7 @@ export const MODULES = {
   chat:        { label: "Chat",         icon: MessageSquare, Component: Chat,         panelWidth: 720 },
   voice:       { label: "Voice",        icon: Mic,           Component: Voice,        panelWidth: 720 },
   approvals:   { label: "Approvals",     icon: ClipboardCheck, Component: Approvals,   panelWidth: 720 },
+  notifications: { label: "Notifications", icon: Bell,         Component: Notifications, panelWidth: 640 },
   activity:    { label: "Activity",      icon: ActivityIcon,  Component: ActivityPage, panelWidth: 720 },
   memory:      { label: "Memory",        icon: Brain,         Component: Memory,      panelWidth: 720 },
   integrations:{ label: "Integrations",  icon: Plug,           Component: Integrations, panelWidth: 720 },

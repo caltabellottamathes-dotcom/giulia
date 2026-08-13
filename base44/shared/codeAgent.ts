@@ -33,7 +33,18 @@ export async function reportToSalvo(base44, agentName, message, threadId) {
   } catch { return null; }
 }
 
-const APPROVAL_CATEGORY = { email: "email", whatsapp: "whatsapp", calendar: "calendar", task: "tasks", tasks: "tasks", file: "documents" };
+/**
+ * inferApprovalCategory — approvals hebben 5 categorieën die los staan van
+ * het 'type' (email/whatsapp/calendar): urgent, communication, projects,
+ * intern, proactive. Een agent moet dit expliciet meegeven via meta.category;
+ * dit is enkel een veilige fallback.
+ */
+function inferApprovalCategory(type, meta) {
+  if (meta && meta.category) return meta.category;
+  if (type === "email" || type === "whatsapp" || type === "calendar") return "communication";
+  if (meta && meta.project_id) return "projects";
+  return "intern";
+}
 
 export async function createApproval(base44, type, title, content, context, assignee, meta) {
   try {
@@ -56,7 +67,7 @@ export async function createApproval(base44, type, title, content, context, assi
       description: title || type,
       action_type: type,
       type,
-      category: APPROVAL_CATEGORY[type] || "other",
+      category: inferApprovalCategory(type, m),
       content: content || "",
       status: "pending",
       agent_source: "giulia",

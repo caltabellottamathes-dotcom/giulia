@@ -38,7 +38,8 @@ export default async function (req) {
       openTasks,
       deadTasks,
       pendingApprovals,
-      recentActivity
+      recentActivity,
+      pendingNotifications
     ] = await Promise.all([
       sr.entities.Memory.list("-created_date", 150).catch(() => []),
       sr.entities.Project.filter({ status: { $in: ["planning", "in_progress", "waiting"] } }).catch(() => []),
@@ -46,6 +47,7 @@ export default async function (req) {
       sr.entities.Task.filter({ status: { $in: ["completed", "archived", "done"] } }, "-updated_date", 40).catch(() => []),
       sr.entities.Approval.filter({ status: "pending" }).catch(() => []),
       sr.entities.Activity.list("-created_date", 10).catch(() => []),
+      sr.entities.Notification.filter({ status: "unread" }).catch(() => []),
     ]);
 
     // Semantische geheugen-selectie — vindt ook herinneringen van weken
@@ -87,6 +89,7 @@ export default async function (req) {
       deadTasks.map(t => `- ID: ${t.id} | ${t.title} | Status: ${t.status}`).join("\n"),
       ``,
       `Wachtende Goedkeuringen voor externe acties: ${pendingApprovals.length}`,
+      `Ongelezen notificaties (vragen/opmerkingen aan Salvo): ${pendingNotifications.length}`,
       `Recente systeem activiteit:`,
       recentActivity.slice(0, 5).map(a => `- ${String(a.description).slice(0, 140)}`).join("\n")
     ].join("\n");
@@ -102,6 +105,7 @@ export default async function (req) {
 3. Soft Deletes: Als Salvo in de chat zegt "Verwijder taak X", roep je 'update_task' aan en zet je de status op 'archived'. Gebruik geen andere acties.
 4. Externe acties (email, whatsapp, kalender toevoegen met gasten) doe je NOOIT rechtstreeks, ALTIJD via 'create_approval'.
 5. Je bent de enige intelligentie. Wees proactief in je denkproces, maar conservatief in het aanmaken van database-records.
+6. STRIKT ONDERSCHEID — Taak vs Approval vs Notificatie: Een Taak ('create_task') is een concrete actie voor Salvo voor vandaag/morgen/deze week, alleen aanmaken als er ECHT iets verandert, en synchroniseer dit altijd met de agenda/planning. Een Approval ('create_approval') is UITSLUITEND een externe actie (email/whatsapp/agenda) die letterlijk verzonden moet worden — kies de category zorgvuldig (urgent/communication/projects/intern/proactive) en gebruik 'proactive' bijna nooit, nooit twee keer over hetzelfde. Een vraag aan Salvo, een plagerij, of een melding over iets dat je op de achtergrond deed gaat ALTIJD via 'create_notification' — dat is geen taak en geen approval.
 `;
 
     // Tool-schema's expliciet meegeven — anders weet Gemini niet welke velden

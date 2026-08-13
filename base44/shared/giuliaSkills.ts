@@ -89,11 +89,23 @@ export const GIULIA_SKILLS = [
   },
   {
     name: "create_approval",
-    description: "EXTERNE ACTIES. Maak een Approval aan voor een email, whatsapp of agenda-afspraak die Salvo moet goedkeuren. Stuur NOOIT zelfstandig iets naar buiten.",
-    inputSchema: { type: "object", properties: { type: { type: "string", enum: ["email", "whatsapp", "calendar"] }, title: { type: "string" }, content: { type: "string" }, thread_id: { type: "string" }, target: { type: "string" } }, required: ["type", "title", "content"] },
-    execute: async ({ type, title, content, thread_id, target }, base44) => {
-      const a = await createApproval(base44, type, title, content, "", "salvo", { thread_id, target });
+    description: "EXTERNE ACTIES. Maak een Approval aan voor een email, whatsapp of agenda-afspraak die Salvo moet goedkeuren. Stuur NOOIT zelfstandig iets naar buiten. Kies 'category' ZORGVULDIG: 'urgent' = een achtergrondproces loopt vast omdat jij twijfelde (bv. bestand verwijderen/archiveren) en blokkeert ander werk. 'communication' = een voorgesteld email/WhatsApp-antwoord of belafspraak (ook als het over een project gaat). 'projects' = ECHTE projectmanagement-beslissingen, geen communicatie. 'intern' = niet-dringende interne zaken die kunnen wachten. 'proactive' = een suggestie die JIJ zelf initieert zonder dat Salvo erom vroeg — gebruik dit BIJNA NOOIT en nooit twee keer over hetzelfde onderwerp; is iets echt belangrijk, maak er dan een taak + agenda-item van in plaats van te vragen. Zet in 'content' bij email/whatsapp ALTIJD het letterlijke voorgestelde bericht.",
+    inputSchema: { type: "object", properties: { type: { type: "string", enum: ["email", "whatsapp", "calendar"] }, category: { type: "string", enum: ["urgent", "communication", "projects", "intern", "proactive"] }, title: { type: "string" }, content: { type: "string" }, context: { type: "string" }, thread_id: { type: "string" }, target: { type: "string" }, project_id: { type: "string" } }, required: ["type", "category", "title", "content"] },
+    execute: async ({ type, category, title, content, context, thread_id, target, project_id }, base44) => {
+      const a = await createApproval(base44, type, title, content, context || "", "salvo", { category, thread_id, target, project_id });
       return a ? { id: a.id } : { error: "create failed" };
+    }
+  },
+  {
+    name: "create_notification",
+    description: "Voor VRAGEN aan Salvo of OPMERKINGEN die GEEN taak en GEEN approval zijn — bv. een vraag die je nodig hebt om verder te kunnen, plagen, of laten weten dat je iets op de achtergrond hebt gedaan (planning gemaakt, iets in de agenda gezet). Gebruik dit i.p.v. create_task of create_approval zodra het geen concrete actie of externe verzending is. Wordt direct als pushmelding gestuurd.",
+    inputSchema: { type: "object", properties: { title: { type: "string" }, message: { type: "string" }, kind: { type: "string", enum: ["question", "remark", "info"] }, requires_response: { type: "boolean" }, urgent: { type: "boolean" }, related_route: { type: "string" } }, required: ["message"] },
+    execute: async (args, base44) => {
+      const n = await base44.asServiceRole.entities.Notification.create({ ...args, agent_source: "GIULIA-CORE" }).catch(() => null);
+      if (n) {
+        try { await base44.functions.invoke("sendPushNotifications", { title: args.title || "Giulia", message: args.message }); } catch { /* ignore */ }
+      }
+      return n ? { id: n.id } : { error: "create failed" };
     }
   },
   {

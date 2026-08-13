@@ -23,6 +23,7 @@ import Documents from '@/pages/Documents';
 import People from '@/pages/People';
 import PersonDetail from '@/pages/PersonDetail';
 import Approvals from '@/pages/Approvals';
+import Notifications from '@/pages/Notifications';
 import Activity from '@/pages/Activity';
 import Memory from '@/pages/Memory';
 import Integrations from '@/pages/Integrations';
@@ -96,6 +97,7 @@ const AuthenticatedApp = () => {
           <Route path="/people" element={<People />} />
           <Route path="/people/:id" element={<PersonDetail />} />
           <Route path="/approvals" element={<Approvals />} />
+          <Route path="/notifications" element={<Notifications />} />
           <Route path="/activity" element={<Activity />} />
           <Route path="/memory" element={<Memory />} />
           <Route path="/integrations" element={<Integrations />} />

@@ -25,7 +25,8 @@ export default function GiuliaWidget() {
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    const today = new Date().toLocaleDateString("sv-SE");
+    const now = new Date();
+    const today = now.toLocaleDateString("sv-SE");
     const [plans, tasks, events, emails, approvals] = await Promise.all([
       base44.entities.DailyPlan.filter({ date: today }).catch(() => []),
       base44.entities.Task.list().catch(() => []),
@@ -41,7 +42,7 @@ export default function GiuliaWidget() {
       setUpdated(p.last_updated || p.updated_date || null);
     } else {
       const todayEvents = events
-        .filter((e) => (e.start || "").slice(0, 10) === today)
+        .filter((e) => (e.start || "").slice(0, 10) === today && new Date(e.end || e.start) >= now)
         .sort((a, b) => new Date(a.start) - new Date(b.start));
       const overdue = tasks
         .filter((t) => t.status === "overdue")
@@ -61,6 +62,11 @@ export default function GiuliaWidget() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+  // Zonder dit blijft de kaart uren stilstaan alsof het nog ochtend is.
+  useEffect(() => {
+    const i = setInterval(load, 5 * 60000);
+    return () => clearInterval(i);
+  }, [load]);
 
   const updatedStr = updated
     ? new Date(updated).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })

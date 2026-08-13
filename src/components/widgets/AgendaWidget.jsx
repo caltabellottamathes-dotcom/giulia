@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import WidgetShell from "./WidgetShell";
 import BrandPhoto from "./BrandPhoto";
 import { usePanel } from "@/lib/PanelContext";
@@ -8,18 +8,29 @@ import { cn } from "@/lib/utils";
 
 const HOURS = 12;
 
-/** AgendaWidget — glass floats over a tall header photo (info on the photo). */
+/** AgendaWidget — glass floats over a tall header photo (info on the photo).
+ *  Verlopen afspraken van vandaag verdwijnen automatisch — er wordt altijd
+ *  de eerstvolgende nog-komende afspraak getoond. */
 export default function AgendaWidget() {
   const { openModule } = usePanel();
-  const { data: events, loading } = useEntityList("Event", { sort: "start" });
+  const { data: events, loading } = useEntityList("Event", { sort: "start", realtime: true });
   const [day, setDay] = useState("today");
+  const [now, setNow] = useState(() => new Date());
 
-  const todayStr = new Date().toLocaleDateString("sv-SE");
-  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  // Herteken elke minuut zodat een afspraak vanzelf uit "Vandaag" valt zodra hij voorbij is.
+  useEffect(() => {
+    const i = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(i);
+  }, []);
+
+  const todayStr = now.toLocaleDateString("sv-SE");
+  const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate() + 1);
   const tomorrowStr = tomorrow.toLocaleDateString("sv-SE");
   const targetStr = day === "today" ? todayStr : tomorrowStr;
 
-  const todays = events.filter((e) => (e.start || "").slice(0, 10) === targetStr).sort((a, b) => (a.start || "").localeCompare(b.start || ""));
+  const dayEvents = events.filter((e) => (e.start || "").slice(0, 10) === targetStr);
+  const todays = (day === "today" ? dayEvents.filter((e) => new Date(e.end || e.start) >= now) : dayEvents)
+    .sort((a, b) => (a.start || "").localeCompare(b.start || ""));
   const next = todays[0];
   const pos = (start) => { const d = new Date(start); const h = d.getHours() + d.getMinutes() / 60; return Math.max(0, Math.min(1, (h - 8) / HOURS)); };
 
@@ -50,7 +61,7 @@ export default function AgendaWidget() {
             ) : (
               <div>
                 <span className="text-5xl font-display font-semibold text-ivory/85">0</span>
-                <p className="text-sm text-ivory/75 mt-1">{day === "today" ? "Vandaag is leeg" : "Morgen is leeg"}</p>
+                <p className="text-sm text-ivory/75 mt-1">{day === "today" ? "Vandaag is klaar" : "Morgen is leeg"}</p>
               </div>
             )}
           </div>
@@ -70,7 +81,7 @@ export default function AgendaWidget() {
                 <span className="absolute -bottom-1 right-0 text-[9px] text-ivory/50 tabular-nums">20</span>
               </div>
               <div className="mt-auto pt-5 flex items-center justify-between">
-                <span className="text-[11px] text-ivory/60">{todays.length} afspraak{todays.length !== 1 ? "en" : ""}</span>
+                <span className="text-[11px] text-ivory/60">{todays.length} afspraak{todays.length !== 1 ? "en" : ""} {day === "today" ? "te gaan" : ""}</span>
                 <button onClick={(e) => { e.stopPropagation(); openModule("agenda"); }} className="rounded-full px-4 py-2 text-[12px] font-semibold transition hover:-translate-y-0.5 active:scale-95" style={{ background: "var(--tile-accent)", color: "var(--tile-on-accent)" }}>Openen</button>
               </div>
             </>

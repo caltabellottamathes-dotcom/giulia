@@ -1,0 +1,65 @@
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "message": {
+      "type": "string",
+      "title": "Message"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "question",
+        "remark",
+        "info"
+      ],
+      "default": "remark",
+      "title": "Kind"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "unread",
+        "answered",
+        "dismissed"
+      ],
+      "default": "unread",
+      "title": "Status"
+    },
+    "answer": {
+      "type": "string",
+      "title": "Answer"
+    },
+    "requires_response": {
+      "type": "boolean",
+      "default": false,
+      "title": "Requires Response"
+    },
+    "urgent": {
+      "type": "boolean",
+      "default": false,
+      "title": "Urgent"
+    },
+    "related_route": {
+      "type": "string",
+      "title": "Related Route"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
+    }
+  },
+  "required": [
+    "message"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

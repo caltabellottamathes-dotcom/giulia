@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 import GlassPanel from "@/components/glass/GlassPanel";
 import PageHero from "@/components/glass/PageHero";
 import { base44 } from "@/api/base44Client";
@@ -20,9 +21,11 @@ const SRC_META = {
 const metaFor = (src) =>
   SRC_META[(src || "").toLowerCase()] || { label: src || "Overig", icon: ActivityIcon, color: "hsl(var(--smoke))" };
 
+/** Activity — per-agent tabs bovenaan i.p.v. eindeloos scrollende gestapelde groepen. */
 export default function Activity() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState("all");
 
   const load = async () => {
     setLoading(true);
@@ -53,10 +56,11 @@ export default function Activity() {
     (groups[k] = groups[k] || []).push(it);
   });
   const groupKeys = Object.keys(groups).sort((a, b) => groups[b].length - groups[a].length);
+  const visible = tab === "all" ? sorted : (groups[tab] || []);
 
   return (
     <div className="space-y-5 animate-fade-up">
-      <PageHero page="activity" icon={ActivityIcon} eyebrow="Giulia" title="Activiteit" subtitle="Wat Giulia voor je heeft gedaan — per categorie" />
+      <PageHero page="activity" icon={ActivityIcon} eyebrow="Giulia" title="Activiteit" subtitle="Wat Giulia voor je heeft gedaan — per agent" />
 
       {loading && (
         <GlassPanel level={2} className="p-6 space-y-2">
@@ -70,33 +74,59 @@ export default function Activity() {
         </GlassPanel>
       )}
 
-      {!loading && groupKeys.map((k) => {
-        const meta = metaFor(k);
-        const list = groups[k];
-        return (
-          <div key={k} className="rounded-2xl border border-border/40 overflow-hidden bg-background/40">
+      {!loading && sorted.length > 0 && (
+        <>
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <button
+              onClick={() => setTab("all")}
+              className={cn(
+                "px-3 py-1.5 text-xs rounded-full whitespace-nowrap transition-all flex items-center gap-2",
+                tab === "all" ? "bg-foreground text-background font-medium" : "glass-1 text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Alles
+              <span className={cn("px-1.5 py-0.5 rounded-full text-[9px]", tab === "all" ? "bg-background/20" : "bg-foreground/10")}>{sorted.length}</span>
+            </button>
+            {groupKeys.map((k) => {
+              const meta = metaFor(k);
+              return (
+                <button
+                  key={k}
+                  onClick={() => setTab(k)}
+                  className={cn(
+                    "px-3 py-1.5 text-xs rounded-full whitespace-nowrap transition-all flex items-center gap-2",
+                    tab === k ? "text-white font-medium" : "glass-1 text-muted-foreground hover:text-foreground"
+                  )}
+                  style={tab === k ? { background: meta.color } : undefined}
+                >
+                  <meta.icon className="h-3 w-3" />
+                  {meta.label}
+                  <span className={cn("px-1.5 py-0.5 rounded-full text-[9px]", tab === k ? "bg-white/20" : "bg-foreground/10")}>{groups[k].length}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="rounded-2xl border border-border/40 overflow-hidden bg-background/40">
             <div className="flex items-center justify-between px-4 py-3 border-b border-border/40">
-              <div className="flex items-center gap-2.5">
-                <span className="h-7 w-7 rounded-lg flex items-center justify-center" style={{ background: meta.color + "22" }}>
-                  <meta.icon className="h-3.5 w-3.5" style={{ color: meta.color }} />
-                </span>
-                <span className="text-sm font-semibold">{meta.label}</span>
-                <span className="text-[11px] text-muted-foreground tabular-nums">{list.length}</span>
-              </div>
-              <button
-                onClick={() => clearCategory(k)}
-                className="text-[11px] text-muted-foreground hover:text-destructive inline-flex items-center gap-1.5 transition-colors"
-              >
-                <Trash2 className="h-3 w-3" /> Wis categorie
-              </button>
+              <span className="text-sm font-semibold">{tab === "all" ? "Alle activiteit" : metaFor(tab).label}</span>
+              {tab !== "all" && (
+                <button
+                  onClick={() => clearCategory(tab)}
+                  className="text-[11px] text-muted-foreground hover:text-destructive inline-flex items-center gap-1.5 transition-colors"
+                >
+                  <Trash2 className="h-3 w-3" /> Wis categorie
+                </button>
+              )}
             </div>
-            <div className="divide-y divide-border/30">
-              {list.map((it) => (
+            <div className="divide-y divide-border/30 max-h-[560px] overflow-y-auto">
+              {visible.map((it) => (
                 <div key={it.id} className="group flex items-start gap-3 px-4 py-2.5 hover:bg-foreground/[0.02] transition-colors">
+                  <span className="h-2 w-2 rounded-full shrink-0 mt-1.5" style={{ background: metaFor(it.source).color }} />
                   <div className="flex-1 min-w-0 pt-0.5">
                     <p className="text-sm leading-snug">{it.description}</p>
                     <p className="text-[10px] text-muted-foreground mt-0.5">
-                      {new Date(it.timestamp || it.created_date).toLocaleString("nl-NL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                      {metaFor(it.source).label} · {new Date(it.timestamp || it.created_date).toLocaleString("nl-NL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>
                   <button
@@ -110,8 +140,8 @@ export default function Activity() {
               ))}
             </div>
           </div>
-        );
-      })}
+        </>
+      )}
     </div>
   );
 }

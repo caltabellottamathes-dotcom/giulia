@@ -5,6 +5,7 @@ const LINKS = [
   { label: "Agenda", to: "/agenda" },
   { label: "Projecten", to: "/projects" },
   { label: "Taken", to: "/tasks" },
+  { label: "Notificaties", to: "/notifications" },
   { label: "Email", to: "/email" },
   { label: "WhatsApp", to: "/whatsapp" },
   { label: "Kennisbank", to: "/knowledge" },

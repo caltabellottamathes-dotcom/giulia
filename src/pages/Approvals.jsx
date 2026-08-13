@@ -10,19 +10,20 @@ import { useToast } from "@/components/ui/use-toast";
 import { base44 } from "@/api/base44Client";
 import { haptic } from "@/lib/nativeBridge";
 import {
-  Check, X, Edit3, Mail, MessageCircle, Calendar, CheckSquare,
-  FileText, Sparkles, ClipboardCheck, AlertCircle, CheckCheck,
+  Check, X, Edit3, MessageCircle, FileText,
+  ClipboardCheck, AlertCircle, CheckCheck, Sparkles,
 } from "lucide-react";
 
-const categories = ["All", "email", "whatsapp", "calendar", "tasks", "projects", "documents", "other"];
-const categoryLabel = { email: "Email", whatsapp: "WhatsApp", calendar: "Calendar", tasks: "Tasks", projects: "Projects", documents: "Documents", other: "Other" };
+const categories = ["All", "urgent", "communication", "projects", "intern", "proactive"];
+const categoryMeta = {
+  urgent: { label: "Urgent", color: "hsl(10 60% 50%)", icon: AlertCircle },
+  communication: { label: "Communicatie", color: "hsl(var(--sand))", icon: MessageCircle },
+  projects: { label: "Projecten", color: "hsl(var(--olive))", icon: FileText },
+  intern: { label: "Intern", color: "hsl(var(--steel))", icon: ClipboardCheck },
+  proactive: { label: "Proactief", color: "hsl(var(--ridge))", icon: Sparkles },
+};
 const statuses = ["pending", "approved", "executed", "edited", "already_done", "rejected", "discarded", "all"];
 const statusLabel = { pending: "Wachtend", approved: "Goedgekeurd", executed: "Uitgevoerd", edited: "Bewerkt", already_done: "Al gebeurd", rejected: "Verworpen", discarded: "Verworpen (oud)", all: "Alles" };
-
-const categoryIcons = {
-  email: Mail, whatsapp: MessageCircle, calendar: Calendar,
-  tasks: CheckSquare, projects: FileText, documents: FileText, other: AlertCircle,
-};
 
 export default function Approvals() {
   const [category, setCategory] = useState("All");
@@ -86,7 +87,7 @@ export default function Approvals() {
         icon={ClipboardCheck}
         eyebrow="Controle"
         title="Ter goedkeuring"
-        subtitle="Centrale AI-controlekamer"
+        subtitle="Enkel externe acties die op jouw ja wachten"
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -119,40 +120,50 @@ export default function Approvals() {
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setCategory(cat)}
-            className={cn(
-              "px-3 py-1.5 text-xs rounded-full whitespace-nowrap transition-all",
-              category === cat ? "bg-foreground text-background font-medium" : "glass-1 text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {cat === "All" ? "Alles" : categoryLabel[cat] || cat}
-          </button>
-        ))}
+        {categories.map((cat) => {
+          const meta = categoryMeta[cat];
+          const count = cat === "All" ? approvals.length : approvals.filter((a) => a.category === cat).length;
+          return (
+            <button
+              key={cat}
+              onClick={() => setCategory(cat)}
+              className={cn(
+                "px-3 py-1.5 text-xs rounded-full whitespace-nowrap transition-all flex items-center gap-2",
+                category === cat ? "text-white font-medium" : "glass-1 text-muted-foreground hover:text-foreground"
+              )}
+              style={category === cat ? { background: meta ? meta.color : "hsl(var(--foreground))" } : undefined}
+            >
+              {meta && <meta.icon className="h-3 w-3" />}
+              {cat === "All" ? "Alles" : meta?.label || cat}
+              {count > 0 && <span className={cn("px-1.5 py-0.5 rounded-full text-[9px]", category === cat ? "bg-white/20" : "bg-foreground/10")}>{count}</span>}
+            </button>
+          );
+        })}
       </div>
 
       <div className="space-y-3">
         {loading && [0, 1].map((i) => <div key={i} className="h-32 rounded-2xl shimmer" />)}
         {!loading && pending.map((approval) => {
-          const Icon = categoryIcons[approval.category] || categoryIcons[approval.type] || AlertCircle;
+          const meta = categoryMeta[approval.category] || categoryMeta.intern;
+          const Icon = meta.icon;
+          const isMessage = approval.type === "email" || approval.type === "whatsapp";
           return (
             <GlassPanel
               key={approval.id}
               level={2}
               className="p-5 cursor-pointer"
+              style={{ borderLeft: `3px solid ${meta.color}` }}
               onClick={() => { setSelected(approval); setEditText(approval.content || approval.proposed_action || ""); }}
             >
               <div className="flex items-start gap-4">
                 <div className="h-10 w-10 rounded-xl glass-1 flex items-center justify-center shrink-0">
-                  <Icon className="h-5 w-5 text-olive" />
+                  <Icon className="h-5 w-5" style={{ color: meta.color }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <StatusBadge variant="urgent">{approval.type || approval.category}</StatusBadge>
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <StatusBadge variant="muted" style={{ color: meta.color, borderColor: meta.color }}>{meta.label}</StatusBadge>
                     <StatusBadge variant="muted">{statusLabel[approval.status] || approval.status}</StatusBadge>
-                    {approval.action_type && <StatusBadge variant="muted">{approval.action_type.replace(/_/g, " ")}</StatusBadge>}
+                    {approval.type && <StatusBadge variant="muted">{approval.type}</StatusBadge>}
                     {approval.assignee && (
                       <StatusBadge variant={approval.assignee === "giulia" ? "waiting" : "active"}>
                         {approval.assignee === "giulia" ? "Voor Giulia" : "Voor jou"}
@@ -160,10 +171,6 @@ export default function Approvals() {
                     )}
                   </div>
                   <h3 className="text-sm font-display font-semibold">{approval.description}</h3>
-                  {approval.proposed_action && <p className="text-xs text-muted-foreground mt-1">{approval.proposed_action}</p>}
-                  {approval.content && (
-                    <div className="glass-1 rounded-lg p-3 mt-3 whitespace-pre-wrap text-xs text-muted-foreground">{approval.content}</div>
-                  )}
                   {approval.context && (
                     <div className="glass-1 rounded-lg p-3 mt-3">
                       <div className="flex items-center gap-1.5 mb-1">
@@ -171,6 +178,14 @@ export default function Approvals() {
                         <p className="text-[10px] uppercase tracking-wider text-olive">Waarom</p>
                       </div>
                       <p className="text-xs text-muted-foreground">{approval.context}</p>
+                    </div>
+                  )}
+                  {approval.content && (
+                    <div className="glass-1 rounded-lg p-3 mt-3">
+                      <p className="text-[10px] uppercase tracking-wider text-olive mb-1">
+                        {isMessage ? "Voorgesteld bericht" : "Details"}
+                      </p>
+                      <p className="whitespace-pre-wrap text-xs text-muted-foreground">{approval.content}</p>
                     </div>
                   )}
                   {approval.project_id && projTitle(approval.project_id) && (
@@ -205,7 +220,7 @@ export default function Approvals() {
         {selected && (
           <div className="space-y-5">
             <div>
-              <StatusBadge variant="urgent">{selected.category}</StatusBadge>
+              <StatusBadge variant="urgent">{categoryMeta[selected.category]?.label || selected.category}</StatusBadge>
               <h2 className="text-xl font-display font-semibold mt-3">Actie bewerken</h2>
               <p className="text-sm text-muted-foreground mt-1">{selected.description}</p>
             </div>
