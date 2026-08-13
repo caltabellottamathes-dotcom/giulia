@@ -58,15 +58,16 @@ export default function Approvals() {
         action,
         edit: edit || null,
       });
-      if (res?.ok) {
+      const r = res?.data ?? res;
+      if (r?.ok) {
         haptic(action === "reject" ? "warning" : "success");
         const title = action === "reject" ? "Verworpen" : action === "already_done" ? "Al gebeurd" : "Uitgevoerd";
-        toast({ title, description: res.detail || "" });
+        toast({ title, description: r.detail || "" });
       } else {
         haptic("warning");
         toast({
           title: "Gedeeltelijk",
-          description: res?.detail || res?.error || "Actie kon niet volledig worden uitgevoerd.",
+          description: r?.detail || r?.error || "Actie kon niet volledig worden uitgevoerd.",
           variant: "destructive",
         });
       }

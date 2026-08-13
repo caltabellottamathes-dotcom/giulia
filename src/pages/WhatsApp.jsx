@@ -65,8 +65,9 @@ export default function WhatsApp() {
     setBusy(true);
     try {
       const res = await base44.functions.invoke("sendWhatsApp", { contact_id: selectedId, message: text.trim() });
-      if (res?.ok) { setDraft(""); reloadMsgs(); toast({ title: "Verzonden" }); }
-      else toast({ title: "Verzenden mislukt", description: res?.error || "", variant: "destructive" });
+      const r = res?.data ?? res;
+      if (r?.ok) { setDraft(""); reloadMsgs(); toast({ title: "Verzonden" }); }
+      else toast({ title: "Verzenden mislukt", description: r?.error || "", variant: "destructive" });
     } catch (e) {
       toast({ title: "Verzenden mislukt", variant: "destructive" });
     }
@@ -82,12 +83,13 @@ export default function WhatsApp() {
     setBusy(true);
     try {
       const res = await base44.functions.invoke("sendWhatsApp", { contact_id: d.thread_id || d.contact_id, message: d.content });
-      if (res?.ok) {
+      const r = res?.data ?? res;
+      if (r?.ok) {
         await base44.entities.Approval.update(d.id, { status: "executed" }).catch(() => {});
         toast({ title: "Verzonden" });
         reloadMsgs(); reloadDrafts();
       } else {
-        toast({ title: "Verzenden mislukt", description: res?.error || "", variant: "destructive" });
+        toast({ title: "Verzenden mislukt", description: r?.error || "", variant: "destructive" });
       }
     } catch (e) {
       toast({ title: "Verzenden mislukt", variant: "destructive" });

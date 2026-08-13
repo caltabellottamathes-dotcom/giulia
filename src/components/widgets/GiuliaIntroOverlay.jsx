@@ -78,15 +78,6 @@ export default function GiuliaIntroOverlay() {
     v.play().catch(() => setNeedsTap(true));
   }, [visible]);
 
-  // Mobiel (geen video) — start de proactivity-run automatisch na 2s.
-  useEffect(() => {
-    if (!visible) return;
-    if (typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches) {
-      const t = setTimeout(startRun, 2000);
-      return () => clearTimeout(t);
-    }
-  }, [visible, startRun]);
-
   const tapToPlay = () => {
     setNeedsTap(false);
     videoRef.current?.play().catch(() => {});
@@ -102,7 +93,6 @@ export default function GiuliaIntroOverlay() {
         src={INTRO_VIDEO}
         playsInline
         autoPlay
-        onEnded={startRun}
         className="hidden md:block absolute inset-0 h-full w-full object-contain"
       />
       <img

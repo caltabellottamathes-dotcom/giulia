@@ -143,6 +143,14 @@ export default function Home() {
 
   const sorted = [...widgets].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
 
+  const WIDGET_SPAN = { giulia: 2, concierge: 2, projects: 2, agenda: 2, email: 2, documents: 2, updates: 2 };
+  const cells = sorted.map((w) => {
+    const def = WIDGETS[w.widget_type];
+    if (!def) return null;
+    if (w.widget_type === "concierge") return { node: <ConciergeWidget key={w.id} onRemove={() => removeWidget(w.id)} />, span: 2 };
+    return { node: <WidgetCell key={w.id} def={def} widget={w} onRemove={() => removeWidget(w.id)} onThemeChange={setWidgetTheme} />, span: WIDGET_SPAN[w.widget_type] || 1 };
+  }).filter(Boolean);
+
   return (
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-mt-8 lg:mb-0 min-h-[calc(100svh-3.5rem)] lg:min-h-[calc(100svh-9.5rem)] overflow-hidden">
       {/* Photo — ONE home background image that transforms when a panel opens.
@@ -242,17 +250,8 @@ export default function Home() {
               ))}
             </div>
           ) : sorted.length > 0 ? (
-            <MasonryGrid className="max-w-[1280px]" gap={16}>
-              {sorted.map((w) => {
-                const def = WIDGETS[w.widget_type];
-                if (!def) return null;
-                if (w.widget_type === "concierge") {
-                  return <ConciergeWidget key={w.id} onRemove={() => removeWidget(w.id)} />;
-                }
-                return (
-                  <WidgetCell key={w.id} def={def} widget={w} onRemove={() => removeWidget(w.id)} onThemeChange={setWidgetTheme} />
-                );
-              })}
+            <MasonryGrid className="max-w-[1280px]" gap={16} spans={cells.map((c) => c.span)}>
+              {cells.map((c) => c.node)}
             </MasonryGrid>
           ) : (
             <div className="glass-card rounded-[28px] p-12 flex flex-col items-center text-center max-w-md mx-auto">
