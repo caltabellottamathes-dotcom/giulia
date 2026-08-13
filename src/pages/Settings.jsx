@@ -9,6 +9,7 @@ import {
   Database, Zap, Plug, Bot, RefreshCw, Image as ImageIcon,
 } from "lucide-react";
 import MediaSection from "@/components/settings/MediaSection";
+import AIRouterSection from "@/components/settings/AIRouterSection";
 
 const sections = [
   { id: "general", label: "General", icon: SettingsIcon },
@@ -202,6 +203,7 @@ export default function Settings() {
               <div className="space-y-6">
                 <h2 className="text-lg font-heading font-medium">AI behavior</h2>
                 <div className="space-y-4">
+                  <AIRouterSection />
                   <div>
                     <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Proactiviteit niveau</label>
                     <div className="grid grid-cols-3 gap-2 mt-2">

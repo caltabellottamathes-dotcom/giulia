@@ -12,9 +12,22 @@
  * zichtbaar zijn in de testlogs / Activity-feed.
  */
 import { secrets } from "base44:runtime";
+import * as aiRouter from "./aiRouter.ts";
 
 // Het enige gebruikte model — géén fallback-chain.
 const MODELS = ["gemini-3.1-flash-lite"];
+
+/** Zet een Gemini-vormige body (system_instruction + contents) om naar OpenAI-messages. */
+function bodyToMessages(body) {
+  const messages = [];
+  const sysText = (body?.system_instruction?.parts || []).map((p) => p.text).join("\n");
+  if (sysText) messages.push({ role: "system", content: sysText });
+  for (const c of body.contents || []) {
+    const text = (c.parts || []).map((p) => p.text || "").join("");
+    messages.push({ role: c.role === "model" ? "assistant" : "user", content: text });
+  }
+  return messages;
+}
 
 export const GIULIA_PERSONA =
   "You are Giulia, a Personal Operating System. You combine conversation, memory, and planning into one coherent system. " +
@@ -34,7 +47,19 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // een chatvraag en een achtergrondcyclus niet op dezelfde 15-20 RPM-limiet.
 const DEFAULT_KEY_NAME = "GEMINI_API_KEY";
 
-async function rawCall(model, body, retried, keyName) {
+async function rawCall(model, body, retried, keyName, taskType = "default") {
+  // Eenvoudige chat/decide-aanroepen (geen tools, geen JSON-schema, geen audio)
+  // gaan via aiRouter — die kan ze naar een lokale Ollama-server sturen en
+  // valt zelf, zonder crash, terug op Gemini. Tool-calling, structured-output
+  // en audio blijven rechtstreeks via Gemini lopen (lokaal ondersteunt dit niet).
+  const hasTools = !!body.tools;
+  const hasSchema = !!body?.generationConfig?.response_schema;
+  const hasInline = JSON.stringify(body).includes("inlineData");
+  if (!hasTools && !hasSchema && !hasInline) {
+    const result = await aiRouter.chat({ messages: bodyToMessages(body), taskType });
+    return { candidates: [{ content: { parts: [{ text: result.content }] } }] };
+  }
+
   const name = keyName || DEFAULT_KEY_NAME;
   const key = secrets.get(name);
   if (!key) throw new Error(`${name} niet ingesteld — check app secrets.`);
@@ -58,11 +83,11 @@ async function rawCall(model, body, retried, keyName) {
 }
 
 /** Probeekt elk model tot er één slaagt; gooit anders de laatste fout. */
-async function callWithFallback(body, keyName) {
+async function callWithFallback(body, keyName, taskType) {
   let lastErr = null;
   for (const model of MODELS) {
     try {
-      return await rawCall(model, body, false, keyName);
+      return await rawCall(model, body, false, keyName, taskType);
     } catch (e) {
       lastErr = e;
       // 429 / 404 op dit model → probeer de volgende; andere fouten → gooi direct.
@@ -98,7 +123,7 @@ export async function geminiDecide({ prompt, schema, model, systemText, temperat
 }
 
 /** geminiChat — free-form text reply (no schema). Returns text or null. */
-export async function geminiChat({ prompt, contents, model, systemText, temperature = 0.6, keyName }) {
+export async function geminiChat({ prompt, contents, model, systemText, temperature = 0.6, keyName, taskType = "chat" }) {
   const body = {
     system_instruction: systemInstruction(systemText),
     contents: contents || [{ role: "user", parts: [{ text: prompt }] }],
@@ -106,8 +131,8 @@ export async function geminiChat({ prompt, contents, model, systemText, temperat
   };
   try {
     const data = model
-      ? await rawCall(model, body, false, keyName)
-      : await callWithFallback(body, keyName);
+      ? await rawCall(model, body, false, keyName, taskType)
+      : await callWithFallback(body, keyName, taskType);
     return data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
   } catch { return null; }
 }
