@@ -1,32 +1,36 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { tool, runGiuliaAgent } from "../../shared/codeAgent.ts";
 
 /**
- * manageProjects (Agent 8 — Project Agent). Real code agent.
- * Trigger: daily + on interpretation.
+ * manageProjects — deterministische scanner, GEEN eigen Gemini-brein meer.
+ * Detecteert stilgevallen projecten en stuurt het signaal naar GIULIA-CONNECT
+ * (chatWithGiulia) zodat GIULIA-GIULIA — het enige brein — beslist welke
+ * acties nodig zijn. Uitvoering loopt via GIULIA-CORE.
  */
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
     const sr = base44.asServiceRole;
 
-    const [projects, tasks, events] = await Promise.all([
-      sr.entities.Project.list().catch(() => []),
-      sr.entities.Task.list().catch(() => []),
-      sr.entities.Event.list().catch(() => []),
-    ]);
+    const projects = await sr.entities.Project.list("-created_date", 200).catch(() => []);
+    const now = Date.now();
+    const dayMs = 24 * 60 * 60 * 1000;
+    const stale = projects.filter((p) => {
+      if (!["planning", "in_progress"].includes(p.status)) return false;
+      const last = p.last_activity_date ? new Date(p.last_activity_date).getTime() : null;
+      return !last || now - last >= 10 * dayMs;
+    });
 
-    const tools = {
-      list_projects: tool({ description: "Alle projecten.", inputSchema: { type: "object", properties: {} }, execute: () => sr.entities.Project.list().catch(() => []).then(l => l.map(p => ({ id: p.id, title: p.title, status: p.status, progress: p.progress, health: p.health, deadline: p.deadline, next_milestone: p.next_milestone, last_activity_date: p.last_activity_date }))) }),
-      list_tasks: tool({ description: "Gekoppelde taken.", inputSchema: { type: "object", properties: {} }, execute: () => sr.entities.Task.list().catch(() => []).then(l => l.map(t => ({ id: t.id, title: t.title, status: t.status, project_id: t.project_id }))) }),
-      update_project: tool({ description: "Update een project (status/health/next_milestone/last_activity_date/progress).", inputSchema: { type: "object", properties: { id: { type: "string" }, status: { type: "string" }, health: { type: "string", enum: ["good", "attention", "critical"] }, next_milestone: { type: "string" }, last_activity_date: { type: "string" }, progress: { type: "number" } }, required: ["id"] }, execute: ({ id, ...patch }) => sr.entities.Project.update(id, patch).catch(() => null) }),
-    };
+    if (!stale.length) return Response.json({ ok: true, stale: 0, skipped: "geen stilgevallen projecten" });
 
-    const context = `Projecten (${projects.length}):\n` + projects.map(p => `- id:${p.id} | [${p.status}] ${p.title} | ${p.progress}% | health ${p.health || "?"} | deadline ${p.deadline || "?"} | next: ${p.next_milestone || "?"}`).join("\n") + `\n\nTaken: ${tasks.length}, Afspraken: ${events.length}`;
-    const task = `Herkend stilgevallen projecten (lang geen last_activity_date). Stel volgende acties voor (next_milestone). Update status/health/progress. Signaleer wanneer een project aandacht nodig heeft (report_to_salvo + notify_salvo).\n\n${context}`;
+    const context = `Stilgevallen projecten (${stale.length}):\n` +
+      stale.map((p) => `- id:${p.id} | ${p.title} | [${p.status}] | health ${p.health || "?"} | laatste activiteit: ${p.last_activity_date || "onbekend"}`).join("\n");
+    const message =
+      `Project-scan: deze projecten zijn stilgevallen (>10 dagen geen activiteit). ` +
+      `Beslis per project of health naar 'attention' moet, of er een follow-up nodig is (create_approval, category calendar/email als extern), of dat het intern kan blijven.\n\n${context}`;
 
-    await runGiuliaAgent(base44, "manageProjects", task, tools, 6);
-    return Response.json({ ok: true, projects: projects.length });
+    await base44.functions.invoke("chatWithGiulia", { message, source: "agent_projects", persist: false }).catch(() => null);
+
+    return Response.json({ ok: true, stale: stale.length });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

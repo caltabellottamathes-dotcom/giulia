@@ -78,13 +78,14 @@ const EXECUTION_SCHEMA = {
 function todayISO() { return new Date().toISOString().slice(0, 10); }
 
 async function loadContext(sr) {
-  const [memories, recentMessages, projects, tasks, events, approvals] = await Promise.all([
+  const [memories, recentMessages, projects, tasks, events, approvals, recentActivity] = await Promise.all([
     sr.entities.Memory.list("-created_date", 20).catch(() => []),
     sr.entities.Message.filter({ channel: "in-app" }, "-created_date", 10).catch(() => []),
     sr.entities.Project.list("-created_date", 100).catch(() => []),
     sr.entities.Task.list("-created_date", 200).catch(() => []),
     sr.entities.CalendarEvent.filter({}, "start", 30).catch(() => []),
     sr.entities.Approval.filter({ status: "pending" }).catch(() => []),
+    sr.entities.Activity.list("-created_date", 15).catch(() => []),
   ]);
 
   const activeProjects = projects
@@ -104,6 +105,9 @@ async function loadContext(sr) {
   if (openTasks.length) lines.push("Open taken:\n" + openTasks.map((t) => `- id:${t.id} | ${t.title} [${t.priority}]${t.deadline ? ` — ${t.deadline}` : ""}`).join("\n"));
   if (upcomingEvents.length) lines.push("Agenda:\n" + upcomingEvents.map((e) => `- ${e.title} — ${e.start}`).join("\n"));
   lines.push(`Openstaande goedkeuringen: ${approvals.length}`);
+  // Recente afgeronde/uitgevoerde acties — voorkomt dat je iets opnieuw
+  // voorstelt dat gisteren al is afgehandeld (bv. een taak die al 'completed' is).
+  if (recentActivity.length) lines.push("Recent al afgehandeld door jou (NIET opnieuw voorstellen):\n" + recentActivity.map((a) => `- ${String(a.description).slice(0, 140)}`).join("\n"));
 
   return lines.join("\n\n");
 }
@@ -148,7 +152,12 @@ export default async function (req) {
     const profile =
       `Naam: ${AGENT_CONTEXT.owner.name} (${AGENT_CONTEXT.owner.short}) · ${AGENT_CONTEXT.owner.location}\n` +
       `Werk: ${AGENT_CONTEXT.background.studio}`;
-    const systemText = `${GIULIA_TONE}\n\n=== OVER SALVO ===\n${profile}\n\n=== CONTEXT ===\n${contextBlock}`;
+    const trust =
+      `Zonder goedkeuring (voer direct uit): ${AGENT_CONTEXT.trust_model.without_approval.join(" · ")}\n` +
+      `ALLEEN met create_approval (nooit direct uitvoeren): ${AGENT_CONTEXT.trust_model.never_without_approval.join(" · ")}\n` +
+      `Jij (GIULIA-GIULIA) bepaalt zelf of iets een taak voor Salvo is (assignee: salvo) of iets dat jij zelf afhandelt (assignee: giulia, en rond het dan ook zelf af via complete_task/create_task met status completed waar mogelijk). ` +
+      `Kijk altijd naar "Recent al afgehandeld" — stel niets opnieuw voor dat al is afgerond.`;
+    const systemText = `${GIULIA_TONE}\n\n=== OVER SALVO ===\n${profile}\n\n=== VERTROUWENSMODEL ===\n${trust}\n\n=== CONTEXT ===\n${contextBlock}`;
 
     // STAP 2 — GIULIA-GIULIA aanroepen. Chat gebruikt haar eigen pool,
     // achtergrond-signalen (startup/proactivity/agent_*) de BACKDESK-pool —
