@@ -102,7 +102,8 @@ export default async function (req) {
       }
       // Email loopt uitsluitend via de IMAP/SMTP-bridge — géén Gmail meer.
       try {
-        const sent = await base44.functions.invoke("sendPrivateEmail", { to, subject, message: messageBody });
+        const sentRes = await base44.functions.invoke("sendPrivateEmail", { to, subject, message: messageBody });
+        const sent = sentRes && sentRes.data;
         if (sent && sent.sent) {
           await sr.entities.Approval.update(approval_id, { status: "executed" }).catch(() => {});
           await markSourceEmailsHandled(sr, ap);
@@ -178,7 +179,8 @@ export default async function (req) {
         return Response.json({ ok: false, executed: "whatsapp", error: "geen bericht", detail: "Approval goedgekeurd, maar geen berichtinhoud." });
       }
       try {
-        const sent = await base44.functions.invoke("sendWhatsApp", { to, contact_id: contactId, message: messageBody });
+        const sentRes = await base44.functions.invoke("sendWhatsApp", { to, contact_id: contactId, message: messageBody });
+        const sent = sentRes && sentRes.data;
         if (sent && sent.ok) {
           await sr.entities.Approval.update(approval_id, { status: "executed" }).catch(() => {});
           if (ap.thread_id) await sr.entities.Thread.update(ap.thread_id, { status: "resolved", needs_info: false }).catch(() => {});

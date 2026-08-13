@@ -103,7 +103,15 @@ export default async function (req) {
 5. Je bent de enige intelligentie. Wees proactief in je denkproces, maar conservatief in het aanmaken van database-records.
 `;
 
-    const systemInstruction = `${GIULIA_TONE}\n\n${profile}\n\n${contextLines}\n\n${rules}`;
+    // Tool-schema's expliciet meegeven — anders weet Gemini niet welke velden
+    // per actie verwacht worden en levert het lege args={} op (silent failure
+    // bij executie in GIULIA-CORE, want required velden ontbreken dan).
+    const toolDocs = GIULIA_SKILLS.map(
+      (s) => `- ${s.name}: ${s.description}\n  args schema: ${JSON.stringify(s.inputSchema)}`
+    ).join("\n");
+    const toolsBlock = `\n== BESCHIKBARE ACTIES (vul args EXACT volgens dit schema, nooit leeg laten) ==\n${toolDocs}\n`;
+
+    const systemInstruction = `${GIULIA_TONE}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}`;
 
     // 3. SCHEMA DEFINITION (Execution Payload)
     const executionSchema = {
@@ -120,9 +128,9 @@ export default async function (req) {
             type: "object",
             properties: {
               name: { type: "string", enum: GIULIA_SKILLS.map(s => s.name) },
-              args: { type: "object", description: "De parameters voor de specifieke tool." }
+              args_json: { type: "string", description: "De parameters voor deze tool als JSON-string (bv. '{\"title\":\"Bel Mathes\",\"priority\":\"high\"}'), EXACT volgens het args-schema van die tool in de systeeminstructie. Nooit leeg laten — minstens de required velden." }
             },
-            required: ["name", "args"]
+            required: ["name", "args_json"]
           }
         },
         memory_updates: {
@@ -159,21 +167,27 @@ export default async function (req) {
       return Response.json({ ok: false, error: "Gemini failed to generate payload", response: fallback, degraded: true });
     }
 
-    // 5. DELEGATE TO GIULIA-CORE
+    // 5. DELEGATE TO GIULIA-CORE — args_json (string) → args (object)
+    const actionsForCore = (payload.actions || []).map((a) => {
+      let args = {};
+      try { args = a.args_json ? JSON.parse(a.args_json) : {}; } catch { args = {}; }
+      return { name: a.name, args };
+    });
+
     let coreResults = [];
-    if (payload.actions && payload.actions.length > 0) {
+    if (actionsForCore.length > 0) {
       const coreRes = await base44.functions.invoke("giuliaLeader", {
-        actions: payload.actions,
+        actions: actionsForCore,
         memory_updates: payload.memory_updates
-      }).catch((e) => ({ error: String((e && e.message) || e) }));
-      coreResults = (coreRes && coreRes.results) || [];
+      }).catch((e) => ({ data: { error: String((e && e.message) || e) } }));
+      coreResults = (coreRes && coreRes.data && coreRes.data.results) || [];
     } else if (payload.memory_updates && payload.memory_updates.length > 0) {
       // Geen acties, wel geheugen-opslag — stuur toch door naar CORE.
       const coreRes = await base44.functions.invoke("giuliaLeader", {
         actions: [],
         memory_updates: payload.memory_updates
-      }).catch((e) => ({ error: String((e && e.message) || e) }));
-      coreResults = (coreRes && coreRes.results) || [];
+      }).catch((e) => ({ data: { error: String((e && e.message) || e) } }));
+      coreResults = (coreRes && coreRes.data && coreRes.data.results) || [];
     }
 
     // 6. SAVE RESPONSE
@@ -187,7 +201,7 @@ export default async function (req) {
     return Response.json({
       ok: true,
       response: responseText,
-      actions_executed: payload.actions || [],
+      actions_executed: actionsForCore,
       core_results: coreResults
     });
 
