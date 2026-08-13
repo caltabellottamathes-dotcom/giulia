@@ -100,6 +100,14 @@ export default function Home() {
     if (sessionStorage.getItem("giulia_boot_seen")) {
       base44.functions.invoke("startGiulia", {}).catch(() => {});
     }
+    // UPDATE-sleutel: bij elke reload het dashboard syncen met de nieuwste
+    // kennis/geheugen — Giulia synthetiseert de actuele staat tot één inzicht.
+    // Throttle 4 min via sessionStorage zodat navigeren niet spamt.
+    const last = Number(sessionStorage.getItem("giulia_last_refresh") || 0);
+    if (Date.now() - last > 4 * 60 * 1000) {
+      sessionStorage.setItem("giulia_last_refresh", String(Date.now()));
+      base44.functions.invoke("refreshDashboard", {}).then(() => load()).catch(() => {});
+    }
   }, []);
 
   const removeWidget = async (id) => {

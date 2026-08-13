@@ -1,8 +1,10 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePanel } from "@/lib/PanelContext";
-import { X, ArrowUp, Loader2, Phone } from "lucide-react";
+import { X, ArrowUp, Loader2, Phone, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
 import ChatMarkdown from "@/components/glass/ChatMarkdown";
+import ChatVoiceCall from "@/components/panels/ChatVoiceCall";
 
 /**
  * ChatWindow — Giulia's conversation panel. Slides in from the right edge
@@ -21,6 +23,8 @@ export default function ChatWindow() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
+  const [callActive, setCallActive] = useState(false);
+  const [superagent, setSuperagent] = useState(false);
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -101,11 +105,16 @@ export default function ChatWindow() {
           {/* Close — top-left */}
           <button
             onClick={closeChat}
-            className="absolute top-4 left-4 z-20 h-9 w-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors"
+            className="absolute top-4 left-4 z-40 h-9 w-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors"
             aria-label="Sluiten"
           >
             <X className="h-4 w-4" />
           </button>
+
+          {/* Inline voice call — direct spraakgesprek met GIULIA-GIULIA (of Superagent) */}
+          {callActive && (
+            <ChatVoiceCall superagent={superagent} onEnd={() => setCallActive(false)} />
+          )}
 
           {/* Header */}
           <div className="shrink-0 px-7 pt-7 pb-5 flex items-center justify-between">
@@ -118,12 +127,26 @@ export default function ChatWindow() {
                 <p className="text-[11px] text-ivory/50 mt-1.5 tracking-wide">Actief · vraag me anything</p>
               </div>
             </div>
-            <button
-              onClick={() => openModule("voice")}
-              className="flex items-center gap-2 rounded-full pl-3 pr-4 py-2 bg-ivory/10 border border-ivory/15 text-ivory/80 text-[12px] font-medium hover:bg-ivory/15 transition-all"
-            >
-              <Phone className="h-3.5 w-3.5" /> Bel
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSuperagent((s) => !s)}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-full px-3 py-2 text-[11px] font-semibold border transition-all",
+                  superagent
+                    ? "bg-olive text-ivory border-olive"
+                    : "bg-ivory/10 border-ivory/15 text-ivory/60 hover:text-ivory"
+                )}
+                title="Superagent GIULIA — vollere redenering met tools"
+              >
+                <Sparkles className="h-3 w-3" /> Super
+              </button>
+              <button
+                onClick={() => setCallActive(true)}
+                className="flex items-center gap-2 rounded-full pl-3 pr-4 py-2 bg-ivory/10 border border-ivory/15 text-ivory/80 text-[12px] font-medium hover:bg-ivory/15 transition-all"
+              >
+                <Phone className="h-3.5 w-3.5" /> Bel
+              </button>
+            </div>
           </div>
 
           {/* Messages — generous whitespace, bubbles breathe */}
