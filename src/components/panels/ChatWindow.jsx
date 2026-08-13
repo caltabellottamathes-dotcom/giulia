@@ -122,9 +122,9 @@ export default function ChatWindow() {
               <span className="h-2.5 w-2.5 rounded-full bg-olive animate-pulse-soft" />
               <div>
                 <p className="font-display font-semibold tracking-[0.22em] text-[13px] uppercase text-ivory leading-none">
-                  Giulia
+                  GIULIA-GIULIA
                 </p>
-                <p className="text-[11px] text-ivory/50 mt-1.5 tracking-wide">Actief · vraag me anything</p>
+                <p className="text-[11px] text-ivory/50 mt-1.5 tracking-wide">De drijvende motor · altijd actief</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -154,10 +154,10 @@ export default function ChatWindow() {
             {messages.length === 0 && !thinking && (
               <div className="flex flex-col items-center text-center py-14 px-4">
                 <p className="font-display font-semibold text-2xl text-ivory mb-3 tracking-[-0.01em]">
-                  Hier is Giulia.
+                  Hier is GIULIA-GIULIA.
                 </p>
                 <p className="text-[13px] text-ivory/55 max-w-[18rem] leading-relaxed">
-                  Je digitale assistent. Ik beheer je agenda, taken, mail en meer — vraag me anything.
+                  De drijvende motor achter je OS. Ik beheer alles — agenda, taken, mail, projecten — autonoom. Vraag me anything.
                 </p>
               </div>
             )}

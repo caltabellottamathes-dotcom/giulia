@@ -136,7 +136,7 @@ export default function ChatVoiceCall({ superagent, onEnd }) {
         </button>
 
         <h2 className="text-lg font-display font-semibold text-ivory mb-1">
-          {speaking ? "Giulia spreekt" : "Giulia luistert"}
+          {speaking ? "GIULIA-GIULIA spreekt" : "GIULIA-GIULIA luistert"}
         </h2>
         <p className="text-xs text-ivory/55 mb-5">
           {superagent ? "Superagent GIULIA" : "GIULIA-GIULIA"} · {LANGS[lang].label}
