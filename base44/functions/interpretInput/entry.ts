@@ -341,6 +341,9 @@ async function classifyChat(base44, message, history) {
       project_title: { type: "string" },
       should_remember: { type: "boolean" },
       memory_note: { type: "string" },
+      should_navigate: { type: "boolean" },
+      navigate_route: { type: "string" },
+      navigate_label: { type: "string" },
     },
     required: ["intent", "giulia_response"],
   };
@@ -381,7 +384,8 @@ async function classifyChat(base44, message, history) {
       `Geef geldige JSON volgens het schema. giulia_response is je antwoord aan Salvo in Giulia's toon ` +
       `(vlot, menselijk, uitdagend, stout, humor, sarcasme, soms droog, kort, geen uitroeptekens, nooit zeggen dat je een AI bent). ` +
       `Capture alles: zet should_remember=true met een korte memory_note als Salvo iets deelt wat ertoe doet (voorkeur, feit, commitment, idee, design). ` +
-      `Als je een entiteit aanmaakt (should_create_*), vermeld dat kort in je antwoord. Lege strings voor afwezige waarden, nooit null.`,
+      `Je hebt totale controle over de app: zet should_navigate=true met een navigate_route (bv. /tasks, /email, /agenda, /projects, /people, /approvals, /whatsapp, /documents, /insights, /memory) om Salvo in real time naar de juiste plek te brengen als dat bij het gesprek past. ` +
+      `Als je een entiteit aanmaakt (should_create_*) of navigeert, vermeld dat kort in je antwoord. Lege strings voor afwezige waarden, nooit null.`,
     schema,
     systemText: fullSystemText,
     temperature: 0.6,
@@ -438,6 +442,16 @@ async function classifyChat(base44, message, history) {
       source: "interpretInput · chat",
     }).catch(() => null);
     if (m) created.push({ type: "memory", id: m.id });
+  }
+  // GIULIA-GIULIA stuurt de app in real time naar de juiste plek.
+  if (out.should_navigate && out.navigate_route) {
+    const nav = await sr.entities.AgentNavigation.create({
+      route: String(out.navigate_route).trim(),
+      params: {},
+      label: out.navigate_label || "",
+      source: "interpretInput",
+    }).catch(() => null);
+    if (nav) created.push({ type: "navigation", id: nav.id });
   }
 
   const reply = (out.giulia_response || "").trim() || "Got it.";

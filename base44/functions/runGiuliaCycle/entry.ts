@@ -42,6 +42,45 @@ async function runSequential(base44, names, delayMs = 4000) {
   return results;
 }
 
+/**
+ * cleanupApprovals — voorkomt dat Salvo 1000× dezelfde goedkeuring ziet.
+ * 1) stale: pending > 24u → "already_done" (dingen die allang afgehandeld zijn).
+ * 2) duplicaten: gelijke genormaliseerde titel → houd de nieuwste, rest "already_done".
+ * 3) cap: max 8 pending tegelijk → oudste overschot "already_done".
+ */
+function normTitle(t) {
+  return String(t || "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter((w) => w.length > 2).sort().join(" ");
+}
+async function cleanupApprovals(sr) {
+  const pending = await sr.entities.Approval.filter({ status: "pending" }).catch(() => []);
+  if (!pending.length) return { resolved: 0 };
+  const now = Date.now();
+  const toResolve = new Set();
+  // stale > 24u
+  pending.forEach((a) => {
+    if (a.created_date && now - new Date(a.created_date).getTime() > 24 * 3600 * 1000) toResolve.add(a.id);
+  });
+  // duplicaten op genormaliseerde titel (houd nieuwste)
+  const byKey = {};
+  pending.forEach((a) => {
+    const k = normTitle(a.title);
+    if (!k) return;
+    (byKey[k] = byKey[k] || []).push(a);
+  });
+  Object.values(byKey).forEach((g) => {
+    if (g.length <= 1) return;
+    g.sort((x, y) => new Date(y.created_date || 0) - new Date(x.created_date || 0));
+    g.slice(1).forEach((a) => toResolve.add(a.id));
+  });
+  // cap op 8
+  const remaining = pending.filter((a) => !toResolve.has(a.id))
+    .sort((x, y) => new Date(x.created_date || 0) - new Date(y.created_date || 0));
+  if (remaining.length > 8) remaining.slice(0, remaining.length - 8).forEach((a) => toResolve.add(a.id));
+  const ids = [...toResolve];
+  if (ids.length) await sr.entities.Approval.bulkUpdate(ids.map((id) => ({ id, status: "already_done" }))).catch(() => null);
+  return { resolved: ids.length };
+}
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -57,10 +96,13 @@ export default async function (req) {
     const okAgents = agentResults.filter((r) => r.ok).length;
     const okSync = syncResults.filter((r) => r.ok).length;
 
+    // 3) ruim duplicaat- en verlopen goedkeuringen op — Salvo ziet niet 1000× hetzelfde.
+    const approvalCleanup = await cleanupApprovals(base44.asServiceRole);
+
     try {
       await base44.entities.Activity.create({
         action: "giulia_cycle",
-        description: `Cyclus voltooid · ${okSync}/${SYNC.length} sync · ${okAgents}/${AGENTS.length} agenten`,
+        description: `Cyclus voltooid · ${okSync}/${SYNC.length} sync · ${okAgents}/${AGENTS.length} agenten · ${approvalCleanup.resolved} goedkeuringen auto-afgehandeld`,
         source: "runGiuliaCycle",
         timestamp: new Date().toISOString(),
       });
@@ -70,7 +112,8 @@ export default async function (req) {
       ok: true,
       sync: syncResults,
       agents: agentResults,
-      summary: { sync: `${okSync}/${SYNC.length}`, agents: `${okAgents}/${AGENTS.length}` },
+      approvalCleanup,
+      summary: { sync: `${okSync}/${SYNC.length}`, agents: `${okAgents}/${AGENTS.length}`, approvalsResolved: approvalCleanup.resolved },
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
