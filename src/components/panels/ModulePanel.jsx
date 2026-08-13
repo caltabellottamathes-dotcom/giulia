@@ -50,6 +50,7 @@ const MODULE_ACCENT = {
   agents: "hsl(var(--olive))",
   timetracker: "hsl(var(--olive))",
   updates: "hsl(var(--sand))",
+  goodmorning: "hsl(var(--sand))",
 };
 
 // Modules without a widget keep an editorial photo; modules WITH a widget
@@ -73,6 +74,7 @@ const MODULE_ROUTE = {
   agents: "/agents",
   timetracker: "/timetracker",
   updates: "/updates",
+  goodmorning: "/wake",
 };
 
 // Topic-related subtitles per module — replaces the bare label so the panel
@@ -98,6 +100,7 @@ const MODULE_TOPIC = {
   profile: "Jij in Giulia",
   integrations: "Verbindingen van Giulia",
   updates: "Achter de schermen",
+  goodmorning: "Een rustige ochtend",
 };
 
 export default function ModulePanel() {

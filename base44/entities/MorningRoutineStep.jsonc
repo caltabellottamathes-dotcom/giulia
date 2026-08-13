@@ -1,0 +1,47 @@
+{
+  "name": "MorningRoutineStep",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "getup",
+        "routine"
+      ],
+      "default": "routine",
+      "title": "Phase"
+    },
+    "order": {
+      "type": "number",
+      "default": 0,
+      "title": "Order"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "title": "Enabled"
+    },
+    "optional": {
+      "type": "boolean",
+      "default": false,
+      "title": "Optional"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "title": "Duration (min)"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

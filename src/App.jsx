@@ -46,6 +46,7 @@ import WidgetGallery2 from '@/pages/WidgetGallery2';
 import WidgetGallery3 from '@/pages/WidgetGallery3';
 import WidgetGallery4 from '@/pages/WidgetGallery4';
 import Briefing from '@/pages/Briefing';
+import WakeMode from '@/pages/WakeMode';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -112,6 +113,7 @@ const AuthenticatedApp = () => {
         </Route>
         <Route path="/quick" element={<QuickCommand />} />
         <Route path="/briefing" element={<Briefing />} />
+        <Route path="/wake" element={<WakeMode />} />
         <Route path="/widget-gallery" element={<WidgetGallery />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />

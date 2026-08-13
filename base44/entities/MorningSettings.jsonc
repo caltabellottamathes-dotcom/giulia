@@ -1,0 +1,88 @@
+{
+  "name": "MorningSettings",
+  "type": "object",
+  "properties": {
+    "enabled": {
+      "type": "boolean",
+      "default": false,
+      "title": "Alarm Active"
+    },
+    "wake_time": {
+      "type": "string",
+      "title": "Wake Time"
+    },
+    "days": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "mon",
+          "tue",
+          "wed",
+          "thu",
+          "fri",
+          "sat",
+          "sun"
+        ]
+      },
+      "title": "Days"
+    },
+    "alarm_sound": {
+      "type": "string",
+      "enum": [
+        "silent",
+        "soft-chime",
+        "birds",
+        "waves",
+        "rain",
+        "ambient"
+      ],
+      "default": "silent",
+      "title": "Alarm Sound"
+    },
+    "voice_enabled": {
+      "type": "boolean",
+      "default": true,
+      "title": "Voice Enabled"
+    },
+    "gradual_wake": {
+      "type": "boolean",
+      "default": true,
+      "title": "Gradual Wake"
+    },
+    "wake_style": {
+      "type": "string",
+      "enum": [
+        "gentle",
+        "normal",
+        "direct"
+      ],
+      "default": "gentle",
+      "title": "Wake Style"
+    },
+    "snooze_minutes": {
+      "type": "number",
+      "default": 5,
+      "title": "Snooze Minutes"
+    },
+    "max_snoozes": {
+      "type": "number",
+      "default": 3,
+      "title": "Max Snoozes"
+    },
+    "briefing_after_routine": {
+      "type": "boolean",
+      "default": true,
+      "title": "Briefing After Routine"
+    }
+  },
+  "required": [
+    "wake_time"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

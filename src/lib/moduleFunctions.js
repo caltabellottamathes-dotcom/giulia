@@ -37,4 +37,5 @@ export const MODULE_FUNCTIONS = {
   profile: [{ label: "Profiel", to: "/profile" }],
   integrations: [{ label: "Integraties", to: "/integrations" }],
   updates: [{ label: "Wat er nieuw is", to: "/updates" }],
+  goodmorning: [{ label: "Wake Mode", to: "/wake" }],
 };

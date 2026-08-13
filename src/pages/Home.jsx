@@ -17,7 +17,7 @@ import ConciergeWidget from "@/components/concierge/ConciergeWidget";
 import { Link } from "react-router-dom";
 import { MODULES } from "@/lib/moduleRegistry";
 
-const DEFAULT_WIDGETS = ["giulia", "agenda", "tasks", "approvals", "email", "projects"];
+const DEFAULT_WIDGETS = ["giulia", "goodmorning", "agenda", "tasks", "approvals", "email", "projects"];
 
 /**
  * Home — a tidy, sorted bento grid. The user's chosen widgets persist and are
@@ -143,7 +143,7 @@ export default function Home() {
 
   const sorted = [...widgets].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
 
-  const WIDGET_SPAN = { giulia: 2, concierge: 2, projects: 2, agenda: 2, email: 2, documents: 2, updates: 2 };
+  const WIDGET_SPAN = { giulia: 2, goodmorning: 2, concierge: 2, projects: 2, agenda: 2, email: 2, documents: 2, updates: 2 };
   const cells = sorted.map((w) => {
     const def = WIDGETS[w.widget_type];
     if (!def) return null;

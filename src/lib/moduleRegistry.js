@@ -1,7 +1,7 @@
 import {
   Calendar, Briefcase, CheckSquare, Mail, MessageCircle,
   BookOpen, FileText, Users, MessageSquare, Mic, ClipboardCheck,
-  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu, Timer, Sparkles,
+  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu, Timer, Sparkles, Sunrise,
 } from "lucide-react";
 
 import Agenda from "@/pages/Agenda";
@@ -24,6 +24,7 @@ import Insights from "@/pages/Insights";
 import TimeTracker from "@/pages/TimeTracker";
 import Agents from "@/pages/Agents";
 import Updates from "@/pages/Updates";
+import GoodMorningPanel from "@/components/panels/GoodMorningPanel";
 
 /**
  * Single source of truth for every module that opens as a sliding glass
@@ -51,4 +52,5 @@ export const MODULES = {
   timetracker: { label: "Tijd",         icon: Timer,           Component: TimeTracker,  panelWidth: 720 },
   agents:      { label: "Agenten",       icon: Cpu,             Component: Agents,        panelWidth: 860 },
   updates:     { label: "Updates",       icon: Sparkles,        Component: Updates,       panelWidth: 720 },
+  goodmorning: { label: "Good Morning",  icon: Sunrise,          Component: GoodMorningPanel, panelWidth: 560 },
 };

@@ -1,0 +1,74 @@
+{
+  "name": "WakeSession",
+  "type": "object",
+  "properties": {
+    "wake_time": {
+      "type": "string",
+      "title": "Wake Time"
+    },
+    "actual_wake_time": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Actual Wake Time"
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "wake",
+        "orient",
+        "getup",
+        "routine",
+        "briefing",
+        "complete",
+        "snoozed"
+      ],
+      "default": "wake",
+      "title": "Phase"
+    },
+    "snooze_count": {
+      "type": "number",
+      "default": 0,
+      "title": "Snooze Count"
+    },
+    "current_step": {
+      "type": "number",
+      "default": 0,
+      "title": "Current Step"
+    },
+    "completed_steps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Completed Steps"
+    },
+    "briefing_started": {
+      "type": "boolean",
+      "default": false,
+      "title": "Briefing Started"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "dismissed"
+      ],
+      "default": "active",
+      "title": "Status"
+    },
+    "morning_context": {
+      "type": "string",
+      "title": "Morning Context"
+    }
+  },
+  "required": [
+    "wake_time"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

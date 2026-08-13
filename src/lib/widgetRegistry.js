@@ -1,10 +1,11 @@
 import {
   Sparkles, Calendar, CheckSquare, ClipboardCheck, Mail, MessageCircle,
-  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu, MessageSquare, Timer,
+  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu, MessageSquare, Timer, Sunrise,
 } from "lucide-react";
 import { IMAGES } from "@/lib/images";
 
 import GiuliaWidget from "@/components/widgets/GiuliaWidget";
+import GoodMorningWidget from "@/components/widgets/GoodMorningWidget";
 import AgendaWidget from "@/components/widgets/AgendaWidget";
 import TasksWidget from "@/components/widgets/TasksWidget";
 import ApprovalsWidget from "@/components/widgets/ApprovalsWidget";
@@ -27,7 +28,8 @@ import UpdatesWidget from "@/components/widgets/UpdatesWidget";
  * photo used as a designed element inside the widget and in the add-picker.
  */
 export const WIDGETS = {
-  giulia:     { type: "giulia",     label: "Giulia · je dag",     icon: Sparkles,       Component: GiuliaWidget,    image: IMAGES.bootPhone,        span: 8, category: "core" },
+  giulia:       { type: "giulia",       label: "Giulia · je dag",     icon: Sparkles,       Component: GiuliaWidget,      image: IMAGES.bootPhone,        span: 8, category: "core" },
+  goodmorning:  { type: "goodmorning",  label: "Good Morning",        icon: Sunrise,        Component: GoodMorningWidget, image: IMAGES.walkChairsBeach,  span: 3, category: "core" },
   agenda:     { type: "agenda",    label: "Agenda",              icon: Calendar,       Component: AgendaWidget,    image: IMAGES.walkChairsBeach,  span: 4, category: "core" },
   tasks:      { type: "tasks",     label: "Taken",               icon: CheckSquare,    Component: TasksWidget,     image: IMAGES.feetChairs,       span: 4, category: "work" },
   approvals:  { type: "approvals",  label: "Goedkeuringen",       icon: ClipboardCheck, Component: ApprovalsWidget, image: IMAGES.leanChair,        span: 4, category: "work" },
