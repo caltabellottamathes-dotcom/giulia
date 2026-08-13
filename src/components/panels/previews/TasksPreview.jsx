@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Row, Empty, SectionLabel, ActionBtn, HeroStat, MiniBars } from "./previewParts";
-import { Check, Hourglass, Bot, Trash2 } from "lucide-react";
+import { Row, Empty, SectionLabel, ActionBtn, HeroStat, MiniBars, RingMini } from "./previewParts";
+import { Check, Hourglass, Bot, Trash2, Plus } from "lucide-react";
 
 const PRIORITY_COLOR = {
   high: "hsl(var(--destructive))",
@@ -9,16 +9,27 @@ const PRIORITY_COLOR = {
   low: "hsl(var(--smoke))",
 };
 
+const CATS = [
+  { key: "focus", label: "Focus" },
+  { key: "today", label: "Vandaag" },
+  { key: "upcoming", label: "Later" },
+  { key: "overdue", label: "Te laat" },
+  { key: "waiting", label: "Wacht" },
+  { key: "delegated", label: "Giulia" },
+];
+
 export default function TasksPreview({ onOpen }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [cat, setCat] = useState("focus");
+  const [newTitle, setNewTitle] = useState("");
 
   const load = async () => {
     try {
       const data = await base44.entities.Task.filter(
-        { status: { $in: ["today", "upcoming", "overdue", "waiting", "todo", "in_progress"] } },
+        { status: { $in: ["today", "upcoming", "overdue", "waiting", "delegated", "todo", "in_progress"] } },
         "deadline",
-        8
+        50
       );
       setTasks(data || []);
     } catch (e) {
@@ -46,38 +57,85 @@ export default function TasksPreview({ onOpen }) {
     setTasks((prev) => prev.filter((x) => x.id !== t.id));
     try { await base44.entities.Task.delete(t.id); } catch (e) { load(); }
   };
+  const quickAdd = async () => {
+    if (!newTitle.trim()) return;
+    const title = newTitle.trim();
+    setNewTitle("");
+    try {
+      const t = await base44.entities.Task.create({ title, status: "today", priority: "medium" });
+      setTasks((prev) => [t, ...prev]);
+    } catch (e) { /* ignore */ }
+  };
 
-  const today = tasks.filter((t) => t.status === "today" || t.status === "overdue");
-  const overdue = tasks.filter((t) => t.status === "overdue").length;
-  const upcoming = tasks.filter((t) => t.status === "upcoming").length;
-  const waiting = tasks.filter((t) => t.status === "waiting").length;
-  const ordered = [...today, ...tasks.filter((t) => !today.includes(t))].slice(0, 6);
+  const today = tasks.filter((t) => t.status === "today");
+  const overdue = tasks.filter((t) => t.status === "overdue");
+  const upcoming = tasks.filter((t) => t.status === "upcoming");
+  const waiting = tasks.filter((t) => t.status === "waiting");
+  const delegated = tasks.filter((t) => t.status === "delegated");
+  const focus = [...overdue, ...today];
+
+  const byCat = {
+    focus, today, upcoming, overdue, waiting, delegated,
+  };
+  const visible = (byCat[cat] || []).slice(0, 8);
+  const doneToday = 0; // completed tasks are filtered out of the query — placeholder ring shows open-load instead
+  const openLoad = Math.min(100, tasks.length ? Math.round((focus.length / Math.max(tasks.length, 1)) * 100) : 0);
 
   return (
     <div className="space-y-4">
       <HeroStat
-        value={today.length}
+        value={focus.length}
         label="Focus vandaag"
         accent="hsl(var(--sand))"
-        sub={`${tasks.length} open · ${overdue} te laat · ${waiting} wacht`}
+        sub={`${tasks.length} open in totaal · ${overdue.length} te laat · ${waiting.length} wacht`}
         visual={
-          <MiniBars
-            height={56}
-            data={[
-              { value: Math.max(overdue, 1), color: "hsl(var(--destructive))" },
-              { value: Math.max(today.length - overdue, 1), color: "hsl(var(--sand))" },
-              { value: Math.max(upcoming, 1), color: "hsl(var(--blue-grey))" },
-              { value: Math.max(waiting, 1), color: "hsl(var(--smoke))" },
-            ]}
-          />
+          <div className="flex items-center gap-4">
+            <MiniBars
+              height={56}
+              data={[
+                { value: Math.max(overdue.length, 1), color: "hsl(var(--destructive))" },
+                { value: Math.max(today.length, 1), color: "hsl(var(--sand))" },
+                { value: Math.max(upcoming.length, 1), color: "hsl(var(--blue-grey))" },
+                { value: Math.max(waiting.length, 1), color: "hsl(var(--smoke))" },
+              ]}
+            />
+            <RingMini value={openLoad} accent="hsl(var(--sand))" size={56} />
+          </div>
         }
       />
-      <SectionLabel>Focus · volgorde op prioriteit</SectionLabel>
+
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+        {CATS.map((c) => {
+          const count = byCat[c.key]?.length || 0;
+          return (
+            <button
+              key={c.key}
+              onClick={() => setCat(c.key)}
+              className={`px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition ${cat === c.key ? "bg-ivory text-charcoal" : "glass-button text-ivory/70 hover:text-ivory"}`}
+            >
+              {c.label}{count > 0 ? ` · ${count}` : ""}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="flex items-center gap-2">
+        <input
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && quickAdd()}
+          placeholder="Snel een taak toevoegen…"
+          className="flex-1 rounded-xl glass-card-2 px-3.5 py-2.5 text-sm text-ivory placeholder:text-ivory/40 focus:outline-none"
+        />
+        <ActionBtn icon={Plus} label="Toevoegen" tone="olive" onClick={quickAdd} />
+      </div>
+
+      <SectionLabel>{CATS.find((c) => c.key === cat)?.label}</SectionLabel>
       {loading ? (
         <Empty text="Laden…" />
-      ) : ordered.length ? (
+      ) : visible.length ? (
         <div className="space-y-2">
-          {ordered.map((t) => (
+          {visible.map((t) => (
             <Row
               key={t.id}
               title={t.title}
@@ -96,7 +154,7 @@ export default function TasksPreview({ onOpen }) {
           ))}
         </div>
       ) : (
-        <Empty text="Niets open — alles gerond" />
+        <Empty text="Niets in deze categorie" />
       )}
     </div>
   );

@@ -5,6 +5,7 @@ import GlassButton from "@/components/glass/GlassButton";
 import StatusBadge from "@/components/glass/StatusBadge";
 import PanelForm from "@/components/glass/PanelForm";
 import TaskAgentRunner from "@/components/tasks/TaskAgentRunner";
+import TaskDetailPanel from "@/components/tasks/TaskDetailPanel";
 import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
@@ -26,6 +27,7 @@ export default function Tasks() {
   const [newTitle, setNewTitle] = useState("");
   const [editTask, setEditTask] = useState(null);
   const [editDraft, setEditDraft] = useState({});
+  const [detailTask, setDetailTask] = useState(null);
 
   const projTitle = (id) => projects.find((p) => p.id === id)?.title;
   const filtered = tasks.filter((t) => t.status === category);
@@ -37,7 +39,7 @@ export default function Tasks() {
     const t = tasks.find((x) => x.id === openId);
     if (t) {
       setCategory(t.status);
-      startEdit(t);
+      setDetailTask(t);
     }
   }, [tasks]);
 
@@ -152,7 +154,7 @@ export default function Tasks() {
               >
                 {task.status === "completed" && <CheckSquare className="h-3 w-3 text-white" />}
               </button>
-              <div className="flex-1 min-w-0 cursor-pointer" onClick={() => startEdit(task)}>
+              <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setDetailTask(task)}>
                 <p className={cn("text-sm font-medium", task.status === "completed" && "line-through text-muted-foreground")}>
                   {task.title}
                 </p>
@@ -250,6 +252,17 @@ export default function Tasks() {
           <input type="date" value={editDraft.deadline || ""} onChange={(e) => setEditDraft({ ...editDraft, deadline: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none" />
         </div>
       </PanelForm>
+
+      <TaskDetailPanel
+        task={detailTask}
+        projectTitle={detailTask?.project_id ? projTitle(detailTask.project_id) : null}
+        onClose={() => setDetailTask(null)}
+        onEdit={() => { const t = detailTask; setDetailTask(null); startEdit(t); }}
+        onComplete={() => { toggleComplete(detailTask); setDetailTask(null); }}
+        onWaiting={() => { setStatus(detailTask, "waiting"); setDetailTask(null); }}
+        onDelegate={() => { setStatus(detailTask, "delegated", { delegated_to_giulia: true }); setDetailTask(null); }}
+        onDelete={() => { delTask(detailTask); setDetailTask(null); }}
+      />
     </div>
   );
 }
