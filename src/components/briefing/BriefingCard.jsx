@@ -253,7 +253,7 @@ function Infographic({ item, onAnswer, onDone }) {
   }
 }
 
-export default function BriefingCard({ item, onAct, onAnswer, onDone, expanded, onToggleExpand, interactive = true, photoIndex = 0 }) {
+export default function BriefingCard({ item, onAct, onAnswer, onDone, onExplain, expanded, onToggleExpand, interactive = true, photoIndex = 0 }) {
   if (!item) return null;
   const Icon = TYPE_ICON[item.type] || AlertTriangle;
   // Question cards always get the Giulia portrait; others rotate through the photo pool
@@ -321,6 +321,13 @@ export default function BriefingCard({ item, onAct, onAnswer, onDone, expanded, 
               className="flex-1 h-12 rounded-2xl bg-charcoal text-ivory font-bold text-sm hover:bg-charcoal/90 transition inline-flex items-center justify-center gap-2 tracking-tight"
             >
               {item.suggested_action || "Actie"} <ArrowRight className="h-4 w-4" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onExplain?.(); }}
+              className="h-12 w-12 rounded-2xl bg-charcoal/8 border border-charcoal/12 text-charcoal/70 hover:bg-charcoal/12 transition flex items-center justify-center"
+              aria-label="Leg uit"
+            >
+              <HelpCircle className="h-4 w-4" />
             </button>
             {item.context && (
               <button

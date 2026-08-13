@@ -114,6 +114,13 @@ export default function Briefing() {
     navigate((item.action_route || "/") + params);
   };
 
+  // "Leg uit" — stuurt het item naar Giulia in de chat voor extra context
+  const explain = (item) => {
+    if (!item) return;
+    const q = `Leg dit kort en duidelijk uit — wat is het, waarom staat het in mijn briefing en wat moet ik ermee doen?\n\n• Type: ${item.type}\n• Titel: ${item.title}\n• Samenvatting: ${item.summary}${item.context ? `\n• Context: ${item.context}` : ""}`;
+    navigate(`/chat?ask=${encodeURIComponent(q)}`);
+  };
+
   const onAnswer = useCallback(async (key, text) => {
     if (!text.trim()) return;
     try {
@@ -155,6 +162,9 @@ export default function Briefing() {
   if (phase === "intro") {
     return (
       <div className="fixed inset-0 z-[120] bg-warm-white text-charcoal flex animate-fade-in overflow-hidden">
+        {/* Mobile — top editorial photo band */}
+        <img src={IMAGES.walkChairsBeach} alt="" className="sm:hidden absolute top-0 inset-x-0 h-[38vh] w-full object-cover" />
+        <div className="sm:hidden absolute top-0 inset-x-0 h-[38vh] bg-gradient-to-b from-transparent via-warm-white/30 to-warm-white" />
         {/* Editorial photo — right half, no overlay */}
         <img src={IMAGES.walkChairsBeach} alt="" className="absolute right-0 top-0 h-full w-1/2 object-cover hidden sm:block" />
         <div className="absolute right-0 top-0 h-full w-1/2 hidden sm:block">
@@ -163,7 +173,7 @@ export default function Briefing() {
           </div>
         </div>
 
-        <div className="relative w-full sm:w-1/2 flex flex-col justify-center px-8 sm:px-14 lg:px-20">
+        <div className="relative w-full sm:w-1/2 flex flex-col justify-end sm:justify-center px-8 sm:px-14 lg:px-20 pt-10 sm:pt-0 pb-14 sm:pb-0">
           <p className="text-[11px] uppercase tracking-[0.3em] text-charcoal/55 font-bold mb-6">{data?.intro?.greeting}</p>
           <h1 className="text-[clamp(2.5rem,7vw,5rem)] font-display font-bold leading-[0.95] tracking-[-0.035em] mb-5 text-balance">
             Ik heb de boel in de gaten gehouden.
@@ -289,6 +299,7 @@ export default function Briefing() {
                 onAct={() => openAction(current)}
                 onAnswer={onAnswer}
                 onDone={onDone}
+                onExplain={() => explain(current)}
                 expanded={expanded}
                 onToggleExpand={() => setExpanded((v) => !v)}
                 photoIndex={index}

@@ -38,6 +38,14 @@ export default function Chat() {
     if (messages.length) didInit.current = true;
   }, [messages, sending]);
 
+  // Auto-send a question passed via ?ask= (used by the Briefing "Leg uit" action)
+  const asked = useRef(false);
+  useEffect(() => {
+    if (asked.current) return;
+    const ask = new URLSearchParams(window.location.search).get("ask");
+    if (ask) { asked.current = true; send(ask); }
+  }, [send]);
+
   const send = async (text) => {
     const msg = (text ?? input).trim();
     if (!msg || sending) return;
