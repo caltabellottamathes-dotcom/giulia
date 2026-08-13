@@ -22,7 +22,8 @@ export default function Chat() {
   const load = useCallback(async () => {
     try {
       const list = await base44.entities.Message.list("-created_date", 200);
-      const inApp = (list || []).filter((m) => m.channel === "in-app");
+      // Alleen de GIULIA-GIULIA-conversatie — achtergrondbriefingen zijn verstoken.
+      const inApp = (list || []).filter((m) => m.channel === "in-app" && (m.role === "user" || m.agent_source === "interpretInput"));
       setMessages(inApp.reverse());
     } catch (e) {
       setMessages([]);
@@ -37,14 +38,6 @@ export default function Chat() {
     endRef.current?.scrollIntoView({ behavior: didInit.current ? "smooth" : "auto" });
     if (messages.length) didInit.current = true;
   }, [messages, sending]);
-
-  // Auto-send a question passed via ?ask= (used by the Briefing "Leg uit" action)
-  const asked = useRef(false);
-  useEffect(() => {
-    if (asked.current) return;
-    const ask = new URLSearchParams(window.location.search).get("ask");
-    if (ask) { asked.current = true; send(ask); }
-  }, [send]);
 
   const send = async (text) => {
     const msg = (text ?? input).trim();
@@ -67,14 +60,22 @@ export default function Chat() {
     }
   };
 
+  // Auto-send a question passed via ?ask= (used by the Briefing "Leg uit" action)
+  const asked = useRef(false);
+  useEffect(() => {
+    if (asked.current) return;
+    const ask = new URLSearchParams(window.location.search).get("ask");
+    if (ask) { asked.current = true; send(ask); }
+  }, [send]);
+
   return (
     <div className="h-[calc(100vh-7rem)] flex flex-col animate-fade-up">
       <PageHero
         page="chat"
         icon={Sparkles}
-        eyebrow="Giulia"
-        title="Giulia"
-        subtitle="Je persoonlijke besturingssysteem — altijd actief"
+        eyebrow="GIULIA-GIULIA"
+        title="GIULIA-GIULIA"
+        subtitle="Hoofd van communicatie — weet alles, daagt je uit, altijd online"
         actions={
           <Link to="/voice" className="glass-button rounded-full h-9 px-3 inline-flex items-center gap-2 text-xs font-medium text-foreground/80 hover:text-foreground">
             <Mic className="h-4 w-4" /> Voice

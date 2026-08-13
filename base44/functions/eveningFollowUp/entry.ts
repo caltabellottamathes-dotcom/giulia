@@ -37,12 +37,13 @@ export default async function (req) {
       message = "Goedenavond Salvo. " + openPart + "Morgen pakken we het weer op.";
     }
 
-    await sr.entities.Message.create({
-      role: "giulia",
-      content: message,
-      channel: "in-app",
-      status: "sent",
-    });
+    // Achtergrond blijft onzichtbaar in de chat — log naar Activity, push blijft.
+    await sr.entities.Activity.create({
+      action: "evening_followup",
+      description: String(message).slice(0, 280),
+      source: "eveningFollowUp",
+      timestamp: new Date().toISOString(),
+    }).catch(() => null);
 
     try { await base44.functions.invoke("sendPush", { title: "Giulia · Avond", message }); } catch (e) { /* ignore */ }
 

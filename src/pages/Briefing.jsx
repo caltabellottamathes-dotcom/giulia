@@ -139,6 +139,13 @@ export default function Briefing() {
       await base44.entities.Task.update(taskId, { status: "completed" });
       const cur = items[index];
       if (cur?.id) updateStatus(cur.id, "actioned");
+      // Registreer de afronding zodat de taak niet opnieuw wordt voorgesteld.
+      base44.entities.Activity.create({
+        action: "task_completed",
+        description: (cur?.title || "Taak").slice(0, 120),
+        source: "briefing",
+        timestamp: new Date().toISOString(),
+      }).catch(() => null);
     } catch {}
     toast({ title: "Taak gedaan", description: "Giulia noteert het als afgerond." });
     setTimeout(() => swipe(1), 780);

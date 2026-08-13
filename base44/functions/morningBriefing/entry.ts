@@ -40,12 +40,13 @@ export default async function (req) {
       message = `Goedemorgen Salvo. ${todayEvents.length ? `Agenda: ${todayEvents.map((e) => e.title).join(", ")}. ` : ""}${todayTasks.length ? `${todayTasks.length} taak/en vandaag. ` : ""}Ik houd je vandaag op de hoogte.`;
     }
 
-    await sr.entities.Message.create({
-      role: "giulia",
-      content: message,
-      channel: "in-app",
-      status: "sent",
-    });
+    // Achtergrond blijft onzichtbaar in de chat — log naar Activity, push blijft.
+    await sr.entities.Activity.create({
+      action: "morning_briefing",
+      description: String(message).slice(0, 280),
+      source: "morningBriefing",
+      timestamp: new Date().toISOString(),
+    }).catch(() => null);
 
     try { await base44.functions.invoke("sendPush", { title: "Giulia · Ochtendbriefing", message }); } catch (e) { /* ignore */ }
 

@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { geminiDecide, GIULIA_PERSONA } from '../../shared/gemini.ts';
-import { GIULIA_TONE } from '../../shared/agentContext.ts';
+import { GIULIA_TONE, AGENT_CONTEXT } from '../../shared/agentContext.ts';
 
 /**
  * interpretInput (Phase 2 — Ingestion & Routing).
@@ -137,12 +137,18 @@ export default async function (req) {
     if (intent === "missing_info") {
       const question = clarification ||
         "Ik heb nog wat informatie nodig om dit uit te voeren. Kun je de ontbrekende details aanvullen?";
-      await sr.entities.Message.create({
-        role: "giulia",
-        content: question,
-        channel: "in-app",
-        status: "sent",
-        agent_source: "interpretInput",
+      // Achtergrond blijft stil in de chat — opent een Thread (needs_info) i.p.v.
+      // een bericht in de in-app chat te posten.
+      await sr.entities.Thread.create({
+        title: `Info nodig: ${(personName || record?.subject || rawText || "").slice(0, 60)}`,
+        type: source === "email" ? "email" : "whatsapp",
+        status: "open",
+        needs_info: true,
+        person_id: contactId || undefined,
+        project_id: projectId || undefined,
+        channel: source,
+        summary: question.slice(0, 280),
+        last_message_date: new Date().toISOString(),
       }).catch(() => null);
       await markProcessed(sr, source, record?.id, { contact_id: contactId, project_id: projectId });
       return Response.json({ ok: true, source, id: record?.id || null, intent, clarification: question });
@@ -333,6 +339,8 @@ async function classifyChat(base44, message, history) {
       should_create_person: { type: "boolean" },
       should_create_project: { type: "boolean" },
       project_title: { type: "string" },
+      should_remember: { type: "boolean" },
+      memory_note: { type: "string" },
     },
     required: ["intent", "giulia_response"],
   };
@@ -341,19 +349,37 @@ async function classifyChat(base44, message, history) {
     .map((m) => `${m.role === "user" ? "Salvo" : "Giulia"}: ${m.content}`)
     .join("\n");
 
+  // GIULIA-GIULIA kent alles: profiel, wat ze al over Salvo weet, en haar geheugen.
+  const me = await base44.auth.me().catch(() => null);
+  const answers = ((me as any)?.giulia_answers || {}) as Record<string, string>;
+  const memories = await sr.entities.Memory.list("-created_date", 8).catch(() => []);
+  const memTxt = (memories || []).map((m) => `- ${m.content}`).join("\n").slice(0, 900);
+  const profile =
+    `== OVER SALVO ==\n` +
+    `Naam: ${AGENT_CONTEXT.owner.name} (${AGENT_CONTEXT.owner.short}) · ${AGENT_CONTEXT.owner.location} · ${AGENT_CONTEXT.owner.timezone}\n` +
+    `Werk: ${AGENT_CONTEXT.background.studio}; ${AGENT_CONTEXT.background.mathes}\n` +
+    `Stijl: ${AGENT_CONTEXT.communication_style.join(" · ")}\n` +
+    `Kwetsbaarheden: ${AGENT_CONTEXT.blind_spots.join(" · ")}`;
+  const answersTxt = Object.keys(answers).length
+    ? `\n\n== WAT GIULIA AL WEET ==\n` + Object.entries(answers).map(([k, v]) => `- ${k}: ${v}`).join("\n")
+    : "";
+  const memBlock = memTxt ? `\n\n== GEHEUGEN ==\n${memTxt}` : "";
+  const fullSystemText = `${GIULIA_TONE}\n\n${profile}${answersTxt}${memBlock}`;
+
   // Live chat draait op de Flash-sleutel (los van de achtergrondcycli) en
   // degraceert vriendelijk als het Gemini-quota is opgemaakt (geen harde 500).
   const out = await geminiDecide({
     prompt:
-      `Classificeer dit bericht van Salvo en antwoord als Giulia.\n\n` +
+      `Classificeer dit bericht van Salvo en antwoord als Giulia-Giulia.\n\n` +
       `Bericht:\n"""${message.slice(0, 2000)}"""\n\n` +
       (histTxt ? `Eerder gesprek:\n${histTxt}\n\n` : "") +
       `Geef geldige JSON volgens het schema. giulia_response is je antwoord aan Salvo in Giulia's toon ` +
-      `(vlot, menselijk, uitdagend, stout, humor, kort, geen uitroeptekens, nooit zeggen dat je een AI bent). ` +
+      `(vlot, menselijk, uitdagend, stout, humor, sarcasme, soms droog, kort, geen uitroeptekens, nooit zeggen dat je een AI bent). ` +
+      `Capture alles: zet should_remember=true met een korte memory_note als Salvo iets deelt wat ertoe doet (voorkeur, feit, commitment, idee, design). ` +
       `Als je een entiteit aanmaakt (should_create_*), vermeld dat kort in je antwoord. Lege strings voor afwezige waarden, nooit null.`,
     schema,
-    systemText: GIULIA_TONE,
-    temperature: 0.5,
+    systemText: fullSystemText,
+    temperature: 0.6,
     keyName: "Gemini_Flash_API_Key",
   });
 
@@ -397,6 +423,16 @@ async function classifyChat(base44, message, history) {
   if (out.should_create_project && out.project_title) {
     const p = await sr.entities.Project.create({ title: out.project_title, status: "planning", agent_source: "interpretInput" }).catch(() => null);
     if (p) created.push({ type: "project", id: p.id });
+  }
+  // Registreer wat ertoe doet in het geheugen — Giulia onthoudt alles.
+  if (out.should_remember && out.memory_note) {
+    const m = await sr.entities.Memory.create({
+      content: String(out.memory_note).slice(0, 500),
+      category: "Conversation-derived",
+      confidence: 0.7,
+      source: "interpretInput · chat",
+    }).catch(() => null);
+    if (m) created.push({ type: "memory", id: m.id });
   }
 
   const reply = (out.giulia_response || "").trim() || "Got it.";
