@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { X, Play, Loader2, Check, Sparkles, Rocket } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { IMAGES } from "@/lib/images";
 
 const INTRO_VIDEO =
@@ -31,6 +32,7 @@ export default function GiuliaIntroOverlay() {
   const [cycle, setCycle] = useState("idle"); // idle | running | done | error
   const [feed, setFeed] = useState([]);
   const videoRef = useRef(null);
+  const navigate = useNavigate();
 
   const close = useCallback(() => {
     sessionStorage.setItem(SEEN_KEY, "1");
@@ -61,7 +63,7 @@ export default function GiuliaIntroOverlay() {
     setCycle((c) => {
       if (c === "running" || c === "done") return c;
       base44.functions
-        .invoke("runGiuliaCycle", {})
+        .invoke("startGiulia", {})
         .then(() => setCycle("done"))
         .catch(() => setCycle("error"));
       return "running";
@@ -193,10 +195,10 @@ export default function GiuliaIntroOverlay() {
               </button>
             )}
             <button
-              onClick={close}
+              onClick={cycle === "done" ? () => { close(); navigate("/briefing"); } : close}
               className={cycle === "done" ? "flex-1 h-11 rounded-2xl bg-ivory text-charcoal font-semibold text-sm hover:bg-ivory/90 transition" : "h-11 px-5 rounded-2xl bg-ivory/10 text-ivory/85 font-medium text-sm hover:bg-ivory/20 transition"}
             >
-              {cycle === "done" ? "Open mijn dashboard" : "Naar dashboard"}
+              {cycle === "done" ? "Open briefing" : "Naar dashboard"}
             </button>
           </div>
         </div>

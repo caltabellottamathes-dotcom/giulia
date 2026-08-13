@@ -45,6 +45,7 @@ import WidgetGallery from '@/pages/WidgetGallery';
 import WidgetGallery2 from '@/pages/WidgetGallery2';
 import WidgetGallery3 from '@/pages/WidgetGallery3';
 import WidgetGallery4 from '@/pages/WidgetGallery4';
+import Briefing from '@/pages/Briefing';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -110,6 +111,7 @@ const AuthenticatedApp = () => {
           <Route path="/widget-gallery-4" element={<WidgetGallery4 />} />
         </Route>
         <Route path="/quick" element={<QuickCommand />} />
+        <Route path="/briefing" element={<Briefing />} />
         <Route path="/widget-gallery" element={<WidgetGallery />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />

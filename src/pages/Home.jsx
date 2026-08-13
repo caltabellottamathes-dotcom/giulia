@@ -7,7 +7,7 @@ import { WidgetThemeProvider } from "@/lib/WidgetThemeContext";
 import { IMAGES } from "@/lib/images";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
-import { Plus } from "lucide-react";
+import { Plus, Sparkles } from "lucide-react";
 import AddWidgetPicker from "@/components/panels/AddWidgetPicker";
 import WidgetCell from "@/components/widgets/WidgetCell";
 import MasonryGrid from "@/components/widgets/MasonryGrid";
@@ -233,12 +233,17 @@ export default function Home() {
               {greeting}.
             </h1>
           </div>
-          <button
-            onClick={() => setPickerOpen(true)}
-            className="fixed top-20 right-6 lg:right-10 z-30 inline-flex items-center gap-2 rounded-full glass-1 px-4 py-2.5 text-xs font-semibold text-ivory hover:bg-ivory/10 transition"
-          >
-            <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Widget</span>
-          </button>
+          <div className="fixed top-20 right-6 lg:right-10 z-30 flex items-center gap-2">
+            <Link to="/briefing" className="inline-flex items-center gap-2 rounded-full bg-charcoal text-ivory px-4 py-2.5 text-xs font-semibold hover:bg-charcoal/90 transition">
+              <Sparkles className="h-4 w-4" /> <span className="hidden sm:inline">Briefing</span>
+            </Link>
+            <button
+              onClick={() => setPickerOpen(true)}
+              className="inline-flex items-center gap-2 rounded-full glass-1 px-4 py-2.5 text-xs font-semibold text-ivory hover:bg-ivory/10 transition"
+            >
+              <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Widget</span>
+            </button>
+          </div>
         </header>
 
         {/* Tidy sorted bento grid */}
