@@ -21,6 +21,7 @@ export default async function (req) {
     const seenW = new Set(existing.map((m) => m.whatsapp_message_id).filter(Boolean));
 
     // Deterministisch spiegelen — geen AI nodig voor dit mechanische werk.
+    // Domein 11: last_contact_date bijwerken na elke binnenkomende interactie.
     let mirrored = 0;
     for (const e of emails) {
       if (seenG.has(e.gmail_message_id || e.id)) continue;
@@ -31,6 +32,7 @@ export default async function (req) {
         gmail_thread_id: e.gmail_thread_id || "",
         agent_source: "manageCommunication",
       }).catch(() => null);
+      if (e.contact_id) await sr.entities.Contact.update(e.contact_id, { last_contact_date: new Date().toISOString() }).catch(() => {});
       mirrored++;
     }
     for (const w of wamsgs) {
@@ -41,6 +43,7 @@ export default async function (req) {
         whatsapp_message_id: w.id,
         agent_source: "manageCommunication",
       }).catch(() => null);
+      if (w.contact_id) await sr.entities.Contact.update(w.contact_id, { last_contact_date: new Date().toISOString() }).catch(() => {});
       mirrored++;
     }
 

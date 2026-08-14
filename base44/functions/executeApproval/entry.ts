@@ -108,6 +108,8 @@ export default async function (req) {
           await sr.entities.Approval.update(approval_id, { status: "executed" }).catch(() => {});
           await markSourceEmailsHandled(sr, ap);
           if (ap.thread_id) await sr.entities.Thread.update(ap.thread_id, { status: "resolved", needs_info: false }).catch(() => {});
+          // Domein 11: last_contact_date bijwerken na deze interactie.
+          if (meta.contact_id) await sr.entities.Contact.update(meta.contact_id, { last_contact_date: new Date().toISOString() }).catch(() => {});
           return Response.json({ ok: true, executed: "email", detail: `Verstuurd aan ${to} (via bridge)` });
         }
         await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
@@ -213,6 +215,8 @@ export default async function (req) {
         if (sent && sent.ok) {
           await sr.entities.Approval.update(approval_id, { status: "executed" }).catch(() => {});
           if (ap.thread_id) await sr.entities.Thread.update(ap.thread_id, { status: "resolved", needs_info: false }).catch(() => {});
+          // Domein 11: last_contact_date bijwerken na deze interactie.
+          if (contactId) await sr.entities.Contact.update(contactId, { last_contact_date: new Date().toISOString() }).catch(() => {});
           return Response.json({ ok: true, executed: "whatsapp", detail: "Verzonden" });
         }
         await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
