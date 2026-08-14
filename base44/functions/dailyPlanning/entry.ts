@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { gravityScore } from "../../shared/codeAgent.ts";
 
 /**
  * dailyPlanning (Phase 3 — The Attention Engine).
@@ -43,28 +44,11 @@ export default async function (req) {
     const projects = await sr.entities.Project.list("-created_date", 200).catch(() => []);
     const healthById = new Map(projects.map((p) => [p.id, p.health]));
 
-    // ── Step 2.2: Gravity Scoring Algorithm ─────────────────────────
-    const scoredTasks = pendingTasks.map((task) => {
-      let score = 0;
-
-      // 1. Deadline-nabijheid
-      if (task.deadline) {
-        const hoursUntilDeadline = (new Date(task.deadline).getTime() - now.getTime()) / (1000 * 60 * 60);
-        if (hoursUntilDeadline < 0) score += 100;        // Overdue
-        else if (hoursUntilDeadline <= 24) score += 60;  // Vandaag
-        else if (hoursUntilDeadline <= 72) score += 30;  // Binnenkort
-      }
-
-      // 2. Expliciete prioriteit
-      if (task.priority === "high") score += 40;
-      else if (task.priority === "medium") score += 20;
-
-      // 3. Dependency / Context — kritiek project geeft +20
-      const health = task.project_id ? healthById.get(task.project_id) : null;
-      if (health === "critical") score += 20;
-
-      return { ...task, gravity_score: score };
-    });
+    // ── Step 2.2: Gravity Scoring Algorithm (gedeeld met manageTasks) ──
+    const scoredTasks = pendingTasks.map((task) => ({
+      ...task,
+      gravity_score: gravityScore(task, now, healthById),
+    }));
 
     scoredTasks.sort((a, b) => b.gravity_score - a.gravity_score);
 
