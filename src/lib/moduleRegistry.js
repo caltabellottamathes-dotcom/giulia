@@ -26,6 +26,7 @@ import TimeTracker from "@/pages/TimeTracker";
 import Agents from "@/pages/Agents";
 import Updates from "@/pages/Updates";
 import GoodMorningPanel from "@/components/panels/GoodMorningPanel";
+import JeDagPreview from "@/components/panels/previews/JeDagPreview";
 
 /**
  * Single source of truth for every module that opens as a sliding glass
@@ -55,4 +56,5 @@ export const MODULES = {
   agents:      { label: "Agenten",       icon: Cpu,             Component: Agents,        panelWidth: 860 },
   updates:     { label: "Updates",       icon: Sparkles,        Component: Updates,       panelWidth: 720 },
   goodmorning: { label: "Good Morning",  icon: Sunrise,          Component: GoodMorningPanel, panelWidth: 560 },
+  jedag:     { label: "Je dag",       icon: Sparkles,        Component: JeDagPreview,  panelWidth: 860 },
 };

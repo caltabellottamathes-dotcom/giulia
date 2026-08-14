@@ -1,7 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { Row, Empty, SectionLabel, ActionBtn, HeroStat, MiniBars, RingMini } from "./previewParts";
-import { Check, Hourglass, Bot, Trash2, Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
+import FloatingPanel from "@/components/glass/FloatingPanel";
+import { SectionLabel, Empty } from "./previewParts";
+import TaskDetailPreview, { StatusBadge } from "./TaskDetailPreview";
+
+const FILTERS = [
+  { key: "alle", label: "Alles" },
+  { key: "today", label: "Vandaag" },
+  { key: "upcoming", label: "Later" },
+  { key: "overdue", label: "Te laat" },
+  { key: "waiting", label: "Wacht" },
+  { key: "completed", label: "Klaar" },
+];
 
 const PRIORITY_COLOR = {
   high: "hsl(var(--destructive))",
@@ -9,153 +20,134 @@ const PRIORITY_COLOR = {
   low: "hsl(var(--smoke))",
 };
 
-const CATS = [
-  { key: "focus", label: "Focus" },
-  { key: "today", label: "Vandaag" },
-  { key: "upcoming", label: "Later" },
-  { key: "overdue", label: "Te laat" },
-  { key: "waiting", label: "Wacht" },
-  { key: "delegated", label: "Giulia" },
-];
-
+/** Tasks module paneel — naar het ontwerp van /slick/takenoverzicht (zoeken +
+ *  filters + kolomlijst), in GIULIA-glass. Klik op een taak opent een genest
+ *  Taak-details paneel (TaskDetailPreview). */
 export default function TasksPreview({ onOpen }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [cat, setCat] = useState("focus");
-  const [newTitle, setNewTitle] = useState("");
+  const [filter, setFilter] = useState("alle");
+  const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState(null);
 
   const load = async () => {
     try {
-      const data = await base44.entities.Task.filter(
-        { status: { $in: ["today", "upcoming", "overdue", "waiting", "delegated", "todo", "in_progress"] } },
-        "deadline",
-        50
-      );
+      const data = await base44.entities.Task.list("deadline", 80).catch(() => []);
       setTasks(data || []);
-    } catch (e) {
+    } catch {
+      /* ignore */
     } finally {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     load();
-    const unsub = base44.entities.Task?.subscribe?.((ev) => { if (ev?.type) load(); });
-    return () => { try { unsub && unsub(); } catch { /* ignore */ } };
+    const unsub = base44.entities.Task?.subscribe?.((ev) => {
+      if (ev?.type) load();
+    });
+    return () => {
+      try {
+        unsub && unsub();
+      } catch {
+        /* ignore */
+      }
+    };
   }, []);
 
-  const setStatus = async (t, status, extra) => {
-    setTasks((prev) => prev.filter((x) => x.id !== t.id));
-    try {
-      await base44.entities.Task.update(t.id, { status, ...(extra || {}) });
-    } catch (e) {
-      load();
-    }
-  };
-  const complete = (t) => setStatus(t, "completed");
-  const remove = async (t) => {
-    setTasks((prev) => prev.filter((x) => x.id !== t.id));
-    try { await base44.entities.Task.delete(t.id); } catch (e) { load(); }
-  };
-  const quickAdd = async () => {
-    if (!newTitle.trim()) return;
-    const title = newTitle.trim();
-    setNewTitle("");
-    try {
-      const t = await base44.entities.Task.create({ title, status: "today", priority: "medium" });
-      setTasks((prev) => [t, ...prev]);
-    } catch (e) { /* ignore */ }
-  };
-
-  const today = tasks.filter((t) => t.status === "today");
-  const overdue = tasks.filter((t) => t.status === "overdue");
-  const upcoming = tasks.filter((t) => t.status === "upcoming");
-  const waiting = tasks.filter((t) => t.status === "waiting");
-  const delegated = tasks.filter((t) => t.status === "delegated");
-  const focus = [...overdue, ...today];
-
-  const byCat = {
-    focus, today, upcoming, overdue, waiting, delegated,
-  };
-  const visible = (byCat[cat] || []).slice(0, 8);
-  const doneToday = 0; // completed tasks are filtered out of the query — placeholder ring shows open-load instead
-  const openLoad = Math.min(100, tasks.length ? Math.round((focus.length / Math.max(tasks.length, 1)) * 100) : 0);
+  const filtered = useMemo(() => {
+    return tasks
+      .filter((t) => {
+        const ms = filter === "alle" || t.status === filter;
+        const mq = (t.title || "").toLowerCase().includes(query.toLowerCase());
+        return ms && mq;
+      })
+      .sort((a, b) => (a.deadline || "").localeCompare(b.deadline || ""));
+  }, [tasks, filter, query]);
 
   return (
     <div className="space-y-4">
-      <HeroStat
-        value={focus.length}
-        label="Focus vandaag"
-        accent="hsl(var(--sand))"
-        sub={`${tasks.length} open in totaal · ${overdue.length} te laat · ${waiting.length} wacht`}
-        visual={
-          <div className="flex items-center gap-4">
-            <MiniBars
-              height={56}
-              data={[
-                { value: Math.max(overdue.length, 1), color: "hsl(var(--destructive))" },
-                { value: Math.max(today.length, 1), color: "hsl(var(--sand))" },
-                { value: Math.max(upcoming.length, 1), color: "hsl(var(--blue-grey))" },
-                { value: Math.max(waiting.length, 1), color: "hsl(var(--smoke))" },
-              ]}
-            />
-            <RingMini value={openLoad} accent="hsl(var(--sand))" size={56} />
-          </div>
-        }
-      />
-
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-        {CATS.map((c) => {
-          const count = byCat[c.key]?.length || 0;
-          return (
+      {/* Toolbar */}
+      <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 rounded-xl glass-card-2 border border-white/15 px-3 py-2 w-fit">
+          <Search className="w-4 h-4 text-ivory/55" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Zoek taken…"
+            className="bg-transparent text-ivory text-sm placeholder:text-ivory/40 outline-none w-40 sm:w-44"
+          />
+        </div>
+        <div className="flex gap-1.5 flex-wrap">
+          {FILTERS.map((f) => (
             <button
-              key={c.key}
-              onClick={() => setCat(c.key)}
-              className={`px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition ${cat === c.key ? "bg-ivory text-charcoal" : "glass-button text-ivory/70 hover:text-ivory"}`}
+              key={f.key}
+              onClick={() => setFilter(f.key)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                filter === f.key ? "bg-ivory text-charcoal" : "glass-button text-ivory/70 hover:text-ivory"
+              }`}
             >
-              {c.label}{count > 0 ? ` · ${count}` : ""}
+              {f.label}
             </button>
-          );
-        })}
+          ))}
+        </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <input
-          value={newTitle}
-          onChange={(e) => setNewTitle(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && quickAdd()}
-          placeholder="Snel een taak toevoegen…"
-          className="flex-1 rounded-xl glass-card-2 px-3.5 py-2.5 text-sm text-ivory placeholder:text-ivory/40 focus:outline-none"
-        />
-        <ActionBtn icon={Plus} label="Toevoegen" tone="olive" onClick={quickAdd} />
-      </div>
+      <SectionLabel>{`Geplande taken (${filtered.length})`}</SectionLabel>
 
-      <SectionLabel>{CATS.find((c) => c.key === cat)?.label}</SectionLabel>
       {loading ? (
         <Empty text="Laden…" />
-      ) : visible.length ? (
-        <div className="space-y-2">
-          {visible.map((t) => (
-            <Row
+      ) : filtered.length ? (
+        <div className="flex flex-col gap-2.5">
+          {filtered.map((t) => (
+            <div
               key={t.id}
-              title={t.title}
-              sub={t.deadline ? `Uiterlijk ${new Date(t.deadline).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}` : undefined}
-              onClick={onOpen}
-              accent={PRIORITY_COLOR[t.priority] || "hsl(var(--smoke))"}
-              action={
-                <div className="flex items-center gap-1">
-                  <ActionBtn icon={Check} label="Afronden" tone="olive" onClick={() => complete(t)} />
-                  <ActionBtn icon={Hourglass} label="Wachten" onClick={() => setStatus(t, "waiting")} />
-                  <ActionBtn icon={Bot} label="Voor Giulia" onClick={() => setStatus(t, "delegated", { delegated_to_giulia: true })} />
-                  <ActionBtn icon={Trash2} label="Verwijder" onClick={() => remove(t)} />
-                </div>
-              }
-            />
+              onClick={() => setSelected(t)}
+              className="group flex items-center gap-4 rounded-2xl border border-white/15 bg-white/[0.06] px-4 py-3.5 hover:bg-white/10 transition-colors cursor-pointer"
+            >
+              <div className="flex flex-col items-center justify-center w-12 shrink-0">
+                <span className="text-ivory/55 text-[10px] uppercase">
+                  {t.deadline ? new Date(t.deadline).toLocaleDateString("nl-NL", { month: "short" }) : "—"}
+                </span>
+                <span className="text-ivory text-xl font-semibold leading-none">
+                  {t.deadline ? new Date(t.deadline).getDate() : "·"}
+                </span>
+              </div>
+              <div className="w-px h-10 bg-ivory/15" />
+              <div className="flex-1 min-w-0">
+                <p className="text-ivory text-sm font-medium truncate">{t.title}</p>
+                <p className="text-xs mt-0.5 capitalize" style={{ color: t.priority ? PRIORITY_COLOR[t.priority] : "hsl(var(--smoke))" }}>
+                  {t.priority || "taak"}
+                </p>
+              </div>
+              <StatusBadge status={t.status} />
+            </div>
           ))}
         </div>
       ) : (
-        <Empty text="Niets in deze categorie" />
+        <Empty text="Geen taken gevonden." />
       )}
+
+      <div className="flex justify-end pt-1">
+        <button
+          onClick={onOpen}
+          className="px-5 py-2.5 rounded-full bg-sand text-charcoal text-sm font-semibold hover:brightness-105 transition-all active:scale-95 flex items-center gap-2 shadow-[0_4px_20px_rgba(210,185,140,0.35)]"
+        >
+          <Plus className="w-4 h-4" /> Nieuwe taak
+        </button>
+      </div>
+
+      {/* Genest Taak-details paneel */}
+      <FloatingPanel
+        open={!!selected}
+        onClose={() => setSelected(null)}
+        position="right"
+        level={4}
+        width={560}
+        showOverlay={false}
+        className="z-[60]"
+      >
+        {selected && <TaskDetailPreview task={selected} tasks={filtered} onSelect={setSelected} />}
+      </FloatingPanel>
     </div>
   );
 }

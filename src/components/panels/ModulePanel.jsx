@@ -22,6 +22,7 @@ import KnowledgePreview from "@/components/panels/previews/KnowledgePreview";
 import DocumentsPreview from "@/components/panels/previews/DocumentsPreview";
 import AgentsPreview from "@/components/panels/previews/AgentsPreview";
 import TimeTrackerPreview from "@/components/panels/previews/TimeTrackerPreview";
+import JeDagPreview from "@/components/panels/previews/JeDagPreview";
 import { AnimatedPicto } from "@/components/panels/previews/previewParts";
 
 /** LEVEL 02 quick-context previews — one per data module. Modules without
@@ -33,6 +34,7 @@ const PREVIEWS = {
   approvals: ApprovalsPreview, activity: ActivityPreview, insights: InsightsPreview,
   memory: MemoryPreview, knowledge: KnowledgePreview, documents: DocumentsPreview,
   agents: AgentsPreview,
+  jedag: JeDagPreview,
   timetracker: TimeTrackerPreview,
 };
 
@@ -52,6 +54,7 @@ const MODULE_ACCENT = {
   timetracker: "hsl(var(--olive))",
   updates: "hsl(var(--sand))",
   goodmorning: "hsl(var(--sand))",
+  jedag: "hsl(var(--sand))",
 };
 
 // Modules without a widget keep an editorial photo; modules WITH a widget
@@ -64,6 +67,7 @@ const MODULE_IMAGE = {
   profile: IMAGES.portraitBootHands,
   integrations: IMAGES.sittingChairs,
   agents: IMAGES.feetChair,
+  jedag: IMAGES.portraitBootFace,
 };
 
 const MODULE_ROUTE = {
@@ -104,6 +108,7 @@ const MODULE_TOPIC = {
   integrations: "Verbindingen van Giulia",
   updates: "Achter de schermen",
   goodmorning: "Een rustige ochtend",
+  jedag: "Jouw dag in één blik",
 };
 
 export default function ModulePanel() {
