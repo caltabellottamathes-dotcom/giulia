@@ -23,7 +23,7 @@ export default function Chat() {
     try {
       const list = await base44.entities.Message.list("-created_date", 200);
       // Alleen de GIULIA-GIULIA-conversatie — achtergrondbriefingen zijn verstoken.
-      const inApp = (list || []).filter((m) => m.channel === "in-app" && (m.role === "user" || m.agent_source === "interpretInput"));
+      const inApp = (list || []).filter((m) => m.channel === "in-app");
       setMessages(inApp.reverse());
     } catch (e) {
       setMessages([]);
@@ -47,11 +47,8 @@ export default function Chat() {
     const temp = { id: "tmp" + Date.now(), role: "user", content: msg, created_date: new Date().toISOString() };
     setMessages((prev) => [...prev, temp]);
     try {
-      // interpretInput classificeert, capturet entiteiten en antwoordt als Giulia
-      await base44.functions.invoke("interpretInput", {
-        message: msg,
-        history: messages.slice(-8).map((m) => ({ role: m.role, content: m.content })),
-      });
+      // Rechtstreeks naar GIULIA-CONNECT (chatWithGiulia) — geen tussenlaag.
+      await base44.functions.invoke("chatWithGiulia", { message: msg, persist: true });
       await load();
     } catch (e) {
       toast({ title: "Bericht niet verzonden", variant: "destructive" });
