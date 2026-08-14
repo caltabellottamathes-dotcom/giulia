@@ -68,7 +68,8 @@ export default async function (req) {
       deadTasks,
       pendingApprovals,
       recentActivity,
-      pendingNotifications
+      pendingNotifications,
+      protocolDocs
     ] = await Promise.all([
       sr.entities.Memory.list("-created_date", 150).catch(() => []),
       sr.entities.Project.filter({ status: { $in: ["planning", "in_progress", "waiting"] } }).catch(() => []),
@@ -77,6 +78,7 @@ export default async function (req) {
       sr.entities.Approval.filter({ status: "pending" }).catch(() => []),
       sr.entities.Activity.list("-created_date", 10).catch(() => []),
       sr.entities.Notification.filter({ status: "unread" }).catch(() => []),
+      sr.entities.Document.filter({ document_type: "reference" }).catch(() => []),
     ]);
 
     // Semantische geheugen-selectie
@@ -153,7 +155,14 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
       ? `\n\n== ACHTERGRONDBRON (geen live chat) ==\nDit signaal komt niet direct van Salvo in de chat. Routinematige status ('sync gelukt', 'X mails verwerkt', 'opstart') hoort in report_to_salvo (Activity-feed), NOOIT in create_notification. Alleen create_notification bij een echte vraag die Salvo zelf moet beantwoorden.\n`
       : "";
 
-    const systemInstruction = `${GIULIA_TONE}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}${sourceRule}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo. Denk na, roep de functies aan die nodig zijn om zijn verzoek ECHT uit te voeren, en geef daarna een kort, menselijk antwoord in het Nederlands.`;
+    const protocolsText = (protocolDocs && protocolDocs.length)
+      ? protocolDocs.map((d) => `=== ${d.name || d.title || "Protocol"} ===\n${String(d.content || "").slice(0, 8000)}`).join("\n\n")
+      : "";
+    const protocolsBlock = protocolsText
+      ? `\n== VOLLEDIG OPERATIONEEL PROTOCOL (bron van waarheid — volg dit strikt) ==\n${protocolsText}\n`
+      : "";
+
+    const systemInstruction = `${GIULIA_TONE}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}${sourceRule}${protocolsBlock}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo. Denk na, roep de functies aan die nodig zijn om zijn verzoek ECHT uit te voeren, en geef daarna een kort, menselijk antwoord in het Nederlands.`;
 
     // 3. BUILD TOOLS — elke skill is een direct uitvoerbare GIULIA-CORE-actie.
     const toolsMap = {};

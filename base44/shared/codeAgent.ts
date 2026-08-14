@@ -207,17 +207,19 @@ function sanitizeResult(r) {
  * state, injected into every agent run so each agent starts with full knowledge.
  */
 async function buildDossier(sr) {
-  const [memories, knowledge, projects, contacts, msgs, agentMsgs] = await Promise.all([
+  const [memories, knowledge, projects, contacts, msgs, agentMsgs, protocols] = await Promise.all([
     sr.entities.Memory.list("-created_date", 20).catch(() => []),
     sr.entities.Knowledge.list("-created_date", 8).catch(() => []),
     sr.entities.Project.list().catch(() => []),
     sr.entities.Contact.list().catch(() => []),
     sr.entities.Message.filter({ direction: "incoming" }, "-created_date", 8).catch(() => []),
     sr.entities.Activity.list("-created_date", 8).catch(() => []),
+    sr.entities.Document.filter({ document_type: "reference" }).catch(() => []),
   ]);
   const lines = [];
   if (memories.length) { lines.push("Wat je over Salvo weet:"); memories.forEach(m => lines.push(`- [${m.category || "info"}] ${String(m.content).slice(0, 160)}`)); }
   if (knowledge.length) { lines.push("Kennisbank:"); knowledge.forEach(k => lines.push(`- ${k.title}: ${String(k.content || "").slice(0, 120)}`)); }
+  if (protocols.length) { lines.push("== VOLLEDIG OPERATIONEEL PROTOCOL (volg dit strikt) =="); protocols.forEach(p => lines.push(String(p.content || "").slice(0, 6000))); }
   if (projects.length) { lines.push("Projecten:"); projects.forEach(p => lines.push(`- ${p.title} [${p.status || "?"}]${p.next_milestone ? ` — next: ${p.next_milestone}` : ""}`)); }
   if (contacts.length) { lines.push("Personen:"); contacts.forEach(c => lines.push(`- ${c.name}${c.company ? ` (${c.company})` : ""}`)); }
   if (msgs.length) { lines.push("Recente inkomende berichten:"); msgs.slice(-8).forEach(m => lines.push(`- [${m.channel}] ${String(m.content).slice(0, 100)}`)); }

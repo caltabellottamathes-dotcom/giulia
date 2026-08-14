@@ -7,7 +7,7 @@ import { WidgetThemeProvider } from "@/lib/WidgetThemeContext";
 import { IMAGES } from "@/lib/images";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
-import { Plus, Sparkles } from "lucide-react";
+import { Plus, Sparkles, RotateCcw } from "lucide-react";
 import AddWidgetPicker from "@/components/panels/AddWidgetPicker";
 import WidgetCell from "@/components/widgets/WidgetCell";
 import MasonryGrid from "@/components/widgets/MasonryGrid";
@@ -32,6 +32,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [userName, setUserName] = useState("");
+  const [resetKey, setResetKey] = useState(0);
   const { toast } = useToast();
 
   const load = async () => {
@@ -90,6 +91,15 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Reset — ververs alle widgets en data zónder de opstart-procedure (startGiulia /
+  // refreshDashboard) opnieuw te draaien. Remount van de grid forceert elke widget
+  // zijn eigen data opnieuw op te halen, zodat je ziet dat acties écht zijn uitgevoerd.
+  const reset = () => {
+    setResetKey((k) => k + 1);
+    load();
+    toast({ title: "Vernieuwd", description: "Widgets en data opgehaald." });
   };
 
   useEffect(() => {
@@ -242,6 +252,13 @@ export default function Home() {
             </h1>
           </div>
           <div className="fixed top-20 right-6 lg:right-10 z-30 flex items-center gap-2">
+            <button
+              onClick={reset}
+              title="Ververs alle widgets en data"
+              className="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold transition bg-foreground/[0.06] border border-foreground/10 text-foreground hover:bg-foreground/10 lg:bg-white/10 lg:border-white/20 lg:text-ivory lg:hover:bg-white/20"
+            >
+              <RotateCcw className="h-4 w-4" /> <span className="hidden sm:inline">Reset</span>
+            </button>
             <Link to="/briefing" className="inline-flex items-center gap-2 rounded-full bg-charcoal text-ivory px-4 py-2.5 text-xs font-semibold hover:bg-charcoal/90 transition">
               <Sparkles className="h-4 w-4" /> <span className="hidden sm:inline">Briefing</span>
             </Link>
@@ -263,7 +280,7 @@ export default function Home() {
               ))}
             </div>
           ) : sorted.length > 0 ? (
-            <MasonryGrid className="max-w-[1280px]" gap={16} spans={cells.map((c) => c.span)} scale={0.9}>
+            <MasonryGrid key={resetKey} className="max-w-[1280px]" gap={16} spans={cells.map((c) => c.span)} scale={0.9}>
               {cells.map((c) => c.node)}
             </MasonryGrid>
           ) : (
