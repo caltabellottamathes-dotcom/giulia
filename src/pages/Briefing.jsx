@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useTransform } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import { X, Sparkles, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
@@ -24,6 +24,12 @@ export default function Briefing() {
   const [exitDir, setExitDir] = useState(0);
   const [expanded, setExpanded] = useState(false);
 
+  // Tinder-style drag — rotation + ACTIE/LATER stamps volgen je vinger.
+  const xDrag = useMotionValue(0);
+  const rotate = useTransform(xDrag, [-220, 220], [-16, 16]);
+  const likeOp = useTransform(xDrag, [50, 140], [0, 1]);
+  const nopeOp = useTransform(xDrag, [-140, -50], [1, 0]);
+
   const buildItems = useCallback((rawItems, answered) => {
     const pool = GIULIA_QUESTIONS.filter((q) => !answered.has(q.key));
     if (!pool.length) return rawItems;
@@ -43,21 +49,63 @@ export default function Briefing() {
   }, []);
 
   const load = useCallback(async () => {
+    const rank = { critical: 0, important: 1, relevant: 2, later: 3 };
+    const greet = (() => { const h = new Date().getHours(); return h < 6 ? "Goedenacht" : h < 12 ? "Goedemorgen" : h < 18 ? "Goedemiddag" : "Goedenavond"; })();
     try {
       const me = await base44.auth.me().catch(() => null);
-      const answers = me?.giulia_answers || {};
-      const answered = new Set(Object.keys(answers));
-      const res = await base44.functions.invoke("compileBriefing", {});
-      const d = res?.data ?? res;
-      if (d?.ok) {
-        setData(d);
-        const enriched = buildItems(d.items || [], answered);
-        setItems(enriched);
-        setPhase(enriched.length ? "intro" : "outro");
-      } else {
-        setPhase("outro");
-        setData({ outro: { head: "Je bent weer bij.", subline: "Er staat niets dringend.", next: "" } });
-      }
+      const answered = new Set(Object.keys(me?.giulia_answers || {}));
+      const now = new Date();
+      const todayIso = now.toISOString().slice(0, 10);
+
+      // Altijd verse data — direct uit de entiteiten, onafhankelijk van LLM-credits.
+      const [briefingItems, tasks, events, emails, approvals, insights] = await Promise.all([
+        base44.entities.BriefingItem.filter({ status: "new" }, "-timestamp", 30).catch(() => []),
+        base44.entities.Task.list("deadline", 80).catch(() => []),
+        base44.entities.Event.list("start").catch(() => []),
+        base44.entities.Email.filter({ status: "unread" }, "-timestamp", 20).catch(() => []),
+        base44.entities.Approval.filter({ status: "pending" }, "-created_date", 20).catch(() => []),
+        base44.entities.Insight.filter({ status: "new" }, "-created_date", 10).catch(() => []),
+      ]);
+
+      const raw = [];
+      (briefingItems || []).forEach((b) => raw.push({ ...b, status: b.status || "new", priority: b.priority || "relevant" }));
+      (tasks || []).filter((t) => ["today", "overdue", "in_progress"].includes(t.status)).forEach((t) => raw.push({
+        id: `t-${t.id}`, type: "task", title: t.title,
+        summary: t.deadline ? `Deadline: ${t.deadline}` : (t.description || "Taak"),
+        related_task: t.id, status: "new", suggested_action: "Open taak",
+        action_route: "/tasks", priority: t.status === "overdue" ? "critical" : "important",
+      }));
+      (events || []).filter((e) => (e.start || "").slice(0, 10) === todayIso).forEach((e) => raw.push({
+        id: `e-${e.id}`, type: "calendar",
+        title: `${new Date(e.start).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })} · ${e.title}`,
+        summary: e.location || "Afspraak vandaag", status: "new",
+        suggested_action: "Naar agenda", action_route: "/agenda", priority: "important",
+      }));
+      (emails || []).filter((m) => m.important).slice(0, 3).forEach((m) => raw.push({
+        id: `m-${m.id}`, type: "email", title: m.subject || "Email",
+        summary: `Van ${m.sender_email || m.sender || "?"}`,
+        payload: { count: 1, important: 1 }, status: "new",
+        suggested_action: "Open email", action_route: "/email", priority: "important",
+      }));
+      (approvals || []).slice(0, 4).forEach((a) => raw.push({
+        id: `a-${a.id}`, type: "important", title: a.title || "Goedkeuring",
+        summary: a.description || "Wacht op jouw ja", status: "new",
+        suggested_action: "Bekijk", action_route: "/approvals",
+        priority: a.category === "urgent" ? "critical" : "important",
+      }));
+      (insights || []).slice(0, 2).forEach((i) => raw.push({
+        id: `i-${i.id}`, type: "insight", title: i.title, summary: i.content,
+        status: "new", suggested_action: "Bekijk", action_route: "/insights", priority: "relevant",
+      }));
+
+      raw.sort((a, b) => (rank[a.priority] ?? 2) - (rank[b.priority] ?? 2));
+      const enriched = buildItems(raw, answered);
+      setData({
+        intro: { greeting: greet, subline: enriched.length ? `${enriched.length} dingen die je aandacht verdienen.` : "Alles is rustig.", personal_note: "" },
+        outro: { head: "Je bent weer bij.", subline: "Niets dringends meer.", next: "" },
+      });
+      setItems(enriched);
+      setPhase(enriched.length ? "intro" : "outro");
     } catch {
       setPhase("outro");
       setData({ outro: { head: "Je bent weer bij.", subline: "Er staat niets dringend.", next: "" } });
@@ -285,21 +333,28 @@ export default function Briefing() {
               className="absolute inset-0 cursor-grab active:cursor-grabbing"
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.6}
+              dragElastic={0.8}
               dragSnapToOrigin
-              whileDrag={{ scale: 1.03 }}
+              onDrag={(e, info) => xDrag.set(info.offset.x)}
               onDragEnd={(e, info) => {
+                xDrag.set(0);
                 if (info.offset.x > 120 || info.velocity.x > 600) swipe(1);
                 else if (info.offset.x < -120 || info.velocity.x < -600) swipe(-1);
               }}
               animate={exitDir
-                ? { x: exitDir * 1100, rotate: exitDir * 14, opacity: 0, scale: 0.92 }
-                : { x: 0, rotate: 0, opacity: 1, scale: 1 }}
+                ? { x: exitDir * 1100, opacity: 0, scale: 0.92 }
+                : { x: 0, opacity: 1, scale: 1 }}
               transition={exitDir
-                ? { duration: 0.36, ease: [0.22, 1, 0.36, 1] }
-                : { type: "spring", stiffness: 340, damping: 32 }}
-              style={{ zIndex: 3 }}
+                ? { duration: 0.4, ease: [0.22, 1, 0.36, 1] }
+                : { type: "spring", stiffness: 320, damping: 34 }}
+              style={{ rotate, zIndex: 3 }}
             >
+              <motion.div style={{ opacity: likeOp }} className="absolute top-10 left-7 z-30 pointer-events-none -rotate-12">
+                <span className="text-4xl sm:text-5xl font-display font-black text-olive border-[3px] border-olive rounded-xl px-3 py-0.5 tracking-tight">ACTIE</span>
+              </motion.div>
+              <motion.div style={{ opacity: nopeOp }} className="absolute top-10 right-7 z-30 pointer-events-none rotate-12">
+                <span className="text-4xl sm:text-5xl font-display font-black text-destructive border-[3px] border-destructive rounded-xl px-3 py-0.5 tracking-tight">LATER</span>
+              </motion.div>
               <BriefingCard
                 key={index}
                 item={current}

@@ -1,16 +1,16 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import LayeredWidgetTile from "@/components/experiment/LayeredWidgetTile";
+import { usePanel } from "@/lib/PanelContext";
 import { useTimeTracker, formatDuration, formatMinutes } from "@/lib/useTimeTracker";
 import { IMAGES } from "@/lib/images";
 import { Play, Pause, Square, Timer } from "lucide-react";
 
 export default function TimeTrackerWidget() {
-  const navigate = useNavigate();
+  const { openModule } = usePanel();
   const { tasks, taskId, setTaskId, running, paused, elapsed, start, pause, resume, stop, todayMin } = useTimeTracker();
 
   return (
-    <LayeredWidgetTile image={IMAGES.hourglassJacket} label="Tijd" count={formatMinutes(todayMin)} onHeaderClick={() => navigate("/timetracker")}>
+    <LayeredWidgetTile image={IMAGES.hourglassJacket} label="Tijd" count={formatMinutes(todayMin)} onHeaderClick={() => openModule("timetracker")}>
       <div className="space-y-4">
         <div>
           <label className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Taak</label>
