@@ -1,16 +1,45 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { geminiDecide, geminiEmbed, cosineSimilarity } from '../../shared/gemini.ts';
+import { geminiGenerate, geminiEmbed, cosineSimilarity } from '../../shared/gemini.ts';
 import { AGENT_CONTEXT, GIULIA_TONE } from '../../shared/agentContext.ts';
 import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
 
 /**
- * GIULIA-CONNECT (chatWithGiulia) - De RAG & Connectie Laag.
+ * chatWithGiulia — GIULIA-GIULIA (het brein) stuurt GIULIA-CORE (de blinde
+ * executor) rechtstreeks aan via een native Gemini function-calling loop.
  *
- * Dit is het enige intelligentiepunt. Het laadt de gigantische context
- * (actieve projecten, ALLE taken, verwijderde taken, geheugen), bouwt de prompt
- * met Anti-Zombie regels, stuurt het naar GIULIA-GIULIA (Gemini), en stuurt
- * de beslissingen door naar GIULIA-CORE (giuliaLeader) voor blinde executie.
+ * GEEN JSON-tussenstap meer. Het model MOET een functie aanropen om iets te
+ * doen — we voeren die direct uit (GIULIA-CORE schrijft meteen in de DB),
+ * geven het resultaat terug aan het model, en de loop gaat door tot GIULIA-
+ * GIULIA geen tools meer wil aanropen en een antwoord teruggeeft. Hierdoor
+ * kan ze niet meer "zeggen dat ze iets deed" zonder het echt gedaan te hebben:
+ * elke actie is een echte functionCall die direct op de database werd
+ * uitgevoerd vóór het eindantwoord.
+ *
+ * Bronnen: source='chat' = Salvo in de app; anders = achtergrondsignaal
+ * (email/whatsapp/upload). Voor achtergrondbronnen geldt de anti-ruis-regel:
+ * routinematige status gaat naar report_to_salvo (Activity-feed), niet naar
+ * create_notification.
  */
+const MAX_STEPS = 10;
+
+function sanitizeResult(r) {
+  if (r == null) return { ok: true };
+  if (typeof r !== "object") return { value: String(r).slice(0, 500) };
+  if (Array.isArray(r)) return { count: r.length, items: r.slice(0, 10).map((x) => sanitizeResult(x)) };
+  const out = {};
+  try {
+    for (const k of Object.keys(r)) {
+      const v = r[k];
+      if (v == null || typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
+        out[k] = typeof v === "string" ? v.slice(0, 300) : v;
+      } else if (Array.isArray(v)) out[k] = `array[${v.length}]`;
+      else if (typeof v === "object") out[k] = "[object]";
+      if (Object.keys(out).length >= 12) break;
+    }
+  } catch { /* ignore */ }
+  return out;
+}
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -50,9 +79,7 @@ export default async function (req) {
       sr.entities.Notification.filter({ status: "unread" }).catch(() => []),
     ]);
 
-    // Semantische geheugen-selectie — vindt ook herinneringen van weken
-    // terug als ze inhoudelijk aansluiten bij dit bericht. Valt terug op
-    // de recentste 20 als embeddings niet beschikbaar zijn.
+    // Semantische geheugen-selectie
     const queryEmbedding = await geminiEmbed({ text: message, keyName: "GIULIA_GIULIA_MEMORY_GEMINI_API_KEY" }).catch(() => null);
     let memories = allMemories.slice(0, 20);
     if (queryEmbedding) {
@@ -81,11 +108,11 @@ export default async function (req) {
       activeProjects.map(p => `- ID: ${p.id} | ${p.title} | Status: ${p.status} | Voortgang: ${p.progress}%`).join("\n"),
       ``,
       `Openstaande Taken (Totaal: ${openTasks.length}):`,
-      `[Je ziet hier een samenvatting, er lopen nu ${openTasks.length} taken. Neem dit serieus, verzin niets nieuws als het niet hoeft.]`,
+      `[Er lopen nu ${openTasks.length} taken. Verzin niets nieuws als het niet hoeft.]`,
       openTasks.slice(0, 30).map(t => `- ID: ${t.id} | ${t.title} | Status: ${t.status}`).join("\n"),
       ``,
       `RECENT VERWIJDERD OF AFGEROND (ANTI-ZOMBIE LIJST):`,
-      `[LET OP: Deze taken zijn zojuist afgesloten of gearchiveerd. MAAK DEZE NOOIT OPNIEUW AAN!]`,
+      `[MAAK DEZE NOOIT OPNIEUW AAN!]`,
       deadTasks.map(t => `- ID: ${t.id} | ${t.title} | Status: ${t.status}`).join("\n"),
       ``,
       `Wachtende Goedkeuringen voor externe acties: ${pendingApprovals.length}`,
@@ -100,133 +127,98 @@ export default async function (req) {
 
     const rules = `
 == ANTI-ZOMBIE & HYGIËNE REGELS (CRITIEK) ==
-1. MAAK GEEN TAKEN AAN OM GATEN TE VULLEN. Je ziet in de context dat er al tientallen of honderden taken open staan.
-2. Controleer ALTIJD de 'RECENT VERWIJDERD' lijst in je context. Als Salvo een taak weghaalt (archived/completed), mag je die NOOIT dupliceren of her-aanmaken.
-3. Soft Deletes: Als Salvo in de chat zegt "Verwijder taak X", roep je 'update_task' aan en zet je de status op 'archived'. Gebruik geen andere acties.
-4. Externe acties (email, whatsapp, kalender toevoegen met gasten) doe je NOOIT rechtstreeks, ALTIJD via 'create_approval'.
-5. Je bent de enige intelligentie. Wees proactief in je denkproces, maar conservatief in het aanmaken van database-records.
-6. STRIKT ONDERSCHEID — Taak vs Approval vs Notificatie: Een Taak ('create_task') is een concrete actie voor Salvo voor vandaag/morgen/deze week, alleen aanmaken als er ECHT iets verandert, en synchroniseer dit altijd met de agenda/planning. Een Approval ('create_approval') is UITSLUITEND een externe actie (email/whatsapp/agenda) die letterlijk verzonden moet worden — kies de category zorgvuldig (urgent/communication/projects/intern/proactive) en gebruik 'proactive' bijna nooit, nooit twee keer over hetzelfde. Een ECHTE vraag aan Salvo die een antwoord vereist, of iets écht belangrijks, gaat via 'create_notification' MET requires_response=true of urgent=true. Routinematige status ('opstart gelukt', 'sync gedraaid', 'ochtendbriefing', aantal mails/taken) is GEEN notificatie — dat loggen via 'report_to_salvo' naar de Activity-feed. Notificaties zijn schaars en altijd betekenisvol, nooit een statusrapport.
+1. MAAK GEEN TAKEN AAN OM GATEN TE VULLEN. Er lopen al tientallen taken.
+2. Controleer ALTIJD de 'RECENT VERWIJDERD' lijst. NOOIT dupliceren of her-aanmaken.
+3. Soft Deletes: "Verwijder taak X" → update_task met status='archived'.
+4. Externe acties (email, whatsapp, kalender met gasten) ALTIJD via create_approval, NOOIT zelf verzenden.
+5. Wees proactief in denken, conservatief in aanmaken van records.
+6. STRIKT ONDERSCHEID — Taak vs Approval vs Notificatie: Taak = concrete actie voor vandaag/morgen/deze week, alleen bij echte verandering, gesynchroniseerd met agenda. Approval = UITSLUITEND externe actie die verzonden moet worden (kies category zorgvuldig; 'proactive' bijna nooit, nooit 2x over hetzelfde). Echte vraag aan Salvo → create_notification MET requires_response=true of urgent=true. Routinematige status → report_to_salvo (Activity-feed), NOOIT create_notification.
+7. WAT JE DOET MOET ECHT GEBEUREN: om iets te veranderen MOET je de bijbehorende functie aanroepen (bv. update_task, update_project, update_contact). Zeg NOOIT "ik heb het aangepast" als je de functie niet hebt aangeroepen — het antwoord is pas waar als de functionCall is uitgevoerd en je het resultaat hebt gezien.
+8. Bij "doe dit niet meer"/"verander X naar Y": roep de juiste update-functie aan met de nieuwe waarden. Bevestig pas ná het resultaat.
 
-== INTAKE-BESLISBOOM (Domein 4 van het Protocol) ==
-Elk binnenkomend signaal (chat, email, whatsapp, upload) classificeer je als één van: Task / Event / Project / Idea / Memory / Contact / Insight / Notification / Approval.
-- Semantische koppeling aan een bestaand Project/Contact: alleen koppelen als je >85% zeker bent van de match; tussen 50-85% stel je het voor via create_notification (kind='question') in plaats van zelf te koppelen; <50% laat je los.
-- Duplicaten: create_task/create_project/create_contact controleren zelf al op ≥85% titel-gelijkenis — als het resultaat duplicate:true teruggeeft, meld dit kort en maak niets nieuws aan.
-- Ontbrekende essentiële info (bv. geen deadline bij iets dat expliciet dringend is): NOOIT gokken — stuur eerst create_notification met kind='question' en requires_response=true, en wacht op antwoord voordat je een actie uitvoert.
+== INTAKE-BESLISBOOM (Domein 4) ==
+Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Insight / Notification / Approval.
+- Semantische koppeling aan Project/Contact: alleen bij >85% zekerheid; 50-85% via create_notification (kind='question'); <50% loslaten.
+- Duplicaten: create_task/create_project/create_contact controleren zelf op ≥85% titel-gelijkenis — bij duplicate:true meld dit kort en maak niets nieuws aan.
+- Ontbrekende essentiële info: NOOIT gokken — eerst create_notification met kind='question', requires_response=true, en wachten.
 `;
 
-    // Tool-schema's expliciet meegeven — anders weet Gemini niet welke velden
-    // per actie verwacht worden en levert het lege args={} op (silent failure
-    // bij executie in GIULIA-CORE, want required velden ontbreken dan).
     const toolDocs = GIULIA_SKILLS.map(
-      (s) => `- ${s.name}: ${s.description}\n  args schema: ${JSON.stringify(s.inputSchema)}`
+      (s) => `- ${s.name}: ${s.description}`
     ).join("\n");
-    const toolsBlock = `\n== BESCHIKBARE ACTIES (vul args EXACT volgens dit schema, nooit leeg laten) ==\n${toolDocs}\n`;
+    const toolsBlock = `\n== BESCHIKBARE ACTIES (roep deze aan om iets te doen — je MOET de functie aanroepen, niet alleen beweren) ==\n${toolDocs}\n`;
 
-    const systemInstruction = `${GIULIA_TONE}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}`;
-
-    // 3. SCHEMA DEFINITION (Execution Payload)
-    const executionSchema = {
-      type: "object",
-      properties: {
-        response_text: {
-          type: "string",
-          description: "Jouw antwoord aan Salvo (alleen in te vullen als source='chat'). Gebruik Markdown links naar IDs als je acties uitvoert, bv. [Taaknaam](/tasks?open=id)."
-        },
-        actions: {
-          type: "array",
-          description: "Lijst van acties die GIULIA-CORE blind moet uitvoeren.",
-          items: {
-            type: "object",
-            properties: {
-              name: { type: "string", enum: GIULIA_SKILLS.map(s => s.name) },
-              args_json: { type: "string", description: "De parameters voor deze tool als JSON-string (bv. '{\"title\":\"Bel Mathes\",\"priority\":\"high\"}'), EXACT volgens het args-schema van die tool in de systeeminstructie. Nooit leeg laten — minstens de required velden." }
-            },
-            required: ["name", "args_json"]
-          }
-        },
-        memory_updates: {
-          type: "array",
-          description: "Feiten of voorkeuren die je permanent in je geheugen wilt opslaan.",
-          items: {
-            type: "object",
-            properties: {
-              content: { type: "string" },
-              category: { type: "string", enum: ["User preferences", "Projects", "People", "Routines", "Conversation-derived"] }
-            }
-          }
-        }
-      },
-      required: ["actions"]
-    };
-
-    // 4. THE AI CALL (GIULIA-GIULIA)
-    const keyName = source === "chat" ? "GIULIA_GIULIA_GEMINI_API_KEY" : "BACKDESK_GEMINI_API_KEY";
-
-    const payload = await geminiDecide({
-      prompt: `Inkomend signaal (bron: ${source}):\n"""${message.slice(0, 3000)}"""\n\nBedenk wat er moet gebeuren, vul het schema in en voer acties toe aan de array.`,
-      schema: executionSchema,
-      systemText: systemInstruction,
-      temperature: 0.2, // Laag houden voor strakke JSON acties
-      keyName
-    });
-
-    if (!payload) {
-      const fallback = "Giulia is even bezet — Gemini-quota bereikt. Probeer het zo weer.";
-      if (persist && source === "chat") {
-        await sr.entities.Message.create({ role: "giulia", content: fallback, channel: "in-app", status: "sent", agent_source: "chatWithGiulia" }).catch(() => null);
-      }
-      return Response.json({ ok: false, error: "Gemini failed to generate payload", response: fallback, degraded: true });
-    }
-
-    // 5. DELEGATE TO GIULIA-CORE — args_json (string) → args (object)
-    let actionsForCore = (payload.actions || []).map((a) => {
-      let args = {};
-      try { args = a.args_json ? JSON.parse(a.args_json) : {}; } catch { args = {}; }
-      return { name: a.name, args };
-    });
-
-    // Anti-ruis: routinematige status-updates (opstart/cyclus/achtergrondsignalen)
-    // mogen nooit als Notification eindigen — dat is voor échte vragen/opmerkingen.
-    // Zulke bronnen loggen we stil naar de Activity-feed in plaats van te droppen.
     const isBackgroundSource = source !== "chat";
-    if (isBackgroundSource) {
-      actionsForCore = actionsForCore.map((a) => {
-        if (a.name === "create_notification" && !a.args.urgent && !a.args.requires_response) {
-          return { name: "report_to_salvo", args: { message: a.args.message || a.args.title || "Achtergrondupdate" } };
+    const sourceRule = isBackgroundSource
+      ? `\n\n== ACHTERGRONDBRON (geen live chat) ==\nDit signaal komt niet direct van Salvo in de chat. Routinematige status ('sync gelukt', 'X mails verwerkt', 'opstart') hoort in report_to_salvo (Activity-feed), NOOIT in create_notification. Alleen create_notification bij een echte vraag die Salvo zelf moet beantwoorden.\n`
+      : "";
+
+    const systemInstruction = `${GIULIA_TONE}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}${sourceRule}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo. Denk na, roep de functies aan die nodig zijn om zijn verzoek ECHT uit te voeren, en geef daarna een kort, menselijk antwoord in het Nederlands.`;
+
+    // 3. BUILD TOOLS — elke skill is een direct uitvoerbare GIULIA-CORE-actie.
+    const toolsMap = {};
+    for (const s of GIULIA_SKILLS) {
+      toolsMap[s.name] = {
+        description: s.description,
+        inputSchema: s.inputSchema,
+        execute: (args) => s.execute(args, base44),
+      };
+    }
+    const functionDeclarations = Object.entries(toolsMap).map(([name, t]) => ({
+      name,
+      description: t.description || "",
+      parameters: t.inputSchema || { type: "object", properties: {} },
+    }));
+    const genTools = [{ functionDeclarations }];
+
+    // 4. THE FUNCTION-CALLING LOOP — GIULIA-GIULIA → GIULIA-CORE direct.
+    const contents = [{ role: "user", parts: [{ text: `Inkomend signaal (bron: ${source}):\n"""${message.slice(0, 3000)}"""` }] }];
+    const executed = [];
+    let responseText = null;
+    const keyName = isBackgroundSource ? "BACKDESK_GEMINI_API_KEY" : "GIULIA_GIULIA_GEMINI_API_KEY";
+
+    for (let step = 0; step < MAX_STEPS; step++) {
+      const parts = await geminiGenerate({ contents, tools: genTools, systemText: systemInstruction, keyName });
+      if (!parts || !parts.length) break;
+      contents.push({ role: "model", parts });
+      const fnCalls = parts.filter((p) => p.functionCall);
+      if (!fnCalls.length) {
+        const textPart = parts.find((p) => p.text);
+        responseText = textPart?.text || null;
+        break;
+      }
+      const respParts = [];
+      for (const p of fnCalls) {
+        const name = p.functionCall.name;
+        const args = p.functionCall.args || {};
+        const t = toolsMap[name];
+        let result;
+        try {
+          result = t ? await t.execute(args) : { error: "unknown tool" };
+        } catch (e) {
+          result = { error: String((e && e.message) || e) };
         }
-        return a;
-      });
+        executed.push({ name, args, ok: !(result && result.error), result: sanitizeResult(result) });
+        respParts.push({ functionResponse: { name, response: sanitizeResult(result) } });
+      }
+      contents.push({ role: "user", parts: respParts });
     }
 
-    let coreResults = [];
-    if (actionsForCore.length > 0) {
-      const coreRes = await base44.functions.invoke("giuliaLeader", {
-        actions: actionsForCore,
-        memory_updates: payload.memory_updates
-      }).catch((e) => ({ data: { error: String((e && e.message) || e) } }));
-      coreResults = (coreRes && coreRes.data && coreRes.data.results) || [];
-    } else if (payload.memory_updates && payload.memory_updates.length > 0) {
-      // Geen acties, wel geheugen-opslag — stuur toch door naar CORE.
-      const coreRes = await base44.functions.invoke("giuliaLeader", {
-        actions: [],
-        memory_updates: payload.memory_updates
-      }).catch((e) => ({ data: { error: String((e && e.message) || e) } }));
-      coreResults = (coreRes && coreRes.data && coreRes.data.results) || [];
-    }
+    // 5. SAVE RESPONSE
+    const finalText = responseText || (executed.length
+      ? "Ik heb het uitgevoerd."
+      : "Giulia is even bezet — probeer het zo weer.");
 
-    // 6. SAVE RESPONSE
-    const responseText = payload.response_text || "";
-    if (persist && source === "chat" && responseText) {
+    if (persist && source === "chat" && finalText) {
       await sr.entities.Message.create({
-        role: "giulia", content: responseText, channel: "in-app", status: "sent", agent_source: "chatWithGiulia"
+        role: "giulia", content: finalText, channel: "in-app", status: "sent", agent_source: "chatWithGiulia"
       }).catch(() => null);
     }
 
     return Response.json({
       ok: true,
-      response: responseText,
-      actions_executed: actionsForCore,
-      core_results: coreResults
+      response: finalText,
+      actions_executed: executed,
     });
 
   } catch (error) {
