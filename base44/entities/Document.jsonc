@@ -6,6 +6,10 @@
       "type": "string",
       "title": "Name"
     },
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
     "type": {
       "type": "string",
       "enum": [
@@ -18,6 +22,22 @@
       ],
       "default": "other",
       "title": "Type"
+    },
+    "document_type": {
+      "type": "string",
+      "enum": [
+        "reference",
+        "contract",
+        "invoice",
+        "notes",
+        "other"
+      ],
+      "default": "other",
+      "title": "Document Type"
+    },
+    "content": {
+      "type": "string",
+      "title": "Content"
     },
     "url": {
       "type": "string",
@@ -50,14 +70,8 @@
   ],
   "rls": {
     "create": true,
-    "read": {
-      "created_by_id": "{{user.id}}"
-    },
-    "update": {
-      "created_by_id": "{{user.id}}"
-    },
-    "delete": {
-      "created_by_id": "{{user.id}}"
-    }
+    "read": true,
+    "update": true,
+    "delete": true
   }
 }
