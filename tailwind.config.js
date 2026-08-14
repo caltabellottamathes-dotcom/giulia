@@ -61,6 +61,11 @@ module.exports = {
   			steel: 'hsl(var(--steel))',
   			linen: 'hsl(var(--linen))',
   			urgent: 'hsl(var(--urgent))',
+  			metal: 'hsl(var(--slick-metal))',
+  			marble: 'hsl(var(--slick-marble))',
+  			clay: 'hsl(var(--slick-clay))',
+  			sky: 'hsl(var(--slick-sky))',
+  			slickstorm: 'hsl(var(--slick-storm))',
   		},
   		fontFamily: {
   			heading: ['var(--font-heading)'],
