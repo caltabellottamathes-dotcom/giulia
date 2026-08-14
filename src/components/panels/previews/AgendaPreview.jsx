@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { ChevronLeft, ChevronRight, Plus, Clock, MapPin } from "lucide-react";
 import { SectionLabel, Empty } from "./previewParts";
+import DomainChip from "@/components/life/DomainChip";
+import { DOMAIN_HEX } from "@/lib/domainUtils";
 
 const HOURS = Array.from({ length: 14 }, (_, i) => i + 7); // 7..20
 const PXMIN = 1.05;
@@ -113,7 +115,7 @@ export default function AgendaPreview({ onOpen }) {
               )}
               {dayEvents.map((e) => (
                 <div key={e.id} onClick={onOpen} className="absolute left-12 right-1 rounded-xl border border-white/15 bg-white/[0.07] px-3 py-1.5 overflow-hidden flex gap-2 cursor-pointer hover:bg-white/12 transition-colors" style={{ top: topFor(e.start), height: Math.max(dur(e) * PXMIN, 34) }}>
-                  <div className="w-1 rounded-full shrink-0 bg-sand" />
+                  <div className="w-1 rounded-full shrink-0" style={{ background: e.domain ? DOMAIN_HEX[e.domain] : "hsl(var(--sand))" }} />
                   <div className="min-w-0">
                     <p className="text-ivory text-xs font-medium leading-tight truncate">{e.title}</p>
                     <p className="text-ivory/50 text-[10px] tabular-nums mt-0.5">{new Date(e.start).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}{e.location ? ` · ${e.location}` : ""}</p>
@@ -151,7 +153,10 @@ export default function AgendaPreview({ onOpen }) {
                         <span className="text-ivory text-base font-semibold leading-none mt-0.5">{d.getDate()}</span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-ivory text-sm font-medium truncate">{e.title}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-ivory text-sm font-medium truncate">{e.title}</p>
+                          {e.domain && <DomainChip domain={e.domain} size="xs" />}
+                        </div>
                         <p className="text-ivory/50 text-xs flex items-center gap-1.5"><Clock className="w-3 h-3" />{d.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}{e.location ? <><MapPin className="w-3 h-3 ml-1" />{e.location}</> : null}</p>
                       </div>
                     </div>

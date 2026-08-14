@@ -12,6 +12,7 @@ const LINKS = [
   { label: "Documenten", to: "/documents" },
   { label: "Mensen", to: "/people" },
   { label: "Inzichten", to: "/insights" },
+  { label: "LIFE", to: "/life" },
   { label: "Backdesk", to: "/settings" },
 ];
 

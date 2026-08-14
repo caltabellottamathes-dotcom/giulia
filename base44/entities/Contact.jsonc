@@ -65,6 +65,19 @@
     "agent_source": {
       "type": "string",
       "title": "Agent Source"
+    },
+    "desired_frequency_days": {
+      "type": "number",
+      "title": "Desired Frequency (days)"
+    },
+    "relationship_domain": {
+      "type": "string",
+      "enum": [
+        "focus",
+        "life",
+        "self"
+      ],
+      "title": "Relationship Domain"
     }
   },
   "required": [

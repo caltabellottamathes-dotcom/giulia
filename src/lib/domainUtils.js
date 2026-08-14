@@ -1,0 +1,79 @@
+// LIFE domain layer — client-side tagging heuristic + balance computation.
+// Giulia's auto-tagging runs server-side via the manage* skills (when LLM
+// credits are available); this provides an immediate, always-working fallback
+// so the domain chips and balance snapshot stay meaningful.
+
+export const DOMAINS = ["focus", "life", "self"];
+
+export const DOMAIN_HEX = {
+  focus: "hsl(var(--olive))",
+  life: "hsl(var(--life-blue))",
+  self: "hsl(var(--self-burgundy))",
+};
+
+export const DOMAIN_LABEL = { focus: "FOCUS", life: "LIFE", self: "SELF" };
+
+const LIFE_KW = ["lunch", "diner", "koffie", "borrel", "bel", "bellen", "mama", "papa", "familie", "vriend", "vriendin", "verjaardag", "feest", "vakantie", "weekend", "sociaal", "date", "cafe", "café", "eten", "sport", "gym", "lopen", "hardlopen", "muziek", "gitaar", "oefenen", "repetitie", "schoonmaak", "boodschappen", "wassen", "was", "huis", "tuin", "klussen", "dokter", "tandarts", "kapper", "hobby", "verjaardag"];
+const SELF_KW = ["meditatie", "journal", "journaling", "therapie", "therapeut", "rust", "slaap", "zelfzorg", "lezen", "reflectie", "reflecteren", "adem", "yoga", "wandelen", "stilte", "afsluiten", "dagboek"];
+const FOCUS_KW = ["offerte", "factuur", "klant", "project", "deadline", "meeting", "vergadering", "call", "client", "sales", "design", "code", "debrief", "contract", "leverancier", "briefing", "rapport", "strategie", "marketing", "budget"];
+
+export function tagDomain(text = "") {
+  const t = (text || "").toLowerCase();
+  if (!t) return null;
+  const hit = (arr) => arr.some((k) => t.includes(k));
+  if (hit(SELF_KW)) return "self";
+  if (hit(LIFE_KW)) return "life";
+  if (hit(FOCUS_KW)) return "focus";
+  return null;
+}
+
+// desired contact frequency in days — explicit value wins, else heuristic by type.
+export function desiredFreq(contact) {
+  const f = contact?.desired_frequency_days;
+  if (f && f > 0) return f;
+  const rt = (contact?.relationship_type || "").toLowerCase();
+  if (rt.includes("famil") || rt.includes("vriend")) return 14;
+  if (rt.includes("klant") || rt.includes("client")) return 21;
+  if (rt.includes("team")) return 7;
+  return 30;
+}
+
+export function daysSince(date) {
+  if (!date) return Infinity;
+  const d = new Date(date).getTime();
+  if (Number.isNaN(d)) return Infinity;
+  return Math.max(0, Math.round((Date.now() - d) / 86400000));
+}
+
+// Contacts needing attention — sorted by overdue ratio (since / desired freq).
+export function socialPulse(contacts = []) {
+  return contacts
+    .filter((c) => c.name)
+    .map((c) => {
+      const freq = desiredFreq(c);
+      const since = daysSince(c.last_contact_date);
+      return { contact: c, freq, since, ratio: since / freq, overdue: since > freq };
+    })
+    .sort((a, b) => b.ratio - a.ratio);
+}
+
+// Domain balance across tasks + calendar events (and optionally projects).
+export function domainBalance({ tasks = [], events = [], projects = [] } = {}) {
+  const counts = { focus: 0, life: 0, self: 0, none: 0 };
+  const tally = (d) => { counts[d in counts ? d : "none"]++; };
+  tasks.forEach((t) => tally(t.domain));
+  events.forEach((e) => tally(e.domain));
+  const total = (tasks.length + events.length) || 1;
+  const pct = (k) => Math.round((counts[k] / total) * 100);
+  return {
+    counts,
+    focus: pct("focus"),
+    life: pct("life"),
+    self: pct("self"),
+    none: pct("none"),
+    total: tasks.length + events.length,
+  };
+}
+
+export const LIFE_BLUE = "hsl(var(--life-blue))";
+export const LIFE_SAND = "hsl(var(--life-sand))";

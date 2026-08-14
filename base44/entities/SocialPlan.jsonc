@@ -1,0 +1,54 @@
+{
+  "name": "SocialPlan",
+  "type": "object",
+  "properties": {
+    "contact_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Contact IDs"
+    },
+    "activity": {
+      "type": "string",
+      "title": "Activity"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "confirmed",
+        "done",
+        "cancelled"
+      ],
+      "default": "planned",
+      "title": "Status"
+    },
+    "calendar_event_id": {
+      "type": "string",
+      "title": "Calendar Event ID"
+    },
+    "suggested_date": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Suggested Date"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Notes"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
+    }
+  },
+  "required": [
+    "activity"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

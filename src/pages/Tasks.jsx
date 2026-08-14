@@ -6,6 +6,8 @@ import StatusBadge from "@/components/glass/StatusBadge";
 import PanelForm from "@/components/glass/PanelForm";
 import TaskAgentRunner from "@/components/tasks/TaskAgentRunner";
 import TaskDetailPanel from "@/components/tasks/TaskDetailPanel";
+import DomainChip from "@/components/life/DomainChip";
+import { tagDomain } from "@/lib/domainUtils";
 import PageHero from "@/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
@@ -76,9 +78,14 @@ export default function Tasks() {
     reload();
   };
 
+  const setDomain = async (task, domain) => {
+    await base44.entities.Task.update(task.id, { domain: domain || undefined });
+    reload();
+  };
+
   const createTask = async () => {
     if (!newTitle.trim()) return;
-    await base44.entities.Task.create({ title: newTitle.trim(), status: "today", priority: "medium" });
+    await base44.entities.Task.create({ title: newTitle.trim(), status: "today", priority: "medium", domain: tagDomain(newTitle) || undefined });
     setNewTitle("");
     setShowNew(false);
     reload();
@@ -184,6 +191,7 @@ export default function Tasks() {
                 )}
               </div>
               <div className="flex items-center gap-2 shrink-0">
+                <DomainChip domain={task.domain} size="xs" onChange={(d) => setDomain(task, d)} />
                 {task.priority && <StatusBadge variant={priorityVariantMap[task.priority]}>{task.priority}</StatusBadge>}
                 {task.deadline && (
                   <span className="text-xs text-muted-foreground flex items-center gap-1">

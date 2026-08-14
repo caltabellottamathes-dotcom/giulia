@@ -2,6 +2,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import { Pencil, Clock, Milestone } from "lucide-react";
 import StatusBadge from "@/components/glass/StatusBadge";
+import DomainChip from "@/components/life/DomainChip";
 import { IMAGES } from "@/lib/images";
 import { projectStatusMeta } from "@/lib/projectStatus";
 
@@ -26,8 +27,9 @@ export default function ProjectCard({ project, index = 0, onOpen, onEdit }) {
       <div className="relative h-32 overflow-hidden">
         <img src={photo} alt={project.title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/60 via-charcoal/15 to-transparent" />
-        <div className="absolute top-2.5 left-2.5">
+        <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
           <StatusBadge variant={ps.variant} className="bg-white/20 border-white/30 text-white">{ps.label}</StatusBadge>
+          {project.domain && <DomainChip domain={project.domain} size="xs" />}
         </div>
         <button
           onClick={(e) => { e.stopPropagation(); onEdit(project, e); }}

@@ -23,6 +23,11 @@ import DocumentsPreview from "@/components/panels/previews/DocumentsPreview";
 import AgentsPreview from "@/components/panels/previews/AgentsPreview";
 import TimeTrackerPreview from "@/components/panels/previews/TimeTrackerPreview";
 import JeDagPreview from "@/components/panels/previews/JeDagPreview";
+import SocialPulsePreview from "@/components/panels/previews/SocialPulsePreview";
+import SocialPlannerPreview from "@/components/panels/previews/SocialPlannerPreview";
+import HouseholdPreview from "@/components/panels/previews/HouseholdPreview";
+import PersonalAdminPreview from "@/components/panels/previews/PersonalAdminPreview";
+import HobbiesPreview from "@/components/panels/previews/HobbiesPreview";
 import { AnimatedPicto } from "@/components/panels/previews/previewParts";
 
 /** LEVEL 02 quick-context previews — one per data module. Modules without
@@ -36,6 +41,8 @@ const PREVIEWS = {
   agents: AgentsPreview,
   jedag: JeDagPreview,
   timetracker: TimeTrackerPreview,
+  socialpulse: SocialPulsePreview, socialplanner: SocialPlannerPreview,
+  household: HouseholdPreview, personaladmin: PersonalAdminPreview, hobbies: HobbiesPreview,
 };
 
 /**
@@ -55,6 +62,8 @@ const MODULE_ACCENT = {
   updates: "hsl(var(--sand))",
   goodmorning: "hsl(var(--sand))",
   jedag: "hsl(var(--sand))",
+  socialpulse: "hsl(var(--life-blue))", socialplanner: "hsl(var(--life-blue))",
+  household: "hsl(var(--life-blue))", personaladmin: "hsl(var(--life-sand))", hobbies: "hsl(var(--life-blue))",
 };
 
 // Modules without a widget keep an editorial photo; modules WITH a widget
@@ -68,6 +77,8 @@ const MODULE_IMAGE = {
   integrations: IMAGES.sittingChairs,
   agents: IMAGES.feetChair,
   jedag: IMAGES.portraitBootFace,
+  socialpulse: IMAGES.portraitThinking, socialplanner: IMAGES.twoChairsSand,
+  household: IMAGES.notebookChair, personaladmin: IMAGES.personClipboard, hobbies: IMAGES.chairWater,
 };
 
 const MODULE_ROUTE = {
@@ -81,6 +92,8 @@ const MODULE_ROUTE = {
   timetracker: "/timetracker",
   updates: "/updates",
   goodmorning: "/wake",
+  socialpulse: "/life/social-pulse", socialplanner: "/life/social-planner",
+  household: "/life/household", personaladmin: "/life/personal-admin", hobbies: "/life/hobbies",
 };
 
 // Topic-related subtitles per module — replaces the bare label so the panel
@@ -109,6 +122,9 @@ const MODULE_TOPIC = {
   updates: "Achter de schermen",
   goodmorning: "Een rustige ochtend",
   jedag: "Jouw dag in één blik",
+  socialpulse: "Wie aandacht verdient", socialplanner: "Sociale tijd inplannen",
+  household: "Het huishouden op orde", personaladmin: "Wat er geregeld moet worden",
+  hobbies: "Wat jou energie geeft",
 };
 
 export default function ModulePanel() {

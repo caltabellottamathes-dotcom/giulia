@@ -53,6 +53,15 @@
     "agent_source": {
       "type": "string",
       "title": "Agent Source"
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "focus",
+        "life",
+        "self"
+      ],
+      "title": "Domain"
     }
   },
   "required": [

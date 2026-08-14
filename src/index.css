@@ -51,6 +51,16 @@
     --linen: 72 8% 87%;
     --urgent: 65 72% 59%;
 
+    /* LIFE layer — lichtblauw hoofdaccent + warme zand-contrast.
+       SELF later — burgundy + warm wit + warm grijs. */
+    --life-blue: 197 38% 63%;
+    --life-blue-soft: 197 38% 73%;
+    --life-blue-deep: 197 42% 48%;
+    --life-sand: 38 38% 63%;
+    --self-burgundy: 342 41% 39%;
+    --self-white: 30 27% 96%;
+    --self-grey: 27 9% 77%;
+
     /* Slick staging palette — metal / marble / storm / clay / sky (externe site staging) */
     --slick-metal: 60 12% 16%;
     --slick-marble: 220 8% 70%;

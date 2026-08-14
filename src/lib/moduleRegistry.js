@@ -1,7 +1,7 @@
 import {
   Calendar, Briefcase, CheckSquare, Mail, MessageCircle,
   BookOpen, FileText, Users, MessageSquare, Mic, ClipboardCheck,
-  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu, Timer, Sparkles, Sunrise, Bell,
+  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu, Timer, Sparkles, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette,
 } from "lucide-react";
 
 import Agenda from "@/pages/Agenda";
@@ -27,6 +27,11 @@ import Agents from "@/pages/Agents";
 import Updates from "@/pages/Updates";
 import GoodMorningPanel from "@/components/panels/GoodMorningPanel";
 import JeDagPreview from "@/components/panels/previews/JeDagPreview";
+import SocialPulsePage from "@/pages/life/SocialPulsePage";
+import SocialPlannerPage from "@/pages/life/SocialPlannerPage";
+import HouseholdPage from "@/pages/life/HouseholdPage";
+import PersonalAdminPage from "@/pages/life/PersonalAdminPage";
+import HobbiesPage from "@/pages/life/HobbiesPage";
 
 /**
  * Single source of truth for every module that opens as a sliding glass
@@ -57,4 +62,9 @@ export const MODULES = {
   updates:     { label: "Updates",       icon: Sparkles,        Component: Updates,       panelWidth: 720 },
   goodmorning: { label: "Good Morning",  icon: Sunrise,          Component: GoodMorningPanel, panelWidth: 560 },
   jedag:     { label: "Je dag",       icon: Sparkles,        Component: JeDagPreview,  panelWidth: 860 },
+  socialpulse:   { label: "Social Pulse",      icon: Heart,           Component: SocialPulsePage,    panelWidth: 760 },
+  socialplanner: { label: "Social Planner",    icon: CalendarHeart,   Component: SocialPlannerPage,  panelWidth: 760 },
+  household:     { label: "Huishouden",         icon: Home,            Component: HouseholdPage,      panelWidth: 760 },
+  personaladmin: { label: "Persoonlijk Admin",  icon: ClipboardList,   Component: PersonalAdminPage,  panelWidth: 760 },
+  hobbies:       { label: "Hobby's",            icon: Palette,         Component: HobbiesPage,        panelWidth: 760 },
 };

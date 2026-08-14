@@ -1,0 +1,54 @@
+{
+  "name": "Hobby",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "default": "active",
+      "title": "Status"
+    },
+    "color": {
+      "type": "string",
+      "title": "Color"
+    },
+    "image": {
+      "type": "string",
+      "format": "uri",
+      "title": "Image"
+    },
+    "category": {
+      "type": "string",
+      "title": "Category"
+    },
+    "linked_project_id": {
+      "type": "string",
+      "title": "Linked Project ID"
+    },
+    "last_activity_date": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Last Activity Date"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}
