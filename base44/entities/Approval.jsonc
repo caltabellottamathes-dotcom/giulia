@@ -31,7 +31,8 @@
         "executed",
         "discarded",
         "edited",
-        "already_done"
+        "already_done",
+        "expired"
       ],
       "default": "pending",
       "title": "Status"
@@ -87,6 +88,11 @@
       ],
       "default": "salvo",
       "title": "Assignee"
+    },
+    "reminder_sent": {
+      "type": "boolean",
+      "default": false,
+      "title": "Reminder Sent"
     }
   },
   "required": [

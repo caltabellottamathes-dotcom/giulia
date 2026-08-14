@@ -68,6 +68,11 @@
       "format": "date-time",
       "title": "Last Activity Date"
     },
+    "last_notified_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Last Notified At"
+    },
     "health": {
       "type": "string",
       "enum": [

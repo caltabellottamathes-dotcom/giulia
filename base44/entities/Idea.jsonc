@@ -34,6 +34,13 @@
       "format": "date-time",
       "title": "Resurfaced Date"
     },
+    "embedding": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "title": "Embedding"
+    },
     "agent_source": {
       "type": "string",
       "title": "Agent Source"

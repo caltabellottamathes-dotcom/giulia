@@ -38,6 +38,28 @@
       "default": false,
       "title": "Categorized"
     },
+    "document_type": {
+      "type": "string",
+      "enum": [
+        "contract",
+        "invoice",
+        "image",
+        "notes",
+        "reference",
+        "other"
+      ],
+      "default": "other",
+      "title": "Document Type"
+    },
+    "version_number": {
+      "type": "number",
+      "default": 1,
+      "title": "Version Number"
+    },
+    "version_of": {
+      "type": "string",
+      "title": "Version Of (Upload ID)"
+    },
     "agent_source": {
       "type": "string",
       "title": "Agent Source"

@@ -32,10 +32,24 @@
       "type": "string",
       "title": "Notes"
     },
+    "status": {
+      "type": "string",
+      "enum": [
+        "confirmed",
+        "unconfirmed"
+      ],
+      "default": "confirmed",
+      "title": "Status"
+    },
     "last_contact_date": {
       "type": "string",
       "format": "date-time",
       "title": "Last Contact Date"
+    },
+    "last_notified_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Last Notified At"
     },
     "project_ids": {
       "type": "array",

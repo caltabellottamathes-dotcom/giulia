@@ -105,6 +105,16 @@
       "type": "boolean",
       "default": false,
       "title": "Triaged"
+    },
+    "awaiting_response": {
+      "type": "boolean",
+      "default": false,
+      "title": "Awaiting Response"
+    },
+    "auto_draft_created": {
+      "type": "boolean",
+      "default": false,
+      "title": "Auto Draft Created"
     }
   },
   "required": [
