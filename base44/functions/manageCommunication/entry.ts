@@ -51,7 +51,7 @@ export default async function (req) {
       `\n\nOngelezen WhatsApp (${wamsgs.length}):\n` + wamsgs.slice(0, 15).map((w) => `- id:${w.id} | ${String(w.message || "").slice(0, 100)}`).join("\n");
     const message =
       `Communicatie-scan: haal acties/deadlines/commitments uit deze berichten en voer ze direct uit als taak (create_task). ` +
-      `Bereid GEEN losse email-antwoorden voor. Voor WhatsApp mag je een kort antwoord-concept voorstellen via create_approval (category whatsapp) als een reactie echt nodig is.\n\n${context}`;
+      `Bereid GEEN losse email-antwoorden voor. Voor WhatsApp mag je een kort antwoord-concept voorstellen via create_approval (type='whatsapp', category='communication') als een reactie echt nodig is.\n\n${context}`;
 
     await base44.functions.invoke("chatWithGiulia", { message, source: "agent_communication", persist: false }).catch(() => null);
 

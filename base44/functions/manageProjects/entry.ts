@@ -14,13 +14,21 @@ export default async function (req) {
     const projects = await sr.entities.Project.list("-created_date", 200).catch(() => []);
     const now = Date.now();
     const dayMs = 24 * 60 * 60 * 1000;
+    // Domein 10: 14 dagen stilstand-drempel (zelfde als runProjectRadar in runProactivity).
+    // Domein 7 anti-spam: max 3 signalen per ronde, niet vaker dan 1x per 7 dagen per project.
     const stale = projects.filter((p) => {
       if (!["planning", "in_progress"].includes(p.status)) return false;
       const last = p.last_activity_date ? new Date(p.last_activity_date).getTime() : null;
-      return !last || now - last >= 10 * dayMs;
-    });
+      const isStale = !last || now - last >= 14 * dayMs;
+      if (!isStale) return false;
+      const lastNotified = p.last_notified_at ? new Date(p.last_notified_at).getTime() : null;
+      if (lastNotified && now - lastNotified < 7 * dayMs) return false;
+      return true;
+    }).slice(0, 3);
 
     if (!stale.length) return Response.json({ ok: true, stale: 0, skipped: "geen stilgevallen projecten" });
+
+    await Promise.all(stale.map((p) => sr.entities.Project.update(p.id, { last_notified_at: new Date().toISOString() }).catch(() => null)));
 
     const context = `Stilgevallen projecten (${stale.length}):\n` +
       stale.map((p) => `- id:${p.id} | ${p.title} | [${p.status}] | health ${p.health || "?"} | laatste activiteit: ${p.last_activity_date || "onbekend"}`).join("\n");
