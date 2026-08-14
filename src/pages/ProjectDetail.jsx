@@ -17,6 +17,7 @@ import CommunicationSection from "@/components/projects/sections/CommunicationSe
 import DecisionsSection from "@/components/projects/sections/DecisionsSection";
 import ActivitySection from "@/components/projects/sections/ActivitySection";
 import GiuliaSection from "@/components/projects/sections/GiuliaSection";
+import TimeSection from "@/components/projects/sections/TimeSection";
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -77,6 +78,7 @@ export default function ProjectDetail() {
         {section === "Communication" && <CommunicationSection project={project} />}
         {section === "Decisions" && <DecisionsSection project={project} />}
         {section === "Activity" && <ActivitySection project={project} />}
+        {section === "Time" && <TimeSection project={project} tasks={tasks} />}
         {section === "Giulia" && <GiuliaSection project={project} tasks={tasks} reload={load} />}
 
         <ProjectEditorPanel open={editorOpen} onClose={() => setEditorOpen(false)} project={project} onSaved={load} />

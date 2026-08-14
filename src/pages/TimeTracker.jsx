@@ -1,103 +1,81 @@
 import React from "react";
 import PageHero from "@/components/glass/PageHero";
 import GlassPanel from "@/components/glass/GlassPanel";
-import GlassButton from "@/components/glass/GlassButton";
-import { useTimeTracker, formatDuration, formatMinutes } from "@/lib/useTimeTracker";
+import { useTimeTracker, formatMinutes } from "@/lib/useTimeTracker";
 import { useEntityList } from "@/hooks/useEntity";
 import { IMAGES } from "@/lib/images";
-import { Timer, Play, Pause, Square, Clock } from "lucide-react";
+import { Timer, Clock } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from "recharts";
 
+const COLORS = ["hsl(var(--olive))", "hsl(var(--sand))", "hsl(var(--blue-grey))", "hsl(var(--powder))", "hsl(var(--steel))", "hsl(var(--ridge))"];
+
+/** Tijdregistratie-pagina — (naar /slick/tijdsregistratie) in app-branding met
+ *  live uren-data. Layout handmatig aanpasbaar. */
 export default function TimeTracker() {
-  const { tasks, taskId, setTaskId, running, paused, elapsed, start, pause, resume, stop, todayMin, weekMin, entries, perProject } = useTimeTracker();
+  const tt = useTimeTracker();
   const { data: projects } = useEntityList("Project");
   const projName = (id) => projects.find((p) => p.id === id)?.title || "—";
-  const projEntries = Object.entries(perProject).sort((a, b) => b[1] - a[1]);
+  const total = (tt.entries || []).reduce((s, e) => s + (e.duration_minutes || 0), 0);
+  const projEntries = Object.entries(tt.perProject || {}).sort((a, b) => b[1] - a[1]);
+  const data = projEntries.map(([id, min]) => ({ name: projName(id), uren: +(min / 60).toFixed(1) }));
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <PageHero
-        page="timetracker"
-        image={IMAGES.hourglassJacket}
-        icon={Timer}
-        eyebrow="Uren"
-        title="Tijdregistratie"
-        subtitle="Track je uren per taak en project"
-      />
+      <PageHero page="timetracker" image={IMAGES.hourglassJacket} icon={Timer} eyebrow="Uren" title="Tijdregistratie" subtitle="Track je uren per taak en project" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <GlassPanel level={2} className="p-6 space-y-4">
-          <p className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Timer</p>
-          <div>
-            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Taak</label>
-            <select
-              value={taskId}
-              onChange={(e) => setTaskId(e.target.value)}
-              disabled={running || paused}
-              className="mt-1.5 w-full glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none disabled:opacity-60"
-            >
-              <option value="">Kies een taak…</option>
-              {tasks.map((t) => <option key={t.id} value={t.id}>{t.title}</option>)}
-            </select>
-          </div>
-          <div className="flex items-center gap-4 rounded-2xl bg-foreground/[0.04] border border-foreground/10 px-5 py-4">
-            <Clock className="h-6 w-6 text-olive shrink-0" />
-            <span className="text-4xl font-display font-semibold tabular-nums tracking-tight">{formatDuration(elapsed)}</span>
-          </div>
-          <div className="flex gap-2">
-            {!running && !paused && (
-              <GlassButton variant="primary" onClick={start} disabled={!taskId} className="flex-1"><Play className="h-4 w-4" /> Start</GlassButton>
-            )}
-            {running && (
-              <GlassButton variant="outline" onClick={pause} className="flex-1"><Pause className="h-4 w-4" /> Pauze</GlassButton>
-            )}
-            {paused && (
-              <GlassButton variant="primary" onClick={resume} className="flex-1"><Play className="h-4 w-4" /> Hervat</GlassButton>
-            )}
-            {(running || paused) && (
-              <GlassButton variant="primary" onClick={stop} className="flex-1"><Square className="h-4 w-4" /> Stop</GlassButton>
+      <div className="grid grid-cols-3 gap-3">
+        <GlassPanel level={2} className="p-4">
+          <div className="flex items-center gap-2 text-muted-foreground text-xs"><Clock className="w-3.5 h-3.5" /> Totaal</div>
+          <p className="text-foreground text-3xl font-display font-semibold mt-1">{formatMinutes(total)}</p>
+        </GlassPanel>
+        <GlassPanel level={2} className="p-4">
+          <div className="flex items-center gap-2 text-olive text-xs"><Clock className="w-3.5 h-3.5" /> Vandaag</div>
+          <p className="text-foreground text-3xl font-display font-semibold mt-1">{formatMinutes(tt.todayMin)}</p>
+        </GlassPanel>
+        <GlassPanel level={2} className="p-4">
+          <div className="flex items-center gap-2 text-blue-grey text-xs"><Clock className="w-3.5 h-3.5" /> Deze week</div>
+          <p className="text-foreground text-3xl font-display font-semibold mt-1">{formatMinutes(tt.weekMin)}</p>
+        </GlassPanel>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <GlassPanel level={2} className="lg:col-span-2 p-6">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-4">Uren per project</p>
+          <div className="h-72">
+            {data.length ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} axisLine={{ stroke: "hsl(var(--border))" }} tickLine={false} interval={0} angle={-12} textAnchor="end" height={50} />
+                  <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <Tooltip cursor={{ fill: "hsl(var(--foreground) / 0.05)" }} contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 12, color: "hsl(var(--foreground))", fontSize: 12 }} />
+                  <Bar dataKey="uren" radius={[8, 8, 0, 0]}>
+                    {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-sm text-muted-foreground h-full flex items-center justify-center">Nog geen uren geregistreerd.</p>
             )}
           </div>
         </GlassPanel>
 
-        <div className="grid grid-cols-2 gap-4 content-start">
-          <GlassPanel level={2} className="p-6">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Vandaag</p>
-            <p className="text-3xl font-display font-semibold mt-2">{formatMinutes(todayMin)}</p>
-          </GlassPanel>
-          <GlassPanel level={2} className="p-6">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Deze week</p>
-            <p className="text-3xl font-display font-semibold mt-2">{formatMinutes(weekMin)}</p>
-          </GlassPanel>
-          <GlassPanel level={2} className="p-6 col-span-2">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3">Uren per project</p>
-            {projEntries.length ? projEntries.map(([id, min]) => (
-              <div key={id} className="flex items-center justify-between py-1.5 border-b border-border/30 last:border-0">
-                <span className="text-sm truncate">{projName(id)}</span>
-                <span className="text-sm font-medium tabular-nums">{formatMinutes(min)}</span>
-              </div>
-            )) : <p className="text-sm text-muted-foreground">Nog geen uren geregistreerd</p>}
-          </GlassPanel>
-        </div>
-      </div>
-
-      <GlassPanel level={2} className="p-6">
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-4">Alle registraties</p>
-        {entries.length ? (
-          <div className="divide-y divide-border/30">
-            {entries.map((e) => (
-              <div key={e.id} className="flex items-center justify-between py-3 gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{e.task_title || "Onbekend"}</p>
-                  <p className="text-xs text-muted-foreground">{projName(e.project_id)} · {new Date(e.end_time || e.start_time).toLocaleString("nl-NL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
+        <GlassPanel level={2} className="p-6">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-4">Specificatie</p>
+          {projEntries.length ? (
+            <div className="flex flex-col gap-2">
+              {projEntries.map(([id, min]) => (
+                <div key={id} className="flex items-center justify-between text-sm">
+                  <span className="text-foreground/80 truncate pr-2">{projName(id)}</span>
+                  <span className="text-foreground tabular-nums shrink-0">{formatMinutes(min)}</span>
                 </div>
-                <span className="text-sm font-display font-semibold tabular-nums shrink-0">{formatMinutes(e.duration_minutes || 0)}</span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">Nog geen tijd geregistreerd. Start de timer bij een taak.</p>
-        )}
-      </GlassPanel>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">Nog geen uren geregistreerd.</p>
+          )}
+        </GlassPanel>
+      </div>
     </div>
   );
 }
