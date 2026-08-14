@@ -119,6 +119,65 @@ export async function navigateApp(base44, route, params, label, source) {
 export function tool(def) { return def; }
 
 /**
+ * titleSimilarity — lichte, deterministische string-gelijkenis (Dice
+ * coefficient op karakter-bigrams, 0-1) voor duplicaat-detectie op titels van
+ * Task/Project/Contact. Geen API-call nodig — snel en gratis.
+ */
+export function titleSimilarity(a, b) {
+  const norm = (s) => String(s || "").toLowerCase().trim();
+  const x = norm(a), y = norm(b);
+  if (!x || !y) return 0;
+  if (x === y) return 1;
+  const bigrams = (s) => { const arr = []; for (let i = 0; i < s.length - 1; i++) arr.push(s.slice(i, i + 2)); return arr; };
+  const bx = bigrams(x), by = bigrams(y);
+  if (!bx.length || !by.length) return 0;
+  const mapY = new Map();
+  for (const g of by) mapY.set(g, (mapY.get(g) || 0) + 1);
+  let matches = 0;
+  for (const g of bx) {
+    const c = mapY.get(g) || 0;
+    if (c > 0) { matches++; mapY.set(g, c - 1); }
+  }
+  return (2 * matches) / (bx.length + by.length);
+}
+
+/**
+ * findDuplicate — Domein 4 (Intake & Categorisatie): ≥85% titel-gelijkenis =
+ * duplicaat. Gebruikt door create_task/create_project/create_contact.
+ */
+export function findDuplicate(existingList, title, field = "title") {
+  let best = null, bestScore = 0;
+  for (const item of existingList) {
+    const score = titleSimilarity(item[field], title);
+    if (score > bestScore) { bestScore = score; best = item; }
+  }
+  return bestScore >= 0.85 ? best : null;
+}
+
+/**
+ * gravityScore — Domein 6 (Dynamische Planning): 40% deadline-urgentie + 30%
+ * projectgewicht/gezondheid + 20% afhankelijkheden + 10% expliciet belang.
+ * Gedeeld tussen dailyPlanning en manageTasks zodat prioritering overal
+ * hetzelfde gewicht geeft.
+ */
+export function gravityScore(task, now, projectHealthById) {
+  let score = 0;
+  if (task.deadline) {
+    const hours = (new Date(task.deadline).getTime() - now.getTime()) / (1000 * 60 * 60);
+    if (hours < 0) score += 40;
+    else if (hours <= 24) score += 30;
+    else if (hours <= 72) score += 15;
+  }
+  const health = task.project_id ? projectHealthById?.get(task.project_id) : null;
+  if (health === "critical") score += 30;
+  else if (health === "attention") score += 15;
+  if (task.parent_task_id || (Array.isArray(task.subtasks) && task.subtasks.length)) score += 20;
+  if (task.priority === "high") score += 10;
+  else if (task.priority === "medium") score += 5;
+  return score;
+}
+
+/**
  * sanitizeResult — forceert een tool-resultaat naar een vlak, JSON-veilig
  * object vóór het de Gemini tool-calling loop in gaat. Voorkomt
  * "Converting circular structure to JSON" wanneer een tool een base44-entity

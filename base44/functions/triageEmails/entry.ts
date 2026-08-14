@@ -1,6 +1,9 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { tool, runGiuliaAgent, createTaskWithApproval } from "../../shared/codeAgent.ts";
 
+// Domein 8: een directe vraag, deadline of verzoek om reactie → awaiting_response.
+const AWAITING_RESPONSE = /(kun je|kan je|laat.*weten|graag.*reactie|graag.*antwoord|zou je|wanneer.*kan|wat denk je|\?)/i;
+
 /**
  * triageEmails — sorteert de inbox in categorieën (important / advertising /
  * newsletter / junk / spam), koppelt projectgerelateerde mails aan het juiste
@@ -59,20 +62,35 @@ export default async function (req) {
     };
 
     const updates = [];
+    const awaitingIds = [];
     for (const e of untriaged) {
       const category = heurCategory(e);
       const projectId = projectMatch(e);
       const isNoise = category !== 'important';
+      const text = `${e.subject || ''} ${e.body || ''}`;
+      const awaiting = !isNoise && AWAITING_RESPONSE.test(text);
+      if (awaiting) awaitingIds.push(e.id);
       updates.push(
         sr.entities.Email.update(e.id, {
           category,
           project_id: projectId || null,
           triaged: true,
-          ...(isNoise ? { folder: 'archived' } : { important: true }),
+          ...(isNoise ? { folder: 'archived' } : { important: true, awaiting_response: awaiting }),
         }).catch(() => null)
       );
     }
     await Promise.all(updates);
+
+    // Domein 8 — automatisch conceptantwoord (Approval) voor mails die op
+    // reactie wachten. Max 5 per run om geen bulk aan drafts te genereren.
+    let autoDrafted = 0;
+    for (const id of awaitingIds.slice(0, 5)) {
+      const res = await base44.functions.invoke('draftEmailReply', { email_id: id }).catch(() => null);
+      if (res && res.data && res.data.ok) {
+        await sr.entities.Email.update(id, { auto_draft_created: true }).catch(() => null);
+        autoDrafted++;
+      }
+    }
 
     // === Laag 2 — LLM-agent: verfijning + concept-antwoorden ===
     const tools = {
@@ -117,6 +135,7 @@ export default async function (req) {
       counts,
       linked,
       drafts: drafts.length,
+      auto_drafted: autoDrafted,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

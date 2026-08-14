@@ -15,13 +15,18 @@ export default async function (req) {
     const dayMs = 24 * 60 * 60 * 1000;
     const stale = contacts.filter((c) => {
       if (!c.last_contact_date) return false;
-      return now - new Date(c.last_contact_date).getTime() >= 30 * dayMs;
-    });
+      if (now - new Date(c.last_contact_date).getTime() < 30 * dayMs) return false;
+      // Anti-spam (Domein 7): niet opnieuw signaleren binnen 7 dagen na de vorige melding.
+      if (c.last_notified_at && now - new Date(c.last_notified_at).getTime() < 7 * dayMs) return false;
+      return true;
+    }).slice(0, 3); // max 3 signalen per ronde
 
     if (!stale.length) return Response.json({ ok: true, stale: 0, skipped: "geen contacten met achterstallig contact" });
 
+    await Promise.all(stale.map((c) => sr.entities.Contact.update(c.id, { last_notified_at: new Date().toISOString() }).catch(() => null)));
+
     const context = `Contacten met >30 dagen geen contact (${stale.length}):\n` +
-      stale.slice(0, 20).map((c) => `- id:${c.id} | ${c.name} | ${c.company || ""} | laatste: ${c.last_contact_date}`).join("\n");
+      stale.map((c) => `- id:${c.id} | ${c.name} | ${c.company || ""} | laatste: ${c.last_contact_date}`).join("\n");
     const message = `Personen-scan: bepaal of een van deze contacten een follow-up verdient. Externe reikwijdte (mail/whatsapp/bellen) altijd via create_approval.\n\n${context}`;
 
     await base44.functions.invoke("chatWithGiulia", { message, source: "agent_people", persist: false }).catch(() => null);

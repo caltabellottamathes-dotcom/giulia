@@ -141,32 +141,61 @@ export default async function (req) {
       return Response.json({ ok: true, executed: "task", detail: "Taak goedgekeurd" });
     }
 
-    // calendar_invite — maak een CalendarEvent aan (echte uitvoering).
+    // calendar_create / calendar_update — maak of update een CalendarEvent (echte uitvoering).
     if (ap.type === "calendar") {
       const title = meta.title || ap.title || "Afspraak";
       const start = meta.start || meta.date || "";
-      if (!start) {
+      const isUpdate = !!meta.event_id;
+      if (!start && !isUpdate) {
         await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
         return Response.json({ ok: false, executed: "calendar", error: "geen starttijd", detail: "Approval goedgekeurd, maar geen starttijd bekend — plan handmatig." });
       }
       try {
-        await sr.entities.CalendarEvent.create({
-          title,
-          description: ap.content || meta.description || "",
-          start,
-          end: meta.end || start,
-          location: meta.location || "",
-          participants: meta.participants || "",
-          project_id: ap.project_id || meta.project_id || undefined,
-          status: "confirmed",
-          agent_source: "executeApproval",
-        });
+        if (isUpdate) {
+          await sr.entities.CalendarEvent.update(meta.event_id, {
+            ...(title ? { title } : {}),
+            ...(start ? { start } : {}),
+            ...(meta.end ? { end: meta.end } : {}),
+            ...(meta.location ? { location: meta.location } : {}),
+            ...(ap.content ? { description: ap.content } : {}),
+          }).catch(() => null);
+        } else {
+          await sr.entities.CalendarEvent.create({
+            title,
+            description: ap.content || meta.description || "",
+            start,
+            end: meta.end || start,
+            location: meta.location || "",
+            participants: meta.participants || "",
+            project_id: ap.project_id || meta.project_id || undefined,
+            status: "confirmed",
+            agent_source: "executeApproval",
+          });
+        }
         await sr.entities.Approval.update(approval_id, { status: "executed" }).catch(() => {});
         if (ap.thread_id) await sr.entities.Thread.update(ap.thread_id, { status: "resolved", needs_info: false }).catch(() => {});
-        return Response.json({ ok: true, executed: "calendar", detail: "Agendagedeelte toegevoegd" });
+        return Response.json({ ok: true, executed: "calendar", detail: isUpdate ? "Afspraak bijgewerkt" : "Agendagedeelte toegevoegd" });
       } catch (e) {
         await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
         return Response.json({ ok: false, executed: "calendar", error: String(e.message || e) });
+      }
+    }
+
+    // document_create — maak een Document-record aan (echte uitvoering).
+    if (ap.type === "file") {
+      try {
+        await sr.entities.Document.create({
+          name: meta.name || ap.title || "Document",
+          document_type: meta.document_type || "other",
+          content: ap.content || meta.content || "",
+          project_id: ap.project_id || meta.project_id || undefined,
+          status: "giulia",
+        });
+        await sr.entities.Approval.update(approval_id, { status: "executed" }).catch(() => {});
+        return Response.json({ ok: true, executed: "file", detail: "Document aangemaakt" });
+      } catch (e) {
+        await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
+        return Response.json({ ok: false, executed: "file", error: String(e.message || e) });
       }
     }
 

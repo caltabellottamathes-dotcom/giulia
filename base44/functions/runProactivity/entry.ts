@@ -139,6 +139,9 @@ export default async function (req) {
     // ── Step 3.2: Dependency unblocking ───────────────────────────────
     const unblocked = await unblockDependencies(sr);
 
+    // ── Step 3.3: Approval-timeout (Domein 15) ────────────────────────
+    const timeouts = await checkApprovalTimeouts(sr, now);
+
     return Response.json({
       ok: true,
       date: todayString,
@@ -148,29 +151,38 @@ export default async function (req) {
       followups_proposed: followUpsProposed,
       project_radar: radar,
       dependencies_unblocked: unblocked,
+      approval_timeouts: timeouts,
     });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
   }
 }
 
-// ── Phase 7 · Step 3.1: Project Radar — stall detection ─────────────────
+// ── Phase 7 · Step 3.1: Project Radar — stall detection (Domein 10) ──────
 // Scant actieve projects (in_progress/planning). Bij > STAGNANT_DAYS dagen
 // zonder last_activity_date: health → "attention", Risk Insight, en een
 // Gemini-gedraftete follow-up → Gatekeeper (ENKEL gemini-3.1-flash-lite).
+// Anti-spam (Domein 7): max 3 signalen per ronde, en per project niet
+// vaker dan 1x per 7 dagen (last_notified_at) om herhaling te voorkomen.
 async function runProjectRadar(sr, now) {
-  const STAGNANT_DAYS = 11;
+  const STAGNANT_DAYS = 14;
+  const MAX_SIGNALS = 3;
   const dayMs = 24 * 60 * 60 * 1000;
   const projects = await sr.entities.Project.list("-created_date", 200).catch(() => []);
   const active = projects.filter((p) => ["in_progress", "planning"].includes(p.status));
   let flagged = 0;
   let drafts = 0;
   for (const p of active) {
+    if (flagged >= MAX_SIGNALS) break;
     const last = p.last_activity_date ? new Date(p.last_activity_date) : null;
     const stale = !last || (now.getTime() - last.getTime()) >= STAGNANT_DAYS * dayMs;
     if (!stale) continue;
+    const lastNotified = p.last_notified_at ? new Date(p.last_notified_at) : null;
+    if (lastNotified && (now.getTime() - lastNotified.getTime()) < 7 * dayMs) continue; // anti-spam
     if (p.health !== "attention") {
-      await sr.entities.Project.update(p.id, { health: "attention" }).catch(() => null);
+      await sr.entities.Project.update(p.id, { health: "attention", last_notified_at: now.toISOString() }).catch(() => null);
+    } else {
+      await sr.entities.Project.update(p.id, { last_notified_at: now.toISOString() }).catch(() => null);
     }
     await sr.entities.Insight.create({
       title: `Project inactive: ${p.title}`,
@@ -233,4 +245,35 @@ async function unblockDependencies(sr) {
     count++;
   }
   return count;
+}
+
+// ── Domein 15: Approval-timeout logica ──────────────────────────────────
+// 48u zonder reactie (status pending/edited) → één herinnering (Notification,
+// reminder_sent=true). 72u zonder reactie → status='expired', wordt nooit
+// meer automatisch uitgevoerd. Idempotent: reminder_sent voorkomt herhaling.
+async function checkApprovalTimeouts(sr, now) {
+  const pending = await sr.entities.Approval.filter({ status: "pending" }, "-created_date", 200).catch(() => []);
+  const edited = await sr.entities.Approval.filter({ status: "edited" }, "-created_date", 100).catch(() => []);
+  const all = [...pending, ...edited];
+  const hourMs = 60 * 60 * 1000;
+  let reminders = 0, expired = 0;
+  for (const ap of all) {
+    const ageH = (now.getTime() - new Date(ap.created_date).getTime()) / hourMs;
+    if (ageH >= 72) {
+      await sr.entities.Approval.update(ap.id, { status: "expired" }).catch(() => null);
+      expired++;
+    } else if (ageH >= 48 && !ap.reminder_sent) {
+      await sr.entities.Approval.update(ap.id, { reminder_sent: true }).catch(() => null);
+      await sr.entities.Notification.create({
+        title: "Goedkeuring wacht al 2 dagen",
+        message: `"${ap.title || ap.description || "Een goedkeuring"}" wacht al 48 uur op je reactie.`,
+        kind: "remark",
+        requires_response: true,
+        related_route: "/approvals",
+        agent_source: "runProactivity",
+      }).catch(() => null);
+      reminders++;
+    }
+  }
+  return { reminders, expired };
 }

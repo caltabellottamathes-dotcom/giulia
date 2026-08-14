@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { todayStr } from "../../shared/codeAgent.ts";
+import { todayStr, gravityScore } from "../../shared/codeAgent.ts";
 
 /**
  * manageTasks — de ZICHTBARE task-agent van GIULIA OS.
@@ -29,8 +29,17 @@ export default async function (req) {
     await Promise.all(overdue.map((x) => sr.entities.Task.update(x.id, { status: "overdue" }).catch(() => {})));
 
     const open = tasks.filter((x) => x.status !== "completed" && x.status !== "done");
-    const mine = open.filter((x) => !x.delegated_to_giulia);
-    const giulia = open.filter((x) => x.delegated_to_giulia);
+
+    // Gravity Score (Domein 6) — dezelfde formule als dailyPlanning, zodat de
+    // task-agent taken in dezelfde volgorde van belangrijkheid aan de leider voorlegt.
+    const now = new Date();
+    const projects = await sr.entities.Project.list("-created_date", 200).catch(() => []);
+    const healthById = new Map(projects.map((p) => [p.id, p.health]));
+    const withScore = open.map((x) => ({ ...x, gravity_score: gravityScore(x, now, healthById) }));
+    withScore.sort((a, b) => b.gravity_score - a.gravity_score);
+
+    const mine = withScore.filter((x) => !x.delegated_to_giulia);
+    const giulia = withScore.filter((x) => x.delegated_to_giulia);
 
     // 2) Activity: zichtbaar dat de task-agent draait
     try {
@@ -44,10 +53,10 @@ export default async function (req) {
 
     // 3) EEN aanroep naar de leider — geen eigen Gemini-loop
     const context =
-      `Open taken — Salvo (${mine.length}):\n` +
-      mine.slice(0, 25).map((x) => `- id:${x.id} | ${x.title} | prio ${x.priority} | deadline ${x.deadline || "geen"} | ${x.status}`).join("\n") +
+      `Open taken — Salvo (${mine.length}), gesorteerd op Gravity Score (hoog = belangrijk):\n` +
+      mine.slice(0, 25).map((x) => `- id:${x.id} | ${x.title} | gravity ${x.gravity_score} | prio ${x.priority} | deadline ${x.deadline || "geen"} | ${x.status}`).join("\n") +
       `\n\nOpen taken — gedelegeerd aan Giulia (${giulia.length}):\n` +
-      giulia.slice(0, 15).map((x) => `- id:${x.id} | ${x.title} | prio ${x.priority} | deadline ${x.deadline || "geen"} | ${x.status}`).join("\n");
+      giulia.slice(0, 15).map((x) => `- id:${x.id} | ${x.title} | gravity ${x.gravity_score} | prio ${x.priority} | deadline ${x.deadline || "geen"} | ${x.status}`).join("\n");
     const signal =
       `Task-agent cyclus. Herzie ALLE open taken (zowel Salvo's als aan Giulia gedelegeerde). ` +
       `Bepaal prioriteit op belangrijkheid, urgentie, afhankelijkheden en opbrengst. ` +

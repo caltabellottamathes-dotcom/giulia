@@ -3,15 +3,19 @@
  * GIULIA-GIULIA (het brein) leest de schemas om te weten wat ze kan.
  * GIULIA-CORE (de leider) voert de execute() functies blind uit in de database.
  */
-import { createTaskWithApproval, navigateApp, reportToSalvo, createApproval } from "./codeAgent.ts";
+import { createTaskWithApproval, navigateApp, reportToSalvo, createApproval, findDuplicate } from "./codeAgent.ts";
 import { geminiEmbed } from "./gemini.ts";
 
 export const GIULIA_SKILLS = [
   {
     name: "create_task",
-    description: "Maak een nieuwe taak aan. Gebruik dit ALLEEN als Salvo expliciet om een nieuwe actie vraagt. Verzin GEEN taken om projecten 'op te vullen'.",
+    description: "Maak een nieuwe taak aan. Gebruik dit ALLEEN als Salvo expliciet om een nieuwe actie vraagt. Verzin GEEN taken om projecten 'op te vullen'. Er wordt automatisch op duplicaten gecontroleerd (≥85% titel-gelijkenis) — bij een duplicaat wordt de bestaande taak teruggegeven in plaats van een nieuwe aan te maken.",
     inputSchema: { type: "object", properties: { title: { type: "string" }, priority: { type: "string" }, deadline: { type: "string", description: "YYYY-MM-DD" }, project_id: { type: "string" }, description: { type: "string" }, assignee: { type: "string", enum: ["salvo", "giulia"] } }, required: ["title"] },
     execute: async (args, base44) => {
+      const sr = base44.asServiceRole;
+      const existing = await sr.entities.Task.filter({ status: { $ne: "archived" } }, "-created_date", 300).catch(() => []);
+      const dup = findDuplicate(existing, args.title);
+      if (dup) return { id: dup.id, title: dup.title, duplicate: true };
       const t = await createTaskWithApproval(base44, { ...args, source: "GIULIA-CORE", delegated_to_giulia: args.assignee === "giulia" });
       return t ? { id: t.id, title: t.title } : { error: "create failed" };
     }
@@ -43,10 +47,14 @@ export const GIULIA_SKILLS = [
   },
   {
     name: "create_project",
-    description: "Maak een nieuw project aan.",
+    description: "Maak een nieuw project aan. Automatische duplicaat-check (≥85% titel-gelijkenis).",
     inputSchema: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, category: { type: "string" }, deadline: { type: "string" } }, required: ["title"] },
     execute: async (args, base44) => {
-      const p = await base44.asServiceRole.entities.Project.create({ ...args, status: "planning", agent_source: "GIULIA-CORE" }).catch(() => null);
+      const sr = base44.asServiceRole;
+      const existing = await sr.entities.Project.filter({ status: { $ne: "archived" } }, "-created_date", 200).catch(() => []);
+      const dup = findDuplicate(existing, args.title);
+      if (dup) return { id: dup.id, title: dup.title, duplicate: true };
+      const p = await sr.entities.Project.create({ ...args, status: "planning", agent_source: "GIULIA-CORE" }).catch(() => null);
       return p ? { id: p.id, title: p.title } : { error: "create failed" };
     }
   },
@@ -61,11 +69,34 @@ export const GIULIA_SKILLS = [
   },
   {
     name: "create_contact",
-    description: "Voeg een nieuw contact toe op basis van communicatie of Salvo's verzoek.",
-    inputSchema: { type: "object", properties: { name: { type: "string" }, company: { type: "string" }, email: { type: "string" }, phone: { type: "string" }, notes: { type: "string" } }, required: ["name"] },
-    execute: async (args, base44) => {
-      const c = await base44.asServiceRole.entities.Contact.create({ ...args, agent_source: "GIULIA-CORE" }).catch(() => null);
+    description: "Voeg een nieuw contact toe op basis van communicatie of Salvo's verzoek. Automatische duplicaat-check op naam. Als Salvo dit NIET zelf expliciet heeft gevraagd (bv. herkend uit een email/gesprek), wordt het contact als 'unconfirmed' aangemaakt en volgt een Notification ter bevestiging.",
+    inputSchema: { type: "object", properties: { name: { type: "string" }, company: { type: "string" }, email: { type: "string" }, phone: { type: "string" }, notes: { type: "string" }, confirmed: { type: "boolean", description: "true als Salvo dit zelf expliciet vroeg" } }, required: ["name"] },
+    execute: async ({ confirmed, ...args }, base44) => {
+      const sr = base44.asServiceRole;
+      const existing = await sr.entities.Contact.list("-created_date", 300).catch(() => []);
+      const dup = findDuplicate(existing, args.name, "name");
+      if (dup) return { id: dup.id, name: dup.name, duplicate: true };
+      const c = await sr.entities.Contact.create({ ...args, status: confirmed ? "confirmed" : "unconfirmed", agent_source: "GIULIA-CORE" }).catch(() => null);
+      if (c && !confirmed) {
+        await sr.entities.Notification.create({
+          title: "Nieuw contact herkend",
+          message: `Ik heb "${c.name}" herkend als nieuw contact${args.company ? ` bij ${args.company}` : ""}. Klopt dit?`,
+          kind: "question",
+          requires_response: true,
+          related_route: "/people",
+          agent_source: "GIULIA-CORE",
+        }).catch(() => null);
+      }
       return c ? { id: c.id, name: c.name } : { error: "create failed" };
+    }
+  },
+  {
+    name: "update_contact",
+    description: "Werk een contact bij — bevestig een unconfirmed contact (status='confirmed'), of update last_contact_date na een interactie.",
+    inputSchema: { type: "object", properties: { id: { type: "string" }, status: { type: "string", enum: ["confirmed", "unconfirmed"] }, last_contact_date: { type: "string" }, notes: { type: "string" } }, required: ["id"] },
+    execute: async ({ id, ...patch }, base44) => {
+      const c = await base44.asServiceRole.entities.Contact.update(id, patch).catch(() => null);
+      return c ? { ok: true } : { error: "not found" };
     }
   },
   {
@@ -124,6 +155,15 @@ export const GIULIA_SKILLS = [
     execute: async ({ route, label }, base44) => {
       const n = await navigateApp(base44, route, {}, label, "GIULIA-CORE");
       return n ? { ok: true } : { error: "failed" };
+    }
+  },
+  {
+    name: "create_document",
+    description: "Sla een document (referentie, contract, notitie) op voor Salvo of als resultaat van een goedgekeurde 'document_create' approval.",
+    inputSchema: { type: "object", properties: { name: { type: "string" }, document_type: { type: "string", enum: ["reference", "contract", "invoice", "notes", "other"] }, content: { type: "string" }, project_id: { type: "string" } }, required: ["name"] },
+    execute: async (args, base44) => {
+      const d = await base44.asServiceRole.entities.Document.create({ ...args, status: "giulia" }).catch(() => null);
+      return d ? { id: d.id, name: d.name } : { error: "create failed" };
     }
   }
 ];
