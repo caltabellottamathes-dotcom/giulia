@@ -12,7 +12,6 @@ import AddWidgetPicker from "@/components/panels/AddWidgetPicker";
 import WidgetCell from "@/components/widgets/WidgetCell";
 import MasonryGrid from "@/components/widgets/MasonryGrid";
 import GiuliaIntroOverlay from "@/components/widgets/GiuliaIntroOverlay";
-import GiuliaStatusCard from "@/components/widgets/GiuliaStatusCard";
 import ConciergeWidget from "@/components/concierge/ConciergeWidget";
 
 import { Link } from "react-router-dom";
@@ -271,10 +270,6 @@ export default function Home() {
             </button>
           </div>
         </header>
-
-        <div className="px-5 lg:px-10">
-          <GiuliaStatusCard />
-        </div>
 
         {/* Tidy sorted bento grid */}
         <div className="px-5 lg:px-10 pb-10 lg:pb-0">
