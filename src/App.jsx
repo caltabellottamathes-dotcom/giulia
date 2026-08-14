@@ -48,7 +48,7 @@ import WidgetGallery3 from '@/pages/WidgetGallery3';
 import WidgetGallery4 from '@/pages/WidgetGallery4';
 import Briefing from '@/pages/Briefing';
 import WakeMode from '@/pages/WakeMode';
-import SlickShell, { SlickPlaceholder } from '@/components/slick/SlickShell';
+// Slick staging pages are self-contained (PageShell per page)
 import SlickHome from '@/pages/slick/SlickHome';
 import SlickWeek from '@/pages/slick/SlickWeek';
 import SlickDag from '@/pages/slick/SlickDag';
@@ -133,28 +133,25 @@ const AuthenticatedApp = () => {
           <Route path="/widget-gallery-3" element={<WidgetGallery3 />} />
           <Route path="/widget-gallery-4" element={<WidgetGallery4 />} />
         </Route>
-        <Route path="/slick" element={<SlickShell />}>
-          <Route index element={<SlickHome />} />
-          <Route path="weekplanning" element={<SlickWeek />} />
-          <Route path="dagplanning" element={<SlickDag />} />
-          <Route path="projecten" element={<SlickProjecten />} />
-          <Route path="contacten" element={<SlickContacten />} />
-          <Route path="taak-details" element={<SlickTaakDetails />} />
-          <Route path="prioriteiten-matrix" element={<SlickMatrix />} />
-          <Route path="notitieblok" element={<SlickNotitieblok />} />
-          <Route path="instellingen" element={<SlickInstellingen />} />
-          <Route path="tijdsregistratie" element={<SlickTijd />} />
-          <Route path="archief" element={<SlickArchief />} />
-          <Route path="focus-modus" element={<SlickFocus />} />
-          <Route path="dagelijkse-briefing" element={<SlickBriefing />} />
-          <Route path="doelen-dashboard" element={<SlickDoelen />} />
-          <Route path="vergader-notities" element={<SlickVergader />} />
-          <Route path="inspiratie-bord" element={<SlickInspiratie />} />
-          <Route path="takenoverzicht" element={<SlickTakenoverzicht />} />
-          <Route path="statistieken" element={<SlickStatistieken />} />
-          <Route path="agenda-overzicht" element={<SlickAgendaOverzicht />} />
-          <Route path="*" element={<SlickPlaceholder />} />
-        </Route>
+        <Route path="/slick" element={<SlickHome />} />
+        <Route path="/slick/weekplanning" element={<SlickWeek />} />
+        <Route path="/slick/dagplanning" element={<SlickDag />} />
+        <Route path="/slick/projecten" element={<SlickProjecten />} />
+        <Route path="/slick/contacten" element={<SlickContacten />} />
+        <Route path="/slick/taak-details" element={<SlickTaakDetails />} />
+        <Route path="/slick/prioriteiten-matrix" element={<SlickMatrix />} />
+        <Route path="/slick/notitieblok" element={<SlickNotitieblok />} />
+        <Route path="/slick/instellingen" element={<SlickInstellingen />} />
+        <Route path="/slick/tijdsregistratie" element={<SlickTijd />} />
+        <Route path="/slick/archief" element={<SlickArchief />} />
+        <Route path="/slick/focus-modus" element={<SlickFocus />} />
+        <Route path="/slick/dagelijkse-briefing" element={<SlickBriefing />} />
+        <Route path="/slick/doelen-dashboard" element={<SlickDoelen />} />
+        <Route path="/slick/vergader-notities" element={<SlickVergader />} />
+        <Route path="/slick/inspiratie-bord" element={<SlickInspiratie />} />
+        <Route path="/slick/takenoverzicht" element={<SlickTakenoverzicht />} />
+        <Route path="/slick/statistieken" element={<SlickStatistieken />} />
+        <Route path="/slick/agenda-overzicht" element={<SlickAgendaOverzicht />} />
         <Route path="/quick" element={<QuickCommand />} />
         <Route path="/briefing" element={<Briefing />} />
         <Route path="/wake" element={<WakeMode />} />

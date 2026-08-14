@@ -52,11 +52,11 @@
     --urgent: 65 72% 59%;
 
     /* Slick staging palette — metal / marble / storm / clay / sky (externe site staging) */
-    --slick-metal: 220 13% 16%;
-    --slick-marble: 40 18% 90%;
-    --slick-storm: 38 14% 14%;
-    --slick-clay: 30 24% 50%;
-    --slick-sky: 205 30% 58%;
+    --slick-metal: 60 12% 16%;
+    --slick-marble: 51 17% 85%;
+    --slick-storm: 60 7% 95%;
+    --slick-clay: 58 15% 46%;
+    --slick-sky: 203 16% 74%;
 
     --glass-bg: 51 14% 88%;
     --glass-border: 60 12% 97%;

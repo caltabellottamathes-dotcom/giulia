@@ -1,79 +1,72 @@
-import React from "react";
-import { Head } from "@/components/slick/slickParts";
-// staging-sync
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { Users, ClipboardList, ListChecks } from "lucide-react";
+import { PageShell, GlassButton, Divider, SectionHeader } from "@/components/slick/glass";
+import { MEETINGS } from "@/lib/slick/meetings";
 
-const CHIPS = ["Wekelijkse afstemming Giulia", "Concept Brons review", "Briefing wervingscampagne"];
-const AGENDA = ["Voortgang Marktanalyse Q3", "Briefing wervingscampagne", "Planning komende week"];
-const ACTIES = ["Rapport uiterlijk vrijdag klaar — Marc", "Briefing sturen naar HR — Sara", "Identiteit planning delen — Giulia"];
-const DEELNEMERS = ["Giulia Romano", "Marc Brons", "Sara Visser"];
+export default function VergaderNotities() {
+  const [id, setId] = useState(MEETINGS[0].id);
+  const m = MEETINGS.find((x) => x.id === id);
 
-export default function SlickVergader() {
   return (
-    <div>
-      <Head title="Vergader Notities" tag="Vergaderingen" />
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-5">
-        {CHIPS.map((c, i) => (
-          <button
-            key={c}
-            className={`whitespace-nowrap px-3 py-1.5 rounded-full text-[11px] border transition-colors ${
-              i === 0 ? "border-marble/50 bg-marble/25 text-slickstorm" : "border-marble/30 bg-marble/10 text-marble/70 hover:bg-marble/20"
-            }`}
-          >
-            {c}
+    <PageShell>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <p className="text-marble/50 text-xs">Vergaderingen</p>
+          <h1 className="text-storm text-2xl sm:text-3xl font-bold tracking-tight">Vergader Notities</h1>
+        </div>
+        <Link to="/slick"><GlassButton className="px-4 py-2 text-storm text-sm">← Terug</GlassButton></Link>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-5">
+        {MEETINGS.map((mt) => (
+          <button key={mt.id} onClick={() => setId(mt.id)} className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${mt.id === id ? "bg-urgent text-metal border-urgent" : "border-marble/30 bg-marble/10 text-marble hover:bg-marble/20"}`}>
+            {mt.title}
           </button>
         ))}
       </div>
-      <div className="rounded-2xl border border-marble/30 bg-marble/10 backdrop-blur-md p-5 max-w-2xl">
-        <h2 className="text-slickstorm text-lg font-semibold">Wekelijkse afstemming Giulia</h2>
-        <p className="text-marble/60 text-xs mt-0.5">2026-08-13 · 16:00 · Studio Giulia</p>
 
-        <Block label="Deelnemers">
-          <div className="flex flex-wrap gap-2">
-            {DEELNEMERS.map((d) => (
-              <span key={d} className="text-[11px] rounded-full border border-marble/25 bg-marble/5 text-marble/80 px-2.5 py-0.5">{d}</span>
-            ))}
+      <div className="rounded-2xl border border-marble/20 bg-marble/5 p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <h2 className="text-storm text-xl font-semibold">{m.title}</h2>
+            <p className="text-marble/50 text-xs mt-1">{m.date} · {m.time} · {m.location}</p>
           </div>
-        </Block>
-
-        <Block label="Agenda">
-          <ul className="space-y-1">
-            {AGENDA.map((a, i) => (
-              <li key={a} className="text-slickstorm/80 text-sm flex gap-2">
-                <span className="text-marble/50 tabular-nums">{i + 1}.</span> {a}
-              </li>
-            ))}
-          </ul>
-        </Block>
-
-        <Block label="Actiepunten">
-          <ul className="space-y-1">
-            {ACTIES.map((a) => (
-              <li key={a} className="text-slickstorm/80 text-sm flex gap-2">
-                <span className="text-clay">•</span> {a}
-              </li>
-            ))}
-          </ul>
-        </Block>
-
-        <div className="mt-5 pt-4 border-t border-marble/15">
-          <p className="text-marble/70 text-xs font-medium flex items-center gap-2 mb-2">
-            <span className="tabular-nums">(1)</span> Notulen
-          </p>
-          <p className="text-slickstorm/80 text-sm leading-relaxed">
-            Giulia is tevreden met conceptrichting. Wervingscampagne start na Q3 rapport. Volgende week focus op
-            identiteit.
-          </p>
         </div>
-      </div>
-    </div>
-  );
-}
 
-function Block({ label, children }) {
-  return (
-    <div className="mt-5">
-      <p className="text-marble/70 text-xs font-medium mb-2">{label}</p>
-      {children}
-    </div>
+        <Divider className="my-5" />
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div>
+            <div className="flex items-center gap-2 text-marble/60 text-xs"><Users className="w-3.5 h-3.5" /> Deelnemers</div>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {m.participants.map((p) => (
+                <span key={p} className="text-xs px-2.5 py-1 rounded-full bg-marble/10 text-storm border border-marble/20">{p}</span>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center gap-2 text-marble/60 text-xs"><ClipboardList className="w-3.5 h-3.5" /> Agenda</div>
+            <ul className="mt-3 flex flex-col gap-1.5">
+              {m.agenda.map((a, i) => (
+                <li key={i} className="text-storm text-sm flex gap-2"><span className="text-marble/40 tabular-nums">{i + 1}.</span>{a}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <div className="flex items-center gap-2 text-marble/60 text-xs"><ListChecks className="w-3.5 h-3.5" /> Actiepunten</div>
+            <ul className="mt-3 flex flex-col gap-1.5">
+              {m.actions.map((a, i) => (
+                <li key={i} className="text-storm text-sm flex items-start gap-2"><span className="w-4 h-4 rounded-full border border-urgent/50 shrink-0 mt-0.5" />{a}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <Divider className="my-5" />
+        <SectionHeader number={1} title="Notulen" />
+        <p className="text-marble/80 text-sm leading-relaxed mt-3">{m.notes}</p>
+      </div>
+    </PageShell>
   );
 }

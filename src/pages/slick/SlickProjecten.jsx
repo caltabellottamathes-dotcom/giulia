@@ -1,98 +1,103 @@
-import React from "react";
-import { Head } from "@/components/slick/slickParts";
-// staging-sync
+import React, { useMemo } from "react";
+import { Link } from "react-router-dom";
+import { Flag } from "lucide-react";
+import { PageShell, GlassButton, Divider } from "@/components/slick/glass";
+import { PROJECTS } from "@/lib/slick/projects";
 
-const SECTIONS = [
-  {
-    label: "Lopend",
-    count: 3,
-    items: [
-      { t: "Marktanalyse Q3", org: "Brons & Co", pct: 72, tags: ["G", "M", "S"], dl: "2026-08-30", next: "Rapport concept" },
-      { t: "Identiteit pakket", org: "Studio Giulia", pct: 45, tags: ["G", "L"], dl: "2026-09-12", next: "Kleurenpallet" },
-      { t: "Onderzoek doelgroep", org: "Intern", pct: 90, warn: "⚠ 7d", tags: ["S"], dl: "2026-08-20", next: "Samenvatting" },
-    ],
-  },
-  {
-    label: "Gepland",
-    count: 2,
-    items: [
-      { t: "Concept Brons pitch", org: "Brons", pct: 30, tags: ["G", "M", "S", "L"], dl: "2026-08-21", next: "Pitch deck" },
-      { t: "Wervingscampagne briefing", org: "HR", pct: 15, tags: ["M", "L"], dl: "2026-09-05", next: "Briefing opstellen" },
-    ],
-  },
-  {
-    label: "Voltooid",
-    count: 1,
-    items: [{ t: "Concurrentieanalyse", org: "Intern", pct: 100, tags: ["S", "G"], dl: "2026-08-10", next: "—" }],
-  },
+const COLUMNS = [
+  { key: "lopend", label: "Lopend", accent: "text-sky", dot: "bg-sky" },
+  { key: "gepland", label: "Gepland", accent: "text-marble", dot: "bg-marble" },
+  { key: "voltooid", label: "Voltooid", accent: "text-urgent", dot: "bg-urgent" },
 ];
-const TAG_COLORS = { G: "bg-clay", M: "bg-sand", S: "bg-sky", L: "bg-slickstorm" };
 
-export default function SlickProjecten() {
+const REF = new Date("2026-08-13");
+const daysLeft = (deadline) => Math.ceil((new Date(deadline) - REF) / 86400000);
+
+export default function Projecten() {
+  const counts = useMemo(() => ({
+    lopend: PROJECTS.filter((p) => p.status === "lopend").length,
+    gepland: PROJECTS.filter((p) => p.status === "gepland").length,
+    voltooid: PROJECTS.filter((p) => p.status === "voltooid").length,
+  }), []);
+
   return (
-    <div>
-      <Head
-        title="Lopende Projecten"
-        tag="Werk"
-        right={
-          <div className="flex gap-3">
-            <Stat n={3} l="Lopend" />
-            <Stat n={2} l="Gepland" />
-            <Stat n={1} l="Voltooid" />
-          </div>
-        }
-      />
-      <div className="space-y-8">
-        {SECTIONS.map((s) => (
-          <div key={s.label}>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-slickstorm text-sm font-semibold">{s.label}</span>
-              <span className="text-marble/50 text-xs tabular-nums">{s.count}</span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {s.items.map((p) => (
-                <div key={p.t} className="rounded-2xl border border-marble/30 bg-marble/10 backdrop-blur-md p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="text-slickstorm text-sm font-semibold">{p.t}</p>
-                      <p className="text-marble/60 text-[11px]">{p.org}</p>
-                    </div>
-                    {p.warn && <span className="text-[10px] text-urgent font-medium">{p.warn}</span>}
-                  </div>
-                  <div className="flex items-center gap-2 mt-3">
-                    <div className="flex-1 h-1.5 rounded-full bg-marble/15 overflow-hidden">
-                      <div className="h-full bg-marble/70 rounded-full" style={{ width: `${p.pct}%` }} />
-                    </div>
-                    <span className="text-slickstorm text-[11px] tabular-nums font-medium">{p.pct}%</span>
-                  </div>
-                  <div className="flex items-center gap-1 mt-3">
-                    {p.tags.map((tg) => (
-                      <span
-                        key={tg}
-                        className={`h-4 w-4 rounded-full text-[9px] text-metal flex items-center justify-center font-bold ${TAG_COLORS[tg] || "bg-marble"}`}
-                      >
-                        {tg}
-                      </span>
-                    ))}
-                    <span className="ml-auto text-marble/50 text-[10px]">Deadline</span>
-                    <span className="text-marble/80 text-[10px] tabular-nums">{p.dl}</span>
-                  </div>
-                  <p className="text-marble/70 text-[11px] mt-2">{p.next}</p>
-                </div>
-              ))}
+    <PageShell>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <p className="text-marble/50 text-xs">Werk</p>
+          <h1 className="text-storm text-2xl sm:text-3xl font-bold tracking-tight">Lopende Projecten</h1>
+        </div>
+        <Link to="/slick"><GlassButton className="px-4 py-2 text-storm text-sm">← Terug</GlassButton></Link>
+      </div>
+
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        {COLUMNS.map((c) => (
+          <div key={c.key} className="rounded-2xl border border-marble/20 bg-marble/5 p-4 flex items-center gap-3">
+            <span className={`w-2.5 h-2.5 rounded-full ${c.dot}`} />
+            <div>
+              <p className={`text-xs ${c.accent}`}>{c.label}</p>
+              <p className="text-storm text-2xl font-semibold leading-none mt-1">{counts[c.key]}</p>
             </div>
           </div>
         ))}
       </div>
-    </div>
-  );
-}
 
-function Stat({ n, l }) {
-  return (
-    <div className="text-center">
-      <p className="text-slickstorm text-base font-bold tabular-nums">{n}</p>
-      <p className="text-marble/50 text-[10px]">{l}</p>
-    </div>
+      <Divider className="mb-5" />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {COLUMNS.map((col) => {
+          const items = PROJECTS.filter((p) => p.status === col.key);
+          return (
+            <div key={col.key} className="rounded-2xl border border-marble/15 bg-marble/5 p-3">
+              <div className="flex items-center justify-between mb-3 px-1">
+                <span className={`text-xs font-semibold ${col.accent}`}>{col.label}</span>
+                <span className="text-marble/50 text-[10px] tabular-nums">{items.length}</span>
+              </div>
+              <div className="flex flex-col gap-3">
+                {items.map((p) => {
+                  const dl = daysLeft(p.deadline);
+                  const risk = dl <= 7 && p.status !== "voltooid";
+                  return (
+                    <div key={p.id} className="rounded-xl border border-marble/20 bg-marble/10 p-3">
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="min-w-0">
+                          <p className="text-storm text-sm font-medium truncate">{p.name}</p>
+                          <p className="text-marble/50 text-xs truncate">{p.client}</p>
+                        </div>
+                        {risk && <span className="shrink-0 text-[9px] px-2 py-0.5 rounded-full bg-urgent/20 text-urgent border border-urgent/40">⚠ {dl}d</span>}
+                      </div>
+                      <div className="mt-3">
+                        <div className="flex justify-between text-[10px] mb-1">
+                          <span className="text-marble/60">Voortgang</span>
+                          <span className="text-storm tabular-nums">{p.progress}%</span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-marble/10 overflow-hidden">
+                          <div className="h-full rounded-full bg-urgent" style={{ width: `${p.progress}%` }} />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between mt-3">
+                        <div className="flex -space-x-1.5">
+                          {p.team.map((t, i) => (
+                            <div key={i} className="w-6 h-6 rounded-full bg-metal border border-marble/30 flex items-center justify-center text-[9px] text-marble">{t}</div>
+                          ))}
+                        </div>
+                        <div className="text-right">
+                          <p className="text-marble/50 text-[9px]">Deadline</p>
+                          <p className="text-storm text-[10px] tabular-nums">{p.deadline}</p>
+                        </div>
+                      </div>
+                      <div className="mt-2 pt-2 border-t border-marble/15 flex items-center gap-1.5">
+                        <Flag className="w-3 h-3 text-marble/60" />
+                        <span className="text-marble/70 text-[10px] truncate">{p.nextMilestone}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </PageShell>
   );
 }

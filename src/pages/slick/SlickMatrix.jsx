@@ -1,67 +1,54 @@
 import React from "react";
-import { Head } from "@/components/slick/slickParts";
-// staging-sync
+import { Link } from "react-router-dom";
+import { PageShell, GlassButton } from "@/components/slick/glass";
+import { TASKS } from "@/lib/slick/tasks";
 
 const QUADS = [
-  {
-    label: "Doen",
-    sub: "Urgent · Belangrijk",
-    items: ["Marktanalyse Q3 voorbereiden", "Klantgesprek Giulia", "Identiteit-richting uitwerken"],
-  },
-  {
-    label: "Delegeren",
-    sub: "Urgent · Niet belangrijk",
-    items: ["Concept Brons review", "Briefing wervingscampagne", "Telefoonafspraak leverancier"],
-  },
-  {
-    label: "Plannen",
-    sub: "Niet urgent · Belangrijk",
-    items: ["Marktonderzoek rapport opstellen", "Identiteit kleurenpallet finaliseren", "Concept Brons pitch voorbereiden"],
-  },
-  {
-    label: "Laten",
-    sub: "Geen van beide",
-    items: ["Concurrentieonderzoek notities", "Logo-iteraties Concept Brons", "Wekelijkse afstemming Giulia"],
-  },
+  { title: "Doen", sub: "Urgent · Belangrijk", tone: "text-urgent", border: "border-urgent/40", ids: [1, 2, 3] },
+  { title: "Plannen", sub: "Niet urgent · Belangrijk", tone: "text-sky", border: "border-sky/40", ids: [7, 10, 12] },
+  { title: "Delegeren", sub: "Urgent · Niet belangrijk", tone: "text-sand", border: "border-sand/40", ids: [4, 6, 9] },
+  { title: "Laten", sub: "Geen van beide", tone: "text-marble/60", border: "border-marble/30", ids: [5, 8, 13] },
 ];
 
-export default function SlickMatrix() {
+function Quad({ q }) {
+  const items = TASKS.filter((t) => q.ids.includes(t.id));
   return (
-    <div>
-      <Head title="Prioriteiten Matrix" tag="Strategie" />
-      <div className="grid grid-cols-[auto_1fr_1fr] gap-2">
-        <div />
-        <p className="text-center text-marble/60 text-[10px] uppercase tracking-wider">Belangrijk →</p>
-        <p className="text-center text-marble/60 text-[10px] uppercase tracking-wider">← Niet belangrijk</p>
-
-        <p className="flex items-center justify-center text-marble/60 text-[10px] uppercase tracking-wider [writing-mode:vertical-rl] rotate-180">
-          Urgent ↓
-        </p>
-        <Quad q={QUADS[0]} />
-        <Quad q={QUADS[1]} />
-
-        <p className="flex items-center justify-center text-marble/60 text-[10px] uppercase tracking-wider [writing-mode:vertical-rl] rotate-180">
-          ↑ Niet urgent
-        </p>
-        <Quad q={QUADS[2]} />
-        <Quad q={QUADS[3]} />
+    <div className={`rounded-2xl border ${q.border} bg-marble/5 p-4 min-h-[180px] flex flex-col`}>
+      <p className={`text-sm font-semibold ${q.tone}`}>{q.title}</p>
+      <p className="text-marble/40 text-[10px]">{q.sub}</p>
+      <div className="mt-3 flex flex-col gap-1.5 flex-1">
+        {items.map((t) => (
+          <div key={t.id} className="rounded-lg bg-marble/10 px-2.5 py-1.5 text-storm text-xs">{t.title}</div>
+        ))}
       </div>
     </div>
   );
 }
 
-function Quad({ q }) {
+export default function PrioriteitenMatrix() {
   return (
-    <div className="rounded-2xl border border-marble/30 bg-marble/10 backdrop-blur-md p-4 min-h-[180px]">
-      <p className="text-slickstorm text-sm font-semibold">{q.label}</p>
-      <p className="text-marble/50 text-[10px] mb-3">{q.sub}</p>
-      <div className="space-y-1.5">
-        {q.items.map((t) => (
-          <div key={t} className="rounded-lg border border-marble/20 bg-marble/5 px-3 py-2 text-slickstorm/80 text-xs">
-            {t}
-          </div>
-        ))}
+    <PageShell>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <p className="text-marble/50 text-xs">Strategie</p>
+          <h1 className="text-storm text-2xl sm:text-3xl font-bold tracking-tight">Prioriteiten Matrix</h1>
+        </div>
+        <Link to="/slick"><GlassButton className="px-4 py-2 text-storm text-sm">← Terug</GlassButton></Link>
       </div>
-    </div>
+
+      <div className="grid grid-cols-[64px_1fr_1fr] grid-rows-[auto_1fr_1fr] gap-2 min-h-[460px]">
+        <div />
+        <p className="text-marble/50 text-[11px] font-medium text-center self-center">Belangrijk →</p>
+        <p className="text-marble/50 text-[11px] font-medium text-center self-center">← Niet belangrijk</p>
+
+        <p className="text-marble/50 text-[11px] font-medium [writing-mode:vertical-rl] rotate-180 text-center self-center">Urgent ↓</p>
+        <Quad q={QUADS[0]} />
+        <Quad q={QUADS[2]} />
+
+        <p className="text-marble/50 text-[11px] font-medium [writing-mode:vertical-rl] rotate-180 text-center self-center">↑ Niet urgent</p>
+        <Quad q={QUADS[1]} />
+        <Quad q={QUADS[3]} />
+      </div>
+    </PageShell>
   );
 }

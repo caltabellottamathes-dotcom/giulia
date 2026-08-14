@@ -1,83 +1,81 @@
-import React from "react";
-import { Head } from "@/components/slick/slickParts";
-// staging-sync
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { Clock, Calendar, Flag, CheckCircle2, Circle } from "lucide-react";
+import { PageShell, GlassButton, SectionHeader, Divider, StatusBadge, CATEGORY_COLORS } from "@/components/slick/glass";
+import { TASKS } from "@/lib/slick/tasks";
 
-const CHIPS = [
-  "Marktanalyse Q3 voorbereiden",
-  "Klantgesprek Giulia",
-  "Identiteit-richting uitwerken",
-  "Concept Brons review",
-  "Concurrentieonderzoek notities",
-  "Briefing wervingscampagne",
-  "Marktonderzoek rapport opstellen",
-  "Logo-iteraties Concept",
+const NOTES = "Klant wil focus op Q3 cijfers en concurrentiepositie. Verzamel data uit marktrapporten en interview Giulia voor extra context. Rapport uiterlijk vrijdag klaar.";
+const SUBTASKS = [
+  { t: "Data verzamelen", done: true },
+  { t: "Giulia interviewen", done: true },
+  { t: "Concept opstellen", done: false },
+  { t: "Rapport schrijven", done: false },
 ];
-const SUB = ["Data verzamelen", "Giulia interviewen", "Concept opstellen", "Rapport schrijven"];
 
-export default function SlickTaakDetails() {
+export default function TaakDetails() {
+  const [taskId, setTaskId] = useState(TASKS[0].id);
+  const [subs, setSubs] = useState(SUBTASKS);
+  const task = TASKS.find((t) => t.id === taskId);
+  const toggle = (i) => setSubs((s) => s.map((x, idx) => (idx === i ? { ...x, done: !x.done } : x)));
+
   return (
-    <div>
-      <Head title="Taak Details" tag="Taak" />
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-5">
-        {CHIPS.map((c, i) => (
-          <button
-            key={i}
-            className={`whitespace-nowrap px-3 py-1.5 rounded-full text-[11px] border transition-colors ${
-              i === 0
-                ? "border-marble/50 bg-marble/25 text-slickstorm"
-                : "border-marble/30 bg-marble/10 text-marble/70 hover:bg-marble/20"
-            }`}
-          >
-            {c}
+    <PageShell>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <p className="text-marble/50 text-xs">Taak</p>
+          <h1 className="text-storm text-2xl sm:text-3xl font-bold tracking-tight">Taak Details</h1>
+        </div>
+        <Link to="/slick"><GlassButton className="px-4 py-2 text-storm text-sm">← Terug</GlassButton></Link>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-5">
+        {TASKS.slice(0, 8).map((t) => (
+          <button key={t.id} onClick={() => setTaskId(t.id)} className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${t.id === taskId ? "bg-urgent text-metal border-urgent" : "border-marble/30 bg-marble/10 text-marble hover:bg-marble/20"}`}>
+            {t.title.slice(0, 22)}
           </button>
         ))}
       </div>
-      <div className="rounded-2xl border border-marble/30 bg-marble/10 backdrop-blur-md p-5">
-        <h2 className="text-slickstorm text-lg font-semibold">Marktanalyse Q3 voorbereiden</h2>
-        <p className="text-marble/60 text-xs mt-0.5">Marktonderzoek</p>
-        <div className="inline-block mt-2 text-[10px] uppercase tracking-wider rounded-full border border-olive/40 bg-olive/15 text-olive px-2 py-0.5">
-          Voltooid
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-          <Meta l="Datum" v="2026-08-13" />
-          <Meta l="Tijd" v="09:00" />
-          <Meta l="Duur" v="120 min" />
-          <Meta l="Type" v="task" />
-        </div>
-        <div className="mt-6">
-          <p className="text-marble/70 text-xs font-medium flex items-center gap-2">
-            <span className="tabular-nums">(1)</span> Notities
-          </p>
-          <p className="text-slickstorm/80 text-sm mt-2 leading-relaxed">
-            Klant wil focus op Q3 cijfers en concurrentiepositie. Verzamel data uit marktrapporten en interview Giulia
-            voor extra context. Rapport uiterlijk vrijdag klaar.
-          </p>
-        </div>
-        <div className="mt-5">
-          <p className="text-marble/70 text-xs font-medium flex items-center gap-2">
-            <span className="tabular-nums">(2)</span> Subtaken
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-            {SUB.map((s, i) => (
-              <div key={s} className="rounded-xl border border-marble/30 bg-marble/10 p-3 flex items-center gap-3">
-                <span className="h-5 w-5 rounded-full bg-olive/20 text-olive text-[10px] font-bold flex items-center justify-center">
-                  {i + 1}
-                </span>
-                <span className="text-slickstorm text-sm">{s}</span>
-              </div>
-            ))}
+
+      <div className="rounded-2xl border border-marble/20 bg-marble/5 p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-storm text-xl font-semibold">{task.title}</h2>
+            <p className={`${CATEGORY_COLORS[task.category]} text-xs mt-1`}>{task.category}</p>
           </div>
+          <StatusBadge status={task.status} />
+        </div>
+
+        <Divider className="my-5" />
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {[
+            { icon: Calendar, label: "Datum", value: task.date },
+            { icon: Clock, label: "Tijd", value: task.time },
+            { icon: Clock, label: "Duur", value: `${task.duration} min` },
+            { icon: Flag, label: "Type", value: task.type },
+          ].map((m) => (
+            <div key={m.label}>
+              <p className="text-marble/50 text-[10px] uppercase">{m.label}</p>
+              <p className="text-storm text-sm font-medium mt-1 flex items-center gap-1.5"><m.icon className="w-3.5 h-3.5 text-marble/60" />{m.value}</p>
+            </div>
+          ))}
+        </div>
+
+        <Divider className="my-5" />
+        <SectionHeader number={1} title="Notities" />
+        <p className="text-marble/80 text-sm leading-relaxed mt-3">{NOTES}</p>
+
+        <Divider className="my-5" />
+        <SectionHeader number={2} title="Subtaken" />
+        <div className="mt-3 flex flex-col gap-2">
+          {subs.map((s, i) => (
+            <button key={i} onClick={() => toggle(i)} className="flex items-center gap-2.5 text-left">
+              {s.done ? <CheckCircle2 className="w-4 h-4 text-urgent" /> : <Circle className="w-4 h-4 text-marble/40" />}
+              <span className={`text-sm ${s.done ? "text-marble/50 line-through" : "text-storm"}`}>{s.t}</span>
+            </button>
+          ))}
         </div>
       </div>
-    </div>
-  );
-}
-
-function Meta({ l, v }) {
-  return (
-    <div>
-      <p className="text-marble/50 text-[10px] uppercase tracking-wider">{l}</p>
-      <p className="text-slickstorm text-sm mt-0.5 tabular-nums">{v}</p>
-    </div>
+    </PageShell>
   );
 }

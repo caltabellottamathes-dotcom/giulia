@@ -1,72 +1,78 @@
 import React, { useState } from "react";
-import { Head } from "@/components/slick/slickParts";
-// staging-sync
+import { Link } from "react-router-dom";
+import { PageShell, GlassButton, Divider, SectionHeader } from "@/components/slick/glass";
+import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-const PREFS = [
-  { key: "push", label: "Push notificaties", desc: "Herinneringen voor afspraken en deadlines", on: true },
-  { key: "weekly", label: "Wekelijkse e-mail", desc: "Overzicht van je week elke zondag", on: true },
-  { key: "sound", label: "Geluidssignalen", desc: "Piepje bij voltooide taak", on: false },
-  { key: "compact", label: "Compacte weergave", desc: "Minder ruimte tussen elementen", on: false },
-  { key: "autosave", label: "Automatisch opslaan", desc: "Notities direct bewaren", on: true },
-  { key: "dark", label: "Donker thema", desc: "Donkere glas-stijl als standaard", on: true },
-];
+export default function Instellingen() {
+  const [prefs, setPrefs] = useState({ notif: true, weekmail: false, geluid: true, compact: false, autosave: true, donker: true });
+  const [name, setName] = useState("Giulia Romano");
+  const [email, setEmail] = useState("giulia@studio.it");
+  const set = (k) => setPrefs((p) => ({ ...p, [k]: !p[k] }));
 
-function Toggle({ on, onClick }) {
+  const TOGGLES = [
+    { key: "notif", label: "Push notificaties", desc: "Herinneringen voor afspraken en deadlines" },
+    { key: "weekmail", label: "Wekelijkse e-mail", desc: "Overzicht van je week elke zondag" },
+    { key: "geluid", label: "Geluidssignalen", desc: "Piepje bij voltooide taak" },
+    { key: "compact", label: "Compacte weergave", desc: "Minder ruimte tussen elementen" },
+    { key: "autosave", label: "Automatisch opslaan", desc: "Notities direct bewaren" },
+    { key: "donker", label: "Donker thema", desc: "Donkere glas-stijl als standaard" },
+  ];
+
   return (
-    <button onClick={onClick} className={`h-5 w-9 rounded-full transition-colors relative shrink-0 ${on ? "bg-olive" : "bg-marble/25"}`}>
-      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-marble transition-all ${on ? "left-4" : "left-0.5"}`} />
-    </button>
-  );
-}
+    <PageShell>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <p className="text-marble/50 text-xs">Account</p>
+          <h1 className="text-storm text-2xl sm:text-3xl font-bold tracking-tight">Instellingen</h1>
+        </div>
+        <Link to="/slick"><GlassButton className="px-4 py-2 text-storm text-sm">← Terug</GlassButton></Link>
+      </div>
 
-export default function SlickInstellingen() {
-  const [prefs, setPrefs] = useState(Object.fromEntries(PREFS.map((p) => [p.key, p.on])));
-  const toggle = (k) => setPrefs((s) => ({ ...s, [k]: !s[k] }));
-  return (
-    <div>
-      <Head title="Instellingen" tag="Account" />
-      <div className="space-y-6 max-w-2xl">
-        <section>
-          <p className="text-marble/70 text-xs font-medium flex items-center gap-2 mb-3">
-            <span className="tabular-nums">(1)</span> Profiel
-          </p>
-          <div className="rounded-2xl border border-marble/30 bg-marble/10 backdrop-blur-md p-4 flex items-center gap-4">
-            <span className="h-12 w-12 rounded-2xl bg-marble/20 text-slickstorm text-sm font-bold flex items-center justify-center">GR</span>
-            <div>
-              <p className="text-slickstorm text-sm font-semibold">Giulia Romano</p>
-              <p className="text-marble/60 text-xs">Beheerder</p>
-            </div>
-            <div className="ml-auto text-right text-marble/60 text-xs space-y-1">
-              <p>Naam</p>
-              <p>E-mail</p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="rounded-2xl border border-marble/20 bg-marble/5 p-6">
+          <SectionHeader number={1} title="Profiel" />
+          <div className="mt-4 flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-metal border border-marble/30 flex items-center justify-center text-marble text-xl font-medium">GR</div>
+            <div className="flex-1">
+              <p className="text-storm text-sm font-medium">{name}</p>
+              <p className="text-marble/50 text-xs">Beheerder</p>
             </div>
           </div>
-        </section>
+          <div className="mt-5 space-y-4">
+            <div>
+              <Label className="text-marble/60 text-xs">Naam</Label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} className="mt-1 bg-marble/10 border-marble/30 text-storm" />
+            </div>
+            <div>
+              <Label className="text-marble/60 text-xs">E-mail</Label>
+              <Input value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 bg-marble/10 border-marble/30 text-storm" />
+            </div>
+          </div>
+        </div>
 
-        <section>
-          <p className="text-marble/70 text-xs font-medium flex items-center gap-2 mb-3">
-            <span className="tabular-nums">(2)</span> Voorkeuren
-          </p>
-          <div className="rounded-2xl border border-marble/30 bg-marble/10 backdrop-blur-md divide-y divide-marble/15">
-            {PREFS.map((p) => (
-              <div key={p.key} className="flex items-center gap-4 p-4">
-                <div className="min-w-0">
-                  <p className="text-slickstorm text-sm font-medium">{p.label}</p>
-                  <p className="text-marble/60 text-xs">{p.desc}</p>
+        <div className="rounded-2xl border border-marble/20 bg-marble/5 p-6">
+          <SectionHeader number={2} title="Voorkeuren" />
+          <div className="mt-4 flex flex-col divide-y divide-marble/15">
+            {TOGGLES.map((t) => (
+              <div key={t.key} className="flex items-center justify-between py-3.5">
+                <div>
+                  <p className="text-storm text-sm">{t.label}</p>
+                  <p className="text-marble/50 text-xs">{t.desc}</p>
                 </div>
-                <div className="ml-auto">
-                  <Toggle on={prefs[p.key]} onClick={() => toggle(p.key)} />
-                </div>
+                <Switch checked={prefs[t.key]} onCheckedChange={() => set(t.key)} />
               </div>
             ))}
           </div>
-        </section>
-
-        <div className="flex gap-2 justify-end">
-          <button className="px-4 py-2 rounded-xl border border-marble/30 bg-marble/10 text-marble/70 text-sm hover:bg-marble/20 transition">Annuleren</button>
-          <button className="px-4 py-2 rounded-xl bg-marble/25 border border-marble/40 text-slickstorm text-sm font-medium hover:bg-marble/30 transition">Opslaan</button>
         </div>
       </div>
-    </div>
+
+      <Divider className="my-6" />
+      <div className="flex justify-end gap-2">
+        <GlassButton className="px-5 py-2.5 text-storm text-sm">Annuleren</GlassButton>
+        <button className="px-6 py-2.5 rounded-full bg-urgent text-metal text-sm font-semibold hover:brightness-105 active:scale-95 transition-all">Opslaan</button>
+      </div>
+    </PageShell>
   );
 }

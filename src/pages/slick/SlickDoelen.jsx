@@ -1,58 +1,62 @@
 import React, { useState } from "react";
-import { Head } from "@/components/slick/slickParts";
-// staging-sync
+import { Link } from "react-router-dom";
+import { Target } from "lucide-react";
+import { PageShell, GlassButton, Divider, SectionHeader } from "@/components/slick/glass";
+import { GOALS } from "@/lib/slick/goals";
 
-const TABS = ["alle", "Professioneel", "Persoonlijk"];
-const GOALS = [
-  { cat: "Professioneel", t: "Marktanalyse Q3 afronden", doel: "2026-09-30", pct: 72, marks: ["Data verzameld", "Analyse", "Rapport"] },
-  { cat: "Persoonlijk", t: "3x per week sporten", doel: "Doorlopend", pct: 60, marks: ["Maandag", "Woensdag", "Vrijdag"] },
-  { cat: "Professioneel", t: "Identiteit pakket leveren", doel: "2026-09-12", pct: 45, marks: ["Logo", "Kleuren", "Typo"] },
-  { cat: "Persoonlijk", t: "20 boeken lezen dit jaar", doel: "2026-12-31", pct: 55, marks: ["11 gelezen"] },
-  { cat: "Professioneel", t: "Concept Brons pitch winnen", doel: "2026-08-21", pct: 30, marks: ["Deck", "Oefening"] },
-  { cat: "Persoonlijk", t: "Dagelijks 30 min lezen", doel: "Doorlopend", pct: 80, marks: ["Streak 24d"] },
-];
+const FILTERS = ["alle", "Professioneel", "Persoonlijk"];
+const TONE = { Professioneel: "bg-urgent", Persoonlijk: "bg-sky" };
 
-export default function SlickDoelen() {
-  const [tab, setTab] = useState("alle");
-  const list = GOALS.filter((g) => tab === "alle" || g.cat === tab);
+export default function DoelenDashboard() {
+  const [filter, setFilter] = useState("alle");
+  const goals = filter === "alle" ? GOALS : GOALS.filter((g) => g.category === filter);
+
   return (
-    <div>
-      <Head title="Doelen Dashboard" tag="Groei" />
+    <PageShell>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <p className="text-marble/50 text-xs">Groei</p>
+          <h1 className="text-storm text-2xl sm:text-3xl font-bold tracking-tight">Doelen Dashboard</h1>
+        </div>
+        <Link to="/slick"><GlassButton className="px-4 py-2 text-storm text-sm">← Terug</GlassButton></Link>
+      </div>
+
       <div className="flex gap-2 mb-5">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-3 py-1.5 rounded-full text-xs border capitalize transition-colors ${
-              tab === t ? "border-marble/50 bg-marble/25 text-slickstorm" : "border-marble/30 bg-marble/10 text-marble/70 hover:bg-marble/20"
-            }`}
-          >
-            {t}
-          </button>
+        {FILTERS.map((f) => (
+          <GlassButton key={f} active={filter === f} onClick={() => setFilter(f)} className="px-4 py-1.5 text-storm text-xs capitalize">{f}</GlassButton>
         ))}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {list.map((g) => (
-          <div key={g.t} className="rounded-2xl border border-marble/30 bg-marble/10 backdrop-blur-md p-4">
-            <p className="text-marble/60 text-[10px] uppercase tracking-wider">{g.cat}</p>
-            <h3 className="text-slickstorm text-base font-semibold mt-1">{g.t}</h3>
-            <p className="text-marble/60 text-xs">Doel: {g.doel}</p>
-            <div className="flex items-center gap-2 mt-3">
-              <div className="flex-1 h-1.5 rounded-full bg-marble/15 overflow-hidden">
-                <div className="h-full bg-marble/70 rounded-full" style={{ width: `${g.pct}%` }} />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {goals.map((g) => (
+          <div key={g.id} className="rounded-2xl border border-marble/20 bg-marble/5 p-5 flex flex-col">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-xl border border-marble/30 bg-marble/10 flex items-center justify-center">
+                <Target className={`w-4 h-4 ${g.category === "Persoonlijk" ? "text-sky" : "text-urgent"}`} />
               </div>
-              <span className="text-slickstorm text-[11px] tabular-nums font-medium">{g.pct}%</span>
+              <span className="text-marble/50 text-[10px] uppercase">{g.category}</span>
             </div>
-            <div className="flex flex-wrap gap-1.5 mt-3">
-              {g.marks.map((m) => (
-                <span key={m} className="text-[10px] rounded-full border border-marble/25 bg-marble/5 text-marble/70 px-2 py-0.5">
-                  {m}
-                </span>
+            <h3 className="text-storm text-sm font-medium mt-3">{g.title}</h3>
+            <p className="text-marble/50 text-xs mt-0.5">Doel: {g.target}</p>
+
+            <div className="mt-4">
+              <div className="flex justify-between text-[10px] mb-1">
+                <span className="text-marble/60">Voortgang</span>
+                <span className="text-storm tabular-nums">{g.progress}%</span>
+              </div>
+              <div className="h-2.5 rounded-full bg-marble/10 overflow-hidden">
+                <div className={`h-full rounded-full ${TONE[g.category]}`} style={{ width: `${g.progress}%` }} />
+              </div>
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-marble/15 flex flex-wrap gap-1.5">
+              {g.milestones.map((m) => (
+                <span key={m} className="text-[10px] px-2 py-0.5 rounded-full bg-marble/10 text-marble/70 border border-marble/20">{m}</span>
               ))}
             </div>
           </div>
         ))}
       </div>
-    </div>
+    </PageShell>
   );
 }

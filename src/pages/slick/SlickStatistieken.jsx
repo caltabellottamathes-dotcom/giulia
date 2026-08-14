@@ -1,77 +1,118 @@
-import React from "react";
-import { Head } from "@/components/slick/slickParts";
-// staging-sync
+import React, { useMemo } from "react";
+import { Link } from "react-router-dom";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid } from "recharts";
+import { CheckCircle2, Clock, Calendar, TrendingUp } from "lucide-react";
+import { PageShell, GlassPanel, GlassButton, SectionHeader, CATEGORY_HEX } from "@/components/slick/glass";
+import { TASKS } from "@/lib/slick/tasks";
 
-const STATS = [
-  { l: "Voltooid", v: "4" },
-  { l: "Lopend", v: "3" },
-  { l: "Gepland", v: "7" },
-  { l: "Totaal uren", v: "19.9" },
-];
-const CATEGORIES = [
-  { l: "Marktonderzoek", min: 400 },
-  { l: "Concept Brons", min: 225 },
-  { l: "Identiteit", min: 210 },
-  { l: "Afspraken", min: 195 },
-  { l: "Onderzoek", min: 165 },
-];
-const STATUS = [
-  { l: "Voltooid", n: 4, color: "bg-olive" },
-  { l: "Lopend", n: 3, color: "bg-sky" },
-  { l: "Gepland", n: 7, color: "bg-clay" },
-];
-const MAX_CAT = Math.max(...CATEGORIES.map((c) => c.min));
-const MAX_ST = Math.max(...STATUS.map((s) => s.n));
-
-export default function SlickStatistieken() {
+function StatCard({ icon: Icon, label, value, accent }) {
   return (
-    <div>
-      <Head title="Statistieken" tag="Privé" />
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        {STATS.map((s) => (
-          <div key={s.l} className="rounded-2xl border border-marble/30 bg-marble/10 backdrop-blur-md p-4 text-center">
-            <p className="text-slickstorm text-2xl font-bold tabular-nums">{s.v}</p>
-            <p className="text-marble/60 text-[10px] uppercase tracking-wider mt-1">{s.l}</p>
-          </div>
-        ))}
+    <GlassPanel className="p-5 flex items-center gap-4">
+      <div className={`w-11 h-11 rounded-xl border border-marble/30 bg-marble/10 flex items-center justify-center ${accent}`}>
+        <Icon className="w-5 h-5" />
+      </div>
+      <div>
+        <p className="text-marble/60 text-xs">{label}</p>
+        <p className="text-storm text-2xl font-semibold leading-none mt-1">{value}</p>
+      </div>
+    </GlassPanel>
+  );
+}
+
+export default function Statistieken() {
+  const completed = TASKS.filter((t) => t.status === "voltooid").length;
+  const running = TASKS.filter((t) => t.status === "lopend").length;
+  const planned = TASKS.filter((t) => t.status === "gepland").length;
+  const totalMinutes = TASKS.reduce((s, t) => s + t.duration, 0);
+
+  const perCategory = useMemo(() => {
+    const map = {};
+    TASKS.forEach((t) => {
+      map[t.category] = (map[t.category] || 0) + t.duration;
+    });
+    return Object.entries(map).map(([name, minutes]) => ({ name, minutes, hours: +(minutes / 60).toFixed(1) }));
+  }, []);
+
+  const statusPie = useMemo(() => [
+    { name: "Voltooid", value: completed, color: CATEGORY_HEX.Afspraken },
+    { name: "Lopend", value: running, color: CATEGORY_HEX.Identiteit },
+    { name: "Gepland", value: planned, color: CATEGORY_HEX.Marble || "#E0DED3" },
+  ], [completed, running, planned]);
+
+  return (
+    <PageShell>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <p className="text-marble/50 text-xs">Privé</p>
+          <h1 className="text-storm text-2xl sm:text-3xl font-bold tracking-tight">Statistieken</h1>
+        </div>
+        <Link to="/slick">
+          <GlassButton className="px-4 py-2 text-storm text-sm">← Terug</GlassButton>
+        </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <section>
-          <p className="text-marble/70 text-xs font-medium flex items-center gap-2 mb-3">
-            <span className="tabular-nums">(1)</span> Tijd besteed per categorie (minuten)
-          </p>
-          <div className="rounded-2xl border border-marble/30 bg-marble/10 backdrop-blur-md p-4 space-y-3">
-            {CATEGORIES.map((c) => (
-              <div key={c.l} className="flex items-center gap-3">
-                <span className="text-slickstorm/80 text-xs w-28 truncate">{c.l}</span>
-                <div className="flex-1 h-2 rounded-full bg-marble/15 overflow-hidden">
-                  <div className="h-full bg-marble/70 rounded-full" style={{ width: `${(c.min / MAX_CAT) * 100}%` }} />
-                </div>
-                <span className="text-marble/70 text-[11px] tabular-nums w-10 text-right">{c.min}</span>
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <StatCard icon={CheckCircle2} label="Voltooid" value={completed} accent="text-urgent" />
+        <StatCard icon={Clock} label="Lopend" value={running} accent="text-sky" />
+        <StatCard icon={Calendar} label="Gepland" value={planned} accent="text-marble" />
+        <StatCard icon={TrendingUp} label="Totaal uren" value={+(totalMinutes / 60).toFixed(1)} accent="text-sand" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Time per category bar chart */}
+        <GlassPanel className="lg:col-span-2 p-6">
+          <SectionHeader number={1} title="Tijd besteed per categorie (minuten)" />
+          <div className="h-72 mt-6">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={perCategory} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(224,222,211,0.12)" vertical={false} />
+                <XAxis dataKey="name" tick={{ fill: "#E0DED3", fontSize: 11 }} axisLine={{ stroke: "rgba(224,222,211,0.2)" }} tickLine={false} />
+                <YAxis tick={{ fill: "#E0DED3", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <Tooltip
+                  cursor={{ fill: "rgba(224,222,211,0.08)" }}
+                  contentStyle={{ background: "rgba(45,45,35,0.9)", border: "1px solid rgba(224,222,211,0.3)", borderRadius: 12, color: "#F2F2F0", fontSize: 12 }}
+                />
+                <Bar dataKey="minutes" radius={[8, 8, 0, 0]}>
+                  {perCategory.map((entry) => (
+                    <Cell key={entry.name} fill={CATEGORY_HEX[entry.name] || "#B1BEC6"} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </GlassPanel>
+
+        {/* Status distribution pie */}
+        <GlassPanel className="p-6">
+          <SectionHeader number={2} title="Statusverdeling" />
+          <div className="h-56 mt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={statusPie} dataKey="value" nameKey="name" innerRadius={48} outerRadius={80} paddingAngle={3}>
+                  {statusPie.map((entry) => (
+                    <Cell key={entry.name} fill={entry.color} stroke="rgba(45,45,35,0.4)" strokeWidth={2} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{ background: "rgba(45,45,35,0.9)", border: "1px solid rgba(224,222,211,0.3)", borderRadius: 12, color: "#F2F2F0", fontSize: 12 }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex flex-col gap-2 mt-4">
+            {statusPie.map((s) => (
+              <div key={s.name} className="flex items-center justify-between text-sm">
+                <span className="flex items-center gap-2 text-marble/80">
+                  <span className="w-3 h-3 rounded-full" style={{ background: s.color }} />
+                  {s.name}
+                </span>
+                <span className="text-storm font-medium">{s.value}</span>
               </div>
             ))}
           </div>
-        </section>
-
-        <section>
-          <p className="text-marble/70 text-xs font-medium flex items-center gap-2 mb-3">
-            <span className="tabular-nums">(2)</span> Statusverdeling
-          </p>
-          <div className="rounded-2xl border border-marble/30 bg-marble/10 backdrop-blur-md p-4 space-y-3">
-            {STATUS.map((s) => (
-              <div key={s.l} className="flex items-center gap-3">
-                <span className={`h-2.5 w-2.5 rounded-full ${s.color}`} />
-                <span className="text-slickstorm/80 text-xs flex-1">{s.l}</span>
-                <div className="w-24 h-2 rounded-full bg-marble/15 overflow-hidden">
-                  <div className={`h-full rounded-full ${s.color}`} style={{ width: `${(s.n / MAX_ST) * 100}%` }} />
-                </div>
-                <span className="text-slickstorm text-[11px] tabular-nums w-6 text-right">{s.n}</span>
-              </div>
-            ))}
-          </div>
-        </section>
+        </GlassPanel>
       </div>
-    </div>
+    </PageShell>
   );
 }
