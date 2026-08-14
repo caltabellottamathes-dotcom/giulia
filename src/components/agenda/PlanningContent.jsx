@@ -25,6 +25,7 @@ const isoDate = (d) => d.toLocaleDateString("sv-SE");
 export default function PlanningContent() {
   const [weekly, setWeekly] = useState(null);
   const [daily, setDaily] = useState(null);
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(null);
 
@@ -34,12 +35,14 @@ export default function PlanningContent() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [w, d] = await Promise.all([
+      const [w, d, t] = await Promise.all([
         base44.entities.WeeklyPlan.filter({ week_start: weekStart }).catch(() => []),
         base44.entities.DailyPlan.filter({ date: today }).catch(() => []),
+        base44.entities.Task.filter({ status: { $in: ["today", "upcoming", "overdue", "todo", "in_progress"] } }).catch(() => []),
       ]);
       setWeekly((w && w[0]) || null);
       setDaily((d && d[0]) || null);
+      setTasks(t || []);
     } catch {
       setWeekly(null);
       setDaily(null);
@@ -61,6 +64,10 @@ export default function PlanningContent() {
       setBusy(null);
     }
   };
+
+  const openTasks = (tasks || []).filter((t) => t.status !== "completed" && t.status !== "archived");
+  const tasksOn = (date) => openTasks.filter((t) => t.deadline === isoDate(date));
+  const todayTasks = openTasks.filter((t) => t.deadline === today || t.status === "today");
 
   const weekPlan = weekly?.plan_data?.plan || [];
   const weekSummary = weekly?.plan_data?.summary || "";
@@ -150,6 +157,20 @@ export default function PlanningContent() {
             )}
           </div>
         )}
+        {!loading && todayTasks.length > 0 && (
+          <div className="mt-6 pt-5 border-t border-border/30">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-semibold mb-3">Jouw taken vandaag</p>
+            <div className="space-y-2">
+              {todayTasks.map((t) => (
+                <div key={t.id} className="flex items-center gap-3 glass-1 rounded-xl px-3 py-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-olive shrink-0" />
+                  <p className="text-sm flex-1">{t.title}</p>
+                  {t.priority === "high" && <span className="text-[10px] uppercase tracking-wider text-urgent font-semibold">hoog</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </GlassPanel>
 
       {/* Week */}
@@ -212,7 +233,12 @@ export default function PlanningContent() {
                       {(dp.items || []).map((item, j) => (
                         <p key={j} className="text-[11px] leading-snug text-muted-foreground">{item}</p>
                       ))}
-                      {!(dp.items || []).length && !dp.focus && (
+                      {tasksOn(date).map((t) => (
+                        <p key={`t-${t.id}`} className="text-[11px] leading-snug text-foreground/80 flex items-center gap-1.5">
+                          <span className="h-1 w-1 rounded-full bg-olive shrink-0" /> {t.title}
+                        </p>
+                      ))}
+                      {!(dp.items || []).length && !dp.focus && !tasksOn(date).length && (
                         <p className="text-[11px] text-muted-foreground/50 italic">vrij</p>
                       )}
                     </div>

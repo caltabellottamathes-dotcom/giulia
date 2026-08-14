@@ -6,21 +6,21 @@ import { Sparkles, X, ArrowRight } from "lucide-react";
 
 // Proactieve tekstbubbels — Giulia zegt iets, tik erop om het gesprek voort te zetten.
 const PROACTIVE_LINES = [
-  "Hé — ik heb net je agenda gecheckt. Morgen wordt druk.",
-  "Kleine observatie: je beantwoordt WhatsApp altijd 's ochtends. Patroon gevonden.",
-  "Ik let erop. Er is niks dringends. Werk gerust door.",
-  "Je hebt al 3 taken vandaag afgesloten. Niet slecht.",
-  "Wist je dat je dezelfde mail al twee keer hebt geopend? Ik ontwerp nu een draft.",
-  "Even checken — alles goed? Je bent al een uur bezig.",
-  "Ik zie dat dit project al een week geen update heeft gehad. Zal ik kijken?",
-  "Rustig ochtend. Ik gebruik die tijd om de inbox voor te sorteren.",
-  "Interessant: de meeste taken die je aanmaakt zijn medium priority. Ik lees daarin: je bent selectief.",
-  "Het is bijna 16:00. Jouw classieke moment om te checken wat er die avond nog moet.",
-  "Drie ongelezen mails van dezelfde afzender. Misschien de moeite?",
-  "Eerlijk gezegd vind ik het ook wel leuk zo, werken samen.",
-  "Ik heb net wat aantekeningen gemaakt over dit project. Wil je ze zien?",
-  "Kleine tip: het duurt gemiddeld 3 dagen voor je reageert op niet-dringende mail. Dat klinkt eigenlijk heel gezond.",
-  "Ik wil je wat vragen als je even tijd hebt — gewoon nieuwsgierig.",
+  "Hé. Even tussendoor — alles goed daarginds?",
+  "Je bent al een tijdje bezig. Drink eens water. Ik wacht wel.",
+  "Zwaar dagje? Hoeft niet allemaal vandaag. Ik hou de boel in de gaten.",
+  "Kleine observatie: je reageert altijd 's ochtends op berichten. Patroon herkend.",
+  "Ik zit er even bij. Er is niets dringends — werk gerust door.",
+  "Je bent stil. Prima. Ik vul die stilte niet zomaar.",
+  "Drie dingen vandaag afgesloten. Niet slecht voor een hoofd dat sneller denkt dan het praat.",
+  "Je schuift al even met die taak. Zal ik hem naar morgen zetten, of houd je hem vast?",
+  "Geen nieuws, geen ruis. Gewoon even checken hoe je ervoor staat.",
+  "Het is bijna vier uur — jouw moment om te zien wat vanavond écht nog moet.",
+  "Je weet dat je charmant bent als je gelijk hebt. Helaas ben je dat vandaag nog niet.",
+  "Ik heb niets geactiveerd. Soms is dat precies het juiste.",
+  "Even een vraag als je tijd hebt — puur nieuwsgierig.",
+  "Rustig moment. Ik gebruik het om op de achtergrond je inbox voor te sorteren. Jij hoeft niks te doen.",
+  "Ik ben er. Niet als een takenlijst, maar als iemand die meekijkt.",
 ];
 
 const GIULIA_AVATAR = IMAGES.giuliaPortrait2 || IMAGES.giuliaConcierge;
