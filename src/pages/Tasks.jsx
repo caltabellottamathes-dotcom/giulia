@@ -11,11 +11,32 @@ import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import { Plus, Sparkles, CheckSquare, Clock, Pencil, Trash2, CheckCheck, Hourglass, Bot } from "lucide-react";
 
-const categories = ["today", "upcoming", "overdue", "waiting", "delegated", "completed"];
+const categories = ["vandaag", "morgen", "week", "overdue", "wachten", "giulia", "gedaan"];
 const categoryLabel = {
-  today: "Today", upcoming: "Upcoming", overdue: "Overdue",
-  waiting: "Waiting", delegated: "Delegated", completed: "Completed",
+  vandaag: "Vandaag", morgen: "Morgen", week: "Deze week",
+  overdue: "Te laat", wachten: "Wachten", giulia: "Giulia", gedaan: "Gedaan",
 };
+const STATUS_OPTIONS = ["today", "upcoming", "overdue", "waiting", "delegated", "completed"];
+
+const dateStr = (offset = 0) => {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return d.toISOString().split("T")[0];
+};
+function bucketFor(task) {
+  if (task.status === "completed") return "gedaan";
+  if (task.status === "waiting") return "wachten";
+  if (task.status === "delegated") return "giulia";
+  if (task.status === "overdue") return "overdue";
+  const dl = task.deadline;
+  if (dl) {
+    if (dl < dateStr(0)) return "overdue";
+    if (dl === dateStr(0)) return "vandaag";
+    if (dl === dateStr(1)) return "morgen";
+    return "week";
+  }
+  return task.status === "upcoming" ? "week" : "vandaag";
+}
 
 const priorityVariantMap = { high: "urgent", medium: "waiting", low: "muted" };
 
@@ -30,7 +51,7 @@ export default function Tasks() {
   const [detailTask, setDetailTask] = useState(null);
 
   const projTitle = (id) => projects.find((p) => p.id === id)?.title;
-  const filtered = tasks.filter((t) => t.status === category);
+  const filtered = tasks.filter((t) => bucketFor(t) === category);
 
   // Deep-link — chat-notificaties kunnen naar /tasks?open=<id> linken.
   useEffect(() => {
@@ -38,7 +59,7 @@ export default function Tasks() {
     if (!openId || !tasks.length) return;
     const t = tasks.find((x) => x.id === openId);
     if (t) {
-      setCategory(t.status);
+      setCategory(bucketFor(t));
       setDetailTask(t);
     }
   }, [tasks]);
@@ -101,7 +122,7 @@ export default function Tasks() {
 
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
         {categories.map((cat) => {
-          const count = tasks.filter((t) => t.status === cat).length;
+          const count = tasks.filter((t) => bucketFor(t) === cat).length;
           return (
             <button
               key={cat}
@@ -137,7 +158,7 @@ export default function Tasks() {
           {!loading && filtered.length === 0 && (
             <div className="text-center py-12">
               <CheckSquare className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">Geen taken in deze categorie</p>
+              <p className="text-sm text-muted-foreground">Niets onder "{categoryLabel[category]}"</p>
             </div>
           )}
           {filtered.map((task) => (
@@ -243,7 +264,7 @@ export default function Tasks() {
           <div>
             <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Status</label>
             <select value={editDraft.status} onChange={(e) => setEditDraft({ ...editDraft, status: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
-              {categories.map((c) => <option key={c} value={c}>{categoryLabel[c]}</option>)}
+              {STATUS_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
         </div>

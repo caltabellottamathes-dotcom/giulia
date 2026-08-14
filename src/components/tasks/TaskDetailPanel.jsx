@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import FloatingPanel from "@/components/glass/FloatingPanel";
 import GlassButton from "@/components/glass/GlassButton";
 import StatusBadge from "@/components/glass/StatusBadge";
+import { base44 } from "@/api/base44Client";
 import {
   Pencil, Trash2, CheckCheck, Hourglass, Bot, Clock,
-  Briefcase, Sparkles, Zap, ListChecks,
+  Briefcase, Sparkles, Zap, ListChecks, HelpCircle, Loader2,
 } from "lucide-react";
 
 const priorityVariantMap = { high: "urgent", medium: "waiting", low: "muted" };
@@ -12,8 +13,29 @@ const energyLabel = { deep: "Diepe focus", shallow: "Lichte focus", quick: "Snel
 
 /** TaskDetailPanel — volledige, leesbare weergave van één taak (L03). */
 export default function TaskDetailPanel({ task, projectTitle, onClose, onEdit, onComplete, onWaiting, onDelegate, onDelete }) {
+  const [explain, setExplain] = useState(null);
+  const [explaining, setExplaining] = useState(false);
+  useEffect(() => { setExplain(null); setExplaining(false); }, [task?.id]);
   if (!task) return null;
   const isDone = task.status === "completed";
+
+  const legUit = async () => {
+    setExplaining(true);
+    try {
+      const res = await base44.functions.invoke("explainTask", {
+        title: task.title,
+        description: task.description,
+        context: task.context,
+        project_title: projectTitle,
+      });
+      const r = res?.data ?? res;
+      setExplain(r?.explanation || "Geen uitleg beschikbaar.");
+    } catch {
+      setExplain("Giulia kon dit nu niet uitleggen — probeer het straks nog eens.");
+    } finally {
+      setExplaining(false);
+    }
+  };
 
   return (
     <FloatingPanel open={!!task} onClose={onClose} position="right" level={3} width={460}>
@@ -86,6 +108,23 @@ export default function TaskDetailPanel({ task, projectTitle, onClose, onEdit, o
             </ul>
           </div>
         )}
+
+        <div>
+          {!explain ? (
+            <GlassButton variant="outline" size="sm" onClick={legUit} disabled={explaining}>
+              {explaining ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <HelpCircle className="h-3.5 w-3.5" />}
+              {explaining ? "Giulia denkt na…" : "Leg uit"}
+            </GlassButton>
+          ) : (
+            <div className="glass-1 rounded-xl p-4">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-olive" />
+                <p className="text-xs font-medium uppercase tracking-wide text-olive">Giulia legt uit</p>
+              </div>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{explain}</p>
+            </div>
+          )}
+        </div>
 
         {task.agent_source && (
           <p className="text-xs text-muted-foreground">Aangemaakt door: {task.agent_source}</p>
