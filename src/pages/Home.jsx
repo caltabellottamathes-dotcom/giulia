@@ -286,25 +286,14 @@ export default function Home() {
           panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100"
         )}
       >
-        <header className="px-5 lg:px-10 pt-8 lg:pt-10 pb-6 lg:pb-6 flex flex-col gap-5 lg:shrink-0">
-          <div className="flex items-center justify-between gap-4 pb-4 border-b border-foreground/10">
-            <div className="flex items-center gap-2.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-olive animate-pulse-soft" />
-              <span className="text-[10px] uppercase tracking-[0.34em] font-bold text-foreground/70">GIULIA · OS</span>
-            </div>
-            <span className="text-[10px] font-mono text-foreground/45 tabular-nums tracking-wide uppercase">
-              {new Date().toLocaleDateString("nl-NL", { weekday: "short", day: "2-digit", month: "short" })}
-            </span>
-          </div>
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <h1 className="text-[44px] sm:text-6xl lg:text-[68px] font-display font-semibold tracking-[-0.025em] leading-[0.98] text-foreground text-balance">
-                {greeting}.
-              </h1>
-              <p className="mt-3 text-[11px] uppercase tracking-[0.24em] font-semibold text-foreground/45">
-                {loading ? "Laden…" : widgets.length ? `${widgets.length} onderdelen op je dashboard` : "Je dashboard is leeg"}
-              </p>
-            </div>
+        <header className="px-5 lg:px-10 pt-8 lg:pt-8 pb-6 lg:pb-4 flex items-end justify-between gap-4 lg:shrink-0">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/70 mb-3 font-semibold">
+              {new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}
+            </p>
+            <h1 className="text-[40px] sm:text-5xl lg:text-6xl font-display font-semibold tracking-[-0.02em] leading-[1.0] text-foreground text-balance">
+              {greeting}.
+            </h1>
           </div>
         </header>
 
@@ -313,9 +302,7 @@ export default function Home() {
           {loading ? (
             <div className="max-w-[1280px] columns-1 sm:columns-2 lg:columns-4 xl:columns-5 gap-3 lg:gap-4">
               {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-                <div key={i} className="relative mb-3 lg:mb-4 break-inside-avoid h-[220px] rounded-[24px] shimmer overflow-hidden">
-                  <span className="absolute inset-x-0 top-0 h-[3px] bg-foreground/15" />
-                </div>
+                <div key={i} className="mb-3 lg:mb-4 break-inside-avoid h-[220px] rounded-[24px] shimmer" />
               ))}
             </div>
           ) : sorted.length > 0 ? (
