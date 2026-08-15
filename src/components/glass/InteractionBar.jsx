@@ -23,6 +23,13 @@ export default function InteractionBar() {
 
   useEffect(() => { if (captured) setNote(""); }, [captured]);
 
+  // "Meer" in de bottom-nav opent dezelfde launcher.
+  useEffect(() => {
+    const h = () => setLauncherOpen(true);
+    window.addEventListener("giulia:open-launcher", h);
+    return () => window.removeEventListener("giulia:open-launcher", h);
+  }, []);
+
   const saveContext = async () => {
     if (!captured) return;
     setSavingCtx(true);
