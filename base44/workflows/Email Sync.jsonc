@@ -1,0 +1,44 @@
+{
+  "name": "Email Sync",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "email_sync",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "sync": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "syncEmails"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Email ophalen",
+            "description": "Elke 10 min via IMAP-bridge"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Haalt elke 10 minuten nieuwe emails op via de IMAP-bridge in de Email-entity (status: unread). Zonder deze sync krijgt de email-pipeline (manageCommunication, interpretInput, auto-draft) nooit input.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "*/10 * * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

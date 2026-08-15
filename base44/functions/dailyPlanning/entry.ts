@@ -94,6 +94,24 @@ export default async function (req) {
       saved = await sr.entities.DailyPlan.create(payload).catch(() => null);
     }
 
+    // ── Protocol 2.9 stap 7: ochtend-push met de focus van de dag ──────
+    // Verbindt de planningslaag met de notificatielaag. Alleen versturen
+    // als er focus-items zijn én het ochtend-venster is (04:00–09:00),
+    // zodat een handmatige run midden op de dag niet spamt.
+    if (topPriorities.length && saved) {
+      const hour = now.getHours();
+      if (hour >= 4 && hour < 9) {
+        const focusList = topPriorities
+          .map((t, i) => `${i + 1} — ${t.title}`)
+          .join("\n");
+        const pushBody = `Goedemorgen. Je dag staat klaar.\n\n${focusList}\n\n${todayEvents.length} afspraken${pendingApprovals.length ? `, ${pendingApprovals.length} wachtende goedkeuringen` : ""}.`;
+        await base44.functions.invoke("sendPushNotifications", {
+          title: "Giulia — je dag staat klaar",
+          message: pushBody,
+        }).catch(() => null);
+      }
+    }
+
     return Response.json({
       ok: true,
       date: todayString,
