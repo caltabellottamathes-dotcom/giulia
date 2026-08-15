@@ -43,6 +43,7 @@ import QuickCommand from '@/system/pages/QuickCommand';
 import Updates from '@/giulia/pages/Updates';
 import Briefing from '@/giulia/pages/Briefing';
 import LifeGallery from '@/life/pages/LifeGallery';
+import SelfGallery from '@/self/pages/SelfGallery';
 import WakeMode from '@/self/pages/WakeMode';
 import LifeLanding from '@/life/pages/LifeLanding';
 import SocialPulsePage from '@/life/pages/SocialPulsePage';
@@ -141,6 +142,7 @@ const AuthenticatedApp = () => {
           <Route path="/self/insights" element={<SelfInsightsPage />} />
         </Route>
         <Route path="/life-gallery" element={<LifeGallery />} />
+        <Route path="/self-gallery" element={<SelfGallery />} />
         <Route path="/quick" element={<QuickCommand />} />
         <Route path="/briefing" element={<Briefing />} />
         <Route path="/wake" element={<WakeMode />} />
