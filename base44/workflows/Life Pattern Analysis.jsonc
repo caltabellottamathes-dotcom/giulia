@@ -1,0 +1,44 @@
+{
+  "description": "Dagelijkse LIFE patroon-analyse: huishouden, administratie, contacten, hobby's en balans \u2192 Insight via de unified pipeline.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "15 21 * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "name": "Life Pattern Analysis",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "life_pattern_analysis",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "analyze": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "analyzeLifePatterns"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "LIFE patroon-analyse",
+            "description": "Huishouden/admin/contacten/hobby's \u2192 Insights"
+          }
+        }
+      }
+    ]
+  }
+}

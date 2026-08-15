@@ -1,5 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { geminiDecide, GIULIA_PERSONA } from '../../shared/gemini.ts';
+import { emitEvent } from '../../shared/eventEngine.ts';
+import { createInsight } from '../../shared/insightHelper.ts';
 
 /**
  * runProactivity (Phase 4 — Dynamic Replanning / "the living schedule").
@@ -86,14 +88,8 @@ export default async function (req) {
       }
 
       if (shiftedTasksCount > 0) {
-        await sr.entities.Insight.create({
-          title: "Plan Recalibrated",
-          content: `Ik merk dat de focus-taken langer duren. Ik heb automatisch ${shiftedTasksCount} laag-prioritaire taken naar later deze week verschoven om je focus te beschermen.`,
-          category: "Suggestion",
-          status: "new",
-          confidence: 90,
-          source: "runProactivity",
-        }).catch(() => null);
+        await createInsight(base44, { domain: "focus", title: "Plan Recalibrated", type: "pattern", category: "Suggestion", description: `Ik merk dat de focus-taken langer duren. Ik heb automatisch ${shiftedTasksCount} laag-prioritaire taken naar later deze week verschoven om je focus te beschermen.`, confidence: 0.9, source: "runProactivity" });
+        await emitEvent(base44, { event_type: "PLAN_RECALIBRATED", object_type: "Task", object_id: null, domain: "focus", description: `${shiftedTasksCount} taken verschoven`, source: "runProactivity" });
       }
     }
 
@@ -184,15 +180,8 @@ async function runProjectRadar(sr, now) {
     } else {
       await sr.entities.Project.update(p.id, { last_notified_at: now.toISOString() }).catch(() => null);
     }
-    await sr.entities.Insight.create({
-      title: `Project inactive: ${p.title}`,
-      content: `Je hebt ${STAGNANT_DAYS} dagen niets aan dit project gedaan. Wacht je op iemand? Of is er simpelweg geen volgende actie gedefinieerd?`,
-      category: "Risk",
-      status: "new",
-      confidence: 0.7,
-      source: "runProactivity · Project Radar",
-      project_id: p.id,
-    }).catch(() => null);
+    await createInsight(base44, { domain: "focus", title: `Project inactive: ${p.title}`, type: "pattern", category: "Risk", description: `Je hebt ${STAGNANT_DAYS} dagen niets aan dit project gedaan. Wacht je op iemand? Of is er simpelweg geen volgende actie gedefinieerd?`, confidence: 0.7, source: "runProactivity · Project Radar", project_id: p.id });
+    await emitEvent(base44, { event_type: "PROJECT_FLAGGED_INACTIVE", object_type: "Project", object_id: p.id, domain: "focus", description: `Project inactive: ${p.title}`, source: "runProactivity" });
     flagged++;
     const draft = await geminiDecide({
       model: "gemini-3.1-flash-lite",
@@ -233,15 +222,8 @@ async function unblockDependencies(sr) {
     const parent = await sr.entities.Task.get(w.parent_task_id).catch(() => null);
     if (!parent || parent.status !== "completed") continue;
     await sr.entities.Task.update(w.id, { status: "todo" }).catch(() => null);
-    await sr.entities.Insight.create({
-      title: "Vervolgtaak geactiveerd",
-      content: `Omdat '${parent.title}' klaar is, kan '${w.title}' nu starten. Ik heb de vervolgtaak geactiveerd.`,
-      category: "Opportunity",
-      status: "new",
-      confidence: 0.8,
-      source: "runProactivity · Dependency Unblock",
-      project_id: w.project_id || undefined,
-    }).catch(() => null);
+    await createInsight(base44, { domain: "focus", title: "Vervolgtaak geactiveerd", type: "pattern", category: "Opportunity", description: `Omdat '${parent.title}' klaar is, kan '${w.title}' nu starten. Ik heb de vervolgtaak geactiveerd.`, confidence: 0.8, source: "runProactivity · Dependency Unblock", project_id: w.project_id || undefined });
+    await emitEvent(base44, { event_type: "TASK_UNBLOCKED", object_type: "Task", object_id: w.id, domain: "focus", description: `Vervolgtaak geactiveerd: ${w.title}`, source: "runProactivity" });
     count++;
   }
   return count;

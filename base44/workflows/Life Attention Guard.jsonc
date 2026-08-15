@@ -1,0 +1,44 @@
+{
+  "description": "Proactieve LIFE-bewaking: achterstallig huishouden, naderende admin-deadlines, verwaarloosde contacten, stilvallende hobby's.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "30 12,16 * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "name": "Life Attention Guard",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "life_attention_guard",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "detect": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "detectLifeAttention"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "LIFE bewaking",
+            "description": "Aandacht-signalen huishouden/admin/contacten"
+          }
+        }
+      }
+    ]
+  }
+}

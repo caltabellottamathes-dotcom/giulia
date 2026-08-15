@@ -1,17 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { geminiDecide, GIULIA_PERSONA } from '../../shared/gemini.ts';
+import { emitEvent } from '../../shared/eventEngine.ts';
+import { notify } from '../../shared/notify.ts';
 
 /**
  * buildDailyJournal — avondlijke dag-samenvatting.
- *
- * Verzamelt de dagelijke context (check-ins, agenda, threads, highlights,
- * voltooide routines, personal-time) en laat Gemini een korte reflectieve
- * journal-entry schrijven in Salvo's stijl. Slaat deze op als JournalEntry
- * (type='reflection', source=giulia) en stuurt een Notification dat de
- * dag-samenvatting klaar staat voor review. Overschrijft geen bestaande
- * Giulia-journal van dezelfde dag (dedup op titel + datum).
- *
- * Trust model: niets extern. Interne data-opslag + in-app notificatie.
+ * Stroomt door de unified event-laag + notify-helper.
  * Trigger: scheduled daily 22:00 Europe/Amsterdam.
  */
 export default async function (req) {
@@ -21,15 +15,12 @@ export default async function (req) {
     const now = new Date();
     const dayStart = new Date(now); dayStart.setHours(0, 0, 0, 0);
     const dayEnd = new Date(now); dayEnd.setHours(23, 59, 59, 999);
-    const dayStr = now.toISOString().split("T")[0];
     const title = `Dagbeeld ${now.toLocaleDateString("nl-NL", { day: "numeric", month: "long" })}`;
 
-    // Dedup: bestaat er al een Giulia-journal vandaag met deze titel?
     const existing = await sr.entities.JournalEntry.filter({}, "-date", 50).catch(() => []);
     const dup = (existing || []).find((e) => e.title === title && e.agent_source === "buildDailyJournal");
     if (dup) return Response.json({ ok: true, skipped: "already_built_today", journal_id: dup.id });
 
-    // Verzamel context
     const [checkIns, events, threads, routines, timeBlocks] = await Promise.all([
       sr.entities.SelfCheckIn.filter({}, "-timestamp", 30).catch(() => []),
       sr.entities.CalendarEvent.filter({ status: "confirmed" }, "-start", 30).catch(() => []),
@@ -38,13 +29,12 @@ export default async function (req) {
       sr.entities.PersonalTimeBlock.filter({}, "-start", 50).catch(() => []),
     ]);
 
-    const todays = <T extends { timestamp?: string; start?: string; date?: string; created_date?: string }>(arr: T[] = []) =>
-      (arr || []).filter((x) => {
-        const t = x.timestamp || x.start || x.date || x.created_date;
-        if (!t) return false;
-        const d = new Date(t);
-        return d >= dayStart && d <= dayEnd;
-      });
+    const todays = (arr = []) => (arr || []).filter((x) => {
+      const t = x.timestamp || x.start || x.date || x.created_date;
+      if (!t) return false;
+      const d = new Date(t);
+      return d >= dayStart && d <= dayEnd;
+    });
 
     const dayCheckIns = todays(checkIns);
     const dayEvents = todays(events);
@@ -61,7 +51,6 @@ export default async function (req) {
       `Belangrijkste behoefte vandaag: ${dayCheckIns.find((c) => c.needs?.length)?.needs?.[0] || "—"}`,
     ].join("\n");
 
-    // Gemini schrijft de reflectie
     const res = await geminiDecide({
       model: "gemini-3.1-flash-lite",
       prompt: `Je bent Giulia. Schrijf een korte, eerlijke reflectieve samenvatting van Salvo's dag (max 120 woorden, 2-3 alinea's). Droog, direct, geen performatief enthousiasme. Noem wat speelde en één observatie of open draad. Context:\n${ctx}\n\nAntwoord UITSLUITEND als JSON: {"summary": "...", "open_thread": "..."}`,
@@ -73,35 +62,24 @@ export default async function (req) {
 
     const summary = res?.summary || `Vandaag: ${dayEvents.length} afspraken, ${dayRoutines.length} routines voltooid.`;
 
-    // Sla op als reflection-entry (niet als highlight — die kiest Salvo zelf)
     const entry = await sr.entities.JournalEntry.create({
-      title,
-      type: "reflection",
-      content: summary,
-      date: now.toISOString(),
-      tags: ["giulia", "dagbeeld", dayStr],
-      is_highlight: false,
-      agent_source: "buildDailyJournal",
+      title, type: "reflection", content: summary, date: now.toISOString(),
+      tags: ["giulia", "dagbeeld", now.toISOString().split("T")[0]], is_highlight: false, agent_source: "buildDailyJournal",
     }).catch(() => null);
 
-    // Notification ter review
-    await sr.entities.Notification.create({
+    await notify(base44, {
       title: "Je dagbeeld staat klaar",
       message: `Ik heb een samenvatting van je dag geschreven. ${res?.open_thread ? "Eén open draad: " + res.open_thread : "Lees hem in je Journal."}`,
-      kind: "info",
-      requires_response: false,
-      related_route: "/self/journal",
-      agent_source: "buildDailyJournal",
-    }).catch(() => null);
-
-    try { await base44.functions.invoke("sendPushNotifications", { title: "Je dagbeeld staat klaar", message: "Giulia schreef een samenvatting van je dag." }); } catch { /* ignore */ }
+      kind: "info", requires_response: false, related_route: "/self/journal", agent_source: "buildDailyJournal", push: true,
+    });
+    await emitEvent(base44, {
+      event_type: "JOURNAL_ENTRY_CREATED", object_type: "JournalEntry", object_id: entry?.id || null,
+      domain: "self", description: title, source: "buildDailyJournal",
+    });
 
     return Response.json({
-      ok: true,
-      journal_id: entry?.id || null,
-      check_ins: dayCheckIns.length,
-      events: dayEvents.length,
-      routines: dayRoutines.length,
+      ok: true, journal_id: entry?.id || null,
+      check_ins: dayCheckIns.length, events: dayEvents.length, routines: dayRoutines.length,
       personal_time_min: dayTime.reduce((s, b) => s + (b.duration_min || 0), 0),
       open_thread: res?.open_thread || null,
     });
