@@ -1,0 +1,90 @@
+{
+  "name": "SelfGoal",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "development",
+        "goal",
+        "milestone",
+        "learning",
+        "activity"
+      ],
+      "default": "goal",
+      "title": "Type"
+    },
+    "area": {
+      "type": "string",
+      "title": "Development Area"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "completed",
+        "archived",
+        "cancelled"
+      ],
+      "default": "active",
+      "title": "Status"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium",
+      "title": "Priority"
+    },
+    "progress": {
+      "type": "number",
+      "default": 0,
+      "title": "Progress"
+    },
+    "deadline": {
+      "type": "string",
+      "format": "date",
+      "title": "Deadline"
+    },
+    "linked_routine_id": {
+      "type": "string",
+      "title": "Linked Routine ID"
+    },
+    "linked_goal_id": {
+      "type": "string",
+      "title": "Linked Goal ID (parent)"
+    },
+    "milestone_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Milestone IDs"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

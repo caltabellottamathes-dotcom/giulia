@@ -56,6 +56,15 @@ import PersonalAdminPage from '@/life/pages/PersonalAdminPage';
 import HobbiesPage from '@/life/pages/HobbiesPage';
 import HobbyDetail from '@/life/pages/HobbyDetail';
 import WantsToKnow from '@/giulia/pages/WantsToKnow';
+import SelfLanding from '@/self/pages/SelfLanding';
+import DailyStatePage from '@/self/pages/DailyStatePage';
+import RoutinesPage from '@/self/pages/RoutinesPage';
+import WakePage from '@/self/pages/WakePage';
+import TherapyPage from '@/self/pages/TherapyPage';
+import JournalPage from '@/self/pages/JournalPage';
+import PersonalDevelopmentPage from '@/self/pages/PersonalDevelopmentPage';
+import PersonalTimePage from '@/self/pages/PersonalTimePage';
+import SelfInsightsPage from '@/self/pages/SelfInsightsPage';
 // Slick staging pages are self-contained (PageShell per page)
 import SlickHome from '@/system/pages/slick/SlickHome';
 import SlickWeek from '@/system/pages/slick/SlickWeek';
@@ -148,6 +157,15 @@ const AuthenticatedApp = () => {
           <Route path="/life/hobbies" element={<HobbiesPage />} />
           <Route path="/life/hobbies/:id" element={<HobbyDetail />} />
           <Route path="/wants-to-know" element={<WantsToKnow />} />
+          <Route path="/self" element={<SelfLanding />} />
+          <Route path="/self/daily-state" element={<DailyStatePage />} />
+          <Route path="/self/routines" element={<RoutinesPage />} />
+          <Route path="/self/wake" element={<WakePage />} />
+          <Route path="/self/therapy" element={<TherapyPage />} />
+          <Route path="/self/journal" element={<JournalPage />} />
+          <Route path="/self/personal-development" element={<PersonalDevelopmentPage />} />
+          <Route path="/self/personal-time" element={<PersonalTimePage />} />
+          <Route path="/self/insights" element={<SelfInsightsPage />} />
         </Route>
         <Route path="/slick" element={<SlickHome />} />
         <Route path="/slick/weekplanning" element={<SlickWeek />} />

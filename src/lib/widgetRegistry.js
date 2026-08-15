@@ -1,6 +1,6 @@
 import {
   Sparkles, Calendar, CheckSquare, ClipboardCheck, Mail, MessageCircle,
-  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu, MessageSquare, Timer, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle,
+  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu, MessageSquare, Timer, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle, Repeat, Target, Clock,
 } from "lucide-react";
 import { IMAGES } from "@/lib/images";
 
@@ -29,6 +29,14 @@ import HouseholdWidget from "@/life/widgets/HouseholdWidget";
 import PersonalAdminWidget from "@/life/widgets/PersonalAdminWidget";
 import HobbiesWidget from "@/life/widgets/HobbiesWidget";
 import GiuliaQuestionsWidget from "@/giulia/widgets/GiuliaQuestionsWidget";
+import DailyStateWidget from "@/self/widgets/DailyStateWidget";
+import RoutinesWidget from "@/self/widgets/RoutinesWidget";
+import WakeWidget from "@/self/widgets/WakeWidget";
+import TherapyWidget from "@/self/widgets/TherapyWidget";
+import JournalWidget from "@/self/widgets/JournalWidget";
+import PersonalDevelopmentWidget from "@/self/widgets/PersonalDevelopmentWidget";
+import PersonalTimeWidget from "@/self/widgets/PersonalTimeWidget";
+import SelfInsightsWidget from "@/self/widgets/SelfInsightsWidget";
 
 /**
  * Single source of truth for every dashboard widget. `image` is a branding
@@ -60,6 +68,14 @@ export const WIDGETS = {
   personaladmin: { type: "personaladmin", label: "Persoonlijk Admin",   icon: ClipboardList,  Component: PersonalAdminWidget,  image: IMAGES.lifePersonalAdmin, span: 3, category: "life" },
   hobbies:       { type: "hobbies",       label: "Hobby's",            icon: Palette,        Component: HobbiesWidget,        image: IMAGES.lifeHobbies,        span: 3, category: "life" },
   giuliaquestions: { type: "giuliaquestions", label: "Giulia · Wants to know", icon: HelpCircle, Component: GiuliaQuestionsWidget, image: IMAGES.portraitThinking, span: 4, category: "intelligence" },
+  selfdailystate:    { type: "selfdailystate",    label: "Daily State",          icon: ActivityIcon,    Component: DailyStateWidget,           image: IMAGES.selfDailyState,    span: 4, category: "self" },
+  selfroutines:      { type: "selfroutines",      label: "Routines",             icon: Repeat,          Component: RoutinesWidget,             image: IMAGES.selfRoutines,      span: 3, category: "self" },
+  selfwake:          { type: "selfwake",          label: "Wake",                 icon: Sunrise,         Component: WakeWidget,                 image: IMAGES.selfWake,          span: 3, category: "self" },
+  selftherapy:       { type: "selftherapy",       label: "Therapy",             icon: Heart,           Component: TherapyWidget,              image: IMAGES.selfTherapy,       span: 3, category: "self" },
+  selfjournal:       { type: "selfjournal",       label: "Journal",             icon: BookOpen,        Component: JournalWidget,              image: IMAGES.selfJournal,       span: 3, category: "self" },
+  selfdevelopment:   { type: "selfdevelopment",   label: "Development",          icon: Target,          Component: PersonalDevelopmentWidget,  image: IMAGES.selfDevelopment,   span: 4, category: "self" },
+  selfpersonaltime:  { type: "selfpersonaltime",  label: "Personal Time",       icon: Clock,            Component: PersonalTimeWidget,         image: IMAGES.selfPersonalTime,  span: 3, category: "self" },
+  selfinsights:      { type: "selfinsights",      label: "Self Insights",        icon: Telescope,       Component: SelfInsightsWidget,         image: IMAGES.selfInsights,      span: 4, category: "self" },
 };
 
 export const WIDGET_LIST = Object.values(WIDGETS);

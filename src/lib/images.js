@@ -85,6 +85,16 @@ export const IMAGES = {
   lifeVase: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/8746a2786_Apply_a_consistent_editorial_documentary_2026062120381.jpeg",
   lifeFeetWalk: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/2875b439e_Apply_a_consistent_editorial_documentary_202606212038.jpeg",
   lifeHandPrint: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/4b11009bc_Apply_a_consistent_editorial_documentary_202606212037.jpeg",
+  // SELF layer branding — introspective editorial motifs
+  selfDailyState: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/97a748202_Make_a_photo_of_me_202606301620.jpeg",
+  selfRoutines: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/a8d5c1938_Notebook_and_pen_on_chair_202608101812.jpg",
+  selfWake: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0a3990207_Person_walking_toward_white_chair_202608101812.jpg",
+  selfTherapy: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/38ab5187a_remake_the_first_image_But_202606301559.jpg",
+  selfJournal: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/76f181950_Notebook_on_stacked_lawn_chairs_202608101812.jpg",
+  selfDevelopment: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/456fa7c2c_Crop_this_last_image_so_202606301550.jpg",
+  selfPersonalTime: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/e5a90ef6f_Two_lawn_chairs_on_sand_202608101819.jpg",
+  selfInsights: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/d8a8c7d63_Hourglass_and_jacket_on_backdrop_202608101819.jpeg",
+  selfLanding: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/15441d0f5_Make_a_new_photo_that_202606301909.jpeg",
 };
 
 export const VIDEOS = {

@@ -51,6 +51,15 @@
     --linen: 72 8% 87%;
     --urgent: 65 72% 59%;
 
+    /* SELF layer — dark plum primary (#301728) + sage accent (#d2d3b1) + urgent yellow (#d5e24a) */
+    --self-primary: 319 35% 14%;
+    --self-primary-light: 319 28% 20%;
+    --self-primary-soft: 319 20% 28%;
+    --self-accent: 61 28% 76%;
+    --self-accent-deep: 61 22% 50%;
+    --self-accent-soft: 61 18% 88%;
+    --self-urgent: 65 72% 59%;
+
     /* LIFE layer — lichtblauw hoofdaccent + warme zand-contrast.
        SELF later — burgundy + warm wit + warm grijs. */
     --life-blue: 203 16% 74%;

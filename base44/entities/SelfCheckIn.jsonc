@@ -1,0 +1,92 @@
+{
+  "name": "SelfCheckIn",
+  "type": "object",
+  "properties": {
+    "state": {
+      "type": "string",
+      "enum": [
+        "calm",
+        "charged",
+        "neutral",
+        "low",
+        "overwhelmed"
+      ],
+      "title": "State"
+    },
+    "energy": {
+      "type": "number",
+      "title": "Energy",
+      "description": "0-100"
+    },
+    "capacity": {
+      "type": "number",
+      "title": "Capacity",
+      "description": "0-100"
+    },
+    "mood": {
+      "type": "string",
+      "enum": [
+        "good",
+        "neutral",
+        "low",
+        "anxious",
+        "tired",
+        "energetic"
+      ],
+      "title": "Mood"
+    },
+    "needs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Needs"
+    },
+    "reflection": {
+      "type": "string",
+      "title": "Reflection"
+    },
+    "context": {
+      "type": "string",
+      "title": "Context"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "giulia",
+        "proactive"
+      ],
+      "default": "manual",
+      "title": "Source"
+    },
+    "check_in_type": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "proactive",
+        "manual"
+      ],
+      "default": "manual",
+      "title": "Check-in Type"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Timestamp"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
+    }
+  },
+  "required": [
+    "state"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

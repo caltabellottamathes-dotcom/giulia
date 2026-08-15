@@ -1,0 +1,95 @@
+{
+  "name": "TherapyTrajectory",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "therapy",
+        "coaching",
+        "counseling",
+        "support",
+        "other"
+      ],
+      "default": "therapy",
+      "title": "Type"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "completed",
+        "archived"
+      ],
+      "default": "active",
+      "title": "Status"
+    },
+    "therapist_name": {
+      "type": "string",
+      "title": "Therapist Name"
+    },
+    "therapist_contact_id": {
+      "type": "string",
+      "title": "Therapist Contact ID"
+    },
+    "contact_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Contact IDs"
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Goals"
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Notes"
+    },
+    "progress": {
+      "type": "number",
+      "default": 0,
+      "title": "Progress"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Start Date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date",
+      "title": "End Date"
+    },
+    "next_appointment": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Next Appointment"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

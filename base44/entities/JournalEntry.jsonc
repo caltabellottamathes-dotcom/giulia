@@ -1,0 +1,76 @@
+{
+  "name": "JournalEntry",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "entry",
+        "moment",
+        "reflection",
+        "highlight",
+        "thread"
+      ],
+      "default": "entry",
+      "title": "Type"
+    },
+    "content": {
+      "type": "string",
+      "title": "Content"
+    },
+    "mood": {
+      "type": "string",
+      "title": "Mood"
+    },
+    "energy": {
+      "type": "number",
+      "title": "Energy"
+    },
+    "date": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Date"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Tags"
+    },
+    "is_highlight": {
+      "type": "boolean",
+      "default": false,
+      "title": "Is Highlight"
+    },
+    "thread_id": {
+      "type": "string",
+      "title": "Thread ID"
+    },
+    "linked_memory_id": {
+      "type": "string",
+      "title": "Linked Memory ID"
+    },
+    "linked_check_in_id": {
+      "type": "string",
+      "title": "Linked Check-in ID"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

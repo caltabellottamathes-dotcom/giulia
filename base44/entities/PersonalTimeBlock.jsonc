@@ -1,0 +1,69 @@
+{
+  "name": "PersonalTimeBlock",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "rest",
+        "recovery",
+        "free",
+        "protected"
+      ],
+      "default": "free",
+      "title": "Type"
+    },
+    "start": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Start"
+    },
+    "end": {
+      "type": "string",
+      "format": "date-time",
+      "title": "End"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "active",
+        "completed",
+        "cancelled",
+        "skipped"
+      ],
+      "default": "scheduled",
+      "title": "Status"
+    },
+    "is_protected": {
+      "type": "boolean",
+      "default": false,
+      "title": "Is Protected"
+    },
+    "linked_calendar_event_id": {
+      "type": "string",
+      "title": "Linked Calendar Event ID"
+    },
+    "duration_min": {
+      "type": "number",
+      "title": "Duration (min)"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

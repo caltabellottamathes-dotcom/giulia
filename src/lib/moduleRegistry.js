@@ -1,7 +1,7 @@
 import {
   Calendar, Briefcase, CheckSquare, Mail, MessageCircle,
   BookOpen, FileText, Users, MessageSquare, Mic, ClipboardCheck,
-  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu, Timer, Sparkles, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle,
+  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu, Timer, Sparkles, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle, Repeat, Target, Clock,
 } from "lucide-react";
 
 import Agenda from "@/focus/pages/Agenda";
@@ -33,6 +33,14 @@ import HouseholdPage from "@/life/pages/HouseholdPage";
 import PersonalAdminPage from "@/life/pages/PersonalAdminPage";
 import HobbiesPage from "@/life/pages/HobbiesPage";
 import WantsToKnow from "@/giulia/pages/WantsToKnow";
+import DailyStatePanel from "@/self/panels/DailyStatePanel";
+import RoutinesPanel from "@/self/panels/RoutinesPanel";
+import WakePanel from "@/self/panels/WakePanel";
+import TherapyPanel from "@/self/panels/TherapyPanel";
+import JournalPanel from "@/self/panels/JournalPanel";
+import PersonalDevelopmentPanel from "@/self/panels/PersonalDevelopmentPanel";
+import PersonalTimePanel from "@/self/panels/PersonalTimePanel";
+import SelfInsightsPanel from "@/self/panels/SelfInsightsPanel";
 
 /**
  * Single source of truth for every module that opens as a sliding glass
@@ -69,4 +77,12 @@ export const MODULES = {
   personaladmin: { label: "Persoonlijk Admin",  icon: ClipboardList,   Component: PersonalAdminPage,  panelWidth: 760 },
   hobbies:       { label: "Hobby's",            icon: Palette,         Component: HobbiesPage,        panelWidth: 760 },
   wantstoknow:   { label: "Wants to know",       icon: HelpCircle,      Component: WantsToKnow,        panelWidth: 760 },
+  selfdailystate:    { label: "Daily State",       icon: ActivityIcon,    Component: DailyStatePanel,           panelWidth: 760 },
+  selfroutines:      { label: "Routines",          icon: Repeat,          Component: RoutinesPanel,             panelWidth: 760 },
+  selfwake:          { label: "Wake",              icon: Sunrise,         Component: WakePanel,                 panelWidth: 560 },
+  selftherapy:       { label: "Therapy",           icon: Heart,           Component: TherapyPanel,              panelWidth: 760 },
+  selfjournal:       { label: "Journal",           icon: BookOpen,        Component: JournalPanel,              panelWidth: 760 },
+  selfdevelopment:   { label: "Development",       icon: Target,          Component: PersonalDevelopmentPanel,  panelWidth: 760 },
+  selfpersonaltime:  { label: "Personal Time",     icon: Clock,           Component: PersonalTimePanel,         panelWidth: 760 },
+  selfinsights:      { label: "Self Insights",     icon: Telescope,       Component: SelfInsightsPanel,         panelWidth: 760 },
 };

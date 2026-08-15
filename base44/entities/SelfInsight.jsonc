@@ -1,0 +1,86 @@
+{
+  "name": "SelfInsight",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "pattern",
+        "balance",
+        "capacity",
+        "imbalance",
+        "overload",
+        "under_recovery",
+        "behavior"
+      ],
+      "default": "pattern",
+      "title": "Type"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "confirmed",
+        "dismissed",
+        "archived"
+      ],
+      "default": "active",
+      "title": "Status"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "energy",
+        "mood",
+        "capacity",
+        "routine",
+        "rest",
+        "personal_time",
+        "social",
+        "focus",
+        "development"
+      ],
+      "title": "Category"
+    },
+    "related_data": {
+      "type": "string",
+      "title": "Related Data"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date",
+      "title": "Period Start"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date",
+      "title": "Period End"
+    },
+    "confidence": {
+      "type": "number",
+      "default": 0.5,
+      "title": "Confidence"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

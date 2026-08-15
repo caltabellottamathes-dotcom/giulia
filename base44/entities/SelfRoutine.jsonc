@@ -1,0 +1,97 @@
+{
+  "name": "SelfRoutine",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly",
+        "custom"
+      ],
+      "default": "daily",
+      "title": "Frequency"
+    },
+    "frequency_days": {
+      "type": "number",
+      "title": "Frequency (days)"
+    },
+    "preferred_time": {
+      "type": "string",
+      "title": "Preferred Time"
+    },
+    "duration_min": {
+      "type": "number",
+      "title": "Duration (min)"
+    },
+    "order": {
+      "type": "number",
+      "title": "Order"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "completed",
+        "skipped",
+        "archived"
+      ],
+      "default": "active",
+      "title": "Status"
+    },
+    "last_done": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Last Done"
+    },
+    "next_due": {
+      "type": "string",
+      "format": "date",
+      "title": "Next Due"
+    },
+    "streak_count": {
+      "type": "number",
+      "default": 0,
+      "title": "Streak Count"
+    },
+    "linked_calendar_event_id": {
+      "type": "string",
+      "title": "Linked Calendar Event ID"
+    },
+    "linked_task_id": {
+      "type": "string",
+      "title": "Linked Task ID"
+    },
+    "linked_goal_id": {
+      "type": "string",
+      "title": "Linked Goal ID"
+    },
+    "linked_self_state": {
+      "type": "string",
+      "title": "Linked Self State"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

@@ -335,13 +335,122 @@ export const GIULIA_SKILLS = [
   },
   {
     name: "create_self_routine",
-    description: "Maak een SELF-routine aan (persoonlijke gewoonte/zelfzorg). Wordt opgeslagen als Task met domain='self'. Set deadline, energy_level of category.",
-    inputSchema: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, deadline: { type: "string", description: "YYYY-MM-DD" }, energy_level: { type: "string", enum: ["deep", "shallow", "quick"] }, category: { type: "string" } }, required: ["title"] },
+    description: "Maak een SELF-routine aan (persoonlijke gewoonte/zelfzorg) in de SelfRoutine-entity. Set frequency (daily/weekly/monthly/custom), preferred_time (morning/afternoon/evening/night), duration_min en frequency_days.",
+    inputSchema: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, frequency: { type: "string", enum: ["daily", "weekly", "monthly", "custom"], default: "daily" }, preferred_time: { type: "string", enum: ["morning", "afternoon", "evening", "night"] }, duration_min: { type: "number" }, frequency_days: { type: "number" } }, required: ["title"] },
     execute: async (args, base44) => {
       const sr = base44.asServiceRole;
-      const r = await sr.entities.Task.create({ ...args, domain: "self", category: args.category || "routine", status: "today", agent_source: "GIULIA-CORE" }).catch(() => null);
-      if (r) await emitEvent(base44, { event_type: "SELF_ROUTINE_CREATED", object_type: "Task", object_id: r.id, domain: "self", description: `SELF-routine: ${r.title}` });
-      return r ? { id: r.id } : { error: "create failed" };
+      const next = new Date(); next.setDate(next.getDate() + (args.frequency_days || 1));
+      const r = await sr.entities.SelfRoutine.create({ ...args, status: "active", next_due: next.toISOString().slice(0, 10), streak_count: 0, agent_source: "GIULIA-CORE" }).catch(() => null);
+      if (r) await emitEvent(base44, { event_type: "SELF_ROUTINE_CREATED", object_type: "SelfRoutine", object_id: r.id, domain: "self", description: `SELF-routine: ${r.title}` });
+      return r ? { id: r.id, title: r.title } : { error: "create failed" };
+    }
+  },
+  {
+    name: "complete_self_routine",
+    description: "Markeer een SELF-routine als voltooid. Verhoogt automatisch de streak_count.",
+    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+    execute: async ({ id }, base44) => {
+      const sr = base44.asServiceRole;
+      const r = await sr.entities.SelfRoutine.get(id).catch(() => null);
+      if (!r) return { error: "not found" };
+      const updated = await sr.entities.SelfRoutine.update(id, { status: "completed", last_done: new Date().toISOString(), streak_count: (r.streak_count || 0) + 1 }).catch(() => null);
+      if (updated) await emitEvent(base44, { event_type: "SELF_ROUTINE_COMPLETED", object_type: "SelfRoutine", object_id: id, domain: "self", description: `Voltooid: ${r.title}` });
+      return updated ? { ok: true, streak: (r.streak_count || 0) + 1 } : { error: "update failed" };
+    }
+  },
+  {
+    name: "update_self_routine",
+    description: "Werk een SELF-routine bij (status, frequency, tijd, duur). Set status='paused' of 'archived' om te deactiveren.",
+    inputSchema: { type: "object", properties: { id: { type: "string" }, status: { type: "string", enum: ["active", "paused", "completed", "skipped", "archived"] }, frequency: { type: "string" }, preferred_time: { type: "string" }, duration_min: { type: "number" } }, required: ["id"] },
+    execute: async ({ id, ...patch }, base44) => {
+      const r = await base44.asServiceRole.entities.SelfRoutine.update(id, patch).catch(() => null);
+      return r ? { ok: true } : { error: "not found" };
+    }
+  },
+  {
+    name: "create_self_check_in",
+    description: "Maak een SELF check-in aan — de actuele persoonlijke toestand (state, energy, capacity, mood, needs, reflection). Giulia kan dit ook proactief doen (~3x per dag) om Salvo's staat te meten.",
+    inputSchema: { type: "object", properties: { state: { type: "string", enum: ["calm", "charged", "neutral", "low", "overwhelmed"] }, energy: { type: "number", description: "0-100" }, capacity: { type: "number", description: "0-100" }, mood: { type: "string", enum: ["good", "neutral", "low", "anxious", "tired", "energetic"] }, needs: { type: "array", items: { type: "string" } }, reflection: { type: "string" }, context: { type: "string" }, source: { type: "string", enum: ["manual", "giulia", "proactive"], default: "giulia" } }, required: ["state"] },
+    execute: async (args, base44) => {
+      const sr = base44.asServiceRole;
+      const c = await sr.entities.SelfCheckIn.create({ ...args, timestamp: new Date().toISOString(), check_in_type: args.source === "proactive" ? "proactive" : "manual", agent_source: "GIULIA-CORE" }).catch(() => null);
+      if (c) await emitEvent(base44, { event_type: "SELF_CHECK_IN_CREATED", object_type: "SelfCheckIn", object_id: c.id, domain: "self", description: `Check-in: ${args.state}` });
+      return c ? { id: c.id } : { error: "create failed" };
+    }
+  },
+  {
+    name: "create_therapy_trajectory",
+    description: "Maak een therapie- of begeleidingstraject aan (SELF → Therapy). Set type (therapy/coaching/counseling/support), therapist_name.",
+    inputSchema: { type: "object", properties: { title: { type: "string" }, type: { type: "string", enum: ["therapy", "coaching", "counseling", "support", "other"] }, therapist_name: { type: "string" } }, required: ["title"] },
+    execute: async (args, base44) => {
+      const sr = base44.asServiceRole;
+      const t = await sr.entities.TherapyTrajectory.create({ ...args, status: "active", agent_source: "GIULIA-CORE" }).catch(() => null);
+      if (t) await emitEvent(base44, { event_type: "THERAPY_TRAJECTORY_CREATED", object_type: "TherapyTrajectory", object_id: t.id, domain: "self", description: `Therapy: ${t.title}` });
+      return t ? { id: t.id } : { error: "create failed" };
+    }
+  },
+  {
+    name: "update_therapy_trajectory",
+    description: "Werk een therapie-traject bij (status, progress, goals, notes, next_appointment).",
+    inputSchema: { type: "object", properties: { id: { type: "string" }, status: { type: "string", enum: ["active", "paused", "completed", "archived"] }, progress: { type: "number" }, next_appointment: { type: "string", description: "ISO datetime" } }, required: ["id"] },
+    execute: async ({ id, ...patch }, base44) => {
+      const t = await base44.asServiceRole.entities.TherapyTrajectory.update(id, patch).catch(() => null);
+      return t ? { ok: true } : { error: "not found" };
+    }
+  },
+  {
+    name: "create_journal_entry",
+    description: "Maak een journal-entry aan (SELF → Journal). Type: entry/moment/reflection/highlight/thread. Wordt automatisch gedateerd op nu.",
+    inputSchema: { type: "object", properties: { title: { type: "string" }, type: { type: "string", enum: ["entry", "moment", "reflection", "highlight", "thread"] }, content: { type: "string" }, mood: { type: "string" }, is_highlight: { type: "boolean" } }, required: ["title"] },
+    execute: async (args, base44) => {
+      const sr = base44.asServiceRole;
+      const e = await sr.entities.JournalEntry.create({ ...args, date: new Date().toISOString(), is_highlight: args.is_highlight || args.type === "highlight", agent_source: "GIULIA-CORE" }).catch(() => null);
+      if (e) await emitEvent(base44, { event_type: "JOURNAL_ENTRY_CREATED", object_type: "JournalEntry", object_id: e.id, domain: "self", description: `Journal: ${e.title}` });
+      return e ? { id: e.id } : { error: "create failed" };
+    }
+  },
+  {
+    name: "create_self_goal",
+    description: "Maak een persoonlijk doel aan (SELF → Personal Development). Type: development/goal/milestone/learning. Set area, priority, deadline.",
+    inputSchema: { type: "object", properties: { title: { type: "string" }, type: { type: "string", enum: ["development", "goal", "milestone", "learning", "activity"] }, area: { type: "string" }, priority: { type: "string", enum: ["low", "medium", "high"] }, deadline: { type: "string", description: "YYYY-MM-DD" } }, required: ["title"] },
+    execute: async (args, base44) => {
+      const sr = base44.asServiceRole;
+      const g = await sr.entities.SelfGoal.create({ ...args, status: "active", progress: 0, agent_source: "GIULIA-CORE" }).catch(() => null);
+      if (g) await emitEvent(base44, { event_type: "SELF_GOAL_CREATED", object_type: "SelfGoal", object_id: g.id, domain: "self", description: `Doel: ${g.title}` });
+      return g ? { id: g.id } : { error: "create failed" };
+    }
+  },
+  {
+    name: "update_self_goal",
+    description: "Werk een persoonlijk doel bij (progress, status, priority). Set status='completed' om af te ronden.",
+    inputSchema: { type: "object", properties: { id: { type: "string" }, progress: { type: "number" }, status: { type: "string", enum: ["active", "paused", "completed", "archived", "cancelled"] } }, required: ["id"] },
+    execute: async ({ id, ...patch }, base44) => {
+      const g = await base44.asServiceRole.entities.SelfGoal.update(id, patch).catch(() => null);
+      return g ? { ok: true } : { error: "not found" };
+    }
+  },
+  {
+    name: "create_personal_time",
+    description: "Plan persoonlijke tijd in (SELF → Personal Time). Type: rest/recovery/free/protected. Set duration_min. Protected tijd wordt beschermd tegen andere afspraken.",
+    inputSchema: { type: "object", properties: { title: { type: "string" }, type: { type: "string", enum: ["rest", "recovery", "free", "protected"] }, duration_min: { type: "number" }, is_protected: { type: "boolean" } }, required: ["title", "type"] },
+    execute: async (args, base44) => {
+      const sr = base44.asServiceRole;
+      const start = new Date().toISOString();
+      const end = new Date(Date.now() + (args.duration_min || 30) * 60000).toISOString();
+      const b = await sr.entities.PersonalTimeBlock.create({ ...args, start, end, duration_min: args.duration_min || 30, status: "scheduled", is_protected: args.is_protected || args.type === "protected", agent_source: "GIULIA-CORE" }).catch(() => null);
+      if (b) await emitEvent(base44, { event_type: "PERSONAL_TIME_CREATED", object_type: "PersonalTimeBlock", object_id: b.id, domain: "self", description: `Personal time: ${b.title}` });
+      return b ? { id: b.id } : { error: "create failed" };
+    }
+  },
+  {
+    name: "create_self_insight",
+    description: "Maak een SELF-inzicht aan (patroon/balans/capaciteit/gedrag). Giulia gebruikt dit om langetermijnpatronen op te slaan die ze ontdekt.",
+    inputSchema: { type: "object", properties: { title: { type: "string" }, type: { type: "string", enum: ["pattern", "balance", "capacity", "imbalance", "overload", "under_recovery", "behavior"] }, description: { type: "string" }, category: { type: "string", enum: ["energy", "mood", "capacity", "routine", "rest", "personal_time", "social", "focus", "development"] } }, required: ["title"] },
+    execute: async (args, base44) => {
+      const sr = base44.asServiceRole;
+      const i = await sr.entities.SelfInsight.create({ ...args, status: "active", agent_source: "GIULIA-CORE" }).catch(() => null);
+      if (i) await emitEvent(base44, { event_type: "SELF_INSIGHT_CREATED", object_type: "SelfInsight", object_id: i.id, domain: "self", description: `Inzicht: ${i.title}` });
+      return i ? { id: i.id } : { error: "create failed" };
     }
   },
 ];
