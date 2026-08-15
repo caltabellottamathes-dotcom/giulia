@@ -1,6 +1,6 @@
 // SELF editorial photos + palette + mock demo data.
-// Hoofdaccent: #301728 (donker plum). Contrast: #d8dab3. Urgent: #d5e24a
-// (uitsluitend urgente zaken). Beton/off-white voor de editorial textuur.
+// Hoofdkleur: #301728 (donker plum). 2e kleur: #d8dab3 (sage). Geen geel.
+// Fotos zijn losse kaarten met 4 ronde hoeken, zonder overlay.
 
 export const SELF_PHOTO = {
   dailyState: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/66a7f3110_An_emotionally_ambiguous_wide_shot_2026062622311.jpeg",
@@ -14,19 +14,12 @@ export const SELF_PHOTO = {
 };
 
 export const PLUM = "#301728";
-export const CONTRAST = "#d8dab3";
-export const URGENT = "#d5e24a";
-export const CONCRETE = "#9aa0a3";
-export const CONCRETE_LIGHT = "#c9ccc9";
-export const OFFWHITE = "#f2f2f0";
+export const SAGE = "#d8dab3";
+export const PLUM_FAINT = "rgba(48,23,40,0.12)";
 
-// translucent plum glass layers
-export const PLUM_GLASS = "rgba(48,23,40,0.55)";
-export const PLUM_GLASS_SOFT = "rgba(48,23,40,0.40)";
-
-// ── mock demo content (valt terug als er geen live data is) ──
+// ── mock demo content ──
 export const MOCK = {
-  dailyState: { state: "calm", energy: 78, capacity: 64, timeline: [62, 55, 70, 48, 80, 78], need: "rust", mood: "good" },
+  dailyState: { state: "calm", energy: 78, capacity: 64, timeline: [62, 55, 70, 48, 80, 78, 72, 81], need: "rust", mood: "good" },
   routines: [
     { id: "m1", title: "Ochtend ademruimte", streak_count: 12, status: "completed" },
     { id: "m2", title: "Stretches", streak_count: 7, status: "completed" },

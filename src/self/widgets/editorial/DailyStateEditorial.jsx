@@ -5,11 +5,11 @@ import WidgetHeader from "@/system/widgets/WidgetHeader";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { useLearningSync } from "@/hooks/useLearningSync";
-import { stateLabel, energyColor, fmtAgo } from "@/lib/selfUtils";
-import { SELF_PHOTO, PLUM, CONTRAST, URGENT, CONCRETE, PLUM_GLASS_SOFT, MOCK } from "./selfEditorial";
+import { stateLabel, fmtAgo } from "@/lib/selfUtils";
+import { SELF_PHOTO, PLUM, SAGE, PLUM_FAINT, MOCK } from "./selfEditorial";
 
-/** Daily State — glas ZWEeft OVER de foto (foto er achter, plum glas ervoor).
- *  Verticale energiekolom + capacity-balk + 6-punts statustimeline. */
+/** Daily State — foto BOVEN als ronde kaart, infographic eronder in glas.
+ *  Grote energiekolom + capacity-boog + 8-punts timeline (levend). */
 export default function DailyStateEditorial() {
   const { openModule } = usePanel();
   const learnTick = useLearningSync();
@@ -21,58 +21,61 @@ export default function DailyStateEditorial() {
   const energy = latest?.energy ?? m.energy;
   const capacity = latest?.capacity ?? m.capacity;
   const need = latest?.needs?.[0] || m.need;
-
   const headline = state === "calm" ? "IN RHYTHM" : state === "charged" ? "CHARGED" : state === "overwhelmed" ? "OVERLOAD" : state === "low" ? "DEPLETED" : "STEADY";
+
   const recent = useMemo(() => {
-    const a = Array.from({ length: 6 }, () => null);
-    (checkIns || []).slice(0, 6).forEach((c, i) => { a[5 - i] = c.energy ?? 0; });
+    const a = Array.from({ length: 8 }, () => null);
+    (checkIns || []).slice(0, 8).forEach((c, i) => { a[7 - i] = c.energy ?? 0; });
     if (!checkIns?.length) m.timeline.forEach((v, i) => { a[i] = v; });
     return a;
   }, [checkIns]);
 
   return (
-    <WidgetShell size="1x2" radius="large" interactive onClick={() => openModule("selfdailystate")} className="min-h-[340px] sm:row-span-2" style={{ "--tile-accent": CONTRAST, background: "transparent" }}>
-      <div className="relative h-full w-full overflow-hidden rounded-[inherit] text-ivory">
-        {/* foto achter */}
-        <img src={SELF_PHOTO.dailyState} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
-        {/* plum glas eroverheen — transparant genoeg dat de foto erdoor schemert */}
-        <div className="absolute inset-0" style={{ background: PLUM_GLASS_SOFT, backdropFilter: "blur(16px) saturate(1.2)", WebkitBackdropFilter: "blur(16px) saturate(1.2)" }} />
-        {/* zware plum kant onderaan voor leesbaarheid */}
-        <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(48,23,40,0.30) 0%, rgba(48,23,40,0.15) 45%, rgba(48,23,40,0.82) 100%)" }} />
+    <WidgetShell size="1x2" radius="large" interactive onClick={() => openModule("selfdailystate")} className="min-h-[340px] sm:row-span-2" style={{ "--tile-accent": PLUM }}>
+      <div className="flex flex-col h-full gap-3 p-3" style={{ color: PLUM }}>
+        {/* foto — 4 ronde hoeken, geen overlay */}
+        <div className="rounded-2xl overflow-hidden h-[32%] shrink-0">
+          <img src={SELF_PHOTO.dailyState} alt="" className="h-full w-full object-cover" draggable={false} />
+        </div>
 
-        <div className="relative z-10 h-full p-5 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-0">
           <WidgetHeader label="Daily State" count={latest ? fmtAgo(latest.timestamp) : "07:12"} />
-          <h3 className="text-[30px] leading-[0.98] font-display font-semibold tracking-[-0.03em] mt-1">{headline}</h3>
-          <p className="text-[10px] uppercase tracking-[0.2em] opacity-60 mt-1.5">{stateLabel(state)}</p>
+          <h3 className="text-[26px] leading-[0.98] font-display font-semibold tracking-[-0.03em] mt-1">{headline}</h3>
+          <p className="text-[10px] uppercase tracking-[0.2em] opacity-55 mt-1">{stateLabel(state)}</p>
 
-          <div className="mt-4 flex items-stretch gap-4 flex-1 min-h-0">
-            <div className="relative w-3 rounded-full bg-ivory/15 overflow-hidden">
-              <motion.div className="absolute bottom-0 left-0 right-0 rounded-full" style={{ background: energy < 30 ? URGENT : CONTRAST }} initial={{ height: 0 }} animate={{ height: `${energy}%` }} transition={{ duration: 1, ease: "easeOut" }} />
+          <div className="mt-3 flex items-stretch gap-3 flex-1 min-h-0">
+            {/* energiekolom */}
+            <div className="relative w-4 rounded-full overflow-hidden" style={{ background: PLUM_FAINT }}>
+              <motion.div className="absolute bottom-0 left-0 right-0 rounded-full" style={{ background: PLUM }} initial={{ height: 0 }} animate={{ height: `${energy}%` }} transition={{ duration: 1.1, ease: "easeOut" }} />
             </div>
-            <div className="flex-1 flex flex-col justify-between py-1">
+            <div className="flex-1 flex flex-col justify-between py-0.5">
               <div>
                 <p className="text-[9px] uppercase tracking-[0.2em] opacity-55">Energy</p>
-                <span className="text-[48px] leading-none font-display font-semibold tabular-nums" style={{ color: energy < 30 ? URGENT : CONTRAST }}>{energy}</span>
+                <span className="text-[52px] leading-none font-display font-semibold tabular-nums">{energy}</span>
               </div>
-              <div className="mt-3">
-                <p className="text-[9px] uppercase tracking-[0.2em] opacity-55 mb-1">Capacity {capacity}%</p>
-                <div className="h-1.5 rounded-full bg-ivory/15 overflow-hidden">
-                  <motion.div className="h-full rounded-full" style={{ background: CONCRETE }} animate={{ width: `${capacity}%` }} transition={{ duration: 1 }} />
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[9px] uppercase tracking-[0.2em] opacity-55">Capacity</p>
+                  <span className="text-[11px] tabular-nums font-semibold">{capacity}%</span>
+                </div>
+                <div className="h-2 rounded-full overflow-hidden" style={{ background: SAGE }}>
+                  <motion.div className="h-full rounded-full" style={{ background: PLUM }} animate={{ width: `${capacity}%` }} transition={{ duration: 1.1 }} />
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="mt-4 flex items-center gap-1.5">
+          {/* 8-punts timeline — levend */}
+          <div className="mt-3 flex items-end gap-1.5 h-12">
             {recent.map((v, i) => (
-              <span key={i} className="flex-1 h-1.5 rounded-full" style={{ background: v != null ? (v < 30 ? URGENT : CONTRAST) : "rgba(255,255,255,0.15)", opacity: v != null ? 0.9 : 0.3 }} />
+              <motion.span key={i} className="flex-1 rounded-full" style={{ background: PLUM }} animate={{ height: v != null ? `${Math.max(12, (v / 100) * 100)}%` : "12%", opacity: v != null ? 0.9 : 0.18 }} transition={{ duration: 0.8, delay: i * 0.05 }} />
             ))}
           </div>
-        </div>
 
-        <div className="absolute bottom-0 left-0 right-0 z-10 px-5 pb-4 pt-3 flex items-center justify-between border-t border-ivory/10">
-          <p className="text-[9px] uppercase tracking-[0.2em] opacity-60">need · <span style={{ color: URGENT }}>{need}</span></p>
-          <button onClick={(e) => { e.stopPropagation(); openModule("selfdailystate"); }} className="rounded-full px-3 py-1 text-[10px] font-semibold border border-ivory/30 text-ivory hover:bg-ivory/10 transition">Open</button>
+          <div className="mt-2 flex items-center justify-between pt-2 border-t" style={{ borderColor: PLUM_FAINT }}>
+            <p className="text-[9px] uppercase tracking-[0.2em] opacity-60">need · <span className="font-semibold">{need}</span></p>
+            <button onClick={(e) => { e.stopPropagation(); openModule("selfdailystate"); }} className="rounded-full px-3 py-1 text-[10px] font-semibold border hover:bg-[#301728]/10 transition" style={{ borderColor: `${PLUM}4d` }}>Open</button>
+          </div>
         </div>
       </div>
     </WidgetShell>

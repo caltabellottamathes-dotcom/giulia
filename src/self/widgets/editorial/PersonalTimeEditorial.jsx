@@ -7,10 +7,9 @@ import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { useLearningSync } from "@/hooks/useLearningSync";
 import { timeBlockLabel, fmtDuration } from "@/lib/selfUtils";
-import { SELF_PHOTO, PLUM, CONTRAST, URGENT, CONCRETE, PLUM_GLASS, MOCK } from "./selfEditorial";
+import { SELF_PHOTO, PLUM, SAGE, PLUM_FAINT, MOCK } from "./selfEditorial";
 
-/** Personal Time — glas zweeft over de foto (foto boven, glas eronder).
- *  24u dag-balk met gekleurde zones. */
+/** Personal Time — foto LINKS, 24u dag-balk rechts. */
 export default function PersonalTimeEditorial() {
   const { openModule } = usePanel();
   const learnTick = useLearningSync();
@@ -26,28 +25,28 @@ export default function PersonalTimeEditorial() {
   const headline = protectedMin ? "BESCHERMD" : total ? "RUST" : "VRIJ";
 
   return (
-    <WidgetShell size="2x1" radius="large" interactive onClick={() => openModule("selfpersonaltime")} className="min-h-[200px] sm:col-span-2" style={{ "--tile-accent": CONTRAST, background: "transparent" }}>
-      <div className="relative h-full w-full overflow-hidden rounded-[inherit] text-ivory">
-        {/* foto boven als band */}
-        <div className="absolute inset-x-0 top-0 h-[45%]">
-          <img src={SELF_PHOTO.personalTime} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(48,23,40,0.35), rgba(48,23,40,0.98))" }} />
+    <WidgetShell size="2x1" radius="large" interactive onClick={() => openModule("selfpersonaltime")} className="min-h-[200px] sm:col-span-2" style={{ "--tile-accent": PLUM }}>
+      <div className="flex h-full gap-3 p-3" style={{ color: PLUM }}>
+        {/* foto links */}
+        <div className="w-[32%] shrink-0 rounded-2xl overflow-hidden">
+          <img src={SELF_PHOTO.personalTime} alt="" className="h-full w-full object-cover" draggable={false} />
         </div>
 
-        {/* glas-content onder, zweeft er deels overheen */}
-        <div className="relative z-10 h-full p-5 flex flex-col mt-[12%]" style={{ background: "linear-gradient(180deg, rgba(48,23,40,0.40), rgba(48,23,40,0.62))", backdropFilter: "blur(18px) saturate(1.25)", WebkitBackdropFilter: "blur(18px) saturate(1.25)" }}>
+        {/* infographic rechts */}
+        <div className="flex-1 flex flex-col min-w-0">
           <WidgetHeader label="Personal Time" count={`${today.length} blokken`} />
           <div className="flex items-end justify-between mt-1">
             <div>
-              <h3 className="text-[28px] leading-[1.0] font-display font-semibold tracking-[-0.03em]">{headline}</h3>
-              <p className="text-[10px] uppercase tracking-[0.2em] opacity-65 mt-1.5">{protectedMin ? `${fmtDuration(protectedMin)} beschermd` : `${fmtDuration(total)} totaal`}</p>
+              <h3 className="text-[26px] leading-[1.0] font-display font-semibold tracking-[-0.03em]">{headline}</h3>
+              <p className="text-[10px] uppercase tracking-[0.2em] opacity-55 mt-1.5">{protectedMin ? `${fmtDuration(protectedMin)} beschermd` : `${fmtDuration(total)} totaal`}</p>
             </div>
-            <CountUp value={total} className="text-[44px] leading-none font-display font-semibold tabular-nums" />
+            <CountUp value={total} className="text-[48px] leading-none font-display font-semibold tabular-nums" />
           </div>
 
-          <div className="mt-4 relative h-9 rounded-md bg-ivory/10 overflow-hidden">
+          {/* 24u dag-balk */}
+          <div className="mt-4 relative h-10 rounded-lg overflow-hidden" style={{ background: PLUM_FAINT }}>
             {Array.from({ length: 24 }).map((_, h) => (
-              <span key={h} className="absolute top-0 bottom-0 w-px" style={{ left: `${(h / 24) * 100}%`, background: "rgba(255,255,255,0.07)" }} />
+              <span key={h} className="absolute top-0 bottom-0 w-px" style={{ left: `${(h / 24) * 100}%`, background: `${PLUM}14` }} />
             ))}
             {today.map((b, i) => {
               const start = new Date(b.start);
@@ -55,21 +54,20 @@ export default function PersonalTimeEditorial() {
               const dur = b.duration_min || 30;
               const left = (sh / 24) * 100;
               const width = Math.min(100 - left, (dur / 60 / 24) * 100);
-              const col = b.is_protected || b.type === "protected" ? CONTRAST : b.type === "rest" ? "#7d8a78" : b.type === "recovery" ? CONCRETE : "rgba(255,255,255,0.4)";
+              const col = b.is_protected || b.type === "protected" ? PLUM : SAGE;
               return (
-                <motion.div key={b.id || i} className="absolute top-0 bottom-0 rounded-sm" style={{ left: `${left}%`, background: col, opacity: 0.85 }} initial={{ width: 0 }} animate={{ width: `${width}%` }} transition={{ duration: 0.9, ease: "easeOut" }} title={timeBlockLabel(b.type)} />
+                <motion.div key={b.id || i} className="absolute top-0 bottom-0 rounded-md" style={{ left: `${left}%`, background: col, opacity: 0.9 }} initial={{ width: 0 }} animate={{ width: `${width}%` }} transition={{ duration: 0.9, ease: "easeOut" }} title={timeBlockLabel(b.type)} />
               );
             })}
           </div>
-          <div className="mt-1.5 flex items-center gap-3 text-[9px] uppercase tracking-wider opacity-55">
-            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm" style={{ background: CONTRAST }} />beschermd</span>
-            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm" style={{ background: "#7d8a78" }} />rust</span>
-            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm" style={{ background: CONCRETE }} />herstel</span>
+          <div className="mt-1.5 flex items-center gap-3 text-[9px] uppercase tracking-wider opacity-60">
+            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm" style={{ background: PLUM }} />beschermd</span>
+            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm" style={{ background: SAGE }} />rust / herstel</span>
           </div>
 
           <div className="flex-1" />
-          <div className="flex items-center justify-end pt-2 border-t border-ivory/10">
-            <button onClick={(e) => { e.stopPropagation(); openModule("selfpersonaltime"); }} className="rounded-full px-3 py-1 text-[10px] font-semibold border border-ivory/30 text-ivory hover:bg-ivory/10 transition">Open</button>
+          <div className="flex items-center justify-end pt-2 border-t" style={{ borderColor: PLUM_FAINT }}>
+            <button onClick={(e) => { e.stopPropagation(); openModule("selfpersonaltime"); }} className="rounded-full px-3 py-1 text-[10px] font-semibold border hover:bg-[#301728]/10 transition" style={{ borderColor: `${PLUM}4d` }}>Open</button>
           </div>
         </div>
       </div>
