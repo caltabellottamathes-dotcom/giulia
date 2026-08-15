@@ -37,16 +37,12 @@ import ResetPassword from '@/system/pages/ResetPassword';
 import OAuthConsent from '@/system/pages/OAuthConsent';
 import Insights from '@/giulia/pages/Insights';
 import Planning from '@/focus/pages/Planning';
-import Experiment from '@/system/pages/Experiment';
 import TimeTracker from '@/focus/pages/TimeTracker';
 import Agents from '@/giulia/pages/Agents';
 import QuickCommand from '@/system/pages/QuickCommand';
 import Updates from '@/giulia/pages/Updates';
-import WidgetGallery from '@/system/pages/WidgetGallery';
-import WidgetGallery2 from '@/system/pages/WidgetGallery2';
-import WidgetGallery3 from '@/system/pages/WidgetGallery3';
-import WidgetGallery4 from '@/system/pages/WidgetGallery4';
 import Briefing from '@/giulia/pages/Briefing';
+import LifeGallery from '@/life/pages/LifeGallery';
 import WakeMode from '@/self/pages/WakeMode';
 import LifeLanding from '@/life/pages/LifeLanding';
 import SocialPulsePage from '@/life/pages/SocialPulsePage';
@@ -65,26 +61,7 @@ import JournalPage from '@/self/pages/JournalPage';
 import PersonalDevelopmentPage from '@/self/pages/PersonalDevelopmentPage';
 import PersonalTimePage from '@/self/pages/PersonalTimePage';
 import SelfInsightsPage from '@/self/pages/SelfInsightsPage';
-// Slick staging pages are self-contained (PageShell per page)
-import SlickHome from '@/system/pages/slick/SlickHome';
-import SlickWeek from '@/system/pages/slick/SlickWeek';
-import SlickDag from '@/system/pages/slick/SlickDag';
-import SlickProjecten from '@/system/pages/slick/SlickProjecten';
-import SlickContacten from '@/system/pages/slick/SlickContacten';
-import SlickTaakDetails from '@/system/pages/slick/SlickTaakDetails';
-import SlickMatrix from '@/system/pages/slick/SlickMatrix';
-import SlickNotitieblok from '@/system/pages/slick/SlickNotitieblok';
-import SlickInstellingen from '@/system/pages/slick/SlickInstellingen';
-import SlickTijd from '@/system/pages/slick/SlickTijd';
-import SlickArchief from '@/system/pages/slick/SlickArchief';
-import SlickFocus from '@/system/pages/slick/SlickFocus';
-import SlickBriefing from '@/system/pages/slick/SlickBriefing';
-import SlickDoelen from '@/system/pages/slick/SlickDoelen';
-import SlickVergader from '@/system/pages/slick/SlickVergader';
-import SlickInspiratie from '@/system/pages/slick/SlickInspiratie';
-import SlickTakenoverzicht from '@/system/pages/slick/SlickTakenoverzicht';
-import SlickStatistieken from '@/system/pages/slick/SlickStatistieken';
-import SlickAgendaOverzicht from '@/system/pages/slick/SlickAgendaOverzicht';
+
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -142,13 +119,9 @@ const AuthenticatedApp = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/insights" element={<Insights />} />
-          <Route path="/experiment" element={<Experiment />} />
           <Route path="/timetracker" element={<TimeTracker />} />
           <Route path="/agents" element={<Agents />} />
           <Route path="/updates" element={<Updates />} />
-          <Route path="/widget-gallery-2" element={<WidgetGallery2 />} />
-          <Route path="/widget-gallery-3" element={<WidgetGallery3 />} />
-          <Route path="/widget-gallery-4" element={<WidgetGallery4 />} />
           <Route path="/life" element={<LifeLanding />} />
           <Route path="/life/social-pulse" element={<SocialPulsePage />} />
           <Route path="/life/social-planner" element={<SocialPlannerPage />} />
@@ -167,29 +140,10 @@ const AuthenticatedApp = () => {
           <Route path="/self/personal-time" element={<PersonalTimePage />} />
           <Route path="/self/insights" element={<SelfInsightsPage />} />
         </Route>
-        <Route path="/slick" element={<SlickHome />} />
-        <Route path="/slick/weekplanning" element={<SlickWeek />} />
-        <Route path="/slick/dagplanning" element={<SlickDag />} />
-        <Route path="/slick/projecten" element={<SlickProjecten />} />
-        <Route path="/slick/contacten" element={<SlickContacten />} />
-        <Route path="/slick/taak-details" element={<SlickTaakDetails />} />
-        <Route path="/slick/prioriteiten-matrix" element={<SlickMatrix />} />
-        <Route path="/slick/notitieblok" element={<SlickNotitieblok />} />
-        <Route path="/slick/instellingen" element={<SlickInstellingen />} />
-        <Route path="/slick/tijdsregistratie" element={<SlickTijd />} />
-        <Route path="/slick/archief" element={<SlickArchief />} />
-        <Route path="/slick/focus-modus" element={<SlickFocus />} />
-        <Route path="/slick/dagelijkse-briefing" element={<SlickBriefing />} />
-        <Route path="/slick/doelen-dashboard" element={<SlickDoelen />} />
-        <Route path="/slick/vergader-notities" element={<SlickVergader />} />
-        <Route path="/slick/inspiratie-bord" element={<SlickInspiratie />} />
-        <Route path="/slick/takenoverzicht" element={<SlickTakenoverzicht />} />
-        <Route path="/slick/statistieken" element={<SlickStatistieken />} />
-        <Route path="/slick/agenda-overzicht" element={<SlickAgendaOverzicht />} />
+        <Route path="/life-gallery" element={<LifeGallery />} />
         <Route path="/quick" element={<QuickCommand />} />
         <Route path="/briefing" element={<Briefing />} />
         <Route path="/wake" element={<WakeMode />} />
-        <Route path="/widget-gallery" element={<WidgetGallery />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
