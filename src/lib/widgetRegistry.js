@@ -20,7 +20,7 @@ import MemoryWidget from "@/giulia/widgets/MemoryWidget";
 import InsightsWidget from "@/giulia/widgets/InsightsWidget";
 import ActivityWidget from "@/giulia/widgets/ActivityWidget";
 import AgentActivityWidget from "@/giulia/widgets/AgentActivityWidget";
-import ConciergeWidget from "@/components/concierge/ConciergeWidget";
+import ConciergeWidget from "@/giulia/widgets/ConciergeWidget";
 import TimeTrackerWidget from "@/focus/widgets/TimeTrackerWidget";
 import UpdatesWidget from "@/giulia/widgets/UpdatesWidget";
 import SocialPulseWidget from "@/life/widgets/SocialPulseWidget";

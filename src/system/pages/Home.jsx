@@ -12,7 +12,7 @@ import AddWidgetPicker from "@/system/panels/AddWidgetPicker";
 import WidgetCell from "@/system/widgets/WidgetCell";
 import MasonryGrid from "@/system/widgets/MasonryGrid";
 import GiuliaIntroOverlay from "@/giulia/widgets/GiuliaIntroOverlay";
-import ConciergeWidget from "@/components/concierge/ConciergeWidget";
+import ConciergeWidget from "@/giulia/widgets/ConciergeWidget";
 
 import { Link } from "react-router-dom";
 import { MODULES } from "@/lib/moduleRegistry";
