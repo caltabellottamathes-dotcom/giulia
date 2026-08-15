@@ -6,6 +6,7 @@
 import { createTaskWithApproval, navigateApp, reportToSalvo, createApproval, findDuplicate } from "./codeAgent.ts";
 import { geminiEmbed } from "./gemini.ts";
 import { logActivity, remember, askQuestion } from "./learningLayer.ts";
+import { emitEvent } from "./eventEngine.ts";
 
 export const GIULIA_SKILLS = [
   {
@@ -238,6 +239,50 @@ export const GIULIA_SKILLS = [
     execute: async (_args, base44) => {
       const list = await base44.asServiceRole.entities.GiuliaQuestion.filter({ status: "open" }, "-created_date", 20).catch(() => []);
       return { count: list.length, items: list.map(q => ({ id: q.id, title: q.title, domain: q.domain, priority: q.priority })) };
+    }
+  },
+  {
+    name: "create_event",
+    description: "Maak een agenda-afspraak (CalendarEvent). Gebruik voor álle afspraken — werk, sociaal, huishouden, SELF. Tag domain automatisch: FOCUS=werk/zakelijk, LIFE=sociaal/huishouden, SELF=rust/zelfzorg. Geef start (en liefst end) als ISO datetime. Koppel optioneel een project_id of participants.",
+    inputSchema: { type: "object", properties: { title: { type: "string" }, start: { type: "string", description: "ISO datetime, bv. 2026-08-17T19:00:00" }, end: { type: "string", description: "ISO datetime" }, location: { type: "string" }, participants: { type: "string" }, project_id: { type: "string" }, domain: { type: "string", enum: ["focus", "life", "self"] }, travel_time: { type: "number" }, prep_time: { type: "number" } }, required: ["title", "start"] },
+    execute: async (args, base44) => {
+      const sr = base44.asServiceRole;
+      const e = await sr.entities.CalendarEvent.create({ ...args, status: "confirmed", agent_source: "GIULIA-CORE" }).catch(() => null);
+      if (e) await emitEvent(base44, { event_type: "EVENT_CREATED", object_type: "CalendarEvent", object_id: e.id, domain: args.domain || "focus", description: `Afspraak: ${e.title}` });
+      return e ? { id: e.id, title: e.title } : { error: "create failed" };
+    }
+  },
+  {
+    name: "create_social_plan",
+    description: "Maak een sociaal plan (LIFE → Social Planner) — een voorgenomen sociale activiteit met één of meerdere contacten. Set contact_ids (array van Contact-ID's), activity en liefst suggested_date. Wordt gekoppeld aan een agenda-afspraak zodra bevestigd (status confirmed).",
+    inputSchema: { type: "object", properties: { activity: { type: "string" }, contact_ids: { type: "array", items: { type: "string" } }, suggested_date: { type: "string", description: "ISO datetime" }, notes: { type: "string" }, calendar_event_id: { type: "string" } }, required: ["activity"] },
+    execute: async (args, base44) => {
+      const sr = base44.asServiceRole;
+      const sp = await sr.entities.SocialPlan.create({ ...args, status: "planned", agent_source: "GIULIA-CORE" }).catch(() => null);
+      if (sp) await emitEvent(base44, { event_type: "SOCIAL_PLAN_CREATED", object_type: "SocialPlan", object_id: sp.id, domain: "life", description: `Sociaal plan: ${sp.activity}` });
+      return sp ? { id: sp.id } : { error: "create failed" };
+    }
+  },
+  {
+    name: "create_household_task",
+    description: "Maak een huishoudtaak (LIFE → Household). Gebruik voor routines, onderhoud en issues. Wordt opgeslagen als HouseholdItem. Set kind: routine/maintenance/issue. Set next_due (YYYY-MM-DD) en frequency_days voor herhalende taken.",
+    inputSchema: { type: "object", properties: { title: { type: "string" }, kind: { type: "string", enum: ["routine", "maintenance", "issue", "item"] }, category: { type: "string" }, next_due: { type: "string", description: "YYYY-MM-DD" }, frequency_days: { type: "number" }, location: { type: "string" }, notes: { type: "string" } }, required: ["title"] },
+    execute: async (args, base44) => {
+      const sr = base44.asServiceRole;
+      const h = await sr.entities.HouseholdItem.create({ ...args, status: "needs_attention", agent_source: "GIULIA-CORE" }).catch(() => null);
+      if (h) await emitEvent(base44, { event_type: "HOUSEHOLD_ITEM_CREATED", object_type: "HouseholdItem", object_id: h.id, domain: "life", description: `Huishoudtaak: ${h.title}` });
+      return h ? { id: h.id } : { error: "create failed" };
+    }
+  },
+  {
+    name: "create_shopping_item",
+    description: "Voeg een boodschap toe aan de huishoudlijst (LIFE → Household, kind=shopping).",
+    inputSchema: { type: "object", properties: { title: { type: "string" }, category: { type: "string" }, notes: { type: "string" } }, required: ["title"] },
+    execute: async (args, base44) => {
+      const sr = base44.asServiceRole;
+      const s = await sr.entities.HouseholdItem.create({ ...args, kind: "shopping", status: "needs_attention", agent_source: "GIULIA-CORE" }).catch(() => null);
+      if (s) await emitEvent(base44, { event_type: "SHOPPING_ITEM_CREATED", object_type: "HouseholdItem", object_id: s.id, domain: "life", description: `Boodschap: ${s.title}` });
+      return s ? { id: s.id } : { error: "create failed" };
     }
   },
 ];

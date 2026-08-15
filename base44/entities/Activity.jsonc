@@ -18,6 +18,28 @@
       "type": "string",
       "format": "date-time",
       "title": "Timestamp"
+    },
+    "event_type": {
+      "type": "string",
+      "title": "Event Type"
+    },
+    "object_type": {
+      "type": "string",
+      "title": "Object Type"
+    },
+    "object_id": {
+      "type": "string",
+      "title": "Object ID"
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "focus",
+        "life",
+        "self",
+        "giulia"
+      ],
+      "title": "Domain"
     }
   },
   "required": [
