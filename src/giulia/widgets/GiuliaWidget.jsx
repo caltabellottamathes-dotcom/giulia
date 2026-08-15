@@ -4,6 +4,7 @@ import WidgetShell from "../../system/widgets/WidgetShell";
 import { usePanel } from "@/lib/PanelContext";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
+import { fetchUnifiedAttention, DOMAIN_META } from "@/lib/unifiedStream";
 
 const greetingWord = () => {
   const h = new Date().getHours();
@@ -11,81 +12,67 @@ const greetingWord = () => {
 };
 
 /**
- * GiuliaWidget — "Je dag". An editorial morning briefing: a layered photo on the
- * left (with an inset second photo) and a glass content card on the right where
- * the three things that matter today stand out as graphic, numbered elements.
- * Left-aligned, quiet, elegant. Pulls today's DailyPlan; synthesises a plan
- * from the live situation when none exists.
+ * GiuliaWidget — "Je dag · alles". Versmolten ochtendbriefing: de drie dingen
+ * die er vandaag toe doen, getrokken uit Focus (plan/overdue), Life (sociale
+ * afspraken/huishouden) én Self (routines/behoeften). Elk item draagt zijn domein.
  */
 export default function GiuliaWidget() {
   const { openModule } = usePanel();
   const [priorities, setPriorities] = useState([]);
   const [summary, setSummary] = useState("");
-  const [updated, setUpdated] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     const now = new Date();
     const today = now.toLocaleDateString("sv-SE");
-    const [plans, tasks, events, emails, approvals] = await Promise.all([
+    const [plans, tasks, att] = await Promise.all([
       base44.entities.DailyPlan.filter({ date: today }).catch(() => []),
       base44.entities.Task.list().catch(() => []),
-      base44.entities.Event.list().catch(() => []),
-      base44.entities.Email.filter({ status: "unread" }).catch(() => []),
-      base44.entities.Approval.filter({ status: "pending" }).catch(() => []),
+      fetchUnifiedAttention(),
     ]);
     const p = plans[0];
     const focusItems = Array.isArray(p?.plan_data?.focus_items) ? p.plan_data.focus_items : [];
-    if (p && focusItems.length) {
-      setPriorities(focusItems.slice(0, 3).map((f) => ({ label: f?.title || "Taak", to: "/tasks" })));
-      setSummary("Ik heb je dag heringericht op wat vandaag telt.");
-      setUpdated(p.last_updated || p.updated_date || null);
+    const prio = [];
+
+    // FOCUS: plan-prioriteiten of overdue taken
+    if (focusItems.length) {
+      focusItems.slice(0, 2).forEach((f) => prio.push({ label: f?.title || "Taak", to: "/tasks", domain: "focus" }));
     } else {
-      const todayEvents = events
-        .filter((e) => (e.start || "").slice(0, 10) === today && new Date(e.end || e.start) >= now)
-        .sort((a, b) => new Date(a.start) - new Date(b.start));
-      const overdue = tasks
-        .filter((t) => t.status === "overdue")
-        .sort((a, b) => new Date(a.deadline || 0) - new Date(b.deadline || 0));
-      const todayTasks = tasks.filter((t) => t.status === "today");
-      const prio = [];
-      overdue.slice(0, 2).forEach((t) => prio.push({ label: `Afronden — ${t.title}`, to: t.project_id ? `/projects/${t.project_id}` : "/tasks" }));
-      todayEvents.slice(0, 1).forEach((e) => prio.push({ label: `Voorbereiden — ${e.title}`, to: "/agenda" }));
-      todayTasks.slice(0, 2).forEach((t) => prio.push({ label: t.title, to: t.project_id ? `/projects/${t.project_id}` : "/tasks" }));
-      if (emails.length && prio.length < 3) prio.push({ label: `${emails.length} belangrijke berichten beantwoorden`, to: "/email" });
-      if (approvals.length && prio.length < 3) prio.push({ label: `${approvals.length} goedkeuringen afhandelen`, to: "/approvals" });
-      setPriorities(prio.slice(0, 3));
-      setSummary("Ik heb je dag opgebouwd op basis van wat er nu speelt.");
-      setUpdated(null);
+      const overdue = (tasks || []).filter((t) => t.status === "overdue").sort((a, b) => new Date(a.deadline || 0) - new Date(b.deadline || 0));
+      overdue.slice(0, 1).forEach((t) => prio.push({ label: `Afronden — ${t.title}`, to: t.project_id ? `/projects/${t.project_id}` : "/tasks", domain: "focus" }));
     }
+
+    // LIFE: sociale afspraken vandaag + huishouden dat aandacht vraagt
+    (att.eventsByDomain.life || []).slice(0, 1).forEach((e) => prio.push({ label: `${e.title}${e.participants ? ` · ${e.participants}` : ""}`, to: "/life/social-planner", domain: "life" }));
+    att.lifeItemsDue.slice(0, 1).forEach((h) => prio.push({ label: h.title, to: "/life/household", domain: "life" }));
+
+    // SELF: routines die vandaag klaarstaan + dringende behoeften
+    att.routinesDueToday.slice(0, 1).forEach((r) => prio.push({ label: r.title, to: "/self/routines", domain: "self" }));
+    att.selfNeeds.filter((n) => n.priority === "high").slice(0, 1).forEach((n) => prio.push({ label: n.title, to: "/self/daily-state", domain: "self" }));
+
+    // FOCUS fallback: werk-afspraken vandaag
+    (att.eventsByDomain.focus || []).slice(0, 1).forEach((e) => prio.push({ label: e.title, to: "/agenda", domain: "focus" }));
+
+    setPriorities(prio.slice(0, 3));
+    setSummary(prio.length ? "Versmolten over Focus, Life en Self — wat er nu telt." : "Een rustige dag — niets dringends.");
     setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
-  // Zonder dit blijft de kaart uren stilstaan alsof het nog ochtend is.
-  useEffect(() => {
-    const i = setInterval(load, 5 * 60000);
-    return () => clearInterval(i);
-  }, [load]);
-
-  const updatedStr = updated
-    ? new Date(updated).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })
-    : "";
+  useEffect(() => { const i = setInterval(load, 5 * 60000); return () => clearInterval(i); }, [load]);
 
   return (
     <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("jedag")} className="min-h-[320px]">
       <div className="flex flex-row h-full">
-        {/* Editorial photo — touches the glass edges */}
         <div className="relative w-[34%] shrink-0 overflow-hidden rounded-r-[24px]">
           <img src={IMAGES.portraitBootFace} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 via-transparent to-transparent" />
           <div className="absolute left-3 bottom-3">
-            <p className="text-[9px] uppercase tracking-[0.3em] font-semibold text-ivory/75">Giulia</p>
+            <p className="text-[9px] uppercase tracking-[0.3em] font-semibold text-ivory/75">Giulia · alles</p>
             <p className="text-[11px] text-ivory/60">je dag</p>
           </div>
         </div>
 
-        {/* Glass content — left-aligned editorial */}
         <div className="flex-1 p-5 flex flex-col text-current min-h-0">
           {loading ? (
             <div className="flex-1 flex items-center justify-center"><div className="h-7 w-7 border-2 border-current/20 border-t-current rounded-full animate-spin" /></div>
@@ -98,22 +85,24 @@ export default function GiuliaWidget() {
               </div>
 
               <ol className="mt-3.5 space-y-2 flex-1">
-                {priorities.map((p, i) => (
-                  <li key={i} className="animate-fade-up" style={{ animationDelay: `${0.1 + i * 0.08}s` }}>
-                    <Link to={p.to} onClick={(e) => e.stopPropagation()} className="flex items-stretch gap-3 glass-1 rounded-xl px-3 py-2 hover:bg-white/5 transition text-left">
-                      <span className="text-[24px] leading-none font-display font-bold tabular-nums w-7 shrink-0" style={{ color: "var(--tile-accent)" }}>{String(i + 1).padStart(2, "0")}</span>
-                      <span className="text-[12px] leading-snug text-current/90 pt-1">{p.label}</span>
-                    </Link>
-                  </li>
-                ))}
+                {priorities.map((p, i) => {
+                  const meta = DOMAIN_META[p.domain] || DOMAIN_META.giulia;
+                  return (
+                    <li key={i} className="animate-fade-up" style={{ animationDelay: `${0.1 + i * 0.08}s` }}>
+                      <Link to={p.to} onClick={(e) => e.stopPropagation()} className="flex items-stretch gap-3 glass-1 rounded-xl px-3 py-2 hover:bg-white/5 transition text-left">
+                        <span className="text-[24px] leading-none font-display font-bold tabular-nums w-7 shrink-0" style={{ color: meta.color }}>{String(i + 1).padStart(2, "0")}</span>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[9px] uppercase tracking-wider font-bold" style={{ color: meta.color }}>{meta.label}</span>
+                          <p className="text-[12px] leading-snug text-current/90">{p.label}</p>
+                        </div>
+                      </Link>
+                    </li>
+                  );
+                })}
                 {priorities.length === 0 && (
                   <li className="text-[12px] text-current/55 glass-1 rounded-xl px-3 py-3">Een rustige dag — niets dringends.</li>
                 )}
               </ol>
-
-              <div className="mt-2 text-[9px] text-current/40 text-left">
-                {updatedStr ? `Bijgewerkt om ${updatedStr}` : "Nog geen planning vandaag"}
-              </div>
             </>
           )}
         </div>
