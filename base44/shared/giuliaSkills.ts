@@ -210,5 +210,32 @@ export const GIULIA_SKILLS = [
       if (m) await sr.entities.Hobby.update(args.hobby_id, { last_activity_date: args.date || new Date().toISOString(), activity_level: "active" }).catch(() => null);
       return m ? { id: m.id } : { error: "create failed" };
     }
-  }
+  },
+  {
+    name: "create_giulia_question",
+    description: "Voeg een vraag toe aan je 'WANTS TO KNOW'-laag — een ontbrekend stuk context dat je later aan Salvo wilt voorleggen. Gebruik dit als je in een gesprek een gat opmerkt dat niet NU hoeft, of als opvolgvraag na een antwoord.",
+    inputSchema: { type: "object", properties: { title: { type: "string" }, body: { type: "string" }, kind: { type: "string", enum: ["quick_drop", "fill_the_gap", "connect_the_dots", "memory_check", "life_check", "self_discovery"] }, domain: { type: "string", enum: ["life", "self", "projects", "time", "admin", "people", "communication"] }, priority: { type: "string", enum: ["now", "soon", "useful", "curious"] }, options: { type: "array", items: { type: "string" } }, target_type: { type: "string" }, target_ref: { type: "string" } }, required: ["title", "body"] },
+    execute: async (args, base44) => {
+      const q = await base44.asServiceRole.entities.GiuliaQuestion.create({ ...args, status: "open", confidence: 0.6, agent_source: "GIULIA-GIULIA" }).catch(() => null);
+      return q ? { id: q.id } : { error: "create failed" };
+    }
+  },
+  {
+    name: "close_giulia_question",
+    description: "Sluit een 'WANTS TO KNOW'-vraag af (status answered/skipped/archived) nadat Salvo heeft geantwoord of de vraag niet meer relevant is.",
+    inputSchema: { type: "object", properties: { id: { type: "string" }, status: { type: "string", enum: ["answered", "skipped", "archived"] }, answer: { type: "string" } }, required: ["id", "status"] },
+    execute: async ({ id, status, answer }, base44) => {
+      const q = await base44.asServiceRole.entities.GiuliaQuestion.update(id, { status, answer: answer || "" }).catch(() => null);
+      return q ? { ok: true } : { error: "not found" };
+    }
+  },
+  {
+    name: "list_open_questions",
+    description: "Lijst van openstaande 'WANTS TO KNOW'-vragen — ontbrekende context die je aan Salvo wilt voorleggen.",
+    inputSchema: { type: "object", properties: {} },
+    execute: async (_args, base44) => {
+      const list = await base44.asServiceRole.entities.GiuliaQuestion.filter({ status: "open" }, "-created_date", 20).catch(() => []);
+      return { count: list.length, items: list.map(q => ({ id: q.id, title: q.title, domain: q.domain, priority: q.priority })) };
+    }
+  },
 ];

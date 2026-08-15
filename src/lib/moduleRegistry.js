@@ -1,7 +1,7 @@
 import {
   Calendar, Briefcase, CheckSquare, Mail, MessageCircle,
   BookOpen, FileText, Users, MessageSquare, Mic, ClipboardCheck,
-  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu, Timer, Sparkles, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette,
+  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu, Timer, Sparkles, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle,
 } from "lucide-react";
 
 import Agenda from "@/pages/Agenda";
@@ -32,6 +32,7 @@ import SocialPlannerPage from "@/pages/life/SocialPlannerPage";
 import HouseholdPage from "@/pages/life/HouseholdPage";
 import PersonalAdminPage from "@/pages/life/PersonalAdminPage";
 import HobbiesPage from "@/pages/life/HobbiesPage";
+import WantsToKnow from "@/pages/WantsToKnow";
 
 /**
  * Single source of truth for every module that opens as a sliding glass
@@ -67,4 +68,5 @@ export const MODULES = {
   household:     { label: "Huishouden",         icon: Home,            Component: HouseholdPage,      panelWidth: 760 },
   personaladmin: { label: "Persoonlijk Admin",  icon: ClipboardList,   Component: PersonalAdminPage,  panelWidth: 760 },
   hobbies:       { label: "Hobby's",            icon: Palette,         Component: HobbiesPage,        panelWidth: 760 },
+  wantstoknow:   { label: "Wants to know",       icon: HelpCircle,      Component: WantsToKnow,        panelWidth: 760 },
 };

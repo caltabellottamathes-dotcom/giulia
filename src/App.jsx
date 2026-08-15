@@ -55,6 +55,7 @@ import HouseholdPage from '@/pages/life/HouseholdPage';
 import PersonalAdminPage from '@/pages/life/PersonalAdminPage';
 import HobbiesPage from '@/pages/life/HobbiesPage';
 import HobbyDetail from '@/pages/life/HobbyDetail';
+import WantsToKnow from '@/pages/WantsToKnow';
 // Slick staging pages are self-contained (PageShell per page)
 import SlickHome from '@/pages/slick/SlickHome';
 import SlickWeek from '@/pages/slick/SlickWeek';
@@ -146,6 +147,7 @@ const AuthenticatedApp = () => {
           <Route path="/life/personal-admin" element={<PersonalAdminPage />} />
           <Route path="/life/hobbies" element={<HobbiesPage />} />
           <Route path="/life/hobbies/:id" element={<HobbyDetail />} />
+          <Route path="/wants-to-know" element={<WantsToKnow />} />
         </Route>
         <Route path="/slick" element={<SlickHome />} />
         <Route path="/slick/weekplanning" element={<SlickWeek />} />

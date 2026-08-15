@@ -11,7 +11,6 @@ import { GiuliaVoiceProvider } from "@/lib/GiuliaVoiceContext";
 import AmbientBloom from "@/components/glass/AmbientBloom";
 import TauriFocusSync from "@/components/native/TauriFocusSync";
 import { GiuliaAgentProvider } from "@/lib/GiuliaAgentContext";
-import BottomNav from "@/components/BottomNav";
 import { useAgentNavigation } from "@/lib/useAgentNavigation";
 import GiuliaBubble from "@/components/glass/GiuliaBubble";
 import {
@@ -141,9 +140,6 @@ function LayoutInner() {
 
       {/* Permanent glass interaction bar — bottom-right */}
       <InteractionBar />
-
-      {/* Bottom page navigation — always visible on every page */}
-      <BottomNav />
 
       {/* Click-to-remember — capture context from any element, anywhere */}
       <ContextCaptureLayer />

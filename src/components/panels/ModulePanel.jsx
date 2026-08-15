@@ -29,6 +29,7 @@ import SocialPlannerPreview from "@/components/panels/previews/SocialPlannerPrev
 import HouseholdPreview from "@/components/panels/previews/HouseholdPreview";
 import PersonalAdminPreview from "@/components/panels/previews/PersonalAdminPreview";
 import HobbiesPreview from "@/components/panels/previews/HobbiesPreview";
+import QuestionsPreview from "@/components/panels/previews/QuestionsPreview";
 import { AnimatedPicto } from "@/components/panels/previews/previewParts";
 
 /** LEVEL 02 quick-context previews — one per data module. Modules without
@@ -44,6 +45,7 @@ const PREVIEWS = {
   timetracker: TimeTrackerPreview,
   socialpulse: SocialPulsePreview, socialplanner: SocialPlannerPreview,
   household: HouseholdPreview, personaladmin: PersonalAdminPreview, hobbies: HobbiesPreview,
+  wantstoknow: QuestionsPreview,
 };
 
 /**
@@ -65,6 +67,7 @@ const MODULE_ACCENT = {
   jedag: "hsl(var(--sand))",
   socialpulse: "hsl(var(--life-blue))", socialplanner: "hsl(var(--life-blue))",
   household: "hsl(var(--life-blue))", personaladmin: "hsl(var(--life-sand))", hobbies: "hsl(var(--life-blue))",
+  wantstoknow: "hsl(var(--olive))",
 };
 
 // Modules without a widget keep an editorial photo; modules WITH a widget
@@ -80,6 +83,7 @@ const MODULE_IMAGE = {
   jedag: IMAGES.portraitBootFace,
   socialpulse: IMAGES.lifeSocialPulse, socialplanner: IMAGES.lifeSocialPlanner,
   household: IMAGES.lifeHousehold, personaladmin: IMAGES.lifePersonalAdmin, hobbies: IMAGES.lifeHobbies,
+  wantstoknow: IMAGES.portraitThinking,
 };
 
 const MODULE_ROUTE = {
@@ -95,6 +99,7 @@ const MODULE_ROUTE = {
   goodmorning: "/wake",
   socialpulse: "/life/social-pulse", socialplanner: "/life/social-planner",
   household: "/life/household", personaladmin: "/life/personal-admin", hobbies: "/life/hobbies",
+  wantstoknow: "/wants-to-know",
 };
 
 // Topic-related subtitles per module — replaces the bare label so the panel
@@ -126,6 +131,7 @@ const MODULE_TOPIC = {
   socialpulse: "Wie aandacht verdient", socialplanner: "Sociale tijd inplannen",
   household: "Het huishouden op orde", personaladmin: "Wat er geregeld moet worden",
   hobbies: "Wat jou energie geeft",
+  wantstoknow: "Wat Giulia nog wil weten",
 };
 
 export default function ModulePanel() {

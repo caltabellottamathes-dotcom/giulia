@@ -1,0 +1,109 @@
+{
+  "name": "GiuliaQuestion",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "body": {
+      "type": "string",
+      "title": "Body"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "quick_drop",
+        "fill_the_gap",
+        "connect_the_dots",
+        "memory_check",
+        "life_check",
+        "self_discovery"
+      ],
+      "default": "fill_the_gap",
+      "title": "Kind"
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "life",
+        "self",
+        "projects",
+        "time",
+        "admin",
+        "people",
+        "communication"
+      ],
+      "default": "projects",
+      "title": "Domain"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "now",
+        "soon",
+        "useful",
+        "curious"
+      ],
+      "default": "useful",
+      "title": "Priority"
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Options"
+    },
+    "target_ref": {
+      "type": "string",
+      "title": "Target Ref"
+    },
+    "target_type": {
+      "type": "string",
+      "title": "Target Type"
+    },
+    "context": {
+      "type": "string",
+      "title": "Context"
+    },
+    "answer": {
+      "type": "string",
+      "title": "Answer"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "answered",
+        "skipped",
+        "archived"
+      ],
+      "default": "open",
+      "title": "Status"
+    },
+    "confidence": {
+      "type": "number",
+      "default": 0.5,
+      "title": "Confidence"
+    },
+    "followup_created": {
+      "type": "boolean",
+      "default": false,
+      "title": "Followup Created"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

@@ -68,4 +68,9 @@ export const MODULE_FUNCTIONS = {
     { label: "Open", to: "/life/personal-admin?tab=open" },
   ],
   hobbies: [{ label: "Hobby's", to: "/life/hobbies" }],
+  wantstoknow: [
+    { label: "Wants to know", to: "/wants-to-know" },
+    { label: "Geheugen", to: "/memory" },
+    { label: "Inzichten", to: "/insights" },
+  ],
 };

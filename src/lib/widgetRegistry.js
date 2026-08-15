@@ -1,6 +1,6 @@
 import {
   Sparkles, Calendar, CheckSquare, ClipboardCheck, Mail, MessageCircle,
-  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu, MessageSquare, Timer, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette,
+  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu, MessageSquare, Timer, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle,
 } from "lucide-react";
 import { IMAGES } from "@/lib/images";
 
@@ -28,6 +28,7 @@ import SocialPlannerWidget from "@/components/widgets/SocialPlannerWidget";
 import HouseholdWidget from "@/components/widgets/HouseholdWidget";
 import PersonalAdminWidget from "@/components/widgets/PersonalAdminWidget";
 import HobbiesWidget from "@/components/widgets/HobbiesWidget";
+import GiuliaQuestionsWidget from "@/components/widgets/GiuliaQuestionsWidget";
 
 /**
  * Single source of truth for every dashboard widget. `image` is a branding
@@ -58,6 +59,7 @@ export const WIDGETS = {
   household:     { type: "household",     label: "Huishouden",          icon: Home,           Component: HouseholdWidget,      image: IMAGES.lifeHousehold,      span: 3, category: "life" },
   personaladmin: { type: "personaladmin", label: "Persoonlijk Admin",   icon: ClipboardList,  Component: PersonalAdminWidget,  image: IMAGES.lifePersonalAdmin, span: 3, category: "life" },
   hobbies:       { type: "hobbies",       label: "Hobby's",            icon: Palette,        Component: HobbiesWidget,        image: IMAGES.lifeHobbies,        span: 3, category: "life" },
+  giuliaquestions: { type: "giuliaquestions", label: "Giulia · Wants to know", icon: HelpCircle, Component: GiuliaQuestionsWidget, image: IMAGES.portraitThinking, span: 4, category: "intelligence" },
 };
 
 export const WIDGET_LIST = Object.values(WIDGETS);
