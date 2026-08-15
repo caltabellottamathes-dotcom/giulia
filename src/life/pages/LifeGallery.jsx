@@ -2,21 +2,16 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { PanelProvider } from "@/lib/PanelContext";
 import ModulePanel from "@/system/panels/ModulePanel";
-import DailyStateWidget from "@/self/widgets/gallery/DailyStateWidget";
-import RoutinesWidget from "@/self/widgets/gallery/RoutinesWidget";
-import WakeWidget from "@/self/widgets/gallery/WakeWidget";
-import TherapyWidget from "@/self/widgets/gallery/TherapyWidget";
-import JournalWidget from "@/self/widgets/gallery/JournalWidget";
-import PersonalDevelopmentWidget from "@/self/widgets/gallery/PersonalDevelopmentWidget";
-import PersonalTimeWidget from "@/self/widgets/gallery/PersonalTimeWidget";
-import InsightsWidget from "@/self/widgets/gallery/InsightsWidget";
+import HobbiesWidget from "@/life/widgets/HobbiesWidget";
+import HouseholdWidget from "@/life/widgets/HouseholdWidget";
+import SocialPlannerWidget from "@/life/widgets/SocialPlannerWidget";
+import SocialPulseWidget from "@/life/widgets/SocialPulseWidget";
+import PersonalAdminWidget from "@/life/widgets/PersonalAdminWidget";
 
 /**
- * LifeGallery — standalone galerij los van het OS. Toont de acht nieuwe
- * editorial SELF-widgets, elk met een eigen visuele metafoor en formaat:
- * living state field · animated timeline · atmospheric progression ·
- * trajectory system · editorial journal · growth map · spatial time field ·
- * data narrative. Eigen PanelProvider + ModulePanel houdt ze interactief.
+ * LifeGallery — een standalone pagina, los van het OS, die alle LIFE-widgets
+ * samenbrengt. Geen OS-shell/header/nav; wel een eigen PanelProvider +
+ * ModulePanel zodat de widgets interactief blijven (klik opent het panel).
  */
 export default function LifeGallery() {
   return (
@@ -25,20 +20,17 @@ export default function LifeGallery() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <Link to="/" className="text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/50 hover:text-foreground transition-colors">← Terug naar OS</Link>
-            <h1 className="text-3xl font-display font-semibold tracking-tight mt-1.5">SELF · Galerij</h1>
-            <p className="text-sm text-muted-foreground mt-1 max-w-xl">Acht editorial SELF-widgets — living state, animated timeline, atmospheric progression, trajectory system, editorial journal, growth map, spatial time field, data narrative.</p>
+            <h1 className="text-3xl font-display font-semibold tracking-tight mt-1.5">LIFE · Galerij</h1>
+            <p className="text-sm text-muted-foreground mt-1">Alle LIFE-widgets, los van het OS.</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 auto-rows-[minmax(200px,auto)] gap-4">
-          <DailyStateWidget />
-          <RoutinesWidget />
-          <WakeWidget />
-          <TherapyWidget />
-          <JournalWidget />
-          <PersonalDevelopmentWidget />
-          <PersonalTimeWidget />
-          <InsightsWidget />
+          <SocialPulseWidget />
+          <SocialPlannerWidget />
+          <HouseholdWidget />
+          <PersonalAdminWidget />
+          <HobbiesWidget />
         </div>
       </div>
       <ModulePanel />
