@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { PanelProvider } from "@/lib/PanelContext";
 import ModulePanel from "@/system/panels/ModulePanel";
+import MasonryGrid from "@/system/widgets/MasonryGrid";
 import DailyStateEditorial from "@/self/widgets/editorial/DailyStateEditorial";
 import RoutinesEditorial from "@/self/widgets/editorial/RoutinesEditorial";
 import WakeEditorial from "@/self/widgets/editorial/WakeEditorial";
@@ -12,21 +13,23 @@ import PersonalTimeEditorial from "@/self/widgets/editorial/PersonalTimeEditoria
 import SelfInsightsEditorial from "@/self/widgets/editorial/SelfInsightsEditorial";
 
 /**
- * SelfGallery — een standalone pagina, los van het OS, die de acht
- * "editorial information objects" van SELF samenbrengt. Burgundy / beton /
- * glas; elke widget heeft zijn eigen formaat, foto en visuele metafoor.
+ * SelfGallery — standalone pagina met de acht SELF editorial information objects.
+ * Hetzelfde MasonryGrid als het dashboard; elke widget heeft een eigen proportie
+ * (smal/hoog, breed/laag, vierkant) bedacht voor zijn inhoud.
  */
 export default function SelfGallery() {
+  // width spans: 1 = smal, 2 = breed — aangepast per widget-inhoud
+  const spans = [1, 2, 1, 2, 1, 2, 2, 2];
   return (
     <PanelProvider>
       <div className="min-h-screen bg-background px-5 lg:px-10 py-8 pb-24">
         <div className="mb-6">
           <Link to="/" className="text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/50 hover:text-foreground transition-colors">← Terug naar OS</Link>
           <h1 className="text-3xl font-display font-semibold tracking-tight mt-1.5">SELF · Galerij</h1>
-          <p className="text-sm text-muted-foreground mt-1">Acht editorial information objects — burgundy, beton, glas.</p>
+          <p className="text-sm text-muted-foreground mt-1">Acht editorial information objects — plum, sage, glas.</p>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 auto-rows-[minmax(190px,auto)] gap-4">
+        <MasonryGrid spans={spans} gap={16}>
           <DailyStateEditorial />
           <RoutinesEditorial />
           <WakeEditorial />
@@ -35,7 +38,7 @@ export default function SelfGallery() {
           <PersonalDevelopmentEditorial />
           <PersonalTimeEditorial />
           <SelfInsightsEditorial />
-        </div>
+        </MasonryGrid>
       </div>
       <ModulePanel />
     </PanelProvider>

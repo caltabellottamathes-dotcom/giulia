@@ -9,7 +9,7 @@ import { useLearningSync } from "@/hooks/useLearningSync";
 import { timeBlockLabel, fmtDuration } from "@/lib/selfUtils";
 import { SELF_PHOTO, PLUM, SAGE, PLUM_FAINT, MOCK } from "./selfEditorial";
 
-/** Personal Time — foto LINKS, 24u dag-balk rechts. */
+/** Personal Time — breed & laag (2×1). 24u dag-balk + foto links. */
 export default function PersonalTimeEditorial() {
   const { openModule } = usePanel();
   const learnTick = useLearningSync();
@@ -25,26 +25,23 @@ export default function PersonalTimeEditorial() {
   const headline = protectedMin ? "BESCHERMD" : total ? "RUST" : "VRIJ";
 
   return (
-    <WidgetShell size="2x1" radius="large" interactive onClick={() => openModule("selfpersonaltime")} className="min-h-[200px] sm:col-span-2" style={{ "--tile-accent": PLUM }}>
-      <div className="flex h-full gap-3 p-3" style={{ color: PLUM }}>
-        {/* foto links */}
-        <div className="w-[32%] shrink-0 rounded-2xl overflow-hidden">
+    <WidgetShell size="2x1" radius="large" interactive onClick={() => openModule("selfpersonaltime")} className="min-h-[160px]" style={{ "--tile-accent": PLUM }}>
+      <div className="flex h-full gap-2.5 p-2.5" style={{ color: PLUM }}>
+        <div className="w-[26%] shrink-0 rounded-xl overflow-hidden">
           <img src={SELF_PHOTO.personalTime} alt="" className="h-full w-full object-cover" draggable={false} />
         </div>
 
-        {/* infographic rechts */}
         <div className="flex-1 flex flex-col min-w-0">
           <WidgetHeader label="Personal Time" count={`${today.length} blokken`} />
-          <div className="flex items-end justify-between mt-1">
+          <div className="flex items-end justify-between mt-0.5">
             <div>
-              <h3 className="text-[26px] leading-[1.0] font-display font-semibold tracking-[-0.03em]">{headline}</h3>
-              <p className="text-[10px] uppercase tracking-[0.2em] opacity-55 mt-1.5">{protectedMin ? `${fmtDuration(protectedMin)} beschermd` : `${fmtDuration(total)} totaal`}</p>
+              <h3 className="text-[20px] leading-[1.0] font-display font-semibold tracking-[-0.03em]">{headline}</h3>
+              <p className="text-[9px] uppercase tracking-[0.2em] opacity-55 mt-1">{protectedMin ? `${fmtDuration(protectedMin)} beschermd` : `${fmtDuration(total)} totaal`}</p>
             </div>
-            <CountUp value={total} className="text-[48px] leading-none font-display font-semibold tabular-nums" />
+            <CountUp value={total} className="text-[34px] leading-none font-display font-semibold tabular-nums" />
           </div>
 
-          {/* 24u dag-balk */}
-          <div className="mt-4 relative h-10 rounded-lg overflow-hidden" style={{ background: PLUM_FAINT }}>
+          <div className="mt-2.5 relative h-7 rounded-lg overflow-hidden" style={{ background: PLUM_FAINT }}>
             {Array.from({ length: 24 }).map((_, h) => (
               <span key={h} className="absolute top-0 bottom-0 w-px" style={{ left: `${(h / 24) * 100}%`, background: `${PLUM}14` }} />
             ))}
@@ -60,14 +57,14 @@ export default function PersonalTimeEditorial() {
               );
             })}
           </div>
-          <div className="mt-1.5 flex items-center gap-3 text-[9px] uppercase tracking-wider opacity-60">
+          <div className="mt-1 flex items-center gap-3 text-[8px] uppercase tracking-wider opacity-60">
             <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm" style={{ background: PLUM }} />beschermd</span>
             <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-sm" style={{ background: SAGE }} />rust / herstel</span>
           </div>
 
           <div className="flex-1" />
-          <div className="flex items-center justify-end pt-2 border-t" style={{ borderColor: PLUM_FAINT }}>
-            <button onClick={(e) => { e.stopPropagation(); openModule("selfpersonaltime"); }} className="rounded-full px-3 py-1 text-[10px] font-semibold border hover:bg-[#301728]/10 transition" style={{ borderColor: `${PLUM}4d` }}>Open</button>
+          <div className="flex items-center justify-end pt-1.5 border-t" style={{ borderColor: PLUM_FAINT }}>
+            <button onClick={(e) => { e.stopPropagation(); openModule("selfpersonaltime"); }} className="rounded-full px-2.5 py-0.5 text-[9px] font-semibold border hover:bg-[#301728]/10 transition" style={{ borderColor: `${PLUM}4d` }}>Open</button>
           </div>
         </div>
       </div>
