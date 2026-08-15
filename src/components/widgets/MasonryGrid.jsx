@@ -32,7 +32,7 @@ export default function MasonryGrid({ children, className, gap = 16, spans, scal
     const update = () => {
       const width = container.offsetWidth;
       if (!width) return;
-      const c = width < 640 ? 1 : width < 1024 ? 2 : width < 1440 ? 3 : 4;
+      const c = width < 640 ? 1 : width < 1024 ? 2 : width < 1280 ? 4 : 5;
       setCols(c);
       setColW((width - (c - 1) * gap) / c);
     };

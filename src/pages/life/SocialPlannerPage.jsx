@@ -12,7 +12,6 @@ import { closeCircle, socialPulse, daysSince } from "@/lib/domainUtils";
 import { CalendarHeart, Plus, Clock, Search, MessageCircle, ExternalLink, Sparkles } from "lucide-react";
 import { logLifeActivity } from "@/lib/lifeActivity";
 import LifeActivityFeed from "@/components/life/LifeActivityFeed";
-import LifeOverviewCards from "@/components/life/LifeOverviewCards";
 
 const BLUE = "hsl(var(--life-blue-deep))";
 const SAND = "hsl(var(--life-sand))";
@@ -136,13 +135,6 @@ export default function SocialPlannerPage() {
     <div className="space-y-6 animate-fade-up">
       <PageHero page="life-social-planner" image={IMAGES.lifeSocialPlanner} icon={CalendarHeart} eyebrow="LIFE" title="Social Planner" subtitle={summary}
         actions={<GlassButton variant="primary" size="md" onClick={() => document.getElementById("creator")?.scrollIntoView({ behavior: "smooth" })}><Plus className="h-4 w-4" /> Nieuw plan</GlassButton>} />
-
-      <LifeOverviewCards cards={[
-        { label: "Deze week", value: weekPlans.length, hint: "gepland", accent: "blue" },
-        { label: "Bevestigd", value: upcoming.length, accent: "blue" },
-        { label: "Open dagen", value: openDaysCount, hint: "vrij", accent: "sand" },
-        { label: "Te bellen", value: peopleWant.length, hint: "overdue", accent: "sand" },
-      ]} />
 
       {/* Tabs */}
       <div className="flex items-center gap-1 overflow-x-auto -mx-1 px-1 pb-1">

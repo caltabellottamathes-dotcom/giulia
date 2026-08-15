@@ -300,13 +300,13 @@ export default function Home() {
         {/* Tidy sorted bento grid */}
         <div className="px-5 lg:px-10 pb-10 lg:pb-0">
           {loading ? (
-            <div className="max-w-[1280px] columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-3">
+            <div className="max-w-[1280px] columns-1 sm:columns-2 lg:columns-4 xl:columns-5 gap-3 lg:gap-4">
               {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-                <div key={i} className="mb-3 break-inside-avoid h-[160px] rounded-[20px] shimmer" />
+                <div key={i} className="mb-3 lg:mb-4 break-inside-avoid h-[220px] rounded-[24px] shimmer" />
               ))}
             </div>
           ) : sorted.length > 0 ? (
-            <MasonryGrid key={resetKey} className="max-w-[1280px]" gap={12} spans={cells.map((c) => c.span)} scale={0.88}>
+            <MasonryGrid key={resetKey} className="max-w-[1280px]" gap={16} spans={cells.map((c) => c.span)} scale={0.9}>
               {cells.map((c) => c.node)}
             </MasonryGrid>
           ) : (

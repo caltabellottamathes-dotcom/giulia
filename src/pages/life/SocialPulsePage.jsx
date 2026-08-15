@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 import { AreaChart, Area, LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { Heart, Search, SlidersHorizontal, Settings, MessageCircle, CalendarHeart, Bell, Plus, Sparkles, ArrowUpRight, Clock, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import LifeActivityFeed from "@/components/life/LifeActivityFeed";
-import LifeOverviewCards from "@/components/life/LifeOverviewCards";
 
 const BLUE = "hsl(var(--life-blue))";
 const DEEP = "hsl(var(--life-blue-deep))";
@@ -118,13 +117,6 @@ export default function SocialPulsePage() {
     <div className="space-y-6 animate-fade-up pb-12">
       <PageHero page="life-social-pulse" image={IMAGES.lifeSocialPulse} icon={Heart} eyebrow="LIFE · SOCIAL" title="Social Pulse" subtitle="Your social world, understood in context."
         actions={<div className="flex items-center gap-2"><button className="glass-button rounded-full h-9 w-9 inline-flex items-center justify-center text-ivory/80"><Search className="h-4 w-4" /></button><button className="glass-button rounded-full h-9 px-3 inline-flex items-center gap-2 text-xs text-ivory/80"><SlidersHorizontal className="h-4 w-4" /> View</button><button className="glass-button rounded-full h-9 w-9 inline-flex items-center justify-center text-ivory/80"><Settings className="h-4 w-4" /></button></div>} />
-
-      <LifeOverviewCards cards={[
-        { label: "Relaties", value: contacts.length, accent: "blue" },
-        { label: "Interacties", value: interactions, hint: "30 dagen", accent: "blue" },
-        { label: "Overdue", value: overdue.length, hint: "doven uit", accent: "sand" },
-        { label: "Komt voor", value: upcoming.length, accent: "blue" },
-      ]} />
 
       {/* TABS */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 -mt-2 relative z-20">
