@@ -242,6 +242,18 @@ export const GIULIA_SKILLS = [
     }
   },
   {
+    name: "find_objects",
+    description: "Zoek objecten op titel/naam. Geef type (CalendarEvent, Task, Project, Contact, HouseholdItem, AdminObligation, SocialPlan, Hobby) en een query (deel van de titel). Retourneert id + titel. GEBRUIK DIT ALTIJD voordat je een update_*/complete_* met een id uitvoert dat je niet kent — raad NOOIT een id.",
+    inputSchema: { type: "object", properties: { type: { type: "string", enum: ["CalendarEvent", "Task", "Project", "Contact", "HouseholdItem", "AdminObligation", "SocialPlan", "Hobby"] }, query: { type: "string" } }, required: ["type", "query"] },
+    execute: async ({ type, query }, base44) => {
+      const sr = base44.asServiceRole;
+      const q = String(query || "").toLowerCase();
+      const list = await sr.entities[type].filter({}, "-created_date", 200).catch(() => []);
+      const matches = list.filter((x) => String(x.title || x.name || x.activity || "").toLowerCase().includes(q)).slice(0, 10);
+      return { count: matches.length, items: matches.map((m) => ({ id: m.id, title: m.title || m.name || m.activity })) };
+    }
+  },
+  {
     name: "create_event",
     description: "Maak een agenda-afspraak (CalendarEvent). Gebruik voor álle afspraken — werk, sociaal, huishouden, SELF. Tag domain automatisch: FOCUS=werk/zakelijk, LIFE=sociaal/huishouden, SELF=rust/zelfzorg. Geef start (en liefst end) als ISO datetime. Koppel optioneel een project_id of participants.",
     inputSchema: { type: "object", properties: { title: { type: "string" }, start: { type: "string", description: "ISO datetime, bv. 2026-08-17T19:00:00" }, end: { type: "string", description: "ISO datetime" }, location: { type: "string" }, participants: { type: "string" }, project_id: { type: "string" }, domain: { type: "string", enum: ["focus", "life", "self"] }, travel_time: { type: "number" }, prep_time: { type: "number" } }, required: ["title", "start"] },
@@ -283,6 +295,53 @@ export const GIULIA_SKILLS = [
       const s = await sr.entities.HouseholdItem.create({ ...args, kind: "shopping", status: "needs_attention", agent_source: "GIULIA-CORE" }).catch(() => null);
       if (s) await emitEvent(base44, { event_type: "SHOPPING_ITEM_CREATED", object_type: "HouseholdItem", object_id: s.id, domain: "life", description: `Boodschap: ${s.title}` });
       return s ? { id: s.id } : { error: "create failed" };
+    }
+  },
+  {
+    name: "update_event",
+    description: "Werk een agenda-afspraak bij (tijd, locatie, status). Set status='cancelled' om af te zeggen — dat annuleert AUTOMATISCH gekoppelde sociale plannen via de propagation-engine.",
+    inputSchema: { type: "object", properties: { id: { type: "string" }, title: { type: "string" }, start: { type: "string", description: "ISO datetime" }, end: { type: "string", description: "ISO datetime" }, location: { type: "string" }, status: { type: "string", enum: ["confirmed", "tentative", "cancelled"] } }, required: ["id"] },
+    execute: async ({ id, ...patch }, base44) => {
+      const sr = base44.asServiceRole;
+      const e = await sr.entities.CalendarEvent.update(id, patch).catch(() => null);
+      if (e) {
+        const et = patch.status === "cancelled" ? "EVENT_CANCELLED" : "EVENT_UPDATED";
+        await emitEvent(base44, { event_type: et, object_type: "CalendarEvent", object_id: id, domain: e.domain || "focus", description: `${et === "EVENT_CANCELLED" ? "Afspraak geannuleerd" : "Afspraak bijgewerkt"}: ${e.title}` });
+      }
+      return e ? { id: e.id } : { error: "not found" };
+    }
+  },
+  {
+    name: "complete_task",
+    description: "Markeer een taak als voltooid (status=completed). Deblokkeert AUTOMATISCH afhankelijke kind-taken die op deze wachtten (parent_task_id, status waiting/delegated) via de propagation-engine.",
+    inputSchema: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+    execute: async ({ id }, base44) => {
+      const sr = base44.asServiceRole;
+      const t = await sr.entities.Task.update(id, { status: "completed" }).catch(() => null);
+      if (t) await emitEvent(base44, { event_type: "TASK_COMPLETED", object_type: "Task", object_id: id, domain: t.domain || "focus", description: `Voltooid: ${t.title}` });
+      return t ? { ok: true } : { error: "not found" };
+    }
+  },
+  {
+    name: "create_admin_obligation",
+    description: "Maak een persoonlijke administratie-verplichting aan (LIFE → Personal Admin): betaling, verzekering, contract, vernieuwing of abonnement. Set due_date (YYYY-MM-DD), amount, recurrence.",
+    inputSchema: { type: "object", properties: { title: { type: "string" }, type: { type: "string", enum: ["payment", "insurance", "contract", "renewal", "subscription"] }, due_date: { type: "string", description: "YYYY-MM-DD" }, amount: { type: "number" }, recurrence: { type: "string", enum: ["none", "monthly", "quarterly", "annual"] }, notes: { type: "string" } }, required: ["title"] },
+    execute: async (args, base44) => {
+      const sr = base44.asServiceRole;
+      const o = await sr.entities.AdminObligation.create({ ...args, status: "open", agent_source: "GIULIA-CORE" }).catch(() => null);
+      if (o) await emitEvent(base44, { event_type: "ADMIN_OBLIGATION_CREATED", object_type: "AdminObligation", object_id: o.id, domain: "life", description: `Admin: ${o.title}` });
+      return o ? { id: o.id } : { error: "create failed" };
+    }
+  },
+  {
+    name: "create_self_routine",
+    description: "Maak een SELF-routine aan (persoonlijke gewoonte/zelfzorg). Wordt opgeslagen als Task met domain='self'. Set deadline, energy_level of category.",
+    inputSchema: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, deadline: { type: "string", description: "YYYY-MM-DD" }, energy_level: { type: "string", enum: ["deep", "shallow", "quick"] }, category: { type: "string" } }, required: ["title"] },
+    execute: async (args, base44) => {
+      const sr = base44.asServiceRole;
+      const r = await sr.entities.Task.create({ ...args, domain: "self", category: args.category || "routine", status: "today", agent_source: "GIULIA-CORE" }).catch(() => null);
+      if (r) await emitEvent(base44, { event_type: "SELF_ROUTINE_CREATED", object_type: "Task", object_id: r.id, domain: "self", description: `SELF-routine: ${r.title}` });
+      return r ? { id: r.id } : { error: "create failed" };
     }
   },
 ];

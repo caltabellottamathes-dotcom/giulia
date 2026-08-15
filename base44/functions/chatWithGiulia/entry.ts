@@ -33,7 +33,7 @@ function sanitizeResult(r) {
       const v = r[k];
       if (v == null || typeof v === "string" || typeof v === "number" || typeof v === "boolean") {
         out[k] = typeof v === "string" ? v.slice(0, 300) : v;
-      } else if (Array.isArray(v)) out[k] = `array[${v.length}]`;
+      } else if (Array.isArray(v)) out[k] = v.slice(0, 10).map((x) => sanitizeResult(x));
       else if (typeof v === "object") out[k] = "[object]";
       if (Object.keys(out).length >= 12) break;
     }

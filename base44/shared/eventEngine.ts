@@ -1,25 +1,22 @@
 /**
- * eventEngine.ts — de typed Event-laag van GIULIA OS.
+ * eventEngine.ts — typed Event-laag + Propagation-engine van GIULIA OS.
  *
- * Iedere CORE-actie emit hier een gestructureerd event (een Activity-record met
- * event_type / object_type / object_id / domain). De UI abonneert zich op
- * Activity (via useLearningSync) en reageert automatisch — dat is de
- * "widgets/panels/pages luisteren naar centrale state"-regel.
+ * emitEvent schrijft een gestructureerd event (Activity met event_type /
+ * object_type / object_id / domain) en triggert daarna propagate(): de
+ * cross-object afhankelijkheden die maken dat "één verandering → hele
+ * systeem bijgewerkt" echt werkt. De UI abonneert zich op Activity (via
+ * useLearningSync) én op de betreffende entiteiten (via realtime subscribe)
+ * en reageert automatisch.
  *
- * Dit is de ruggengraat van "één verandering → hele systeem bijgewerkt". De
- * propagation-engine (cross-object afhankelijkheden, bv. EVENT_CANCELLED →
- * gelinkte SocialPlans annuleren + planning herrekenen) bouwt hierop verder
- * op en wordt als volgende stap toegevoegd.
- */
-
-/**
- * emitEvent — schrijft een gestructureerd event in de Activity-feed.
- * `action` wordt gelijkgesteld aan event_type voor backwards-compatibele
- * consumenten die op action filteren; de aparte velden geven structuur.
+ * Regels die nu leven (voeg hier nieuwe propagation-regels toe):
+ *  - EVENT_CANCELLED        → gekoppelde SocialPlans (calendar_event_id) → cancelled
+ *  - TASK_COMPLETED          → afhankelijke kind-taken (parent_task_id, status waiting/delegated) → todo
+ *  - SOCIAL_PLAN_CONFIRMED   → gelinkte CalendarEvent → confirmed
+ *  - HOUSEHOLD/SHOPPING_ITEM_COMPLETED (routine met frequency_days) → next_due herzien
  */
 export async function emitEvent(base44, { event_type, object_type, object_id, domain, description, source }) {
   try {
-    return await base44.asServiceRole.entities.Activity.create({
+    const a = await base44.asServiceRole.entities.Activity.create({
       action: event_type,
       description: description || event_type,
       source: source || "GIULIA-CORE",
@@ -29,5 +26,66 @@ export async function emitEvent(base44, { event_type, object_type, object_id, do
       object_id,
       domain,
     });
+    // Propagate cross-object dependencies (fire-and-forget — breekt nooit de flow)
+    propagate(base44, { event_type, object_type, object_id, domain, description }).catch(() => {});
+    return a;
   } catch { return null; }
+}
+
+/**
+ * propagate — de afhankelijkheids-engine. Gegeven een event, past hij alle
+ * objecten aan die ervan afhangen. Houd dit deterministisch en bij-effect-arm;
+ * GIULIA-GIULIA beslist wáárom, CORE bepaalt hóe.
+ */
+export async function propagate(base44, event) {
+  const sr = base44.asServiceRole;
+  const { event_type, object_type, object_id } = event;
+  if (!event_type || !object_type || !object_id) return null;
+
+  // EVENT_CANCELLED → gekoppelde sociale plannen annuleren
+  if (event_type === "EVENT_CANCELLED" && object_type === "CalendarEvent") {
+    const plans = await sr.entities.SocialPlan.filter({ calendar_event_id: object_id }).catch(() => []);
+    let n = 0;
+    for (const sp of plans) {
+      if (sp.status === "planned" || sp.status === "confirmed") {
+        await sr.entities.SocialPlan.update(sp.id, { status: "cancelled" }).catch(() => null);
+        n++;
+      }
+    }
+    return { cancelled_social_plans: n };
+  }
+
+  // TASK_COMPLETED → afhankelijke kind-taken deblokkeren
+  if (event_type === "TASK_COMPLETED" && object_type === "Task") {
+    const children = await sr.entities.Task.filter({ parent_task_id: object_id, status: { $in: ["waiting", "delegated"] } }).catch(() => []);
+    let n = 0;
+    for (const c of children) {
+      await sr.entities.Task.update(c.id, { status: "todo" }).catch(() => null);
+      n++;
+    }
+    return { unblocked_tasks: n };
+  }
+
+  // SOCIAL_PLAN_CONFIRMED → gelinkte agenda-afspraak bevestigen
+  if (event_type === "SOCIAL_PLAN_CONFIRMED" && object_type === "SocialPlan") {
+    const sp = await sr.entities.SocialPlan.get(object_id).catch(() => null);
+    if (sp && sp.calendar_event_id) {
+      await sr.entities.CalendarEvent.update(sp.calendar_event_id, { status: "confirmed" }).catch(() => null);
+      return { confirmed_event: sp.calendar_event_id };
+    }
+    return null;
+  }
+
+  // HOUSEHOLD/SHOPPING_ITEM_COMPLETED (routine) → next_due herzien op basis van frequency_days
+  if ((event_type === "HOUSEHOLD_ITEM_COMPLETED" || event_type === "SHOPPING_ITEM_COMPLETED") && object_type === "HouseholdItem") {
+    const h = await sr.entities.HouseholdItem.get(object_id).catch(() => null);
+    if (h && h.kind === "routine" && h.frequency_days) {
+      const next = new Date(Date.now() + h.frequency_days * 86400000).toISOString().slice(0, 10);
+      await sr.entities.HouseholdItem.update(object_id, { status: "needs_attention", next_due: next, last_done: new Date().toISOString() }).catch(() => null);
+      return { next_due: next };
+    }
+    return null;
+  }
+
+  return null;
 }

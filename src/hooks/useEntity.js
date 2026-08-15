@@ -5,7 +5,7 @@ import { base44 } from "@/api/base44Client";
  * useEntityList — fetch real entity records (user-scoped via RLS).
  * `reload()` re-fetches after create/update/delete.
  */
-export function useEntityList(name, { filter, sort, limit, realtime, externalTick } = {}) {
+export function useEntityList(name, { filter, sort, limit, realtime = true, externalTick } = {}) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tick, setTick] = useState(0);
