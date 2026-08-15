@@ -73,12 +73,13 @@ export default function WidgetShell({
         "--tile-accent": tile.accent,
         "--tile-on-accent": tile.on,
         ...bg,
-        boxShadow: "0 28px 64px -26px rgba(0,0,0,0.42), inset 0 1px 0 0 rgba(255,255,255,0.14)",
+        boxShadow:
+          "0 1px 2px rgba(0,0,0,0.06), 0 18px 44px -22px rgba(0,0,0,0.40), inset 0 1px 0 0 rgba(255,255,255,0.16)",
         ...style,
         zIndex,
       }}
       className={cn(
-        "relative overflow-hidden flex flex-col h-full animate-fade-up border border-current/10 ring-1 ring-inset ring-white/10",
+        "relative overflow-hidden flex flex-col h-full animate-fade-up border border-white/12 ring-1 ring-inset ring-white/10",
         tile.text,
         sizeMap[size] || sizeMap["1x1"],
         radiusMap[radius] || radiusMap.medium,
@@ -86,7 +87,10 @@ export default function WidgetShell({
         className
       )}
     >
-      <span className="pointer-events-none absolute inset-x-0 top-0 h-[3px]" style={{ background: "var(--tile-accent)" }} />
+      {/* editoriale accent-haarlijn — van accent naar transparant, subtieler dan een harde strip */}
+      <span className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: "linear-gradient(90deg, transparent, var(--tile-accent) 18%, var(--tile-accent) 82%, transparent)" }} />
+      {/* zachte refractie-licht van linksboven voor glasdiepte */}
+      <span className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(130% 90% at 0% 0%, rgba(255,255,255,0.10), transparent 46%)" }} />
       {children}
     </div>
   );

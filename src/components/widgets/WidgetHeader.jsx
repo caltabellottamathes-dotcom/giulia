@@ -9,21 +9,21 @@ export default function WidgetHeader({ label, count }) {
   return (
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center gap-2">
-        <span className="flex items-end gap-[2px] h-3.5">
+        <span className="flex items-end gap-[2px] h-3">
           {[0, 1, 2].map((i) => (
             <motion.span
               key={i}
-              className="w-[3px] rounded-full"
+              className="w-[2.5px] rounded-full"
               style={{ background: "var(--tile-accent)" }}
-              animate={{ height: ["30%", "100%", "45%", "80%", "30%"] }}
-              transition={{ duration: 1.9, repeat: Infinity, ease: "easeInOut", delay: i * 0.22 }}
+              animate={{ height: ["28%", "100%", "42%", "78%", "28%"] }}
+              transition={{ duration: 2.1, repeat: Infinity, ease: "easeInOut", delay: i * 0.24 }}
             />
           ))}
         </span>
-        <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-current opacity-55">{label}</h3>
+        <h3 className="text-[10px] uppercase tracking-[0.28em] font-bold text-current opacity-60">{label}</h3>
       </div>
       {count != null && count !== "" && (
-        <span className="text-[10px] uppercase tracking-[0.18em] font-medium text-current opacity-40 tabular-nums">{count}</span>
+        <span className="text-[10px] font-mono tracking-[0.02em] text-current opacity-45 tabular-nums">{count}</span>
       )}
     </div>
   );
