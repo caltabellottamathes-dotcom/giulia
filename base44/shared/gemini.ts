@@ -104,8 +104,14 @@ async function rawCall(model, body, keyName) {
     } catch (e) {
       lastErr = e;
       const status = (e && e.status) || 0;
-      if (status === 429 || status === 403 || status >= 500) continue; // → volgende sleutel
-      throw e; // 400 e.d. — andere sleutels helpen niet
+      const msg = String((e && e.message) || "");
+      // Een ongeldige sleutel komt soms terug als 400 (API_KEY_INVALID) i.p.v.
+      // 403 — zonder deze check roteert de pool nooit en falen alle backdesk-
+      // agents permanent op één dode sleutel. Alleen key-specifieke fouten
+      // roteren; een echte schema-400 valt niet door dit filter.
+      const invalidKey = /API_KEY_INVALID|API key not valid|API_KEY_EXPIRED|UNAUTHORIZED|invalid_api_key|PERMISSION_DENIED/i.test(msg);
+      if (status === 429 || status === 403 || status === 401 || status >= 500 || invalidKey) continue;
+      throw e; // echte 400 (bad request/schema) — andere sleutels helpen niet
     }
   }
   // Alle sleutels op quota/verboden → korte pauze en nog één keer de eigen sleutel.

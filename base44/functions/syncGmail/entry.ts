@@ -1,9 +1,16 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { secrets } from 'base44:runtime';
 
 /**
- * syncGmail — pulls recent inbox messages from the connected Gmail account
- * into the Email entity (deduped by gmail_message_id). Works both with a
- * logged-in user and without (scheduled/service-role).
+ * syncGmail — trekt recente inbox-berichten binnen via de IMAP-bridge
+ * (BRIDGE_URL) in de Email-entity, gedupliceerd op IMAP-uid
+ * (opgeslagen in gmail_message_id). Werkt zowel met een ingelogde user als
+ * zonder (scheduled/service-role).
+ *
+ * De Gmail OAuth-connector is niet geautoriseerd voor deze workspace, daarom
+ * loopt alles via de bridge — dezelfde IMAP-pijplijn die fetchPrivateEmails
+ * al gebruikt. Als de connector later wél actief wordt kan dit weer terug naar
+ * de OAuth-API, maar de bridge is nu de betrouwbare weg.
  */
 export default async function (req) {
   try {
@@ -11,56 +18,43 @@ export default async function (req) {
     const user = await base44.auth.me().catch(() => null);
     const ent = user ? base44.entities : base44.asServiceRole.entities;
 
-    const { accessToken } = await base44.asServiceRole.connectors.getConnection('gmail');
-    const h = { Authorization: `Bearer ${accessToken}` };
+    const base = (secrets.get('BRIDGE_URL') || '').replace(/\/$/, '');
+    if (!base) return Response.json({ error: 'BRIDGE_URL not set' }, { status: 500 });
+    const token = secrets.get('BRIDGE_TOKEN') || '';
 
-    // This Gmail account IS mail@salvatorecaltabellotta.com — every inbox
-    // message belongs to that address, so we pull the full inbox.
-    const listRes = await fetch(
-      'https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=50&q=' +
-        encodeURIComponent('in:inbox'),
-      { headers: h }
-    );
-    if (!listRes.ok) {
-      return Response.json({ error: 'gmail list failed', detail: await listRes.text() }, { status: 502 });
+    const res = await fetch(base + '/emails', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ limit: 50 }),
+    });
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '');
+      return Response.json({ error: 'bridge /emails failed', detail }, { status: 502 });
     }
-    const list = await listRes.json();
-    const ids = (list.messages || []).map((m) => m.id);
+    const data = await res.json();
+    const emails = Array.isArray(data.emails) ? data.emails : [];
 
-    const existing = await ent.Email.filter({ folder: 'inbox' });
+    const existing = await ent.Email.filter({ folder: 'inbox' }).catch(() => []);
     const seen = new Set(existing.map((e) => e.gmail_message_id).filter(Boolean));
 
     let added = 0;
-    for (const id of ids) {
-      if (seen.has(id)) continue;
-      const mRes = await fetch(
-        `https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Delivered-To&metadataHeaders=Subject&metadataHeaders=Date`,
-        { headers: h }
-      );
-      if (!mRes.ok) continue;
-      const m = await mRes.json();
-      const headers = m.payload?.headers || [];
-      const get = (n) =>
-        headers.find((x) => x.name.toLowerCase() === n.toLowerCase())?.value || '';
-      const from = get('from');
-      const subject = get('subject') || '(geen onderwerp)';
-      const senderName = from.replace(/<.*>/, '').trim().replace(/"/g, '') || from;
-      const senderEmail = (from.match(/<([^>]+)>/) || [, from])[1];
+    for (const m of emails) {
+      const uid = String(m.uid || '');
+      if (!uid || seen.has(uid)) continue;
       await ent.Email.create({
-        sender: senderName,
-        sender_email: senderEmail,
-        subject,
-        body: m.snippet || '',
-        timestamp: new Date(Number(m.internalDate)).toISOString(),
-        status: m.labelIds?.includes('UNREAD') ? 'unread' : 'read',
+        sender: m.sender || '',
+        sender_email: m.sender_email || '',
+        subject: m.subject || '(geen onderwerp)',
+        body: '',
+        timestamp: m.timestamp || new Date().toISOString(),
+        status: m.unread ? 'unread' : 'read',
         folder: 'inbox',
-        gmail_message_id: id,
-        gmail_thread_id: m.threadId,
-      });
+        gmail_message_id: uid,
+      }).catch(() => {});
       added++;
     }
 
-    return Response.json({ ok: true, added, total: ids.length, mode: user ? 'user' : 'service' });
+    return Response.json({ ok: true, added, total: emails.length, mode: user ? 'user' : 'service' });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
