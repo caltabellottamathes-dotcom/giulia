@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import ConciergeAvatar from "./ConciergeAvatar";
-import ConciergePanel from "./ConciergePanel";
+import ConciergeAvatar from "../../giulia/components/ConciergeAvatar";
+import ConciergePanel from "../../giulia/components/ConciergePanel";
 import { MessageSquare, X } from "lucide-react";
 
 /**

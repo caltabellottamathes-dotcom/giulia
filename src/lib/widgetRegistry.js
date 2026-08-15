@@ -4,31 +4,31 @@ import {
 } from "lucide-react";
 import { IMAGES } from "@/lib/images";
 
-import GiuliaWidget from "@/components/widgets/GiuliaWidget";
-import GoodMorningWidget from "@/components/widgets/GoodMorningWidget";
-import AgendaWidget from "@/components/widgets/AgendaWidget";
-import TasksWidget from "@/components/widgets/TasksWidget";
-import ApprovalsWidget from "@/components/widgets/ApprovalsWidget";
-import NotificationsWidget from "@/components/widgets/NotificationsWidget";
-import EmailWidget from "@/components/widgets/EmailWidget";
-import WhatsAppWidget from "@/components/widgets/WhatsAppWidget";
-import ProjectsWidget from "@/components/widgets/ProjectsWidget";
-import KnowledgeWidget from "@/components/widgets/KnowledgeWidget";
-import PeopleWidget from "@/components/widgets/PeopleWidget";
-import DocumentsWidget from "@/components/widgets/DocumentsWidget";
-import MemoryWidget from "@/components/widgets/MemoryWidget";
-import InsightsWidget from "@/components/widgets/InsightsWidget";
-import ActivityWidget from "@/components/widgets/ActivityWidget";
-import AgentActivityWidget from "@/components/widgets/AgentActivityWidget";
+import GiuliaWidget from "@/giulia/widgets/GiuliaWidget";
+import GoodMorningWidget from "@/self/widgets/GoodMorningWidget";
+import AgendaWidget from "@/focus/widgets/AgendaWidget";
+import TasksWidget from "@/focus/widgets/TasksWidget";
+import ApprovalsWidget from "@/giulia/widgets/ApprovalsWidget";
+import NotificationsWidget from "@/focus/widgets/NotificationsWidget";
+import EmailWidget from "@/focus/widgets/EmailWidget";
+import WhatsAppWidget from "@/focus/widgets/WhatsAppWidget";
+import ProjectsWidget from "@/focus/widgets/ProjectsWidget";
+import KnowledgeWidget from "@/focus/widgets/KnowledgeWidget";
+import PeopleWidget from "@/focus/widgets/PeopleWidget";
+import DocumentsWidget from "@/focus/widgets/DocumentsWidget";
+import MemoryWidget from "@/giulia/widgets/MemoryWidget";
+import InsightsWidget from "@/giulia/widgets/InsightsWidget";
+import ActivityWidget from "@/giulia/widgets/ActivityWidget";
+import AgentActivityWidget from "@/giulia/widgets/AgentActivityWidget";
 import ConciergeWidget from "@/components/concierge/ConciergeWidget";
-import TimeTrackerWidget from "@/components/widgets/TimeTrackerWidget";
-import UpdatesWidget from "@/components/widgets/UpdatesWidget";
-import SocialPulseWidget from "@/components/widgets/SocialPulseWidget";
-import SocialPlannerWidget from "@/components/widgets/SocialPlannerWidget";
-import HouseholdWidget from "@/components/widgets/HouseholdWidget";
-import PersonalAdminWidget from "@/components/widgets/PersonalAdminWidget";
-import HobbiesWidget from "@/components/widgets/HobbiesWidget";
-import GiuliaQuestionsWidget from "@/components/widgets/GiuliaQuestionsWidget";
+import TimeTrackerWidget from "@/focus/widgets/TimeTrackerWidget";
+import UpdatesWidget from "@/giulia/widgets/UpdatesWidget";
+import SocialPulseWidget from "@/life/widgets/SocialPulseWidget";
+import SocialPlannerWidget from "@/life/widgets/SocialPlannerWidget";
+import HouseholdWidget from "@/life/widgets/HouseholdWidget";
+import PersonalAdminWidget from "@/life/widgets/PersonalAdminWidget";
+import HobbiesWidget from "@/life/widgets/HobbiesWidget";
+import GiuliaQuestionsWidget from "@/giulia/widgets/GiuliaQuestionsWidget";
 
 /**
  * Single source of truth for every dashboard widget. `image` is a branding

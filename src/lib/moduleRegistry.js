@@ -4,35 +4,35 @@ import {
   Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu, Timer, Sparkles, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle,
 } from "lucide-react";
 
-import Agenda from "@/pages/Agenda";
-import Projects from "@/pages/Projects";
-import Tasks from "@/pages/Tasks";
-import Email from "@/pages/Email";
-import WhatsApp from "@/pages/WhatsApp";
-import Knowledge from "@/pages/Knowledge";
-import Documents from "@/pages/Documents";
-import People from "@/pages/People";
-import Chat from "@/pages/Chat";
-import Voice from "@/pages/Voice";
-import Approvals from "@/pages/Approvals";
-import Notifications from "@/pages/Notifications";
-import ActivityPage from "@/pages/Activity";
-import Memory from "@/pages/Memory";
-import Integrations from "@/pages/Integrations";
-import SettingsPage from "@/pages/Settings";
-import Profile from "@/pages/Profile";
-import Insights from "@/pages/Insights";
-import TimeTracker from "@/pages/TimeTracker";
-import Agents from "@/pages/Agents";
-import Updates from "@/pages/Updates";
-import GoodMorningPanel from "@/components/panels/GoodMorningPanel";
-import JeDagPreview from "@/components/panels/previews/JeDagPreview";
-import SocialPulsePage from "@/pages/life/SocialPulsePage";
-import SocialPlannerPage from "@/pages/life/SocialPlannerPage";
-import HouseholdPage from "@/pages/life/HouseholdPage";
-import PersonalAdminPage from "@/pages/life/PersonalAdminPage";
-import HobbiesPage from "@/pages/life/HobbiesPage";
-import WantsToKnow from "@/pages/WantsToKnow";
+import Agenda from "@/focus/pages/Agenda";
+import Projects from "@/focus/pages/Projects";
+import Tasks from "@/focus/pages/Tasks";
+import Email from "@/focus/pages/Email";
+import WhatsApp from "@/focus/pages/WhatsApp";
+import Knowledge from "@/focus/pages/Knowledge";
+import Documents from "@/focus/pages/Documents";
+import People from "@/focus/pages/People";
+import Chat from "@/giulia/pages/Chat";
+import Voice from "@/giulia/pages/Voice";
+import Approvals from "@/giulia/pages/Approvals";
+import Notifications from "@/focus/pages/Notifications";
+import ActivityPage from "@/giulia/pages/Activity";
+import Memory from "@/giulia/pages/Memory";
+import Integrations from "@/system/pages/Integrations";
+import SettingsPage from "@/system/pages/Settings";
+import Profile from "@/system/pages/Profile";
+import Insights from "@/giulia/pages/Insights";
+import TimeTracker from "@/focus/pages/TimeTracker";
+import Agents from "@/giulia/pages/Agents";
+import Updates from "@/giulia/pages/Updates";
+import GoodMorningPanel from "@/self/panels/GoodMorningPanel";
+import JeDagPreview from "@/giulia/panels/JeDagPreview";
+import SocialPulsePage from "@/life/pages/SocialPulsePage";
+import SocialPlannerPage from "@/life/pages/SocialPlannerPage";
+import HouseholdPage from "@/life/pages/HouseholdPage";
+import PersonalAdminPage from "@/life/pages/PersonalAdminPage";
+import HobbiesPage from "@/life/pages/HobbiesPage";
+import WantsToKnow from "@/giulia/pages/WantsToKnow";
 
 /**
  * Single source of truth for every module that opens as a sliding glass
