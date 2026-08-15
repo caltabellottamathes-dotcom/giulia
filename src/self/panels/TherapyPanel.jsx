@@ -7,6 +7,14 @@ import { Plus, Calendar, ArrowUpRight, FileText, Target, TrendingUp } from "luci
 
 const SAGE = "hsl(var(--self-accent))";
 
+const SUBNAV = [
+  { key: "", label: "Trajecten" },
+  { key: "?tab=appointments", label: "Afspraken" },
+  { key: "?tab=goals", label: "Doelen" },
+  { key: "?tab=notes", label: "Notities" },
+  { key: "?tab=progress", label: "Voortgang" },
+];
+
 /** Therapy panel — actieve trajecten en volgende afspraak. */
 export default function TherapyPanel() {
   const navigate = useNavigate();
@@ -39,6 +47,13 @@ export default function TherapyPanel() {
         <SectionLabel>Therapy</SectionLabel>
         <h2 className="text-[32px] leading-[0.95] font-display font-semibold tracking-[-0.03em] mt-1">{active.length} actief</h2>
         <p className="text-sm text-ivory/55 mt-1.5 italic">{next ? `Volgende: ${fmtDate(next.next_appointment)} ${fmtTime(next.next_appointment)}` : "Geen afspraak gepland"}</p>
+        <nav className="flex flex-wrap gap-x-3 gap-y-1 mt-3">
+          {SUBNAV.map((s) => (
+            <button key={s.key} onClick={() => navigate(`/self/therapy${s.key}`)} className="text-[11px] uppercase tracking-[0.16em] font-medium text-ivory/45 hover:text-ivory transition-colors border-b border-transparent hover:border-ivory/30 pb-0.5">
+              {s.label}
+            </button>
+          ))}
+        </nav>
       </div>
 
       <div className="grid grid-cols-2 gap-2.5">

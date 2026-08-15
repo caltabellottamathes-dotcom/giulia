@@ -7,6 +7,14 @@ import { Plus, Shield, ArrowUpRight, Coffee, Heart, Clock } from "lucide-react";
 
 const SAGE = "hsl(var(--self-accent))";
 
+const SUBNAV = [
+  { key: "", label: "Vandaag" },
+  { key: "?tab=protected", label: "Beschermd" },
+  { key: "?tab=recovery", label: "Herstel" },
+  { key: "?tab=free", label: "Vrij" },
+  { key: "?tab=week", label: "Week" },
+];
+
 /** Personal Time panel — persoonlijke tijd vandaag met breakdown. */
 export default function PersonalTimePanel() {
   const navigate = useNavigate();
@@ -49,6 +57,13 @@ export default function PersonalTimePanel() {
         <SectionLabel>Personal Time</SectionLabel>
         <h2 className="text-[32px] leading-[0.95] font-display font-semibold tracking-[-0.03em] mt-1">{fmtDuration(total)}</h2>
         <p className="text-sm text-ivory/55 mt-1.5 italic">{protected_ > 0 ? `${fmtDuration(protected_)} beschermd` : "Geen beschermde tijd vandaag"}</p>
+        <nav className="flex flex-wrap gap-x-3 gap-y-1 mt-3">
+          {SUBNAV.map((s) => (
+            <button key={s.key} onClick={() => navigate(`/self/personal-time${s.key}`)} className="text-[11px] uppercase tracking-[0.16em] font-medium text-ivory/45 hover:text-ivory transition-colors border-b border-transparent hover:border-ivory/30 pb-0.5">
+              {s.label}
+            </button>
+          ))}
+        </nav>
       </div>
 
       {/* Breakdown */}

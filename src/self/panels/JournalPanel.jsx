@@ -7,6 +7,14 @@ import { Plus, ArrowUpRight, BookOpen, Star, MessageSquare, Sparkles } from "luc
 
 const SAGE = "hsl(var(--self-accent))";
 
+const SUBNAV = [
+  { key: "", label: "Vandaag" },
+  { key: "?tab=highlights", label: "Highlights" },
+  { key: "?tab=timeline", label: "Threads" },
+  { key: "?tab=reflection", label: "Reflectie" },
+  { key: "?tab=history", label: "Archief" },
+];
+
 /** Journal panel — actuele dag, momenten en highlights. */
 export default function JournalPanel() {
   const navigate = useNavigate();
@@ -42,6 +50,13 @@ export default function JournalPanel() {
         <SectionLabel>Journal</SectionLabel>
         <h2 className="text-[32px] leading-[0.95] font-display font-semibold tracking-[-0.03em] mt-1">{moments.length} momenten</h2>
         <p className="text-sm text-ivory/55 mt-1.5 italic">{openThreads.length ? `${openThreads.length} open thread${openThreads.length > 1 ? "s" : ""}` : "Vandaag is leeg — voeg iets toe."}</p>
+        <nav className="flex flex-wrap gap-x-3 gap-y-1 mt-3">
+          {SUBNAV.map((s) => (
+            <button key={s.key} onClick={() => navigate(`/self/journal${s.key}`)} className="text-[11px] uppercase tracking-[0.16em] font-medium text-ivory/45 hover:text-ivory transition-colors border-b border-transparent hover:border-ivory/30 pb-0.5">
+              {s.label}
+            </button>
+          ))}
+        </nav>
       </div>
 
       {/* Today's moments */}

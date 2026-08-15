@@ -8,6 +8,16 @@ import { Activity as ActivityIcon, Battery, Heart, Plus, ArrowUpRight, Sparkles,
 const SAGE = "hsl(var(--self-accent))";
 const URGENT = "hsl(var(--self-urgent))";
 
+const SUBNAV = [
+  { key: "state", label: "State" },
+  { key: "energy", label: "Energy" },
+  { key: "capacity", label: "Capacity" },
+  { key: "mood", label: "Mood" },
+  { key: "needs", label: "Needs" },
+  { key: "history", label: "History" },
+  { key: "check_ins", label: "Check-ins" },
+];
+
 /** Daily State panel — compacte actuele toestand met snelle acties. */
 export default function DailyStatePanel() {
   const navigate = useNavigate();
@@ -47,6 +57,14 @@ export default function DailyStatePanel() {
         <SectionLabel>Daily State</SectionLabel>
         <h2 className="text-[32px] leading-[0.95] font-display font-semibold tracking-[-0.03em] mt-1">{latest ? stateLabel(latest.state) : "Check in"}</h2>
         <p className="text-sm text-ivory/55 mt-1.5 italic">{latest ? `Last check-in ${fmtAgo(latest.timestamp)}` : "Nog geen check-in vandaag."}</p>
+        {/* Sub-navigatie naar interessante onderdelen van de pagina */}
+        <nav className="flex flex-wrap gap-x-3 gap-y-1 mt-3">
+          {SUBNAV.map((s) => (
+            <button key={s.key} onClick={() => navigate(`/self/daily-state?tab=${s.key}`)} className="text-[11px] uppercase tracking-[0.16em] font-medium text-ivory/45 hover:text-ivory transition-colors border-b border-transparent hover:border-ivory/30 pb-0.5">
+              {s.label}
+            </button>
+          ))}
+        </nav>
       </div>
 
       {/* Current metrics */}

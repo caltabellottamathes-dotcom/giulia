@@ -288,6 +288,21 @@ export function insightTypeLabel(type) {
   return map[type] || type;
 }
 
+export function insightCategoryLabel(cat) {
+  const map = {
+    energy: "Energie",
+    mood: "Stemming",
+    capacity: "Capaciteit",
+    routine: "Ritme",
+    rest: "Rust",
+    personal_time: "Persoonlijke tijd",
+    social: "Sociaal",
+    focus: "Focus",
+    development: "Ontwikkeling",
+  };
+  return map[cat] || cat;
+}
+
 /* ── Streaks ──────────────────────────────────────────────── */
 export function streakLabel(count) {
   if (!count || count === 0) return "—";

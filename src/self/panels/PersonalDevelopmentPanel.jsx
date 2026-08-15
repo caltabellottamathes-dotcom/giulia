@@ -7,6 +7,14 @@ import { Plus, Target, ArrowUpRight, Award, BookOpen, TrendingUp } from "lucide-
 
 const SAGE = "hsl(var(--self-accent))";
 
+const SUBNAV = [
+  { key: "", label: "Gebieden" },
+  { key: "?tab=goals", label: "Doelen" },
+  { key: "?tab=growth", label: "Milestones" },
+  { key: "?tab=learning", label: "Leren" },
+  { key: "?tab=timeline", label: "Tijdlijn" },
+];
+
 /** Personal Development panel — actieve gebieden, doelen en voortgang. */
 export default function PersonalDevelopmentPanel() {
   const navigate = useNavigate();
@@ -44,6 +52,13 @@ export default function PersonalDevelopmentPanel() {
         <SectionLabel>Personal Development</SectionLabel>
         <h2 className="text-[32px] leading-[0.95] font-display font-semibold tracking-[-0.03em] mt-1">{active.length} actief</h2>
         <p className="text-sm text-ivory/55 mt-1.5 italic">{areas.length} ontwikkelgebieden · {milestones.length} milestones</p>
+        <nav className="flex flex-wrap gap-x-3 gap-y-1 mt-3">
+          {SUBNAV.map((s) => (
+            <button key={s.key} onClick={() => navigate(`/self/personal-development${s.key}`)} className="text-[11px] uppercase tracking-[0.16em] font-medium text-ivory/45 hover:text-ivory transition-colors border-b border-transparent hover:border-ivory/30 pb-0.5">
+              {s.label}
+            </button>
+          ))}
+        </nav>
       </div>
 
       {/* Active areas */}
