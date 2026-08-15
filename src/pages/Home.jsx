@@ -161,7 +161,7 @@ export default function Home() {
 
   const sorted = [...widgets].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
 
-  const WIDGET_SPAN = { giulia: 2, goodmorning: 2, concierge: 2, projects: 2, agenda: 2, email: 2, documents: 2, updates: 2 };
+  const WIDGET_SPAN = { giulia: 2, goodmorning: 2, concierge: 2, projects: 2, agenda: 2, email: 2, documents: 2, updates: 2, household: 2 };
   const cells = sorted.map((w) => {
     const def = WIDGETS[w.widget_type];
     if (!def) return null;

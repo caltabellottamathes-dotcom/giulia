@@ -37,6 +37,10 @@ export const householdHeadline = (matters, items) => {
 export const statusLabel = (s) => ({ overdue: "Te laat", needs_attention: "Aandacht", due: "Nu", open: "Open", calm: "Rustig", good: "Goed", done: "Klaar" }[s] || "—");
 
 // Routine cadence: ON TRACK / DUE / UPCOMING / TE LAAT
+export const isVeryUrgent = (s) => s === "overdue";
+export const accentFor = (s) => (isVeryUrgent(s) ? "hsl(var(--urgent))" : isAttention(s) ? "hsl(var(--life-sand))" : "hsl(var(--life-blue))");
+export const tileAccent = (zones) => (zones.some((z) => isVeryUrgent(z.status)) ? "hsl(var(--urgent))" : zones.some((z) => isAttention(z.status)) ? "hsl(var(--life-sand))" : "hsl(var(--life-blue))");
+
 export const routineState = (item) => {
   if (item.status === "overdue") return { label: "TE LAAT", hot: true };
   if (item.next_due) {
