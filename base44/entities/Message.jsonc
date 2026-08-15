@@ -68,6 +68,13 @@
     "agent_source": {
       "type": "string",
       "title": "Agent Source"
+    },
+    "tool_calls": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "title": "Tool Calls"
     }
   },
   "required": [

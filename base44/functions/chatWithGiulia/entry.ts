@@ -208,41 +208,6 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
     let responseText = null;
     const keyName = isBackgroundSource ? "BACKDESK_GEMINI_API_KEY" : "GIULIA_GIULIA_GEMINI_API_KEY";
 
-    // ── DISPATCH-THEN-EXECUTE ──────────────────────────────────────────
-    // GIULIA-GIULIA geeft ALLEREERST de expliciete order aan GIULIA-CORE
-    // (geregistreerd in de Activity-feed via de learningLayer) vóór de
-    // uitvoeringsloop loopt. Pas daarna voert dezelfde loop het echt uit.
-    let dispatchOrder = null;
-    try {
-      const dispatchTools = [{ functionDeclarations: [{
-        name: "dispatch_order",
-        description: "Leg uit welke order je aan GIULIA-CORE geeft: korte intentie + de skills die je wilt aanroepen.",
-        parameters: { type: "object", properties: {
-          intent: { type: "string", description: "Eén-zin samenvatting van wat je CORE opdraagt" },
-          planned_actions: { type: "array", items: { type: "string" }, description: "Skill-namen die je van plan bent aan te roepen" },
-        }, required: ["intent"] },
-      }] }];
-      const dParts = await geminiGenerate({
-        contents: [{ role: "user", parts: [{ text: message.slice(0, 3000) }] }],
-        tools: dispatchTools,
-        systemText: `${GIULIA_TONE}\n\nJe bent GIULIA-GIULIA. Salvo vraagt iets. Je geeft ALLEREERST de expliciete order aan GIULIA-CORE (je blinde uitvoerder) via dispatch_order: één zin intentie + de skills die je wilt inzetten. Doe verder niets — CORE voert straks uit.`,
-        keyName,
-      });
-      if (dParts && dParts.length) {
-        const fc = dParts.find((p) => p.functionCall && p.functionCall.name === "dispatch_order");
-        if (fc) {
-          dispatchOrder = fc.functionCall.args || null;
-          const intent = dispatchOrder?.intent || message.slice(0, 160);
-          const planned = Array.isArray(dispatchOrder?.planned_actions) ? dispatchOrder.planned_actions.join(", ") : "";
-          await logActivity(base44, "GIULIA-GIULIA", `Order → CORE: ${intent}${planned ? ` (${planned})` : ""}`, { action: "dispatch_order" });
-        }
-      }
-    } catch { /* ignore — uitvoering loopt toch */ }
-
-    if (dispatchOrder) {
-      systemInstruction += `\n== DISPATCH (je order aan CORE is geregistreerd) ==\nIntent: ${dispatchOrder.intent}\nGeplande acties: ${(dispatchOrder.planned_actions || []).join(", ") || "vrij"}\nVoer nu uit wat je hebt opgedragen.\n`;
-    }
-
     for (let step = 0; step < MAX_STEPS; step++) {
       const parts = await geminiGenerate({ contents, tools: genTools, systemText: systemInstruction, keyName });
       if (!parts || !parts.length) break;
@@ -277,7 +242,13 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
 
     if (persist && source === "chat" && finalText) {
       await sr.entities.Message.create({
-        role: "giulia", content: finalText, channel: "in-app", status: "sent", agent_source: "chatWithGiulia"
+        role: "giulia", content: finalText, channel: "in-app", status: "sent", agent_source: "chatWithGiulia",
+        tool_calls: executed.map((e) => ({
+          name: e.name,
+          status: e.ok ? "completed" : "failed",
+          arguments_string: JSON.stringify(e.args),
+          results: JSON.stringify(e.result),
+        })),
       }).catch(() => null);
     }
 

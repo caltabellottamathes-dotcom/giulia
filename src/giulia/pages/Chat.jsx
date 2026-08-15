@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 import { useToast } from "@/components/ui/use-toast";
@@ -8,11 +8,18 @@ import PageHero from "@/system/components/glass/PageHero";
 import AgentMessageBubble from "@/giulia/components/AgentMessageBubble";
 
 const GIULIA_AVATAR = IMAGES.giuliaConcierge;
-const AGENT_NAME = "giulia_assistant";
 const PILLS = ["Wat staat er vandaag?", "Openstaande taken?", "Check mijn email", "Wat is veranderd?"];
 
+function toBubble(m) {
+  return {
+    id: m.id,
+    role: m.role === "user" ? "user" : "assistant",
+    content: m.content || "",
+    tool_calls: Array.isArray(m.tool_calls) ? m.tool_calls : [],
+  };
+}
+
 export default function Chat() {
-  const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
@@ -20,38 +27,18 @@ export default function Chat() {
   const endRef = useRef(null);
   const { toast } = useToast();
 
-  // Haal (of maak) het hoofdgesprek met de Giulia assistant agent.
-  useEffect(() => {
-    (async () => {
-      try {
-        const list = await base44.agents.listConversations({ agent_name: AGENT_NAME });
-        let conv = list && list[0];
-        if (!conv) {
-          conv = await base44.agents.createConversation({
-            agent_name: AGENT_NAME,
-            metadata: { name: "Hoofdgesprek", description: "GIULIA-GIULIA chat" },
-          });
-        } else {
-          conv = await base44.agents.getConversation(conv.id);
-        }
-        setConversation(conv);
-        setMessages(conv.messages || []);
-      } catch (e) {
-        toast({ title: "Gesprek niet geladen", variant: "destructive" });
-      } finally {
-        setLoading(false);
-      }
-    })();
+  const loadMessages = useCallback(async () => {
+    const list = await base44.entities.Message.filter({ channel: "in-app" }, "-created_date", 60).catch(() => []);
+    const ordered = (list || []).slice().reverse();
+    setMessages(ordered.map(toBubble));
   }, []);
 
-  // Live stream: abonneer op het gesprek.
   useEffect(() => {
-    if (!conversation?.id) return;
-    const unsubscribe = base44.agents.subscribeToConversation(conversation.id, (data) => {
-      setMessages(data.messages || []);
-    });
-    return () => unsubscribe();
-  }, [conversation?.id]);
+    (async () => {
+      await loadMessages();
+      setLoading(false);
+    })();
+  }, [loadMessages]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -59,25 +46,28 @@ export default function Chat() {
 
   const send = async (text) => {
     const msg = (text ?? input).trim();
-    if (!msg || sending || !conversation) return;
+    if (!msg || sending) return;
     setInput("");
+    const userBubble = { id: `local-${Date.now()}`, role: "user", content: msg, tool_calls: [] };
+    setMessages((prev) => [...prev, userBubble]);
     setSending(true);
     try {
-      await base44.agents.addMessage(conversation, { role: "user", content: msg });
+      const res = await base44.functions.invoke("chatWithGiulia", { message: msg, source: "chat" });
+      await loadMessages();
+      if (!res?.ok) toast({ title: "Giulia reageerde niet", variant: "destructive" });
     } catch (e) {
-      toast({ title: "Bericht niet verzonden", variant: "destructive" });
+      toast({ title: "Verzenden mislukt", variant: "destructive" });
     } finally {
       setSending(false);
     }
   };
 
-  // Auto-send a question passed via ?ask= (used by the Briefing "Leg uit" action)
   const asked = useRef(false);
   useEffect(() => {
-    if (asked.current || !conversation) return;
+    if (asked.current || loading) return;
     const ask = new URLSearchParams(window.location.search).get("ask");
     if (ask) { asked.current = true; send(ask); }
-  }, [conversation, send]);
+  }, [loading]);
 
   return (
     <div className="h-[calc(100vh-7rem)] flex flex-col animate-fade-up">
@@ -95,7 +85,6 @@ export default function Chat() {
       />
 
       <div className="glass-2 rounded-3xl flex-1 flex flex-col min-h-0 overflow-hidden">
-        {/* Messages */}
         <div className="flex-1 overflow-y-auto p-5 lg:p-7 space-y-4">
           {loading ? (
             <div className="flex items-center justify-center h-full">
@@ -108,8 +97,8 @@ export default function Chat() {
               <p className="text-sm text-muted-foreground mt-1">Stel een vraag of kies een suggestie hieronder.</p>
             </div>
           ) : (
-            messages.map((m, i) => (
-              <AgentMessageBubble key={m.id || i} message={m} isUser={m.role === "user"} avatar={GIULIA_AVATAR} />
+            messages.map((m) => (
+              <AgentMessageBubble key={m.id} message={m} isUser={m.role === "user"} avatar={GIULIA_AVATAR} />
             ))
           )}
 
@@ -126,7 +115,6 @@ export default function Chat() {
           <div ref={endRef} />
         </div>
 
-        {/* Pills */}
         {messages.length <= 2 && (
           <div className="px-5 lg:px-7 pb-3 flex flex-wrap gap-2">
             {PILLS.map((p) => (
@@ -137,7 +125,6 @@ export default function Chat() {
           </div>
         )}
 
-        {/* Input */}
         <div className="p-4 border-t border-border/40">
           <div className="flex items-center gap-2">
             <input
