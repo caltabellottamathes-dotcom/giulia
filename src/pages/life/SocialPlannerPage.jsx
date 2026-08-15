@@ -10,6 +10,8 @@ import SocialPersonCard from "@/components/life/SocialPersonCard";
 import { IMAGES } from "@/lib/images";
 import { closeCircle, socialPulse, daysSince } from "@/lib/domainUtils";
 import { CalendarHeart, Plus, Clock, Search, MessageCircle, ExternalLink, Sparkles } from "lucide-react";
+import { logLifeActivity } from "@/lib/lifeActivity";
+import LifeActivityFeed from "@/components/life/LifeActivityFeed";
 
 const BLUE = "hsl(var(--life-blue-deep))";
 const SAND = "hsl(var(--life-sand))";
@@ -114,13 +116,14 @@ export default function SocialPlannerPage() {
     try {
       const ev = await base44.entities.CalendarEvent.create({ title: form.activity.trim(), start, end, domain: "life", status: "tentative" });
       await base44.entities.SocialPlan.create({ contact_ids: [form.contactId], activity: form.activity.trim(), calendar_event_id: ev.id, suggested_date: start, status: "planned" });
+      await logLifeActivity("SocialPlanner", "planned", `${form.activity.trim()} met ${contactName(form.contactId)}`);
       setForm({ contactId: "", activity: "", slot: null });
       await load();
     } catch { /* ignore */ }
   };
-  const confirmPlan = async (p) => { try { await base44.entities.SocialPlan.update(p.id, { status: "confirmed" }); if (p.calendar_event_id) await base44.entities.CalendarEvent.update(p.calendar_event_id, { status: "confirmed" }); await load(); } catch { /* ignore */ } };
-  const cancelPlan = async (p) => { try { await base44.entities.SocialPlan.update(p.id, { status: "cancelled" }); await load(); } catch { /* ignore */ } };
-  const markDone = async (p) => { try { await base44.entities.SocialPlan.update(p.id, { status: "done" }); if (p.calendar_event_id) await base44.entities.CalendarEvent.update(p.calendar_event_id, { status: "confirmed" }); await load(); } catch { /* ignore */ } };
+  const confirmPlan = async (p) => { try { await base44.entities.SocialPlan.update(p.id, { status: "confirmed" }); if (p.calendar_event_id) await base44.entities.CalendarEvent.update(p.calendar_event_id, { status: "confirmed" }); await logLifeActivity("SocialPlanner", "confirmed", `${p.activity} bevestigd`); await load(); } catch { /* ignore */ } };
+  const cancelPlan = async (p) => { try { await base44.entities.SocialPlan.update(p.id, { status: "cancelled" }); await logLifeActivity("SocialPlanner", "cancelled", `${p.activity} geannuleerd`); await load(); } catch { /* ignore */ } };
+  const markDone = async (p) => { try { await base44.entities.SocialPlan.update(p.id, { status: "done" }); if (p.calendar_event_id) await base44.entities.CalendarEvent.update(p.calendar_event_id, { status: "confirmed" }); await logLifeActivity("SocialPlanner", "done", `${p.activity} gedaan`); await load(); } catch { /* ignore */ } };
   const editPlan = (p) => { setForm({ contactId: p.contact_ids?.[0] || "", activity: p.activity, slot: new Date(p.suggested_date) }); document.getElementById("creator")?.scrollIntoView({ behavior: "smooth" }); };
 
   const filteredPlans = planFilter === "UPCOMING" ? upcoming : planFilter === "TENTATIVE" ? tentative : planFilter === "WAITING" ? waiting : completed;
@@ -319,6 +322,8 @@ export default function SocialPlannerPage() {
           <OpenSection title="Volg op" items={waiting.filter((p) => { const d = daysSince(p.suggested_date); return d >= 3; }).map((p) => ({ id: p.id, title: `${p.activity} — ${daysSince(p.suggested_date)} dagen geleden verzonden`, action: "Stuur herinnering", onAction: () => navigate("/whatsapp") }))} empty="Niets om op te volgen." />
         </div>
       )}
+
+      <LifeActivityFeed />
     </div>
   );
 }

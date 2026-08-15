@@ -8,6 +8,8 @@ import AdminObligationCard from "@/components/life/AdminObligationCard";
 import { IMAGES } from "@/lib/images";
 import { adminWeather, radarEvents, comingUp, weatherZones, repeaters, friction, nextThing, openLoops, needsYouList, accentFor, daysUntil, fmtDate, isActive } from "@/lib/adminUtils";
 import { Shield, Wallet, FileText, RefreshCw, ListChecks, CircleDot, Plus, Search, CheckCircle2, AlertTriangle } from "lucide-react";
+import { logLifeActivity } from "@/lib/lifeActivity";
+import LifeActivityFeed from "@/components/life/LifeActivityFeed";
 
 const TABS = [
   { key: "OVERVIEW", label: "Overview", icon: CircleDot },
@@ -38,7 +40,7 @@ export default function PersonalAdminPage() {
   const renewals = useMemo(() => obs.filter((o) => ["renewal", "subscription", "insurance"].includes(o.type)), [obs]);
   const activeDocs = useMemo(() => (docs || []).filter((d) => d.status !== "archived"), [docs]);
 
-  const done = async (o) => { try { await base44.entities.AdminObligation.update(o.id, { status: "done" }); await load(); } catch { /* ignore */ } };
+  const done = async (o) => { try { await base44.entities.AdminObligation.update(o.id, { status: "done" }); await logLifeActivity("Admin", "completed", `${o.title} afgerekend`); await load(); } catch { /* ignore */ } };
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -338,6 +340,8 @@ export default function PersonalAdminPage() {
           </div>
         </div>
       )}
+
+      <LifeActivityFeed />
     </div>
   );
 }

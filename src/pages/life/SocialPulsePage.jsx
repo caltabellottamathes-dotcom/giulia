@@ -7,13 +7,14 @@ import { socialPulse, closeCircle } from "@/lib/domainUtils";
 import { cn } from "@/lib/utils";
 import { AreaChart, Area, LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { Heart, Search, SlidersHorizontal, Settings, MessageCircle, CalendarHeart, Bell, Plus, Sparkles, ArrowUpRight, Clock, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import LifeActivityFeed from "@/components/life/LifeActivityFeed";
 
 const BLUE = "hsl(var(--life-blue))";
 const DEEP = "hsl(var(--life-blue-deep))";
 const SAND = "hsl(var(--life-sand))";
 const SAND_DEEP = "hsl(var(--life-sand-deep))";
 const SOFT = "hsl(var(--life-blue-soft))";
-const TABS = ["OVERVIEW", "RELATIONSHIPS", "ACTIVITY", "MOMENTS", "PATTERNS"];
+const TABS = ["OVERVIEW", "RELATIONSHIPS", "MOMENTS", "PATTERNS"];
 const MOMENT_PHOTOS = [IMAGES.lifeSocialPulseAlt, IMAGES.lifeFabric, IMAGES.lifeSuitStrings, IMAGES.lifeGlove, IMAGES.lifeVase, IMAGES.lifeHandPrint, IMAGES.lifeStitch, IMAGES.lifeStride];
 
 const fmtDay = (d) => new Date(d).toLocaleDateString("nl-NL", { weekday: "short", day: "numeric" });
@@ -283,51 +284,6 @@ export default function SocialPulsePage() {
         </div>
       )}
 
-      {!loading && tab === "ACTIVITY" && (
-        <div className="space-y-6">
-          <div><h2 className="text-4xl font-display font-semibold tracking-tight">Social activity</h2><p className="text-muted-foreground mt-1">How your social world has moved over time.</p></div>
-          <GlassPanel level={2} className="p-6 lg:p-7">
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={weeks} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
-                  <defs>
-                    <linearGradient id="aMsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={BLUE} stopOpacity={0.5} /><stop offset="100%" stopColor={BLUE} stopOpacity={0} /></linearGradient>
-                    <linearGradient id="aMtg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={SAND} stopOpacity={0.5} /><stop offset="100%" stopColor={SAND} stopOpacity={0} /></linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                  <XAxis dataKey="label" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 12, fontSize: 12 }} />
-                  <Area type="monotone" dataKey="messages" stroke={BLUE} strokeWidth={2.5} fill="url(#aMsg)" />
-                  <Area type="monotone" dataKey="meetings" stroke={SAND} strokeWidth={2.5} fill="url(#aMtg)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="flex gap-5 mt-4 text-xs">
-              <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full" style={{ background: BLUE }} /> Messages</span>
-              <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full" style={{ background: SAND }} /> Meetings</span>
-            </div>
-          </GlassPanel>
-          <div className="grid sm:grid-cols-3 gap-4">
-            {[["8", "meaningful interactions", interactions], ["4", "social plans", (plans || []).filter(p=>p.status==="planned"||p.status==="confirmed").length], ["2", "new moments", upcoming.length]].map(([_,l,v]) => (
-              <GlassPanel level={2} key={l} className="p-6"><p className="text-[56px] leading-none font-display font-semibold tracking-[-0.03em]">{v}</p><p className="text-xs uppercase tracking-wider text-muted-foreground mt-2">{l}</p></GlassPanel>
-            ))}
-          </div>
-          <GlassPanel level={2} className="p-6 lg:p-7">
-            <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-4">Recent moments</p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {pastMoments.map((e, i) => (
-                <div key={e.id} className="rounded-2xl overflow-hidden border border-border">
-                  <div className="relative h-20"><img src={MOMENT_PHOTOS[i % MOMENT_PHOTOS.length]} alt="" className="absolute inset-0 h-full w-full object-cover" /><span className="absolute bottom-2 left-2 text-[10px] uppercase tracking-wide font-semibold text-ivory">{fmtDay(e.start)}</span></div>
-                  <div className="p-3"><p className="text-sm font-medium truncate">{e.title}</p></div>
-                </div>
-              ))}
-              {pastMoments.length === 0 && <p className="text-sm text-muted-foreground">Nog geen momenten.</p>}
-            </div>
-          </GlassPanel>
-        </div>
-      )}
-
       {!loading && tab === "MOMENTS" && (
         <div className="space-y-6">
           <div><h2 className="text-4xl font-display font-semibold tracking-tight">Moments</h2><p className="text-muted-foreground mt-1">Sociale gebeurtenissen en wat eraan komt.</p></div>
@@ -425,6 +381,8 @@ export default function SocialPulsePage() {
           </div>
         </div>
       )}
+
+      <LifeActivityFeed />
     </div>
   );
 }

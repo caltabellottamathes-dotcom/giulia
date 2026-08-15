@@ -7,6 +7,8 @@ import GlassButton from "@/components/glass/GlassButton";
 import { IMAGES } from "@/lib/images";
 import { hobbyGroups, hobbyHeadline, hobbyState, fieldSize, stateColor, attentionFlow, hobbyRhythm, rhythmState, fmtDaysAgo } from "@/lib/hobbyUtils";
 import { Palette, Plus, ArrowUpRight, Search, Sliders, Film, Calendar, Star, Compass } from "lucide-react";
+import { logLifeActivity } from "@/lib/lifeActivity";
+import LifeActivityFeed from "@/components/life/LifeActivityFeed";
 
 const TABS = [
   { key: "overview", label: "Overview" },
@@ -52,7 +54,7 @@ export default function HobbiesPage() {
 
   const add = async () => {
     if (!form.title.trim()) return;
-    try { await base44.entities.Hobby.create({ title: form.title.trim(), type: form.type, current_thread: form.current_thread || undefined, status: "active", activity_level: "active" }); setForm({ title: "", type: "creative", current_thread: "" }); setShowAdd(false); await load(); } catch { /* ignore */ }
+    try { await base44.entities.Hobby.create({ title: form.title.trim(), type: form.type, current_thread: form.current_thread || undefined, status: "active", activity_level: "active" }); await logLifeActivity("Hobbies", "added", `${form.title.trim()} toegevoegd`); setForm({ title: "", type: "creative", current_thread: "" }); setShowAdd(false); await load(); } catch { /* ignore */ }
   };
   const setTab2 = (t) => { setTab(t); navigate(`/life/hobbies?tab=${t}`, { replace: true }); };
 
@@ -283,6 +285,8 @@ export default function HobbiesPage() {
           )}
         </>
       )}
+
+      <LifeActivityFeed />
     </div>
   );
 }

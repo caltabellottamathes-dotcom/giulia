@@ -9,6 +9,8 @@ import HouseholdItemCard from "@/components/life/HouseholdItemCard";
 import { IMAGES } from "@/lib/images";
 import { householdZones, mattersItems, householdHeadline, isAttention, statusLabel, routineState, nextExpected } from "@/lib/householdUtils";
 import { Home, Repeat, ShoppingCart, Wrench, Plus, Sparkles, CheckCircle2, Search } from "lucide-react";
+import { logLifeActivity } from "@/lib/lifeActivity";
+import LifeActivityFeed from "@/components/life/LifeActivityFeed";
 
 const SAND = "hsl(var(--life-sand))";
 const SAND_DEEP = "hsl(var(--life-sand-deep))";
@@ -61,13 +63,14 @@ export default function HouseholdPage() {
   const householdItems = items.filter((i) => i.kind === "item");
   const history = items.filter((i) => i.status === "done" || i.last_done).sort((a, b) => new Date(b.last_done || 0) - new Date(a.last_done || 0));
 
-  const complete = async (i) => { try { await base44.entities.HouseholdItem.update(i.id, { status: "done", last_done: new Date().toISOString(), next_due: i.frequency_days ? new Date(Date.now() + i.frequency_days * 86400000).toISOString().slice(0, 10) : i.next_due }); await load(); } catch { /* ignore */ } };
+  const complete = async (i) => { try { await base44.entities.HouseholdItem.update(i.id, { status: "done", last_done: new Date().toISOString(), next_due: i.frequency_days ? new Date(Date.now() + i.frequency_days * 86400000).toISOString().slice(0, 10) : i.next_due }); await logLifeActivity("Household", "completed", `${i.title} voltooid`); await load(); } catch { /* ignore */ } };
   const createItem = async () => {
     if (!form.title.trim()) return;
     try {
       const base = { title: form.title.trim(), category: form.category || undefined, notes: form.notes || undefined, preferred_time: form.preferred_time, frequency_days: form.frequency_days ? Number(form.frequency_days) : undefined, status: form.kind === "issue" ? "open" : form.kind === "routine" ? "good" : "needs_attention" };
       if (form.kind === "task") await base44.entities.Task.create({ title: form.title.trim(), domain: "life", status: "today" });
       else await base44.entities.HouseholdItem.create({ ...base, kind: form.kind });
+      await logLifeActivity("Household", "added", `${form.title.trim()} toegevoegd`);
       setForm({ title: "", kind: "task", category: "", notes: "", frequency_days: "", preferred_time: "evening" });
       await load();
     } catch { /* ignore */ }
@@ -345,6 +348,8 @@ export default function HouseholdPage() {
 
       {/* Creator */}
       <Creator form={form} setForm={setForm} onCreate={createItem} />
+
+      <LifeActivityFeed />
     </div>
   );
 }

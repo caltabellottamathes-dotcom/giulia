@@ -6,6 +6,7 @@ import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 import { domainBalance, DOMAIN_HEX } from "@/lib/domainUtils";
 import { Heart, CalendarHeart, Home, ClipboardList, Palette, ArrowUpRight } from "lucide-react";
+import LifeActivityFeed from "@/components/life/LifeActivityFeed";
 
 const MODULES = [
   { to: "/life/social-pulse", label: "Social Pulse", icon: Heart, desc: "Wie aandacht verdient", image: IMAGES.lifeSocialPulse },
@@ -86,6 +87,8 @@ export default function LifeLanding() {
           </Link>
         ))}
       </div>
+
+      <LifeActivityFeed />
     </div>
   );
 }
