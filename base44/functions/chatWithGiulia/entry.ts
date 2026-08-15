@@ -167,7 +167,7 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
       ? `\n\n== CONVERSATIE-CONTINUNITEIT ==\nJe krijgt de recente berichtdraad mee (user + giulia, afwisselend). Je weet daardoor wat Salvo net zei én wat jij zelf net antwoordde. Blijf in het gesprek: bouw voort op wat er al gezegd is, herhaal of herformuleer je vorige antwoord niet, en vraag niet om dingen die al duidelijk zijn. Reageer vloeiend en natuurlijk — alsof je nooit weg was.\n`
       : "";
 
-    let systemInstruction = `${GIULIA_TONE}${convoRule}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}${sourceRule}${protocolsBlock}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo. Denk na, roep de functies aan die nodig zijn om zijn verzoek ECHT uit te voeren, en geef daarna een kort, menselijk antwoord in het Nederlands.`;
+    let systemInstruction = `${GIULIA_TONE}${convoRule}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}${sourceRule}${protocolsBlock}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo. Denk na, roep de functies aan die nodig zijn om zijn verzoek ECHT uit te voeren. Geef daarna een ULTRAKORT antwoord (1-3 zinnen, max) in het Nederlands — alleen wat er nu gevraagd is. Stel geen acties voor, bied geen menu aan, sommer geen opties, herhaal niet wat Salvo zei. Wacht met voorstellen tot er een duidelijke, actuele nood is. Minder is meer.`;
 
     // 3. BUILD TOOLS — elke skill is een direct uitvoerbare GIULIA-CORE-actie.
     const toolsMap = {};
