@@ -37,7 +37,7 @@ export default function Home() {
 
   const load = async () => {
     try {
-      const [recs, events, tasks, approvals, emails, waMsgs, insights, agentMsgs] = await Promise.all([
+      const [recs, events, tasks, approvals, emails, waMsgs, insights, agentMsgs, notifs, household, admin, hobbies, projects] = await Promise.all([
         base44.entities.DashboardWidget.list("position").catch(() => []),
         base44.entities.Event.list().catch(() => []),
         base44.entities.Task.list().catch(() => []),
@@ -46,10 +46,16 @@ export default function Home() {
         base44.entities.WhatsAppMessage.filter({ direction: "received", status: "unread" }).catch(() => []),
         base44.entities.Insight.list("-created_date", 1).catch(() => []),
         base44.entities.Message.filter({ role: "giulia" }, "-created_date", 50).catch(() => []),
+        base44.entities.Notification.filter({ status: "unread" }).catch(() => []),
+        base44.entities.HouseholdItem.list("-updated_date", 200).catch(() => []),
+        base44.entities.AdminObligation.filter({ status: "open" }).catch(() => []),
+        base44.entities.Hobby.list("-last_activity_date").catch(() => []),
+        base44.entities.Project.filter({ status: { $in: ["planning", "in_progress", "waiting", "review"] } }).catch(() => []),
       ]);
 
       const todayStr = new Date().toLocaleDateString("sv-SE");
       const agentToday = agentMsgs.filter((m) => (m.created_date || "").slice(0, 10) === todayStr);
+      const in3 = new Date(Date.now() + 3 * 86400000).toLocaleDateString("sv-SE");
       const attention = {
         agenda: events.some((e) => (e.start || "").slice(0, 10) === todayStr),
         tasks: tasks.some((t) => t.status === "overdue" || t.status === "today"),
@@ -58,6 +64,11 @@ export default function Home() {
         whatsapp: waMsgs.length > 0,
         insights: insights.length > 0,
         agentactivity: agentToday.length > 0,
+        notifications: notifs.length > 0,
+        household: household.some((h) => ["needs_attention", "due", "overdue"].includes(h.status)),
+        personaladmin: admin.some((a) => a.status === "overdue" || (a.due_date && a.due_date <= in3)),
+        hobbies: hobbies.some((h) => ["new", "reactivating", "emerging"].includes(h.activity_level)),
+        projects: projects.some((p) => p.health === "critical" || p.health === "attention"),
       };
 
       let saved = recs && recs.length ? recs.filter((r) => r.visible !== false) : [];
@@ -85,7 +96,13 @@ export default function Home() {
         saved = [...saved, ...created];
       }
 
-      setWidgets(saved);
+      // Bij openen toont het dashboard alleen widgets met nieuwe info of oude
+      // info die urgent werd. De vaste metgezel-widgets (giulia, goodmorning)
+      // blijven altijd staan; al het andere wordt gefilterd op attention.
+      const ALWAYS_SHOW = new Set(["giulia", "goodmorning"]);
+      const visible = saved.filter((w) => ALWAYS_SHOW.has(w.widget_type) || attention[w.widget_type]);
+
+      setWidgets(visible);
     } catch (e) {
       setWidgets([]);
     } finally {

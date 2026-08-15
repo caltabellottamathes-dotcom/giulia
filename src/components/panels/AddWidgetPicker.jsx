@@ -1,17 +1,14 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import FloatingPanel from "@/components/glass/FloatingPanel";
 import { WIDGET_LIST } from "@/lib/widgetRegistry";
-import { usePanel } from "@/lib/PanelContext";
 import { cn } from "@/lib/utils";
-import { ArrowUpRight, Check } from "lucide-react";
+import { Check } from "lucide-react";
 
 /**
- * AddWidgetPicker — snelle, overzichtelijke launcher achter thema-tabs
- * (FOCUS / LIFE / SELF). Tik op een module → pagina opent én het bijbehorende
- * paneel schuift direct open. Alles met motion: staggered tiles, cross-fade
- * tussen thema's, hover-lift. Pint ook meteen op het dashboard als hij nieuw is.
+ * AddWidgetPicker — puur widget-beheer. Tik op een widget om hem op je
+ * dashboard te pinnen. Geen navigatie, geen menu — alleen widgets
+ * toevoegen/verwijderen, ingedeeld per thema (FOCUS / LIFE / SELF).
  */
 const THEMES = [
   { key: "focus", label: "FOCUS", blurb: "Werk, communicatie & kennis", categories: ["core", "work", "comms", "intelligence"], accent: "hsl(var(--olive))" },
@@ -19,54 +16,22 @@ const THEMES = [
   { key: "self", label: "SELF", blurb: "Rust, zelfzorg & reflectie", categories: ["self"], accent: "hsl(var(--self-burgundy))" },
 ];
 
-const ROUTES = {
-  giulia: "/chat", goodmorning: "/wake", concierge: "/chat", agenda: "/agenda", tasks: "/tasks",
-  approvals: "/approvals", notifications: "/notifications", email: "/email", whatsapp: "/whatsapp",
-  projects: "/projects", knowledge: "/knowledge", people: "/people", documents: "/documents",
-  memory: "/memory", activity: "/activity", agentactivity: "/agents", insights: "/insights",
-  timetracker: "/timetracker", updates: "/updates", socialpulse: "/life/social-pulse",
-  socialplanner: "/life/social-planner", household: "/life/household", personaladmin: "/life/personal-admin", hobbies: "/life/hobbies",
-};
-
-// Extra bestemmingen die geen eigen widget hebben — zodat je overal heen kunt.
-const EXTRA = [
-  { label: "LIFE", route: "/life" },
-  { label: "Planning", route: "/planning" },
-  { label: "Briefing", route: "/briefing" },
-  { label: "Wake", route: "/wake" },
-  { label: "Insights", route: "/insights" },
-  { label: "Agenten", route: "/agents" },
-  { label: "Updates", route: "/updates" },
-  { label: "Tijd", route: "/timetracker" },
-  { label: "Zoeken", route: "/search" },
-  { label: "Integraties", route: "/integrations" },
-  { label: "Instellingen", route: "/settings" },
-  { label: "Profiel", route: "/profile" },
-  { label: "Experiment", route: "/experiment" },
-];
-
 export default function AddWidgetPicker({ open, onClose, onAdd, addedTypes = [] }) {
   const [theme, setTheme] = useState("focus");
-  const navigate = useNavigate();
-  const { openModule, openChat } = usePanel();
   const active = THEMES.find((t) => t.key === theme);
   const widgets = WIDGET_LIST.filter((w) => active.categories.includes(w.category));
 
-  const launch = (w) => {
-    if (!addedTypes.includes(w.type)) onAdd?.(w.type);
-    if (w.type === "concierge" || w.type === "giulia") openChat();
-    else openModule(w.type);
-    const route = ROUTES[w.type];
-    if (route) navigate(route);
-    onClose();
+  const pick = (w) => {
+    if (addedTypes.includes(w.type)) return; // al op dashboard
+    onAdd?.(w.type);
   };
 
   return (
     <FloatingPanel open={open} onClose={onClose} position="right" level={3} width={440}>
       <div className="p-6 lg:p-7 text-ivory">
-        <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/70 font-semibold mb-2">Snelle toegang</p>
-        <h3 className="text-2xl font-display font-semibold tracking-tight">Alles openen</h3>
-        <p className="text-sm text-ivory/55 mt-1.5 mb-5">Tik een module — pagina + paneel openen direct.</p>
+        <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/70 font-semibold mb-2">Dashboard</p>
+        <h3 className="text-2xl font-display font-semibold tracking-tight">Widget toevoegen</h3>
+        <p className="text-sm text-ivory/55 mt-1.5 mb-5">Tik een widget om hem op je dashboard te pinnen.</p>
 
         {/* Theme tabs */}
         <div className="flex gap-1.5 p-1 rounded-full glass-card-2 mb-4">
@@ -89,8 +54,9 @@ export default function AddWidgetPicker({ open, onClose, onAdd, addedTypes = [] 
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.04, duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                  onClick={() => launch(w)}
-                  className="glass-card-2 rounded-2xl overflow-hidden text-left group relative hover:-translate-y-0.5 transition-transform"
+                  onClick={() => pick(w)}
+                  disabled={added}
+                  className={cn("glass-card-2 rounded-2xl overflow-hidden text-left group relative transition-transform", !added && "hover:-translate-y-0.5", added && "opacity-60")}
                 >
                   <div className="relative h-16 overflow-hidden">
                     <img src={w.image} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" draggable={false} />
@@ -101,12 +67,9 @@ export default function AddWidgetPicker({ open, onClose, onAdd, addedTypes = [] 
                       </span>
                     )}
                   </div>
-                  <div className="p-3 flex items-center justify-between gap-2">
-                    <span className="text-sm font-semibold text-ivory flex items-center gap-1.5 min-w-0">
-                      {w.icon && <w.icon className="w-3.5 h-3.5 opacity-70 shrink-0" />}
-                      <span className="truncate">{w.label}</span>
-                    </span>
-                    <ArrowUpRight className="w-3.5 h-3.5 text-ivory/50 shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  <div className="p-3 flex items-center gap-1.5">
+                    {w.icon && <w.icon className="w-3.5 h-3.5 opacity-70 shrink-0" />}
+                    <span className="text-sm font-semibold text-ivory truncate">{w.label}</span>
                   </div>
                 </motion.button>
               );
@@ -118,16 +81,6 @@ export default function AddWidgetPicker({ open, onClose, onAdd, addedTypes = [] 
             )}
           </motion.div>
         </AnimatePresence>
-
-        {/* Snelle plekken — alle overige bestemmingen */}
-        <p className="text-[10px] uppercase tracking-[0.2em] text-ivory/40 font-semibold mt-6 mb-2.5">Snelle plekken</p>
-        <div className="flex flex-wrap gap-2">
-          {EXTRA.map((d) => (
-            <button key={d.route} onClick={() => { navigate(d.route); onClose(); }} className="rounded-full px-3 py-1.5 text-xs font-medium glass-card-2 text-ivory/70 hover:text-ivory transition">
-              {d.label}
-            </button>
-          ))}
-        </div>
       </div>
     </FloatingPanel>
   );

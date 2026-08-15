@@ -162,7 +162,11 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
       ? `\n== VOLLEDIG OPERATIONEEL PROTOCOL (bron van waarheid — volg dit strikt) ==\n${protocolsText}\n`
       : "";
 
-    const systemInstruction = `${GIULIA_TONE}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}${sourceRule}${protocolsBlock}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo. Denk na, roep de functies aan die nodig zijn om zijn verzoek ECHT uit te voeren, en geef daarna een kort, menselijk antwoord in het Nederlands.`;
+    const convoRule = source === "chat"
+      ? `\n\n== CONVERSATIE-CONTINUNITEIT ==\nJe krijgt de recente berichtdraad mee (user + giulia, afwisselend). Je weet daardoor wat Salvo net zei én wat jij zelf net antwoordde. Blijf in het gesprek: bouw voort op wat er al gezegd is, herhaal of herformuleer je vorige antwoord niet, en vraag niet om dingen die al duidelijk zijn. Reageer vloeiend en natuurlijk — alsof je nooit weg was.\n`
+      : "";
+
+    const systemInstruction = `${GIULIA_TONE}${convoRule}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}${sourceRule}${protocolsBlock}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo. Denk na, roep de functies aan die nodig zijn om zijn verzoek ECHT uit te voeren, en geef daarna een kort, menselijk antwoord in het Nederlands.`;
 
     // 3. BUILD TOOLS — elke skill is een direct uitvoerbare GIULIA-CORE-actie.
     const toolsMap = {};
@@ -180,8 +184,25 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
     }));
     const genTools = [{ functionDeclarations }];
 
-    // 4. THE FUNCTION-CALLING LOOP — GIULIA-GIULIA → GIULIA-CORE direct.
-    const contents = [{ role: "user", parts: [{ text: `Inkomend signaal (bron: ${source}):\n"""${message.slice(0, 3000)}"""` }] }];
+    // 4. CONVERSATIE-GESCHIEDENIS — Giulia herinnert het lopende gesprek.
+    //    Voor live chat laden we de recente in-app berichtdraad mee (user +
+    //    giulia, afwisselend) zodat ze weet wat ze net zei en het gesprek
+    //    vloeiend kan voortzetten. Voor achtergrondbronnen blijft het signaal
+    //    gewikkeld als 'inkomend signaal'.
+    let contents;
+    if (source === "chat") {
+      const history = await sr.entities.Message.filter({ channel: "in-app" }, "-created_date", 24).catch(() => []);
+      const ordered = (history || []).filter((m) => m.content).reverse();
+      contents = ordered.map((m) => ({
+        role: m.role === "user" ? "user" : "model",
+        parts: [{ text: String(m.content).slice(0, 1200) }],
+      }));
+      if (!contents.length) {
+        contents = [{ role: "user", parts: [{ text: message.slice(0, 3000) }] }];
+      }
+    } else {
+      contents = [{ role: "user", parts: [{ text: `Inkomend signaal (bron: ${source}):\n"""${message.slice(0, 3000)}"""` }] }];
+    }
     const executed = [];
     let responseText = null;
     const keyName = isBackgroundSource ? "BACKDESK_GEMINI_API_KEY" : "GIULIA_GIULIA_GEMINI_API_KEY";

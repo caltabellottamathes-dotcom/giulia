@@ -1,47 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
 import { usePanel } from "@/lib/PanelContext";
 import { useContextCapture } from "@/lib/ContextCaptureContext";
 import { base44 } from "@/api/base44Client";
 import { cn } from "@/lib/utils";
 import {
-  Plus, Phone, MessageSquare, Home, Calendar, CalendarDays, Briefcase, CheckSquare,
-  Mail, MessageCircle, BookOpen, FileText, Users, Mic, ClipboardCheck,
-  Activity, Brain, Plug, Settings, User, FlaskConical, BrainCircuit, X, Send, Loader2,
+  Plus, Phone, MessageSquare, BrainCircuit, X, Send, Loader2,
 } from "lucide-react";
-
-const navSections = [
-  {
-    label: null,
-    items: [
-      { key: "home", to: "/", icon: Home, label: "Home" },
-      { key: "agenda", icon: Calendar, label: "Agenda" },
-      { key: "planning", to: "/planning", icon: CalendarDays, label: "Planning" },
-      { key: "projects", icon: Briefcase, label: "Projects" },
-      { key: "tasks", icon: CheckSquare, label: "Tasks" },
-      { key: "email", icon: Mail, label: "Email" },
-      { key: "whatsapp", icon: MessageCircle, label: "WhatsApp" },
-      { key: "knowledge", icon: BookOpen, label: "Knowledge" },
-      { key: "documents", icon: FileText, label: "Documents" },
-      { key: "people", icon: Users, label: "People" },
-      { key: "experiment", to: "/experiment", icon: FlaskConical, label: "Experiment" },
-    ],
-  },
-  { label: "Giulia", items: [
-    { key: "chat", icon: MessageSquare, label: "Chat" },
-    { key: "voice", icon: Mic, label: "Voice" },
-  ] },
-  { label: "Intelligence", items: [
-    { key: "approvals", icon: ClipboardCheck, label: "Approvals" },
-    { key: "activity", icon: Activity, label: "Activity" },
-    { key: "memory", icon: Brain, label: "Memory" },
-  ] },
-  { label: "System", items: [
-    { key: "integrations", icon: Plug, label: "Integrations" },
-    { key: "settings", icon: Settings, label: "Settings" },
-    { key: "profile", icon: User, label: "Profile" },
-  ] },
-];
+import QuickLauncher from "@/components/glass/QuickLauncher";
 
 // Mobile: a small transparent pill with the 3 icons only.
 // Desktop: the full bottom-anchored glass panel with the Giulia text input.
@@ -49,7 +14,7 @@ const actionBtn =
   "h-9 w-9 lg:h-10 lg:w-10 rounded-full flex items-center justify-center text-foreground/70 lg:text-ivory/85 hover:bg-foreground/10 lg:hover:bg-ivory/15 hover:text-foreground lg:hover:text-ivory transition-colors shrink-0";
 
 export default function InteractionBar() {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [launcherOpen, setLauncherOpen] = useState(false);
   const [query, setQuery] = useState("");
   const { openModule, openChat, setPendingMessage } = usePanel();
   const { active, start, stop, captured, clear } = useContextCapture();
@@ -68,11 +33,6 @@ export default function InteractionBar() {
     } finally {
       setSavingCtx(false);
     }
-  };
-
-  const handleNav = (key) => {
-    setMenuOpen(false);
-    openModule(key);
   };
 
   const submit = (e) => {
@@ -111,7 +71,7 @@ export default function InteractionBar() {
         <button onClick={active ? stop : start} aria-label="Context toevoegen" className={cn(actionBtn, active && "text-olive")}>
           <BrainCircuit className="h-5 w-5" />
         </button>
-        <button onClick={() => setMenuOpen(true)} aria-label="Snelle acties" className={actionBtn}>
+        <button onClick={() => setLauncherOpen(true)} aria-label="Snelle acties" className={actionBtn}>
           <Plus className="h-5 w-5" />
         </button>
         <button onClick={() => openModule("voice")} aria-label="Bel Giulia" className={actionBtn}>
@@ -153,66 +113,7 @@ export default function InteractionBar() {
         </div>
       )}
 
-      {/* Compact editorial quick-nav — anchored just above the interaction bar */}
-      {menuOpen && (
-        <>
-          <div className="fixed inset-0 z-[38]" onClick={() => setMenuOpen(false)} />
-          <div className="fixed z-[39] bottom-[4.5rem] right-4 lg:right-10 w-[320px] animate-scale-in">
-            <div className="glass-4 rounded-[24px] overflow-hidden text-ivory border border-white/18 shadow-[0_24px_60px_-18px_rgba(0,0,0,0.55)]">
-              {/* Header */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-ivory/10">
-                <div className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-olive animate-pulse-soft" />
-                  <span className="text-[11px] uppercase tracking-[0.22em] font-bold text-ivory/70">Giulia OS</span>
-                </div>
-                <button onClick={() => setMenuOpen(false)} className="text-ivory/50 hover:text-ivory transition">
-                  <Plus className="h-4 w-4 rotate-45" />
-                </button>
-              </div>
-              {/* Nav grid — flat list, editorial style */}
-              <div className="p-4 space-y-0.5">
-                {navSections.map((section, si) => (
-                  <div key={si}>
-                    {section.label && (
-                      <p className="px-3 pt-3 pb-1 text-[9px] uppercase tracking-[0.28em] text-ivory/40 font-bold">{section.label}</p>
-                    )}
-                    <div className="grid grid-cols-2 gap-0.5">
-                      {section.items.map((item) =>
-                        item.to ? (
-                          <NavLink
-                            key={item.key}
-                            to={item.to}
-                            end
-                            onClick={() => setMenuOpen(false)}
-                            className={({ isActive }) =>
-                              cn(
-                                "flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium transition",
-                                isActive ? "bg-ivory/15 text-ivory" : "text-ivory/75 hover:text-ivory hover:bg-ivory/8"
-                              )
-                            }
-                          >
-                            <item.icon className="h-3.5 w-3.5 shrink-0 opacity-70" strokeWidth={1.8} />
-                            <span>{item.label}</span>
-                          </NavLink>
-                        ) : (
-                          <button
-                            key={item.key}
-                            onClick={() => handleNav(item.key)}
-                            className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] font-medium text-ivory/75 hover:text-ivory hover:bg-ivory/8 transition w-full"
-                          >
-                            <item.icon className="h-3.5 w-3.5 shrink-0 opacity-70" strokeWidth={1.8} />
-                            <span>{item.label}</span>
-                          </button>
-                        )
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+      <QuickLauncher open={launcherOpen} onClose={() => setLauncherOpen(false)} />
     </>
   );
 }
