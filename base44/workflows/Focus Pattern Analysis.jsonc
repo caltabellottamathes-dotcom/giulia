@@ -1,0 +1,44 @@
+{
+  "description": "Dagelijkse FOCUS patroon-analyse: voltooiing, overdue, wachtende taken, stilgevallen projecten en domeinbalans \u2192 Insight via de unified pipeline.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "30 21 * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "name": "Focus Pattern Analysis",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "focus_pattern_analysis",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "analyze": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "analyzeFocusPatterns"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "FOCUS patroon-analyse",
+            "description": "Voltooiing/overdue/projecten/balans \u2192 Insights"
+          }
+        }
+      }
+    ]
+  }
+}

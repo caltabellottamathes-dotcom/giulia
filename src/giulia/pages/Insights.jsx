@@ -16,6 +16,14 @@ const CATS = [
   { id: "Signaal", label: "Signaal", icon: AlertCircle, color: "bg-charcoal text-ivory" },
   { id: "Idee", label: "Idee", icon: Lightbulb, color: "bg-stone text-charcoal" },
   { id: "Opmerking", label: "Opmerking", icon: Star, color: "bg-blue-grey text-charcoal" },
+  // Geautomatiseerde categorieën (geschreven door analyzeFocusPatterns / analyzeLifePatterns / runProactivity via insightHelper)
+  { id: "Risk", label: "Risico", icon: AlertCircle, color: "bg-charcoal text-ivory" },
+  { id: "Suggestion", label: "Suggestie", icon: Lightbulb, color: "bg-sand text-ivory" },
+  { id: "Opportunity", label: "Kans", icon: TrendingUp, color: "bg-olive text-ivory" },
+  { id: "Follow-up", label: "Follow-up", icon: Repeat, color: "bg-ridge text-charcoal" },
+  { id: "Trend", label: "Trend", icon: TrendingUp, color: "bg-blue-grey text-charcoal" },
+  { id: "Review", label: "Review", icon: Star, color: "bg-stone text-charcoal" },
+  { id: "Research", label: "Onderzoek", icon: Telescope, color: "bg-blue-grey text-charcoal" },
 ];
 
 const CAT_MAP = Object.fromEntries(CATS.map((c) => [c.id, c]));
