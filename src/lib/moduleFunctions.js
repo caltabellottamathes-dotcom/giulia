@@ -59,6 +59,13 @@ export const MODULE_FUNCTIONS = {
     { label: "Onderhoud", to: "/life/household?tab=maintenance" },
     { label: "Huishouden", to: "/life/household?tab=household" },
   ],
-  personaladmin: [{ label: "Admin", to: "/life/personal-admin" }],
+  personaladmin: [
+    { label: "Overview", to: "/life/personal-admin?tab=overview" },
+    { label: "Geld", to: "/life/personal-admin?tab=money" },
+    { label: "Documenten", to: "/life/personal-admin?tab=documents" },
+    { label: "Verlengingen", to: "/life/personal-admin?tab=renewals" },
+    { label: "Verplichtingen", to: "/life/personal-admin?tab=obligations" },
+    { label: "Open", to: "/life/personal-admin?tab=open" },
+  ],
   hobbies: [{ label: "Hobby's", to: "/life/hobbies" }],
 };

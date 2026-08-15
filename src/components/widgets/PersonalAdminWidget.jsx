@@ -1,57 +1,47 @@
 import React, { useMemo } from "react";
 import WidgetShell from "./WidgetShell";
-import BrandPhoto from "./BrandPhoto";
+import WidgetHeader from "./WidgetHeader";
+import AdminRadar from "@/components/life/AdminRadar";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
-import { IMAGES } from "@/lib/images";
+import { adminWeather, radarEvents, accentFor } from "@/lib/adminUtils";
 
-const BLUE = "hsl(var(--life-blue))";
-const SAND = "hsl(var(--life-sand))";
-const iso = (d) => d.toISOString().slice(0, 10);
-
-/** Personal Admin widget — aankomende betalingen/deadlines + achterstanden. */
+/** Personal Admin widget — een administratief weerbericht. Lange portretvorm:
+ *  poster-headline, centrale geanimeerde radar, drie grote cijfers onderaan.
+ *  Kleur life-blue → life-sand (nadert) → urgent #d5e24a (te laat). */
 export default function PersonalAdminWidget() {
   const { openModule } = usePanel();
-  const { data: obligations, loading } = useEntityList("AdminObligation");
-
-  const today = iso(new Date());
-  const soon = useMemo(() => {
-    const limit = new Date(Date.now() + 14 * 86400000);
-    return (obligations || []).filter((o) => o.status !== "done" && o.due_date && new Date(o.due_date) <= limit);
-  }, [obligations]);
-  const overdue = soon.filter((o) => o.due_date < today);
+  const { data: obs } = useEntityList("AdminObligation");
+  const w = useMemo(() => adminWeather(obs || []), [obs]);
+  const events = useMemo(() => radarEvents(obs || []), [obs]);
+  const accent = w.counts.overdue > 0 ? "hsl(var(--urgent))" : w.counts.coming > 0 ? "hsl(var(--life-sand))" : "hsl(var(--life-blue))";
 
   return (
-    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("personaladmin")} className="min-h-[200px]">
-      <div className="flex flex-col h-full">
-        <div className="relative h-20 shrink-0 overflow-hidden">
-          <BrandPhoto src={IMAGES.personClipboard} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/80 to-transparent" />
-          <div className="absolute inset-0 px-5 flex items-center justify-between">
-            <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">Persoonlijk Admin</h3>
-            <span className="text-[10px] uppercase tracking-[0.18em] tabular-nums" style={{ color: SAND }}>{soon.length} eraan</span>
-          </div>
+    <WidgetShell size="1x2" radius="large" interactive onClick={() => openModule("personaladmin")} className="min-h-[320px]" style={{ "--tile-accent": accent }}>
+      <div className="p-5 flex flex-col h-full">
+        <WidgetHeader label="Personal Admin" count={w.counts.coming ? `${w.counts.coming} op komst` : "oké"} />
+        <h3 className="text-[22px] leading-[1.04] font-display font-semibold tracking-[-0.02em] text-current">{w.headline}</h3>
+        <p className="text-[10px] uppercase tracking-[0.18em] opacity-50 mt-1.5">{w.sub}</p>
+
+        <div className="flex-1 flex items-center justify-center my-3">
+          <AdminRadar events={events} size={150} tone="dark" />
         </div>
-        <div className="flex-1 -mt-8 rounded-t-[24px] glass-3 p-5 relative z-10 shadow-[0_-12px_28px_-12px_rgba(0,0,0,0.35)] text-ivory flex flex-col">
-          {loading ? (
-            <div className="flex-1 flex items-center justify-center"><div className="h-8 w-8 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" /></div>
-          ) : soon.length ? (
-            <div className="flex-1 flex flex-col gap-2.5">
-              {overdue.length > 0 && (
-                <p className="text-[11px] font-semibold" style={{ color: SAND }}>{overdue.length} te laat</p>
-              )}
-              {soon.slice(0, 3).map((o) => (
-                <div key={o.id} className="flex items-center gap-2.5">
-                  <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: o.due_date < today ? SAND : BLUE }} />
-                  <p className="text-sm font-medium truncate flex-1">{o.title}</p>
-                  <span className="text-[10px] text-ivory/45 tabular-nums shrink-0">{o.due_date?.slice(5)}</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="flex-1 flex items-center justify-center text-xs text-ivory/55">Admin is bij</p>
-          )}
+
+        <div className="grid grid-cols-3 gap-2 pt-3 border-t border-white/10">
+          <Stat n={w.counts.coming} l="aandacht" c={accentFor(w.counts.overdue > 0 ? "urgent" : w.counts.coming > 0 ? "soon" : "later")} />
+          <Stat n={`€${Math.round(w.counts.money)}`} l="op komst" c="hsl(var(--life-blue))" />
+          <Stat n={w.counts.overdue} l="te laat" c={w.counts.overdue > 0 ? "hsl(var(--urgent))" : "hsl(var(--life-blue))"} />
         </div>
       </div>
     </WidgetShell>
+  );
+}
+
+function Stat({ n, l, c }) {
+  return (
+    <div className="text-center">
+      <p className="text-2xl font-display font-semibold tabular-nums leading-none" style={{ color: c }}>{n}</p>
+      <p className="text-[9px] uppercase tracking-wide opacity-50 mt-1">{l}</p>
+    </div>
   );
 }
