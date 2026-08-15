@@ -1,11 +1,15 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { useGiuliaAgent } from "@/lib/GiuliaAgentContext";
-import { X, ArrowUp, Loader2, Sparkles, ChevronDown, Wrench } from "lucide-react";
-import ReactMarkdown from "react-markdown";
+import { X, ArrowUp, Loader2, Sparkles } from "lucide-react";
+import ChatMarkdown from "@/components/glass/ChatMarkdown";
 
-const AGENT_NAME = "giulia_assistant";
-
+/**
+ * GiuliaAgentPanel — het agent-paneel. Loopt volledig via de eigen BYOK
+ * Gemini-sleutels (chatWithGiulia), NIET via de platform-agent-runtime
+ * (Core.InvokeLLM). Giulia's redeneer-loop draait server-side op eigen
+ * sleutels, dus het paneel werkt ook buiten integration-credits.
+ */
 const SUGGESTIONS = [
   "Wat staan er vandaag voor taken?",
   "Geef een overzicht van lopende projecten",
@@ -14,47 +18,26 @@ const SUGGESTIONS = [
 ];
 
 export default function GiuliaAgentPanel() {
-  const { open, closePanel, conversationId, setConversationId } = useGiuliaAgent();
+  const { open, closePanel } = useGiuliaAgent();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [thinking, setThinking] = useState(false);
-  const convRef = useRef(null);
+  const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
   const scrollRef = useRef(null);
 
-  useEffect(() => {
-    if (!open) return;
-    let unsub = () => {};
-    (async () => {
-      try {
-        let convId = conversationId;
-        if (!convId) {
-          const existing = await base44.agents
-            .listConversations({ agent_name: AGENT_NAME })
-            .catch(() => []);
-          if (existing && existing.length) {
-            convId = existing[0].id;
-            convRef.current = existing[0];
-          } else {
-            const conv = await base44.agents.createConversation({
-              agent_name: AGENT_NAME,
-              metadata: { name: "Giulia Agent" },
-            });
-            convId = conv.id;
-            convRef.current = conv;
-          }
-          setConversationId(convId);
-        } else {
-          convRef.current = await base44.agents.getConversation(convId).catch(() => convRef.current);
-        }
-        unsub = base44.agents.subscribeToConversation(convId, (data) => {
-          setMessages(data.messages || []);
-        });
-      } catch {
-        setThinking(false);
-      }
-    })();
-    return () => unsub();
-  }, [open, conversationId, setConversationId]);
+  const load = useCallback(async () => {
+    try {
+      const list = await base44.entities.Message.list("-created_date", 200);
+      const inApp = (list || []).filter((m) => m.channel === "in-app");
+      setMessages(inApp.reverse());
+    } catch {
+      setMessages([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { if (open) { setLoading(true); load(); } }, [open, load]);
 
   useEffect(() => {
     if (document && open) {
@@ -70,23 +53,26 @@ export default function GiuliaAgentPanel() {
   }, [open, closePanel]);
 
   useEffect(() => {
-    if (messages.length && messages[messages.length - 1].role === "assistant") {
-      setThinking(false);
-    }
     requestAnimationFrame(() =>
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" })
     );
-  }, [messages]);
+  }, [messages, sending]);
 
   const send = async (text) => {
     const content = (text ?? input).trim();
-    if (!content || !convRef.current || thinking) return;
+    if (!content || sending) return;
     setInput("");
-    setThinking(true);
+    setSending(true);
+    const temp = { id: "tmp" + Date.now(), role: "user", content, created_date: new Date().toISOString() };
+    setMessages((prev) => [...prev, temp]);
     try {
-      await base44.agents.addMessage(convRef.current, { role: "user", content });
+      // Rechtstreeks naar GIULIA-CONNECT (chatWithGiulia) — BYOK Gemini.
+      await base44.functions.invoke("chatWithGiulia", { message: content, source: "chat", persist: true });
+      await load();
     } catch {
-      setThinking(false);
+      /* ignore */
+    } finally {
+      setSending(false);
     }
   };
 
@@ -114,7 +100,7 @@ export default function GiuliaAgentPanel() {
                   Giulia Agent
                 </p>
                 <p className="text-[11px] text-ivory/50 mt-1.5 tracking-wide">
-                  Met tool-toegang tot je data
+                  Eigen Gemini · direct op je data
                 </p>
               </div>
             </div>
@@ -122,7 +108,11 @@ export default function GiuliaAgentPanel() {
           </div>
 
           <div ref={scrollRef} className="relative flex-1 overflow-y-auto px-7 py-4 space-y-4">
-            {messages.length === 0 && !thinking && (
+            {loading ? (
+              <div className="flex items-center justify-center py-14">
+                <Loader2 className="h-5 w-5 animate-spin text-ivory/40" />
+              </div>
+            ) : messages.length === 0 && !sending ? (
               <div className="flex flex-col items-center text-center py-14 px-4">
                 <p className="font-display font-semibold text-2xl text-ivory mb-3 tracking-[-0.01em]">
                   Hier is Giulia.
@@ -132,11 +122,25 @@ export default function GiuliaAgentPanel() {
                   agenda en contacten. Vraag me anything — ik pak het zelf op.
                 </p>
               </div>
+            ) : (
+              messages.map((m) => {
+                const isUser = m.role === "user";
+                return isUser ? (
+                  <div key={m.id} className="flex justify-end">
+                    <div className="max-w-[80%] rounded-[20px] rounded-br-md px-[18px] py-3 text-sm leading-relaxed text-background tracking-[-0.01em]" style={{ background: "rgba(45, 45, 35, 0.92)" }}>
+                      {m.content}
+                    </div>
+                  </div>
+                ) : (
+                  <div key={m.id} className="flex justify-start">
+                    <div className="max-w-[88%] chat-bubble px-[18px] py-3 text-sm text-ivory leading-relaxed">
+                      <ChatMarkdown className="prose prose-sm max-w-none prose-invert">{m.content}</ChatMarkdown>
+                    </div>
+                  </div>
+                );
+              })
             )}
-            {messages.map((m) => (
-              <MessageBubble key={m.id} message={m} />
-            ))}
-            {thinking && (
+            {sending && (
               <div className="flex items-center gap-2 text-ivory/50 text-xs ml-1">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" /> Giulia werkt eraan…
               </div>
@@ -146,11 +150,7 @@ export default function GiuliaAgentPanel() {
           {messages.length === 0 && (
             <div className="px-7 pb-3 flex flex-wrap gap-2">
               {SUGGESTIONS.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => send(s)}
-                  className="chat-bubble px-4 py-2 text-[12px] text-ivory/70 hover:text-ivory transition-colors"
-                >
+                <button key={s} onClick={() => send(s)} className="chat-bubble px-4 py-2 text-[12px] text-ivory/70 hover:text-ivory transition-colors">
                   {s}
                 </button>
               ))}
@@ -168,7 +168,7 @@ export default function GiuliaAgentPanel() {
               />
               <button
                 onClick={() => send()}
-                disabled={!input.trim() || thinking}
+                disabled={!input.trim() || sending}
                 className="h-12 w-12 rounded-full bg-foreground text-background flex items-center justify-center hover:scale-105 transition-transform disabled:opacity-40 disabled:hover:scale-100"
                 aria-label="Verstuur"
               >
@@ -179,109 +179,5 @@ export default function GiuliaAgentPanel() {
         </div>
       </div>
     </>
-  );
-}
-
-function MessageBubble({ message }) {
-  const isUser = message.role === "user";
-  if (isUser) {
-    return (
-      <div className="flex justify-end">
-        <div
-          className="max-w-[80%] rounded-[20px] rounded-br-md px-[18px] py-3 text-sm leading-relaxed text-background tracking-[-0.01em]"
-          style={{ background: "rgba(45, 45, 35, 0.92)" }}
-        >
-          {message.content}
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="flex justify-start">
-      <div className="max-w-[88%] chat-bubble px-[18px] py-3 text-sm text-ivory leading-relaxed space-y-2">
-        {message.content ? (
-          <ReactMarkdown>{message.content}</ReactMarkdown>
-        ) : (
-          <span className="text-ivory/40 italic">…</span>
-        )}
-        {message.tool_calls?.map((tc, i) => (
-          <FunctionDisplay key={i} toolCall={tc} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function FunctionDisplay({ toolCall }) {
-  const [expanded, setExpanded] = useState(false);
-
-  const resultsRaw = toolCall.results;
-  let parsedResults = resultsRaw;
-  if (typeof resultsRaw === "string") {
-    try { parsedResults = JSON.parse(resultsRaw); } catch { parsedResults = resultsRaw; }
-  }
-
-  let args = toolCall.arguments_string;
-  if (typeof args === "string") {
-    try { args = JSON.parse(args); } catch { /* keep raw */ }
-  }
-
-  const status = toolCall.status;
-  const failed = status === "failed" || status === "error";
-  const label =
-    status === "running" || status === "in_progress" || status === "pending"
-      ? "loopt…"
-      : failed
-      ? "mislukt"
-      : "klaar";
-
-  const proj = toolCall.display_projection || {};
-  const hide = proj.hide_details && proj.details_redacted;
-  const stateLabel = failed ? proj.error_label || label : proj.label || toolCall.name || "tool";
-  const activeLabel = proj.active_label || stateLabel;
-
-  if (hide) {
-    return (
-      <div className="flex items-center gap-2 pt-1 text-[11px] text-ivory/55">
-        <Wrench className="h-3 w-3" />
-        <span>{failed ? label : activeLabel}</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="mt-2 rounded-xl border border-ivory/10 bg-ivory/[0.04] text-[11px] text-ivory/70 overflow-hidden">
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-ivory/[0.04] transition-colors"
-      >
-        <Wrench className={`h-3 w-3 ${failed ? "text-red-300/70" : "text-olive/70"}`} />
-        <span className="font-medium text-ivory/80">{toolCall.name || "tool"}</span>
-        <span className={`ml-auto ${failed ? "text-red-300/60" : "text-ivory/45"}`}>{label}</span>
-        <ChevronDown className={`h-3 w-3 transition-transform ${expanded ? "rotate-180" : ""}`} />
-      </button>
-      {expanded && (
-        <div className="px-3 pb-3 space-y-2">
-          {args && Object.keys(args).length > 0 && (
-            <div>
-              <p className="text-[10px] uppercase tracking-wide text-ivory/40 mb-1">Parameters</p>
-              <pre className="whitespace-pre-wrap break-words text-[10px] text-ivory/60">
-                {JSON.stringify(args, null, 2)}
-              </pre>
-            </div>
-          )}
-          {parsedResults !== undefined && parsedResults !== null && (
-            <div>
-              <p className="text-[10px] uppercase tracking-wide text-ivory/40 mb-1">Resultaat</p>
-              <pre className="whitespace-pre-wrap break-words text-[10px] text-ivory/60 max-h-40 overflow-auto">
-                {typeof parsedResults === "string"
-                  ? parsedResults
-                  : JSON.stringify(parsedResults, null, 2)}
-              </pre>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
   );
 }

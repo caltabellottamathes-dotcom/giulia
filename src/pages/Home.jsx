@@ -110,13 +110,19 @@ export default function Home() {
     }
   };
 
-  // Reset — ververs alle widgets en data zónder de opstart-procedure (startGiulia /
-  // refreshDashboard) opnieuw te draaien. Remount van de grid forceert elke widget
-  // zijn eigen data opnieuw op te halen, zodat je ziet dat acties écht zijn uitgevoerd.
-  const reset = () => {
+  // Reset — maak het dashboard helemaal schoon en zaai opnieuw in, zodat je
+  // fris kunt starten en alles weer lekker loopt. Wist alle gepinde widgets,
+  // zet de vaste standaardset terug en herlaadt.
+  const reset = async () => {
+    try {
+      await base44.entities.DashboardWidget.deleteMany({}).catch(() => {});
+      await base44.entities.DashboardWidget.bulkCreate(
+        DEFAULT_WIDGETS.map((t, i) => ({ widget_type: t, position: i, visible: true }))
+      ).catch(() => []);
+    } catch { /* ignore */ }
     setResetKey((k) => k + 1);
-    load();
-    toast({ title: "Vernieuwd", description: "Widgets en data opgehaald." });
+    await load();
+    toast({ title: "Dashboard gereset", description: "Standaardwidgets hersteld — frisse start." });
   };
 
   useEffect(() => {
