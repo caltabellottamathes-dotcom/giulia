@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import PageHero from "@/components/glass/PageHero";
 import GlassPanel from "@/components/glass/GlassPanel";
 import GlassButton from "@/components/glass/GlassButton";
-import AdminRadar from "@/components/life/AdminRadar";
+import AdminTimeline from "@/components/life/AdminTimeline";
 import AdminObligationCard from "@/components/life/AdminObligationCard";
 import { IMAGES } from "@/lib/images";
 import { adminWeather, radarEvents, comingUp, weatherZones, repeaters, friction, nextThing, openLoops, needsYouList, accentFor, daysUntil, fmtDate, isActive } from "@/lib/adminUtils";
@@ -65,7 +65,7 @@ export default function PersonalAdminPage() {
                 <h2 className="text-5xl lg:text-6xl font-display font-semibold tracking-[-0.03em] text-ivory mt-1.5">{w.headline.replace("ADMIN WEATHER: ", "MOSTLY ").replace("MOSTLY QUIET FOR NOW", "QUIET FOR NOW")}</h2>
                 <p className="text-sm text-ivory/70 mt-2">{w.counts.overdue} te laat · {w.counts.coming} op komst · {w.counts.needsYou} vereist jou</p>
               </div>
-              <div className="flex justify-center lg:justify-end"><AdminRadar events={events} size={230} tone="dark" labels pills onSelect={done} /></div>
+              <div className="w-full max-w-sm"><div className="glass-card rounded-2xl p-4"><p className="text-[10px] uppercase tracking-[0.2em] text-ivory/55 font-semibold mb-3">Op komst</p><AdminTimeline events={events} max={5} tone="dark" onSelect={done} /></div></div>
             </div>
           </div>
 
@@ -255,7 +255,7 @@ export default function PersonalAdminPage() {
                   <h2 className="text-5xl font-display font-semibold tabular-nums text-ivory mt-1">{renewals.length}</h2>
                   <p className="text-sm text-ivory/70 mt-1">komen terug</p>
                 </div>
-                <div className="hidden sm:block"><AdminRadar events={events.filter((e) => ["renewal", "subscription", "insurance"].includes(e.type))} size={120} tone="dark" /></div>
+                <div className="hidden sm:flex items-center gap-2 text-ivory/70 text-sm"><RefreshCw className="w-4 h-4" /> {renewals.length} terugkerend</div>
               </div>
             </div>
           </div>
