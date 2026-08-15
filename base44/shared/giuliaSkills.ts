@@ -453,4 +453,85 @@ export const GIULIA_SKILLS = [
       return i ? { id: i.id } : { error: "create failed" };
     }
   },
+  {
+    name: "add_therapy_note",
+    description: "Voeg een notitie toe aan een therapie-/begeleidingstraject (SELF → Therapy). Wordt opgeslagen in de notes-array van het traject.",
+    inputSchema: { type: "object", properties: { trajectory_id: { type: "string" }, note: { type: "string" } }, required: ["trajectory_id", "note"] },
+    execute: async ({ trajectory_id, note }, base44) => {
+      const sr = base44.asServiceRole;
+      const t = await sr.entities.TherapyTrajectory.get(trajectory_id).catch(() => null);
+      if (!t) return { error: "trajectory not found" };
+      const notes = [...(t.notes || []), note];
+      const updated = await sr.entities.TherapyTrajectory.update(trajectory_id, { notes, agent_source: "GIULIA-CORE" }).catch(() => null);
+      return updated ? { ok: true, notes_count: notes.length } : { error: "update failed" };
+    }
+  },
+  {
+    name: "add_therapy_goal",
+    description: "Voeg een doel toe aan een therapie-traject (SELF → Therapy → Goals). Wordt opgeslagen in de goals-array van het traject.",
+    inputSchema: { type: "object", properties: { trajectory_id: { type: "string" }, goal: { type: "string" } }, required: ["trajectory_id", "goal"] },
+    execute: async ({ trajectory_id, goal }, base44) => {
+      const sr = base44.asServiceRole;
+      const t = await sr.entities.TherapyTrajectory.get(trajectory_id).catch(() => null);
+      if (!t) return { error: "trajectory not found" };
+      const goals = [...(t.goals || []), goal];
+      const updated = await sr.entities.TherapyTrajectory.update(trajectory_id, { goals, agent_source: "GIULIA-CORE" }).catch(() => null);
+      return updated ? { ok: true, goals_count: goals.length } : { error: "update failed" };
+    }
+  },
+  {
+    name: "add_therapy_person",
+    description: "Koppel een contact (Contact-ID) aan een therapie-traject (SELF → Therapy → People). Voegt toe aan de contact_ids-array.",
+    inputSchema: { type: "object", properties: { trajectory_id: { type: "string" }, contact_id: { type: "string" } }, required: ["trajectory_id", "contact_id"] },
+    execute: async ({ trajectory_id, contact_id }, base44) => {
+      const sr = base44.asServiceRole;
+      const t = await sr.entities.TherapyTrajectory.get(trajectory_id).catch(() => null);
+      if (!t) return { error: "trajectory not found" };
+      const contact_ids = [...(t.contact_ids || []), contact_id];
+      const updated = await sr.entities.TherapyTrajectory.update(trajectory_id, { contact_ids, agent_source: "GIULIA-CORE" }).catch(() => null);
+      return updated ? { ok: true, people_count: contact_ids.length } : { error: "update failed" };
+    }
+  },
+  {
+    name: "create_therapy_appointment",
+    description: "Maak een therapie-/begeleidingsafspraak (CalendarEvent, domain='self') en koppel deze aan een traject door next_appointment te zetten.",
+    inputSchema: { type: "object", properties: { trajectory_id: { type: "string" }, title: { type: "string" }, start: { type: "string", description: "ISO datetime" }, end: { type: "string", description: "ISO datetime" }, location: { type: "string" } }, required: ["trajectory_id", "title", "start"] },
+    execute: async (args, base44) => {
+      const sr = base44.asServiceRole;
+      const e = await sr.entities.CalendarEvent.create({ title: args.title, start: args.start, end: args.end, location: args.location, domain: "self", status: "confirmed", agent_source: "GIULIA-CORE" }).catch(() => null);
+      if (!e) return { error: "event create failed" };
+      await sr.entities.TherapyTrajectory.update(args.trajectory_id, { next_appointment: args.start, agent_source: "GIULIA-CORE" }).catch(() => null);
+      await emitEvent(base44, { event_type: "EVENT_CREATED", object_type: "CalendarEvent", object_id: e.id, domain: "self", description: `Therapie-afspraak: ${e.title}` });
+      return { id: e.id, title: e.title };
+    }
+  },
+  {
+    name: "add_need",
+    description: "Registreer een behoefte als eersteklas object (SelfNeed-entity) met status, prioriteit en categorie. Gebruik dit als een behoefte opvolging verdient (niet alleen een vluchtige check-in-tag).",
+    inputSchema: { type: "object", properties: { title: { type: "string" }, priority: { type: "string", enum: ["low", "medium", "high"], default: "medium" }, category: { type: "string" }, context: { type: "string" }, check_in_id: { type: "string" } }, required: ["title"] },
+    execute: async (args, base44) => {
+      const sr = base44.asServiceRole;
+      const n = await sr.entities.SelfNeed.create({ ...args, status: "open", first_seen: new Date().toISOString(), agent_source: "GIULIA-CORE" }).catch(() => null);
+      return n ? { id: n.id, title: n.title } : { error: "create failed" };
+    }
+  },
+  {
+    name: "update_need",
+    description: "Werk een behoefte bij — status (open/prioritized/resolved/deferred/revisited), prioriteit. Gebruik resolved/deferred om een behoefte af te sluiten.",
+    inputSchema: { type: "object", properties: { id: { type: "string" }, status: { type: "string", enum: ["open", "prioritized", "resolved", "deferred", "revisited"] }, priority: { type: "string", enum: ["low", "medium", "high"] } }, required: ["id"] },
+    execute: async ({ id, ...patch }, base44) => {
+      if (patch.status === "resolved") patch.resolved_at = new Date().toISOString();
+      const n = await base44.asServiceRole.entities.SelfNeed.update(id, { ...patch, agent_source: "GIULIA-CORE" }).catch(() => null);
+      return n ? { ok: true, status: n.status } : { error: "not found" };
+    }
+  },
+  {
+    name: "list_open_needs",
+    description: "Lijst van openstaande behoeften (SelfNeed) — behoeften die opvolging of aandacht verdienen.",
+    inputSchema: { type: "object", properties: {} },
+    execute: async (_args, base44) => {
+      const list = await base44.asServiceRole.entities.SelfNeed.filter({ status: { $in: ["open", "prioritized", "revisited"] } }, "-first_seen", 30).catch(() => []);
+      return { count: list.length, items: list.map((n) => ({ id: n.id, title: n.title, priority: n.priority, status: n.status, category: n.category })) };
+    }
+  },
 ];

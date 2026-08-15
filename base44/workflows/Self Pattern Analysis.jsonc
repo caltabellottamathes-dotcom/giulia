@@ -1,0 +1,44 @@
+{
+  "name": "Self Pattern Analysis",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 21 * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "Dagelijkse analyse van SELF-data (check-ins, routines, tijd) \u2192 formuleert en slaat patronen als SelfInsight op.",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "self_pattern_analysis",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "analyze": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "analyzeSelfPatterns"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Patroon-analyse",
+            "description": "14-daagse trend \u2192 SelfInsights"
+          }
+        }
+      }
+    ]
+  }
+}

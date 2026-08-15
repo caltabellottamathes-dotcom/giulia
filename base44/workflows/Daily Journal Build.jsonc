@@ -1,0 +1,44 @@
+{
+  "name": "Daily Journal Build",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 22 * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "Avondlijke dag-samenvatting: verzamelt check-ins, agenda, threads en routines \u2192 schrijft een reflectieve JournalEntry via Gemini.",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "daily_journal_build",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "build_journal": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "buildDailyJournal"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Dagbeeld bouwen",
+            "description": "Reflectieve samenvatting van de dag"
+          }
+        }
+      }
+    ]
+  }
+}

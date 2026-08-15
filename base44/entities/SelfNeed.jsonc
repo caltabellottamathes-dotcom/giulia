@@ -1,0 +1,67 @@
+{
+  "name": "SelfNeed",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "prioritized",
+        "resolved",
+        "deferred",
+        "revisited"
+      ],
+      "default": "open",
+      "title": "Status"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium",
+      "title": "Priority"
+    },
+    "category": {
+      "type": "string",
+      "title": "Category"
+    },
+    "check_in_id": {
+      "type": "string",
+      "title": "Linked Check-in ID"
+    },
+    "context": {
+      "type": "string",
+      "title": "Context"
+    },
+    "first_seen": {
+      "type": "string",
+      "format": "date-time",
+      "title": "First Seen"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Resolved At"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "name": "Self Check-ins",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 10,14,18 * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "Proactieve SELF check-in runner (~3x/dag) \u2014 verzamelt context en stelt een context-bewuste vraag via Gemini.",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "self_checkins",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_checkin": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "runSelfCheckIns"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Proactieve check-in",
+            "description": "Context-bewuste vraag via Gemini"
+          }
+        }
+      }
+    ]
+  }
+}
