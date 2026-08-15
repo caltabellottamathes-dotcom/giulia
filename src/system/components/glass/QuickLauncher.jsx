@@ -17,29 +17,37 @@ import { X } from "lucide-react";
  */
 const GROUPS = [
   {
-    label: "Vandaag",
+    label: "Giulia",
+    items: [
+      { label: "Chat", route: "/chat", module: "chat" },
+      { label: "Wants to know", route: "/wants-to-know", module: "wantstoknow" },
+      { label: "Goedkeuringen", route: "/approvals", module: "approvals" },
+      { label: "Briefing", route: "/briefing" },
+      { label: "Insights", route: "/insights", module: "insights" },
+      { label: "Geheugen", route: "/memory", module: "memory" },
+      { label: "Activiteit", route: "/activity", module: "activity" },
+      { label: "Agenten", route: "/agents" },
+      { label: "Updates", route: "/updates", module: "updates" },
+    ],
+  },
+  {
+    label: "Focus",
     items: [
       { label: "Agenda", route: "/agenda", module: "agenda" },
       { label: "Taken", route: "/tasks", module: "tasks" },
       { label: "Planning", route: "/planning" },
-      { label: "Briefing", route: "/briefing" },
-      { label: "Goedkeuringen", route: "/approvals", module: "approvals" },
-      { label: "Notificaties", route: "/notifications" },
-    ],
-  },
-  {
-    label: "Werk",
-    items: [
       { label: "Projecten", route: "/projects", module: "projects" },
       { label: "Email", route: "/email", module: "email" },
       { label: "WhatsApp", route: "/whatsapp", module: "whatsapp" },
       { label: "Kennis", route: "/knowledge", module: "knowledge" },
       { label: "Documenten", route: "/documents", module: "documents" },
       { label: "Mensen", route: "/people", module: "people" },
+      { label: "Notificaties", route: "/notifications" },
+      { label: "Tijd", route: "/timetracker" },
     ],
   },
   {
-    label: "Leven",
+    label: "Life",
     items: [
       { label: "LIFE", route: "/life" },
       { label: "Social Pulse", route: "/life/social-pulse", module: "socialpulse" },
@@ -50,22 +58,15 @@ const GROUPS = [
     ],
   },
   {
-    label: "Giulia",
+    label: "Self",
     items: [
-      { label: "Wants to know", route: "/wants-to-know", module: "wantstoknow" },
-      { label: "Chat", route: "/chat", module: "chat" },
       { label: "Wake", route: "/wake" },
-      { label: "Insights", route: "/insights", module: "insights" },
-      { label: "Geheugen", route: "/memory", module: "memory" },
-      { label: "Activiteit", route: "/activity", module: "activity" },
+      { label: "Good Morning", route: "/", module: "goodmorning" },
     ],
   },
   {
-    label: "Systeem",
+    label: "System",
     items: [
-      { label: "Agenten", route: "/agents" },
-      { label: "Updates", route: "/updates", module: "updates" },
-      { label: "Tijd", route: "/timetracker" },
       { label: "Zoeken", route: "/search" },
       { label: "Integraties", route: "/integrations" },
       { label: "Instellingen", route: "/settings" },
