@@ -1,6 +1,6 @@
-// SELF editorial photos (burgundy / beton / off-white) + palette.
-// Elke widget gebruikt een eigen foto als visuele metafoor — de data is
-// onderdeel van de compositie, geen standaard dashboard card.
+// SELF editorial photos + palette + mock demo data.
+// Hoofdaccent: #301728 (donker plum). Contrast: #d8dab3. Urgent: #d5e24a
+// (uitsluitend urgente zaken). Beton/off-white voor de editorial textuur.
 
 export const SELF_PHOTO = {
   dailyState: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/66a7f3110_An_emotionally_ambiguous_wide_shot_2026062622311.jpeg",
@@ -13,10 +13,57 @@ export const SELF_PHOTO = {
   insights: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/fdb845d44_A_deadpan_horizontal_profile_shot_202606262244.jpeg",
 };
 
-export const BURGUNDY = "hsl(var(--self-burgundy))";
-export const BURGUNDY_LIGHT = "hsl(342 38% 56%)";
-export const CONCRETE = "hsl(204 6% 66%)";
-export const CONCRETE_DEEP = "hsl(204 5% 44%)";
-export const OFFWHITE = "hsl(var(--warm-white))";
-export const URGENT = "hsl(var(--self-urgent))";
-export const SAGE = "hsl(var(--self-accent))";
+export const PLUM = "#301728";
+export const CONTRAST = "#d8dab3";
+export const URGENT = "#d5e24a";
+export const CONCRETE = "#9aa0a3";
+export const CONCRETE_LIGHT = "#c9ccc9";
+export const OFFWHITE = "#f2f2f0";
+
+// translucent plum glass layers
+export const PLUM_GLASS = "rgba(48,23,40,0.55)";
+export const PLUM_GLASS_SOFT = "rgba(48,23,40,0.40)";
+
+// ── mock demo content (valt terug als er geen live data is) ──
+export const MOCK = {
+  dailyState: { state: "calm", energy: 78, capacity: 64, timeline: [62, 55, 70, 48, 80, 78], need: "rust", mood: "good" },
+  routines: [
+    { id: "m1", title: "Ochtend ademruimte", streak_count: 12, status: "completed" },
+    { id: "m2", title: "Stretches", streak_count: 7, status: "completed" },
+    { id: "m3", title: "Lezen 10 min", streak_count: 3, status: "active" },
+    { id: "m4", title: "Geen schermen na 22u", streak_count: 21, status: "active" },
+  ],
+  wake: { done: 2, total: 4, lastDone: "07:12" },
+  therapy: { active: 2, avg: 45, goals: 5, next: "vr 21 aug · 14:00" },
+  journal: [
+    { id: "j1", title: "Stilte voor de dag begon", type: "reflection", is_highlight: true },
+    { id: "j2", title: "Wandeling langs het water", type: "moment", is_highlight: false },
+    { id: "j3", title: "Een oude gedachte teruggekomen", type: "entry", is_highlight: false },
+    { id: "j4", title: "Gesprek met M. over grenzen", type: "thread", is_highlight: true },
+    { id: "j5", title: "Vroeg naar bed, opgelucht", type: "entry", is_highlight: false },
+  ],
+  development: {
+    goals: [
+      { id: "g1", title: "Hardloopschema 10km", progress: 80, area: "Fysiek" },
+      { id: "g2", title: "Wekelijks schrijven", progress: 55, area: "Creatief" },
+      { id: "g3", title: "Lezen: 12 boeken", progress: 30, area: "Groei" },
+    ],
+    areas: ["Fysiek", "Creatief", "Groei"],
+    avg: 55,
+  },
+  personalTime: {
+    blocks: [
+      { id: "p1", type: "protected", start: "2026-08-16T07:00:00", duration_min: 90 },
+      { id: "p2", type: "rest", start: "2026-08-16T13:00:00", duration_min: 30 },
+      { id: "p3", type: "recovery", start: "2026-08-16T20:30:00", duration_min: 60 },
+    ],
+    total: 180, protected: 90,
+  },
+  insights: {
+    items: [
+      { type: "balance", n: 2 }, { type: "pattern", n: 2 }, { type: "capacity", n: 1 },
+      { type: "overload", n: 1 }, { type: "under_recovery", n: 1 },
+    ],
+    pos: 5, neg: 2, balance: 71,
+  },
+};
