@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import PageHero from "@/components/glass/PageHero";
 import GlassPanel from "@/components/glass/GlassPanel";
 import { IMAGES } from "@/lib/images";
-import { socialPulse } from "@/lib/domainUtils";
+import { socialPulse, closeCircle } from "@/lib/domainUtils";
 import { cn } from "@/lib/utils";
 import { AreaChart, Area, LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
 import { Heart, Search, SlidersHorizontal, Settings, MessageCircle, CalendarHeart, Bell, Plus, Sparkles, ArrowUpRight, Clock, TrendingUp, TrendingDown, Minus } from "lucide-react";
@@ -11,6 +11,7 @@ import { Heart, Search, SlidersHorizontal, Settings, MessageCircle, CalendarHear
 const BLUE = "hsl(var(--life-blue))";
 const DEEP = "hsl(var(--life-blue-deep))";
 const SAND = "hsl(var(--life-sand))";
+const SAND_DEEP = "hsl(var(--life-sand-deep))";
 const SOFT = "hsl(var(--life-blue-soft))";
 const TABS = ["OVERVIEW", "RELATIONSHIPS", "ACTIVITY", "MOMENTS", "PATTERNS"];
 const MOMENT_PHOTOS = [IMAGES.lifeSocialPulseAlt, IMAGES.lifeFabric, IMAGES.lifeSuitStrings, IMAGES.lifeGlove, IMAGES.lifeVase, IMAGES.lifeHandPrint, IMAGES.lifeStitch, IMAGES.lifeStride];
@@ -20,7 +21,10 @@ const fmtTime = (d) => new Date(d).toLocaleTimeString("nl-NL", { hour: "2-digit"
 const initials = (n) => (n || "?").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 
 export default function SocialPulsePage() {
-  const [tab, setTab] = useState("OVERVIEW");
+  const [tab, setTab] = useState(() => {
+    const t = new URLSearchParams(window.location.search).get("tab");
+    return t ? t.toUpperCase() : "OVERVIEW";
+  });
   const [contacts, setContacts] = useState([]);
   const [emails, setEmails] = useState([]);
   const [whatsapps, setWhatsapps] = useState([]);
@@ -44,7 +48,7 @@ export default function SocialPulsePage() {
     })();
   }, []);
 
-  const pulse = useMemo(() => socialPulse(contacts), [contacts]);
+  const pulse = useMemo(() => socialPulse(closeCircle(contacts)), [contacts]);
   const overdue = pulse.filter((p) => p.overdue);
 
   const interactions = useMemo(() => {
@@ -173,7 +177,7 @@ export default function SocialPulsePage() {
                   <div className="h-24 w-24 rounded-full border border-dashed" style={{ borderColor: SOFT }} />
                 </div>
                 {mapNodes.map((n) => (
-                  <button key={n.contact.id} onClick={() => { setTab("RELATIONSHIPS"); setSelected(n.contact.id); }} className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center font-display font-semibold text-ivory transition-transform hover:scale-110" style={{ left: `${n.x}%`, top: `${n.y}%`, width: n.size, height: n.size, background: n.overdue ? SAND : DEEP, boxShadow: "0 8px 20px -8px rgba(0,0,0,0.4)" }}>
+                  <button key={n.contact.id} onClick={() => { setTab("RELATIONSHIPS"); setSelected(n.contact.id); }} className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center font-display font-semibold text-ivory transition-transform hover:scale-110" style={{ left: `${n.x}%`, top: `${n.y}%`, width: n.size, height: n.size, background: n.overdue ? SAND_DEEP : DEEP, boxShadow: "0 8px 20px -8px rgba(0,0,0,0.4)" }}>
                     <span className="text-xs">{initials(n.contact.name)}</span>
                   </button>
                 ))}
@@ -200,7 +204,7 @@ export default function SocialPulsePage() {
               {overdue.slice(0, 3).map((p) => (
                 <div key={p.contact.id} className="rounded-2xl border border-border p-4 flex flex-col">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-semibold text-ivory" style={{ background: SAND }}>{initials(p.contact.name)}</div>
+                    <div className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-semibold text-charcoal" style={{ background: SAND }}>{initials(p.contact.name)}</div>
                     <div className="min-w-0"><p className="text-sm font-semibold truncate">{p.contact.name}</p><p className="text-xs text-muted-foreground">{p.since === Infinity ? "geen contact" : `${p.since} dagen`}</p></div>
                   </div>
                   <p className="text-xs text-muted-foreground flex-1">Relatie dooft uit — je ritme was elke {p.freq} dagen.</p>
@@ -239,7 +243,7 @@ export default function SocialPulsePage() {
             <div className="relative h-72">
               <div className="absolute inset-0 flex items-center justify-center"><div className="h-32 w-32 rounded-full border border-dashed" style={{ borderColor: SOFT }} /></div>
               {mapNodes.map((n) => (
-                <button key={n.contact.id} onClick={() => setSelected(n.contact.id)} className={cn("absolute -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center font-display font-semibold text-ivory transition-transform hover:scale-110", selected === n.contact.id && "ring-4 ring-offset-2 ring-offset-background")} style={{ left: `${n.x}%`, top: `${n.y}%`, width: n.size, height: n.size, background: n.overdue ? SAND : DEEP, boxShadow: "0 8px 20px -8px rgba(0,0,0,0.4)" }}><span className="text-xs">{initials(n.contact.name)}</span></button>
+                <button key={n.contact.id} onClick={() => setSelected(n.contact.id)} className={cn("absolute -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center font-display font-semibold text-ivory transition-transform hover:scale-110", selected === n.contact.id && "ring-4 ring-offset-2 ring-offset-background")} style={{ left: `${n.x}%`, top: `${n.y}%`, width: n.size, height: n.size, background: n.overdue ? SAND_DEEP : DEEP, boxShadow: "0 8px 20px -8px rgba(0,0,0,0.4)" }}><span className="text-xs">{initials(n.contact.name)}</span></button>
               ))}
             </div>
           </GlassPanel>
@@ -268,10 +272,10 @@ export default function SocialPulsePage() {
             <div className="divide-y divide-border/30">
               {pulse.map((p) => (
                 <button key={p.contact.id} onClick={() => setSelected(p.contact.id)} className="w-full flex items-center gap-4 py-3 text-left hover:bg-foreground/[0.03] -mx-2 px-2 rounded-lg transition">
-                  <div className="h-9 w-9 rounded-full flex items-center justify-center text-xs font-semibold text-ivory shrink-0" style={{ background: p.overdue ? SAND : DEEP }}>{initials(p.contact.name)}</div>
+                  <div className="h-9 w-9 rounded-full flex items-center justify-center text-xs font-semibold text-ivory shrink-0" style={{ background: p.overdue ? SAND_DEEP : DEEP }}>{initials(p.contact.name)}</div>
                   <div className="flex-1 min-w-0"><p className="text-sm font-medium truncate">{p.contact.name}</p><p className="text-xs text-muted-foreground">{p.contact.relationship_type || "—"} · elke {p.freq} dagen</p></div>
                   <span className="text-xs text-muted-foreground tabular-nums hidden sm:block">{p.since === Infinity ? "nooit" : `${p.since}d`}</span>
-                  <span className="text-[10px] uppercase tracking-wide font-semibold" style={{ color: p.overdue ? "hsl(var(--life-sand))" : "hsl(var(--muted-foreground))" }}>{p.overdue ? "wacht" : "bij"}</span>
+                  <span className="text-[10px] uppercase tracking-wide font-semibold" style={{ color: p.overdue ? "hsl(var(--life-sand-deep))" : "hsl(var(--muted-foreground))" }}>{p.overdue ? "wacht" : "bij"}</span>
                 </button>
               ))}
             </div>
@@ -381,7 +385,7 @@ export default function SocialPulsePage() {
                     <div className="flex items-center justify-between mb-1"><span className="text-sm font-medium">{p.contact.name}</span><span className="text-xs text-muted-foreground tabular-nums">{(p.since === Infinity ? 0 : p.since / 7).toFixed(1)} weeks</span></div>
                     <div className="relative h-2 rounded-full bg-muted overflow-hidden">
                       <div className="absolute top-0 bottom-0 w-0.5 bg-foreground/50" style={{ left: `${freqPct}%` }} />
-                      <div className="h-full rounded-full" style={{ width: `${sincePct}%`, background: p.overdue ? SAND : DEEP }} />
+                      <div className="h-full rounded-full" style={{ width: `${sincePct}%`, background: p.overdue ? SAND_DEEP : DEEP }} />
                     </div>
                   </div>
                 );
@@ -408,7 +412,7 @@ export default function SocialPulsePage() {
               const ch = rhythmChange(p);
               const Icon = ch === "quieter" ? TrendingDown : TrendingUp;
               const label = ch === "quieter" ? "QUIETER" : ch === "more" ? "MORE ACTIVE" : "STABLE";
-              const accent = ch === "quieter" ? SAND : DEEP;
+              const accent = ch === "quieter" ? SAND_DEEP : DEEP;
               return (
                 <GlassPanel level={2} key={p.contact.id} className="p-5">
                   <div className="flex items-center gap-2 mb-2"><Icon className="h-4 w-4" style={{ color: accent }} /><p className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: accent }}>{label}</p></div>

@@ -38,4 +38,15 @@ export const MODULE_FUNCTIONS = {
   integrations: [{ label: "Integraties", to: "/integrations" }],
   updates: [{ label: "Wat er nieuw is", to: "/updates" }],
   goodmorning: [{ label: "Wake Mode", to: "/wake" }],
+  socialpulse: [
+    { label: "Overview", to: "/life/social-pulse?tab=overview" },
+    { label: "Relaties", to: "/life/social-pulse?tab=relationships" },
+    { label: "Activiteit", to: "/life/social-pulse?tab=activity" },
+    { label: "Momenten", to: "/life/social-pulse?tab=moments" },
+    { label: "Patronen", to: "/life/social-pulse?tab=patterns" },
+  ],
+  socialplanner: [{ label: "Plannen", to: "/life/social-planner" }],
+  household: [{ label: "Huishouden", to: "/life/household" }],
+  personaladmin: [{ label: "Admin", to: "/life/personal-admin" }],
+  hobbies: [{ label: "Hobby's", to: "/life/hobbies" }],
 };

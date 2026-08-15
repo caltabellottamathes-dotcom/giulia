@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import FloatingPanel from "@/components/glass/FloatingPanel";
 import { usePanel } from "@/lib/PanelContext";
 import { MODULES } from "@/lib/moduleRegistry";
+import { MODULE_FUNCTIONS } from "@/lib/moduleFunctions";
 import { WIDGETS } from "@/lib/widgetRegistry";
 import { IMAGES } from "@/lib/images";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import { Plus, LayoutGrid, ArrowUpRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import AgendaPreview from "@/components/panels/previews/AgendaPreview";
 import TasksPreview from "@/components/panels/previews/TasksPreview";
 import ProjectsPreview from "@/components/panels/previews/ProjectsPreview";
@@ -179,6 +180,15 @@ export default function ModulePanel() {
                   <h2 className="text-[24px] lg:text-[28px] font-display font-semibold tracking-tight leading-none text-ivory">
                     {MODULE_TOPIC[activeModule] || mod.label}
                   </h2>
+                  {(MODULE_FUNCTIONS[activeModule] || []).length > 0 && (
+                    <div className="flex flex-wrap gap-x-3.5 gap-y-1 mt-2.5">
+                      {MODULE_FUNCTIONS[activeModule].map((f) => (
+                        <Link key={f.label} to={f.to} onClick={closeModule} className="text-[11px] text-ivory/55 hover:text-ivory transition-colors underline underline-offset-4 decoration-ivory/20">
+                          {f.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
               <div className="flex items-center gap-2 shrink-0 mt-0.5">
                 {widgetDef && (

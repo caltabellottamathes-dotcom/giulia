@@ -77,3 +77,13 @@ export function domainBalance({ tasks = [], events = [], projects = [] } = {}) {
 
 export const LIFE_BLUE = "hsl(var(--life-blue))";
 export const LIFE_SAND = "hsl(var(--life-sand))";
+
+// Close circle — the relationships that actually matter to Salvo. Everything
+// else is noise in the Social Pulse "what matters now" view.
+const CLOSE_CIRCLE_KEYS = ["mama", "debora", "sara", "juan", "pawel", "paul", "oma", "wouter"];
+export function closeCircle(contacts = []) {
+  return (contacts || []).filter((c) => {
+    const n = (c.name || "").toLowerCase();
+    return !n.includes("salvatore") && CLOSE_CIRCLE_KEYS.some((k) => n.includes(k));
+  });
+}

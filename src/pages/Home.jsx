@@ -171,6 +171,27 @@ export default function Home() {
 
   return (
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-mt-8 lg:mb-0 min-h-[calc(100svh-3.5rem)] lg:min-h-[calc(100svh-9.5rem)] overflow-hidden">
+      {/* Fixed action buttons — truly viewport-fixed (kept out of the transformed
+          content layer so they never scroll away). */}
+      <div className="fixed top-20 right-6 lg:right-10 z-40 flex items-center gap-2">
+        <button
+          onClick={reset}
+          title="Ververs alle widgets en data"
+          className="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold transition bg-foreground/[0.06] border border-foreground/10 text-foreground hover:bg-foreground/10 lg:bg-white/10 lg:border-white/20 lg:text-ivory lg:hover:bg-white/20"
+        >
+          <RotateCcw className="h-4 w-4" /> <span className="hidden sm:inline">Reset</span>
+        </button>
+        <Link to="/briefing" className="inline-flex items-center gap-2 rounded-full bg-charcoal text-ivory px-4 py-2.5 text-xs font-semibold hover:bg-charcoal/90 transition">
+          <Sparkles className="h-4 w-4" /> <span className="hidden sm:inline">Briefing</span>
+        </Link>
+        <button
+          onClick={() => setPickerOpen(true)}
+          className="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold transition bg-foreground/[0.06] border border-foreground/10 text-foreground hover:bg-foreground/10 lg:bg-transparent lg:border-transparent lg:glass-1 lg:text-ivory lg:hover:bg-ivory/10"
+        >
+          <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Widget</span>
+        </button>
+      </div>
+
       {/* Photo — ONE home background image that transforms when a panel opens.
           Desktop: glides from the right side (closed) to the bottom-left corner
           (open), keeping the same image so it reads as a transform — not a new
@@ -250,24 +271,6 @@ export default function Home() {
             <h1 className="text-[40px] sm:text-5xl lg:text-6xl font-display font-semibold tracking-[-0.02em] leading-[1.0] text-foreground text-balance">
               {greeting}.
             </h1>
-          </div>
-          <div className="fixed top-20 right-6 lg:right-10 z-30 flex items-center gap-2">
-            <button
-              onClick={reset}
-              title="Ververs alle widgets en data"
-              className="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold transition bg-foreground/[0.06] border border-foreground/10 text-foreground hover:bg-foreground/10 lg:bg-white/10 lg:border-white/20 lg:text-ivory lg:hover:bg-white/20"
-            >
-              <RotateCcw className="h-4 w-4" /> <span className="hidden sm:inline">Reset</span>
-            </button>
-            <Link to="/briefing" className="inline-flex items-center gap-2 rounded-full bg-charcoal text-ivory px-4 py-2.5 text-xs font-semibold hover:bg-charcoal/90 transition">
-              <Sparkles className="h-4 w-4" /> <span className="hidden sm:inline">Briefing</span>
-            </Link>
-            <button
-              onClick={() => setPickerOpen(true)}
-              className="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold transition bg-foreground/[0.06] border border-foreground/10 text-foreground hover:bg-foreground/10 lg:bg-transparent lg:border-transparent lg:glass-1 lg:text-ivory lg:hover:bg-ivory/10"
-            >
-              <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Widget</span>
-            </button>
           </div>
         </header>
 

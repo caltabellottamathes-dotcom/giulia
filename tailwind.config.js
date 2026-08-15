@@ -65,6 +65,7 @@ module.exports = {
   			'life-blue-soft': 'hsl(var(--life-blue-soft))',
   			'life-blue-deep': 'hsl(var(--life-blue-deep))',
   			'life-sand': 'hsl(var(--life-sand))',
+  			'life-sand-deep': 'hsl(var(--life-sand-deep))',
   			'self-burgundy': 'hsl(var(--self-burgundy))',
   			'self-white': 'hsl(var(--self-white))',
   			'self-grey': 'hsl(var(--self-grey))',
