@@ -23,7 +23,7 @@ export default function SelfGallery() {
         <div className="mb-6">
           <Link to="/" className="text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/50 hover:text-foreground transition-colors">← Terug naar OS</Link>
           <h1 className="text-3xl font-display font-semibold tracking-tight mt-1.5">SELF · Galerij</h1>
-          <p className="text-sm text-muted-foreground mt-1">Acht editorial information objects — burgundy, beton, glas.</p>
+          <p className="text-sm text-muted-foreground mt-1">Acht editorial information objects — plum, contrast, glas.</p>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 auto-rows-[minmax(190px,auto)] gap-4">
