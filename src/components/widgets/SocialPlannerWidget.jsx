@@ -1,70 +1,103 @@
 import React, { useMemo } from "react";
 import WidgetShell from "./WidgetShell";
+import WidgetHeader from "./WidgetHeader";
 import BrandPhoto from "./BrandPhoto";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { IMAGES } from "@/lib/images";
-import { socialPulse } from "@/lib/domainUtils";
 
+const DOW = ["MA", "DI", "WO", "DO", "VR", "ZA", "ZO"];
+const SAND = "hsl(var(--life-sand))";
 const BLUE = "hsl(var(--life-blue))";
-const BLUE_SOFT = "hsl(var(--life-blue-soft))";
 
-const startOfWeek = () => { const d = new Date(); d.setHours(0, 0, 0, 0); const day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day); return d; };
-const endOfWeek = () => { const d = startOfWeek(); d.setDate(d.getDate() + 7); return d; };
+const startOfWeek = () => {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  const day = (d.getDay() + 6) % 7;
+  d.setDate(d.getDate() - day);
+  return d;
+};
 
-/** Social Planner widget — sociale plannen deze week + open weekend + suggestie. */
+/** Social Planner widget — grote visuele kaart die antwoordt op:
+ *  "Wat gebeurt er met mijn sociale plannen?" Dynamische headline + centrale
+ *  week-visual (plannen als blocks, vrije dagen als negative space) + footer. */
 export default function SocialPlannerWidget() {
   const { openModule } = usePanel();
-  const { data: plans, loading } = useEntityList("SocialPlan");
-  const { data: contacts } = useEntityList("Contact");
+  const { data: plans } = useEntityList("SocialPlan");
+  const { data: events } = useEntityList("CalendarEvent", { sort: "start" });
 
-  const weekPlans = useMemo(() => {
-    const s = startOfWeek().getTime(), e = endOfWeek().getTime();
-    return (plans || []).filter((p) => { const t = new Date(p.suggested_date || 0).getTime(); return t >= s && t < e && p.status !== "cancelled"; });
-  }, [plans]);
+  const week = useMemo(() => {
+    const start = startOfWeek();
+    return DOW.map((label, i) => {
+      const d = new Date(start.getTime() + i * 86400000);
+      d.setHours(0, 0, 0, 0);
+      const next = new Date(d.getTime() + 86400000);
+      const dayPlans = (plans || []).filter((p) => {
+        const t = new Date(p.suggested_date || 0).getTime();
+        return t >= d.getTime() && t < next && p.status !== "cancelled";
+      });
+      const busy = (events || []).some((e) => {
+        const s = new Date(e.start).getTime();
+        const en = new Date(e.end || e.start).getTime();
+        return s < next && en > d.getTime() && e.domain !== "life";
+      });
+      return { label, date: d, plans: dayPlans, busy, open: !busy && dayPlans.length === 0 };
+    });
+  }, [plans, events]);
 
-  const suggestion = useMemo(() => {
-    const top = socialPulse(contacts).find((p) => p.overdue);
-    if (!top) return null;
-    const weeks = Math.round(top.since / 7);
-    return { name: top.contact.name, weeks };
-  }, [contacts]);
+  const weekPlans = week.flatMap((d) => d.plans);
+  const openInvites = weekPlans.filter((p) => p.status === "planned").length;
+  const freeEvenings = week.filter((d) => d.open).length;
+  const weekendOpen = week[5].open && week[6].open;
+
+  const headline = weekendOpen ? "JOUW WEEKEND IS OPEN" : weekPlans.length >= 3 ? `${weekPlans.length} SOCIALE PLANNEN` : weekPlans.length > 0 ? "JE ZIET MENSEN" : "RUIMTE VOOR SOCIAAL";
+  const sub = weekendOpen ? "Twee lege dagen wachten" : weekPlans.length > 0 ? "Deze week staat klaar" : "Nog niets gepland";
+  const nextPlan = weekPlans.find((p) => p.status === "planned" || p.status === "confirmed");
 
   return (
-    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("socialplanner")} className="min-h-[200px]">
-      <div className="flex flex-col h-full">
-        <div className="relative h-20 shrink-0 overflow-hidden">
-          <BrandPhoto src={IMAGES.twoChairsSand} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/80 to-transparent" />
-          <div className="absolute inset-0 px-5 flex items-center justify-between">
-            <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">Social Planner</h3>
-            <span className="text-[10px] uppercase tracking-[0.18em] tabular-nums" style={{ color: BLUE_SOFT }}>{weekPlans.length} deze week</span>
-          </div>
+    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("socialplanner")} className="min-h-[260px]" style={{ "--tile-accent": BLUE }}>
+      <div className="p-6 flex flex-col flex-1 min-h-0">
+        <WidgetHeader label="Social Planner" count={weekPlans.length ? `${weekPlans.length} deze week` : "open"} />
+        <h3 className="text-[26px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current">{headline}</h3>
+        <p className="text-[11px] uppercase tracking-[0.18em] opacity-50 mt-1.5">{sub}</p>
+
+        {/* Centrale week-visual */}
+        <div className="mt-5 grid grid-cols-7 gap-1.5">
+          {week.map((d, i) => {
+            const hasPlan = d.plans.length > 0;
+            return (
+              <div key={i} className="flex flex-col items-center gap-1.5">
+                <span className="text-[8px] uppercase tracking-wider opacity-45 font-semibold">{d.label}</span>
+                <div
+                  className="relative w-full h-14 rounded-md flex flex-col items-center justify-center overflow-hidden"
+                  style={hasPlan ? { background: SAND } : { border: `1px ${d.open ? "dashed" : "solid"} currentColor` }}
+                >
+                  {hasPlan ? (
+                    <span className="text-charcoal text-[9px] font-semibold uppercase tracking-wide leading-tight text-center px-0.5 line-clamp-3">{d.plans[0].activity}</span>
+                  ) : d.open ? (
+                    <span className="w-1.5 h-1.5 rounded-full animate-pulse-soft" style={{ background: "currentColor" }} />
+                  ) : (
+                    <span className="text-[8px] opacity-60">·</span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
-        <div className="flex-1 -mt-8 rounded-t-[24px] glass-3 p-5 relative z-10 shadow-[0_-12px_28px_-12px_rgba(0,0,0,0.35)] text-ivory flex flex-col">
-          {loading ? (
-            <div className="flex-1 flex items-center justify-center"><div className="h-8 w-8 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" /></div>
-          ) : (
-            <div className="flex-1 flex flex-col gap-3">
-              {weekPlans.length ? (
-                weekPlans.slice(0, 2).map((p) => (
-                  <div key={p.id} className="flex items-center gap-2.5">
-                    <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: BLUE }} />
-                    <p className="text-sm font-medium truncate flex-1">{p.activity}</p>
-                    <span className="text-[10px] text-ivory/45">{p.status}</span>
-                  </div>
-                ))
-              ) : (
-                <p className="text-xs text-ivory/55">Nog geen plannen deze week</p>
-              )}
-              {suggestion && (
-                <p className="mt-auto text-[12px] leading-snug pt-3 border-t border-ivory/10" style={{ color: BLUE_SOFT }}>
-                  Giulia: je hebt <span className="font-semibold">{suggestion.name}</span> al {suggestion.weeks > 0 ? `${suggestion.weeks} week${suggestion.weeks !== 1 ? "en" : ""}` : "even"} niet gezien.
-                </p>
-              )}
-            </div>
-          )}
-        </div>
+
+        <div className="flex-1" />
       </div>
+      <BrandPhoto src={IMAGES.lifeSocialPlanner} className="h-20 w-full -mt-6 rounded-t-[24px] relative z-10 shadow-[0_-12px_28px_-12px_rgba(0,0,0,0.28)]" overlay="bg-gradient-to-t from-charcoal/50 via-transparent to-transparent">
+        <div className="absolute inset-0 flex items-center justify-between px-6">
+          <div className="min-w-0">
+            <p className="text-[9px] uppercase tracking-[0.2em] text-ivory/60 font-semibold">{weekPlans.length} plannen · {openInvites} open · {freeEvenings} vrij</p>
+            <p className="text-sm font-semibold text-ivory truncate" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.6)" }}>
+              {nextPlan ? `${nextPlan.activity} · ${new Date(nextPlan.suggested_date).toLocaleDateString("nl-NL", { weekday: "short", day: "numeric" })}` : "Geen plan deze week"}
+            </p>
+          </div>
+          <button onClick={(e) => { e.stopPropagation(); openModule("socialplanner"); }} className="rounded-full px-3.5 py-1.5 text-[11px] font-semibold border border-ivory/30 text-ivory transition hover:bg-ivory/10 shrink-0">Open</button>
+        </div>
+      </BrandPhoto>
     </WidgetShell>
   );
 }
