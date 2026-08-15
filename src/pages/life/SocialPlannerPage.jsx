@@ -64,7 +64,7 @@ export default function SocialPlannerPage() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <PageHero page="life-social-planner" image={IMAGES.twoChairsSand} icon={CalendarHeart} eyebrow="LIFE" title="Social Planner" subtitle="Sociale tijd inplannen op vrije momenten"
+      <PageHero page="life-social-planner" image={IMAGES.lifeSocialPlanner} icon={CalendarHeart} eyebrow="LIFE" title="Social Planner" subtitle="Sociale tijd inplannen op vrije momenten"
         actions={<GlassButton variant="primary" size="md" onClick={() => document.getElementById("add-plan")?.scrollIntoView({ behavior: "smooth" })}><Plus className="h-4 w-4" /> Nieuw plan</GlassButton>} />
 
       <div className="grid sm:grid-cols-3 gap-3">

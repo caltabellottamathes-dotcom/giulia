@@ -77,8 +77,8 @@ const MODULE_IMAGE = {
   integrations: IMAGES.sittingChairs,
   agents: IMAGES.feetChair,
   jedag: IMAGES.portraitBootFace,
-  socialpulse: IMAGES.portraitThinking, socialplanner: IMAGES.twoChairsSand,
-  household: IMAGES.notebookChair, personaladmin: IMAGES.personClipboard, hobbies: IMAGES.chairWater,
+  socialpulse: IMAGES.lifeSocialPulse, socialplanner: IMAGES.lifeSocialPlanner,
+  household: IMAGES.lifeHousehold, personaladmin: IMAGES.lifePersonalAdmin, hobbies: IMAGES.lifeHobbies,
 };
 
 const MODULE_ROUTE = {

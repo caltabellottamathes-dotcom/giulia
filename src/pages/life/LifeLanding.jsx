@@ -8,11 +8,11 @@ import { domainBalance, DOMAIN_HEX } from "@/lib/domainUtils";
 import { Heart, CalendarHeart, Home, ClipboardList, Palette, ArrowUpRight } from "lucide-react";
 
 const MODULES = [
-  { to: "/life/social-pulse", label: "Social Pulse", icon: Heart, desc: "Wie aandacht verdient", image: IMAGES.portraitThinking },
-  { to: "/life/social-planner", label: "Social Planner", icon: CalendarHeart, desc: "Sociale tijd inplannen", image: IMAGES.twoChairsSand },
-  { to: "/life/household", label: "Huishouden", icon: Home, desc: "Het huis op orde", image: IMAGES.notebookChair },
-  { to: "/life/personal-admin", label: "Persoonlijk Admin", icon: ClipboardList, desc: "Wat geregeld moet worden", image: IMAGES.personClipboard },
-  { to: "/life/hobbies", label: "Hobby's", icon: Palette, desc: "Wat jou energie geeft", image: IMAGES.chairWater },
+  { to: "/life/social-pulse", label: "Social Pulse", icon: Heart, desc: "Wie aandacht verdient", image: IMAGES.lifeSocialPulse },
+  { to: "/life/social-planner", label: "Social Planner", icon: CalendarHeart, desc: "Sociale tijd inplannen", image: IMAGES.lifeSocialPlanner },
+  { to: "/life/household", label: "Huishouden", icon: Home, desc: "Het huis op orde", image: IMAGES.lifeHousehold },
+  { to: "/life/personal-admin", label: "Persoonlijk Admin", icon: ClipboardList, desc: "Wat geregeld moet worden", image: IMAGES.lifePersonalAdmin },
+  { to: "/life/hobbies", label: "Hobby's", icon: Palette, desc: "Wat jou energie geeft", image: IMAGES.lifeHobbies },
 ];
 
 export default function LifeLanding() {

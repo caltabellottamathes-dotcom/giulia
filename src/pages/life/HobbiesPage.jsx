@@ -37,7 +37,7 @@ export default function HobbiesPage() {
     <Link to={`/life/hobbies/${h.id}`} className="block">
       <GlassPanel level={2} className="overflow-hidden hover:-translate-y-1 transition-transform h-full flex flex-col">
         <div className="relative h-28">
-          <img src={h.image || IMAGES.chairWater} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          <img src={h.image || IMAGES.lifeHobbies} alt="" className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 to-transparent" />
           {h.status === "inactive" && <span className="absolute top-3 left-3 text-[10px] uppercase tracking-wide font-semibold text-ivory/80 rounded-full px-2 py-0.5 bg-charcoal/50">inactief</span>}
         </div>
@@ -54,7 +54,7 @@ export default function HobbiesPage() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <PageHero page="life-hobbies" image={IMAGES.chairWater} icon={Palette} eyebrow="LIFE" title="Hobby's" subtitle="Wat jou energie geeft — met plek in je week"
+      <PageHero page="life-hobbies" image={IMAGES.lifeHobbies} icon={Palette} eyebrow="LIFE" title="Hobby's" subtitle="Wat jou energie geeft — met plek in je week"
         actions={<GlassButton variant="primary" size="md" onClick={() => setShowAdd((v) => !v)}><Plus className="h-4 w-4" /> Hobby</GlassButton>} />
 
       {showAdd && (

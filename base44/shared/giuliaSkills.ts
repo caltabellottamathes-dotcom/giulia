@@ -10,7 +10,7 @@ export const GIULIA_SKILLS = [
   {
     name: "create_task",
     description: "Maak een nieuwe taak aan. Gebruik dit ALLEEN als Salvo expliciet om een nieuwe actie vraagt. Verzin GEEN taken om projecten 'op te vullen'. Er wordt automatisch op duplicaten gecontroleerd (≥85% titel-gelijkenis) — bij een duplicaat wordt de bestaande taak teruggegeven in plaats van een nieuwe aan te maken.",
-    inputSchema: { type: "object", properties: { title: { type: "string" }, priority: { type: "string" }, deadline: { type: "string", description: "YYYY-MM-DD" }, project_id: { type: "string" }, description: { type: "string" }, assignee: { type: "string", enum: ["salvo", "giulia"] } }, required: ["title"] },
+    inputSchema: { type: "object", properties: { title: { type: "string" }, priority: { type: "string" }, deadline: { type: "string", description: "YYYY-MM-DD" }, project_id: { type: "string" }, description: { type: "string" }, assignee: { type: "string", enum: ["salvo", "giulia"] }, domain: { type: "string", enum: ["focus", "life", "self"], description: "FOCUS=werk/zakelijk, LIFE=relaties/sociaal/huishouden/admin/hobby, SELF=rust/zelfzorg/reflectie. Tag automatisch op basis van inhoud." }, category: { type: "string", description: "Sub-categorie voor LIFE, bv. household" } }, required: ["title"] },
     execute: async (args, base44) => {
       const sr = base44.asServiceRole;
       const existing = await sr.entities.Task.filter({ status: { $ne: "archived" } }, "-created_date", 300).catch(() => []);
@@ -48,7 +48,7 @@ export const GIULIA_SKILLS = [
   {
     name: "create_project",
     description: "Maak een nieuw project aan. Automatische duplicaat-check (≥85% titel-gelijkenis).",
-    inputSchema: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, category: { type: "string" }, deadline: { type: "string" } }, required: ["title"] },
+    inputSchema: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, category: { type: "string" }, deadline: { type: "string" }, domain: { type: "string", enum: ["focus", "life", "self"], description: "FOCUS=werk, LIFE=levensproject/hobby, SELF=persoonlijke groei" } }, required: ["title"] },
     execute: async (args, base44) => {
       const sr = base44.asServiceRole;
       const existing = await sr.entities.Project.filter({ status: { $ne: "archived" } }, "-created_date", 200).catch(() => []);

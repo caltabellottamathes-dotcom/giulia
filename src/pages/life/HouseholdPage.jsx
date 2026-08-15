@@ -44,7 +44,7 @@ export default function HouseholdPage() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <PageHero page="life-household" image={IMAGES.notebookChair} icon={Home} eyebrow="LIFE" title="Huishouden" subtitle="Schoonmaak, boodschappen, onderhoud en routines op orde"
+      <PageHero page="life-household" image={IMAGES.lifeHousehold} icon={Home} eyebrow="LIFE" title="Huishouden" subtitle="Schoonmaak, boodschappen, onderhoud en routines op orde"
         actions={<GlassButton variant="primary" size="md" onClick={() => setShowAdd((v) => !v)}><Plus className="h-4 w-4" /> Toevoegen</GlassButton>} />
 
       <div className="grid sm:grid-cols-3 gap-3">

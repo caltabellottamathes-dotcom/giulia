@@ -64,6 +64,27 @@ export const IMAGES = {
   capTablet: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/6ec08817c_Baseball_cap_on_tablet_device_202608101819.jpeg",
   hourglassClose: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/d8a8c7d63_Hourglass_and_jacket_on_backdrop_202608101819.jpeg",
   salvoReadingBeach: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/c2c8cf77a_Person_holding_clipboard_on_sand_202608101819.jpeg",
+  // LIFE layer branding series — surrealist editorial (uploaded 2026-08-14)
+  lifeSocialPulse: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/f7bdee9b6_Apply_a_consistent_editorial_documentary_2026062122294.jpeg",
+  lifeSocialPulseAlt: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/6b31ee66a_Apply_a_consistent_editorial_documentary_2026062122144.jpeg",
+  lifeSocialPlanner: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/3ff819d08_Apply_a_highly_realistic_editorial_202606212230.jpeg",
+  lifeHousehold: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/76c891531_A_surreal_editorial_photograph_of_a_202606270239.jpeg",
+  lifePersonalAdmin: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0bea9ecdf_Apply_a_consistent_editorial_documentary_202606212036.jpeg",
+  lifeHobbies: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/6f93aecac_Apply_a_consistent_editorial_documentary_2026062122141.jpeg",
+  lifeFabric: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/5ed99c12d_An_extreme_surrealist_editorial_photograph_202606270306.jpeg",
+  lifeSuitStrings: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/28b7b375d_Deadpan_performance-art_photograph_in_an_202606270250.jpeg",
+  lifeStitch: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/42cf228fa_Extreme_close-up_macro_photograph_of_202606270247.jpeg",
+  lifeGlove: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/de0b5dc66_A_graphic_minimalist_photograph_focusing_202606270246.jpeg",
+  lifeHandsMetal: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/fba30e498_Transform_this_black-and-white_image_into_202606220004.jpeg",
+  lifeFingerLip: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/42ad9efe4_Apply_a_consistent_editorial_documentary_2026062122151.jpeg",
+  lifeDotsNeck: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/fae9d0325_Apply_a_consistent_editorial_documentary_2026062122111.jpeg",
+  lifeFingerLip2: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/fb95ab429_Gemini_Generated_Image_k0gfuhk0gfuhk0gfpng_202606212158.jpeg",
+  lifeWhiteCorner: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/45e55e684_Apply_a_consistent_editorial_documentary_2026062120411.jpeg",
+  lifeStride: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/87e2c9ab3_Apply_a_consistent_editorial_documentary_2026062120383.jpeg",
+  lifeTwoCoats: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0f0946a9f_Apply_a_consistent_editorial_documentary_2026062120382.jpeg",
+  lifeVase: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/8746a2786_Apply_a_consistent_editorial_documentary_2026062120381.jpeg",
+  lifeFeetWalk: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/2875b439e_Apply_a_consistent_editorial_documentary_202606212038.jpeg",
+  lifeHandPrint: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/4b11009bc_Apply_a_consistent_editorial_documentary_202606212037.jpeg",
 };
 
 export const VIDEOS = {

@@ -46,7 +46,7 @@ export default function PersonalAdminPage() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <PageHero page="life-personal-admin" image={IMAGES.personClipboard} icon={ClipboardList} eyebrow="LIFE" title="Persoonlijk Admin" subtitle="Betalingen, verzekeringen, contracten en terugkerende verplichtingen"
+      <PageHero page="life-personal-admin" image={IMAGES.lifePersonalAdmin} icon={ClipboardList} eyebrow="LIFE" title="Persoonlijk Admin" subtitle="Betalingen, verzekeringen, contracten en terugkerende verplichtingen"
         actions={<GlassButton variant="primary" size="md" onClick={() => setShowAdd((v) => !v)}><Plus className="h-4 w-4" /> Toevoegen</GlassButton>} />
 
       <div className="grid sm:grid-cols-4 gap-3">

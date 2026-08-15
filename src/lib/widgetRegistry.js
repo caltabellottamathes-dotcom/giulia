@@ -53,11 +53,11 @@ export const WIDGETS = {
   timetracker: { type: "timetracker", label: "Tijd · Timer",     icon: Timer,          Component: TimeTrackerWidget, image: IMAGES.hourglassJacket,  span: 4, category: "work" },
   concierge:  { type: "concierge",  label: "Giulia · Concierge",  icon: MessageSquare,  Component: ConciergeWidget,   image: IMAGES.feetChair,        span: 3, category: "core" },
   updates:    { type: "updates",    label: "Giulia · Updates",    icon: Sparkles,       Component: UpdatesWidget,     image: IMAGES.feetChair,        span: 3, category: "intelligence" },
-  socialpulse:   { type: "socialpulse",   label: "Social Pulse",        icon: Heart,          Component: SocialPulseWidget,    image: IMAGES.portraitThinking, span: 3, category: "life" },
-  socialplanner: { type: "socialplanner", label: "Social Planner",      icon: CalendarHeart,  Component: SocialPlannerWidget,  image: IMAGES.twoChairsSand,     span: 3, category: "life" },
-  household:     { type: "household",     label: "Huishouden",          icon: Home,           Component: HouseholdWidget,      image: IMAGES.notebookChair,    span: 3, category: "life" },
-  personaladmin: { type: "personaladmin", label: "Persoonlijk Admin",   icon: ClipboardList,  Component: PersonalAdminWidget,  image: IMAGES.personClipboard,  span: 3, category: "life" },
-  hobbies:       { type: "hobbies",       label: "Hobby's",            icon: Palette,        Component: HobbiesWidget,        image: IMAGES.chairWater,        span: 3, category: "life" },
+  socialpulse:   { type: "socialpulse",   label: "Social Pulse",        icon: Heart,          Component: SocialPulseWidget,    image: IMAGES.lifeSocialPulse,    span: 4, category: "life" },
+  socialplanner: { type: "socialplanner", label: "Social Planner",      icon: CalendarHeart,  Component: SocialPlannerWidget,  image: IMAGES.lifeSocialPlanner,  span: 3, category: "life" },
+  household:     { type: "household",     label: "Huishouden",          icon: Home,           Component: HouseholdWidget,      image: IMAGES.lifeHousehold,      span: 3, category: "life" },
+  personaladmin: { type: "personaladmin", label: "Persoonlijk Admin",   icon: ClipboardList,  Component: PersonalAdminWidget,  image: IMAGES.lifePersonalAdmin, span: 3, category: "life" },
+  hobbies:       { type: "hobbies",       label: "Hobby's",            icon: Palette,        Component: HobbiesWidget,        image: IMAGES.lifeHobbies,        span: 3, category: "life" },
 };
 
 export const WIDGET_LIST = Object.values(WIDGETS);
