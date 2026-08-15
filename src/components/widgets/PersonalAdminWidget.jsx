@@ -3,6 +3,7 @@ import WidgetShell from "./WidgetShell";
 import AdminTimeline from "@/components/life/AdminTimeline";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
+import { useLearningSync } from "@/hooks/useLearningSync";
 import { IMAGES } from "@/lib/images";
 import { adminWeather, radarEvents, accentFor } from "@/lib/adminUtils";
 
@@ -11,7 +12,8 @@ import { adminWeather, radarEvents, accentFor } from "@/lib/adminUtils";
  *  cijfers. Kleur life-blue → life-sand → urgent #d5e24a. */
 export default function PersonalAdminWidget() {
   const { openModule } = usePanel();
-  const { data: obs } = useEntityList("AdminObligation");
+  const learnTick = useLearningSync();
+  const { data: obs } = useEntityList("AdminObligation", { realtime: true, externalTick: learnTick });
   const w = useMemo(() => adminWeather(obs || []), [obs]);
   const events = useMemo(() => radarEvents(obs || []), [obs]);
   const accent = w.counts.overdue > 0 ? "hsl(var(--urgent))" : w.counts.coming > 0 ? "hsl(var(--life-sand))" : "hsl(var(--life-blue))";

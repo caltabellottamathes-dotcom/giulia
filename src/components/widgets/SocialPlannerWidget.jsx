@@ -4,6 +4,7 @@ import WidgetHeader from "./WidgetHeader";
 import BrandPhoto from "./BrandPhoto";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
+import { useLearningSync } from "@/hooks/useLearningSync";
 import { IMAGES } from "@/lib/images";
 
 const DOW = ["MA", "DI", "WO", "DO", "VR", "ZA", "ZO"];
@@ -23,8 +24,9 @@ const startOfWeek = () => {
  *  week-visual (plannen als blocks, vrije dagen als negative space) + footer. */
 export default function SocialPlannerWidget() {
   const { openModule } = usePanel();
-  const { data: plans } = useEntityList("SocialPlan");
-  const { data: events } = useEntityList("CalendarEvent", { sort: "start" });
+  const learnTick = useLearningSync();
+  const { data: plans } = useEntityList("SocialPlan", { realtime: true, externalTick: learnTick });
+  const { data: events } = useEntityList("CalendarEvent", { sort: "start", realtime: true, externalTick: learnTick });
 
   const week = useMemo(() => {
     const start = startOfWeek();

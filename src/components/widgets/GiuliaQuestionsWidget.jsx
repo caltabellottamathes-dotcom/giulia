@@ -3,6 +3,7 @@ import WidgetShell from "./WidgetShell";
 import WidgetHeader from "./WidgetHeader";
 import BrandPhoto from "./BrandPhoto";
 import { usePanel } from "@/lib/PanelContext";
+import { useLearningSync } from "@/hooks/useLearningSync";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 import { Sparkles } from "lucide-react";
@@ -17,6 +18,7 @@ const PRIORITY_ACCENT = {
 /** GiuliaQuestionsWidget — Giulia's nieuwsgierigheidslaag op het dashboard. */
 export default function GiuliaQuestionsWidget() {
   const { openModule } = usePanel();
+  const learnTick = useLearningSync();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -28,7 +30,7 @@ export default function GiuliaQuestionsWidget() {
     } catch { setQuestions([]); }
     finally { setLoading(false); }
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [learnTick]);
 
   const search = async (e) => {
     e.stopPropagation(); setBusy(true);

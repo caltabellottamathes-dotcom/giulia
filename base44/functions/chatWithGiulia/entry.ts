@@ -2,6 +2,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { geminiGenerate, geminiEmbed, cosineSimilarity } from '../../shared/gemini.ts';
 import { AGENT_CONTEXT, GIULIA_TONE } from '../../shared/agentContext.ts';
 import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
+import { logActivity } from '../../shared/learningLayer.ts';
 
 /**
  * chatWithGiulia — GIULIA-GIULIA (het brein) stuurt GIULIA-CORE (de blinde
@@ -166,7 +167,7 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
       ? `\n\n== CONVERSATIE-CONTINUNITEIT ==\nJe krijgt de recente berichtdraad mee (user + giulia, afwisselend). Je weet daardoor wat Salvo net zei én wat jij zelf net antwoordde. Blijf in het gesprek: bouw voort op wat er al gezegd is, herhaal of herformuleer je vorige antwoord niet, en vraag niet om dingen die al duidelijk zijn. Reageer vloeiend en natuurlijk — alsof je nooit weg was.\n`
       : "";
 
-    const systemInstruction = `${GIULIA_TONE}${convoRule}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}${sourceRule}${protocolsBlock}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo. Denk na, roep de functies aan die nodig zijn om zijn verzoek ECHT uit te voeren, en geef daarna een kort, menselijk antwoord in het Nederlands.`;
+    let systemInstruction = `${GIULIA_TONE}${convoRule}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}${sourceRule}${protocolsBlock}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo. Denk na, roep de functies aan die nodig zijn om zijn verzoek ECHT uit te voeren, en geef daarna een kort, menselijk antwoord in het Nederlands.`;
 
     // 3. BUILD TOOLS — elke skill is een direct uitvoerbare GIULIA-CORE-actie.
     const toolsMap = {};
@@ -206,6 +207,41 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
     const executed = [];
     let responseText = null;
     const keyName = isBackgroundSource ? "BACKDESK_GEMINI_API_KEY" : "GIULIA_GIULIA_GEMINI_API_KEY";
+
+    // ── DISPATCH-THEN-EXECUTE ──────────────────────────────────────────
+    // GIULIA-GIULIA geeft ALLEREERST de expliciete order aan GIULIA-CORE
+    // (geregistreerd in de Activity-feed via de learningLayer) vóór de
+    // uitvoeringsloop loopt. Pas daarna voert dezelfde loop het echt uit.
+    let dispatchOrder = null;
+    try {
+      const dispatchTools = [{ functionDeclarations: [{
+        name: "dispatch_order",
+        description: "Leg uit welke order je aan GIULIA-CORE geeft: korte intentie + de skills die je wilt aanroepen.",
+        parameters: { type: "object", properties: {
+          intent: { type: "string", description: "Eén-zin samenvatting van wat je CORE opdraagt" },
+          planned_actions: { type: "array", items: { type: "string" }, description: "Skill-namen die je van plan bent aan te roepen" },
+        }, required: ["intent"] },
+      }] }];
+      const dParts = await geminiGenerate({
+        contents: [{ role: "user", parts: [{ text: message.slice(0, 3000) }] }],
+        tools: dispatchTools,
+        systemText: `${GIULIA_TONE}\n\nJe bent GIULIA-GIULIA. Salvo vraagt iets. Je geeft ALLEREERST de expliciete order aan GIULIA-CORE (je blinde uitvoerder) via dispatch_order: één zin intentie + de skills die je wilt inzetten. Doe verder niets — CORE voert straks uit.`,
+        keyName,
+      });
+      if (dParts && dParts.length) {
+        const fc = dParts.find((p) => p.functionCall && p.functionCall.name === "dispatch_order");
+        if (fc) {
+          dispatchOrder = fc.functionCall.args || null;
+          const intent = dispatchOrder?.intent || message.slice(0, 160);
+          const planned = Array.isArray(dispatchOrder?.planned_actions) ? dispatchOrder.planned_actions.join(", ") : "";
+          await logActivity(base44, "GIULIA-GIULIA", `Order → CORE: ${intent}${planned ? ` (${planned})` : ""}`, { action: "dispatch_order" });
+        }
+      }
+    } catch { /* ignore — uitvoering loopt toch */ }
+
+    if (dispatchOrder) {
+      systemInstruction += `\n== DISPATCH (je order aan CORE is geregistreerd) ==\nIntent: ${dispatchOrder.intent}\nGeplande acties: ${(dispatchOrder.planned_actions || []).join(", ") || "vrij"}\nVoer nu uit wat je hebt opgedragen.\n`;
+    }
 
     for (let step = 0; step < MAX_STEPS; step++) {
       const parts = await geminiGenerate({ contents, tools: genTools, systemText: systemInstruction, keyName });

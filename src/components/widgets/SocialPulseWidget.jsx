@@ -5,6 +5,7 @@ import BrandPhoto from "./BrandPhoto";
 import CountUp from "./CountUp";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
+import { useLearningSync } from "@/hooks/useLearningSync";
 import { IMAGES } from "@/lib/images";
 import { socialPulse } from "@/lib/domainUtils";
 
@@ -15,10 +16,11 @@ const BLUE = "hsl(var(--life-blue))";
  *  brand photo onderaan. Eén klikbaar object → Social Pulse panel. */
 export default function SocialPulseWidget() {
   const { openModule } = usePanel();
-  const { data: contacts } = useEntityList("Contact");
-  const { data: emails } = useEntityList("Email", { sort: "-timestamp" });
-  const { data: whatsapps } = useEntityList("WhatsAppMessage", { sort: "-timestamp" });
-  const { data: plans } = useEntityList("SocialPlan");
+  const learnTick = useLearningSync();
+  const { data: contacts } = useEntityList("Contact", { realtime: true, externalTick: learnTick });
+  const { data: emails } = useEntityList("Email", { sort: "-timestamp", realtime: true, externalTick: learnTick });
+  const { data: whatsapps } = useEntityList("WhatsAppMessage", { sort: "-timestamp", realtime: true, externalTick: learnTick });
+  const { data: plans } = useEntityList("SocialPlan", { realtime: true, externalTick: learnTick });
 
   const pulse = useMemo(() => socialPulse(contacts), [contacts]);
   const overdue = pulse.filter((p) => p.overdue);

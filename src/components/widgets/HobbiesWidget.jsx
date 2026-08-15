@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import WidgetShell from "./WidgetShell";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
+import { useLearningSync } from "@/hooks/useLearningSync";
 import { IMAGES } from "@/lib/images";
 import { hobbyGroups, hobbyHeadline, fieldSize, hobbyState, stateColor } from "@/lib/hobbyUtils";
 
@@ -13,7 +14,8 @@ const SAND = "hsl(var(--life-sand-deep))";
  *  stil = gedempt. Dynamische headline + 3 grote cijfers onderaan. */
 export default function HobbiesWidget() {
   const { openModule } = usePanel();
-  const { data: hobbies, loading } = useEntityList("Hobby");
+  const learnTick = useLearningSync();
+  const { data: hobbies, loading } = useEntityList("Hobby", { realtime: true, externalTick: learnTick });
 
   const g = useMemo(() => hobbyGroups(hobbies || []), [hobbies]);
   const headline = useMemo(() => hobbyHeadline(g), [g]);

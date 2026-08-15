@@ -5,6 +5,7 @@ import BrandPhoto from "./BrandPhoto";
 import HouseholdStateViz from "@/components/life/HouseholdStateViz";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
+import { useLearningSync } from "@/hooks/useLearningSync";
 import { IMAGES } from "@/lib/images";
 import { householdZones, mattersItems, householdHeadline, tileAccent } from "@/lib/householdUtils";
 
@@ -13,8 +14,9 @@ import { householdZones, mattersItems, householdHeadline, tileAccent } from "@/l
  *  voet met de uitsplitsing. life-blue → life-sand → urgent #d5e24a. */
 export default function HouseholdWidget() {
   const { openModule } = usePanel();
-  const { data: items } = useEntityList("HouseholdItem");
-  const { data: tasks } = useEntityList("Task");
+  const learnTick = useLearningSync();
+  const { data: items } = useEntityList("HouseholdItem", { realtime: true, externalTick: learnTick });
+  const { data: tasks } = useEntityList("Task", { realtime: true, externalTick: learnTick });
 
   const zones = useMemo(() => householdZones(items || []), [items]);
   const matters = useMemo(() => mattersItems(items || [], tasks || []), [items, tasks]);

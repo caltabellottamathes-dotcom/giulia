@@ -5,6 +5,7 @@
  */
 import { createTaskWithApproval, navigateApp, reportToSalvo, createApproval, findDuplicate } from "./codeAgent.ts";
 import { geminiEmbed } from "./gemini.ts";
+import { logActivity, remember, askQuestion } from "./learningLayer.ts";
 
 export const GIULIA_SKILLS = [
   {
@@ -113,8 +114,8 @@ export const GIULIA_SKILLS = [
     description: "Sla een blijvende herinnering of contextueel feit op in Giulia's geheugen.",
     inputSchema: { type: "object", properties: { content: { type: "string" }, category: { type: "string" } }, required: ["content"] },
     execute: async (args, base44) => {
-      const embedding = await geminiEmbed({ text: args.content, keyName: "GIULIA_GIULIA_MEMORY_GEMINI_API_KEY" }).catch(() => null);
-      const m = await base44.asServiceRole.entities.Memory.create({ ...args, ...(embedding ? { embedding } : {}), agent_source: "GIULIA-CORE" }).catch(() => null);
+      const m = await remember(base44, { content: args.content, category: args.category, source: "GIULIA-CORE" });
+      await logActivity(base44, "GIULIA-CORE", `Geheugen opgeslagen: ${String(args.content).slice(0, 80)}`, { action: "remember" });
       return m ? { id: m.id } : { error: "create failed" };
     }
   },
@@ -144,7 +145,7 @@ export const GIULIA_SKILLS = [
     description: "Log een activiteit in de Activity-feed op de achtergrond. Gebruik dit NIET als antwoord in een live chat.",
     inputSchema: { type: "object", properties: { message: { type: "string" } }, required: ["message"] },
     execute: async ({ message }, base44) => {
-      const a = await reportToSalvo(base44, "GIULIA-CORE", message);
+      const a = await logActivity(base44, "GIULIA-CORE", message, { action: "report" });
       return a ? { ok: true } : { error: "failed" };
     }
   },
@@ -216,7 +217,8 @@ export const GIULIA_SKILLS = [
     description: "Voeg een vraag toe aan je 'WANTS TO KNOW'-laag — een ontbrekend stuk context dat je later aan Salvo wilt voorleggen. Gebruik dit als je in een gesprek een gat opmerkt dat niet NU hoeft, of als opvolgvraag na een antwoord.",
     inputSchema: { type: "object", properties: { title: { type: "string" }, body: { type: "string" }, kind: { type: "string", enum: ["quick_drop", "fill_the_gap", "connect_the_dots", "memory_check", "life_check", "self_discovery"] }, domain: { type: "string", enum: ["life", "self", "projects", "time", "admin", "people", "communication"] }, priority: { type: "string", enum: ["now", "soon", "useful", "curious"] }, options: { type: "array", items: { type: "string" } }, target_type: { type: "string" }, target_ref: { type: "string" } }, required: ["title", "body"] },
     execute: async (args, base44) => {
-      const q = await base44.asServiceRole.entities.GiuliaQuestion.create({ ...args, status: "open", confidence: 0.6, agent_source: "GIULIA-GIULIA" }).catch(() => null);
+      const q = await askQuestion(base44, { ...args, source: "GIULIA-GIULIA" });
+      await logActivity(base44, "GIULIA-GIULIA", `Nieuw mysterie: ${String(args.title).slice(0, 80)}`, { action: "ask" });
       return q ? { id: q.id } : { error: "create failed" };
     }
   },
