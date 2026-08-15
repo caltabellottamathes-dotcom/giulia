@@ -1,17 +1,18 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 import { useToast } from "@/components/ui/use-toast";
 import { Send, Mic, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
-import { cn } from "@/lib/utils";
 import PageHero from "@/system/components/glass/PageHero";
-import ChatMarkdown from "@/system/components/glass/ChatMarkdown";
+import AgentMessageBubble from "@/giulia/components/AgentMessageBubble";
 
 const GIULIA_AVATAR = IMAGES.giuliaConcierge;
+const AGENT_NAME = "giulia_assistant";
 const PILLS = ["Wat staat er vandaag?", "Openstaande taken?", "Check mijn email", "Wat is veranderd?"];
 
 export default function Chat() {
+  const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
@@ -19,37 +20,50 @@ export default function Chat() {
   const endRef = useRef(null);
   const { toast } = useToast();
 
-  const load = useCallback(async () => {
-    try {
-      const list = await base44.entities.Message.list("-created_date", 200);
-      // Alleen de GIULIA-GIULIA-conversatie — achtergrondbriefingen zijn verstoken.
-      const inApp = (list || []).filter((m) => m.channel === "in-app");
-      setMessages(inApp.reverse());
-    } catch (e) {
-      setMessages([]);
-    } finally {
-      setLoading(false);
-    }
+  // Haal (of maak) het hoofdgesprek met de Giulia assistant agent.
+  useEffect(() => {
+    (async () => {
+      try {
+        const list = await base44.agents.listConversations({ agent_name: AGENT_NAME });
+        let conv = list && list[0];
+        if (!conv) {
+          conv = await base44.agents.createConversation({
+            agent_name: AGENT_NAME,
+            metadata: { name: "Hoofdgesprek", description: "GIULIA-GIULIA chat" },
+          });
+        } else {
+          conv = await base44.agents.getConversation(conv.id);
+        }
+        setConversation(conv);
+        setMessages(conv.messages || []);
+      } catch (e) {
+        toast({ title: "Gesprek niet geladen", variant: "destructive" });
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
-  useEffect(() => { load(); }, [load]);
-  const didInit = useRef(false);
+  // Live stream: abonneer op het gesprek.
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: didInit.current ? "smooth" : "auto" });
-    if (messages.length) didInit.current = true;
+    if (!conversation?.id) return;
+    const unsubscribe = base44.agents.subscribeToConversation(conversation.id, (data) => {
+      setMessages(data.messages || []);
+    });
+    return () => unsubscribe();
+  }, [conversation?.id]);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, sending]);
 
   const send = async (text) => {
     const msg = (text ?? input).trim();
-    if (!msg || sending) return;
+    if (!msg || sending || !conversation) return;
     setInput("");
     setSending(true);
-    const temp = { id: "tmp" + Date.now(), role: "user", content: msg, created_date: new Date().toISOString() };
-    setMessages((prev) => [...prev, temp]);
     try {
-      // Rechtstreeks naar GIULIA-CONNECT (chatWithGiulia) — geen tussenlaag.
-      await base44.functions.invoke("chatWithGiulia", { message: msg, persist: true });
-      await load();
+      await base44.agents.addMessage(conversation, { role: "user", content: msg });
     } catch (e) {
       toast({ title: "Bericht niet verzonden", variant: "destructive" });
     } finally {
@@ -60,10 +74,10 @@ export default function Chat() {
   // Auto-send a question passed via ?ask= (used by the Briefing "Leg uit" action)
   const asked = useRef(false);
   useEffect(() => {
-    if (asked.current) return;
+    if (asked.current || !conversation) return;
     const ask = new URLSearchParams(window.location.search).get("ask");
     if (ask) { asked.current = true; send(ask); }
-  }, [send]);
+  }, [conversation, send]);
 
   return (
     <div className="h-[calc(100vh-7rem)] flex flex-col animate-fade-up">
@@ -94,31 +108,9 @@ export default function Chat() {
               <p className="text-sm text-muted-foreground mt-1">Stel een vraag of kies een suggestie hieronder.</p>
             </div>
           ) : (
-            messages.map((m) => {
-              const isUser = m.role === "user";
-              return (
-                <div key={m.id} className={cn("flex gap-3", isUser && "flex-row-reverse")}>
-                  {isUser ? (
-                    <div className="h-8 w-8 rounded-full bg-charcoal flex items-center justify-center shrink-0 text-[10px] font-semibold text-ivory">SC</div>
-                  ) : (
-                    <img src={GIULIA_AVATAR} alt="" className="h-8 w-8 rounded-full object-cover shrink-0" />
-                  )}
-                  <div className={cn("max-w-[78%]", isUser ? "items-end" : "items-start", "flex flex-col")}>
-                    {!isUser && m.agent_source && (
-                      <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider font-semibold text-muted-foreground mb-1 px-1">
-                        <Sparkles className="h-3 w-3" /> {m.agent_source}
-                      </span>
-                    )}
-                    <div className={cn(
-                      "rounded-2xl px-4 py-3 text-sm leading-relaxed",
-                      isUser ? "bg-foreground/8 text-foreground" : "glass-1 text-foreground"
-                    )}>
-                      {isUser ? m.content : <ChatMarkdown className="prose prose-sm max-w-none">{m.content}</ChatMarkdown>}
-                    </div>
-                  </div>
-                </div>
-              );
-            })
+            messages.map((m, i) => (
+              <AgentMessageBubble key={m.id || i} message={m} isUser={m.role === "user"} avatar={GIULIA_AVATAR} />
+            ))
           )}
 
           {sending && (
