@@ -1,0 +1,109 @@
+{
+  "name": "HouseholdItem",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "routine",
+        "shopping",
+        "maintenance",
+        "issue",
+        "item"
+      ],
+      "default": "item",
+      "title": "Kind"
+    },
+    "category": {
+      "type": "string",
+      "title": "Category"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "calm",
+        "needs_attention",
+        "due",
+        "overdue",
+        "good",
+        "done",
+        "open"
+      ],
+      "default": "good",
+      "title": "Status"
+    },
+    "frequency_days": {
+      "type": "number",
+      "title": "Frequency (days)"
+    },
+    "last_done": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Last Done"
+    },
+    "next_due": {
+      "type": "string",
+      "format": "date",
+      "title": "Next Due"
+    },
+    "preferred_time": {
+      "type": "string",
+      "title": "Preferred Time"
+    },
+    "duration_min": {
+      "type": "number",
+      "title": "Duration (min)"
+    },
+    "flexibility": {
+      "type": "string",
+      "enum": [
+        "fixed",
+        "flexible"
+      ],
+      "default": "flexible",
+      "title": "Flexibility"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Notes"
+    },
+    "image": {
+      "type": "string",
+      "format": "uri",
+      "title": "Image"
+    },
+    "location": {
+      "type": "string",
+      "title": "Location"
+    },
+    "linked_task_id": {
+      "type": "string",
+      "title": "Linked Task ID"
+    },
+    "linked_document_id": {
+      "type": "string",
+      "title": "Linked Document ID"
+    },
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

@@ -1,58 +1,64 @@
 import React, { useMemo } from "react";
 import WidgetShell from "./WidgetShell";
+import WidgetHeader from "./WidgetHeader";
 import BrandPhoto from "./BrandPhoto";
+import HouseholdStateViz from "@/components/life/HouseholdStateViz";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { IMAGES } from "@/lib/images";
+import { householdZones, mattersItems, householdHeadline } from "@/lib/householdUtils";
 
-const BLUE = "hsl(var(--life-blue))";
-const BLUE_SOFT = "hsl(var(--life-blue-soft))";
 const SAND = "hsl(var(--life-sand))";
-const iso = (d) => d.toISOString().slice(0, 10);
 
-/** Household widget — openstaande huishoudtaken + aankomend + alert. */
+/** Household widget — visuele momentopname van het huishouden. Dynamische
+ *  status, abstracte animated state graphic, groot getal "dingen waard". */
 export default function HouseholdWidget() {
   const { openModule } = usePanel();
-  const { data: tasks, loading } = useEntityList("Task");
+  const { data: items } = useEntityList("HouseholdItem");
+  const { data: tasks } = useEntityList("Task");
 
-  const household = useMemo(
-    () => (tasks || []).filter((t) => t.domain === "life" && t.category === "household" && t.status !== "completed" && t.status !== "archived"),
-    [tasks]
-  );
-  const today = iso(new Date());
-  const tomorrow = iso(new Date(Date.now() + 86400000));
-  const upcoming = household.filter((t) => t.deadline === today || t.deadline === tomorrow);
+  const zones = useMemo(() => householdZones(items || []), [items]);
+  const matters = useMemo(() => mattersItems(items || [], tasks || []), [items, tasks]);
+  const headline = householdHeadline(matters, items || []);
+
+  const householdTasks = matters.filter((m) => m.kind === "task").length;
+  const shopping = matters.filter((m) => m.kind === "shopping").length;
+  const maintenance = matters.filter((m) => m.kind === "maintenance").length;
+  const issues = matters.filter((m) => m.kind === "issue").length;
+
+  const sub = matters.length === 0 ? "Niets vraagt om aandacht" : matters.length >= 4 ? "Een reset zou helpen" : "Een paar dingen deze week";
 
   return (
-    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("household")} className="min-h-[200px]">
-      <div className="flex flex-col h-full">
-        <div className="relative h-20 shrink-0 overflow-hidden">
-          <BrandPhoto src={IMAGES.notebookChair} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/80 to-transparent" />
-          <div className="absolute inset-0 px-5 flex items-center justify-between">
-            <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">Huishouden</h3>
-            <span className="text-[10px] uppercase tracking-[0.18em] tabular-nums" style={{ color: BLUE_SOFT }}>{household.length} open</span>
+    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("household")} className="min-h-[260px]" style={{ "--tile-accent": SAND }}>
+      <div className="p-6 flex flex-col flex-1 min-h-0">
+        <WidgetHeader label="Household" count={matters.length ? `${matters.length} aandacht` : "oké"} />
+        <h3 className="text-[26px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current">{headline}</h3>
+        <p className="text-[11px] uppercase tracking-[0.18em] opacity-50 mt-1.5">{sub}</p>
+
+        {/* Centrale animated state graphic */}
+        <div className="mt-5">
+          <HouseholdStateViz zones={zones} compact tone="dark" />
+        </div>
+
+        <div className="flex items-end gap-4 mt-4">
+          <span className="text-[52px] leading-[0.8] font-display font-semibold tracking-[-0.04em] text-current tabular-nums">{matters.length}</span>
+          <div className="text-[10px] uppercase tracking-[0.18em] opacity-50 leading-tight mb-2">
+            <p>dingen</p>
+            <p>waard</p>
           </div>
         </div>
-        <div className="flex-1 -mt-8 rounded-t-[24px] glass-3 p-5 relative z-10 shadow-[0_-12px_28px_-12px_rgba(0,0,0,0.35)] text-ivory flex flex-col">
-          {loading ? (
-            <div className="flex-1 flex items-center justify-center"><div className="h-8 w-8 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" /></div>
-          ) : household.length ? (
-            <div className="flex-1 flex flex-col gap-2.5">
-              {upcoming.length > 0 && (
-                <p className="text-[11px] font-semibold" style={{ color: SAND }}>{upcoming.length} vandaag/morgen</p>
-              )}
-              {household.slice(0, 3).map((t) => (
-                <div key={t.id} className="flex items-center gap-2.5">
-                  <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: t.deadline === today ? SAND : BLUE }} />
-                  <p className="text-sm font-medium truncate flex-1">{t.title}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="flex-1 flex items-center justify-center text-xs text-ivory/55">Huis is op orde</p>
-          )}
-        </div>
+
+        <div className="flex-1" />
       </div>
+      <BrandPhoto src={IMAGES.lifeHousehold} className="h-20 w-full -mt-6 rounded-t-[24px] relative z-10 shadow-[0_-12px_28px_-12px_rgba(0,0,0,0.28)]" overlay="bg-gradient-to-t from-charcoal/50 via-transparent to-transparent">
+        <div className="absolute inset-0 flex items-center justify-between px-6">
+          <div className="min-w-0">
+            <p className="text-[9px] uppercase tracking-[0.2em] text-ivory/60 font-semibold">{householdTasks} taak · {shopping} boodschap · {maintenance} onderhoud{issues ? ` · ${issues} issue` : ""}</p>
+            <p className="text-sm font-semibold text-ivory truncate" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.6)" }}>{matters.length === 0 ? "Alles onder controle" : matters[0]?.title || "Een paar dingen"}</p>
+          </div>
+          <button onClick={(e) => { e.stopPropagation(); openModule("household"); }} className="rounded-full px-3.5 py-1.5 text-[11px] font-semibold border border-ivory/30 text-ivory transition hover:bg-ivory/10 shrink-0">Open</button>
+        </div>
+      </BrandPhoto>
     </WidgetShell>
   );
 }

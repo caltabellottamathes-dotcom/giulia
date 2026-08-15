@@ -1,87 +1,129 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { SectionLabel, Empty, Card, ActionBtn } from "./previewParts";
-import { Plus, Check, CalendarPlus } from "lucide-react";
+import HouseholdStateViz from "@/components/life/HouseholdStateViz";
+import { householdZones, mattersItems, householdHeadline, isAttention, statusLabel } from "@/lib/householdUtils";
+import { Plus, Wrench, ShoppingCart, Repeat, ListChecks } from "lucide-react";
 
-const BLUE = "hsl(var(--life-blue))";
 const SAND = "hsl(var(--life-sand))";
+const BLUE = "hsl(var(--life-blue-deep))";
 
-const today = () => new Date().toLocaleDateString("sv-SE");
-
-/** Household panel — huishoudtaken (Tasks domain=life, category=household). */
+/** Household panel — snelle huishoudelijke werkruimte. Huidige staat, wat nu
+ *  ertoe doet, en snelle acties + compacte creator. */
 export default function HouseholdPreview() {
+  const [items, setItems] = useState([]);
   const [tasks, setTasks] = useState([]);
-  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [title, setTitle] = useState("");
-  const [showAdd, setShowAdd] = useState(false);
+  const [form, setForm] = useState({ title: "", kind: "task" });
 
   const load = async () => {
     try {
-      const [t, e] = await Promise.all([
-        base44.entities.Task.list("deadline").catch(() => []),
-        base44.entities.CalendarEvent.list("start").catch(() => []),
+      const [it, t] = await Promise.all([
+        base44.entities.HouseholdItem.list().catch(() => []),
+        base44.entities.Task.filter({ domain: "life" }).catch(() => []),
       ]);
-      setTasks(t || []); setEvents(e || []);
+      setItems(it || []); setTasks(t || []);
     } catch { /* ignore */ } finally { setLoading(false); }
   };
   useEffect(() => { load(); }, []);
 
-  const household = useMemo(
-    () => (tasks || []).filter((t) => t.domain === "life" && t.category === "household" && t.status !== "completed" && t.status !== "archived"),
-    [tasks]
-  );
-  const todayUpcoming = household.filter((t) => t.deadline === today() || t.deadline === new Date(Date.now() + 86400000).toLocaleDateString("sv-SE"));
+  const zones = useMemo(() => householdZones(items), [items]);
+  const matters = useMemo(() => mattersItems(items, tasks), [items, tasks]);
+  const headline = householdHeadline(matters, items);
+  const sub = matters.length === 0 ? "Niets dringends — het loopt soepel." : matters.length >= 4 ? "Een reset zou rust geven." : "Een paar dingen maken de week makkelijker.";
 
-  const complete = async (t) => { try { await base44.entities.Task.update(t.id, { status: "completed" }); await load(); } catch { /* ignore */ } };
-  const addTask = async (cat = "household") => {
-    if (!title.trim()) return;
-    try { await base44.entities.Task.create({ title: title.trim(), domain: "life", category: cat, status: "today", priority: "medium" }); setTitle(""); setShowAdd(false); await load(); } catch { /* ignore */ }
+  const nowItems = items.filter((i) => isAttention(i.status)).slice(0, 4);
+
+  const complete = async (i) => { try { await base44.entities.HouseholdItem.update(i.id, { status: "done", last_done: new Date().toISOString() }); await load(); } catch { /* ignore */ } };
+  const addQuick = async () => {
+    if (!form.title.trim()) return;
+    try {
+      if (form.kind === "task") await base44.entities.Task.create({ title: form.title.trim(), domain: "life", status: "today" });
+      else await base44.entities.HouseholdItem.create({ title: form.title.trim(), kind: form.kind, status: form.kind === "issue" ? "open" : "needs_attention" });
+      setForm({ title: "", kind: "task" }); await load();
+    } catch { /* ignore */ }
   };
-  const planMaintenance = async () => {
-    if (!title.trim()) return;
-    const start = new Date(Date.now() + 2 * 86400000); start.setHours(10, 0, 0, 0);
-    try { await base44.entities.CalendarEvent.create({ title: title.trim(), start: start.toISOString(), end: new Date(start.getTime() + 2 * 3600000).toISOString(), domain: "life" }); setTitle(""); await load(); } catch { /* ignore */ }
-  };
+
+  if (loading) return <p className="text-sm text-ivory/50">Laden…</p>;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <SectionLabel>Huishouden</SectionLabel>
-        <button onClick={() => setShowAdd((v) => !v)} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-charcoal transition" style={{ background: BLUE }}><Plus className="w-3.5 h-3.5" /> Toevoegen</button>
+    <div className="space-y-7 text-ivory">
+      {/* HEADER */}
+      <div>
+        <p className="text-[10px] uppercase tracking-[0.3em] text-ivory/45 font-semibold">Household</p>
+        <h2 className="text-[40px] leading-[0.95] font-display font-semibold tracking-[-0.03em] mt-1.5">{headline}</h2>
+        <p className="text-sm text-ivory/55 mt-2 italic">{sub}</p>
       </div>
 
-      {showAdd && (
-        <div className="rounded-2xl glass-card-2 p-4 space-y-3 animate-fade-up">
-          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Taak of boodschap…" className="w-full rounded-xl bg-white/5 border border-white/15 px-3 py-2 text-sm text-ivory placeholder:text-ivory/40 outline-none" />
-          <div className="flex flex-wrap gap-2">
-            <button onClick={() => addTask("household")} className="rounded-full glass-button px-3 py-1.5 text-xs text-ivory">Huishoudtaak</button>
-            <button onClick={() => addTask("grocery")} className="rounded-full glass-button px-3 py-1.5 text-xs text-ivory">Boodschap</button>
-            <button onClick={planMaintenance} className="inline-flex items-center gap-1.5 rounded-full glass-button px-3 py-1.5 text-xs text-ivory"><CalendarPlus className="w-3.5 h-3.5" /> Onderhoud plannen</button>
+      {/* CURRENT STATE */}
+      <div>
+        <p className="text-[10px] uppercase tracking-[0.3em] text-ivory/45 font-semibold mb-3">Huidige staat</p>
+        <div className="glass-card-2 rounded-2xl p-4">
+          <HouseholdStateViz zones={zones} compact tone="dark" />
+          <div className="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-ivory/10">
+            {zones.map((z) => (
+              <div key={z.key} className="text-center">
+                <p className="text-[10px] uppercase tracking-wide text-ivory/55 font-semibold">{z.label}</p>
+                <p className="text-xs mt-0.5" style={{ color: isAttention(z.status) ? SAND : "hsl(var(--ivory) / 0.5)" }}>{statusLabel(z.status)}</p>
+              </div>
+            ))}
           </div>
         </div>
-      )}
+      </div>
 
-      {todayUpcoming.length > 0 && (
-        <p className="text-[11px] font-semibold" style={{ color: SAND }}>{todayUpcoming.length} vandaag/morgen</p>
-      )}
+      {/* WHAT MATTERS NOW */}
+      <div>
+        <p className="text-[10px] uppercase tracking-[0.3em] text-ivory/45 font-semibold mb-3">Wat nu ertoe doet</p>
+        {nowItems.length ? (
+          <div className="space-y-2">
+            {nowItems.map((i) => (
+              <div key={i.id} className="glass-card-2 rounded-2xl p-4 flex items-center gap-4">
+                <div className="min-w-0 flex-1">
+                  <p className="text-base font-display font-semibold truncate">{i.title}</p>
+                  <p className="text-xs text-ivory/55 mt-0.5 italic">{contextFor(i)}</p>
+                </div>
+                <button onClick={() => complete(i)} className="shrink-0 rounded-full glass-button px-3 py-1.5 text-xs font-medium text-ivory">Nu</button>
+                <button onClick={() => complete(i)} className="shrink-0 rounded-full glass-button px-3 py-1.5 text-xs font-medium text-ivory/60">Later</button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="glass-card-2 rounded-2xl p-5"><p className="text-sm text-ivory/70 italic">Alles goed — niets vraagt nu om aandacht.</p></div>
+        )}
+      </div>
 
-      {loading ? <Empty text="Laden…" /> : household.length ? (
-        <div className="flex flex-col gap-2 max-h-[400px] overflow-y-auto pr-1 -mr-1">
-          {household.map((t) => (
-            <Card key={t.id} accent={t.deadline === today() ? SAND : BLUE}>
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-medium text-ivory flex-1 truncate">{t.title}</p>
-                {t.category === "grocery" && <span className="text-[9px] uppercase tracking-wide text-ivory/40">boodschap</span>}
-              </div>
-              {t.deadline && <p className="text-[11px] text-ivory/45 mt-0.5">t/m {t.deadline}</p>}
-              <div className="mt-2 flex items-center gap-2">
-                <ActionBtn label="Afronden" icon={Check} onClick={() => complete(t)} />
-              </div>
-            </Card>
-          ))}
+      {/* QUICK ADD */}
+      <div>
+        <p className="text-[10px] uppercase tracking-[0.3em] text-ivory/45 font-semibold mb-3">Snel toevoegen</p>
+        <div className="glass-card-2 rounded-2xl p-4 space-y-3">
+          <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="bv. 'De wasmachine maakt een raar geluid'" className="w-full rounded-xl bg-white/5 border border-white/15 px-3 py-2 text-sm text-ivory placeholder:text-ivory/40 outline-none" />
+          <div className="flex flex-wrap gap-1.5">
+            {[{ k: "task", l: "Taak", icon: ListChecks }, { k: "shopping", l: "Boodschap", icon: ShoppingCart }, { k: "maintenance", l: "Onderhoud", icon: Wrench }, { k: "issue", l: "Issue", icon: Plus }].map((o) => (
+              <button key={o.k} onClick={() => setForm((f) => ({ ...f, kind: o.k }))} className={`rounded-full px-3 py-1.5 text-xs font-medium border transition ${form.kind === o.k ? "text-charcoal" : "text-ivory/65 border-white/15"}`} style={form.kind === o.k ? { background: SAND, borderColor: SAND } : {}}>
+                <o.icon className="w-3 h-3 inline mr-1" />{o.l}
+              </button>
+            ))}
+          </div>
+          <button onClick={addQuick} disabled={!form.title.trim()} className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-charcoal disabled:opacity-40 transition" style={{ background: SAND }}><Plus className="w-4 h-4" /> Toevoegen</button>
         </div>
-      ) : <Empty text="Huis is op orde" />}
+      </div>
+
+      {/* QUICK ACTIONS */}
+      <div>
+        <p className="text-[10px] uppercase tracking-[0.3em] text-ivory/45 font-semibold mb-3">Snelle acties</p>
+        <div className="grid grid-cols-2 gap-2">
+          <button onClick={() => setForm({ title: "", kind: "task" })} className="glass-button rounded-xl px-4 py-3 text-left text-sm text-ivory hover:bg-white/10 transition flex items-center gap-2"><ListChecks className="w-4 h-4" style={{ color: BLUE }} /> Taak</button>
+          <button onClick={() => setForm({ title: "", kind: "shopping" })} className="glass-button rounded-xl px-4 py-3 text-left text-sm text-ivory hover:bg-white/10 transition flex items-center gap-2"><ShoppingCart className="w-4 h-4" style={{ color: BLUE }} /> Boodschap</button>
+          <button onClick={() => setForm({ title: "", kind: "maintenance" })} className="glass-button rounded-xl px-4 py-3 text-left text-sm text-ivory hover:bg-white/10 transition flex items-center gap-2"><Wrench className="w-4 h-4" style={{ color: BLUE }} /> Onderhoud</button>
+          <button onClick={() => setForm({ title: "", kind: "issue" })} className="glass-button rounded-xl px-4 py-3 text-left text-sm text-ivory hover:bg-white/10 transition flex items-center gap-2"><Repeat className="w-4 h-4" style={{ color: BLUE }} /> Routine</button>
+        </div>
+      </div>
     </div>
   );
+}
+
+function contextFor(i) {
+  if (i.kind === "shopping") return "Je mist iets dat je regelmatig gebruikt.";
+  if (i.kind === "maintenance") return i.next_due ? `Volgende: ${new Date(i.next_due).toLocaleDateString("nl-NL", { day: "numeric", month: "long" })}` : "Vereist aandacht.";
+  if (i.kind === "issue") return i.notes || "Iets dat opgelost moet worden.";
+  return "Huishoudelijke taak.";
 }

@@ -52,7 +52,13 @@ export const MODULE_FUNCTIONS = {
     { label: "Kansen", to: "/life/social-planner?tab=opportunities" },
     { label: "Open", to: "/life/social-planner?tab=open" },
   ],
-  household: [{ label: "Huishouden", to: "/life/household" }],
+  household: [
+    { label: "Overview", to: "/life/household?tab=overview" },
+    { label: "Routines", to: "/life/household?tab=routines" },
+    { label: "Boodschappen", to: "/life/household?tab=shopping" },
+    { label: "Onderhoud", to: "/life/household?tab=maintenance" },
+    { label: "Huishouden", to: "/life/household?tab=household" },
+  ],
   personaladmin: [{ label: "Admin", to: "/life/personal-admin" }],
   hobbies: [{ label: "Hobby's", to: "/life/hobbies" }],
 };
