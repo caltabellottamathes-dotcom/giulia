@@ -276,6 +276,35 @@ export const GIULIA_SKILLS = [
     }
   },
   {
+    name: "create_social_appointment",
+    description: "UNIFIED LIFE-afspraak. Gebruik dit als Salvo een sociale of private afspraak noemt ('morgen naar Oma', 'zaterdag diner met Eva', 'donderdag koffie met Sven'). Dit maakt in ÉÉN actie: (1) een agenda-afspraak CalendarEvent(domain='life', status='confirmed'), (2) een gekoppeld SocialPlan met calendar_event_id + contact_ids, (3) resolveert de contactnaam naar een bestaand Contact of maakt er één aan (unconfirmed) als deze ontbreekt. Hierdoor verschijnt de afspraak AUTOMATISCH in de agenda, in LIFE Social Planner + Social Pulse, én in de dagplanning (dailyPlanning haalt alle events van de dag). Geef activity (bv. 'Bezoek Oma'), contact_name, start (ISO datetime), en optioneel end/location. NIET gebruiken voor zakelijke werk-afspraken — gebruik dan create_event met domain='focus'.",
+    inputSchema: { type: "object", properties: { activity: { type: "string", description: "Wat je gaat doen, bv. 'Bezoek Oma', 'Diner met Eva'" }, contact_name: { type: "string", description: "Naam van de persoon (wordt gematcht op bestaand contact, anders aangemaakt als unconfirmed)" }, start: { type: "string", description: "ISO datetime, bv. 2026-08-16T15:00:00" }, end: { type: "string", description: "ISO datetime" }, location: { type: "string" }, notes: { type: "string" } }, required: ["activity", "contact_name", "start"] },
+    execute: async (args, base44) => {
+      const sr = base44.asServiceRole;
+      // 1. Resolve contact by name (case-insensitive), else create unconfirmed
+      const all = await sr.entities.Contact.list("-created_date", 300).catch(() => []);
+      const q = String(args.contact_name || "").toLowerCase().trim();
+      let contact = (all || []).find((c) => (c.name || "").toLowerCase().trim() === q);
+      let contactCreated = false;
+      if (!contact) {
+        contact = await sr.entities.Contact.create({ name: args.contact_name, status: "unconfirmed", agent_source: "GIULIA-CORE" }).catch(() => null);
+        contactCreated = !!contact;
+      }
+      const contactIds = contact ? [contact.id] : [];
+      const participants = contact ? contact.name : args.contact_name;
+      const title = args.activity || `Afspraak met ${participants}`;
+      // 2. CalendarEvent (domain='life', confirmed — Salvo stated it as fact)
+      const ev = await sr.entities.CalendarEvent.create({ title, start: args.start, end: args.end, location: args.location, participants, domain: "life", status: "confirmed", agent_source: "GIULIA-CORE" }).catch(() => null);
+      if (!ev) return { error: "event create failed" };
+      // 3. Linked SocialPlan (confirmed, gekoppeld aan agenda)
+      const sp = await sr.entities.SocialPlan.create({ contact_ids: contactIds, activity: title, calendar_event_id: ev.id, suggested_date: args.start, notes: args.notes, status: "confirmed", agent_source: "GIULIA-CORE" }).catch(() => null);
+      // 4. Events via unified pipeline (propagate bevestigt gelinkte agenda al — idempotent)
+      await emitEvent(base44, { event_type: "EVENT_CREATED", object_type: "CalendarEvent", object_id: ev.id, domain: "life", description: `Afspraak: ${title}` });
+      if (sp) await emitEvent(base44, { event_type: "SOCIAL_PLAN_CONFIRMED", object_type: "SocialPlan", object_id: sp.id, domain: "life", description: `Sociaal plan bevestigd: ${title}` });
+      return { event_id: ev.id, social_plan_id: sp?.id || null, contact_id: contact?.id || null, contact_created: contactCreated };
+    }
+  },
+  {
     name: "create_household_task",
     description: "Maak een huishoudtaak (LIFE → Household). Gebruik voor routines, onderhoud en issues. Wordt opgeslagen als HouseholdItem. Set kind: routine/maintenance/issue. Set next_due (YYYY-MM-DD) en frequency_days voor herhalende taken.",
     inputSchema: { type: "object", properties: { title: { type: "string" }, kind: { type: "string", enum: ["routine", "maintenance", "issue", "item"] }, category: { type: "string" }, next_due: { type: "string", description: "YYYY-MM-DD" }, frequency_days: { type: "number" }, location: { type: "string" }, notes: { type: "string" } }, required: ["title"] },
