@@ -28,6 +28,23 @@ const ROUTES = {
   socialplanner: "/life/social-planner", household: "/life/household", personaladmin: "/life/personal-admin", hobbies: "/life/hobbies",
 };
 
+// Extra bestemmingen die geen eigen widget hebben — zodat je overal heen kunt.
+const EXTRA = [
+  { label: "LIFE", route: "/life" },
+  { label: "Planning", route: "/planning" },
+  { label: "Briefing", route: "/briefing" },
+  { label: "Wake", route: "/wake" },
+  { label: "Insights", route: "/insights" },
+  { label: "Agenten", route: "/agents" },
+  { label: "Updates", route: "/updates" },
+  { label: "Tijd", route: "/timetracker" },
+  { label: "Zoeken", route: "/search" },
+  { label: "Integraties", route: "/integrations" },
+  { label: "Instellingen", route: "/settings" },
+  { label: "Profiel", route: "/profile" },
+  { label: "Experiment", route: "/experiment" },
+];
+
 export default function AddWidgetPicker({ open, onClose, onAdd, addedTypes = [] }) {
   const [theme, setTheme] = useState("focus");
   const navigate = useNavigate();
@@ -101,6 +118,16 @@ export default function AddWidgetPicker({ open, onClose, onAdd, addedTypes = [] 
             )}
           </motion.div>
         </AnimatePresence>
+
+        {/* Snelle plekken — alle overige bestemmingen */}
+        <p className="text-[10px] uppercase tracking-[0.2em] text-ivory/40 font-semibold mt-6 mb-2.5">Snelle plekken</p>
+        <div className="flex flex-wrap gap-2">
+          {EXTRA.map((d) => (
+            <button key={d.route} onClick={() => { navigate(d.route); onClose(); }} className="rounded-full px-3 py-1.5 text-xs font-medium glass-card-2 text-ivory/70 hover:text-ivory transition">
+              {d.label}
+            </button>
+          ))}
+        </div>
       </div>
     </FloatingPanel>
   );

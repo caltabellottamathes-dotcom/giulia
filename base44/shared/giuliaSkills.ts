@@ -165,5 +165,50 @@ export const GIULIA_SKILLS = [
       const d = await base44.asServiceRole.entities.Document.create({ ...args, status: "giulia" }).catch(() => null);
       return d ? { id: d.id, name: d.name } : { error: "create failed" };
     }
+  },
+  {
+    name: "create_hobby",
+    description: "Maak een hobby of interesse aan in LIFE → HOBBIES. Gebruik dit als Salvo een nieuwe interesse noemt of als jij er één herkent (duplicaat-check ≥85% op titel). Set activity_level: 'new' voor net ontdekt, 'active' als Salvo er nu mee bezig is.",
+    inputSchema: { type: "object", properties: { title: { type: "string" }, type: { type: "string", enum: ["music", "creative", "cultural", "sport", "learning", "collecting", "other"] }, current_thread: { type: "string" }, image: { type: "string" }, discovered: { type: "boolean", description: "true als Giulia dit zelf herkende (niet expliciet gevraagd)" } }, required: ["title"] },
+    execute: async (args, base44) => {
+      const sr = base44.asServiceRole;
+      const existing = await sr.entities.Hobby.list("-created_date", 300).catch(() => []);
+      const dup = findDuplicate(existing, args.title);
+      if (dup) return { id: dup.id, title: dup.title, duplicate: true };
+      const today = new Date().toISOString().slice(0, 10);
+      const h = await sr.entities.Hobby.create({
+        title: args.title,
+        type: args.type || "creative",
+        current_thread: args.current_thread,
+        image: args.image,
+        activity_level: args.discovered ? "new" : "active",
+        discovered_date: args.discovered ? today : undefined,
+        status: "active",
+        agent_source: "GIULIA-CORE",
+      }).catch(() => null);
+      return h ? { id: h.id, title: h.title } : { error: "create failed" };
+    }
+  },
+  {
+    name: "update_hobby",
+    description: "Werk een hobby bij — activity_level (active/reactivating/quiet/new/emerging/archived), current_thread, last_activity_date, of koppel een project. Gebruik 'reactivating' als Salvo zegt iets weer op te pakken; 'quiet' als een hobby lang stil is; 'archived' (status inactive) om uit het actieve veld te halen.",
+    inputSchema: { type: "object", properties: { id: { type: "string" }, activity_level: { type: "string", enum: ["active", "reactivating", "quiet", "new", "emerging", "archived"] }, current_thread: { type: "string" }, linked_project_id: { type: "string" }, status: { type: "string", enum: ["active", "inactive"] } }, required: ["id"] },
+    execute: async ({ id, ...patch }, base44) => {
+      if (patch.activity_level === "archived") patch.status = "inactive";
+      if (patch.status === "active" && !patch.activity_level) patch.activity_level = "active";
+      const h = await base44.asServiceRole.entities.Hobby.update(id, patch).catch(() => null);
+      return h ? { ok: true } : { error: "not found" };
+    }
+  },
+  {
+    name: "log_hobby_moment",
+    description: "Log een hobby-moment (concert, repetitie, expositie, film, museumsbezoek, creatieve sessie). Updatet last_activity_date + activity_level='active' en maakt een HobbyMoment-record.",
+    inputSchema: { type: "object", properties: { hobby_id: { type: "string" }, title: { type: "string" }, activity: { type: "string", enum: ["concert", "exhibition", "rehearsal", "film", "museum", "creative_session", "performance", "other"] }, date: { type: "string", description: "ISO datetime" }, location: { type: "string" }, people: { type: "string" } }, required: ["hobby_id", "title"] },
+    execute: async (args, base44) => {
+      const sr = base44.asServiceRole;
+      const m = await sr.entities.HobbyMoment.create({ ...args, date: args.date || new Date().toISOString(), agent_source: "GIULIA-CORE" }).catch(() => null);
+      if (m) await sr.entities.Hobby.update(args.hobby_id, { last_activity_date: args.date || new Date().toISOString(), activity_level: "active" }).catch(() => null);
+      return m ? { id: m.id } : { error: "create failed" };
+    }
   }
 ];

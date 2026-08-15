@@ -1,0 +1,68 @@
+{
+  "name": "HobbyMoment",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "hobby_id": {
+      "type": "string",
+      "title": "Hobby ID"
+    },
+    "activity": {
+      "type": "string",
+      "enum": [
+        "concert",
+        "exhibition",
+        "rehearsal",
+        "film",
+        "museum",
+        "creative_session",
+        "performance",
+        "other"
+      ],
+      "default": "other",
+      "title": "Activity"
+    },
+    "date": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Date"
+    },
+    "location": {
+      "type": "string",
+      "title": "Location"
+    },
+    "people": {
+      "type": "string",
+      "title": "People"
+    },
+    "photo": {
+      "type": "string",
+      "format": "uri",
+      "title": "Photo"
+    },
+    "related_project_id": {
+      "type": "string",
+      "title": "Related Project ID"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Notes"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}
