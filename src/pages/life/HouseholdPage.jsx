@@ -11,6 +11,7 @@ import { householdZones, mattersItems, householdHeadline, isAttention, statusLab
 import { Home, Repeat, ShoppingCart, Wrench, Plus, Sparkles, CheckCircle2, Search } from "lucide-react";
 import { logLifeActivity } from "@/lib/lifeActivity";
 import LifeActivityFeed from "@/components/life/LifeActivityFeed";
+import LifeOverviewCards from "@/components/life/LifeOverviewCards";
 
 const SAND = "hsl(var(--life-sand))";
 const SAND_DEEP = "hsl(var(--life-sand-deep))";
@@ -98,6 +99,13 @@ export default function HouseholdPage() {
     <div className="space-y-6 animate-fade-up">
       <PageHero page="life-household" image={IMAGES.lifeHousehold} icon={Home} eyebrow="LIFE" title="Household" subtitle={matters.length === 0 ? "Alles loopt soepel — niets vraagt om aandacht." : `${matters.length} dingen waard om deze week te doen.`}
         actions={<GlassButton variant="primary" size="md" onClick={() => document.getElementById("creator")?.scrollIntoView({ behavior: "smooth" })}><Plus className="h-4 w-4" /> Toevoegen</GlassButton>} />
+
+      <LifeOverviewCards cards={[
+        { label: "Routines", value: routines.length, hint: `${todayRoutines.length} vandaag`, accent: "blue" },
+        { label: "Boodschappen", value: shopping.length, accent: "blue" },
+        { label: "Onderhoud", value: maintenance.length, accent: "blue" },
+        { label: "Aandacht", value: matters.length, hint: "deze week", accent: "sand" },
+      ]} />
 
       {/* Tabs */}
       <div className="flex items-center gap-1 overflow-x-auto -mx-1 px-1 pb-1">

@@ -167,7 +167,24 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
       ? `\n\n== CONVERSATIE-CONTINUNITEIT ==\nJe krijgt de recente berichtdraad mee (user + giulia, afwisselend). Je weet daardoor wat Salvo net zei én wat jij zelf net antwoordde. Blijf in het gesprek: bouw voort op wat er al gezegd is, herhaal of herformuleer je vorige antwoord niet, en vraag niet om dingen die al duidelijk zijn. Reageer vloeiend en natuurlijk — alsof je nooit weg was.\n`
       : "";
 
-    let systemInstruction = `${GIULIA_TONE}${convoRule}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}${sourceRule}${protocolsBlock}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo. Denk na, roep de functies aan die nodig zijn om zijn verzoek ECHT uit te voeren, en geef daarna een kort, menselijk antwoord in het Nederlands.`;
+    const responseStyle = `
+== ANTWOORDSTIJL (CRITIEK — volg dit strikt) ==
+- KORT. Maximaal 1–3 zinnen. Geen opsommingen, geen recap, geen herhaling van wat Salvo zojuist zei.
+- BLIJF BIJ HET MOMENT. Reageer alleen op wat Salvo nú zegt. Haal geen oude projecten, taken of herinneringen naar voren die er niets mee te maken hebben. Bestaande data is géén aanleiding tot actie.
+- WACHT MET VOORSTELLEN. Stel niet direct voor wat je 'kunt doen'. Geef alleen een actie/voorstel als het écht en direct nodig is voor wat hij nú vraagt. Stille aanwezigheid gaat boven een lijst acties. "Begrepen" of "Genoteerd" is vaak genoeg.
+- Geen opsomming van mogelijkheden, geen "Wil je dat ik...?"-lijsten. Eén actie, alleen als nodig.
+`;
+
+    const systemMap = `
+== SYSTEM MAP (actuele routes, modules & flows — up to date) ==
+Navigatie (QuickLauncher, editoriale index): /, /agenda, /planning, /briefing, /tasks, /approvals, /notifications, /projects, /email, /whatsapp, /knowledge, /documents, /people, /life, /life/social-pulse, /life/social-planner, /life/household, /life/personal-admin, /life/hobbies, /wants-to-know, /chat, /wake, /insights, /memory, /activity, /agents, /updates, /timetracker, /search, /integrations, /settings, /profile.
+LIFE-modules: Social Pulse (relatiegezondheid), Social Planner (afspraken plannen), Household (routines/boodschappen/onderhoud), Personal Admin (obligaties/betalingen/vernieuwingen), Hobbies (actieve interesses + momenten).
+Domein-tags: focus | life | self — op Task, CalendarEvent, Project, Contact.
+Activity-koppellaag: elke actie in een LIFE-module schrijft een Activity-record met source="LIFE · <Module>" (Household/SocialPlanner/Admin/Hobbies). De gedeelde LifeActivityFeed leest source.startsWith("LIFE"). Bij LIFE-acties via de chat gebruik je report_to_salvo met source-prefix "LIFE · <Module>" zodat ze in de feed verschijnen en alles gelinkt blijft.
+Flow: dispatch-then-execute (jij geeft eerst dispatch_order, daarna voert de loop de skills echt uit). Externe acties → altijd create_approval. Echte vragen aan Salvo → create_notification met requires_response/urgent. Routinematige status → report_to_salvo (Activity-feed), nooit create_notification.
+`;
+
+    let systemInstruction = `${GIULIA_TONE}${convoRule}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}${sourceRule}${protocolsBlock}\n\n${responseStyle}\n\n${systemMap}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo. Denk na, roep alleen een functie aan als het écht nodig is voor zijn verzoek, en geef daarna een kort antwoord (1–3 zinnen) in het Nederlands.`;
 
     // 3. BUILD TOOLS — elke skill is een direct uitvoerbare GIULIA-CORE-actie.
     const toolsMap = {};

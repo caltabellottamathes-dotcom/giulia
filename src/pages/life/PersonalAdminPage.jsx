@@ -10,6 +10,7 @@ import { adminWeather, radarEvents, comingUp, weatherZones, repeaters, friction,
 import { Shield, Wallet, FileText, RefreshCw, ListChecks, CircleDot, Plus, Search, CheckCircle2, AlertTriangle } from "lucide-react";
 import { logLifeActivity } from "@/lib/lifeActivity";
 import LifeActivityFeed from "@/components/life/LifeActivityFeed";
+import LifeOverviewCards from "@/components/life/LifeOverviewCards";
 
 const TABS = [
   { key: "OVERVIEW", label: "Overview", icon: CircleDot },
@@ -46,6 +47,13 @@ export default function PersonalAdminPage() {
     <div className="space-y-6 animate-fade-up">
       <PageHero page="life-personaladmin" image={IMAGES.lifePersonalAdmin} icon={Shield} eyebrow="LIFE → ADMIN" title="Personal Admin" subtitle={w.counts.overdue === 0 ? "Your administrative life, currently behaving itself." : `${w.counts.overdue} te laat · ${w.counts.coming} op komst · ${w.counts.needsYou} vereist jou`}
         actions={<GlassButton variant="primary" size="md" onClick={() => alert("Toevoegen")}><Plus className="h-4 w-4" /> Toevoegen</GlassButton>} />
+
+      <LifeOverviewCards cards={[
+        { label: "Te laat", value: w.counts.overdue, accent: "sand" },
+        { label: "Op komst", value: w.counts.coming, accent: "blue" },
+        { label: "Vereist jou", value: w.counts.needsYou, accent: "sand" },
+        { label: "Documenten", value: activeDocs.length, accent: "blue" },
+      ]} />
 
       <div className="flex items-center gap-1 overflow-x-auto -mx-1 px-1 pb-1">
         {TABS.map((t) => (

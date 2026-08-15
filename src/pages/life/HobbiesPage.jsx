@@ -9,6 +9,7 @@ import { hobbyGroups, hobbyHeadline, hobbyState, fieldSize, stateColor, attentio
 import { Palette, Plus, ArrowUpRight, Search, Sliders, Film, Calendar, Star, Compass } from "lucide-react";
 import { logLifeActivity } from "@/lib/lifeActivity";
 import LifeActivityFeed from "@/components/life/LifeActivityFeed";
+import LifeOverviewCards from "@/components/life/LifeOverviewCards";
 
 const TABS = [
   { key: "overview", label: "Overview" },
@@ -88,6 +89,13 @@ export default function HobbiesPage() {
             <GlassButton variant="primary" size="md" onClick={() => setShowAdd((v) => !v)}><Plus className="h-4 w-4" /> Hobby</GlassButton>
           </div>
         } />
+
+      <LifeOverviewCards cards={[
+        { label: "Actief", value: hobbies.length, hint: "hobby's", accent: "blue" },
+        { label: "Verrijzend", value: hobbies.filter((h) => ["new", "emerging", "reactivating"].includes(h.activity_level)).length, accent: "sand" },
+        { label: "Momenten", value: moments.length, accent: "blue" },
+        { label: "Projecten", value: hobbyProjects.length, accent: "blue" },
+      ]} />
 
       {showAdd && (
         <GlassPanel level={2} className="p-6 animate-fade-up">
