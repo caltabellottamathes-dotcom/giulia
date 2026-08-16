@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useEffect } from "react";
-import { useConversation } from "@elevenlabs/react";
+import { useConversation, ConversationProvider } from "@elevenlabs/react";
 import { useNavigate } from "react-router-dom";
 import { usePanel } from "@/lib/PanelContext";
 import { cn } from "@/lib/utils";
@@ -19,7 +19,7 @@ import { Mic, Phone, PhoneOff, Volume2 } from "lucide-react";
  *  - externe verzending klaarzetten (create_approval) en complexe opdrachten
  *    delegeren (delegate_to_giulia → chatWithGiulia function-calling loop).
  */
-export default function Voice() {
+function VoiceInner() {
   const navigate = useNavigate();
   const { openModule, activeModule } = usePanel();
   const endRef = useRef(null);
@@ -164,5 +164,13 @@ export default function Voice() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Voice() {
+  return (
+    <ConversationProvider>
+      <VoiceInner />
+    </ConversationProvider>
   );
 }
