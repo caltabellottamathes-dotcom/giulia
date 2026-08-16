@@ -16,11 +16,11 @@ const actionBtn = "h-9 w-9 rounded-full flex items-center justify-center text-iv
    FOCUS → groen (olive) · SELF & LIFE → lichtblauw (ridge) ·
    GIULIA & SYSTEEM → #d8dab3. */
 const DOMAIN_COLOR = {
-  focus: "hsl(var(--olive))",
-  self: "hsl(var(--ridge))",
-  life: "hsl(var(--ridge))",
+  focus: "#94925d",
+  self: "#b1bec6",
+  life: "#301728",
   giulia: "#d8dab3",
-  system: "#d8dab3",
+  system: "#d5e24a",
 };
 
 const ROUTE_DOMAIN = [
@@ -147,9 +147,15 @@ export default function WorkspaceToolbar() {
       {/* persistent live line + bloom (inactive indicator) */}
       {hidden && (
         <div className="fixed bottom-0 inset-x-0 z-30 pointer-events-none">
-          <div className="relative h-[2px] w-full">
+          <div className="relative h-[3px] w-full">
             <LiveLine color={color} />
-            <span className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 h-2.5 w-24 rounded-full blur-md" style={{ background: color, opacity: 0.6 }} />
+            <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 h-6 w-40 rounded-full blur-xl" style={{ background: color, opacity: 0.85 }} />
+            <motion.span
+              className="absolute -bottom-[3px] left-1/2 -translate-x-1/2 h-2.5 w-2.5 rounded-full"
+              style={{ background: color, boxShadow: `0 0 14px 3px ${color}` }}
+              animate={{ opacity: [0.55, 1, 0.55], scale: [1, 1.25, 1] }}
+              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+            />
           </div>
         </div>
       )}
@@ -194,13 +200,11 @@ export default function WorkspaceToolbar() {
             {/* spacer pushes the input to the far right */}
             <div className="flex-1" />
 
-            {/* Giulia input (right) */}
-            <form onSubmit={submit} className="hidden sm:flex items-center gap-2.5 w-[40%] lg:w-[32%]">
+            {/* Giulia input (right, tegen de knoppen) */}
+            <form onSubmit={submit} className="hidden sm:flex items-center gap-2.5 w-[34%] lg:w-[24%]">
               <span className="h-1.5 w-1.5 rounded-full bg-olive animate-pulse-soft shrink-0" />
-              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Vraag Giulia anything…" className="flex-1 min-w-0 bg-transparent text-sm text-ivory placeholder:text-ivory/45 focus:outline-none" />
+              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Vraag Giulia anything…" className="flex-1 min-w-0 bg-transparent text-sm text-ivory placeholder:text-ivory/45 focus:outline-none text-right" />
             </form>
-
-            <span className="hidden lg:block h-6 w-px bg-ivory/15 shrink-0" />
 
             {/* Actions (right) */}
             <button onClick={() => { reveal(); active ? stop() : start(); }} aria-label="Context toevoegen" className={cn(actionBtn, active && "text-olive")}><BrainCircuit className="h-5 w-5" /></button>

@@ -1,0 +1,44 @@
+{
+  "name": "Giulia Wants To Know",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "giulia_wants_to_know",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "questions": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "generateQuestions"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Giulia stelt vragen",
+            "description": "3x daags 09:00 \u00b7 13:00 \u00b7 18:00"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Giulia's nieuwsgierigheidslaag: stelt 3x per dag (09:00, 13:00, 18:00) actief persoonlijke en inhoudelijke vragen, verzamelt ontbrekende kennis en ververst verouderde info in projecten, agenda en andere functies. Dedupliceert automatisch tegen openstaande vragen.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 9,13,18 * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

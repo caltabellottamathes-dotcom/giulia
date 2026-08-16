@@ -8,8 +8,52 @@ import { giuliaCompose } from '../../shared/giulia.ts';
  * actie in gang (runProactivity / triageEmails / compileBriefing /
  * eveningFollowUp). Per trigger maximaal één keer per 20 min uitgevoerd,
  * zodat het nooit spamt.
+ *
+ * Variatie: elke check-in wordt frans geformuleerd — geen standaard-riedeltje,
+ * elke keer een andere invalshoek/toon/openingswoord. Recente bubbel-regels
+ * worden meegegeven om herhaling te vermijden.
  */
 const THROTTLE_MS = 20 * 60 * 1000;
+
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+const TEMPLATES = {
+  overdue: (n) => [
+    `${n} taak${n > 1 ? "en" : ""} lopen achter. Ik houd de lagere prio's op afstand zodat jij de deadline haalt.`,
+    `De klok tikt door op ${n} taak${n > 1 ? "en" : ""}. Zal ik vanavond even herschikken?`,
+    `Nog ${n} die roepen. Zeg het maar als ik iets voor je verschuif.`,
+  ],
+  soon_event: (mins, title) => [
+    `Over ${mins} min begint "${title}" — briefing ligt klaar.`,
+    `"${title}" staat voor de deur, ${mins} min nog. Klaar?`,
+    `Nog ${mins} min tot "${title}". Ik heb de context al gepakt.`,
+  ],
+  prep_inbox: () => [
+    `Rustig moment — ik ga alvast door je inbox om antwoorden te schetsen.`,
+    `Even ruimte. Ik bereid je inbox voor, dan kun je straks snel door.`,
+    `Ik gebruik de rust om je mail op orde te zetten.`,
+  ],
+  approvals: (n) => [
+    `${n} goedkeuring${n > 1 ? "en" : ""} wachten op jou. Ik voer niets uit zonder je ja.`,
+    `Er liggen ${n} dingen te wachten op je afteken.`,
+    `${n} keuzes staan klaar — pas als jij ze aftekent, gebeurt er iets.`,
+  ],
+  stale_threads: () => [
+    `Een paar threads wachten al dagen op info. Zal ik follow-ups voorstellen?`,
+    `Nog steeds open: een paar threads die op input wachten. Ik kan herinneringen opstellen.`,
+    `Er liggen threads stil — wil je dat ik ze weer levend maak?`,
+  ],
+  evening_prep: () => [
+    `Bijna einde dag. Ik bereid de avond alvast voor.`,
+    `Rustig aan toe. Ik zet alvast de avond klaar.`,
+    `Het kalmeert — ik gebruik het om vanavond voor te bereiden.`,
+  ],
+  quiet: () => [
+    `Rustig moment. Ik sorteer op de achtergrond je inbox voor.`,
+    `Even niets dringends. Ik gebruik de tijd om op te ruimen.`,
+    `Stilte — ideaal om achter de schermen je inbox voor te sorteren.`,
+  ],
+};
 
 export default async function (req) {
   try {
@@ -45,38 +89,38 @@ export default async function (req) {
     if (overdue.length) {
       trigger = "overdue";
       baseContext = `Te late taken (${overdue.length}): ${overdue.slice(0, 3).map((t) => t.title).join(", ")}.`;
-      templated = `Je hebt ${overdue.length} te late taak${overdue.length > 1 ? "en" : ""}. Ik schuif laag-prioritaire taken door om je focus te beschermen.`;
+      templated = pick(TEMPLATES.overdue(overdue.length));
       actionFn = "runProactivity"; actionLabel = "Plan herschikt";
     } else if (soon) {
       trigger = "soon_event";
       const t = new Date(soon.start).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" });
       const mins = Math.max(1, Math.round((new Date(soon.start).getTime() - now.getTime()) / 60000));
       baseContext = `Aankomende afspraak: "${soon.title}" om ${t}, over ${mins} minuten.`;
-      templated = `Over ${mins} minuten begint "${soon.title}". Ik leg de briefing klaar.`;
+      templated = pick(TEMPLATES.soon_event(mins, soon.title));
       actionFn = "compileBriefing"; actionLabel = "Briefing klaargelegd";
     } else if (unread >= 5) {
       trigger = "prep_inbox";
       baseContext = `Ongelezen mails: ${unread}. Geen te late taken — rustig moment.`;
-      templated = `Rustig genoeg. Ik ga alvast je inbox voorbereiden en antwoorden schetsen.`;
+      templated = pick(TEMPLATES.prep_inbox());
       actionFn = "triageEmails"; actionLabel = "Inbox voorbereid";
     } else if (approvals.length) {
       trigger = "approvals";
       baseContext = `Openstaande goedkeuringen (${approvals.length}): ${approvals.slice(0, 3).map((a) => a.title).join(", ")}.`;
-      templated = `Er wachten ${approvals.length} goedkeuring${approvals.length > 1 ? "en" : ""} op je. Ik voer niks uit zonder jouw afteken.`;
+      templated = pick(TEMPLATES.approvals(approvals.length));
     } else if (stale.length) {
       trigger = "stale_threads";
       baseContext = `Threads die wachten op info: ${stale.slice(0, 3).map((t) => t.title).join(", ")}.`;
-      templated = `Een paar openstaande threads wachten al dagen op info. Ik stel follow-ups voor.`;
+      templated = pick(TEMPLATES.stale_threads());
       actionFn = "runProactivity"; actionLabel = "Follow-ups voorgesteld";
     } else if (hour >= 15) {
       trigger = "evening_prep";
       baseContext = `Het is ${hour}:00. Geen dringende zaken meer.`;
-      templated = `Bijna einde van je dag. Ik bereid de avond alvast voor.`;
+      templated = pick(TEMPLATES.evening_prep());
       actionFn = "eveningFollowUp"; actionLabel = "Avond voorbereid";
     } else {
       trigger = "quiet";
       baseContext = `Rustig moment — geen te late taken, geen afspraken nu, ${unread} ongelezen mails.`;
-      templated = `Rustig moment. Ik gebruik het om op de achtergrond je inbox voor te sorteren.`;
+      templated = pick(TEMPLATES.quiet());
       actionFn = "triageEmails"; actionLabel = "Inbox voorbereid";
     }
 
@@ -101,12 +145,28 @@ export default async function (req) {
     }
     const context = baseContext + "\n" + actionNote;
 
-    let line = await giuliaCompose(
-      base44,
-      "Schrijf een korte proactieve check-in op basis van de context. Eén tot twee zinnen, concreet, Nederlands. Spreek Salvo direct aan. Vermeld specifieke namen of tijden waar relevant. Geen opsommingstekens.",
-      context
-    ).catch(() => null);
+    // Recente bubbel-regels ophalen → vermijd herhaling van zinsbouw/opening.
+    const recentActs = await sr.entities.Activity.filter({ source: "proactiveBubble" }, "-created_date", 6).catch(() => []);
+    const recentLines = (recentActs || []).map((a) => String(a.description || "").trim()).filter(Boolean).slice(0, 6);
+    const recentBlock = recentLines.length
+      ? `\n\nRECENTE BUBBELS (herhaal NIET deze zinsbouw of openingswoorden, varieer sterk):\n${recentLines.map((l) => "- " + l).join("\n")}`
+      : "";
+
+    const instruction =
+      `Schrijf een korte proactieve check-in op basis van de context. Eén tot twee zinnen, concreet, Nederlands, direct tot Salvo. Vermeld specifieke namen of tijden waar relevant. Geen opsommingstekens, geen standaard-riedeltje.` +
+      ` Begin NOOIT met "Je hebt", "Er wachten", "Rustig moment" of soortgelijke formules. Kies elke keer een andere invalshoek, toon en openingswoord — soms een vraag, soms een observatie, soms een droge one-liner, soms warm, soms speels.` +
+      recentBlock;
+
+    let line = await giuliaCompose(base44, instruction, context).catch(() => null);
     if (!line) line = templated;
+
+    // Bewaar deze regel voor toekomstige variatie-controle.
+    await sr.entities.Activity.create({
+      action: "proactive_bubble",
+      description: String(line).slice(0, 280),
+      source: "proactiveBubble",
+      timestamp: now.toISOString(),
+    }).catch(() => null);
 
     let actionDone = false;
     if (willRun && actionFn) {

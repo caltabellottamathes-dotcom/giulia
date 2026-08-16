@@ -41,6 +41,27 @@ function sanitizeResult(r) {
   return out;
 }
 
+async function buildImageParts(attachments) {
+  const parts = [];
+  for (const a of attachments) {
+    if (!a || a.type !== "image" || !a.url) continue;
+    try {
+      const ext = (a.name || "").split(".").pop().toLowerCase();
+      const mime = ext === "png" ? "image/png" : ext === "gif" ? "image/gif" : ext === "webp" ? "image/webp" : "image/jpeg";
+      const buf = await fetch(a.url).then((r) => r.arrayBuffer());
+      if (!buf || buf.byteLength > 12 * 1024 * 1024) continue;
+      const bytes = new Uint8Array(buf);
+      let bin = "";
+      const chunk = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunk) {
+        bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+      }
+      parts.push({ inlineData: { mimeType: mime, data: btoa(bin) } });
+    } catch { /* ignore */ }
+  }
+  return parts;
+}
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -217,6 +238,13 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
       }
     } else {
       contents = [{ role: "user", parts: [{ text: `Inkomend signaal (bron: ${source}):\n"""${message.slice(0, 3000)}"""` }] }];
+    }
+    // Beeldbijlagen → inline aan de laatste user-beurt (Gemini vision, BYOK)
+    const imgParts = await buildImageParts(attachments);
+    if (imgParts.length) {
+      const last = contents[contents.length - 1];
+      if (last && last.role === "user") last.parts = [...last.parts, ...imgParts];
+      else contents.push({ role: "user", parts: imgParts });
     }
     const executed = [];
     let responseText = null;
