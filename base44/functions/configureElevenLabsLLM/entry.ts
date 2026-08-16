@@ -95,6 +95,15 @@ ${ELEVEN_TOOLS.map((t) => `- ${t.name}(${Object.entries(t.params || {}).filter((
 Lees de actuele context, begrijp zijn intentie, wees scherp, voer uit, herplan waar nodig, verbind alle entiteiten en spreek.
 `;
 
+const CONVERSATIONAL_PROMPT = `Je bent Giulia, de stem van Salvo's persoonlijke besturingssysteem. Je praat met hem via ElevenLabs — kort, warm, menselijk, in het Nederlands.
+
+REGELS:
+- Eén gedachte per zin. Maximaal 1-2 zinnen per beurt. Geen opsommingen, geen menu's, geen herhaling.
+- Je hebt GEEN tools en doet ZELF GEEN acties. Niets navigeren, niets aanmaken, niets opzoeken in de database.
+- Als Salvo iets actiebaars vraagt (taak, afspraak, notitie, herinnering, een scherm openen, een vraag over zijn data): antwoord heel kort dat Giulia het regelt ("Ik regel dat voor je", "Ik open je agenda", "Komt voor elkaar") en verzin GEEN details die je niet echt hebt uitgevoerd.
+- De uitvoering gebeurt op de achtergrond door je kern (chatWithGiulia); wat daar verschijnt is het echte resultaat. Zeg dus nooit "ik heb een taak aangemaakt" als jij het niet zelf deed — zeg alleen dat het wordt geregeld.
+- Wees rustig en scherp, niet overdreven enthousiast. Geen SaaS-taal.`;
+
 const SYSTEM_PROMPT = GIULIA_CORE_INSTRUCTIONS + "\n" + VOICE_ADDENDUM;
 
 // Zet platte params ({ key: { type, description, required } }) om naar een
@@ -156,7 +165,8 @@ export default async function (req) {
     let input = {};
     try { input = await req.json(); } catch { input = {}; }
     const proxyUrl = input?.proxyUrl;
-    const useProxy = !!proxyUrl;
+    const conversationalOnly = input?.conversationalOnly !== false;
+    const useProxy = !conversationalOnly && !!proxyUrl;
 
     // 1) Api-key secret: direct (Gemini key1) of proxy-token (GIULIA_API_KEY).
     let secretLocator;
@@ -183,27 +193,45 @@ export default async function (req) {
     // 3) Config aanpassen: custom LLM + volle system-prompt + tools.
     cfg.agent = cfg.agent || {};
     cfg.agent.prompt = cfg.agent.prompt || {};
-    cfg.agent.prompt.prompt = SYSTEM_PROMPT;
-    cfg.agent.prompt.llm = "custom-llm";
-    cfg.agent.prompt.custom_llm = {
-      url: useProxy ? proxyUrl : GEMINI_ENDPOINT,
-      model: GEMINI_MODEL,
-      model_id: GEMINI_MODEL,
-      api_key: secretLocator,
-      api_type: "chat_completions",
-      temperature: 0.5,
-    };
-    // Tools horen op conversation_config.agent.prompt.tools (niet op cfg.tools).
-    // ElevenLabs auto-aangemaakt managed tools uit inline defs; daarom tool_ids
-    // leeggemaakt om de "both tools and tool_ids"-conflict te voorkomen.
-    cfg.agent.prompt.tool_ids = [];
-    cfg.agent.prompt.tools = ELEVEN_TOOLS.map((t) => ({
-      name: t.name,
-      description: t.description,
-      type: t.type || "client",
-      parameters: toJsonSchema(t.params),
-      expects_response: !!t.wait_for_response,
-    }));
+    if (conversationalOnly) {
+      // Conversatie-only: directe Gemini, GEEN tools. De stem-agent praat
+      // alleen. Acties/navigatie lopen via chatWithGiulia, getriggerd vanuit
+      // de frontend (useConversation transcript → invoke("chatWithGiulia")).
+      cfg.agent.prompt.prompt = CONVERSATIONAL_PROMPT;
+      cfg.agent.prompt.llm = "custom-llm";
+      cfg.agent.prompt.custom_llm = {
+        url: GEMINI_ENDPOINT,
+        model: GEMINI_MODEL,
+        model_id: GEMINI_MODEL,
+        api_key: secretLocator,
+        api_type: "chat_completions",
+        temperature: 0.5,
+      };
+      cfg.agent.prompt.tool_ids = [];
+      cfg.agent.prompt.tools = [];
+    } else {
+      cfg.agent.prompt.prompt = SYSTEM_PROMPT;
+      cfg.agent.prompt.llm = "custom-llm";
+      cfg.agent.prompt.custom_llm = {
+        url: useProxy ? proxyUrl : GEMINI_ENDPOINT,
+        model: GEMINI_MODEL,
+        model_id: GEMINI_MODEL,
+        api_key: secretLocator,
+        api_type: "chat_completions",
+        temperature: 0.5,
+      };
+      // Tools horen op conversation_config.agent.prompt.tools (niet op cfg.tools).
+      // ElevenLabs auto-aangemaakt managed tools uit inline defs; daarom tool_ids
+      // leeggemaakt om de "both tools and tool_ids"-conflict te voorkomen.
+      cfg.agent.prompt.tool_ids = [];
+      cfg.agent.prompt.tools = ELEVEN_TOOLS.map((t) => ({
+        name: t.name,
+        description: t.description,
+        type: t.type || "client",
+        parameters: toJsonSchema(t.params),
+        expects_response: !!t.wait_for_response,
+      }));
+    }
 
     // 4) PATCH terug naar ElevenLabs.
     const patchRes = await fetch(`https://api.elevenlabs.io/v1/convai/agents/${AGENT_ID}`, {
@@ -242,11 +270,11 @@ export default async function (req) {
       agent_id: AGENT_ID,
       llm: "custom-llm",
       model: GEMINI_MODEL,
-      mode: useProxy ? "proxy+fallback" : "direct",
-      endpoint: useProxy ? proxyUrl : GEMINI_ENDPOINT,
+      mode: conversationalOnly ? "conversational" : (useProxy ? "proxy+fallback" : "direct"),
+      endpoint: conversationalOnly ? GEMINI_ENDPOINT : (useProxy ? proxyUrl : GEMINI_ENDPOINT),
       fallback_key_available: !!process.env.ELEVEN_2_GEMINI_API_KEY,
-      tools: ELEVEN_TOOLS.map((t) => t.name),
-      prompt_chars: SYSTEM_PROMPT.length,
+      tools: conversationalOnly ? [] : ELEVEN_TOOLS.map((t) => t.name),
+      prompt_chars: conversationalOnly ? CONVERSATIONAL_PROMPT.length : SYSTEM_PROMPT.length,
       orphan_tools_removed: deletedOrphans,
     });
   } catch (e) {

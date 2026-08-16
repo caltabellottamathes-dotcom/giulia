@@ -1,40 +1,58 @@
-import React, { useMemo, useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useConversation, ConversationProvider } from "@elevenlabs/react";
-import { useNavigate } from "react-router-dom";
 import { usePanel } from "@/lib/PanelContext";
 import { cn } from "@/lib/utils";
 import { IMAGES } from "@/lib/images";
 import { ELEVEN_AGENT_ID } from "@/lib/voiceNavigation";
-import { buildVoiceClientTools } from "@/lib/voiceClientTools";
-import { Mic, Phone, PhoneOff, Volume2 } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { Mic, Phone, PhoneOff, Volume2, Loader2 } from "lucide-react";
 
 /**
  * Voice — een echt stemgesprek met de ElevenLabs voice agent (inline).
  * Werkt zowel als losse pagina (/voice) als in het ModulePanel.
  *
- * De agent kan:
- *  - proactief navigeren (navigate_to_page / open_panel / scroll / highlight)
- *  - direct acties uitvoeren (taken, notities, geheugen, agenda, journal,
- *    check-ins, needs, notificaties) — "meteen doorgestuurde acties"
- *  - externe verzending klaarzetten (create_approval) en complexe opdrachten
- *    delegeren (delegate_to_giulia → chatWithGiulia function-calling loop).
+ * De stem-agent (directe Gemini, conversatie-only) doet ZELF geen acties.
+ * Elke uitgesproken gebruikersbeurt wordt hier onderschept en naar
+ * chatWithGiulia doorgestuurd — die het echte werk doet: entity-CRUD,
+ * navigatie (via AgentNavigation), geheugen, etc. De gesproken reply is
+ * alleen bevestiging; het resultaat verschijnt op het scherm + in het
+ * chat-paneel. Omzeilt de ElevenLabs client-tool bug (#603).
  */
 function VoiceInner() {
-  const navigate = useNavigate();
-  const { openModule, activeModule } = usePanel();
+  const { activeModule } = usePanel();
   const endRef = useRef(null);
   const inPanel = activeModule === "voice";
-
-  const clientTools = useMemo(
-    () => buildVoiceClientTools({ navigate, openModule }),
-    [navigate, openModule]
-  );
 
   const { startSession, endSession, status, isSpeaking, messages } = useConversation({
     agentId: ELEVEN_AGENT_ID,
   });
   const connected = status === "connected";
   const connecting = status === "connecting";
+
+  // ── Stem → chatWithGiulia pijplijn ──────────────────────────────────────
+  // De ElevenLabs-agent doet alleen conversatie (directe Gemini, geen tools).
+  // Elke uitgesproken gebruikersbeurt wordt hier onderschept en naar
+  // chatWithGiulia doorgestuurd — die het ECHTE werk doet: entity-CRUD,
+  // navigatie (via AgentNavigation), geheugen, etc. Resultaat verschijnt in
+  // het chat-paneel + acties gebeuren op het scherm. Omzeilt de ElevenLabs
+  // client-tool bug (#603) volledig.
+  const processedRef = useRef(new Set());
+  const [giuliaWorking, setGiuliaWorking] = useState(false);
+  useEffect(() => {
+    if (!connected || !messages?.length) return;
+    let piped = false;
+    for (const m of messages) {
+      if (m.role !== "user") continue;
+      const text = String(m.message || m.content || m.text || "").trim();
+      if (!text || processedRef.current.has(text)) continue;
+      processedRef.current.add(text);
+      piped = true;
+      base44.functions.invoke("chatWithGiulia", { message: text, source: "chat" })
+        .catch(() => {})
+        .finally(() => setGiuliaWorking(false));
+    }
+    if (piped) setGiuliaWorking(true);
+  }, [messages, connected]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -51,7 +69,7 @@ function VoiceInner() {
     if (connected) {
       try { await endSession(); } catch {}
     } else {
-      try { await startSession({ clientTools }); } catch {}
+      try { await startSession(); } catch {}
     }
   };
 
@@ -134,6 +152,12 @@ function VoiceInner() {
           <div className="flex items-center gap-2 mb-3">
             <Volume2 className="h-4 w-4 text-olive" />
             <h2 className="text-sm font-display font-semibold">Gesprek</h2>
+            {giuliaWorking && (
+              <span className="ml-auto flex items-center gap-1.5 text-[11px] text-olive">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Giulia voert uit…
+              </span>
+            )}
           </div>
 
           {(!messages || messages.length === 0) ? (
