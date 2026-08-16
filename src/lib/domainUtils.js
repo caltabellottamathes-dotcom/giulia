@@ -8,7 +8,7 @@ export const DOMAINS = ["focus", "life", "self"];
 export const DOMAIN_HEX = {
   focus: "hsl(var(--olive))",
   life: "hsl(var(--life-blue))",
-  self: "hsl(var(--self-burgundy))",
+  self: "hsl(var(--self-primary-soft))",
 };
 
 export const DOMAIN_LABEL = { focus: "FOCUS", life: "LIFE", self: "SELF" };

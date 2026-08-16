@@ -1,21 +1,21 @@
 // SELF editorial photos + palette + mock demo data.
-// Hoofdkleur: #301728 (donker plum). 2e kleur: #d8dab3 (sage). Geen geel.
+// Hoofdkleur: #5c7584 (blauw — was LIFE blauw, na kleur-swap). 2e kleur: #d8dab3 (sage). Geen geel.
 // Fotos zijn losse kaarten met 4 ronde hoeken, zonder overlay.
 
 export const SELF_PHOTO = {
-  dailyState: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/66a7f3110_An_emotionally_ambiguous_wide_shot_2026062622311.jpeg",
-  routines: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/30a15f7eb_A_striking_surreal_editorial_photograph_202606262301.jpeg",
-  wake: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/d9f47727d_A_medium_shot_from_behind_202606262232.jpeg",
-  therapy: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/e90d53d56_An_emotionally_ambiguous_close-up_of_202606262301.jpeg",
-  journal: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/2cd956e5c_A_striking_composition_of_graphic_202606262301.jpeg",
-  development: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/b2f8d6b92_A_graphic_minimalist_photograph_exploring_2026062623011.jpeg",
-  personalTime: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/79e3eeaf0_A_graphic_minimalist_photograph_exploring_202606262301.jpeg",
-  insights: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/fdb845d44_A_deadpan_horizontal_profile_shot_202606262244.jpeg",
+  dailyState: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/f7bdee9b6_Apply_a_consistent_editorial_documentary_2026062122294.jpeg",
+  routines: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/3ff819d08_Apply_a_highly_realistic_editorial_202606212230.jpeg",
+  wake: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/76c891531_A_surreal_editorial_photograph_of_a_202606270239.jpeg",
+  therapy: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0bea9ecdf_Apply_a_consistent_editorial_documentary_202606212036.jpeg",
+  journal: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/6f93aecac_Apply_a_consistent_editorial_documentary_2026062122141.jpeg",
+  development: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/5ed99c12d_An_extreme_surrealist_editorial_photograph_202606270306.jpeg",
+  personalTime: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/28b7b375d_Deadpan_performance-art_photograph_in_an_202606270250.jpeg",
+  insights: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/42cf228fa_Extreme_close-up_macro_photograph_of_202606270247.jpeg",
 };
 
-export const PLUM = "#301728";
+export const PLUM = "#5c7584";
 export const SAGE = "#d8dab3";
-export const PLUM_FAINT = "rgba(48,23,40,0.12)";
+export const PLUM_FAINT = "rgba(92,117,132,0.12)";
 
 // ── mock demo content ──
 export const MOCK = {

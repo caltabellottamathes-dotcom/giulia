@@ -16,6 +16,7 @@ import MasonryGrid from "@/system/widgets/MasonryGrid";
 import GiuliaIntroOverlay from "@/giulia/widgets/GiuliaIntroOverlay";
 import ConciergeWidget from "@/giulia/widgets/ConciergeWidget";
 import BoardSwitcher from "@/system/components/BoardSwitcher";
+import StartupSequence from "@/system/components/StartupSequence";
 
 import { Link } from "react-router-dom";
 import { MODULES } from "@/lib/moduleRegistry";
@@ -41,6 +42,7 @@ export default function Home() {
   const [userName, setUserName] = useState("");
   const [resetKey, setResetKey] = useState(0);
   const [urgentTypes, setUrgentTypes] = useState(null);
+  const [startupDone, setStartupDone] = useState(() => sessionStorage.getItem("giulia_startup_done") === "1");
   const { toast } = useToast();
 
   const nowMode = activeBoard === "now";
@@ -59,16 +61,17 @@ export default function Home() {
 
   useEffect(() => {
     base44.auth.me().then((u) => setUserName(u?.full_name || "")).catch(() => {});
-    if (sessionStorage.getItem("giulia_boot_seen")) {
-      base44.functions.invoke("startGiulia", {}).catch(() => {});
-    }
     // Eenmalig per opstart: alle dashboards correct vullen. Daarna niet meer.
     let cancelled = false;
     ensureAllBoards().finally(() => { if (!cancelled) setReady(true); });
-    const last = Number(sessionStorage.getItem("giulia_last_refresh") || 0);
-    if (Date.now() - last > 4 * 60 * 1000) {
-      sessionStorage.setItem("giulia_last_refresh", String(Date.now()));
-      base44.functions.invoke("refreshDashboard", {}).then(() => reloadRef.current?.()).catch(() => {});
+    // De opstart-video zet startGiulia + refreshDashboard op gang. Bij een
+    // terugkerende sessie (video al geweest) houden we de throttle-refresh aan.
+    if (startupDone) {
+      const last = Number(sessionStorage.getItem("giulia_last_refresh") || 0);
+      if (Date.now() - last > 4 * 60 * 1000) {
+        sessionStorage.setItem("giulia_last_refresh", String(Date.now()));
+        base44.functions.invoke("refreshDashboard", {}).then(() => reloadRef.current?.()).catch(() => {});
+      }
     }
     return () => { cancelled = true; };
   }, []);
@@ -184,6 +187,13 @@ export default function Home() {
 
       <BoardSwitcher active={activeBoard} onSelect={selectBoard} />
 
+      {!startupDone && (
+        <StartupSequence onDone={() => {
+          sessionStorage.setItem("giulia_startup_done", "1");
+          sessionStorage.setItem("giulia_boot_seen", "1");
+          setStartupDone(true);
+        }} />
+      )}
       <GiuliaIntroOverlay />
 
       <AddWidgetPicker open={pickerOpen} onClose={() => setPickerOpen(false)} onAdd={addWidget} addedTypes={widgets.map((w) => w.widget_type)} />
