@@ -148,12 +148,9 @@ export default function Home() {
               {cells.map((c) => c.node)}
             </MasonryGrid>
           ) : (
-            <div className="glass-card rounded-[28px] p-12 flex flex-col items-center text-center max-w-md mx-auto">
-              <p className="text-lg font-display font-semibold mb-2">Dit dashboard is leeg</p>
-              <p className="text-sm text-foreground/55 mb-5">Voeg widgets toe om het te vullen.</p>
-              <button onClick={() => setPickerOpen(true)} className="inline-flex items-center gap-2 rounded-full bg-olive text-ivory px-5 py-2.5 text-sm font-semibold hover:bg-olive/90 transition">
-                <Plus className="h-4 w-4" /> Widget toevoegen
-              </button>
+            <div className="flex flex-col items-center justify-center py-24 select-none animate-fade-in">
+              <p className="text-[clamp(2rem,5vw,3.5rem)] font-display font-semibold tracking-[-0.03em] text-foreground/25 leading-none">Even helemaal niets.</p>
+              <div className="mt-6 h-px w-24 bg-foreground/15" />
             </div>
           )}
         </div>

@@ -5,7 +5,7 @@ import WidgetHeader from "@/system/widgets/WidgetHeader";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { useLearningSync } from "@/hooks/useLearningSync";
-import { stateLabel, fmtAgo } from "@/lib/selfUtils";
+import { fmtAgo } from "@/lib/selfUtils";
 import { SELF_PHOTO, PLUM, SAGE, PLUM_FAINT, MOCK } from "./selfEditorial";
 
 /** Daily State — smal & hoog (1×2). Foto boven, energiekolom + timeline eronder. */
@@ -19,7 +19,6 @@ export default function DailyStateEditorial() {
   const state = latest?.state || m.state;
   const energy = latest?.energy ?? m.energy;
   const capacity = latest?.capacity ?? m.capacity;
-  const need = latest?.needs?.[0] || m.need;
   const headline = state === "calm" ? "IN RHYTHM" : state === "charged" ? "CHARGED" : state === "overwhelmed" ? "OVERLOAD" : state === "low" ? "DEPLETED" : "STEADY";
 
   const recent = useMemo(() => {
@@ -37,8 +36,7 @@ export default function DailyStateEditorial() {
         </div>
         <div className="flex-1 flex flex-col min-h-0">
           <WidgetHeader label="Daily State" count={latest ? fmtAgo(latest.timestamp) : "07:12"} />
-          <h3 className="text-[20px] leading-[1.0] font-display font-semibold tracking-[-0.03em] mt-0.5">{headline}</h3>
-          <p className="text-[9px] uppercase tracking-[0.2em] opacity-55 mt-0.5">{stateLabel(state)}</p>
+          <h3 className="text-[20px] leading-[1.0] font-display font-semibold tracking-[-0.03em]">{headline}</h3>
 
           <div className="mt-2 flex items-stretch gap-2 flex-1 min-h-0">
             <div className="relative w-3 rounded-full overflow-hidden" style={{ background: PLUM_FAINT }}>
@@ -65,11 +63,6 @@ export default function DailyStateEditorial() {
             {recent.map((v, i) => (
               <motion.span key={i} className="flex-1 rounded-full" style={{ background: PLUM }} animate={{ height: v != null ? `${Math.max(20, v)}%` : "20%", opacity: v != null ? 0.9 : 0.18 }} transition={{ duration: 0.8, delay: i * 0.05 }} />
             ))}
-          </div>
-
-          <div className="mt-1.5 flex items-center justify-between pt-1.5 border-t" style={{ borderColor: PLUM_FAINT }}>
-            <p className="text-[8px] uppercase tracking-[0.2em] opacity-60">need · <span className="font-semibold">{need}</span></p>
-            <button onClick={(e) => { e.stopPropagation(); openModule("selfdailystate"); }} className="rounded-full px-2.5 py-0.5 text-[9px] font-semibold border hover:bg-[#301728]/10 transition" style={{ borderColor: `${PLUM}4d` }}>Open</button>
           </div>
         </div>
       </div>

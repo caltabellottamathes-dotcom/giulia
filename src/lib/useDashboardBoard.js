@@ -74,20 +74,24 @@ export function useDashboardBoard(boardId) {
       if (custom) {
         setWidgets(sessionRecords(boardId));
       } else {
+        const domain = DEFAULT_BOARDS.find((b) => b.id === boardId)?.domain || boardId;
+        const domainTypes = domainWidgetTypes(domain);
         let recs = await base44.entities.DashboardWidget.filter({ board_id: boardId }, "position").catch(() => []);
-        // eenmalige migratie: legacy records zonder board_id → giulia
-        if (!recs.length && boardId === "giulia") {
-          const all = await base44.entities.DashboardWidget.filter({}, "position").catch(() => []);
-          const orphans = (all || []).filter((r) => !r.board_id);
-          if (orphans.length) {
-            await base44.entities.DashboardWidget.bulkUpdate(orphans.map((r) => ({ id: r.id, board_id: "giulia" }))).catch(() => {});
-            recs = orphans;
+        // Vervuiling (legacy widgets van een ander domein) → eenmalig schoonmaken
+        // en aanvullen tot het volledige domein. Daarna blijven verwijderde widgets weg.
+        const wrong = (recs || []).filter((r) => !domainTypes.includes(r.widget_type));
+        if (wrong.length) {
+          await Promise.all(wrong.map((r) => base44.entities.DashboardWidget.delete(r.id).catch(() => {})));
+          recs = (recs || []).filter((r) => domainTypes.includes(r.widget_type));
+          const present = (recs || []).map((r) => r.widget_type);
+          const missing = domainTypes.filter((t) => !present.includes(t));
+          if (missing.length) {
+            const created = await base44.entities.DashboardWidget.bulkCreate(missing.map((t, i) => ({ widget_type: t, position: (recs?.length || 0) + i, visible: true, board_id: boardId }))).catch(() => []);
+            recs = [...(recs || []), ...(created || [])];
           }
-        }
-        // eerste keer: zaai alle domein-widgets
-        if (!recs.length) {
-          const types = domainWidgetTypes(boardId);
-          recs = await base44.entities.DashboardWidget.bulkCreate(types.map((t, i) => ({ widget_type: t, position: i, visible: true, board_id: boardId }))).catch(() => []);
+        } else if (!recs.length) {
+          // eerste keer: zaai alle domein-widgets
+          recs = await base44.entities.DashboardWidget.bulkCreate(domainTypes.map((t, i) => ({ widget_type: t, position: i, visible: true, board_id: boardId }))).catch(() => []);
         }
         setWidgets((recs || []).filter((r) => r.visible !== false));
       }

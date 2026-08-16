@@ -17,8 +17,6 @@ export default function PersonalDevelopmentEditorial() {
   const liveActive = (goals || []).filter((g) => g.status === "active");
   const active = liveActive.length ? liveActive : MOCK.development.goals;
   const top = useMemo(() => [...active].sort((a, b) => (b.progress || 0) - (a.progress || 0)).slice(0, 3), [active]);
-  const areas = useMemo(() => Array.from(new Set(active.map((g) => g.area).filter(Boolean))), [active]);
-  const areasOrMock = areas.length ? areas : MOCK.development.areas;
   const avg = liveActive.length ? Math.round(liveActive.reduce((s, g) => s + (g.progress || 0), 0) / liveActive.length) : MOCK.development.avg;
 
   const rings = [
@@ -37,7 +35,6 @@ export default function PersonalDevelopmentEditorial() {
         <div className="flex-1 flex flex-col min-w-0">
           <WidgetHeader label="Development" count={`${active.length} doelen`} />
           <h3 className="text-[20px] leading-[1.0] font-display font-semibold tracking-[-0.03em] mt-0.5">{active.length} DOELEN</h3>
-          <p className="text-[9px] uppercase tracking-[0.2em] opacity-55 mt-0.5">{areasOrMock.length} gebieden · {avg}% gem.</p>
 
           <div className="mt-2 flex items-center gap-3 flex-1 min-h-0">
             <div className="relative w-[96px] h-[96px] shrink-0">
@@ -57,7 +54,7 @@ export default function PersonalDevelopmentEditorial() {
               </div>
             </div>
 
-            <div className="flex-1 min-w-0 space-y-1">
+            <div className="flex-1 min-w-0 space-y-1.5">
               {top.map((g, i) => (
                 <div key={g.id || i} className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: i === 0 ? PLUM : SAGE }} />
@@ -65,14 +62,7 @@ export default function PersonalDevelopmentEditorial() {
                   <span className="text-[9px] tabular-nums opacity-65">{g.progress || 0}%</span>
                 </div>
               ))}
-              <div className="flex flex-wrap gap-1 pt-1">
-                {areasOrMock.map((a) => <span key={a} className="text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded-full" style={{ background: PLUM_FAINT }}>{a}</span>)}
-              </div>
             </div>
-          </div>
-
-          <div className="flex items-center justify-end pt-1.5 border-t" style={{ borderColor: PLUM_FAINT }}>
-            <button onClick={(e) => { e.stopPropagation(); openModule("selfdevelopment"); }} className="rounded-full px-2.5 py-0.5 text-[9px] font-semibold border hover:bg-[#301728]/10 transition" style={{ borderColor: `${PLUM}4d` }}>Open</button>
           </div>
         </div>
       </div>

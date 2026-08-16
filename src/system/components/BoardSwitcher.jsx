@@ -5,16 +5,14 @@ import { DEFAULT_BOARDS, loadCustomBoards, createCustomBoard } from "@/lib/useDa
 
 /**
  * BoardSwitcher — simpele links linksonder op Home. Wisselt het actieve
- * dashboard in-place. Vijf vaste boards + tijdelijke eigen boards + een
- * knop om een leeg dashboard toe te voegen.
+ * dashboard in-place. Vijf vaste boards + tijdelijke eigen boards (altijd
+ * "NOW") + een knop om een leeg dashboard toe te voegen.
  */
 export default function BoardSwitcher({ active, onSelect }) {
   const [custom, setCustom] = useState(loadCustomBoards());
 
   const addBoard = () => {
-    const name = window.prompt("Naam van het nieuwe dashboard", "Nieuw dashboard");
-    if (name === null) return;
-    const id = createCustomBoard(name.trim() || "Nieuw dashboard");
+    const id = createCustomBoard("NOW");
     setCustom(loadCustomBoards());
     onSelect(id);
   };

@@ -19,7 +19,6 @@ export default function RoutinesEditorial() {
   const due = liveDue.length ? liveDue : MOCK.routines;
   const done = due.filter((r) => r.status === "completed");
   const bestStreak = Math.max(0, ...(routines || []).map((r) => r.streak_count || 0), ...MOCK.routines.map((r) => r.streak_count));
-  const pct = due.length ? Math.round((done.length / due.length) * 100) : 0;
   const rows = due.slice(0, 3);
 
   return (
@@ -27,18 +26,11 @@ export default function RoutinesEditorial() {
       <div className="flex h-full gap-2.5 p-2.5" style={{ color: PLUM }}>
         <div className="flex-1 flex flex-col min-w-0">
           <WidgetHeader label="Routines" count={`${due.length} vandaag`} />
-          <div className="flex items-end gap-2 mt-0.5">
-            <h3 className="text-[20px] leading-[1.0] font-display font-semibold tracking-[-0.03em]">{done.length}/{due.length}</h3>
-            <span className="text-[9px] uppercase tracking-[0.2em] opacity-55 mb-0.5">vandaag</span>
-          </div>
+          <h3 className="text-[20px] leading-[1.0] font-display font-semibold tracking-[-0.03em] mt-0.5">{done.length}/{due.length}</h3>
 
           <div className="mt-2 flex items-end gap-2">
             <CountUp value={bestStreak} className="text-[44px] leading-[0.8] font-display font-semibold tabular-nums tracking-[-0.04em]" />
             <p className="text-[9px] uppercase tracking-[0.2em] opacity-55 mb-1">langste<br />streak</p>
-            <div className="ml-auto text-right">
-              <p className="text-[8px] uppercase tracking-[0.2em] opacity-55">voltooid</p>
-              <span className="text-[18px] font-display font-semibold tabular-nums">{pct}%</span>
-            </div>
           </div>
 
           <div className="mt-2.5 space-y-1.5 flex-1 min-h-0">
@@ -56,10 +48,6 @@ export default function RoutinesEditorial() {
                 </div>
               );
             })}
-          </div>
-
-          <div className="flex items-center justify-end pt-1.5 border-t" style={{ borderColor: PLUM_FAINT }}>
-            <button onClick={(e) => { e.stopPropagation(); openModule("selfroutines"); }} className="rounded-full px-2.5 py-0.5 text-[9px] font-semibold border hover:bg-[#301728]/10 transition" style={{ borderColor: `${PLUM}4d` }}>Open</button>
           </div>
         </div>
 

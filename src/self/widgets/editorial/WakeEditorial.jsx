@@ -19,7 +19,6 @@ export default function WakeEditorial() {
   const total = morning.length || MOCK.wake.total;
   const done = morning.filter((r) => r.status === "completed").length || MOCK.wake.done;
   const steps = Math.round((done / total) * PHASES.length);
-  const pct = Math.round((done / total) * 100);
   const headline = steps >= PHASES.length ? "KLAAR" : steps > 0 ? "ONTWAKEN" : "SLAAP";
   const lastDone = morning.find((r) => r.last_done)?.last_done ? new Date(morning.find((r) => r.last_done).last_done).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" }) : MOCK.wake.lastDone;
 
@@ -32,7 +31,6 @@ export default function WakeEditorial() {
         <div className="flex-1 flex flex-col min-h-0">
           <WidgetHeader label="Wake" count={lastDone} />
           <h3 className="text-[20px] leading-[1.0] font-display font-semibold tracking-[-0.03em] mt-0.5">{headline}</h3>
-          <p className="text-[9px] uppercase tracking-[0.2em] opacity-55 mt-0.5">{done}/{total} ochtend · {pct}%</p>
 
           <div className="mt-2.5 flex-1 flex flex-col justify-between gap-1.5 min-h-0">
             {PHASES.map((p, i) => {
@@ -47,11 +45,6 @@ export default function WakeEditorial() {
                 </div>
               );
             })}
-          </div>
-
-          <div className="flex items-center justify-between pt-1.5 border-t" style={{ borderColor: PLUM_FAINT }}>
-            <p className="text-[8px] uppercase tracking-[0.2em] opacity-60">drempel · ochtend</p>
-            <button onClick={(e) => { e.stopPropagation(); openModule("selfwake"); }} className="rounded-full px-2.5 py-0.5 text-[9px] font-semibold border hover:bg-[#301728]/10 transition" style={{ borderColor: `${PLUM}4d` }}>Open</button>
           </div>
         </div>
       </div>

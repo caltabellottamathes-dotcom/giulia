@@ -39,16 +39,13 @@ export default function SelfInsightsEditorial() {
         <div className="flex flex-col flex-1 min-h-0">
           <WidgetHeader label="Self Insights" count={`${active} actief`} />
           <h3 className="text-[20px] leading-[1.0] font-display font-semibold tracking-[-0.03em] mt-0.5">{active} INZICHTEN</h3>
-          <p className="text-[9px] uppercase tracking-[0.2em] opacity-55 mt-0.5">balans · patronen</p>
 
-          <div className="mt-2">
+          <div className="mt-3">
             <div className="relative h-3 rounded-full overflow-hidden" style={{ background: `linear-gradient(90deg, ${SAGE}, ${PLUM})` }}>
               <motion.div className="absolute top-1/2 -translate-y-1/2 h-5 w-1.5 rounded-full bg-white shadow-md" animate={{ left: `${balance}%` }} transition={{ duration: 1.2, ease: "easeOut" }} style={{ left: `${balance}%` }} />
             </div>
             <div className="flex items-center justify-between mt-1.5">
-              <span className="text-[8px] uppercase tracking-wider opacity-55">onbalans</span>
               <CountUp value={balance} className="text-[20px] font-display font-semibold tabular-nums" />
-              <span className="text-[8px] uppercase tracking-wider opacity-55">balans</span>
             </div>
           </div>
 
@@ -67,11 +64,6 @@ export default function SelfInsightsEditorial() {
 
         <div className="rounded-xl overflow-hidden h-14 shrink-0">
           <img src={SELF_PHOTO.insights} alt="" className="h-full w-full object-cover" draggable={false} />
-        </div>
-
-        <div className="flex items-center justify-between pt-1 border-t" style={{ borderColor: PLUM_FAINT }}>
-          <p className="text-[8px] uppercase tracking-[0.2em] opacity-60">observatie · patroon</p>
-          <button onClick={(e) => { e.stopPropagation(); openModule("selfinsights"); }} className="rounded-full px-2.5 py-0.5 text-[9px] font-semibold border hover:bg-[#301728]/10 transition" style={{ borderColor: `${PLUM}4d` }}>Open</button>
         </div>
       </div>
     </WidgetShell>
