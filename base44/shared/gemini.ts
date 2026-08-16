@@ -6,17 +6,16 @@
  * is injected at the root level via `system_instruction`. Supports structured
  * JSON output (response_schema) and raw tool-calling turns for the agent loop.
  *
- * Primair gemini-3.5-flash wordt gebruikt — met automatische fallback naar de
- * lite-versies bij 404/429. Fouten worden doorgeslikt naar null bij geminiDecide/Chat
+ * gemini-3.5-flash-lite primair, gemini-3.1-flash-lite als gelijkwaardige
+ * fallback bij 404/429. Fouten worden doorgeslikt naar null bij geminiDecide/Chat
  * (single-shot), maar gegooid bij geminiGenerate (agent-loop) zodat ze
  * zichtbaar zijn in de testlogs / Activity-feed.
  */
 import { secrets } from "base44:runtime";
 
-// Primair gemini-3.5-flash (meeste credits + hoogste rate-limits op alle
-// sleutels); valt alleen terug op de lite-versies als 3.5-flash op een key
-// 404/429 geeft — nooit blind een onbevestigd model-ID als enige optie.
-const MODELS = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite"];
+// gemini-3.5-flash-lite primair (meeste credits + hoogste rate-limits);
+// gemini-3.1-flash-lite als gelijkwaardige fallback bij 404/429.
+const MODELS = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite"];
 
 export const GIULIA_PERSONA =
   "You are Giulia, a Personal Operating System. You combine conversation, memory, and planning into one coherent system. " +

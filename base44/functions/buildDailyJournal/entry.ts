@@ -52,7 +52,7 @@ export default async function (req) {
     ].join("\n");
 
     const res = await geminiDecide({
-      model: "gemini-3.5-flash",
+      model: "gemini-3.5-flash-lite",
       prompt: `Je bent Giulia. Schrijf een korte, eerlijke reflectieve samenvatting van Salvo's dag (max 120 woorden, 2-3 alinea's). Droog, direct, geen performatief enthousiasme. Noem wat speelde en één observatie of open draad. Context:\n${ctx}\n\nAntwoord UITSLUITEND als JSON: {"summary": "...", "open_thread": "..."}`,
       schema: { type: "object", properties: { summary: { type: "string" }, open_thread: { type: "string" } }, required: ["summary"] },
       systemText: GIULIA_PERSONA,

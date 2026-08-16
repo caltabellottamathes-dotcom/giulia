@@ -72,7 +72,7 @@ export default async function (req) {
     let enriched = findings;
     try {
       const r = await geminiDecide({
-        model: "gemini-3.5-flash",
+        model: "gemini-3.5-flash-lite",
         prompt: `Je bent Giulia. Herverwoord elke titel + beschrijving korter, menselijker, in Salvo's stijl (droog, direct, geen performatief enthousiasme). Behoud category EXACT (Risk/Suggestion/Opportunity/Follow-up/Trend/Review/Research). Findings:\n${JSON.stringify(findings)}\n\nGeef UITSLUITEND JSON: {"items":[...]}`,
         schema: { type: "object", properties: { json: { type: "string" } }, required: ["json"] },
         systemText: GIULIA_PERSONA,

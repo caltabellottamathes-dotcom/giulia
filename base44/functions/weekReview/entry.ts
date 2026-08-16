@@ -98,7 +98,7 @@ ${weeklyDataPayload}`;
     const analysisResult = await geminiDecide({
       prompt: geminiPrompt,
       schema: responseSchema,
-      model: "gemini-3.5-flash",
+      model: "gemini-3.5-flash-lite",
       systemText: "You are the cognitive review engine for GIULIA OS. Analyze weekly productivity data and extract permanent planning rules. Output strict JSON only.",
       temperature: 0.4,
     });

@@ -184,7 +184,7 @@ async function runProjectRadar(sr, now) {
     await emitEvent(base44, { event_type: "PROJECT_FLAGGED_INACTIVE", object_type: "Project", object_id: p.id, domain: "focus", description: `Project inactive: ${p.title}`, source: "runProactivity" });
     flagged++;
     const draft = await geminiDecide({
-      model: "gemini-3.5-flash",
+      model: "gemini-3.5-flash-lite",
       prompt: `Project "${p.title}" is al ${STAGNANT_DAYS} dagen inactief. Schrijf een korte, professionele Nederlandse follow-up e-mail (max 120 woorden) aan de betrokken contactpersoon om te vragen wat de volgende stap is. Geef alleen de e-mailbody terug in JSON {body: string}.`,
       schema: { type: "object", properties: { body: { type: "string" } }, required: ["body"] },
       systemText: GIULIA_PERSONA,
