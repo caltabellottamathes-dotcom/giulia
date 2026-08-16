@@ -13,7 +13,6 @@ import { Plus, Sparkles, RefreshCw } from "lucide-react";
 import AddWidgetPicker from "@/system/panels/AddWidgetPicker";
 import WidgetCell from "@/system/widgets/WidgetCell";
 import MasonryGrid from "@/system/widgets/MasonryGrid";
-import GiuliaIntroOverlay from "@/giulia/widgets/GiuliaIntroOverlay";
 import ConciergeWidget from "@/giulia/widgets/ConciergeWidget";
 import BoardSwitcher from "@/system/components/BoardSwitcher";
 import StartupSequence from "@/system/components/StartupSequence";
@@ -194,8 +193,6 @@ export default function Home() {
           setStartupDone(true);
         }} />
       )}
-      <GiuliaIntroOverlay />
-
       <AddWidgetPicker open={pickerOpen} onClose={() => setPickerOpen(false)} onAdd={addWidget} addedTypes={widgets.map((w) => w.widget_type)} />
     </div>
   );
