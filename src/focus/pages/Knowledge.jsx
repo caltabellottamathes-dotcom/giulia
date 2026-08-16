@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import GlassPanel from "@/system/components/glass/GlassPanel";
 import GlassButton from "@/system/components/glass/GlassButton";
@@ -7,10 +7,11 @@ import PanelForm from "@/system/components/glass/PanelForm";
 import PageHero from "@/system/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
-import { Search, BookOpen, Plus, Pencil, Trash2 } from "lucide-react";
+import { useMediaViewer } from "@/lib/MediaViewerContext";
+import { Search, BookOpen, Plus, Pencil, Trash2, Upload, Image as ImageIcon, Film, Music, FileText } from "lucide-react";
 
 const categories = ["Research", "Notes", "Insights", "References", "Decisions", "Conversations", "Saved"];
-const empty = { title: "", content: "", category: "Notes", source: "", project_id: "" };
+const empty = { title: "", content: "", category: "Notes", source: "", project_id: "", media_url: "", media_type: "" };
 
 function Fields({ d, set, projects }) {
   return (
@@ -42,7 +43,43 @@ function Fields({ d, set, projects }) {
         <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Inhoud</label>
         <textarea value={d.content || ""} onChange={(e) => set({ ...d, content: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none min-h-[120px] resize-none" />
       </div>
+      <MediaField d={d} set={set} />
     </>
+  );
+}
+
+function MediaField({ d, set }) {
+  const fileRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const onFile = async (e) => {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f) return;
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file: f });
+      const ext = (f.name.split(".").pop() || "").toLowerCase();
+      const type = ["png","jpg","jpeg","gif","webp"].includes(ext) ? "image" : ["mp4","mov","webm","mkv"].includes(ext) ? "video" : ["mp3","wav","m4a","flac","aac","ogg"].includes(ext) ? "audio" : "doc";
+      set({ ...d, media_url: file_url, media_type: type });
+    } catch { /* ignore */ } finally { setUploading(false); }
+  };
+  const Icon = d.media_type === "image" ? ImageIcon : d.media_type === "video" ? Film : d.media_type === "audio" ? Music : FileText;
+  return (
+    <div>
+      <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Media (foto · video · document)</label>
+      <div className="flex items-center gap-2 mt-1.5">
+        <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} className="inline-flex items-center gap-1.5 glass-1 rounded-xl px-3 py-2 text-xs hover:bg-olive/10 transition disabled:opacity-50">
+          <Upload className="h-3.5 w-3.5" /> {uploading ? "Uploaden…" : "Upload bestand"}
+        </button>
+        <input ref={fileRef} type="file" className="hidden" onChange={onFile} />
+        {d.media_url && (
+          <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground truncate flex-1">
+            <Icon className="h-3.5 w-3.5" /> {d.media_url.split("/").pop()}
+          </span>
+        )}
+        {d.media_url && <button type="button" onClick={() => set({ ...d, media_url: "", media_type: "" })} className="text-xs text-destructive hover:underline">verwijder</button>}
+      </div>
+    </div>
   );
 }
 
@@ -56,6 +93,7 @@ export default function Knowledge() {
 
   const { data: items, loading, reload } = useEntityList("Knowledge");
   const { data: projects } = useEntityList("Project");
+  const { openMedia } = useMediaViewer();
   const projTitle = (id) => projects.find((p) => p.id === id)?.title;
 
   const filtered = items.filter((k) => {
@@ -69,7 +107,7 @@ export default function Knowledge() {
     await base44.entities.Knowledge.create({ ...draft, title: draft.title.trim(), project_id: draft.project_id || undefined });
     setDraft(empty); setShowNew(false); reload();
   };
-  const startEdit = (k) => { setEditItem(k); setEditDraft({ title: k.title, content: k.content, category: k.category || "Notes", source: k.source || "", project_id: k.project_id || "" }); };
+  const startEdit = (k) => { setEditItem(k); setEditDraft({ title: k.title, content: k.content, category: k.category || "Notes", source: k.source || "", project_id: k.project_id || "", media_url: k.media_url || "", media_type: k.media_type || "" }); };
   const saveEdit = async () => {
     if (!editItem) return;
     await base44.entities.Knowledge.update(editItem.id, { ...editDraft, project_id: editDraft.project_id || undefined });
@@ -113,6 +151,16 @@ export default function Knowledge() {
               <button onClick={() => startEdit(item)} className="h-7 w-7 rounded-full glass-1 flex items-center justify-center text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition" aria-label="Bewerk"><Pencil className="h-3.5 w-3.5" /></button>
               <button onClick={() => del(item)} className="h-7 w-7 rounded-full glass-1 flex items-center justify-center text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition" aria-label="Verwijder"><Trash2 className="h-3.5 w-3.5" /></button>
             </div>
+            {item.media_url && (
+              <button
+                onClick={(e) => { e.stopPropagation(); openMedia({ name: item.title, url: item.media_url, type: item.media_type }); }}
+                className="block w-full mb-3 rounded-xl overflow-hidden bg-black/10 h-28 flex items-center justify-center"
+              >
+                {item.media_type === "image"
+                  ? <img src={item.media_url} alt={item.title} className="w-full h-full object-cover" />
+                  : <span className="text-muted-foreground/70">{item.media_type === "video" ? <Film className="h-7 w-7" /> : item.media_type === "audio" ? <Music className="h-7 w-7" /> : <FileText className="h-7 w-7" />}</span>}
+              </button>
+            )}
             <div className="flex items-start justify-between mb-3">
               <StatusBadge variant="muted">{item.category}</StatusBadge>
             </div>

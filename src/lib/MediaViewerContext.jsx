@@ -20,7 +20,14 @@ export function kindOfFile(file) {
   if (IMAGE_EXT.includes(ext)) return "image";
   const t = (file?.type || "").toLowerCase();
   if (t === "image") return "image";
+  if (t === "video") return "video";
+  if (t === "audio") return "music";
   return "doc";
+}
+
+export function isDriveUrl(url) {
+  if (!url) return false;
+  return /drive\.google\.com|googleusercontent\.com/.test(url);
 }
 
 const MODULE_FOR_KIND = { image: "imageviewer", video: "videoplayer", music: "musicplayer", doc: "docviewer" };

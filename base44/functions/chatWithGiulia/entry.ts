@@ -49,15 +49,21 @@ export default async function (req) {
     const message = body.message || body.content || "";
     const source = body.source || "chat";
     const persist = body.persist !== false;
+    const file_urls = Array.isArray(body.file_urls) ? body.file_urls : [];
+    const attachments = Array.isArray(body.attachments) ? body.attachments : [];
+    const fullMessage = file_urls.length
+      ? `${message}\n\n[Bijlage(s): ${file_urls.map((u, i) => `${attachments[i]?.name || "bestand"} — ${u}`).join(" | ")}]`
+      : message;
 
-    if (!message) return Response.json({ error: "No message provided" }, { status: 400 });
+    if (!message && !file_urls.length) return Response.json({ error: "No message provided" }, { status: 400 });
 
     const sr = base44.asServiceRole;
 
     // Save User Message
     if (persist && source === "chat") {
       await sr.entities.Message.create({
-        role: "user", content: message, channel: "in-app", status: "sent"
+        role: "user", content: message, channel: "in-app", status: "sent",
+        attachments: attachments.map((a) => ({ url: a.url, name: a.name, type: a.type })),
       }).catch(() => null);
     }
 
@@ -199,7 +205,15 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
         parts: [{ text: String(m.content).slice(0, 1200) }],
       }));
       if (!contents.length) {
-        contents = [{ role: "user", parts: [{ text: message.slice(0, 3000) }] }];
+        contents = [{ role: "user", parts: [{ text: fullMessage.slice(0, 3000) }] }];
+      } else if (file_urls.length) {
+        const note = `\n\n[Bijlage(s): ${file_urls.map((u, i) => `${attachments[i]?.name || "bestand"} — ${u}`).join(" | ")}]`;
+        const last = contents[contents.length - 1];
+        if (last && last.role === "user" && last.parts && last.parts[0]) {
+          last.parts[0].text = `${String(last.parts[0].text).slice(0, 2800)}${note}`;
+        } else {
+          contents.push({ role: "user", parts: [{ text: note.slice(0, 3000) }] });
+        }
       }
     } else {
       contents = [{ role: "user", parts: [{ text: `Inkomend signaal (bron: ${source}):\n"""${message.slice(0, 3000)}"""` }] }];

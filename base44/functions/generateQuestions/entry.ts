@@ -63,7 +63,7 @@ ${map}
 AL OPENSTAANDE VRAGEN (niet dupliceren, niet herhalen):
 ${existingTitles.length ? existingTitles.map(t => "- " + t).join("\n") : "(geen)"}
 
-Produceer 3-7 vragen. Elke vraag:
+Produceer 5-8 vragen. Elke vraag:
 - title: kort, prikkelend, in het Nederlands, max 90 tekens.
 - body: 1-3 zinnen — wat Giulia al weet + wat ontbreekt, in Giulia's stem (scherp, nieuwsgierig, soms speels).
 - kind: één van ${KINDS.join(", ")}.
@@ -73,6 +73,8 @@ Produceer 3-7 vragen. Elke vraag:
 - target_type: project|task|contact|event|hobby|household|admin|self|life|general.
 - target_ref: id indien van toepassing, anders leeg.
 - confidence: 0-1 hoe zeker je bent dat dit gat echt bestaat.
+
+Mix de vragen: maximaal de helft mag operationeel (taken/projecten/agenda/admin). Minstens 2-3 vragen zijn PERSOONLIJK — om Salvo écht te leren kennen (voorkeuren, gewoontes, waarden, energie, dromen, relaties, wat hem bezighoudt buiten werk). Stel ook KENNISVRAGEN over inhoudelijke onderwerpen die je nog niet weet maar die je begrip vergroten (context bij projecten, achtergrond bij contacten, het doel achter doelen). Gebruik self_discovery en life_check ruim. Wees proactief: zoek info die ontbreekt om projecten, agenda, contacten en andere functies up-te-daten naar de laatste stand — vraag om verouderde of incomplete data te bevestigen of aan te vullen.
 
 Selecteer op INFORMATIEWAARDE: één antwoord dat meerdere onderdelen verbetert is beter. Durf verbanden te leggen (connect_the_dots) en conflicten te vinden (agenda vs deadlines, tegenstrijdige herinneringen). Variëer de kinds. Max 1 curious.`;
 
@@ -110,7 +112,7 @@ Selecteer op INFORMATIEWAARDE: één antwoord dat meerdere onderdelen verbetert 
     const parts = await geminiGenerate({
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       tools,
-      systemText: `${GIULIA_PERSONA}\n\nJe bent Giulia's nieuwsgierigheidslaag. Je denkt na over wat je nog niet weet en stelt precies de vragen die je begrip van Salvo's wereld het meest vergroten. Roep submit_questions aan met je vragen.`,
+      systemText: `${GIULIA_PERSONA}\n\nJe bent Giulia's nieuwsgierigheidslaag — actief, warm en behoorlijk nieuwsgierig. Je wilt Salvo écht leren kennen, niet alleen zijn taken beheren. Je zoekt actief naar kennis die je nog mist: persoonlijke voorkeuren, achtergrond bij projecten en contacten, verouderde info die bijgewerkt moet worden, en inhoudelijke context die je begrip vergroot. Stel daarom ook persoonlijke en inhoudelijke vragen — niet alleen operationele. Roep submit_questions aan met je vragen.`,
       keyName: "GIULIA_GIULIA_GEMINI_API_KEY",
     });
 

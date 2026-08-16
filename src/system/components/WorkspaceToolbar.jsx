@@ -1,19 +1,76 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { usePanel } from "@/lib/PanelContext";
 import { useContextCapture } from "@/lib/ContextCaptureContext";
 import { base44 } from "@/api/base44Client";
 import { cn } from "@/lib/utils";
+import { useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Plus, Phone, MessageSquare, BrainCircuit, X, Send, Loader2 } from "lucide-react";
 import QuickLauncher from "@/system/components/glass/QuickLauncher";
+import { WIDGETS } from "@/lib/widgetRegistry";
 import { DEFAULT_BOARDS, loadCustomBoards, createCustomBoard, getActiveBoard, setActiveBoard } from "@/lib/useDashboardBoard";
 
 const actionBtn = "h-9 w-9 rounded-full flex items-center justify-center text-ivory/80 hover:bg-ivory/15 hover:text-ivory transition-colors shrink-0";
 
+/* ── Active-section → color ─────────────────────────────────────────────
+   FOCUS → groen (olive) · SELF & LIFE → lichtblauw (ridge) ·
+   GIULIA & SYSTEEM → #d8dab3. */
+const DOMAIN_COLOR = {
+  focus: "hsl(var(--olive))",
+  self: "hsl(var(--ridge))",
+  life: "hsl(var(--ridge))",
+  giulia: "#d8dab3",
+  system: "#d8dab3",
+};
+
+const ROUTE_DOMAIN = [
+  [/^\/self/, "self"], [/^\/wake$/, "self"],
+  [/^\/life/, "life"],
+  [/^\/(agenda|projects|tasks|email|whatsapp|documents|people|planning|timetracker)/, "focus"],
+  [/^\/knowledge/, "system"],
+  [/^\/(chat|voice|approvals|insights|updates|briefing|wants-to-know|activity|memory|agents)/, "giulia"],
+  [/^\/(search|integrations|settings|profile)/, "system"],
+];
+const MODULE_DOMAIN_FALLBACK = { chat: "giulia", voice: "giulia", settings: "system", profile: "system", integrations: "system" };
+
+function useActiveSection(board) {
+  const { activeModule } = usePanel();
+  const loc = useLocation();
+  if (activeModule) {
+    const d = WIDGETS[activeModule]?.domain || MODULE_DOMAIN_FALLBACK[activeModule];
+    if (d) return d;
+  }
+  if (loc.pathname === "/") {
+    const b = (board || "").toLowerCase();
+    if (b === "focus") return "focus";
+    if (b === "self") return "self";
+    if (b === "life") return "life";
+    if (b === "system") return "system";
+    return "giulia";
+  }
+  for (const [re, d] of ROUTE_DOMAIN) if (re.test(loc.pathname)) return d;
+  return "giulia";
+}
+
+function LiveLine({ color }) {
+  return (
+    <div className="relative h-full w-full overflow-hidden" style={{ background: color, opacity: 0.5 }}>
+      <motion.span
+        className="absolute top-0 bottom-0 w-1/4 rounded-full"
+        style={{ background: color, filter: "blur(1px)", boxShadow: `0 0 10px ${color}` }}
+        animate={{ x: ["-120%", "520%"] }}
+        transition={{ duration: 3.4, repeat: Infinity, ease: "linear" }}
+      />
+    </div>
+  );
+}
+
 /**
  * WorkspaceToolbar — één volledige glazen werkbalk onderaan over de volle
- * breedte. Links de dashboard-tabs (NOW / GIULIA / FOCUS / LIFE / SELF /
- * SYSTEM), midden de "Vraag Giulia anything"-invoer, rechts de actieknoppen
- * (context, snelstart, bellen, chat). Computer-achtige, verfijnde taakbalk.
+ * breedte. Levende kleurlijn bovenin (kleur = actieve OS-laag), tabs links,
+ * Giulia-invoer rechts. Verdwijnt naar beneden bij inactiviteit; bij hover
+ * onderaan verschijnt hij weer. Inactief blijft de levende lijn + een bloom
+ * zichtbaar als indicator van het actieve onderdeel.
  */
 export default function WorkspaceToolbar() {
   const { openModule, openChat, setPendingMessage } = usePanel();
@@ -24,6 +81,22 @@ export default function WorkspaceToolbar() {
   const [custom, setCustom] = useState(loadCustomBoards());
   const [note, setNote] = useState("");
   const [savingCtx, setSavingCtx] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const hideTimer = useRef(null);
+
+  const domain = useActiveSection(board);
+  const color = DOMAIN_COLOR[domain] || DOMAIN_COLOR.giulia;
+
+  const reveal = () => {
+    setHidden(false);
+    clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(() => setHidden(true), 5000);
+  };
+  const scheduleHide = () => {
+    clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(() => setHidden(true), 1800);
+  };
+  useEffect(() => { reveal(); return () => clearTimeout(hideTimer.current); }, []);
 
   useEffect(() => { if (captured) setNote(""); }, [captured]);
   useEffect(() => {
@@ -35,6 +108,7 @@ export default function WorkspaceToolbar() {
   const selectBoard = (id) => {
     setActiveBoard(id);
     setBoard(id);
+    reveal();
     window.dispatchEvent(new CustomEvent("giulia:board-change", { detail: id }));
   };
   const addBoard = () => {
@@ -54,9 +128,10 @@ export default function WorkspaceToolbar() {
   };
 
   const submit = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     const text = query.trim();
     if (!text) return;
+    reveal();
     setQuery("");
     setPendingMessage(text);
     openChat();
@@ -66,34 +141,72 @@ export default function WorkspaceToolbar() {
 
   return (
     <>
-      <div data-no-capture className="fixed bottom-0 inset-x-0 z-30 pointer-events-none">
-        <div className="mx-auto max-w-[1700px] px-3 lg:px-6 pb-3 pointer-events-auto">
-          <div className="relative w-full flex items-center gap-2 lg:gap-3 px-3 lg:px-5 h-14 rounded-[20px] glass-4 border border-white/18 shadow-[0_28px_64px_-26px_rgba(0,0,0,0.5),inset_0_1px_0_0_rgba(255,255,255,0.16)]">
-            <span className="pointer-events-none absolute inset-x-0 top-0 h-[2px] rounded-t-[20px]" style={{ background: "linear-gradient(90deg, transparent, hsl(var(--sand)), transparent)" }} />
+      {/* bottom hover-reveal zone */}
+      <div className="fixed bottom-0 inset-x-0 h-12 z-20" onMouseEnter={reveal} />
 
-            {/* Dashboard tabs */}
-            <div className="flex items-center gap-1 overflow-x-auto shrink-0 max-w-[42%] lg:max-w-[50%] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {all.map((b) => (
-                <button key={b.id} onClick={() => selectBoard(b.id)} className={cn("rounded-full px-2.5 lg:px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] whitespace-nowrap transition", board === b.id ? "bg-ivory text-charcoal" : "text-ivory/65 hover:text-ivory hover:bg-ivory/10")}>{b.label}</button>
-              ))}
-              <button onClick={addBoard} title="Dashboard toevoegen" className="shrink-0 h-7 w-7 rounded-full flex items-center justify-center text-ivory/60 hover:text-ivory hover:bg-ivory/10 transition"><Plus className="h-3.5 w-3.5" /></button>
+      {/* persistent live line + bloom (inactive indicator) */}
+      {hidden && (
+        <div className="fixed bottom-0 inset-x-0 z-30 pointer-events-none">
+          <div className="relative h-[2px] w-full">
+            <LiveLine color={color} />
+            <span className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 h-2.5 w-24 rounded-full blur-md" style={{ background: color, opacity: 0.6 }} />
+          </div>
+        </div>
+      )}
+
+      {/* the bar */}
+      <div
+        className={cn(
+          "fixed bottom-0 inset-x-0 z-30 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+          hidden ? "translate-y-[135%]" : "translate-y-0"
+        )}
+        onMouseEnter={reveal}
+        onMouseLeave={scheduleHide}
+      >
+        <div className="mx-auto max-w-[1700px] px-3 lg:px-6 pb-3">
+          <div className="relative w-full flex items-center gap-2 lg:gap-3 px-3 lg:px-5 h-14 rounded-[20px] glass-4 border border-white/18 shadow-[0_28px_64px_-26px_rgba(0,0,0,0.5),inset_0_1px_0_0_rgba(255,255,255,0.16)]">
+            {/* top live line — animated, active color */}
+            <span className="pointer-events-none absolute inset-x-0 top-0 h-[2px] rounded-t-[20px] overflow-hidden">
+              <LiveLine color={color} />
+            </span>
+
+            {/* Dashboard tabs (left) — elegant, no pill */}
+            <div className="flex items-center gap-1 overflow-x-auto shrink-0 max-w-[44%] lg:max-w-[52%] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {all.map((b) => {
+                const on = board === b.id;
+                return (
+                  <button
+                    key={b.id}
+                    onClick={() => selectBoard(b.id)}
+                    className={cn(
+                      "relative px-2.5 lg:px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] whitespace-nowrap transition-colors",
+                      on ? "text-ivory" : "text-ivory/45 hover:text-ivory/80"
+                    )}
+                  >
+                    {b.label}
+                    {on && <span className="absolute -bottom-0.5 left-2.5 right-2.5 h-px rounded-full" style={{ background: color }} />}
+                  </button>
+                );
+              })}
+              <button onClick={addBoard} title="Dashboard toevoegen" className="shrink-0 h-7 w-7 rounded-full flex items-center justify-center text-ivory/50 hover:text-ivory hover:bg-ivory/10 transition"><Plus className="h-3.5 w-3.5" /></button>
             </div>
 
-            <span className="hidden lg:block h-6 w-px bg-ivory/15 shrink-0" />
+            {/* spacer pushes the input to the far right */}
+            <div className="flex-1" />
 
-            {/* Giulia input */}
-            <form onSubmit={submit} className="flex-1 min-w-0 flex items-center gap-2.5">
+            {/* Giulia input (right) */}
+            <form onSubmit={submit} className="hidden sm:flex items-center gap-2.5 w-[40%] lg:w-[32%]">
               <span className="h-1.5 w-1.5 rounded-full bg-olive animate-pulse-soft shrink-0" />
               <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Vraag Giulia anything…" className="flex-1 min-w-0 bg-transparent text-sm text-ivory placeholder:text-ivory/45 focus:outline-none" />
             </form>
 
             <span className="hidden lg:block h-6 w-px bg-ivory/15 shrink-0" />
 
-            {/* Actions */}
-            <button onClick={active ? stop : start} aria-label="Context toevoegen" className={cn(actionBtn, active && "text-olive")}><BrainCircuit className="h-5 w-5" /></button>
-            <button onClick={() => setLauncherOpen(true)} aria-label="Snelle acties" className={actionBtn}><Plus className="h-5 w-5" /></button>
-            <button onClick={() => openModule("voice")} aria-label="Bel Giulia" className={actionBtn}><Phone className="h-5 w-5" /></button>
-            <button onClick={openChat} aria-label="Chat met Giulia" className={actionBtn}><MessageSquare className="h-5 w-5" /></button>
+            {/* Actions (right) */}
+            <button onClick={() => { reveal(); active ? stop() : start(); }} aria-label="Context toevoegen" className={cn(actionBtn, active && "text-olive")}><BrainCircuit className="h-5 w-5" /></button>
+            <button onClick={() => { reveal(); setLauncherOpen(true); }} aria-label="Snelle acties" className={actionBtn}><Plus className="h-5 w-5" /></button>
+            <button onClick={() => { reveal(); openModule("voice"); }} aria-label="Bel Giulia" className={actionBtn}><Phone className="h-5 w-5" /></button>
+            <button onClick={() => { reveal(); openChat(); }} aria-label="Chat met Giulia" className={actionBtn}><MessageSquare className="h-5 w-5" /></button>
           </div>
         </div>
       </div>

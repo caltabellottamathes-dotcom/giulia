@@ -31,6 +31,21 @@
     "project_id": {
       "type": "string",
       "title": "Project ID"
+    },
+    "media_url": {
+      "type": "string",
+      "format": "uri",
+      "title": "Media URL"
+    },
+    "media_type": {
+      "type": "string",
+      "enum": [
+        "image",
+        "video",
+        "audio",
+        "doc"
+      ],
+      "title": "Media Type"
     }
   },
   "required": [

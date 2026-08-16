@@ -1,9 +1,10 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePanel } from "@/lib/PanelContext";
-import { X, ArrowUp, Loader2, Phone, Sparkles } from "lucide-react";
+import { X, ArrowUp, Loader2, Phone, Sparkles, Paperclip, Image as ImageIcon, Film, Music, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ChatMarkdown from "@/system/components/glass/ChatMarkdown";
+import { useMediaViewer } from "@/lib/MediaViewerContext";
 import ChatVoiceCall from "@/giulia/panels/ChatVoiceCall";
 
 /**
@@ -30,6 +31,9 @@ export default function ChatWindow() {
   const [callActive, setCallActive] = useState(false);
   const [superagent, setSuperagent] = useState(false);
   const scrollRef = useRef(null);
+  const fileRef = useRef(null);
+  const [attachments, setAttachments] = useState([]);
+  const { openMedia } = useMediaViewer();
 
   useEffect(() => {
     if (chatOpen) {
@@ -72,13 +76,15 @@ export default function ChatWindow() {
 
   const send = async (text) => {
     const content = (text ?? input).trim();
-    if (!content || thinking) return;
+    if ((!content && attachments.length === 0) || thinking) return;
+    const atts = attachments;
     setInput("");
-    setMessages((prev) => [...prev, { id: `u${Date.now()}`, role: "user", content }]);
+    setAttachments([]);
+    setMessages((prev) => [...prev, { id: `u${Date.now()}`, role: "user", content, attachments: atts }]);
     setThinking(true);
     scrollToBottom();
     try {
-      await base44.functions.invoke("chatWithGiulia", { message: content });
+      await base44.functions.invoke("chatWithGiulia", { message: content, file_urls: atts.map((a) => a.url), attachments: atts });
       await load();
     } catch (e) {
       setMessages((prev) => [...prev, { id: `e${Date.now()}`, role: "giulia", content: "Er ging iets mis bij het bereiken van Giulia. Probeer het opnieuw." }]);
@@ -97,6 +103,22 @@ export default function ChatWindow() {
       send(msg);
     }
   }, [chatOpen, pendingMessage, setPendingMessage]);
+
+  const onPickFile = async (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = "";
+    if (!files.length) return;
+    const uploaded = [];
+    for (const f of files) {
+      try {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: f });
+        const ext = (f.name.split(".").pop() || "").toLowerCase();
+        const type = ["png","jpg","jpeg","gif","webp"].includes(ext) ? "image" : ["mp4","mov","webm","mkv"].includes(ext) ? "video" : ["mp3","wav","m4a","flac","aac","ogg"].includes(ext) ? "audio" : "doc";
+        uploaded.push({ url: file_url, name: f.name, type });
+      } catch { /* ignore */ }
+    }
+    if (uploaded.length) setAttachments((prev) => [...prev, ...uploaded]);
+  };
 
   if (!chatOpen) return null;
 
@@ -190,20 +212,41 @@ export default function ChatWindow() {
             </div>
           )}
 
-          {/* Input — spacious */}
+          {/* Input — spacious, multi-line */}
           <div className="shrink-0 px-7 pb-7 pt-4">
-            <div className="flex items-center gap-3">
-              <input
+            {attachments.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {attachments.map((a, i) => (
+                  <div key={i} className="flex items-center gap-2 rounded-full bg-ivory/10 border border-ivory/15 pl-2.5 pr-1.5 py-1">
+                    <span className="text-ivory/70">{a.type === "image" ? <ImageIcon className="h-3.5 w-3.5" /> : a.type === "video" ? <Film className="h-3.5 w-3.5" /> : a.type === "audio" ? <Music className="h-3.5 w-3.5" /> : <FileText className="h-3.5 w-3.5" />}</span>
+                    <span className="text-[11px] text-ivory/80 max-w-[140px] truncate">{a.name}</span>
+                    <button onClick={() => setAttachments((prev) => prev.filter((_, j) => j !== i))} className="text-ivory/50 hover:text-ivory"><X className="h-3 w-3" /></button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex items-end gap-3">
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="h-12 w-12 shrink-0 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory hover:bg-ivory/15 transition-colors"
+                aria-label="Bijlage toevoegen"
+              >
+                <Paperclip className="h-4 w-4" />
+              </button>
+              <input ref={fileRef} type="file" multiple className="hidden" onChange={onPickFile} />
+              <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") send(); }}
-                placeholder="Vraag Giulia anything…"
-                className="flex-1 chat-bubble px-5 py-3.5 text-sm text-ivory placeholder:text-ivory/40 focus:outline-none"
+                onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); send(); } }}
+                placeholder="Vraag Giulia anything…  (Enter = nieuwe regel · ⌘/Ctrl+Enter = verstuur)"
+                rows={1}
+                className="flex-1 chat-bubble px-5 py-3.5 text-sm text-ivory placeholder:text-ivory/40 focus:outline-none resize-none max-h-40"
+                style={{ minHeight: "48px" }}
               />
               <button
                 onClick={() => send()}
-                disabled={!input.trim() || thinking}
-                className="h-12 w-12 rounded-full bg-foreground text-background flex items-center justify-center hover:scale-105 transition-transform disabled:opacity-40 disabled:hover:scale-100"
+                disabled={(!input.trim() && attachments.length === 0) || thinking}
+                className="h-12 w-12 shrink-0 rounded-full bg-foreground text-background flex items-center justify-center hover:scale-105 transition-transform disabled:opacity-40 disabled:hover:scale-100"
                 aria-label="Verstuur"
               >
                 <ArrowUp className="h-4 w-4" />
@@ -218,6 +261,14 @@ export default function ChatWindow() {
 
 function MessageBubble({ message }) {
   const isUser = message.role === "user";
+  const { openMedia } = useMediaViewer();
+  const atts = message.attachments || [];
+  const renderAtt = (a, i) => (
+    <button key={i} onClick={() => openMedia({ name: a.name, url: a.url, type: a.type })} className="mt-2 flex items-center gap-2 rounded-lg bg-black/20 border border-white/10 px-2.5 py-1.5 text-left max-w-full">
+      <span className="text-ivory/70 shrink-0">{a.type === "image" ? <ImageIcon className="h-3.5 w-3.5" /> : a.type === "video" ? <Film className="h-3.5 w-3.5" /> : a.type === "audio" ? <Music className="h-3.5 w-3.5" /> : <FileText className="h-3.5 w-3.5" />}</span>
+      <span className="text-[11px] text-ivory/85 truncate">{a.name}</span>
+    </button>
+  );
   if (isUser) {
     return (
       <div className="flex justify-end">
@@ -226,6 +277,7 @@ function MessageBubble({ message }) {
           style={{ background: "rgba(45, 45, 35, 0.92)" }}
         >
           {message.content}
+          {atts.map(renderAtt)}
         </div>
       </div>
     );
@@ -234,6 +286,7 @@ function MessageBubble({ message }) {
     <div className="flex justify-start">
       <div className="max-w-[85%] chat-bubble px-[18px] py-3 text-sm text-ivory leading-relaxed">
         <ChatMarkdown>{message.content}</ChatMarkdown>
+        {atts.map(renderAtt)}
       </div>
     </div>
   );
