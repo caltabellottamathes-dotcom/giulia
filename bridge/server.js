@@ -135,5 +135,32 @@ app.post('/send', auth, async (req, res) => {
   }
 });
 
+// ── ElevenLabs custom-LLM pass-through ───────────────────────────────────
+// ElevenLabs plakt /chat/completions achter de custom_llm.url; Base44-functies
+// serveren dat sub-pad niet (strikt /functions/<name>). Deze route vangt het op
+// en stuurt de aanvraag 1:1 door naar de Base44 elevenLlmProxy-functie (die de
+// Gemini key-fallback + AgentNavigation-workaround doet) en geeft de SSE terug.
+// Auth: ElevenLabs stuurt `Bearer <GIULIA_API_KEY>`; we sturen die header
+// ongefilterd door — de Base44-functie controleert hem tegen zijn eigen
+// GIULIA_API_KEY env-var. Geen BRIDGE_TOKEN nodig op deze route.
+app.post('/chat/completions', async (req, res) => {
+  try {
+    const upstream = process.env.ELEVEN_PROXY_TARGET || 'https://giulia-os-flow.base44.app/functions/elevenLlmProxy';
+    const authz = req.headers['authorization'] || '';
+    const r = await fetch(upstream, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: authz },
+      body: JSON.stringify(req.body || {}),
+    });
+    res.status(r.status);
+    res.set('Content-Type', r.headers.get('content-type') || 'text/event-stream');
+    res.set('Cache-Control', 'no-cache');
+    res.set('Connection', 'keep-alive');
+    res.send(await r.text());
+  } catch (e) {
+    res.status(502).json({ error: 'proxy relay failed', detail: e.message });
+  }
+});
+
 const port = process.env.PORT || 8080;
 app.listen(port, () => console.log('giulia-email-bridge listening on ' + port));
