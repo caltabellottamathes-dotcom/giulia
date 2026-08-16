@@ -147,10 +147,15 @@ app.post('/chat/completions', async (req, res) => {
   try {
     const upstream = process.env.ELEVEN_PROXY_TARGET || 'https://giulia-os-flow.base44.app/functions/elevenLlmProxy';
     const authz = req.headers['authorization'] || '';
+    // ElevenLabs stuurt bij een custom LLM (chat_completions) niet altijd een
+    // `model`-veld mee, maar het OpenAI-compatibele Gemini-endpoint vereist dat.
+    // Injecteer de default als hij ontbreekt — same model als de rest van de app.
+    const body = req.body || {};
+    if (!body.model) body.model = 'gemini-3.5-flash-lite';
     const r = await fetch(upstream, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: authz },
-      body: JSON.stringify(req.body || {}),
+      body: JSON.stringify(body),
     });
     res.status(r.status);
     res.set('Content-Type', r.headers.get('content-type') || 'text/event-stream');
