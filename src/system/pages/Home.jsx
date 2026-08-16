@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { usePanel } from "@/lib/PanelContext";
 import { WIDGETS } from "@/lib/widgetRegistry";
 import { MODULE_FUNCTIONS } from "@/lib/moduleFunctions";
-import { useDashboardBoard, getActiveBoard, setActiveBoard } from "@/lib/useDashboardBoard";
+import { useDashboardBoard, ensureAllBoards, getActiveBoard, setActiveBoard } from "@/lib/useDashboardBoard";
 import { IMAGES } from "@/lib/images";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
-import { Plus, Sparkles, RotateCcw } from "lucide-react";
+import { Plus, Sparkles, RefreshCw } from "lucide-react";
 import AddWidgetPicker from "@/system/panels/AddWidgetPicker";
 import WidgetCell from "@/system/widgets/WidgetCell";
 import MasonryGrid from "@/system/widgets/MasonryGrid";
@@ -30,7 +30,11 @@ export default function Home() {
   const { activeModule, closeModule } = usePanel();
   const panelOpen = !!activeModule;
   const [activeBoard, setActiveBoardState] = useState(getActiveBoard());
-  const { widgets, loading, addWidget, removeWidget, patchWidget, reset, reload, isCustom } = useDashboardBoard(activeBoard);
+  const [ready, setReady] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const { widgets, loading, addWidget, removeWidget, patchWidget, reload, isCustom } = useDashboardBoard(activeBoard, ready);
+  const reloadRef = useRef(null);
+  reloadRef.current = reload;
   const [pickerOpen, setPickerOpen] = useState(false);
   const [userName, setUserName] = useState("");
   const [resetKey, setResetKey] = useState(0);
@@ -46,17 +50,24 @@ export default function Home() {
     if (sessionStorage.getItem("giulia_boot_seen")) {
       base44.functions.invoke("startGiulia", {}).catch(() => {});
     }
+    // Eenmalig per opstart: alle dashboards correct vullen. Daarna niet meer.
+    let cancelled = false;
+    ensureAllBoards().finally(() => { if (!cancelled) setReady(true); });
     const last = Number(sessionStorage.getItem("giulia_last_refresh") || 0);
     if (Date.now() - last > 4 * 60 * 1000) {
       sessionStorage.setItem("giulia_last_refresh", String(Date.now()));
-      base44.functions.invoke("refreshDashboard", {}).then(() => reload()).catch(() => {});
+      base44.functions.invoke("refreshDashboard", {}).then(() => reloadRef.current?.()).catch(() => {});
     }
-  }, [reload]);
+    return () => { cancelled = true; };
+  }, []);
 
-  const doReset = async () => {
-    await reset();
-    setResetKey((k) => k + 1);
-    toast({ title: "Dashboard gereset", description: "Alle domein-widgets hersteld." });
+  const doUpdate = async () => {
+    setRefreshing(true);
+    try { await base44.functions.invoke("refreshDashboard", {}).catch(() => {}); } catch {}
+    await reload();
+    setResetKey((k) => k + 1); // widgets opnieuw mounten → verse data
+    setRefreshing(false);
+    toast({ title: "Alles bijgewerkt", description: "Data, widgets en panelen vernieuwd." });
   };
 
   const hour = new Date().getHours();
@@ -78,11 +89,11 @@ export default function Home() {
       {/* Fixed action buttons */}
       <div className="fixed top-20 right-6 lg:right-10 z-40 flex items-center gap-2">
         <button
-          onClick={doReset}
-          title="Dashboard resetten naar alle domein-widgets"
+          onClick={doUpdate}
+          title="Alle data, widgets en panelen bijwerken"
           className="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold transition bg-foreground/[0.06] border border-foreground/10 text-foreground hover:bg-foreground/10 lg:bg-white/10 lg:border-white/20 lg:text-ivory lg:hover:bg-white/20"
         >
-          <RotateCcw className="h-4 w-4" /> <span className="hidden sm:inline">Reset</span>
+          <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} /> <span className="hidden sm:inline">Update</span>
         </button>
         <Link to="/briefing" className="inline-flex items-center gap-2 rounded-full bg-charcoal text-ivory px-4 py-2.5 text-xs font-semibold hover:bg-charcoal/90 transition">
           <Sparkles className="h-4 w-4" /> <span className="hidden sm:inline">Briefing</span>

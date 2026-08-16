@@ -63,7 +63,42 @@ function sessionRecords(boardId) {
   return sessionWidgets(boardId).map((t, i) => ({ id: `sess_${boardId}_${i}_${t}`, widget_type: t, position: i, visible: true }));
 }
 
-export function useDashboardBoard(boardId) {
+let _boardsEnsured = false;
+/**
+ * ensureAllBoards — eenmalig per opstart: garandeert dat elk vast dashboard
+ * exact zijn domein-widgets bevat (geen duplicaten, geen verkeerde widgets;
+ * ontbrekende worden aangezaaid). Daarna worden boards nooit meer
+ * automatisch aangevuld — verwijderde widgets blijven weg.
+ */
+export async function ensureAllBoards() {
+  if (_boardsEnsured) return;
+  _boardsEnsured = true;
+  try {
+    for (const b of DEFAULT_BOARDS) {
+      const types = domainWidgetTypes(b.domain);
+      let recs = await base44.entities.DashboardWidget.filter({ board_id: b.id }, "position").catch(() => []);
+      recs = recs || [];
+      const seen = new Set();
+      const dupes = [];
+      const keep = [];
+      for (const r of recs) {
+        if (seen.has(r.widget_type)) dupes.push(r);
+        else { seen.add(r.widget_type); keep.push(r); }
+      }
+      const wrong = keep.filter((r) => !types.includes(r.widget_type));
+      const toDelete = [...dupes, ...wrong];
+      if (toDelete.length) await Promise.all(toDelete.map((r) => base44.entities.DashboardWidget.delete(r.id).catch(() => {})));
+      const kept = keep.filter((r) => types.includes(r.widget_type));
+      const present = kept.map((r) => r.widget_type);
+      const missing = types.filter((t) => !present.includes(t));
+      if (missing.length) {
+        await base44.entities.DashboardWidget.bulkCreate(missing.map((t, i) => ({ widget_type: t, position: kept.length + i, visible: true, board_id: b.id }))).catch(() => {});
+      }
+    }
+  } catch {}
+}
+
+export function useDashboardBoard(boardId, ready = true) {
   const [widgets, setWidgets] = useState([]);
   const [loading, setLoading] = useState(true);
   const custom = !isDefaultBoard(boardId);
@@ -74,25 +109,7 @@ export function useDashboardBoard(boardId) {
       if (custom) {
         setWidgets(sessionRecords(boardId));
       } else {
-        const domain = DEFAULT_BOARDS.find((b) => b.id === boardId)?.domain || boardId;
-        const domainTypes = domainWidgetTypes(domain);
-        let recs = await base44.entities.DashboardWidget.filter({ board_id: boardId }, "position").catch(() => []);
-        // Vervuiling (legacy widgets van een ander domein) → eenmalig schoonmaken
-        // en aanvullen tot het volledige domein. Daarna blijven verwijderde widgets weg.
-        const wrong = (recs || []).filter((r) => !domainTypes.includes(r.widget_type));
-        if (wrong.length) {
-          await Promise.all(wrong.map((r) => base44.entities.DashboardWidget.delete(r.id).catch(() => {})));
-          recs = (recs || []).filter((r) => domainTypes.includes(r.widget_type));
-          const present = (recs || []).map((r) => r.widget_type);
-          const missing = domainTypes.filter((t) => !present.includes(t));
-          if (missing.length) {
-            const created = await base44.entities.DashboardWidget.bulkCreate(missing.map((t, i) => ({ widget_type: t, position: (recs?.length || 0) + i, visible: true, board_id: boardId }))).catch(() => []);
-            recs = [...(recs || []), ...(created || [])];
-          }
-        } else if (!recs.length) {
-          // eerste keer: zaai alle domein-widgets
-          recs = await base44.entities.DashboardWidget.bulkCreate(domainTypes.map((t, i) => ({ widget_type: t, position: i, visible: true, board_id: boardId }))).catch(() => []);
-        }
+        const recs = await base44.entities.DashboardWidget.filter({ board_id: boardId }, "position").catch(() => []);
         setWidgets((recs || []).filter((r) => r.visible !== false));
       }
     } catch {
@@ -102,9 +119,12 @@ export function useDashboardBoard(boardId) {
     }
   }, [boardId, custom]);
 
-  useEffect(() => { load(); }, [load]);
+  // Alleen laden zodra de eenmalige opstart-ensure klaar is (vaste boards);
+  // tijdelijke boards laden direct.
+  useEffect(() => { if (custom || ready) load(); }, [load, custom, ready]);
 
   const addWidget = useCallback(async (type) => {
+    if (widgets.some((w) => w.widget_type === type)) return; // nooit twee dezelfde widget
     if (custom) {
       const types = sessionWidgets(boardId);
       if (types.includes(type)) return;
@@ -115,7 +135,7 @@ export function useDashboardBoard(boardId) {
       const rec = await base44.entities.DashboardWidget.create({ widget_type: type, position: widgets.length, visible: true, board_id: boardId }).catch(() => null);
       if (rec) setWidgets((w) => [...w, rec]);
     }
-  }, [boardId, custom, widgets.length]);
+  }, [boardId, custom, widgets]);
 
   const removeWidget = useCallback(async (id) => {
     if (custom) {
