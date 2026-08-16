@@ -106,7 +106,7 @@ export default async function (req) {
       "and put the requested new time in entities.date_time_reference.";
 
     const out = await geminiDecide({
-      model: "gemini-3.1-flash-lite",
+      model: "gemini-3.5-flash",
       prompt: `Extract structured entities from this incoming ${source === "email" ? "email" : source === "command" ? "quick command" : "WhatsApp message"}.\n\nMessage:\n"""${rawText.slice(0, 4000)}"""`,
       schema,
       systemText: `${GIULIA_PERSONA}\n\n${systemText}`,

@@ -36,7 +36,7 @@ export default async function (req) {
     ].join("\n");
 
     const res = await geminiDecide({
-      model: "gemini-3.1-flash-lite",
+      model: "gemini-3.5-flash",
       prompt: `Je bent Giulia, de persoonlijke AI van Salvo. Het is ${now.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}. Stel EÉN korte, context-bewuste check-invraag (max 15 woorden) om zijn huidige staat te meten. Reageer op wat hier speelt — niet standaard. Context:\n${contextSummary}\n\nAntwoord UITSLUITEND als JSON: {"question": "...", "tone": "zacht|direct|plagerig"}`,
       schema: { type: "object", properties: { question: { type: "string" }, tone: { type: "string" } }, required: ["question"] },
       systemText: GIULIA_PERSONA,
