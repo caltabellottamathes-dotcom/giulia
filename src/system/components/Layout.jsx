@@ -12,6 +12,7 @@ import { ContextCaptureProvider } from "@/lib/ContextCaptureContext";
 import ContextCaptureLayer from "@/system/components/context/ContextCaptureLayer";
 import { GiuliaVoiceProvider } from "@/lib/GiuliaVoiceContext";
 import AmbientBloom from "@/system/components/glass/AmbientBloom";
+import { ELEVEN_AGENT_ID } from "@/lib/voiceNavigation";
 import TauriFocusSync from "@/system/components/native/TauriFocusSync";
 import { GiuliaAgentProvider } from "@/lib/GiuliaAgentContext";
 import { useAgentNavigation } from "@/lib/useAgentNavigation";
@@ -156,6 +157,9 @@ function LayoutInner() {
 
       {/* Beeldbank modus — klik elke foto om hem te wisselen */}
       <BeeldbankOverlay />
+
+      {/* ElevenLabs voice agent — kant-en-klare zwevende widget, altijd beschikbaar */}
+      <elevenlabs-convai agent-id={ELEVEN_AGENT_ID}></elevenlabs-convai>
     </div>
   );
 }

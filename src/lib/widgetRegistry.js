@@ -1,6 +1,6 @@
 import {
   Sparkles, Calendar, CheckSquare, ClipboardCheck, Mail, MessageCircle,
-  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu, MessageSquare, Timer, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle, Repeat, Target, Clock, Image as ImageIcon, Music, Video, Mic, Images,
+  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu, MessageSquare, Timer, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle, Repeat, Target, Clock, Image as ImageIcon, Music, Video, Images,
 } from "lucide-react";
 import { IMAGES } from "@/lib/images";
 
@@ -42,7 +42,6 @@ import VideoPlayerWidget from "@/system/widgets/viewers/VideoPlayerWidget";
 import MusicPlayerWidget from "@/system/widgets/viewers/MusicPlayerWidget";
 import DocViewerWidget from "@/system/widgets/viewers/DocViewerWidget";
 import BeeldbankWidget from "@/system/widgets/BeeldbankWidget";
-import VoiceAgentWidget from "@/system/widgets/VoiceAgentWidget";
 
 /**
  * Single source of truth for every dashboard widget.
@@ -100,7 +99,6 @@ export const WIDGETS = {
 
   // ── BEELDBANK & VOICE ──
   beeldbank:  { type: "beeldbank",  label: "Beeldbank",    icon: Images, Component: BeeldbankWidget,  image: IMAGES.feetChair,    span: 2, category: "system", domain: "system" },
-  voiceagent: { type: "voiceagent", label: "Voice agent",  icon: Mic,    Component: VoiceAgentWidget, image: IMAGES.portraitBoot, span: 1, category: "core",   domain: "giulia" },
 };
 
 export const WIDGET_LIST = Object.values(WIDGETS);

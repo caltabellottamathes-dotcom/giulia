@@ -464,6 +464,14 @@
 }
 
 
+/* Voice highlight — tijdelijke markering door de ElevenLabs agent */
+.voice-highlight {
+  outline: 3px solid hsl(var(--olive));
+  outline-offset: 4px;
+  border-radius: 12px;
+  transition: outline-color 0.3s ease, outline-offset 0.3s ease;
+}
+
 /* Beeldbank modus — klik elke foto om hem te wisselen */
 body.beeldbank-active img { cursor: pointer !important; }
 body.beeldbank-active img:hover { outline: 2px solid hsl(var(--olive)); outline-offset: 2px; }
