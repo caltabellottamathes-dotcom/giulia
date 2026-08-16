@@ -18,7 +18,7 @@ const OPTIONS = [
  * it, and a swipe-left gesture (drag) to dismiss it once you've read it.
  * Fixed widgets (Je dag) pass no onRemove and so aren't swipeable.
  */
-export default function WidgetCell({ def, widget, onRemove, onThemeChange }) {
+export default function WidgetCell({ def, widget, onRemove, onThemeChange, sessionMode = false }) {
   const Comp = def.Component;
   const [open, setOpen] = useState(false);
   const theme = widget?.theme || "glass";
@@ -35,10 +35,12 @@ export default function WidgetCell({ def, widget, onRemove, onThemeChange }) {
 
   const pick = async (opt) => {
     const next = opt.key === "glass" ? { theme: "glass", color: "" } : { theme: "solid", color: opt.key };
+    if (sessionMode) { onThemeChange?.(widget.id, next); return; }
     try { await base44.entities.DashboardWidget.update(widget.id, next); onThemeChange?.(widget.id, next); } catch {}
   };
 
   const commit = async (patch) => {
+    if (sessionMode) { onThemeChange?.(widget.id, patch); return; }
     try { await base44.entities.DashboardWidget.update(widget.id, patch); onThemeChange?.(widget.id, patch); } catch {}
   };
 

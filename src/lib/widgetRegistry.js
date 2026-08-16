@@ -29,53 +29,64 @@ import HouseholdWidget from "@/life/widgets/HouseholdWidget";
 import PersonalAdminWidget from "@/life/widgets/PersonalAdminWidget";
 import HobbiesWidget from "@/life/widgets/HobbiesWidget";
 import GiuliaQuestionsWidget from "@/giulia/widgets/GiuliaQuestionsWidget";
-import DailyStateWidget from "@/self/widgets/DailyStateWidget";
-import RoutinesWidget from "@/self/widgets/RoutinesWidget";
-import WakeWidget from "@/self/widgets/WakeWidget";
-import TherapyWidget from "@/self/widgets/TherapyWidget";
-import JournalWidget from "@/self/widgets/JournalWidget";
-import PersonalDevelopmentWidget from "@/self/widgets/PersonalDevelopmentWidget";
-import PersonalTimeWidget from "@/self/widgets/PersonalTimeWidget";
-import SelfInsightsWidget from "@/self/widgets/SelfInsightsWidget";
+import DailyStateEditorial from "@/self/widgets/editorial/DailyStateEditorial";
+import RoutinesEditorial from "@/self/widgets/editorial/RoutinesEditorial";
+import WakeEditorial from "@/self/widgets/editorial/WakeEditorial";
+import TherapyEditorial from "@/self/widgets/editorial/TherapyEditorial";
+import JournalEditorial from "@/self/widgets/editorial/JournalEditorial";
+import PersonalDevelopmentEditorial from "@/self/widgets/editorial/PersonalDevelopmentEditorial";
+import PersonalTimeEditorial from "@/self/widgets/editorial/PersonalTimeEditorial";
+import SelfInsightsEditorial from "@/self/widgets/editorial/SelfInsightsEditorial";
 
 /**
- * Single source of truth for every dashboard widget. `image` is a branding
- * photo used as a designed element inside the widget and in the add-picker.
+ * Single source of truth for every dashboard widget.
+ * `domain` deelt widgets in over de vijf OS-lagen: giulia / focus / life / self / system.
+ * `image` is de branding-foto, gebruikt in de widget én als ronde thumb in het
+ * toevoeg-paneel.
  */
 export const WIDGETS = {
-  giulia:       { type: "giulia",       label: "Giulia · je dag",     icon: Sparkles,       Component: GiuliaWidget,      image: IMAGES.bootPhone,        span: 8, category: "core" },
-  goodmorning:  { type: "goodmorning",  label: "Good Morning",        icon: Sunrise,        Component: GoodMorningWidget, image: IMAGES.walkChairsBeach,  span: 3, category: "core" },
-  agenda:     { type: "agenda",    label: "Agenda",              icon: Calendar,       Component: AgendaWidget,    image: IMAGES.walkChairsBeach,  span: 4, category: "core" },
-  tasks:      { type: "tasks",     label: "Taken",               icon: CheckSquare,    Component: TasksWidget,     image: IMAGES.feetChairs,       span: 4, category: "work" },
-  approvals:  { type: "approvals",  label: "Goedkeuringen",       icon: ClipboardCheck, Component: ApprovalsWidget, image: IMAGES.leanChair,        span: 4, category: "work" },
-  notifications: { type: "notifications", label: "Notificaties",  icon: Bell,           Component: NotificationsWidget, image: IMAGES.feetChair,   span: 3, category: "core" },
-  email:      { type: "email",      label: "Email",              icon: Mail,           Component: EmailWidget,      image: IMAGES.portraitBoot,     span: 4, category: "comms" },
-  whatsapp:   { type: "whatsapp",   label: "WhatsApp",          icon: MessageCircle,  Component: WhatsAppWidget,  image: IMAGES.stilettoHead,     span: 4, category: "comms" },
-  projects:   { type: "projects",   label: "Projecten",          icon: Briefcase,      Component: ProjectsWidget,   image: IMAGES.walkChairsHigh,   span: 5, category: "work" },
-  knowledge:  { type: "knowledge",  label: "Kennisbank",          icon: BookOpen,       Component: KnowledgeWidget,  image: IMAGES.chairWater,       span: 4, category: "work" },
-  people:     { type: "people",     label: "Mensen",             icon: Users,          Component: PeopleWidget,     image: IMAGES.portraitThinking, span: 3, category: "work" },
-  documents:  { type: "documents",  label: "Documenten",          icon: FileText,       Component: DocumentsWidget,  image: IMAGES.chairsScattered,  span: 4, category: "work" },
-  memory:     { type: "memory",     label: "Geheugen",           icon: Brain,          Component: MemoryWidget,     image: IMAGES.loungeChairs,     span: 4, category: "intelligence" },
-  activity:   { type: "activity",   label: "Activiteit",          icon: ActivityIcon,   Component: ActivityWidget,   image: IMAGES.topDownWalk,     span: 6, category: "intelligence" },
-  agentactivity: { type: "agentactivity", label: "Giulia · Agenten", icon: Cpu,             Component: AgentActivityWidget, image: IMAGES.feetChair,        span: 4, category: "intelligence" },
-  insights:   { type: "insights",   label: "Giulia · Inzichten",  icon: Telescope,      Component: InsightsWidget,   image: IMAGES.feetChair,        span: 4, category: "intelligence" },
-  timetracker: { type: "timetracker", label: "Tijd · Timer",     icon: Timer,          Component: TimeTrackerWidget, image: IMAGES.hourglassJacket,  span: 4, category: "work" },
-  concierge:  { type: "concierge",  label: "Giulia · Concierge",  icon: MessageSquare,  Component: ConciergeWidget,   image: IMAGES.feetChair,        span: 3, category: "core" },
-  updates:    { type: "updates",    label: "Giulia · Updates",    icon: Sparkles,       Component: UpdatesWidget,     image: IMAGES.feetChair,        span: 3, category: "intelligence" },
-  socialpulse:   { type: "socialpulse",   label: "Social Pulse",        icon: Heart,          Component: SocialPulseWidget,    image: IMAGES.lifeSocialPulse,    span: 4, category: "life" },
-  socialplanner: { type: "socialplanner", label: "Social Planner",      icon: CalendarHeart,  Component: SocialPlannerWidget,  image: IMAGES.lifeSocialPlanner,  span: 3, category: "life" },
-  household:     { type: "household",     label: "Huishouden",          icon: Home,           Component: HouseholdWidget,      image: IMAGES.lifeHousehold,      span: 3, category: "life" },
-  personaladmin: { type: "personaladmin", label: "Persoonlijk Admin",   icon: ClipboardList,  Component: PersonalAdminWidget,  image: IMAGES.lifePersonalAdmin, span: 3, category: "life" },
-  hobbies:       { type: "hobbies",       label: "Hobby's",            icon: Palette,        Component: HobbiesWidget,        image: IMAGES.lifeHobbies,        span: 3, category: "life" },
-  giuliaquestions: { type: "giuliaquestions", label: "Giulia · Wants to know", icon: HelpCircle, Component: GiuliaQuestionsWidget, image: IMAGES.portraitThinking, span: 4, category: "intelligence" },
-  selfdailystate:    { type: "selfdailystate",    label: "Daily State",          icon: ActivityIcon,    Component: DailyStateWidget,           image: IMAGES.selfDailyState,    span: 4, category: "self" },
-  selfroutines:      { type: "selfroutines",      label: "Routines",             icon: Repeat,          Component: RoutinesWidget,             image: IMAGES.selfRoutines,      span: 3, category: "self" },
-  selfwake:          { type: "selfwake",          label: "Wake",                 icon: Sunrise,         Component: WakeWidget,                 image: IMAGES.selfWake,          span: 3, category: "self" },
-  selftherapy:       { type: "selftherapy",       label: "Therapy",             icon: Heart,           Component: TherapyWidget,              image: IMAGES.selfTherapy,       span: 3, category: "self" },
-  selfjournal:       { type: "selfjournal",       label: "Journal",             icon: BookOpen,        Component: JournalWidget,              image: IMAGES.selfJournal,       span: 3, category: "self" },
-  selfdevelopment:   { type: "selfdevelopment",   label: "Development",          icon: Target,          Component: PersonalDevelopmentWidget,  image: IMAGES.selfDevelopment,   span: 4, category: "self" },
-  selfpersonaltime:  { type: "selfpersonaltime",  label: "Personal Time",       icon: Clock,            Component: PersonalTimeWidget,         image: IMAGES.selfPersonalTime,  span: 3, category: "self" },
-  selfinsights:      { type: "selfinsights",      label: "Self Insights",        icon: Telescope,       Component: SelfInsightsWidget,         image: IMAGES.selfInsights,      span: 4, category: "self" },
+  // ── GIULIA ──
+  giulia:          { type: "giulia",          label: "Giulia · je dag",      icon: Sparkles,      Component: GiuliaWidget,          image: IMAGES.bootPhone,        span: 8, category: "core", domain: "giulia" },
+  goodmorning:     { type: "goodmorning",     label: "Good Morning",         icon: Sunrise,       Component: GoodMorningWidget,     image: IMAGES.walkChairsBeach,  span: 3, category: "core", domain: "giulia" },
+  concierge:       { type: "concierge",       label: "Giulia · Concierge",   icon: MessageSquare, Component: ConciergeWidget,        image: IMAGES.giuliaConcierge, span: 3, category: "core", domain: "giulia" },
+  approvals:       { type: "approvals",       label: "Goedkeuringen",         icon: ClipboardCheck,Component: ApprovalsWidget,       image: IMAGES.leanChair,        span: 4, category: "core", domain: "giulia" },
+  memory:          { type: "memory",          label: "Geheugen",             icon: Brain,         Component: MemoryWidget,           image: IMAGES.loungeChairs,     span: 4, category: "intelligence", domain: "giulia" },
+  activity:        { type: "activity",        label: "Activiteit",           icon: ActivityIcon,  Component: ActivityWidget,        image: IMAGES.topDownWalk,      span: 6, category: "intelligence", domain: "giulia" },
+  agentactivity:   { type: "agentactivity",   label: "Giulia · Agenten",     icon: Cpu,           Component: AgentActivityWidget,    image: IMAGES.feetChair,        span: 4, category: "intelligence", domain: "giulia" },
+  insights:        { type: "insights",        label: "Giulia · Inzichten",   icon: Telescope,     Component: InsightsWidget,         image: IMAGES.feetChair,        span: 4, category: "intelligence", domain: "giulia" },
+  updates:         { type: "updates",         label: "Giulia · Updates",     icon: Sparkles,      Component: UpdatesWidget,          image: IMAGES.feetChair,        span: 3, category: "intelligence", domain: "giulia" },
+  giuliaquestions: { type: "giuliaquestions", label: "Giulia · Wants to know", icon: HelpCircle,   Component: GiuliaQuestionsWidget,   image: IMAGES.portraitThinking, span: 4, category: "intelligence", domain: "giulia" },
+
+  // ── FOCUS ──
+  agenda:     { type: "agenda",     label: "Agenda",      icon: Calendar,    Component: AgendaWidget,     image: IMAGES.walkChairsBeach, span: 4, category: "core", domain: "focus" },
+  tasks:      { type: "tasks",      label: "Taken",       icon: CheckSquare, Component: TasksWidget,      image: IMAGES.feetChairs,       span: 4, category: "work", domain: "focus" },
+  projects:   { type: "projects",   label: "Projecten",   icon: Briefcase,   Component: ProjectsWidget,   image: IMAGES.walkChairsHigh,   span: 5, category: "work", domain: "focus" },
+  email:      { type: "email",      label: "Email",       icon: Mail,        Component: EmailWidget,      image: IMAGES.portraitBoot,     span: 4, category: "comms", domain: "focus" },
+  whatsapp:   { type: "whatsapp",   label: "WhatsApp",    icon: MessageCircle, Component: WhatsAppWidget, image: IMAGES.stilettoHead,   span: 4, category: "comms", domain: "focus" },
+  knowledge:  { type: "knowledge",  label: "Kennisbank",  icon: BookOpen,     Component: KnowledgeWidget,  image: IMAGES.chairWater,       span: 4, category: "work", domain: "focus" },
+  documents:  { type: "documents",  label: "Documenten",  icon: FileText,     Component: DocumentsWidget,  image: IMAGES.chairsScattered,  span: 4, category: "work", domain: "focus" },
+  people:     { type: "people",     label: "Mensen",      icon: Users,        Component: PeopleWidget,     image: IMAGES.portraitThinking, span: 3, category: "work", domain: "focus" },
+  timetracker:{ type: "timetracker", label: "Tijd · Timer", icon: Timer,      Component: TimeTrackerWidget, image: IMAGES.hourglassJacket,  span: 4, category: "work", domain: "focus" },
+
+  // ── LIFE ──
+  socialpulse:   { type: "socialpulse",   label: "Social Pulse",      icon: Heart,         Component: SocialPulseWidget,    image: IMAGES.lifeSocialPulse,    span: 4, category: "life", domain: "life" },
+  socialplanner: { type: "socialplanner", label: "Social Planner",    icon: CalendarHeart,  Component: SocialPlannerWidget,  image: IMAGES.lifeSocialPlanner,  span: 3, category: "life", domain: "life" },
+  household:     { type: "household",     label: "Huishouden",         icon: Home,          Component: HouseholdWidget,      image: IMAGES.lifeHousehold,      span: 3, category: "life", domain: "life" },
+  personaladmin: { type: "personaladmin", label: "Persoonlijk Admin", icon: ClipboardList,  Component: PersonalAdminWidget,  image: IMAGES.lifePersonalAdmin,  span: 3, category: "life", domain: "life" },
+  hobbies:       { type: "hobbies",       label: "Hobby's",           icon: Palette,        Component: HobbiesWidget,        image: IMAGES.lifeHobbies,        span: 3, category: "life", domain: "life" },
+
+  // ── SELF ──
+  selfdailystate:   { type: "selfdailystate",   label: "Daily State",      icon: ActivityIcon, Component: DailyStateEditorial,          image: IMAGES.selfDailyState,    span: 1, category: "self", domain: "self" },
+  selfroutines:     { type: "selfroutines",     label: "Routines",          icon: Repeat,       Component: RoutinesEditorial,             image: IMAGES.selfRoutines,      span: 2, category: "self", domain: "self" },
+  selfwake:         { type: "selfwake",         label: "Wake",              icon: Sunrise,      Component: WakeEditorial,                 image: IMAGES.selfWake,          span: 1, category: "self", domain: "self" },
+  selftherapy:      { type: "selftherapy",      label: "Therapy",          icon: Heart,        Component: TherapyEditorial,              image: IMAGES.selfTherapy,       span: 2, category: "self", domain: "self" },
+  selfjournal:      { type: "selfjournal",      label: "Journal",          icon: BookOpen,     Component: JournalEditorial,              image: IMAGES.selfJournal,       span: 1, category: "self", domain: "self" },
+  selfdevelopment:  { type: "selfdevelopment",  label: "Development",       icon: Target,       Component: PersonalDevelopmentEditorial,  image: IMAGES.selfDevelopment,   span: 2, category: "self", domain: "self" },
+  selfpersonaltime: { type: "selfpersonaltime", label: "Personal Time",    icon: Clock,        Component: PersonalTimeEditorial,         image: IMAGES.selfPersonalTime,  span: 2, category: "self", domain: "self" },
+  selfinsights:     { type: "selfinsights",     label: "Self Insights",    icon: Telescope,    Component: SelfInsightsEditorial,         image: IMAGES.selfInsights,      span: 2, category: "self", domain: "self" },
+
+  // ── SYSTEM ──
+  notifications: { type: "notifications", label: "Notificaties", icon: Bell, Component: NotificationsWidget, image: IMAGES.feetChair, span: 3, category: "core", domain: "system" },
 };
 
 export const WIDGET_LIST = Object.values(WIDGETS);

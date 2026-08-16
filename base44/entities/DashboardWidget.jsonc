@@ -6,6 +6,11 @@
       "type": "string",
       "title": "Widget Type"
     },
+    "board_id": {
+      "type": "string",
+      "default": "giulia",
+      "title": "Board ID"
+    },
     "position": {
       "type": "number",
       "default": 0,

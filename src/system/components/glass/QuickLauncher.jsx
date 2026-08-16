@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePanel } from "@/lib/PanelContext";
+import { base44 } from "@/api/base44Client";
 import { X } from "lucide-react";
 
 /**
@@ -142,6 +143,11 @@ export default function QuickLauncher({ open, onClose }) {
     onClose();
   };
 
+  const shutdown = async () => {
+    onClose();
+    await base44.auth.logout("/login").catch(() => { window.location.href = "/login"; });
+  };
+
   return (
     <>
       <div className="fixed inset-0 z-[38] bg-charcoal/30 backdrop-blur-[2px] animate-fade-in" onClick={onClose} />
@@ -230,7 +236,10 @@ export default function QuickLauncher({ open, onClose }) {
             {/* Footer hairline */}
             <div className="px-6 py-3 border-t border-ivory/10 shrink-0 flex items-center justify-between">
               <span className="text-[10px] font-mono text-ivory/35">{flat.length} onderdelen · ↑↓ ↵ esc</span>
-              <span className="text-[10px] uppercase tracking-[0.24em] text-ivory/30 font-bold">Editorial Index</span>
+              <div className="flex items-center gap-4">
+                <button onClick={shutdown} className="text-[10px] uppercase tracking-[0.24em] text-ivory/45 hover:text-ivory transition font-bold">Afsluiten</button>
+                <span className="text-[10px] uppercase tracking-[0.24em] text-ivory/30 font-bold">Editorial Index</span>
+              </div>
             </div>
           </div>
         </motion.div>
