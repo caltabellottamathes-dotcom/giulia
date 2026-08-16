@@ -55,7 +55,7 @@ function LayoutInner() {
   const location = useLocation();
   const { openModule } = usePanel();
   const { logout } = useAuth();
-  useAgentNavigation();
+  useAgentNavigation({ openModule });
 
   return (
     <div className="min-h-screen relative">
