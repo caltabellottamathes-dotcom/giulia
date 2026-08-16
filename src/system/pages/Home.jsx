@@ -20,7 +20,7 @@ import StartupSequence from "@/system/components/StartupSequence";
 import { Link } from "react-router-dom";
 import { MODULES } from "@/lib/moduleRegistry";
 
-const WIDGET_SPAN = { giulia: 2, goodmorning: 2, concierge: 2, projects: 2, agenda: 2, email: 2, documents: 2, updates: 2, household: 2, selfroutines: 2, selftherapy: 2, selfdevelopment: 2, selfpersonaltime: 2, selfinsights: 2 };
+const WIDGET_SPAN = { giulia: 2, goodmorning: 2, concierge: 2, projects: 2, agenda: 2, email: 2, documents: 2, updates: 2, household: 2, selfroutines: 2, selftherapy: 2, selfdevelopment: 2, selfpersonaltime: 2, selfinsights: 2, beeldbank: 2, voiceagent: 1 };
 
 /**
  * Home — in-place multi-dashboard. Vijf domein-dashboards (GIULIA / FOCUS /

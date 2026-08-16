@@ -1,0 +1,41 @@
+{
+  "name": "ImageAsset",
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "title": "URL"
+    },
+    "label": {
+      "type": "string",
+      "title": "Label"
+    },
+    "category": {
+      "type": "string",
+      "title": "Category"
+    },
+    "origin": {
+      "type": "string",
+      "enum": [
+        "website",
+        "uploaded"
+      ],
+      "default": "uploaded",
+      "title": "Origin"
+    },
+    "source_key": {
+      "type": "string",
+      "title": "Source Key"
+    }
+  },
+  "required": [
+    "url"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

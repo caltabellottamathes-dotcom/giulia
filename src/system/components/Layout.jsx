@@ -5,6 +5,8 @@ import ModulePanel from "@/system/panels/ModulePanel";
 import ChatWindow from "@/giulia/panels/ChatWindow";
 import WorkspaceToolbar from "@/system/components/WorkspaceToolbar";
 import { MediaViewerProvider } from "@/lib/MediaViewerContext";
+import { BeeldbankProvider } from "@/lib/BeeldbankContext";
+import BeeldbankOverlay from "@/system/components/BeeldbankOverlay";
 import { PanelProvider, usePanel } from "@/lib/PanelContext";
 import { ContextCaptureProvider } from "@/lib/ContextCaptureContext";
 import ContextCaptureLayer from "@/system/components/context/ContextCaptureLayer";
@@ -32,15 +34,17 @@ const userMenuItems = [
 export default function Layout() {
   return (
     <PanelProvider>
-      <MediaViewerProvider>
-        <GiuliaVoiceProvider>
-          <GiuliaAgentProvider>
-            <ContextCaptureProvider>
-              <LayoutInner />
-            </ContextCaptureProvider>
-          </GiuliaAgentProvider>
-        </GiuliaVoiceProvider>
-      </MediaViewerProvider>
+      <BeeldbankProvider>
+        <MediaViewerProvider>
+          <GiuliaVoiceProvider>
+            <GiuliaAgentProvider>
+              <ContextCaptureProvider>
+                <LayoutInner />
+              </ContextCaptureProvider>
+            </GiuliaAgentProvider>
+          </GiuliaVoiceProvider>
+        </MediaViewerProvider>
+      </BeeldbankProvider>
     </PanelProvider>
   );
 }
@@ -149,6 +153,9 @@ function LayoutInner() {
 
       {/* Giulia proactive text bubbles — appear during active OS sessions */}
       <GiuliaBubble />
+
+      {/* Beeldbank modus — klik elke foto om hem te wisselen */}
+      <BeeldbankOverlay />
     </div>
   );
 }

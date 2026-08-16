@@ -1,6 +1,6 @@
 import {
   Sparkles, Calendar, CheckSquare, ClipboardCheck, Mail, MessageCircle,
-  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu, MessageSquare, Timer, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle, Repeat, Target, Clock, Image as ImageIcon, Music, Video,
+  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu, MessageSquare, Timer, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle, Repeat, Target, Clock, Image as ImageIcon, Music, Video, Mic, Images,
 } from "lucide-react";
 import { IMAGES } from "@/lib/images";
 
@@ -41,6 +41,8 @@ import ImageViewerWidget from "@/system/widgets/viewers/ImageViewerWidget";
 import VideoPlayerWidget from "@/system/widgets/viewers/VideoPlayerWidget";
 import MusicPlayerWidget from "@/system/widgets/viewers/MusicPlayerWidget";
 import DocViewerWidget from "@/system/widgets/viewers/DocViewerWidget";
+import BeeldbankWidget from "@/system/widgets/BeeldbankWidget";
+import VoiceAgentWidget from "@/system/widgets/VoiceAgentWidget";
 
 /**
  * Single source of truth for every dashboard widget.
@@ -95,6 +97,10 @@ export const WIDGETS = {
   musicplayer: { type: "musicplayer", label: "Muziek", icon: Music, Component: MusicPlayerWidget, image: IMAGES.hourglassJacket, span: 1, category: "system", domain: "system" },
   docviewer:   { type: "docviewer",   label: "Document", icon: FileText, Component: DocViewerWidget,   image: IMAGES.womanFolder, span: 1, category: "system", domain: "system" },
   notifications: { type: "notifications", label: "Notificaties", icon: Bell, Component: NotificationsWidget, image: IMAGES.feetChair, span: 3, category: "core", domain: "system" },
+
+  // ── BEELDBANK & VOICE ──
+  beeldbank:  { type: "beeldbank",  label: "Beeldbank",    icon: Images, Component: BeeldbankWidget,  image: IMAGES.feetChair,    span: 2, category: "system", domain: "system" },
+  voiceagent: { type: "voiceagent", label: "Voice agent",  icon: Mic,    Component: VoiceAgentWidget, image: IMAGES.portraitBoot, span: 1, category: "core",   domain: "giulia" },
 };
 
 export const WIDGET_LIST = Object.values(WIDGETS);

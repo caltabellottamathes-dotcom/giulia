@@ -62,6 +62,7 @@ import JournalPage from '@/self/pages/JournalPage';
 import PersonalDevelopmentPage from '@/self/pages/PersonalDevelopmentPage';
 import PersonalTimePage from '@/self/pages/PersonalTimePage';
 import SelfInsightsPage from '@/self/pages/SelfInsightsPage';
+import Beeldbank from '@/system/pages/Beeldbank';
 
 
 const AuthenticatedApp = () => {
@@ -140,6 +141,7 @@ const AuthenticatedApp = () => {
           <Route path="/self/personal-development" element={<PersonalDevelopmentPage />} />
           <Route path="/self/personal-time" element={<PersonalTimePage />} />
           <Route path="/self/insights" element={<SelfInsightsPage />} />
+          <Route path="/beeldbank" element={<Beeldbank />} />
         </Route>
         <Route path="/life-gallery" element={<LifeGallery />} />
         <Route path="/self-gallery" element={<SelfGallery />} />
