@@ -21,7 +21,14 @@ export default function StartupSequence({ onDone }) {
     base44.functions.invoke("refreshDashboard", {})
       .then(() => bumpRefresh())
       .catch(() => {});
-    // safety: ook na een paar seconden forceren, voor het geval de functie traag is
+    // probeer de video met geluid af te spelen; als de browser dat blokkeert
+    // (geen user-gesture), val terug op muted autoplay — geen stilte.
+    const v = videoRef.current;
+    if (v) {
+      v.volume = 0.9;
+      const p = v.play();
+      if (p && typeof p.catch === "function") p.catch(() => { v.muted = true; v.play().catch(() => {}); });
+    }
     const t = setTimeout(() => bumpRefresh(), 5000);
     return () => clearTimeout(t);
   }, []);
@@ -37,7 +44,6 @@ export default function StartupSequence({ onDone }) {
         ref={videoRef}
         src={VIDEOS.giuliaOpening}
         autoPlay
-        muted
         playsInline
         onEnded={finish}
         className="absolute inset-0 h-full w-full object-cover"
