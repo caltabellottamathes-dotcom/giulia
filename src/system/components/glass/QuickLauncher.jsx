@@ -143,9 +143,9 @@ export default function QuickLauncher({ open, onClose }) {
     onClose();
   };
 
-  const shutdown = async () => {
+  const shutdown = () => {
     onClose();
-    await base44.auth.logout("/login").catch(() => { window.location.href = "/login"; });
+    base44.auth.logout("/login");
   };
 
   return (
