@@ -3,7 +3,8 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { IMAGES } from "@/lib/images";
 import ModulePanel from "@/system/panels/ModulePanel";
 import ChatWindow from "@/giulia/panels/ChatWindow";
-import InteractionBar from "@/system/components/glass/InteractionBar";
+import WorkspaceToolbar from "@/system/components/WorkspaceToolbar";
+import { MediaViewerProvider } from "@/lib/MediaViewerContext";
 import { PanelProvider, usePanel } from "@/lib/PanelContext";
 import { ContextCaptureProvider } from "@/lib/ContextCaptureContext";
 import ContextCaptureLayer from "@/system/components/context/ContextCaptureLayer";
@@ -31,13 +32,15 @@ const userMenuItems = [
 export default function Layout() {
   return (
     <PanelProvider>
-      <GiuliaVoiceProvider>
-        <GiuliaAgentProvider>
-          <ContextCaptureProvider>
-            <LayoutInner />
-          </ContextCaptureProvider>
-        </GiuliaAgentProvider>
-      </GiuliaVoiceProvider>
+      <MediaViewerProvider>
+        <GiuliaVoiceProvider>
+          <GiuliaAgentProvider>
+            <ContextCaptureProvider>
+              <LayoutInner />
+            </ContextCaptureProvider>
+          </GiuliaAgentProvider>
+        </GiuliaVoiceProvider>
+      </MediaViewerProvider>
     </PanelProvider>
   );
 }
@@ -139,7 +142,7 @@ function LayoutInner() {
       <ChatWindow />
 
       {/* Permanent glass interaction bar — bottom-right */}
-      <InteractionBar />
+      <WorkspaceToolbar />
 
       {/* Click-to-remember — capture context from any element, anywhere */}
       <ContextCaptureLayer />

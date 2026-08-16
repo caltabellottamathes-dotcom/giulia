@@ -14,7 +14,7 @@ import AddWidgetPicker from "@/system/panels/AddWidgetPicker";
 import WidgetCell from "@/system/widgets/WidgetCell";
 import MasonryGrid from "@/system/widgets/MasonryGrid";
 import ConciergeWidget from "@/giulia/widgets/ConciergeWidget";
-import BoardSwitcher from "@/system/components/BoardSwitcher";
+
 import StartupSequence from "@/system/components/StartupSequence";
 
 import { Link } from "react-router-dom";
@@ -53,10 +53,11 @@ export default function Home() {
     return () => { cancelled = true; };
   }, [nowMode, resetKey]);
 
-  const selectBoard = (id) => {
-    setActiveBoard(id);
-    setActiveBoardState(id);
-  };
+  useEffect(() => {
+    const h = (e) => setActiveBoardState(e.detail);
+    window.addEventListener("giulia:board-change", h);
+    return () => window.removeEventListener("giulia:board-change", h);
+  }, []);
 
   useEffect(() => {
     base44.auth.me().then((u) => setUserName(u?.full_name || "")).catch(() => {});
@@ -183,8 +184,6 @@ export default function Home() {
           )}
         </div>
       </div>
-
-      <BoardSwitcher active={activeBoard} onSelect={selectBoard} />
 
       {!startupDone && (
         <StartupSequence onDone={() => {

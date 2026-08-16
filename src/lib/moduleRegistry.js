@@ -1,7 +1,7 @@
 import {
   Calendar, Briefcase, CheckSquare, Mail, MessageCircle,
   BookOpen, FileText, Users, MessageSquare, Mic, ClipboardCheck,
-  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu, Timer, Sparkles, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle, Repeat, Target, Clock,
+  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu, Timer, Sparkles, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle, Repeat, Target, Clock, Image as ImageIcon, Music, Video,
 } from "lucide-react";
 
 import Agenda from "@/focus/pages/Agenda";
@@ -41,6 +41,10 @@ import JournalPanel from "@/self/panels/JournalPanel";
 import PersonalDevelopmentPanel from "@/self/panels/PersonalDevelopmentPanel";
 import PersonalTimePanel from "@/self/panels/PersonalTimePanel";
 import SelfInsightsPanel from "@/self/panels/SelfInsightsPanel";
+import ImageViewerPanel from "@/system/panels/viewers/ImageViewerPanel";
+import VideoPlayerPanel from "@/system/panels/viewers/VideoPlayerPanel";
+import MusicPlayerPanel from "@/system/panels/viewers/MusicPlayerPanel";
+import DocViewerPanel from "@/system/panels/viewers/DocViewerPanel";
 
 /**
  * Single source of truth for every module that opens as a sliding glass
@@ -85,4 +89,8 @@ export const MODULES = {
   selfdevelopment:   { label: "Development",       icon: Target,          Component: PersonalDevelopmentPanel,  panelWidth: 760 },
   selfpersonaltime:  { label: "Personal Time",     icon: Clock,           Component: PersonalTimePanel,         panelWidth: 760 },
   selfinsights:      { label: "Self Insights",     icon: Telescope,       Component: SelfInsightsPanel,         panelWidth: 760 },
+  imageviewer:       { label: "Afbeeldingen",       icon: ImageIcon,       Component: ImageViewerPanel,          panelWidth: 1000 },
+  videoplayer:       { label: "Video",              icon: Video,           Component: VideoPlayerPanel,          panelWidth: 1000 },
+  musicplayer:       { label: "Muziek",             icon: Music,           Component: MusicPlayerPanel,          panelWidth: 760 },
+  docviewer:         { label: "Document",           icon: FileText,        Component: DocViewerPanel,            panelWidth: 1000 },
 };

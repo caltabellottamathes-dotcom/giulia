@@ -1,6 +1,6 @@
 import {
   Sparkles, Calendar, CheckSquare, ClipboardCheck, Mail, MessageCircle,
-  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu, MessageSquare, Timer, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle, Repeat, Target, Clock,
+  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu, MessageSquare, Timer, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle, Repeat, Target, Clock, Image as ImageIcon, Music, Video,
 } from "lucide-react";
 import { IMAGES } from "@/lib/images";
 
@@ -37,6 +37,10 @@ import JournalEditorial from "@/self/widgets/editorial/JournalEditorial";
 import PersonalDevelopmentEditorial from "@/self/widgets/editorial/PersonalDevelopmentEditorial";
 import PersonalTimeEditorial from "@/self/widgets/editorial/PersonalTimeEditorial";
 import SelfInsightsEditorial from "@/self/widgets/editorial/SelfInsightsEditorial";
+import ImageViewerWidget from "@/system/widgets/viewers/ImageViewerWidget";
+import VideoPlayerWidget from "@/system/widgets/viewers/VideoPlayerWidget";
+import MusicPlayerWidget from "@/system/widgets/viewers/MusicPlayerWidget";
+import DocViewerWidget from "@/system/widgets/viewers/DocViewerWidget";
 
 /**
  * Single source of truth for every dashboard widget.
@@ -86,6 +90,10 @@ export const WIDGETS = {
   selfinsights:     { type: "selfinsights",     label: "Self Insights",    icon: Telescope,    Component: SelfInsightsEditorial,         image: IMAGES.selfInsights,      span: 2, category: "self", domain: "self" },
 
   // ── SYSTEM ──
+  imageviewer: { type: "imageviewer", label: "Afbeeldingen", icon: ImageIcon, Component: ImageViewerWidget, image: IMAGES.notebookChair, span: 1, category: "system", domain: "system" },
+  videoplayer: { type: "videoplayer", label: "Video", icon: Video, Component: VideoPlayerWidget, image: IMAGES.bootPhone, span: 1, category: "system", domain: "system" },
+  musicplayer: { type: "musicplayer", label: "Muziek", icon: Music, Component: MusicPlayerWidget, image: IMAGES.hourglassJacket, span: 1, category: "system", domain: "system" },
+  docviewer:   { type: "docviewer",   label: "Document", icon: FileText, Component: DocViewerWidget,   image: IMAGES.womanFolder, span: 1, category: "system", domain: "system" },
   notifications: { type: "notifications", label: "Notificaties", icon: Bell, Component: NotificationsWidget, image: IMAGES.feetChair, span: 3, category: "core", domain: "system" },
 };
 

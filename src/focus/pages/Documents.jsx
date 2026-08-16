@@ -10,6 +10,7 @@ import {
   Star, Sparkles, Folder, Pencil, Trash2,
 } from "lucide-react";
 import FloatingPanel from "@/system/components/glass/FloatingPanel";
+import { useMediaViewer } from "@/lib/MediaViewerContext";
 
 const categories = ["recent", "project", "shared", "favorite", "giulia"];
 const categoryLabel = { recent: "Recent", project: "Projecten", shared: "Gedeeld", favorite: "Favorieten", giulia: "Giulia gegenereerd" };
@@ -26,6 +27,7 @@ export default function Documents() {
   const fileRef = useRef(null);
   const [editDoc, setEditDoc] = useState(null);
   const [editDraft, setEditDraft] = useState({});
+  const { openMedia } = useMediaViewer();
 
   const { data: documents, loading, reload } = useEntityList("Document");
   const { data: projects } = useEntityList("Project");
@@ -107,7 +109,8 @@ export default function Documents() {
         {!loading && filtered.map((doc) => {
           const Icon = fileIcons[doc.type] || FileText;
           return (
-            <GlassPanel key={doc.id} level={2} className="p-5 cursor-pointer hover:scale-[1.01] transition-transform group relative">
+            <div key={doc.id} onClick={() => openMedia(doc)} className="cursor-pointer">
+              <GlassPanel level={2} className="p-5 hover:scale-[1.01] transition-transform group relative">
               <div className="absolute top-3 right-3 flex gap-1.5 z-10">
                 <button onClick={(e) => { e.stopPropagation(); startEdit(doc); }} className="h-7 w-7 rounded-full glass-1 flex items-center justify-center text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition" aria-label="Bewerk"><Pencil className="h-3.5 w-3.5" /></button>
                 <button onClick={(e) => { e.stopPropagation(); delDoc(doc); }} className="h-7 w-7 rounded-full glass-1 flex items-center justify-center text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition" aria-label="Verwijder"><Trash2 className="h-3.5 w-3.5" /></button>
@@ -123,8 +126,8 @@ export default function Documents() {
                 <span className="uppercase">{doc.type}</span>
                 {doc.project_id && projTitle(doc.project_id) && <span className="text-olive truncate ml-2">{projTitle(doc.project_id)}</span>}
               </div>
-              {doc.url && <a href={doc.url} target="_blank" rel="noreferrer" className="text-[10px] text-olive mt-2 inline-block hover:underline">Openen →</a>}
             </GlassPanel>
+            </div>
           );
         })}
       </div>

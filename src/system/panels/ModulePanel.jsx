@@ -68,6 +68,7 @@ const MODULE_ACCENT = {
   socialpulse: "hsl(var(--life-blue))", socialplanner: "hsl(var(--life-blue))",
   household: "hsl(var(--life-blue))", personaladmin: "hsl(var(--life-sand))", hobbies: "hsl(var(--life-blue))",
   wantstoknow: "hsl(var(--olive))",
+  imageviewer: "hsl(var(--blue-grey))", videoplayer: "hsl(var(--sand))", musicplayer: "hsl(var(--olive))", docviewer: "hsl(var(--charcoal))",
 };
 
 // Modules without a widget keep an editorial photo; modules WITH a widget
@@ -144,6 +145,7 @@ const MODULE_TOPIC = {
   selfdevelopment: "Waar je aan groeit",
   selfpersonaltime: "Tijd voor jezelf",
   selfinsights: "Patronen over jezelf",
+  imageviewer: "Jouw afbeeldingen", videoplayer: "Je video's", musicplayer: "Je muziek", docviewer: "Jouw documenten",
 };
 
 export default function ModulePanel() {
