@@ -22,7 +22,7 @@ import { ELEVEN_TOOLS } from "../../shared/elevenTools.ts";
 
 const AGENT_ID = "agent_5501kza2zx7hehxbh0ydey1mq5gv";
 const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-const GEMINI_MODEL = "gemini-2.0-flash";
+const GEMINI_MODEL = "gemini-flash-latest";
 
 const NAV_PAGES = {
   "/": "Dashboard — overzicht van de dag",
@@ -96,6 +96,23 @@ Lees de actuele context, begrijp zijn intentie, wees scherp, voer uit, herplan w
 `;
 
 const SYSTEM_PROMPT = GIULIA_CORE_INSTRUCTIONS + "\n" + VOICE_ADDENDUM;
+
+// Zet platte params ({ key: { type, description, required } }) om naar een
+// geldige JSON-Schema zoals ElevenLabs verwacht: { type:"object", properties, required }.
+function toJsonSchema(flatParams) {
+  if (!flatParams || typeof flatParams !== "object") return undefined;
+  const entries = Object.entries(flatParams);
+  if (entries.length === 0) return undefined;
+  const properties = {};
+  const required = [];
+  for (const [key, val] of entries) {
+    properties[key] = { type: val.type, description: val.description };
+    if (val.required) required.push(key);
+  }
+  const schema = { type: "object", properties };
+  if (required.length) schema.required = required;
+  return schema;
+}
 
 async function readBody(res) {
   try { return await res.text(); } catch { return ""; }
@@ -171,10 +188,22 @@ export default async function (req) {
     cfg.agent.prompt.custom_llm = {
       url: useProxy ? proxyUrl : GEMINI_ENDPOINT,
       model: GEMINI_MODEL,
+      model_id: GEMINI_MODEL,
       api_key: secretLocator,
+      api_type: "chat_completions",
       temperature: 0.5,
     };
-    cfg.tools = ELEVEN_TOOLS;
+    // Tools horen op conversation_config.agent.prompt.tools (niet op cfg.tools).
+    // ElevenLabs auto-aangemaakt managed tools uit inline defs; daarom tool_ids
+    // leeggemaakt om de "both tools and tool_ids"-conflict te voorkomen.
+    cfg.agent.prompt.tool_ids = [];
+    cfg.agent.prompt.tools = ELEVEN_TOOLS.map((t) => ({
+      name: t.name,
+      description: t.description,
+      type: t.type || "client",
+      parameters: toJsonSchema(t.params),
+      expects_response: !!t.wait_for_response,
+    }));
 
     // 4) PATCH terug naar ElevenLabs.
     const patchRes = await fetch(`https://api.elevenlabs.io/v1/convai/agents/${AGENT_ID}`, {
@@ -186,6 +215,28 @@ export default async function (req) {
       return Response.json({ error: `PATCH agent faalde (${patchRes.status}): ${await readBody(patchRes)}` }, { status: 502 });
     }
 
+    // 5) Opruimen: verwijder managed tools die niet meer gerefereerd worden
+    //    (voorkomt accumulatie van wees-tools bij elke herconfiguratie).
+    let deletedOrphans = 0;
+    try {
+      const afterRes = await fetch(`https://api.elevenlabs.io/v1/convai/agents/${AGENT_ID}`, { headers: { "xi-api-key": xiKey } });
+      if (afterRes.ok) {
+        const afterAgent = await afterRes.json();
+        const activeIds = new Set(afterAgent.conversation_config?.agent?.prompt?.tool_ids || []);
+        const listRes = await fetch("https://api.elevenlabs.io/v1/convai/tools", { headers: { "xi-api-key": xiKey } });
+        if (listRes.ok) {
+          const lj = await listRes.json();
+          const all = Array.isArray(lj) ? lj : (lj?.tools || lj?.data || []);
+          for (const t of all) {
+            if (t?.id && !activeIds.has(t.id)) {
+              await fetch(`https://api.elevenlabs.io/v1/convai/tools/${t.id}`, { method: "DELETE", headers: { "xi-api-key": xiKey } });
+              deletedOrphans++;
+            }
+          }
+        }
+      }
+    } catch {}
+
     return Response.json({
       ok: true,
       agent_id: AGENT_ID,
@@ -196,6 +247,7 @@ export default async function (req) {
       fallback_key_available: !!process.env.ELEVEN_2_GEMINI_API_KEY,
       tools: ELEVEN_TOOLS.map((t) => t.name),
       prompt_chars: SYSTEM_PROMPT.length,
+      orphan_tools_removed: deletedOrphans,
     });
   } catch (e) {
     return Response.json({ error: String(e?.message || e) }, { status: 500 });
