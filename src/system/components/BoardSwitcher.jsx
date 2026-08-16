@@ -12,7 +12,7 @@ export default function BoardSwitcher({ active, onSelect }) {
   const [custom, setCustom] = useState(loadCustomBoards());
 
   const addBoard = () => {
-    const id = createCustomBoard("NOW");
+    const id = createCustomBoard("Nieuw");
     setCustom(loadCustomBoards());
     onSelect(id);
   };

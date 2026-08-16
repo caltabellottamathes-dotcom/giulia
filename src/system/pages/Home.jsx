@@ -4,6 +4,8 @@ import { usePanel } from "@/lib/PanelContext";
 import { WIDGETS } from "@/lib/widgetRegistry";
 import { MODULE_FUNCTIONS } from "@/lib/moduleFunctions";
 import { useDashboardBoard, ensureAllBoards, getActiveBoard, setActiveBoard } from "@/lib/useDashboardBoard";
+import { bumpRefresh } from "@/lib/refreshBus";
+import { getUrgentTypes } from "@/lib/nowUrgency";
 import { IMAGES } from "@/lib/images";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
@@ -38,7 +40,17 @@ export default function Home() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [userName, setUserName] = useState("");
   const [resetKey, setResetKey] = useState(0);
+  const [urgentTypes, setUrgentTypes] = useState(null);
   const { toast } = useToast();
+
+  const nowMode = activeBoard === "now";
+  useEffect(() => {
+    if (!nowMode) { setUrgentTypes(null); return; }
+    let cancelled = false;
+    setUrgentTypes(null);
+    getUrgentTypes().then((s) => { if (!cancelled) setUrgentTypes(s); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [nowMode, resetKey]);
 
   const selectBoard = (id) => {
     setActiveBoard(id);
@@ -65,7 +77,8 @@ export default function Home() {
     setRefreshing(true);
     try { await base44.functions.invoke("refreshDashboard", {}).catch(() => {}); } catch {}
     await reload();
-    setResetKey((k) => k + 1); // widgets opnieuw mounten → verse data
+    bumpRefresh(); // alle widgets én panelen via useLearningSync direct verversen
+    setResetKey((k) => k + 1);
     setRefreshing(false);
     toast({ title: "Alles bijgewerkt", description: "Data, widgets en panelen vernieuwd." });
   };
@@ -77,12 +90,14 @@ export default function Home() {
   const greeting = `${greetWord}, ${displayName}`;
 
   const sorted = [...widgets].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
-  const cells = sorted.map((w) => {
+  const visible = nowMode ? (urgentTypes ? sorted.filter((w) => urgentTypes.has(w.widget_type)) : []) : sorted;
+  const cells = visible.map((w) => {
     const def = WIDGETS[w.widget_type];
     if (!def) return null;
     if (w.widget_type === "concierge") return { node: <ConciergeWidget key={w.id} onRemove={() => removeWidget(w.id)} />, span: 2 };
     return { node: <WidgetCell key={w.id} def={def} widget={w} onRemove={() => removeWidget(w.id)} onThemeChange={patchWidget} sessionMode={isCustom} />, span: WIDGET_SPAN[w.widget_type] || 1 };
   }).filter(Boolean);
+  const showLoading = loading || (nowMode && urgentTypes === null);
 
   return (
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-mt-8 lg:mb-0 min-h-[calc(100svh-3.5rem)] lg:min-h-[calc(100svh-9.5rem)] overflow-hidden">
@@ -148,13 +163,13 @@ export default function Home() {
         </header>
 
         <div className="px-5 lg:px-10 pb-10 lg:pb-0">
-          {loading ? (
+          {showLoading ? (
             <div className="max-w-[1280px] columns-1 sm:columns-2 lg:columns-4 xl:columns-5 gap-3 lg:gap-4">
               {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
                 <div key={i} className="mb-3 lg:mb-4 break-inside-avoid h-[220px] rounded-[24px] shimmer" />
               ))}
             </div>
-          ) : sorted.length > 0 ? (
+          ) : visible.length > 0 ? (
             <MasonryGrid key={activeBoard + resetKey} className="max-w-[1280px]" gap={16} spans={cells.map((c) => c.span)} scale={0.9}>
               {cells.map((c) => c.node)}
             </MasonryGrid>

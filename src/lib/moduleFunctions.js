@@ -73,4 +73,48 @@ export const MODULE_FUNCTIONS = {
     { label: "Geheugen", to: "/memory" },
     { label: "Inzichten", to: "/insights" },
   ],
+  jedag: [
+    { label: "Je dag", to: "/agenda" },
+    { label: "Briefing", to: "/briefing" },
+  ],
+  selfdailystate: [
+    { label: "Daily State", to: "/self/daily-state" },
+    { label: "Inzichten", to: "/self/insights" },
+    { label: "Routines", to: "/self/routines" },
+  ],
+  selfroutines: [
+    { label: "Routines", to: "/self/routines" },
+    { label: "Wake", to: "/self/wake" },
+    { label: "Doelen", to: "/self/personal-development" },
+  ],
+  selfwake: [
+    { label: "Wake", to: "/self/wake" },
+    { label: "Routines", to: "/self/routines" },
+    { label: "Daily State", to: "/self/daily-state" },
+  ],
+  selftherapy: [
+    { label: "Therapy", to: "/self/therapy" },
+    { label: "Journal", to: "/self/journal" },
+    { label: "Mensen", to: "/people" },
+  ],
+  selfjournal: [
+    { label: "Journal", to: "/self/journal" },
+    { label: "Daily State", to: "/self/daily-state" },
+    { label: "Inzichten", to: "/self/insights" },
+  ],
+  selfdevelopment: [
+    { label: "Development", to: "/self/personal-development" },
+    { label: "Routines", to: "/self/routines" },
+    { label: "Inzichten", to: "/self/insights" },
+  ],
+  selfpersonaltime: [
+    { label: "Personal Time", to: "/self/personal-time" },
+    { label: "Agenda", to: "/agenda" },
+    { label: "Routines", to: "/self/routines" },
+  ],
+  selfinsights: [
+    { label: "Self Insights", to: "/self/insights" },
+    { label: "Daily State", to: "/self/daily-state" },
+    { label: "Inzichten", to: "/insights" },
+  ],
 };

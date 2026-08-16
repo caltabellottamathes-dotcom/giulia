@@ -100,6 +100,10 @@ const MODULE_ROUTE = {
   socialpulse: "/life/social-pulse", socialplanner: "/life/social-planner",
   household: "/life/household", personaladmin: "/life/personal-admin", hobbies: "/life/hobbies",
   wantstoknow: "/wants-to-know",
+  selfdailystate: "/self/daily-state", selfroutines: "/self/routines", selfwake: "/self/wake",
+  selftherapy: "/self/therapy", selfjournal: "/self/journal", selfdevelopment: "/self/personal-development",
+  selfpersonaltime: "/self/personal-time", selfinsights: "/self/insights",
+  jedag: "/agenda",
 };
 
 // Topic-related subtitles per module — replaces the bare label so the panel
@@ -132,6 +136,14 @@ const MODULE_TOPIC = {
   household: "Het huishouden op orde", personaladmin: "Wat er geregeld moet worden",
   hobbies: "Wat jou energie geeft",
   wantstoknow: "Wat Giulia nog wil weten",
+  selfdailystate: "Hoe je er nu bij staat",
+  selfroutines: "Routines die je vasthoudt",
+  selfwake: "Je ochtendritueel",
+  selftherapy: "Je traject en voortgang",
+  selfjournal: "Je gedachten vastgelegd",
+  selfdevelopment: "Waar je aan groeit",
+  selfpersonaltime: "Tijd voor jezelf",
+  selfinsights: "Patronen over jezelf",
 };
 
 export default function ModulePanel() {

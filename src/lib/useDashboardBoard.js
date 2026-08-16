@@ -14,7 +14,10 @@ import { WIDGETS } from "@/lib/widgetRegistry";
  * verdwijnen bij afsluiten/herstart.
  */
 
+const NOW_WIDGET_TYPES = ["approvals", "tasks", "notifications", "email", "whatsapp", "household", "personaladmin", "selfdailystate", "selfinsights"];
+
 export const DEFAULT_BOARDS = [
+  { id: "now", label: "NOW", domain: "now" },
   { id: "giulia", label: "GIULIA", domain: "giulia" },
   { id: "focus", label: "FOCUS", domain: "focus" },
   { id: "life", label: "LIFE", domain: "life" },
@@ -27,12 +30,13 @@ export function isDefaultBoard(id) {
 }
 
 export function domainWidgetTypes(domain) {
+  if (domain === "now") return NOW_WIDGET_TYPES;
   return Object.values(WIDGETS).filter((w) => w.domain === domain).map((w) => w.type);
 }
 
 // ── active board (session) ──
 export function getActiveBoard() {
-  return sessionStorage.getItem("giulia_active_board") || "giulia";
+  return sessionStorage.getItem("giulia_active_board") || "now";
 }
 export function setActiveBoard(id) {
   sessionStorage.setItem("giulia_active_board", id);

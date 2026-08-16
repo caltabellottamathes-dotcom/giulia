@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { onRefresh } from "@/lib/refreshBus";
 
 /**
  * useLearningSync — abonneert op de Activity-feed: de ene learning/sync-bron.
@@ -20,5 +21,7 @@ export function useLearningSync() {
     });
     return () => { try { unsub && unsub(); } catch { /* ignore */ } };
   }, []);
+  // Update-knop → directe, globale refresh voor alles wat deze hook gebruikt.
+  useEffect(() => onRefresh(() => setTick((t) => t + 1)), []);
   return tick;
 }
