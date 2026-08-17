@@ -78,6 +78,14 @@
       "format": "date-time",
       "title": "Next Appointment"
     },
+    "event_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Event IDs",
+      "description": "ID's van gekoppelde CalendarEvent-afspraken (bidirectioneel met CalendarEvent.therapy_trajectory_id)."
+    },
     "agent_source": {
       "type": "string",
       "title": "Agent Source"

@@ -42,6 +42,11 @@
       "type": "string",
       "title": "Project ID"
     },
+    "therapy_trajectory_id": {
+      "type": "string",
+      "title": "Therapy Trajectory ID",
+      "description": "ID van het gekoppelde TherapyTrajectory (SELF) \u2014 bidirectionele koppeling met TherapyTrajectory.event_ids."
+    },
     "travel_time": {
       "type": "number",
       "title": "Travel Time (min)"

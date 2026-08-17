@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
+import React, { useState, useRef, useEffect } from "react";
+import { useGiuliaChat } from "@/lib/useGiuliaChat";
 import { IMAGES } from "@/lib/images";
 import { useToast } from "@/components/ui/use-toast";
 import { Send, Mic, Sparkles } from "lucide-react";
@@ -8,66 +8,36 @@ import PageHero from "@/system/components/glass/PageHero";
 import AgentMessageBubble from "@/giulia/components/AgentMessageBubble";
 
 const GIULIA_AVATAR = IMAGES.giuliaConcierge;
-const PILLS = ["Wat staat er vandaag?", "Openstaande taken?", "Check mijn email", "Wat is veranderd?"];
-
-function toBubble(m) {
-  return {
-    id: m.id,
-    role: m.role === "user" ? "user" : "assistant",
-    content: m.content || "",
-    tool_calls: Array.isArray(m.tool_calls) ? m.tool_calls : [],
-  };
-}
+const PILLS = ["Wat staat er vandaag op de agenda?", "Openstaande taken?", "Check mijn email", "Wat is veranderd?"];
 
 export default function Chat() {
-  const [messages, setMessages] = useState([]);
+  const { messages, send, sending, ready } = useGiuliaChat();
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
   const endRef = useRef(null);
   const { toast } = useToast();
-
-  const loadMessages = useCallback(async () => {
-    const list = await base44.entities.Message.filter({ channel: "in-app" }, "-created_date", 60).catch(() => []);
-    const ordered = (list || []).slice().reverse();
-    setMessages(ordered.map(toBubble));
-  }, []);
-
-  useEffect(() => {
-    (async () => {
-      await loadMessages();
-      setLoading(false);
-    })();
-  }, [loadMessages]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, sending]);
 
-  const send = async (text) => {
+  const submit = async (text) => {
     const msg = (text ?? input).trim();
     if (!msg || sending) return;
     setInput("");
-    const userBubble = { id: `local-${Date.now()}`, role: "user", content: msg, tool_calls: [] };
-    setMessages((prev) => [...prev, userBubble]);
-    setSending(true);
     try {
-      const res = await base44.functions.invoke("chatWithGiulia", { message: msg, source: "chat" });
-      await loadMessages();
-      if (!res?.ok) toast({ title: "Giulia reageerde niet", variant: "destructive" });
-    } catch (e) {
+      await send(msg);
+    } catch {
       toast({ title: "Verzenden mislukt", variant: "destructive" });
-    } finally {
-      setSending(false);
     }
   };
 
   const asked = useRef(false);
   useEffect(() => {
-    if (asked.current || loading) return;
+    if (asked.current || !ready) return;
     const ask = new URLSearchParams(window.location.search).get("ask");
-    if (ask) { asked.current = true; send(ask); }
-  }, [loading]);
+    if (ask) { asked.current = true; submit(ask); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready]);
 
   return (
     <div className="h-[calc(100vh-7rem)] flex flex-col animate-fade-up">
@@ -86,11 +56,11 @@ export default function Chat() {
 
       <div className="glass-2 rounded-3xl flex-1 flex flex-col min-h-0 overflow-hidden">
         <div className="flex-1 overflow-y-auto p-5 lg:p-7 space-y-4">
-          {loading ? (
+          {!ready ? (
             <div className="flex items-center justify-center h-full">
               <div className="h-8 w-8 border-2 border-muted-foreground/20 border-t-muted-foreground rounded-full animate-spin" />
             </div>
-          ) : messages.length === 0 ? (
+          ) : messages.length === 0 && !sending ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <img src={GIULIA_AVATAR} alt="" className="h-16 w-16 rounded-full object-cover mb-3" />
               <p className="text-lg font-display font-medium">Waar kan ik je mee helpen?</p>
@@ -115,10 +85,10 @@ export default function Chat() {
           <div ref={endRef} />
         </div>
 
-        {messages.length <= 2 && (
+        {messages.length <= 2 && ready && (
           <div className="px-5 lg:px-7 pb-3 flex flex-wrap gap-2">
             {PILLS.map((p) => (
-              <button key={p} onClick={() => send(p)} className="glass-1 rounded-full px-3.5 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <button key={p} onClick={() => submit(p)} className="glass-1 rounded-full px-3.5 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
                 {p}
               </button>
             ))}
@@ -130,12 +100,12 @@ export default function Chat() {
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && send(input)}
+              onKeyDown={(e) => e.key === "Enter" && submit(input)}
               placeholder="Vraag Giulia iets..."
               className="flex-1 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-olive/30"
             />
             <button
-              onClick={() => send(input)}
+              onClick={() => submit(input)}
               disabled={sending || !input.trim()}
               className="h-10 w-10 rounded-xl bg-charcoal text-ivory flex items-center justify-center disabled:opacity-40 hover:-translate-y-0.5 transition-transform"
               aria-label="Verzenden"

@@ -97,7 +97,9 @@ export default async function (req) {
       pendingApprovals,
       recentActivity,
       pendingNotifications,
-      protocolDocs
+      protocolDocs,
+      upcomingEvents,
+      activeTherapy
     ] = await Promise.all([
       sr.entities.Memory.list("-created_date", 150).catch(() => []),
       sr.entities.Project.filter({ status: { $in: ["planning", "in_progress", "waiting"] } }).catch(() => []),
@@ -107,6 +109,8 @@ export default async function (req) {
       sr.entities.Activity.list("-created_date", 10).catch(() => []),
       sr.entities.Notification.filter({ status: "unread" }).catch(() => []),
       sr.entities.Document.filter({ document_type: "reference" }).catch(() => []),
+      sr.entities.CalendarEvent.filter({ start: { $gte: new Date(Date.now() - 86400000).toISOString() } }, "start", 60).catch(() => []),
+      sr.entities.TherapyTrajectory.filter({ status: "active" }).catch(() => []),
     ]);
 
     // Semantische geheugen-selectie
@@ -148,7 +152,14 @@ export default async function (req) {
       `Wachtende Goedkeuringen voor externe acties: ${pendingApprovals.length}`,
       `Ongelezen notificaties (vragen/opmerkingen aan Salvo): ${pendingNotifications.length}`,
       `Recente systeem activiteit:`,
-      recentActivity.slice(0, 5).map(a => `- ${String(a.description).slice(0, 140)}`).join("\n")
+      recentActivity.slice(0, 5).map(a => `- ${String(a.description).slice(0, 140)}`).join("\n"),
+      ``,
+      `AGENDA — aankomende afspraken (${upcomingEvents.length}):`,
+      `[Gebruik deze IDs als Salvo een afspraak noemt of er iets aan koppelt.]`,
+      upcomingEvents.slice(0, 30).map(e => `- ID: ${e.id} | ${e.title} | start: ${e.start} | domain: ${e.domain || "?"} | therapy_trajectory_id: ${e.therapy_trajectory_id || "—"}`).join("\n"),
+      ``,
+      `THERAPIE-/BEGELEIDINGSTRAJECTEN (actief, ${activeTherapy.length}):`,
+      activeTherapy.map(t => `- ID: ${t.id} | ${t.title} | type: ${t.type} | therapeut: ${t.therapist_name || "—"} | next: ${t.next_appointment || "—"}`).join("\n")
     ].join("\n");
 
     // 2. THE SYSTEM PROMPT (The Personality & Rules)

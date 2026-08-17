@@ -535,6 +535,24 @@ export const GIULIA_SKILLS = [
     }
   },
   {
+    name: "link_event_to_therapy",
+    description: "Koppel een BESTAANDE agenda-afspraak (CalendarEvent) aan een therapie-/begeleidingstraject (TherapyTrajectory). Gebruik dit als Salvo vraagt om een afspraak 'ook bij therapie te zetten'. Zoek eerst het event en het traject op (IDs uit de AGENDA- en THERAPIE-context, of via find_objects). Zet CalendarEvent.therapy_trajectory_id (en domain='self') én voeg het event-ID toe aan TherapyTrajectory.event_ids — bidirectioneel. Raad NOOIT een ID; gebruik altijd de ID uit de context of find_objects.",
+    inputSchema: { type: "object", properties: { event_id: { type: "string" }, trajectory_id: { type: "string" } }, required: ["event_id", "trajectory_id"] },
+    execute: async ({ event_id, trajectory_id }, base44) => {
+      const sr = base44.asServiceRole;
+      const ev = await sr.entities.CalendarEvent.update(event_id, { therapy_trajectory_id: trajectory_id, domain: "self", agent_source: "GIULIA-CORE" }).catch(() => null);
+      if (!ev) return { error: "event not found" };
+      const t = await sr.entities.TherapyTrajectory.get(trajectory_id).catch(() => null);
+      let event_ids = [];
+      if (t) {
+        event_ids = [...(t.event_ids || []), event_id].filter((v, i, a) => a.indexOf(v) === i);
+        await sr.entities.TherapyTrajectory.update(trajectory_id, { event_ids, agent_source: "GIULIA-CORE" }).catch(() => null);
+      }
+      await emitEvent(base44, { event_type: "THERAPY_EVENT_LINKED", object_type: "CalendarEvent", object_id: event_id, domain: "self", description: `Afspraak gekoppeld aan therapie-traject: ${ev.title}` });
+      return { ok: true, event_id, trajectory_id, event_ids };
+    }
+  },
+  {
     name: "add_need",
     description: "Registreer een behoefte als eersteklas object (SelfNeed-entity) met status, prioriteit en categorie. Gebruik dit als een behoefte opvolging verdient (niet alleen een vluchtige check-in-tag).",
     inputSchema: { type: "object", properties: { title: { type: "string" }, priority: { type: "string", enum: ["low", "medium", "high"], default: "medium" }, category: { type: "string" }, context: { type: "string" }, check_in_id: { type: "string" } }, required: ["title"] },

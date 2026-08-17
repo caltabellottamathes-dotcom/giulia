@@ -1,6 +1,7 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
-import { base44 } from "@/api/base44Client";
+import React, { useRef, useState, useEffect } from "react";
+import { useGiuliaChat } from "@/lib/useGiuliaChat";
 import { usePanel } from "@/lib/PanelContext";
+import { base44 } from "@/api/base44Client";
 import { X, ArrowUp, Loader2, Phone, Sparkles, Paperclip, Image as ImageIcon, Film, Music, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ChatMarkdown from "@/system/components/glass/ChatMarkdown";
@@ -8,13 +9,10 @@ import { useMediaViewer } from "@/lib/MediaViewerContext";
 import ChatVoiceCall from "@/giulia/panels/ChatVoiceCall";
 
 /**
- * ChatWindow — GIULIA-GIULIA's conversation panel. Slides in from the right
- * edge as a full-height refraction-glass panel. All traffic flows through
- * GIULIA-CONNECT (chatWithGiulia) → GIULIA-CORE (giuliaLeader).
- *
- * Naamgevingsconventie GIULIA OS:
- *   GIULIA-SYSTEM  = workspace Superagent · GIULIA-GIULIA = in-app agent (gezicht)
- *   GIULIA-CORE    = giuliaLeader (denkbrein) · GIULIA-CONNECT = chatWithGiulia (luik)
+ * ChatWindow — GIULIA-GIULIA's conversation panel. Praat rechtstreeks met de
+ * giulia_assistant-agent (via useGiuliaChat) — dezelfde agent + hetzelfde
+ * gedeelde gesprek als de /chat-pagina. De agent stuurt CORE aan via haar
+ * entity-tools + backend-functies. Geen chatWithGiulia-luik meer.
  */
 const SUGGESTIONS = [
   "Wat staat er vandaag op de agenda?",
@@ -24,10 +22,9 @@ const SUGGESTIONS = [
 ];
 
 export default function ChatWindow() {
-  const { chatOpen, closeChat, openModule, pendingMessage, setPendingMessage } = usePanel();
-  const [messages, setMessages] = useState([]);
+  const { chatOpen, closeChat, pendingMessage, setPendingMessage } = usePanel();
+  const { messages, send, sending, ready } = useGiuliaChat();
   const [input, setInput] = useState("");
-  const [thinking, setThinking] = useState(false);
   const [callActive, setCallActive] = useState(false);
   const [superagent, setSuperagent] = useState(false);
   const scrollRef = useRef(null);
@@ -51,58 +48,40 @@ export default function ChatWindow() {
   const scrollToBottom = (behavior = "smooth") =>
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior });
 
-  const load = useCallback(async () => {
-    try {
-      const list = await base44.entities.Message.list("-created_date", 200);
-      const inApp = (list || []).filter((m) => m.channel === "in-app");
-      setMessages(inApp.reverse().slice(-120));
-    } catch { setMessages([]); }
-  }, []);
-
-  // Bij openen altijd het laatst verstuurde bericht meteen tonen — niet het
-  // allereerste. Spring direct (geen smooth) naar de bodem zodra de berichten
-  // geladen zijn, en opnieuw ná de slide-in animatie (0.4s), zodat de laatste
-  // bubble altijd boven de invoer staat — op elke pagina.
   useEffect(() => {
     if (!chatOpen) return;
     const timers = [];
-    load().then(() => {
-      timers.push(setTimeout(() => scrollToBottom("auto"), 40));
-      timers.push(setTimeout(() => scrollToBottom("auto"), 220));
-      timers.push(setTimeout(() => scrollToBottom("auto"), 460));
-    });
+    timers.push(setTimeout(() => scrollToBottom("auto"), 40));
+    timers.push(setTimeout(() => scrollToBottom("auto"), 220));
+    timers.push(setTimeout(() => scrollToBottom("auto"), 460));
     return () => timers.forEach(clearTimeout);
-  }, [chatOpen, load]);
+  }, [chatOpen]);
 
-  const send = async (text) => {
+  useEffect(() => { scrollToBottom("auto"); }, [messages, sending]);
+
+  const doSend = async (text) => {
     const content = (text ?? input).trim();
-    if ((!content && attachments.length === 0) || thinking) return;
+    if ((!content && attachments.length === 0) || sending) return;
     const atts = attachments;
     setInput("");
     setAttachments([]);
-    setMessages((prev) => [...prev, { id: `u${Date.now()}`, role: "user", content, attachments: atts }]);
-    setThinking(true);
     scrollToBottom();
     try {
-      await base44.functions.invoke("chatWithGiulia", { message: content, file_urls: atts.map((a) => a.url), attachments: atts });
-      await load();
-    } catch (e) {
-      setMessages((prev) => [...prev, { id: `e${Date.now()}`, role: "giulia", content: "Er ging iets mis bij het bereiken van Giulia. Probeer het opnieuw." }]);
-    } finally {
-      setThinking(false);
-      requestAnimationFrame(() => scrollToBottom("auto"));
-      setTimeout(() => scrollToBottom("smooth"), 120);
+      await send(content, { attachments: atts, file_urls: atts.map((a) => a.url) });
+    } catch {
+      // de hook toont de fout via het gesprek; niets extra hier
     }
   };
 
   // Messages entered in the interaction bar are handed off here on open.
   useEffect(() => {
-    if (chatOpen && pendingMessage) {
+    if (chatOpen && pendingMessage && ready) {
       const msg = pendingMessage;
       setPendingMessage(null);
-      send(msg);
+      doSend(msg);
     }
-  }, [chatOpen, pendingMessage, setPendingMessage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatOpen, pendingMessage, ready]);
 
   const onPickFile = async (e) => {
     const files = Array.from(e.target.files || []);
@@ -128,7 +107,6 @@ export default function ChatWindow() {
 
       <div className="fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 z-50 w-[calc(100%-2rem)] lg:w-[460px] animate-slide-right">
         <div className="refraction-panel h-full flex flex-col">
-          {/* Close — top-left */}
           <button
             onClick={closeChat}
             className="absolute top-4 left-4 z-40 h-9 w-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors"
@@ -137,12 +115,10 @@ export default function ChatWindow() {
             <X className="h-4 w-4" />
           </button>
 
-          {/* Inline voice call — direct spraakgesprek met GIULIA-GIULIA (of Superagent) */}
           {callActive && (
             <ChatVoiceCall superagent={superagent} onEnd={() => setCallActive(false)} />
           )}
 
-          {/* Header */}
           <div className="shrink-0 px-7 pt-7 pb-5 flex items-center justify-between">
             <div className="flex items-center gap-3 ml-12">
               <span className="h-2.5 w-2.5 rounded-full bg-olive animate-pulse-soft" />
@@ -158,11 +134,9 @@ export default function ChatWindow() {
                 onClick={() => setSuperagent((s) => !s)}
                 className={cn(
                   "flex items-center gap-1.5 rounded-full px-3 py-2 text-[11px] font-semibold border transition-all",
-                  superagent
-                    ? "bg-olive text-ivory border-olive"
-                    : "bg-ivory/10 border-ivory/15 text-ivory/60 hover:text-ivory"
+                  superagent ? "bg-olive text-ivory border-olive" : "bg-ivory/10 border-ivory/15 text-ivory/60 hover:text-ivory"
                 )}
-                title="GIULIA-SYSTEM — vollere redenering via GIULIA-CONNECT → GIULIA-CORE"
+                title="Super-modus (vollere redenering)"
               >
                 <Sparkles className="h-3 w-3" /> Super
               </button>
@@ -175,9 +149,8 @@ export default function ChatWindow() {
             </div>
           </div>
 
-          {/* Messages — generous whitespace, bubbles breathe */}
           <div ref={scrollRef} className="relative flex-1 overflow-y-auto px-7 py-4 space-y-4">
-            {messages.length === 0 && !thinking && (
+            {messages.length === 0 && !sending && ready && (
               <div className="flex flex-col items-center text-center py-14 px-4">
                 <p className="font-display font-semibold text-2xl text-ivory mb-3 tracking-[-0.01em]">
                   Hier is GIULIA-GIULIA.
@@ -190,20 +163,19 @@ export default function ChatWindow() {
             {messages.map((m) => (
               <MessageBubble key={m.id} message={m} />
             ))}
-            {thinking && (
+            {sending && (
               <div className="flex items-center gap-2 text-ivory/50 text-xs ml-1">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" /> Giulia denkt na…
               </div>
             )}
           </div>
 
-          {/* Suggestions */}
-          {messages.length === 0 && (
+          {messages.length === 0 && ready && (
             <div className="px-7 pb-3 flex flex-wrap gap-2">
               {SUGGESTIONS.map((s) => (
                 <button
                   key={s}
-                  onClick={() => send(s)}
+                  onClick={() => doSend(s)}
                   className="chat-bubble px-4 py-2 text-[12px] text-ivory/70 hover:text-ivory transition-colors"
                 >
                   {s}
@@ -212,7 +184,6 @@ export default function ChatWindow() {
             </div>
           )}
 
-          {/* Input — spacious, multi-line */}
           <div className="shrink-0 px-7 pb-7 pt-4">
             {attachments.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-2">
@@ -237,15 +208,15 @@ export default function ChatWindow() {
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); send(); } }}
+                onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); doSend(); } }}
                 placeholder="Vraag Giulia anything…  (Enter = nieuwe regel · ⌘/Ctrl+Enter = verstuur)"
                 rows={1}
                 className="flex-1 chat-bubble px-5 py-3.5 text-sm text-ivory placeholder:text-ivory/40 focus:outline-none resize-none max-h-40"
                 style={{ minHeight: "48px" }}
               />
               <button
-                onClick={() => send()}
-                disabled={(!input.trim() && attachments.length === 0) || thinking}
+                onClick={() => doSend()}
+                disabled={(!input.trim() && attachments.length === 0) || sending}
                 className="h-12 w-12 shrink-0 rounded-full bg-foreground text-background flex items-center justify-center hover:scale-105 transition-transform disabled:opacity-40 disabled:hover:scale-100"
                 aria-label="Verstuur"
               >
