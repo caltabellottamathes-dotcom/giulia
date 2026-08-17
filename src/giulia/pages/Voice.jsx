@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { IMAGES } from "@/lib/images";
 import { ELEVEN_AGENT_ID } from "@/lib/voiceNavigation";
 import { base44 } from "@/api/base44Client";
+import { useToast } from "@/components/ui/use-toast";
 import { Mic, Phone, PhoneOff, Volume2, Loader2 } from "lucide-react";
 
 /**
@@ -20,43 +21,47 @@ import { Mic, Phone, PhoneOff, Volume2, Loader2 } from "lucide-react";
  */
 function VoiceInner() {
   const { activeModule } = usePanel();
+  const { toast } = useToast();
   const endRef = useRef(null);
   const inPanel = activeModule === "voice";
 
-  const { startSession, endSession, status, isSpeaking, messages } = useConversation({
+  // ── Stem → chatWithGiulia pijplijn ──────────────────────────────────────
+  // useConversation (v1.12.1) geeft GEEN messages-array terug, alleen `message`
+  // (enkelvoudig). Daarom gebruiken we de onMessage-callback: bij elke
+  // gesproken beurt bouwen we hier het transcript op EN sturen we de
+  // gebruikersbeurt direct naar chatWithGiulia — die het echte werk doet
+  // (entity-CRUD, navigatie via AgentNavigation, geheugen). De stem-agent
+  // zelf doet alleen conversatie (directe Gemini, geen tools) en geeft een
+  // korte mondelinge bevestiging. Omzeilt ElevenLabs client-tool bug (#603).
+  const [transcript, setTranscript] = useState([]);
+  const [giuliaWorking, setGiuliaWorking] = useState(false);
+  const processedRef = useRef(new Set());
+
+  const { startSession, endSession, status, isSpeaking } = useConversation({
     agentId: ELEVEN_AGENT_ID,
+    onMessage: (payload) => {
+      const text = String(payload?.message || "").trim();
+      const role = payload?.role || (payload?.source === "ai" ? "assistant" : payload?.source || "user");
+      if (!text) return;
+      setTranscript((t) => [...t, { id: `${Date.now()}-${Math.random()}`, role, text }]);
+      if (role === "user" && !processedRef.current.has(text)) {
+        processedRef.current.add(text);
+        setGiuliaWorking(true);
+        base44.functions.invoke("chatWithGiulia", { message: text, source: "chat" })
+          .then(() => setGiuliaWorking(false))
+          .catch((e) => {
+            setGiuliaWorking(false);
+            toast({ title: "Giulia kon het niet uitvoeren", description: String(e?.message || e), variant: "destructive" });
+          });
+      }
+    },
   });
   const connected = status === "connected";
   const connecting = status === "connecting";
 
-  // ── Stem → chatWithGiulia pijplijn ──────────────────────────────────────
-  // De ElevenLabs-agent doet alleen conversatie (directe Gemini, geen tools).
-  // Elke uitgesproken gebruikersbeurt wordt hier onderschept en naar
-  // chatWithGiulia doorgestuurd — die het ECHTE werk doet: entity-CRUD,
-  // navigatie (via AgentNavigation), geheugen, etc. Resultaat verschijnt in
-  // het chat-paneel + acties gebeuren op het scherm. Omzeilt de ElevenLabs
-  // client-tool bug (#603) volledig.
-  const processedRef = useRef(new Set());
-  const [giuliaWorking, setGiuliaWorking] = useState(false);
-  useEffect(() => {
-    if (!connected || !messages?.length) return;
-    let piped = false;
-    for (const m of messages) {
-      if (m.role !== "user") continue;
-      const text = String(m.message || m.content || m.text || "").trim();
-      if (!text || processedRef.current.has(text)) continue;
-      processedRef.current.add(text);
-      piped = true;
-      base44.functions.invoke("chatWithGiulia", { message: text, source: "chat" })
-        .catch(() => {})
-        .finally(() => setGiuliaWorking(false));
-    }
-    if (piped) setGiuliaWorking(true);
-  }, [messages, connected]);
-
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [transcript]);
 
   // Sluit de sessie netjes af bij unmount (voorkomt hangend mic bij paneel-sluiten).
   useEffect(() => {
@@ -69,6 +74,8 @@ function VoiceInner() {
     if (connected) {
       try { await endSession(); } catch {}
     } else {
+      setTranscript([]);
+      processedRef.current.clear();
       try { await startSession(); } catch {}
     }
   };
@@ -160,24 +167,23 @@ function VoiceInner() {
             )}
           </div>
 
-          {(!messages || messages.length === 0) ? (
+          {transcript.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">
               {connected ? "Zeg iets om te beginnen…" : "Start een gesprek om Giulia's antwoorden live te zien"}
             </p>
           ) : (
             <div className="space-y-2.5 flex-1 overflow-y-auto">
-              {messages.map((m, i) => {
-                const text = String(m.message || m.content || m.text || "");
+              {transcript.map((m) => {
                 const isUser = m.role === "user";
                 return (
-                  <div key={i} className={cn("flex", isUser ? "justify-end" : "justify-start")}>
+                  <div key={m.id} className={cn("flex", isUser ? "justify-end" : "justify-start")}>
                     <div
                       className={cn(
                         "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
                         isUser ? "bg-charcoal text-ivory rounded-br-md" : "glass-1 rounded-bl-md"
                       )}
                     >
-                      {text}
+                      {m.text}
                     </div>
                   </div>
                 );
