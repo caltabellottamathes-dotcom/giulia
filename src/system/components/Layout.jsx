@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { IMAGES } from "@/lib/images";
 import ModulePanel from "@/system/panels/ModulePanel";
 import ChatWindow from "@/giulia/panels/ChatWindow";
+import VoiceWindow from "@/giulia/panels/VoiceWindow";
 import WorkspaceToolbar from "@/system/components/WorkspaceToolbar";
 import { MediaViewerProvider } from "@/lib/MediaViewerContext";
 import { BeeldbankProvider } from "@/lib/BeeldbankContext";
@@ -52,7 +53,7 @@ export default function Layout() {
 function LayoutInner() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { openModule } = usePanel();
+  const { openModule, openVoice } = usePanel();
   const { logout } = useAuth();
   useAgentNavigation({ openModule });
 
@@ -83,7 +84,7 @@ function LayoutInner() {
               Giulia actief
             </div>
             <button
-              onClick={() => openModule("voice")}
+              onClick={openVoice}
               className="h-9 w-9 rounded-full  flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors"
               aria-label="Bel Giulia"
             >
@@ -144,6 +145,9 @@ function LayoutInner() {
 
       {/* Dedicated chat window — the Giulia agent */}
       <ChatWindow />
+
+      {/* Persistent voice window — stays open across dashboard navigation */}
+      <VoiceWindow />
 
       {/* Permanent glass interaction bar — bottom-right */}
       <WorkspaceToolbar />

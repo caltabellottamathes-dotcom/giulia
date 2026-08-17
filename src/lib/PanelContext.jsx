@@ -2,20 +2,26 @@ import React, { createContext, useContext, useState } from "react";
 
 /**
  * Global panel state — exactly ONE sliding glass panel can be open at a time
- * for modules. Chat is a separate, dedicated floating window (Giulia agent)
- * that can coexist with a module panel.
+ * for modules. Chat and Voice are separate, dedicated floating windows that
+ * can coexist with a module panel and persist across dashboard navigation.
  */
 const PanelContext = createContext(null);
 
 export function PanelProvider({ children }) {
   const [activeModule, setActiveModule] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const [pendingMessage, setPendingMessage] = useState(null);
 
   // "chat" opens the dedicated chat window instead of a module panel.
+  // "voice" opens the dedicated, navigation-persistent voice window.
   const openModule = (key) => {
     if (key === "chat") {
       setChatOpen(true);
+      return;
+    }
+    if (key === "voice") {
+      setVoiceOpen(true);
       return;
     }
     setActiveModule(key);
@@ -23,10 +29,17 @@ export function PanelProvider({ children }) {
   const closeModule = () => setActiveModule(null);
   const openChat = () => setChatOpen(true);
   const closeChat = () => setChatOpen(false);
+  const openVoice = () => setVoiceOpen(true);
+  const closeVoice = () => setVoiceOpen(false);
 
   return (
     <PanelContext.Provider
-      value={{ activeModule, openModule, closeModule, chatOpen, openChat, closeChat, pendingMessage, setPendingMessage }}
+      value={{
+        activeModule, openModule, closeModule,
+        chatOpen, openChat, closeChat,
+        voiceOpen, openVoice, closeVoice,
+        pendingMessage, setPendingMessage,
+      }}
     >
       {children}
     </PanelContext.Provider>

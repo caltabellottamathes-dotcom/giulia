@@ -73,7 +73,7 @@ function LiveLine({ color }) {
  * zichtbaar als indicator van het actieve onderdeel.
  */
 export default function WorkspaceToolbar() {
-  const { openModule, openChat, setPendingMessage } = usePanel();
+  const { openModule, openChat, openVoice, setPendingMessage } = usePanel();
   const { active, start, stop, captured, clear } = useContextCapture();
   const [launcherOpen, setLauncherOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -209,7 +209,7 @@ export default function WorkspaceToolbar() {
             {/* Actions (right) */}
             <button onClick={() => { reveal(); active ? stop() : start(); }} aria-label="Context toevoegen" className={cn(actionBtn, active && "text-olive")}><BrainCircuit className="h-5 w-5" /></button>
             <button onClick={() => { reveal(); setLauncherOpen(true); }} aria-label="Snelle acties" className={actionBtn}><Plus className="h-5 w-5" /></button>
-            <button onClick={() => { reveal(); openModule("voice"); }} aria-label="Bel Giulia" className={actionBtn}><Phone className="h-5 w-5" /></button>
+            <button onClick={() => { reveal(); openVoice(); }} aria-label="Bel Giulia" className={actionBtn}><Phone className="h-5 w-5" /></button>
             <button onClick={() => { reveal(); openChat(); }} aria-label="Chat met Giulia" className={actionBtn}><MessageSquare className="h-5 w-5" /></button>
           </div>
         </div>
