@@ -22,7 +22,7 @@ import { ELEVEN_TOOLS } from "../../shared/elevenTools.ts";
 
 const AGENT_ID = "agent_5501kza2zx7hehxbh0ydey1mq5gv";
 const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-const GEMINI_MODEL = "gemini-flash-latest";
+const GEMINI_MODEL = "gemini-3.5-flash-lite";
 
 const NAV_PAGES = {
   "/": "Dashboard — overzicht van de dag",
