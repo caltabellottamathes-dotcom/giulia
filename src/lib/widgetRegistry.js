@@ -80,7 +80,7 @@ export const WIDGETS = {
   household:     { type: "household",     label: "Huishouden",         icon: Home,          Component: HouseholdWidget,      image: IMAGES.lifeHousehold,      span: 3, category: "life", domain: "life" },
   personaladmin: { type: "personaladmin", label: "Persoonlijk Admin", icon: ClipboardList,  Component: PersonalAdminWidget,  image: IMAGES.lifePersonalAdmin,  span: 3, category: "life", domain: "life" },
   hobbies:       { type: "hobbies",       label: "Hobby's",           icon: Palette,        Component: HobbiesWidget,        image: IMAGES.lifeHobbies,        span: 3, category: "life", domain: "life" },
-  food:          { type: "food",          label: "Food",              icon: Utensils,       Component: FoodWidget,           image: IMAGES.lifeFood,           span: 4, category: "life", domain: "life" },
+  food:          { type: "food",          label: "Food",              icon: Utensils,       Component: FoodWidget,           image: IMAGES.lifeFood,           span: 2, category: "life", domain: "life" },
 
   // ── SELF ──
   selfdailystate:   { type: "selfdailystate",   label: "Daily State",      icon: ActivityIcon, Component: DailyStateEditorial,          image: IMAGES.selfDailyState,    span: 1, category: "self", domain: "self" },

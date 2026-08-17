@@ -1,13 +1,13 @@
 import React, { useMemo, useState } from "react";
 import GlassPanel from "@/system/components/glass/GlassPanel";
-import { MEAL_LABELS, MEAL_ORDER, DAY_FULL, mealsForWeek, weekDays, fmtEuro } from "@/lib/foodUtils";
+import { IMAGES } from "@/lib/images";
+import { MEAL_ORDER, DAY_FULL, mealsForWeek, weekDays, fmtEuro } from "@/lib/foodUtils";
 import MealCard from "./MealCard";
 import RecipeView from "@/life/components/RecipeView";
+import { SAND, SAND_DEEP, PLUM } from "./lifeColors";
 import { CalendarClock } from "lucide-react";
 
-/** TAB 4 — VOLGENDE WEEK. Voorlopige planning van de komende week, zodat
- *  boodschappen op tijd op het lijstje kunnen. Wordt DEZE WEEK zodra de
- *  week begint. */
+/** TAB 4 — VOLGENDE WEEK. Voorlopige planning; wordt DEZE WEEK bij start. */
 export default function NextWeekTab({ week, meals }) {
   const [selected, setSelected] = useState(null);
   const weekMeals = useMemo(() => mealsForWeek(meals, week?.id), [meals, week]);
@@ -25,16 +25,23 @@ export default function NextWeekTab({ week, meals }) {
 
   return (
     <div className="space-y-5">
-      <GlassPanel level={2} className="p-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground font-semibold">Next week</p>
-          <h2 className="text-2xl font-display font-semibold mt-1">Week {week.week_number}</h2>
-          <p className="text-xs text-muted-foreground mt-1">{new Date(week.date_start + "T00:00:00").toLocaleDateString("nl-NL", { day: "numeric", month: "long" })} t/m {new Date(week.date_end + "T00:00:00").toLocaleDateString("nl-NL", { day: "numeric", month: "long" })}</p>
+      {/* Hero banner — LIFE-stijl */}
+      <div className="relative rounded-3xl overflow-hidden h-40">
+        <img src={IMAGES.lifeFood} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 to-transparent" />
+        <div className="absolute inset-0 flex items-end p-6">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/80 font-semibold">Next week</p>
+            <h2 className="text-[40px] font-display font-semibold tracking-tight text-ivory leading-none">WEEK {week.week_number}</h2>
+            <p className="text-sm text-ivory/70 mt-1">{new Date(week.date_start + "T00:00:00").toLocaleDateString("nl-NL", { day: "numeric", month: "long" })} t/m {new Date(week.date_end + "T00:00:00").toLocaleDateString("nl-NL", { day: "numeric", month: "long" })}</p>
+          </div>
         </div>
-        <div className="flex gap-6">
-          <div><p className="text-2xl font-display font-semibold tabular-nums">{fmtEuro(week.total_cost)}</p><p className="text-[10px] uppercase tracking-wider text-muted-foreground">/ {fmtEuro(week.budget)}</p></div>
-          <div><p className="text-2xl font-display font-semibold tabular-nums">{week.meals_count}</p><p className="text-[10px] uppercase tracking-wider text-muted-foreground">maaltijden</p></div>
-        </div>
+      </div>
+
+      <GlassPanel level={2} className="p-6 flex flex-wrap gap-8">
+        <div><p className="text-[40px] leading-[0.8] font-display font-semibold tabular-nums tracking-[-0.04em]" style={{ color: PLUM }}>{fmtEuro(week.total_cost)}</p><p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-semibold mt-1">/ {fmtEuro(week.budget)} budget</p></div>
+        <div><p className="text-[40px] leading-[0.8] font-display font-semibold tabular-nums tracking-[-0.04em]" style={{ color: SAND_DEEP }}>{week.meals_count}</p><p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-semibold mt-1">maaltijden</p></div>
+        <div><p className="text-[40px] leading-[0.8] font-display font-semibold tabular-nums tracking-[-0.04em]" style={{ color: PLUM }}>{week.quick_meals}</p><p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-semibold mt-1">quick</p></div>
       </GlassPanel>
 
       <div className="flex items-center gap-2 text-xs text-muted-foreground italic">

@@ -1,8 +1,8 @@
 // foodUtils — gedeelde helpers voor de FOOD-laag (LIFE).
 export const MEAL_ORDER = ["breakfast", "lunch", "snack", "dinner"];
 export const MEAL_LABELS = { breakfast: "Breakfast", lunch: "Lunch", snack: "Snack", dinner: "Dinner" };
-export const DAY_LABELS = { mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri", sat: "Sat", sun: "Sun" };
-export const DAY_FULL = { mon: "Monday", tue: "Tuesday", wed: "Wednesday", thu: "Thursday", fri: "Friday", sat: "Saturday", sun: "Sunday" };
+export const DAY_LABELS = { mon: "Ma", tue: "Di", wed: "Wo", thu: "Do", fri: "Fr", sat: "Za", sun: "Zo" };
+export const DAY_FULL = { mon: "Maandag", tue: "Dinsdag", wed: "Woensdag", thu: "Donderdag", fri: "Vrijdag", sat: "Zaterdag", sun: "Zondag" };
 
 export function fmtEuro(n) {
   return "€" + (Number(n || 0)).toFixed(2).replace(".", ",");
