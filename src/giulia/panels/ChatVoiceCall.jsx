@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { base44 } from "@/api/base44Client";
+import { askGiuliaOnce } from "@/lib/useGiuliaChat";
 import { cn } from "@/lib/utils";
 import { PhoneOff, Languages } from "lucide-react";
 
@@ -62,10 +62,7 @@ export default function ChatVoiceCall({ superagent, onEnd }) {
   const handleUserText = async (text) => {
     setTranscript((p) => [...p, { role: "user", text }]);
     try {
-      const fn = superRef.current ? "chatWithGiulia" : "interpretInput";
-      const res = await base44.functions.invoke(fn, { message: text });
-      const d = res?.data ?? res ?? {};
-      const reply = (superRef.current ? d.response : d.giulia_response) || "Ik heb even niks teruggekregen.";
+      const reply = await askGiuliaOnce(text) || "Ik heb even niks teruggekregen.";
       setTranscript((p) => [...p, { role: "giulia", text: reply }]);
       speak(reply);
     } catch {

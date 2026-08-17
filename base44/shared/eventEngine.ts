@@ -76,6 +76,26 @@ export async function propagate(base44, event) {
     return null;
   }
 
+  // CalendarEvent met therapy_trajectory_id → bidirectionele koppeling zelf
+  // herstellen (TherapyTrajectory.event_ids) + next_appointment bijwerken.
+  // Werkt ongeacht hoe de link werd gezet (agent, skill of handmatig).
+  if (object_type === "CalendarEvent" && (event_type === "EVENT_CREATED" || event_type === "EVENT_UPDATED" || event_type === "THERAPY_EVENT_LINKED")) {
+    const ev = await sr.entities.CalendarEvent.get(object_id).catch(() => null);
+    if (ev && ev.therapy_trajectory_id) {
+      const t = await sr.entities.TherapyTrajectory.get(ev.therapy_trajectory_id).catch(() => null);
+      if (t) {
+        const event_ids = [...(t.event_ids || []), object_id].filter((v, i, a) => a.indexOf(v) === i);
+        const patch = { event_ids };
+        if (ev.start && (!t.next_appointment || new Date(ev.start) < new Date(t.next_appointment))) {
+          patch.next_appointment = ev.start;
+        }
+        await sr.entities.TherapyTrajectory.update(ev.therapy_trajectory_id, patch).catch(() => null);
+        return { linked_trajectory: ev.therapy_trajectory_id, event_ids };
+      }
+    }
+    return null;
+  }
+
   // HOUSEHOLD/SHOPPING_ITEM_COMPLETED (routine) → next_due herzien op basis van frequency_days
   if ((event_type === "HOUSEHOLD_ITEM_COMPLETED" || event_type === "SHOPPING_ITEM_COMPLETED") && object_type === "HouseholdItem") {
     const h = await sr.entities.HouseholdItem.get(object_id).catch(() => null);

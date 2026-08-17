@@ -45,6 +45,12 @@ export default function TherapyPage() {
   const active = useMemo(() => (trajectories || []).filter((t) => t.status === "active"), [trajectories]);
   const allGoals = useMemo(() => active.reduce((arr, t) => [...arr, ...(t.goals || []).map((g) => ({ goal: g, trajectory: t.title }))], []), [active]);
   const allNotes = useMemo(() => active.reduce((arr, t) => [...arr, ...(t.notes || []).map((n) => ({ note: n, trajectory: t.title }))], []), [active]);
+  const linkedEvents = useMemo(() => {
+    const map = {};
+    for (const t of active) map[t.id] = (events || []).filter((e) => e.therapy_trajectory_id === t.id || (t.event_ids || []).includes(e.id));
+    const unlinked = (events || []).filter((e) => !e.therapy_trajectory_id && !active.some((t) => (t.event_ids || []).includes(e.id)));
+    return { map, unlinked };
+  }, [active, events]);
 
   const add = async () => {
     if (!form.title.trim()) return;
@@ -102,6 +108,7 @@ export default function TherapyPage() {
                     <p className="text-xs text-muted-foreground mt-1">{t.therapist_name || "—"} · {t.type}</p>
                     {t.progress > 0 && <div className="mt-3"><Progress value={t.progress} accent={SAGE} /></div>}
                     {t.next_appointment && <p className="text-[11px] text-muted-foreground mt-2">Volgende: {fmtDate(t.next_appointment)}</p>}
+                    <p className="text-[11px] text-muted-foreground mt-1">{(linkedEvents.map[t.id] || []).length} gekoppelde afspraken</p>
                   </GlassPanel>
                 )) : <Empty text="Geen actieve trajecten." />}
               </div>
@@ -109,16 +116,37 @@ export default function TherapyPage() {
           )}
 
           {tab === "appointments" && (
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">Therapie-afspraken worden opgeslagen als agenda-events met domain=self.</p>
-              <div className="space-y-2">
-                {events.length ? events.slice(0, 20).map((e) => (
-                  <Card key={e.id} accent={SAGE}>
-                    <p className="text-sm font-semibold">{e.title}</p>
-                    <p className="text-[11px] text-muted-foreground">{fmtDate(e.start)} · {fmtTime(e.start)} · {e.location || "—"}</p>
-                  </Card>
-                )) : <Empty text="Geen therapie-afspraken." />}
-              </div>
+            <div className="space-y-5">
+              <p className="text-sm text-muted-foreground">Afspraken gekoppeld aan een traject (via therapy_trajectory_id). Ongekoppelde self-events staan onderaan.</p>
+              {active.length ? active.map((t) => {
+                const evs = linkedEvents.map[t.id] || [];
+                return (
+                  <div key={t.id} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full" style={{ background: SAGE }} />
+                      <p className="text-sm font-display font-semibold">{t.title}</p>
+                      <span className="text-[11px] text-muted-foreground">{evs.length} afspraak{evs.length === 1 ? "" : "en"}</span>
+                    </div>
+                    {evs.length ? evs.map((e) => (
+                      <Card key={e.id} accent={SAGE}>
+                        <p className="text-sm font-semibold">{e.title}</p>
+                        <p className="text-[11px] text-muted-foreground">{fmtDate(e.start)} · {fmtTime(e.start)} · {e.location || "—"}</p>
+                      </Card>
+                    )) : <p className="text-[11px] text-muted-foreground pl-4">Geen gekoppelde afspraken.</p>}
+                  </div>
+                );
+              }) : <Empty text="Geen actieve trajecten." />}
+              {linkedEvents.unlinked.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-display font-semibold text-muted-foreground">Ongekoppeld</p>
+                  {linkedEvents.unlinked.map((e) => (
+                    <Card key={e.id} accent="hsl(var(--self-accent-deep))">
+                      <p className="text-sm font-semibold">{e.title}</p>
+                      <p className="text-[11px] text-muted-foreground">{fmtDate(e.start)} · {fmtTime(e.start)} · {e.location || "—"}</p>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

@@ -254,6 +254,24 @@ export const GIULIA_SKILLS = [
     }
   },
   {
+    name: "link_objects",
+    description: "Koppel twee bestaande objecten aan elkaar (generiek). Geef source_type (Task, Project, CalendarEvent, Note, Document, Memory, SocialPlan, Hobby, SelfGoal, SelfRoutine, JournalEntry, PersonalTimeBlock, HouseholdItem, AdminObligation, TherapyTrajectory), source_id, relationship (veldnaam op het source-object, bv. project_id, therapy_trajectory_id, calendar_event_id) en target_id. Voor array-relaties (contact_ids, event_ids) wordt target_id aan de array toegevoegd (gedupliceerd-vrij). Zoek IDs altijd via find_objects of context; raad NOOIT een ID.",
+    inputSchema: { type: "object", properties: { source_type: { type: "string", enum: ["Task", "Project", "CalendarEvent", "Note", "Document", "Memory", "SocialPlan", "Hobby", "SelfGoal", "SelfRoutine", "JournalEntry", "PersonalTimeBlock", "HouseholdItem", "AdminObligation", "TherapyTrajectory"] }, source_id: { type: "string" }, relationship: { type: "string" }, target_id: { type: "string" } }, required: ["source_type", "source_id", "relationship", "target_id"] },
+    execute: async ({ source_type, source_id, relationship, target_id }, base44) => {
+      const sr = base44.asServiceRole;
+      const obj = await sr.entities[source_type].get(source_id).catch(() => null);
+      if (!obj) return { error: "source not found" };
+      const cur = obj[relationship];
+      const patch = Array.isArray(cur)
+        ? { [relationship]: [...cur, target_id].filter((v, i, a) => a.indexOf(v) === i) }
+        : { [relationship]: target_id };
+      patch.agent_source = "GIULIA-CORE";
+      const updated = await sr.entities[source_type].update(source_id, patch).catch(() => null);
+      if (updated) await emitEvent(base44, { event_type: "OBJECT_LINKED", object_type: source_type, object_id: source_id, domain: updated.domain || "focus", description: `${source_type} gekoppeld (${relationship} → ${target_id})` });
+      return updated ? { ok: true, relationship, target_id } : { error: "update failed" };
+    }
+  },
+  {
     name: "create_event",
     description: "Maak een agenda-afspraak (CalendarEvent). Gebruik voor álle afspraken — werk, sociaal, huishouden, SELF. Tag domain automatisch: FOCUS=werk/zakelijk, LIFE=sociaal/huishouden, SELF=rust/zelfzorg. Geef start (en liefst end) als ISO datetime. Koppel optioneel een project_id of participants.",
     inputSchema: { type: "object", properties: { title: { type: "string" }, start: { type: "string", description: "ISO datetime, bv. 2026-08-17T19:00:00" }, end: { type: "string", description: "ISO datetime" }, location: { type: "string" }, participants: { type: "string" }, project_id: { type: "string" }, domain: { type: "string", enum: ["focus", "life", "self"] }, travel_time: { type: "number" }, prep_time: { type: "number" } }, required: ["title", "start"] },

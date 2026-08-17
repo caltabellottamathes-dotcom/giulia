@@ -85,3 +85,28 @@ export function useGiuliaChat() {
 
   return { messages, send, sending, ready, conversationId };
 }
+
+/**
+ * askGiuliaOnce — één shot vraag aan dezelfde giulia_assistant-agent
+ * (gebruikt het gedeelde gesprek). Resolvet met de eerste nieuwe
+ * assistent-reactie. Gebruikt door het voice-pad zodat spraak ook via
+ * de agent loopt in plaats van via chatWithGiulia/interpretInput.
+ */
+export async function askGiuliaOnce(content) {
+  const text = (content || "").trim();
+  if (!text) return null;
+  const conv = await ensureConversation();
+  let full = await base44.agents.getConversation(conv.id).catch(() => conv);
+  const beforeIds = new Set((full?.messages || []).map((m) => m.id));
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = (val) => { if (done) return; done = true; try { unsub(); } catch { /* ignore */ } resolve(val); };
+    const unsub = base44.agents.subscribeToConversation(conv.id, (data) => {
+      const msgs = data?.messages || [];
+      const fresh = msgs.find((m) => m.role === "assistant" && m.content && !beforeIds.has(m.id));
+      if (fresh) finish(fresh.content);
+    });
+    setTimeout(() => finish(null), 30000);
+    base44.agents.addMessage(conv, { role: "user", content: text }).catch(() => finish(null));
+  });
+}
