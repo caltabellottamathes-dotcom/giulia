@@ -399,25 +399,33 @@
     {
       "entity_name": "FoodWeek",
       "allowed_operations": [
-        "read"
+        "read",
+        "create",
+        "update"
       ]
     },
     {
       "entity_name": "Meal",
       "allowed_operations": [
-        "read"
+        "read",
+        "create",
+        "update",
+        "delete"
       ]
     },
     {
       "entity_name": "Recipe",
       "allowed_operations": [
-        "read"
+        "read",
+        "create",
+        "update"
       ]
     },
     {
       "entity_name": "FoodProfile",
       "allowed_operations": [
-        "read"
+        "read",
+        "update"
       ]
     }
   ],

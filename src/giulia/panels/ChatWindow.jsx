@@ -2,11 +2,9 @@ import React, { useRef, useState, useEffect } from "react";
 import { useGiuliaChat } from "@/lib/useGiuliaChat";
 import { usePanel } from "@/lib/PanelContext";
 import { base44 } from "@/api/base44Client";
-import { X, ArrowUp, Loader2, Phone, Sparkles, Paperclip, Image as ImageIcon, Film, Music, FileText } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { X, ArrowUp, Loader2, Phone, Paperclip, Image as ImageIcon, Film, Music, FileText } from "lucide-react";
 import ChatMarkdown from "@/system/components/glass/ChatMarkdown";
 import { useMediaViewer } from "@/lib/MediaViewerContext";
-import ChatVoiceCall from "@/giulia/panels/ChatVoiceCall";
 
 /**
  * ChatWindow — GIULIA-GIULIA's conversation panel. Praat rechtstreeks met de
@@ -22,11 +20,9 @@ const SUGGESTIONS = [
 ];
 
 export default function ChatWindow() {
-  const { chatOpen, closeChat, pendingMessage, setPendingMessage } = usePanel();
+  const { chatOpen, closeChat, openVoice, pendingMessage, setPendingMessage } = usePanel();
   const { messages, send, sending, ready } = useGiuliaChat();
   const [input, setInput] = useState("");
-  const [callActive, setCallActive] = useState(false);
-  const [superagent, setSuperagent] = useState(false);
   const scrollRef = useRef(null);
   const fileRef = useRef(null);
   const [attachments, setAttachments] = useState([]);
@@ -115,10 +111,6 @@ export default function ChatWindow() {
             <X className="h-4 w-4" />
           </button>
 
-          {callActive && (
-            <ChatVoiceCall superagent={superagent} onEnd={() => setCallActive(false)} />
-          )}
-
           <div className="shrink-0 px-7 pt-7 pb-5 flex items-center justify-between">
             <div className="flex items-center gap-3 ml-12">
               <span className="h-2.5 w-2.5 rounded-full bg-olive animate-pulse-soft" />
@@ -131,18 +123,9 @@ export default function ChatWindow() {
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setSuperagent((s) => !s)}
-                className={cn(
-                  "flex items-center gap-1.5 rounded-full px-3 py-2 text-[11px] font-semibold border transition-all",
-                  superagent ? "bg-olive text-ivory border-olive" : "bg-ivory/10 border-ivory/15 text-ivory/60 hover:text-ivory"
-                )}
-                title="Super-modus (vollere redenering)"
-              >
-                <Sparkles className="h-3 w-3" /> Super
-              </button>
-              <button
-                onClick={() => setCallActive(true)}
+                onClick={openVoice}
                 className="flex items-center gap-2 rounded-full pl-3 pr-4 py-2 bg-ivory/10 border border-ivory/15 text-ivory/80 text-[12px] font-medium hover:bg-ivory/15 transition-all"
+                title="Bel Giulia (ElevenLabs voice agent)"
               >
                 <Phone className="h-3.5 w-3.5" /> Bel
               </button>

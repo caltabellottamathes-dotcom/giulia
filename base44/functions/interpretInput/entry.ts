@@ -254,6 +254,13 @@ export default async function (req) {
     // ── Step 2.5: Mark as Processed ──────────────────────────────────
     if (!isCommand) await markProcessed(sr, source, record.id, { contact_id: contactId, project_id: projectId });
 
+    // ── Step 2.6: Background brain — voor complexe/actie-signalen laat het
+    //    achtergrondbrein (chatWithGiulia) autonoom cross-domain redeneren en
+    //    koppelen (link_objects, plan, follow-up). Fire-and-forget.
+    if (!isCommand && (intent === "action_required" || isComplex) && rawText) {
+      base44.functions.invoke("chatWithGiulia", { message: rawText.slice(0, 2000), source: source || "whatsapp", persist: false }).catch(() => null);
+    }
+
     return Response.json({ ok: true, source, id: isCommand ? null : record?.id, intent, created });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });
