@@ -29,6 +29,7 @@ import SocialPlannerPreview from "@/life/panels/SocialPlannerPreview";
 import HouseholdPreview from "@/life/panels/HouseholdPreview";
 import PersonalAdminPreview from "@/life/panels/PersonalAdminPreview";
 import HobbiesPreview from "@/life/panels/HobbiesPreview";
+import FoodPreview from "@/life/panels/FoodPreview";
 import QuestionsPreview from "@/giulia/panels/QuestionsPreview";
 import { AnimatedPicto } from "@/system/panels/previewParts";
 
@@ -45,6 +46,7 @@ const PREVIEWS = {
   timetracker: TimeTrackerPreview,
   socialpulse: SocialPulsePreview, socialplanner: SocialPlannerPreview,
   household: HouseholdPreview, personaladmin: PersonalAdminPreview, hobbies: HobbiesPreview,
+  food: FoodPreview,
   wantstoknow: QuestionsPreview,
 };
 
@@ -67,6 +69,7 @@ const MODULE_ACCENT = {
   jedag: "hsl(var(--sand))",
   socialpulse: "hsl(var(--life-blue))", socialplanner: "hsl(var(--life-blue))",
   household: "hsl(var(--life-blue))", personaladmin: "hsl(var(--life-sand))", hobbies: "hsl(var(--life-blue))",
+  food: "hsl(var(--life-sand))",
   wantstoknow: "hsl(var(--olive))",
   imageviewer: "hsl(var(--blue-grey))", videoplayer: "hsl(var(--sand))", musicplayer: "hsl(var(--olive))", docviewer: "hsl(var(--charcoal))",
 };
@@ -84,6 +87,7 @@ const MODULE_IMAGE = {
   jedag: IMAGES.portraitBootFace,
   socialpulse: IMAGES.lifeSocialPulse, socialplanner: IMAGES.lifeSocialPlanner,
   household: IMAGES.lifeHousehold, personaladmin: IMAGES.lifePersonalAdmin, hobbies: IMAGES.lifeHobbies,
+  food: IMAGES.lifeFood,
   wantstoknow: IMAGES.portraitThinking,
 };
 
@@ -100,6 +104,7 @@ const MODULE_ROUTE = {
   goodmorning: "/wake",
   socialpulse: "/life/social-pulse", socialplanner: "/life/social-planner",
   household: "/life/household", personaladmin: "/life/personal-admin", hobbies: "/life/hobbies",
+  food: "/life/food",
   wantstoknow: "/wants-to-know",
   selfdailystate: "/self/daily-state", selfroutines: "/self/routines", selfwake: "/self/wake",
   selftherapy: "/self/therapy", selfjournal: "/self/journal", selfdevelopment: "/self/personal-development",
@@ -136,6 +141,7 @@ const MODULE_TOPIC = {
   socialpulse: "Wie aandacht verdient", socialplanner: "Sociale tijd inplannen",
   household: "Het huishouden op orde", personaladmin: "Wat er geregeld moet worden",
   hobbies: "Wat jou energie geeft",
+  food: "Wat je eet deze week",
   wantstoknow: "Wat Giulia nog wil weten",
   selfdailystate: "Hoe je er nu bij staat",
   selfroutines: "Routines die je vasthoudt",

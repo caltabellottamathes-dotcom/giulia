@@ -71,6 +71,7 @@ export const IMAGES = {
   lifeHousehold: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0a3990207_Person_walking_toward_white_chair_202608101812.jpg",
   lifePersonalAdmin: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/2cd956e5c_A_striking_composition_of_graphic_202606262301.jpeg",
   lifeHobbies: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/79e3eeaf0_A_graphic_minimalist_photograph_exploring_202606262301.jpeg",
+  lifeFood: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/b4a8001be_generated_image.png",
   lifeFabric: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/fdb845d44_A_deadpan_horizontal_profile_shot_202606262244.jpeg",
   lifeSuitStrings: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ea7201165_Apply_a_consistent_editorial_documentary_2026062200562.jpeg",
   lifeStitch: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/b2f8d6b92_A_graphic_minimalist_photograph_exploring_2026062623011.jpeg",

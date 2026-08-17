@@ -5,7 +5,7 @@ import GlassPanel from "@/system/components/glass/GlassPanel";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 import { domainBalance, DOMAIN_HEX } from "@/lib/domainUtils";
-import { Heart, CalendarHeart, Home, ClipboardList, Palette, ArrowUpRight } from "lucide-react";
+import { Heart, CalendarHeart, Home, ClipboardList, Palette, Utensils, ArrowUpRight } from "lucide-react";
 import LifeActivityFeed from "@/life/components/LifeActivityFeed";
 
 const MODULES = [
@@ -14,6 +14,7 @@ const MODULES = [
   { to: "/life/household", label: "Huishouden", icon: Home, desc: "Het huis op orde", image: IMAGES.lifeHousehold },
   { to: "/life/personal-admin", label: "Persoonlijk Admin", icon: ClipboardList, desc: "Wat geregeld moet worden", image: IMAGES.lifePersonalAdmin },
   { to: "/life/hobbies", label: "Hobby's", icon: Palette, desc: "Wat jou energie geeft", image: IMAGES.lifeHobbies },
+  { to: "/life/food", label: "Food", icon: Utensils, desc: "Wat je deze week eet", image: IMAGES.lifeFood },
 ];
 
 export default function LifeLanding() {

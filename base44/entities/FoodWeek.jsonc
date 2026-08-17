@@ -1,0 +1,84 @@
+{
+  "name": "FoodWeek",
+  "type": "object",
+  "properties": {
+    "week_number": {
+      "type": "number",
+      "title": "Week Number"
+    },
+    "year": {
+      "type": "number",
+      "title": "Year"
+    },
+    "date_start": {
+      "type": "string",
+      "format": "date",
+      "title": "Date Start"
+    },
+    "date_end": {
+      "type": "string",
+      "format": "date",
+      "title": "Date End"
+    },
+    "budget": {
+      "type": "number",
+      "title": "Budget"
+    },
+    "total_cost": {
+      "type": "number",
+      "default": 0,
+      "title": "Total Cost"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "planned",
+        "active",
+        "completed"
+      ],
+      "default": "planned",
+      "title": "Status"
+    },
+    "meals_count": {
+      "type": "number",
+      "default": 0,
+      "title": "Meals Count"
+    },
+    "promotions_count": {
+      "type": "number",
+      "default": 0,
+      "title": "Promotions Count"
+    },
+    "quick_meals": {
+      "type": "number",
+      "default": 0,
+      "title": "Quick Meals"
+    },
+    "batch_meals": {
+      "type": "number",
+      "default": 0,
+      "title": "Batch Meals"
+    },
+    "summary": {
+      "type": "string",
+      "title": "Summary"
+    }
+  },
+  "required": [
+    "date_start",
+    "date_end"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

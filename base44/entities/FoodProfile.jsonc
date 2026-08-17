@@ -1,0 +1,118 @@
+{
+  "name": "FoodProfile",
+  "type": "object",
+  "properties": {
+    "weekly_budget": {
+      "type": "number",
+      "default": 50,
+      "title": "Weekly Budget"
+    },
+    "people": {
+      "type": "number",
+      "default": 2,
+      "title": "People"
+    },
+    "meals": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "breakfast",
+          "lunch",
+          "snack",
+          "dinner"
+        ]
+      },
+      "default": [
+        "breakfast",
+        "lunch",
+        "snack",
+        "dinner"
+      ],
+      "title": "Meals"
+    },
+    "likes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Likes"
+    },
+    "dislikes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Dislikes"
+    },
+    "favourites": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Favourites"
+    },
+    "cuisines": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Cuisines"
+    },
+    "min_cook_time": {
+      "type": "number",
+      "title": "Min Cook Time (min)"
+    },
+    "max_cook_time": {
+      "type": "number",
+      "title": "Max Cook Time (min)"
+    },
+    "quick_meals_per_week": {
+      "type": "number",
+      "title": "Quick Meals Per Week"
+    },
+    "batch_cooking": {
+      "type": "boolean",
+      "default": false,
+      "title": "Batch Cooking"
+    },
+    "meal_prep": {
+      "type": "boolean",
+      "default": false,
+      "title": "Meal Prep"
+    },
+    "use_leftovers": {
+      "type": "boolean",
+      "default": true,
+      "title": "Use Leftovers"
+    },
+    "priorities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "budget",
+          "variety",
+          "convenience",
+          "nutrition",
+          "reuse",
+          "volume",
+          "cooking_time"
+        ]
+      },
+      "title": "Priorities"
+    }
+  },
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

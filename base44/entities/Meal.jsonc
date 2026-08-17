@@ -1,0 +1,144 @@
+{
+  "name": "Meal",
+  "type": "object",
+  "properties": {
+    "week_id": {
+      "type": "string",
+      "title": "Week ID"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+    },
+    "day": {
+      "type": "string",
+      "enum": [
+        "mon",
+        "tue",
+        "wed",
+        "thu",
+        "fri",
+        "sat",
+        "sun"
+      ],
+      "title": "Day"
+    },
+    "meal_type": {
+      "type": "string",
+      "enum": [
+        "breakfast",
+        "lunch",
+        "snack",
+        "dinner"
+      ],
+      "title": "Meal Type"
+    },
+    "recipe_id": {
+      "type": "string",
+      "title": "Recipe ID"
+    },
+    "recipe_name": {
+      "type": "string",
+      "title": "Recipe Name"
+    },
+    "time": {
+      "type": "string",
+      "title": "Time"
+    },
+    "servings": {
+      "type": "number",
+      "default": 2,
+      "title": "Servings"
+    },
+    "cost": {
+      "type": "number",
+      "default": 0,
+      "title": "Cost"
+    },
+    "prep_time": {
+      "type": "number",
+      "title": "Prep Time (min)"
+    },
+    "cook_time": {
+      "type": "number",
+      "title": "Cook Time (min)"
+    },
+    "total_time": {
+      "type": "number",
+      "title": "Total Time (min)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "eaten",
+        "skipped",
+        "changed",
+        "moved",
+        "favourite"
+      ],
+      "default": "planned",
+      "title": "Status"
+    },
+    "ingredients": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "supermarket_product": {
+            "type": "string"
+          },
+          "package": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          }
+        }
+      },
+      "title": "Ingredients"
+    },
+    "method": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Method"
+    },
+    "cuisine": {
+      "type": "string",
+      "title": "Cuisine"
+    },
+    "rating": {
+      "type": "string",
+      "title": "Rating"
+    }
+  },
+  "required": [
+    "date",
+    "meal_type",
+    "recipe_name"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

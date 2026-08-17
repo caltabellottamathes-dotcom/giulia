@@ -1,6 +1,6 @@
 import {
   Sparkles, Calendar, CheckSquare, ClipboardCheck, Mail, MessageCircle,
-  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu, MessageSquare, Timer, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle, Repeat, Target, Clock, Image as ImageIcon, Music, Video, Images,
+  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu, MessageSquare, Timer, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle, Repeat, Target, Clock, Image as ImageIcon, Music, Video, Images, Utensils,
 } from "lucide-react";
 import { IMAGES } from "@/lib/images";
 
@@ -28,6 +28,7 @@ import SocialPlannerWidget from "@/life/widgets/SocialPlannerWidget";
 import HouseholdWidget from "@/life/widgets/HouseholdWidget";
 import PersonalAdminWidget from "@/life/widgets/PersonalAdminWidget";
 import HobbiesWidget from "@/life/widgets/HobbiesWidget";
+import FoodWidget from "@/life/widgets/FoodWidget";
 import GiuliaQuestionsWidget from "@/giulia/widgets/GiuliaQuestionsWidget";
 import DailyStateEditorial from "@/self/widgets/editorial/DailyStateEditorial";
 import RoutinesEditorial from "@/self/widgets/editorial/RoutinesEditorial";
@@ -79,6 +80,7 @@ export const WIDGETS = {
   household:     { type: "household",     label: "Huishouden",         icon: Home,          Component: HouseholdWidget,      image: IMAGES.lifeHousehold,      span: 3, category: "life", domain: "life" },
   personaladmin: { type: "personaladmin", label: "Persoonlijk Admin", icon: ClipboardList,  Component: PersonalAdminWidget,  image: IMAGES.lifePersonalAdmin,  span: 3, category: "life", domain: "life" },
   hobbies:       { type: "hobbies",       label: "Hobby's",           icon: Palette,        Component: HobbiesWidget,        image: IMAGES.lifeHobbies,        span: 3, category: "life", domain: "life" },
+  food:          { type: "food",          label: "Food",              icon: Utensils,       Component: FoodWidget,           image: IMAGES.lifeFood,           span: 2, category: "life", domain: "life" },
 
   // ── SELF ──
   selfdailystate:   { type: "selfdailystate",   label: "Daily State",      icon: ActivityIcon, Component: DailyStateEditorial,          image: IMAGES.selfDailyState,    span: 1, category: "self", domain: "self" },

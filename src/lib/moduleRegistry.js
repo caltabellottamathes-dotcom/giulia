@@ -1,7 +1,7 @@
 import {
   Calendar, Briefcase, CheckSquare, Mail, MessageCircle,
   BookOpen, FileText, Users, MessageSquare, Mic, ClipboardCheck,
-  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu, Timer, Sparkles, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle, Repeat, Target, Clock, Image as ImageIcon, Music, Video,
+  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu, Timer, Sparkles, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle, Repeat, Target, Clock, Image as ImageIcon, Music, Video, Utensils,
 } from "lucide-react";
 
 import Agenda from "@/focus/pages/Agenda";
@@ -32,6 +32,7 @@ import SocialPlannerPage from "@/life/pages/SocialPlannerPage";
 import HouseholdPage from "@/life/pages/HouseholdPage";
 import PersonalAdminPage from "@/life/pages/PersonalAdminPage";
 import HobbiesPage from "@/life/pages/HobbiesPage";
+import FoodPage from "@/life/pages/FoodPage";
 import WantsToKnow from "@/giulia/pages/WantsToKnow";
 import DailyStatePanel from "@/self/panels/DailyStatePanel";
 import RoutinesPanel from "@/self/panels/RoutinesPanel";
@@ -80,6 +81,7 @@ export const MODULES = {
   household:     { label: "Huishouden",         icon: Home,            Component: HouseholdPage,      panelWidth: 760 },
   personaladmin: { label: "Persoonlijk Admin",  icon: ClipboardList,   Component: PersonalAdminPage,  panelWidth: 760 },
   hobbies:       { label: "Hobby's",            icon: Palette,         Component: HobbiesPage,        panelWidth: 760 },
+  food:          { label: "Food",               icon: Utensils,         Component: FoodPage,          panelWidth: 760 },
   wantstoknow:   { label: "Wants to know",       icon: HelpCircle,      Component: WantsToKnow,        panelWidth: 760 },
   selfdailystate:    { label: "Daily State",       icon: ActivityIcon,    Component: DailyStatePanel,           panelWidth: 760 },
   selfroutines:      { label: "Routines",          icon: Repeat,          Component: RoutinesPanel,             panelWidth: 760 },

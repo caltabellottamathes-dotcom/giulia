@@ -52,6 +52,7 @@ import HouseholdPage from '@/life/pages/HouseholdPage';
 import PersonalAdminPage from '@/life/pages/PersonalAdminPage';
 import HobbiesPage from '@/life/pages/HobbiesPage';
 import HobbyDetail from '@/life/pages/HobbyDetail';
+import FoodPage from '@/life/pages/FoodPage';
 import WantsToKnow from '@/giulia/pages/WantsToKnow';
 import SelfLanding from '@/self/pages/SelfLanding';
 import DailyStatePage from '@/self/pages/DailyStatePage';
@@ -131,6 +132,7 @@ const AuthenticatedApp = () => {
           <Route path="/life/personal-admin" element={<PersonalAdminPage />} />
           <Route path="/life/hobbies" element={<HobbiesPage />} />
           <Route path="/life/hobbies/:id" element={<HobbyDetail />} />
+          <Route path="/life/food" element={<FoodPage />} />
           <Route path="/wants-to-know" element={<WantsToKnow />} />
           <Route path="/self" element={<SelfLanding />} />
           <Route path="/self/daily-state" element={<DailyStatePage />} />

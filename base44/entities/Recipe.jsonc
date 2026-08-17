@@ -1,0 +1,113 @@
+{
+  "name": "Recipe",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Name"
+    },
+    "meal_type": {
+      "type": "string",
+      "enum": [
+        "breakfast",
+        "lunch",
+        "snack",
+        "dinner"
+      ],
+      "title": "Meal Type"
+    },
+    "category": {
+      "type": "string",
+      "title": "Category"
+    },
+    "cuisine": {
+      "type": "string",
+      "title": "Cuisine"
+    },
+    "ingredients": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "supermarket_product": {
+            "type": "string"
+          },
+          "package": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          }
+        }
+      },
+      "title": "Ingredients"
+    },
+    "method": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Method"
+    },
+    "servings": {
+      "type": "number",
+      "default": 2,
+      "title": "Servings"
+    },
+    "prep_time": {
+      "type": "number",
+      "title": "Prep Time"
+    },
+    "cook_time": {
+      "type": "number",
+      "title": "Cook Time"
+    },
+    "total_time": {
+      "type": "number",
+      "title": "Total Time"
+    },
+    "cost": {
+      "type": "number",
+      "default": 0,
+      "title": "Cost"
+    },
+    "times_eaten": {
+      "type": "number",
+      "default": 0,
+      "title": "Times Eaten"
+    },
+    "last_eaten": {
+      "type": "string",
+      "format": "date",
+      "title": "Last Eaten"
+    },
+    "rating": {
+      "type": "string",
+      "title": "Rating"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}
