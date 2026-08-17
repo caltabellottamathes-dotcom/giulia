@@ -83,8 +83,19 @@ export default async function (req) {
       .map((h) => `- ${h.title}${h.status ? ` (${h.status})` : ""}`)
       .join("\n");
 
-    // 4) Weekrange (deze maandag → zondag)
-    const start = mondayOf(new Date());
+    // 4) Weekrange — plan de eerstvolgende week die nog niet bestaat
+    //    (de maandag ná de laatste bestaande week, anders deze maandag).
+    let start = mondayOf(new Date());
+    if (weeks.length) {
+      const latestEnd = weeks
+        .map((w) => new Date(w.date_end + "T00:00:00").getTime())
+        .reduce((acc, t) => (t > acc ? t : acc), 0);
+      if (latestEnd >= Date.now()) {
+        const after = new Date(latestEnd);
+        after.setDate(after.getDate() + 1);
+        start = mondayOf(after);
+      }
+    }
     const end = new Date(start);
     end.setDate(start.getDate() + 6);
     const dateStart = fmt(start);

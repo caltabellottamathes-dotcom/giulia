@@ -66,3 +66,26 @@ export function remainingInWeek(meals, weekId) {
   now.setHours(0, 0, 0, 0);
   return mealsForWeek(meals, weekId).filter((m) => new Date(m.date + "T00:00:00") >= now).length;
 }
+
+export function dayKeyFor(dateStr) {
+  const dow = new Date(dateStr + "T00:00:00").getDay();
+  return ["mon", "tue", "wed", "thu", "fri", "sat", "sun"][(dow + 6) % 7];
+}
+
+export function mondayOf(d) {
+  const date = new Date(d);
+  const day = (date.getDay() + 6) % 7;
+  date.setDate(date.getDate() - day);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+export function weekDays(week) {
+  if (!week) return [];
+  return Array.from({ length: 7 }).map((_, i) => {
+    const d = new Date(week.date_start + "T00:00:00");
+    d.setDate(d.getDate() + i);
+    const ds = d.toISOString().slice(0, 10);
+    return { date: ds, dayKey: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"][i] };
+  });
+}
