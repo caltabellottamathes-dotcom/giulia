@@ -426,6 +426,16 @@
   }
 }
 
+/* GlassAgenda scope — exacte tokens van het GlassAgenda-repo, los van het OS */
+.glass-scope {
+  --marble: 51 17% 85%;
+  --storm: 60 7% 95%;
+  --olive: 63 35% 78%;
+  --plum: 319 35% 14%;
+  --selfbg: 47 30% 93%;
+  --selfpanel: 48 45% 97%;
+}
+
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
