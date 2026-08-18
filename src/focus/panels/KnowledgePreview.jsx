@@ -1,78 +1,69 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import PreviewShell from "@/system/panels/PreviewShell";
+import { AnimatedRing, BarGrow, LiveSparkline } from "@/glass/components/modules/viz";
 import { base44 } from "@/api/base44Client";
-import { SectionLabel, Empty } from "../../system/panels/previewParts";
-import CountUp from "@/system/widgets/CountUp";
-import { FOCUS } from "@/lib/domainPalettes";
-import { AnimatedRing, ContextGrid, ActionRow, OpenLink, LiveBarChart } from "@/self/components/SelfViz";
-import { ResponsiveContainer, BarChart, Bar, Cell, XAxis, YAxis, Tooltip } from "recharts";
+
+const MID = "#94925d", URG = "#d5e24a";
 
 export default function KnowledgePreview({ onOpen }) {
-  const navigate = useNavigate();
-  const [items, setItems] = useState([]);
+  const [arts, setArts] = useState([]);
+  const [active, setActive] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { (async () => { try { const data = await base44.entities.Knowledge.filter({}, "-created_date", 20); setItems(data || []); } catch { /* ignore */ } finally { setLoading(false); } })(); }, []);
+  useEffect(() => {
+    base44.entities.Knowledge.filter({}, "-created_date", 30).then(data => setArts(data || [])).catch(() => {}).finally(() => setLoading(false));
+  }, []);
 
-  const cats = useMemo(() => { const m = {}; items.forEach((i) => { const c = i.category || "Notes"; m[c] = (m[c] || 0) + 1; }); return Object.entries(m).map(([n, v], i) => ({ label: n.slice(0, 3).toUpperCase(), value: v, c: [FOCUS.deep, FOCUS.mid, FOCUS.light, FOCUS.urgent][i % 4] })); }, [items]);
-  const catCount = new Set(items.map((i) => i.category)).size;
+  const toggle = (id) => setArts(a => a.map(x => x.id === id ? { ...x, _read: !x._read } : x));
+
+  const TOPICS = ["Research", "Notes", "Insights", "References", "Decisions"].map((n, i) => ({ n, v: Math.min(100, arts.filter(a => a.category === n).length * 20 + 20) }));
+  const totalReads = arts.length * 120;
 
   return (
-    <div className="space-y-6 text-ivory">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <SectionLabel>Knowledge</SectionLabel>
-          <h2 className="text-[32px] leading-[0.95] font-display font-semibold tracking-[-0.03em] mt-1">{items.length} notities</h2>
-          <p className="text-sm text-ivory/55 mt-1.5 italic">{catCount} categorieën</p>
+    <PreviewShell index="06" section="KNOWLEDGE" statement="BASE" kicker={`${arts.length} ARTICLES`} accent={URG}
+      context={[
+        { label: "COVERAGE", text: `${Math.min(100, arts.length * 10)}% van de kennisdomeinen gedocumenteerd.` },
+        { label: "ENTRIES", text: `${arts.length} artikelen in de kennisbank.` },
+        { label: "GAPS", text: "Research en References hebben de minste dekking." },
+      ]}
+      actions={[{ label: "New Article", primary: true, to: "/knowledge" }, { label: "Search", to: "/knowledge" }, { label: "Tags", to: "/knowledge" }, { label: "Open Knowledge", to: "/knowledge" }]}>
+      <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6 h-full overflow-hidden">
+        <div className="flex flex-col gap-5 overflow-auto pr-1">
+          <div className="flex flex-col items-center"><AnimatedRing pct={Math.min(100, arts.length * 10)} size={150} color={MID} label={`${Math.min(100, arts.length * 10)}%`} sub="COVERAGE" /></div>
+          <div>
+            <p className="text-storm/50 text-[10px] tracking-[0.25em] mb-3">TOPICS · KLIK OM TE MARKEREN</p>
+            {TOPICS.map((t, i) => (
+              <button key={t.n} onClick={() => setActive(active === t.n ? null : t.n)} className="block w-full mb-3 text-left">
+                <div className="flex justify-between text-xs mb-1.5"><span className={active === t.n ? "text-urgent" : "text-storm/70"}>{t.n}</span><span className="text-storm tabular-nums">{t.v}%</span></div>
+                <BarGrow value={t.v} max={100} color={active === t.n ? URG : MID} delay={i * 0.1} />
+              </button>
+            ))}
+          </div>
+          <div className="rounded-2xl border border-marble/20 bg-marble/5 p-3">
+            <p className="text-storm/50 text-[10px] tracking-[0.25em] mb-2">READS · LIVE</p>
+            <LiveSparkline color={MID} max={40} intervalMs={1800} />
+          </div>
         </div>
-        <OpenLink to="/knowledge" label="Open Knowledge" color={FOCUS.light} />
+        <div className="flex flex-col overflow-hidden">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-storm/50 text-[10px] tracking-[0.25em]">RECENT · {arts.length}</p>
+            <p className="text-storm/50 text-[10px] tabular-nums">{totalReads.toLocaleString("nl-NL")} reads</p>
+          </div>
+          <div className="flex-1 overflow-auto pr-1 space-y-1.5">
+            {loading ? <p className="text-storm/40 text-sm">Laden…</p> : arts.length === 0 ? <p className="text-storm/40 text-sm">Geen artikelen.</p> : arts.map(a => (
+              <motion.button key={a.id} layout onClick={() => toggle(a.id)} className={`w-full flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${a._read ? "border-marble/15 bg-marble/5" : "border-marble/25 bg-marble/8 hover:bg-marble/15"}`}>
+                <span className="w-1.5 h-10 rounded-full shrink-0" style={{ background: active === a.category ? URG : MID }} />
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm truncate ${a._read ? "text-storm/50" : "text-storm"}`}>{a.title}</p>
+                  <p className="text-[10px] text-storm/50 mt-0.5">{a.category || "Notes"} · {a.source || "—"}</p>
+                </div>
+                <span className="text-[10px] text-storm/40 shrink-0">{a._read ? "✓" : "○"}</span>
+              </motion.button>
+            ))}
+          </div>
+        </div>
       </div>
-
-      {/* Ring + category chart */}
-      <div className="flex flex-col lg:flex-row gap-6 items-center">
-        <AnimatedRing pct={items.length ? 100 : 0} size={140} stroke={8} color={FOCUS.light}>
-          <span className="text-ivory text-4xl font-bold tabular-nums leading-none"><CountUp value={items.length} /></span>
-          <span className="text-ivory/40 text-[9px] tracking-wider mt-1">NOTITIES</span>
-        </AnimatedRing>
-        <div className="flex-1 w-full">
-          <p className="text-ivory/45 text-[10px] uppercase tracking-[0.22em] mb-3">Categorieën</p>
-          <ResponsiveContainer width="100%" height={120}>
-            <BarChart data={cats} margin={{ top: 5, right: 5, bottom: 0, left: 0 }}>
-              <XAxis dataKey="label" stroke="rgba(255,255,255,0.25)" fontSize={9} tickLine={false} axisLine={false} />
-              <YAxis stroke="rgba(255,255,255,0.25)" fontSize={9} tickLine={false} axisLine={false} />
-              <Tooltip contentStyle={{ background: "rgba(20,20,20,0.9)", border: `1px solid ${FOCUS.mid}`, borderRadius: 12, fontSize: 12, color: "#fff" }} cursor={{ fill: "rgba(255,255,255,0.05)" }} />
-              <Bar dataKey="value" radius={[6, 6, 0, 0]} animationDuration={1000}>
-                {cats.map((d, i) => <Cell key={i} fill={d.c} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Recent knowledge */}
-      <SectionLabel>Recente kennis</SectionLabel>
-      {loading ? <Empty text="Laden…" /> : items.length ? (
-        <div className="flex flex-col gap-2">
-          {items.slice(0, 6).map((k, i) => (
-            <motion.div key={k.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} onClick={onOpen} className="group rounded-2xl border border-white/15 bg-white/[0.06] px-4 py-3 hover:bg-white/10 transition-colors cursor-pointer">
-              {k.category && <span className="text-[9px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full" style={{ background: `${FOCUS.light}20`, color: FOCUS.light }}>{k.category}</span>}
-              <p className="block text-sm font-medium text-ivory mt-1.5 truncate">{k.title}</p>
-              {k.content && <p className="block text-xs text-ivory/50 line-clamp-2 mt-0.5">{k.content}</p>}
-            </motion.div>
-          ))}
-        </div>
-      ) : <Empty text="Nog geen kennis opgeslagen" />}
-
-      <ContextGrid items={[
-        { label: "TOTAAL", text: `${items.length} notities opgeslagen.` },
-        { label: "CATEGORIEËN", text: `${catCount} verschillende categorieën.` },
-        { label: "LAATSTE", text: items[0] ? items[0].title : "Nog niets opgeslagen." },
-      ]} />
-      <ActionRow actions={[
-        { label: "Open Knowledge", primary: true, color: FOCUS.light, to: "/knowledge" },
-      ]} />
-    </div>
+    </PreviewShell>
   );
 }

@@ -1,17 +1,14 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
-import { SectionLabel, Empty } from "../../system/panels/previewParts";
-import CountUp from "@/system/widgets/CountUp";
-import { GIULIA } from "@/lib/domainPalettes";
-import { AnimatedRing, ContextGrid, ActionRow, OpenLink, PulseDot } from "@/self/components/SelfViz";
 import { Sparkles, Loader2 } from "lucide-react";
+import PreviewShell from "@/system/panels/PreviewShell";
+import { AnimatedRing, BarGrow } from "@/glass/components/modules/viz";
+import { base44 } from "@/api/base44Client";
 
-const PRIORITY = { now: { c: GIULIA.urgent, l: "NOW" }, soon: { c: GIULIA.light, l: "SOON" }, useful: { c: GIULIA.mid, l: "USEFUL" }, curious: { c: GIULIA.plum, l: "CURIOUS" } };
+const PLUM = "#301728", URG = "#d5e24a", MID = "#94925d", LIGHT = "#d8dab3";
+const PRIORITY = { now: { c: URG, l: "NOW" }, soon: { c: LIGHT, l: "SOON" }, useful: { c: MID, l: "USEFUL" }, curious: { c: PLUM, l: "CURIOUS" } };
 
 export default function QuestionsPreview({ onOpen }) {
-  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -22,75 +19,57 @@ export default function QuestionsPreview({ onOpen }) {
   const search = async () => { setBusy(true); try { await base44.functions.invoke("generateQuestions", {}); } catch { /* ignore */ } setBusy(false); load(); };
   const answer = async (q, opt) => { try { await base44.functions.invoke("answerQuestion", { question_id: q.id, answer: opt }); } catch { /* ignore */ } load(); };
 
-  const nowCount = items.filter((q) => q.priority === "now").length;
+  const nowCount = items.filter(q => q.priority === "now").length;
+  const counts = { now: 0, soon: 0, useful: 0, curious: 0 };
+  items.forEach(q => { if (counts[q.priority] !== undefined) counts[q.priority]++; });
 
   return (
-    <div className="space-y-6 text-ivory">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <SectionLabel>Wants to Know</SectionLabel>
-          <div className="flex items-center gap-3 mt-1">
-            <h2 className="text-[32px] leading-[0.95] font-display font-semibold tracking-[-0.03em]">{items.length} mysteries</h2>
-            {nowCount > 0 && <PulseDot color={GIULIA.urgent} size={8} />}
-          </div>
-          <p className="text-sm text-ivory/55 mt-1.5 italic">{nowCount} dringend · ontbrekende context</p>
-        </div>
-        <OpenLink to="/wants-to-know" label="Open Vragen" color={GIULIA.light} />
-      </div>
-
-      {/* Ring + generate */}
-      <div className="flex items-center gap-6">
-        <AnimatedRing pct={items.length ? Math.min(100, items.length * 10) : 0} size={120} stroke={8} color={GIULIA.mid}>
-          <span className="text-ivory text-3xl font-bold tabular-nums leading-none"><CountUp value={items.length} /></span>
-          <span className="text-ivory/40 text-[9px] tracking-wider mt-1">OPEN</span>
-        </AnimatedRing>
-        <div>
-          <p className="text-ivory/60 text-sm leading-relaxed max-w-sm mb-3">Giulia zoekt naar gaten in haar kennis over jou. Beantwoord vragen om haar context te verrijken.</p>
-          <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={search} disabled={busy} className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-charcoal disabled:opacity-50 transition" style={{ background: GIULIA.light }}>
-            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-            {busy ? "Zoekt…" : "Zoek gaten"}
-          </motion.button>
-        </div>
-      </div>
-
-      {/* Questions list */}
-      <SectionLabel>Wat Giulia wil weten</SectionLabel>
-      {loading ? <Empty text="Laden…" /> : items.length ? (
-        <div className="flex flex-col gap-2">
-          <AnimatePresence>
-            {items.map((q) => (
-              <motion.div key={q.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} onClick={onOpen} className="group rounded-2xl border border-white/15 bg-white/[0.06] px-4 py-3.5 hover:bg-white/10 transition-colors cursor-pointer">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-[9px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full" style={{ background: `${PRIORITY[q.priority]?.c || GIULIA.mid}22`, color: PRIORITY[q.priority]?.c || GIULIA.mid }}>{PRIORITY[q.priority]?.l || "USEFUL"}</span>
-                  <span className="text-[10px] uppercase tracking-wider text-ivory/55 font-semibold">{q.kind?.replace(/_/g, " ")} · {q.domain}</span>
-                </div>
-                <p className="block text-sm font-medium text-ivory">{q.title}</p>
-                {q.body && <p className="block text-xs text-ivory/50 line-clamp-2 mt-0.5">{q.body}</p>}
-                {q.options && q.options.length ? (
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {q.options.map((o) => (
-                      <button key={o} onClick={(e) => { e.stopPropagation(); answer(q, o); }} className="chat-bubble px-2.5 py-1 text-[11px] text-ivory/80 hover:text-ivory transition">{o}</button>
-                    ))}
-                  </div>
-                ) : (
-                  <button onClick={(e) => { e.stopPropagation(); answer(q, "Vertel het Giulia"); }} className="mt-2 chat-bubble px-2.5 py-1 text-[11px] text-ivory/80">Beantwoord →</button>
-                )}
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      ) : <Empty text="Giulia heeft (voorlopig) geen vragen" />}
-
-      <ContextGrid items={[
+    <PreviewShell index="19" section="WANTS TO KNOW" statement={`${items.length} MYSTERIES`} kicker="ONTBREKENDE CONTEXT" accent={URG}
+      context={[
         { label: "OPEN", text: `${items.length} onbeantwoorde vragen.` },
         { label: "DRINGEND", text: `${nowCount} vragen met hoge prioriteit.` },
-        { label: "DOMEIN", text: items[0] ? items[0].domain || "—" : "—" },
-      ]} />
-      <ActionRow actions={[
-        { label: "Zoek Gaten", primary: true, color: GIULIA.light, onClick: search },
-        { label: "Open Vragen", to: "/wants-to-know" },
-      ]} />
-    </div>
+        { label: "ACTIE", text: "Beantwoord vragen om Giulia's context te verrijken." },
+      ]}
+      actions={[{ label: busy ? "Zoekt…" : "Zoek Gaten", primary: true, onClick: search }, { label: "Open Vragen", to: "/wants-to-know" }]}>
+      <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6 h-full overflow-hidden">
+        <div className="flex flex-col gap-5 overflow-auto pr-1">
+          <div className="flex flex-col items-center"><AnimatedRing pct={items.length ? Math.min(100, items.length * 10) : 0} size={150} color={MID} label={String(items.length)} sub="OPEN" /></div>
+          <div>
+            <p className="text-storm/50 text-[10px] tracking-[0.25em] mb-3">PRIORITEIT</p>
+            {Object.keys(PRIORITY).map((k, i) => (
+              <div key={k} className="mb-3">
+                <div className="flex justify-between text-xs mb-1.5">
+                  <span className="text-storm/70">{PRIORITY[k].l}</span>
+                  <span className="text-storm tabular-nums">{counts[k]}</span>
+                </div>
+                <BarGrow value={counts[k]} max={Math.max(...Object.values(counts), 1)} color={PRIORITY[k].c} delay={i * 0.12} />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-col overflow-hidden">
+          <p className="text-storm/50 text-[10px] tracking-[0.25em] mb-3">WAT GIULIA WIL WETEN · {items.length}</p>
+          <div className="flex-1 overflow-auto pr-1 space-y-2">
+            <AnimatePresence>
+              {loading ? <p className="text-storm/40 text-sm">Laden…</p> : items.length === 0 ? <p className="text-storm/40 text-sm">Giulia heeft (voorlopig) geen vragen.</p> : items.map(q => (
+                <motion.div key={q.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} onClick={onOpen} className="rounded-2xl border border-marble/25 bg-marble/8 px-4 py-3.5 cursor-pointer hover:bg-marble/12 transition-colors">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-[9px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full" style={{ background: `${(PRIORITY[q.priority] || PRIORITY.useful).c}22`, color: (PRIORITY[q.priority] || PRIORITY.useful).c }}>{(PRIORITY[q.priority] || PRIORITY.useful).l}</span>
+                    <span className="text-[10px] uppercase tracking-wider text-storm/55 font-semibold">{q.kind?.replace(/_/g, " ")} · {q.domain}</span>
+                  </div>
+                  <p className="block text-sm font-medium text-storm">{q.title}</p>
+                  {q.body && <p className="block text-xs text-storm/50 line-clamp-2 mt-0.5">{q.body}</p>}
+                  {q.options && q.options.length ? (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {q.options.map(o => <button key={o} onClick={(e) => { e.stopPropagation(); answer(q, o); }} className="px-2.5 py-1 rounded-full border border-marble/20 bg-marble/5 text-[11px] text-storm/80 hover:bg-marble/15 transition">{o}</button>)}
+                    </div>
+                  ) : <button onClick={(e) => { e.stopPropagation(); answer(q, "Vertel het Giulia"); }} className="mt-2 px-2.5 py-1 rounded-full border border-marble/20 bg-marble/5 text-[11px] text-storm/80 hover:bg-marble/15 transition">Beantwoord →</button>}
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+    </PreviewShell>
   );
 }

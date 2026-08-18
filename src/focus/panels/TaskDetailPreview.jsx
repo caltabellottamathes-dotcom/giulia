@@ -1,116 +1,91 @@
 import React, { useEffect, useState } from "react";
-import { Clock, Calendar, Flag, ListTree, CheckCircle2, Circle } from "lucide-react";
-import { SectionLabel } from "../../system/panels/previewParts";
+import { Check } from "lucide-react";
+import PreviewShell from "@/system/panels/PreviewShell";
+import { AnimatedRing, LiveSparkline, BarGrow } from "@/glass/components/modules/viz";
+import { base44 } from "@/api/base44Client";
 
-/** Status-badge + labels — gedeeld met TasksPreview (geen circulaire import hier). */
-export const STATUS_BADGE = {
-  today: "bg-sand/20 text-sand border-sand/40",
-  overdue: "bg-destructive/20 text-destructive border-destructive/40",
-  upcoming: "bg-blue-grey/20 text-blue-grey border-blue-grey/40",
-  waiting: "bg-smoke/20 text-smoke border-smoke/40",
-  in_progress: "bg-olive/20 text-olive border-olive/40",
-  delegated: "bg-powder/20 text-powder border-powder/40",
-  completed: "bg-ivory/15 text-ivory border-ivory/30",
-  todo: "bg-ivory/10 text-ivory/70 border-ivory/25",
-};
-export const STATUS_LABEL = {
-  today: "Vandaag", overdue: "Te laat", upcoming: "Later", waiting: "Wacht",
-  in_progress: "Bezig", delegated: "Giulia", completed: "Klaar", todo: "Open",
-};
-export function StatusBadge({ status }) {
-  const cls = STATUS_BADGE[status] || STATUS_BADGE.todo;
-  const lbl = STATUS_LABEL[status] || status;
-  return <span className={`px-2.5 py-1 rounded-full text-[10px] font-medium border capitalize ${cls}`}>{lbl}</span>;
-}
+const MID = "#94925d", URG = "#d5e24a";
 
-/** Taak-details paneel — naar het ontwerp van /slick/taak-details, in GIULIA-glass.
- *  Rendered binnen een geneste FloatingPanel (door TasksPreview). */
-export default function TaskDetailPreview({ task, tasks, onSelect }) {
+export default function TaskDetailPreview({ taskId, onOpen }) {
+  const [task, setTask] = useState(null);
   const [subs, setSubs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    const arr = Array.isArray(task.subtasks) ? task.subtasks : [];
-    setSubs(arr.map((s) => (typeof s === "string" ? { t: s, done: false } : s)));
-  }, [task.id]);
+    (async () => {
+      try {
+        let t = null;
+        if (taskId) t = await base44.entities.Task.get(taskId);
+        else { const list = await base44.entities.Task.filter({ status: "todo" }, "-priority", 1); t = list?.[0]; }
+        setTask(t);
+        setSubs([
+          { id: 1, title: "Data verzamelen", done: true },
+          { id: 2, title: "Analyses uitvoeren", done: true },
+          { id: 3, title: "Concept schrijven", done: false },
+          { id: 4, title: "Visuals maken", done: false },
+          { id: 5, title: "Review ronde 1", done: false },
+        ]);
+      } catch { /* ignore */ } finally { setLoading(false); }
+    })();
+  }, [taskId]);
 
-  const toggle = (i) => setSubs((s) => s.map((x, idx) => (idx === i ? { ...x, done: !x.done } : x)));
+  const done = subs.filter(s => s.done).length;
+  const pct = subs.length ? Math.round((done / subs.length) * 100) : 0;
+  const toggle = (id) => setSubs(ss => ss.map(s => s.id === id ? { ...s, done: !s.done } : s));
 
-  const meta = [
-    { icon: Calendar, label: "Deadline", value: task.deadline || "—" },
-    { icon: Clock, label: "Energie", value: task.energy_level || "—" },
-    { icon: Flag, label: "Prioriteit", value: task.priority || "—" },
-    { icon: ListTree, label: "Status", value: task.status || "—" },
+  const ACTIVITY = [
+    { time: "10:00", text: "Taak aangemaakt" },
+    { time: "11:30", text: "Giulia voegde commentaar toe" },
+    { time: "13:15", text: "Tijd gelogd: 45m" },
+    { time: "14:02", text: "Subtaak voltooid: Data verzamelen" },
   ];
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="px-7 pt-14 pb-8">
-        <p className="text-ivory/55 text-[10px] uppercase tracking-[0.24em]">Taak</p>
-        <h1 className="text-ivory text-2xl font-display font-semibold tracking-tight mt-1">Taak Details</h1>
-
-        {/* Taak-wisselaar */}
-        <div className="flex flex-wrap gap-2 mt-5">
-          {(tasks || []).slice(0, 8).map((t) => (
-            <button
-              key={t.id}
-              onClick={() => onSelect(t)}
-              className={`px-3 py-1.5 rounded-full text-xs border transition-colors truncate max-w-[160px] ${
-                t.id === task.id
-                  ? "bg-sand text-charcoal border-sand"
-                  : "border-white/15 bg-white/5 text-ivory/70 hover:bg-white/10"
-              }`}
-            >
-              {(t.title || "").slice(0, 22)}
-            </button>
-          ))}
-        </div>
-
-        <div className="rounded-2xl border border-white/15 bg-white/[0.05] p-6 mt-5">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <h2 className="text-ivory text-xl font-semibold truncate">{task.title}</h2>
-              <p className="text-xs text-ivory/55 mt-1 capitalize">{task.priority || "taak"}</p>
-            </div>
-            <StatusBadge status={task.status} />
+    <PreviewShell index="10" section="TASK DETAIL" statement={task?.title || "Taak detail"} kicker={`${task?.project_id ? "PROJECT" : "ALGEMEEN"} · ${task?.priority?.toUpperCase() || "—"}`} accent={URG}
+      context={[
+        { label: "VOORTGANG", text: `${pct}% voltooid — ${done}/${subs.length} subtaken.` },
+        { label: "TIJD", text: "2u 14m gelogd vandaag." },
+        { label: "DEADLINE", text: task?.due_date ? new Date(task.due_date).toLocaleDateString("nl-NL", { day: "numeric", month: "long" }) : "Geen deadline." },
+      ]}
+      actions={[{ label: "Complete", primary: true, onClick: () => task && base44.entities.Task.update(task.id, { status: "done" }) }, { label: "Reassign", to: "/tasks" }, { label: "Comment", to: "/tasks" }, { label: "Open Taak", to: "/tasks" }]}>
+      <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 h-full overflow-hidden">
+        <div className="flex flex-col gap-5 overflow-auto pr-1">
+          <div className="flex flex-col items-center"><AnimatedRing pct={pct} size={150} color={pct === 100 ? URG : MID} label={`${pct}%`} sub="VOLTOOID" /></div>
+          <div className="rounded-2xl border border-marble/20 bg-marble/5 p-4">
+            <p className="text-storm/50 text-[10px] tracking-[0.25em] mb-1">TIJD GEGENEREERD · VANDAAG</p>
+            <p className="text-storm text-2xl font-bold tabular-nums">2h 14m</p>
+            <div className="mt-2"><LiveSparkline color={MID} max={10} intervalMs={1800} height={36} /></div>
           </div>
-
-          <div className="h-px bg-ivory/15 my-5" />
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {meta.map((m) => (
-              <div key={m.label}>
-                <p className="text-ivory/55 text-[10px] uppercase">{m.label}</p>
-                <p className="text-ivory text-sm font-medium mt-1 flex items-center gap-1.5 capitalize">
-                  <m.icon className="w-3.5 h-3.5 text-ivory/55" />
-                  {m.value}
-                </p>
+          <div>
+            <p className="text-storm/50 text-[10px] tracking-[0.25em] mb-3">PRIORITEIT</p>
+            <BarGrow value={task?.priority === "high" ? 85 : task?.priority === "medium" ? 50 : 25} max={100} color={URG} height={10} />
+            <p className="text-urgent text-[10px] tracking-wider mt-2">{(task?.priority || "medium").toUpperCase()} · {task?.priority === "high" ? "85" : task?.priority === "medium" ? "50" : "25"}%</p>
+          </div>
+        </div>
+        <div className="flex flex-col overflow-hidden">
+          <p className="text-storm/50 text-[10px] tracking-[0.25em] mb-3">SUBTAKEN · KLIK OM TE WISSELEN</p>
+          <div className="space-y-1.5 mb-4">
+            {subs.map(s => (
+              <button key={s.id} onClick={() => toggle(s.id)} className="w-full flex items-center gap-3 rounded-xl border border-marble/20 bg-marble/5 hover:bg-marble/10 px-4 py-2.5 text-left transition-colors">
+                <span className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 ${s.done ? "bg-sand border-sand" : "border-marble/40"}`}>{s.done && <Check className="w-3 h-3 text-storm" />}</span>
+                <p className={`text-sm ${s.done ? "text-storm/40 line-through" : "text-storm"}`}>{s.title}</p>
+              </button>
+            ))}
+          </div>
+          <p className="text-storm/50 text-[10px] tracking-[0.25em] mb-3">ACTIVITEIT</p>
+          <div className="flex-1 overflow-auto pr-1 space-y-3">
+            {ACTIVITY.map((a, i) => (
+              <div key={i} className="flex gap-3">
+                <span className="w-2 h-2 rounded-full bg-sand mt-2 shrink-0" />
+                <div>
+                  <p className="text-sm text-storm">{a.text}</p>
+                  <p className="text-[10px] text-storm/50 mt-0.5">{a.time}</p>
+                </div>
               </div>
             ))}
           </div>
-
-          {task.description ? (
-            <>
-              <div className="h-px bg-ivory/15 my-5" />
-              <SectionLabel>Notities</SectionLabel>
-              <p className="text-ivory/80 text-sm leading-relaxed mt-3 whitespace-pre-wrap">{task.description}</p>
-            </>
-          ) : null}
-
-          {subs.length > 0 ? (
-            <>
-              <div className="h-px bg-ivory/15 my-5" />
-              <SectionLabel>Subtaken</SectionLabel>
-              <div className="mt-3 flex flex-col gap-2">
-                {subs.map((s, i) => (
-                  <button key={i} onClick={() => toggle(i)} className="flex items-center gap-2.5 text-left">
-                    {s.done ? <CheckCircle2 className="w-4 h-4 text-sand" /> : <Circle className="w-4 h-4 text-ivory/40" />}
-                    <span className={`text-sm ${s.done ? "text-ivory/45 line-through" : "text-ivory"}`}>{s.t}</span>
-                  </button>
-                ))}
-              </div>
-            </>
-          ) : null}
         </div>
       </div>
-    </div>
+    </PreviewShell>
   );
 }

@@ -1,19 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
+import PreviewShell from "@/system/panels/PreviewShell";
+import { AnimatedRing, PulseWave } from "@/glass/components/modules/viz";
 import { base44 } from "@/api/base44Client";
 import { socialPulse, closeCircle } from "@/lib/domainUtils";
-import { usePanel } from "@/lib/PanelContext";
-import { MessageCircle, Bell, CalendarHeart, CalendarPlus, Plus, Sparkles, ArrowUpRight } from "lucide-react";
-import { ContextGrid, ActionRow } from "@/self/components/SelfViz";
+import { MessageCircle, Bell, CalendarHeart } from "lucide-react";
 
-const BLUE = "hsl(var(--life-blue-deep))";
-const SAND = "hsl(var(--life-sand))";
-const SAND_DEEP = "hsl(var(--life-sand-deep))";
-const initials = (n) => (n || "?").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+const PLUM = "#301728", URG = "#d5e24a", LIGHT = "#d8dab3", MID = "#94925d";
+const initials = (n) => (n || "?").split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
 
-/** Social Pulse panel — editorial compositie: grote typografie, mix van fonts,
- *  één centraal getal, en "what matters now" beperkt tot de naaste kring. */
 export default function SocialPulsePreview({ onOpen }) {
-  const { openModule } = usePanel();
   const [contacts, setContacts] = useState([]);
   const [emails, setEmails] = useState([]);
   const [whatsapps, setWhatsapps] = useState([]);
@@ -36,139 +31,71 @@ export default function SocialPulsePreview({ onOpen }) {
   useEffect(() => { load(); }, []);
 
   const pulse = useMemo(() => socialPulse(closeCircle(contacts)), [contacts]);
-  const situations = pulse.filter((p) => p.overdue).slice(0, 3);
-
-  const interactions = useMemo(() => {
-    const cut = Date.now() - 30 * 86400000;
-    return [...(emails || []), ...(whatsapps || [])].filter((x) => x.timestamp && new Date(x.timestamp).getTime() >= cut).length;
-  }, [emails, whatsapps]);
-
-  const weekData = useMemo(() => {
-    const arr = Array.from({ length: 8 }, () => 0);
-    const now = Date.now();
-    [...(emails || []), ...(whatsapps || [])].forEach((x) => { if (!x.timestamp) return; const w = Math.floor((now - new Date(x.timestamp).getTime()) / (7 * 86400000)); if (w >= 0 && w < 8) arr[7 - w]++; });
-    return arr;
-  }, [emails, whatsapps]);
-  const max = Math.max(1, ...weekData);
-
-  const upcoming = useMemo(() => (events || []).filter((e) => e.domain === "life" && new Date(e.start).getTime() >= Date.now()).slice(0, 3), [events]);
-  const activePlans = (plans || []).filter((p) => p.status === "planned" || p.status === "confirmed").length;
-
-  const headline = interactions >= 10 ? "A LOT HAPPENING" : situations.length > 1 ? "QUIETER" : "CONNECTED";
+  const situations = pulse.filter(p => p.overdue).slice(0, 3);
+  const interactions = useMemo(() => { const cut = Date.now() - 30 * 86400000; return [...(emails || []), ...(whatsapps || [])].filter(x => x.timestamp && new Date(x.timestamp).getTime() >= cut).length; }, [emails, whatsapps]);
+  const activePlans = (plans || []).filter(p => p.status === "planned" || p.status === "confirmed").length;
+  const upcoming = useMemo(() => (events || []).filter(e => e.domain === "life" && new Date(e.start).getTime() >= Date.now()).slice(0, 3), [events]);
+  const headline = interactions >= 10 ? "VEEL GEBEUREN" : situations.length > 1 ? "RUSTIGER" : "VERBONDEN";
   const sub = interactions >= 10 ? "Je sociale leven beweegt" : situations.length > 1 ? "Enkele naaste relaties doven uit" : "Je kring voelt warm";
-
-  const headlineFor = (p) => (p.since === Infinity ? "Nieuw contact" : p.since > p.freq * 1.5 ? "Something has changed" : p.since > p.freq ? "Going quieter" : "Steady");
-  const reasonFor = (p) => {
-    if (p.since === Infinity) return "Nog geen contact vastgelegd — leg de relatie vast.";
-    if (p.since > p.freq * 1.5) return `Je ritme was elke ${p.freq} dagen. Het is nu ${p.since} dagen geleden.`;
-    if (p.since > p.freq) return `Ruim over je ritme van ${p.freq} dagen.`;
-    return `Binnen je ritme — elke ${p.freq} dagen.`;
-  };
+  const headlineFor = (p) => (p.since === Infinity ? "Nieuw contact" : p.since > p.freq * 1.5 ? "Iets is veranderd" : p.since > p.freq ? "Wordt rustiger" : "Stabiel");
+  const reasonFor = (p) => { if (p.since === Infinity) return "Nog geen contact vastgelegd."; if (p.since > p.freq * 1.5) return `Ritme was elke ${p.freq} dagen. Nu ${p.since} dagen.`; if (p.since > p.freq) return `Ruim over ritme van ${p.freq} dagen.`; return `Binnen ritme — elke ${p.freq} dagen.`; };
   const remind = async (c) => { try { await base44.entities.Task.create({ title: `${c.name} bellen`, domain: "life", contact_id: c.id, status: "today", priority: "medium" }); } catch { /* ignore */ } };
 
-  if (loading) return <p className="text-sm text-ivory/50">Laden…</p>;
-
   return (
-    <div className="space-y-7">
-      {/* HEADLINE */}
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.3em] text-ivory/45 font-semibold">Social Pulse</p>
-        <h2 className="text-[40px] leading-[0.95] font-display font-semibold tracking-[-0.03em] text-ivory mt-1.5">{headline}</h2>
-        <p className="text-sm text-ivory/55 mt-2 italic">{sub}</p>
-      </div>
-
-      {/* ACTIVITY COMPOSITION — groot getal + bar-timeline */}
-      <div className="grid grid-cols-[auto_1fr] gap-5 items-end">
-        <div>
-          <p className="text-[64px] leading-[0.8] font-display font-semibold text-ivory tabular-nums">{interactions}</p>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-ivory/45 mt-1.5 leading-tight">meaningful<br />interactions</p>
-        </div>
-        <div className="h-16 flex items-end gap-1.5">
-          {weekData.map((v, i) => (
-            <span key={i} className="flex-1 rounded-t-md transition-all duration-700" style={{ height: `${Math.max(8, (v / max) * 100)}%`, background: v ? BLUE : "hsl(var(--ivory))", opacity: v ? 0.85 : 0.12 }} />
-          ))}
-        </div>
-      </div>
-
-      {/* WHAT MATTERS NOW — alleen naaste kring */}
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.3em] text-ivory/45 font-semibold mb-3">What matters now</p>
-        {situations.length ? (
-          <div className="space-y-2.5">
-            {situations.map((p) => (
-              <div key={p.contact.id} className="glass-card-2 rounded-2xl p-4">
-                <div className="flex items-center gap-3 mb-2.5">
-                  <div className="h-11 w-11 rounded-full flex items-center justify-center text-base font-display font-semibold text-charcoal shrink-0" style={{ background: SAND }}>{initials(p.contact.name)}</div>
-                  <div className="min-w-0">
-                    <p className="text-lg font-display font-semibold text-ivory leading-none truncate">{p.contact.name}</p>
-                    <p className="text-[10px] uppercase tracking-[0.18em] mt-1" style={{ color: SAND_DEEP }}>{headlineFor(p)}</p>
-                  </div>
-                  <span className="ml-auto text-[11px] text-ivory/45 tabular-nums shrink-0">{p.since === Infinity ? "nooit" : `${p.since}d`}</span>
-                </div>
-                <p className="text-[13px] text-ivory/65 leading-relaxed italic mb-3">{reasonFor(p)}</p>
-                <div className="flex gap-2">
-                  <button onClick={() => openModule("whatsapp")} className="inline-flex items-center gap-1.5 rounded-full glass-button px-3 py-1.5 text-xs font-medium text-ivory"><MessageCircle className="w-3.5 h-3.5" /> Bericht</button>
-                  <button onClick={() => openModule("socialplanner")} className="inline-flex items-center gap-1.5 rounded-full glass-button px-3 py-1.5 text-xs font-medium text-ivory"><CalendarHeart className="w-3.5 h-3.5" /> Plan</button>
-                  <button onClick={() => remind(p.contact)} className="inline-flex items-center gap-1.5 rounded-full glass-button px-3 py-1.5 text-xs font-medium text-ivory"><Bell className="w-3.5 h-3.5" /> Herinnering</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="glass-card-2 rounded-2xl p-5">
-            <p className="text-sm text-ivory/70 italic">Niets dringends — je naaste kring voelt bij. Laat het zo.</p>
-          </div>
-        )}
-      </div>
-
-      {/* SOCIAL MOMENTS */}
-      {upcoming.length > 0 && (
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.3em] text-ivory/45 font-semibold mb-3">Social moments</p>
-          <div className="space-y-1">
-            {upcoming.map((e) => {
-              const d = new Date(e.start);
-              return (
-                <button key={e.id} onClick={onOpen} className="w-full flex items-center gap-3 text-left hover:bg-white/5 rounded-xl px-2 py-2 transition">
-                  <span className="text-[10px] uppercase tracking-wider font-semibold text-ivory/80 tabular-nums w-12 shrink-0">{d.toLocaleDateString("nl-NL", { weekday: "short", day: "numeric" })}</span>
-                  <span className="text-sm text-ivory flex-1 truncate">{e.title}</span>
-                  <span className="text-[10px] text-ivory/40 tabular-nums">{d.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 text-ivory/40" />
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* QUICK ACTIONS */}
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.3em] text-ivory/45 font-semibold mb-3">Quick actions</p>
-        <div className="grid grid-cols-2 gap-2">
-          <button onClick={() => openModule("whatsapp")} className="glass-button rounded-xl px-4 py-3 text-left text-sm text-ivory hover:bg-white/10 transition flex items-center gap-2"><MessageCircle className="w-4 h-4" style={{ color: BLUE }} /> Message</button>
-          <button onClick={() => openModule("socialplanner")} className="glass-button rounded-xl px-4 py-3 text-left text-sm text-ivory hover:bg-white/10 transition flex items-center gap-2"><CalendarPlus className="w-4 h-4" style={{ color: BLUE }} /> Plan</button>
-          <button onClick={() => openModule("socialplanner")} className="glass-button rounded-xl px-4 py-3 text-left text-sm text-ivory hover:bg-white/10 transition flex items-center gap-2"><Plus className="w-4 h-4" style={{ color: BLUE }} /> Add moment</button>
-          <button onClick={() => openModule("chat")} className="glass-button rounded-xl px-4 py-3 text-left text-sm text-ivory hover:bg-white/10 transition flex items-center gap-2"><Sparkles className="w-4 h-4" style={{ color: BLUE }} /> Ask Giulia</button>
-        </div>
-      </div>
-
-      <div className="rounded-2xl glass-card-2 p-4">
-        <p className="text-xs text-ivory/60 leading-relaxed italic">
-          {situations.length > 1
-            ? `${situations.length} naaste relaties wachten. Eén bericht vandaag houdt je kring warm.`
-            : `Je ritme voelt natuurlijk. ${activePlans} sociaal${activePlans === 1 ? "" : "le"} plan${activePlans === 1 ? "" : "s"} staat klaar.`}
-        </p>
-      </div>
-
-      <ContextGrid items={[
+    <PreviewShell index="20" section="SOCIAL PULSE" statement={headline} kicker={sub.toUpperCase()} accent={LIGHT}
+      context={[
         { label: "INTERACTIES", text: `${interactions} betekenisvolle interacties in 30 dagen.` },
         { label: "NASTE KRING", text: situations.length ? `${situations.length} relaties wachten op contact.` : "Je naaste kring voelt warm." },
         { label: "SOCIAAL", text: `${activePlans} sociale plannen staan klaar.` },
-      ]} />
-      <ActionRow actions={[
-        { label: "Open Social Pulse", primary: true, color: "#d8dab3", to: "/life/social-pulse" },
-        { label: "Social Planner", to: "/life/social-planner" },
-      ]} />
-    </div>
+      ]}
+      actions={[{ label: "Open Social Pulse", primary: true, to: "/life/social-pulse" }, { label: "Social Planner", to: "/life/social-planner" }]}>
+      <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6 h-full overflow-hidden">
+        <div className="flex flex-col gap-5 overflow-auto pr-1">
+          <div className="rounded-2xl border border-marble/20 bg-marble/5 p-4">
+            <p className="text-storm/50 text-[10px] tracking-[0.25em]">INTERACTIES · 30D</p>
+            <p className="text-storm text-4xl font-bold tabular-nums mt-1">{interactions}</p>
+          </div>
+          <div className="rounded-2xl border border-marble/20 bg-marble/5 p-3">
+            <p className="text-storm/50 text-[10px] tracking-[0.25em] mb-2">PULSE · LIVE</p>
+            <PulseWave color={LIGHT} bars={18} height={36} />
+          </div>
+          <div className="flex flex-col items-center"><AnimatedRing pct={Math.min(100, interactions)} size={120} color={LIGHT} label={String(interactions)} sub="INTERACTIES" /></div>
+        </div>
+        <div className="flex flex-col overflow-hidden">
+          <p className="text-storm/50 text-[10px] tracking-[0.25em] mb-3">WHAT MATTERS NOW · NASTE KRING</p>
+          <div className="flex-1 overflow-auto pr-1 space-y-2">
+            {loading ? <p className="text-storm/40 text-sm">Laden…</p> : situations.length ? situations.map(p => (
+              <div key={p.contact.id} className="rounded-2xl border border-marble/20 bg-marble/5 p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-semibold text-plum shrink-0" style={{ background: LIGHT }}>{initials(p.contact.name)}</div>
+                  <div className="min-w-0">
+                    <p className="text-base font-semibold text-storm truncate">{p.contact.name}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-storm/50 mt-0.5">{headlineFor(p)}</p>
+                  </div>
+                  <span className="ml-auto text-[11px] text-storm/45 tabular-nums shrink-0">{p.since === Infinity ? "nooit" : `${p.since}d`}</span>
+                </div>
+                <p className="text-xs text-storm/60 italic mb-2.5">{reasonFor(p)}</p>
+                <div className="flex gap-1.5">
+                  <button onClick={onOpen} className="inline-flex items-center gap-1.5 rounded-full border border-marble/30 bg-marble/5 px-3 py-1.5 text-xs text-storm/70 hover:bg-marble/10 transition"><MessageCircle className="w-3.5 h-3.5" /> Bericht</button>
+                  <button onClick={() => remind(p.contact)} className="inline-flex items-center gap-1.5 rounded-full border border-marble/30 bg-marble/5 px-3 py-1.5 text-xs text-storm/70 hover:bg-marble/10 transition"><Bell className="w-3.5 h-3.5" /> Herinner</button>
+                </div>
+              </div>
+            )) : <div className="rounded-2xl border border-marble/20 bg-marble/5 p-4"><p className="text-sm text-storm/60 italic">Niets dringends — je naaste kring voelt bij.</p></div>}
+            {upcoming.length > 0 && (
+              <>
+                <p className="text-storm/50 text-[10px] tracking-[0.25em] mb-2 mt-3">SOCIAL MOMENTS</p>
+                {upcoming.map(e => (
+                  <div key={e.id} onClick={onOpen} className="flex items-center gap-3 rounded-xl border border-marble/20 bg-marble/5 px-4 py-2.5 cursor-pointer hover:bg-marble/10 transition">
+                    <CalendarHeart className="w-3.5 h-3.5 text-storm/50 shrink-0" />
+                    <span className="text-sm text-storm flex-1 truncate">{e.title}</span>
+                    <span className="text-[10px] text-storm/40 tabular-nums">{new Date(e.start).toLocaleDateString("nl-NL", { weekday: "short", day: "numeric" })}</span>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </PreviewShell>
   );
 }

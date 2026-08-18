@@ -1,146 +1,91 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import PreviewShell from "@/system/panels/PreviewShell";
+import { AnimatedRing, BarGrow, LiveSparkline } from "@/glass/components/modules/viz";
 import { base44 } from "@/api/base44Client";
-import { SectionLabel, Empty, Card, ActionBtn } from "../../system/panels/previewParts";
-import { IMAGES } from "@/lib/images";
-import { hobbyGroups, hobbyHeadline, statusLine, hobbyState, hobbyRhythm, fmtDaysAgo, stateColor } from "@/lib/hobbyUtils";
-import { Plus, CalendarPlus, Briefcase, Sparkles, Clock } from "lucide-react";
-import { ContextGrid, ActionRow } from "@/self/components/SelfViz";
+import { hobbyGroups, hobbyHeadline, statusLine, hobbyRhythm, fmtDaysAgo } from "@/lib/hobbyUtils";
+import { Plus, CalendarPlus } from "lucide-react";
 
-const BLUE = "hsl(var(--life-blue-deep))";
-const SAND = "hsl(var(--life-sand-deep))";
-
+const PLUM = "#301728", URG = "#d5e24a", LIGHT = "#d8dab3", MID = "#94925d";
 const TYPES = ["music", "creative", "cultural", "sport", "learning", "collecting", "other"];
 
-/** Hobbies paneel — 4 secties: Currently Alive, What you've been into,
- *  Quiet but alive, Quick actions + Add-hobby flow. */
-export default function HobbiesPreview() {
-  const navigate = useNavigate();
+export default function HobbiesPreview({ onOpen }) {
   const [hobbies, setHobbies] = useState([]);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ title: "", type: "creative", current_thread: "" });
 
-  const load = async () => {
-    try {
-      const [h, e] = await Promise.all([base44.entities.Hobby.list("-last_activity_date").catch(() => []), base44.entities.CalendarEvent.list("start").catch(() => [])]);
-      setHobbies(h || []); setEvents(e || []);
-    } catch { /* ignore */ } finally { setLoading(false); }
-  };
+  const load = async () => { try { const [h, e] = await Promise.all([base44.entities.Hobby.list("-last_activity_date").catch(() => []), base44.entities.CalendarEvent.list("start").catch(() => [])]); setHobbies(h || []); setEvents(e || []); } catch { /* ignore */ } finally { setLoading(false); } };
   useEffect(() => { load(); }, []);
 
   const g = useMemo(() => hobbyGroups(hobbies), [hobbies]);
   const headline = hobbyHeadline(g);
-  const line = statusLine(g);
   const rhythm = useMemo(() => hobbyRhythm(events), [events]);
 
-  const add = async () => {
-    if (!form.title.trim()) return;
-    try { await base44.entities.Hobby.create({ title: form.title.trim(), type: form.type, current_thread: form.current_thread || undefined, status: "active", activity_level: "active" }); setForm({ title: "", type: "creative", current_thread: "" }); setShowAdd(false); await load(); } catch { /* ignore */ }
-  };
-  const open = (h) => navigate(`/life/hobbies/${h.id}`);
+  const add = async () => { if (!form.title.trim()) return; try { await base44.entities.Hobby.create({ title: form.title.trim(), type: form.type, current_thread: form.current_thread || undefined, status: "active", activity_level: "active" }); setForm({ title: "", type: "creative", current_thread: "" }); setShowAdd(false); await load(); } catch { /* ignore */ } };
   const logActivity = async (h) => { try { await base44.entities.Hobby.update(h.id, { last_activity_date: new Date().toISOString(), activity_level: "active" }); await load(); } catch { /* ignore */ } };
 
-  if (loading) return <p className="text-sm text-ivory/50">Laden…</p>;
-
   return (
-    <div className="space-y-5 text-ivory">
-      <div>
-        <SectionLabel>Hobby's</SectionLabel>
-        <h2 className="text-[32px] leading-[0.95] font-display font-semibold tracking-[-0.03em] mt-1">{headline}</h2>
-        <p className="text-sm text-ivory/55 mt-1.5 italic">{line}</p>
-      </div>
-
-      {/* 01 — CURRENTLY ALIVE */}
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/45 font-semibold mb-2.5">01 · Nu levend</p>
-        {g.active.length ? (
-          <div className="flex flex-col gap-2.5">
-            {g.active.slice(0, 4).map((h) => (
-              <Card key={h.id} accent={BLUE} onClick={() => open(h)}>
-                <div className="flex items-center gap-3">
-                  <div className="relative h-12 w-12 shrink-0 rounded-xl overflow-hidden">
-                    <img src={h.image || IMAGES.lifeHobbies} alt="" className="h-full w-full object-cover" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold truncate">{h.title}</p>
-                    <p className="text-[11px] text-ivory/45">{h.current_thread || "actief"} · {fmtDaysAgo(h.last_activity_date)}</p>
-                  </div>
-                  <span className="text-[9px] uppercase tracking-wide font-semibold" style={{ color: stateColor("active") }}>Active</span>
-                </div>
-              </Card>
-            ))}
-          </div>
-        ) : <Empty text="Niets nu actief." />}
-      </div>
-
-      {/* 02 — WHAT YOU'VE BEEN INTO */}
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/45 font-semibold mb-2.5">02 · Waar je mee bezig was</p>
-        <div className="glass-card-2 rounded-2xl p-4 flex items-end justify-between gap-2 overflow-x-auto">
-          {rhythm.map((d, i) => (
-            <div key={i} className="flex flex-col items-center gap-2 min-w-[44px]">
-              <span className={`text-[9px] uppercase tracking-wide font-semibold ${d.label === "—" ? "text-ivory/25" : "text-ivory/70"}`}>{d.label === "—" ? "—" : d.label.split(" ")[0]}</span>
-              <span className="w-2 rounded-full" style={{ height: d.label === "—" ? 6 : 34, background: d.label === "—" ? "rgba(255,255,255,0.12)" : BLUE }} />
-              <span className="text-[9px] uppercase tracking-wide text-ivory/45 font-semibold">{d.day}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 03 — QUIET BUT ALIVE */}
-      {g.quiet.length > 0 && (
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/45 font-semibold mb-2.5">03 · Stil, maar levend</p>
-          <div className="flex flex-col gap-1.5">
-            {g.quiet.slice(0, 5).map((h) => (
-              <div key={h.id} className="flex items-center justify-between glass-card-2 rounded-xl px-3.5 py-2.5">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{h.title}</p>
-                  <p className="text-[11px] text-ivory/40">{fmtDaysAgo(h.last_activity_date)}</p>
-                </div>
-                <button onClick={() => logActivity(h)} className="text-[10px] uppercase tracking-wide font-semibold" style={{ color: SAND }}>Reactiveer</button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 04 — QUICK ACTIONS */}
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/45 font-semibold mb-2.5">04 · Snel</p>
-        <div className="grid grid-cols-3 gap-2">
-          <ActionBtn label="Hobby" icon={Plus} onClick={() => setShowAdd((v) => !v)} />
-          <ActionBtn label="Log" icon={CalendarPlus} onClick={() => g.active[0] && logActivity(g.active[0])} />
-          <ActionBtn label="Projecten" icon={Briefcase} onClick={() => navigate("/life/hobbies?tab=projects")} />
-          <ActionBtn label="Giulia" icon={Sparkles} onClick={() => navigate("/chat")} />
-          <ActionBtn label="Verken" icon={Clock} onClick={() => navigate("/life/hobbies?tab=explore")} />
-        </div>
-      </div>
-
-      {/* ADD HOBBY */}
-      {showAdd && (
-        <div className="rounded-2xl glass-card-2 p-4 space-y-2.5 animate-fade-up">
-          <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="Hobby (bv. muziek, fotografie)" className="w-full rounded-xl bg-white/5 border border-white/15 px-3 py-2 text-sm text-ivory placeholder:text-ivory/40 outline-none" />
-          <div className="flex gap-2">
-            <select value={form.type} onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))} className="rounded-xl bg-white/5 border border-white/15 px-2.5 py-2 text-xs text-ivory outline-none capitalize">
-              {TYPES.map((t) => <option key={t} value={t} className="text-charcoal">{t}</option>)}
-            </select>
-            <input value={form.current_thread} onChange={(e) => setForm((f) => ({ ...f, current_thread: e.target.value }))} placeholder="Waar je nu mee bezig bent" className="flex-1 rounded-xl bg-white/5 border border-white/15 px-3 py-2 text-xs text-ivory placeholder:text-ivory/40 outline-none" />
-          </div>
-          <button onClick={add} disabled={!form.title.trim()} className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-charcoal disabled:opacity-40 transition" style={{ background: "hsl(var(--life-blue))" }}><Plus className="w-4 h-4" /> Voeg toe</button>
-        </div>
-      )}
-
-      <ContextGrid items={[
+    <PreviewShell index="22" section="HOBBY'S" statement={headline.toUpperCase()} kicker={`${g.active.length} NU LEVEND`} accent={LIGHT}
+      context={[
         { label: "ACTIEF", text: `${g.active.length} hobby's zijn nu levend.` },
         { label: "STIL", text: g.quiet.length ? `${g.quiet.length} hobby's wachten op heractivering.` : "Geen stille hobby's." },
-        { label: "RITME", text: rhythm.some((d) => d.label !== "—") ? "Je hebt deze week actief geweest." : "Nog geen activiteit deze week." },
-      ]} />
-      <ActionRow actions={[
-        { label: "Open Hobby's", primary: true, color: "#d8dab3", to: "/life/hobbies" },
-      ]} />
-    </div>
+        { label: "RITME", text: rhythm.some(d => d.label !== "—") ? "Je hebt deze week actief geweest." : "Nog geen activiteit deze week." },
+      ]}
+      actions={[{ label: "New Hobby", primary: true, onClick: () => setShowAdd(v => !v) }, { label: "Log Activity", onClick: () => g.active[0] && logActivity(g.active[0]) }, { label: "Open Hobby's", to: "/life/hobbies" }]}>
+      <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6 h-full overflow-hidden">
+        <div className="flex flex-col gap-5 overflow-auto pr-1">
+          <div className="flex flex-col items-center"><AnimatedRing pct={g.active.length ? 100 : 0} size={140} color={LIGHT} label={String(g.active.length)} sub="ACTIEF" /></div>
+          <div>
+            <p className="text-storm/50 text-[10px] tracking-[0.25em] mb-3">RITME · DEZE WEEK</p>
+            <div className="flex items-end gap-1.5 h-16">
+              {rhythm.map((d, i) => (
+                <div key={i} className="flex-1 rounded-t" style={{ height: d.label === "—" ? "20%" : "100%", background: d.label === "—" ? "rgba(255,255,255,0.08)" : LIGHT }} />
+              ))}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-marble/20 bg-marble/5 p-3">
+            <p className="text-storm/50 text-[10px] tracking-[0.25em] mb-2">ACTIVITEIT · LIVE</p>
+            <LiveSparkline color={MID} max={12} intervalMs={1800} />
+          </div>
+          {showAdd && (
+            <div className="rounded-2xl border border-marble/25 bg-marble/8 p-3 space-y-2">
+              <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Hobby naam" className="w-full rounded-lg border border-marble/30 bg-marble/5 px-3 py-2 text-xs text-storm placeholder:text-storm/40 focus:outline-none" />
+              <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))} className="w-full rounded-lg border border-marble/30 bg-marble/5 px-3 py-2 text-xs text-storm focus:outline-none">
+                {TYPES.map(t => <option key={t} value={t} className="text-charcoal capitalize">{t}</option>)}
+              </select>
+              <button onClick={add} disabled={!form.title.trim()} className="w-full px-3 py-2 rounded-full text-xs font-semibold text-plum disabled:opacity-40 transition" style={{ background: LIGHT }}><Plus className="w-3.5 h-3.5 inline mr-1" />Voeg toe</button>
+            </div>
+          )}
+        </div>
+        <div className="flex flex-col overflow-hidden">
+          <p className="text-storm/50 text-[10px] tracking-[0.25em] mb-3">NU LEVEND · {g.active.length}</p>
+          <div className="flex-1 overflow-auto pr-1 space-y-2">
+            {loading ? <p className="text-storm/40 text-sm">Laden…</p> : g.active.length ? g.active.slice(0, 6).map(h => (
+              <div key={h.id} onClick={onOpen} className="rounded-2xl border border-marble/20 bg-marble/5 hover:bg-marble/10 p-3.5 cursor-pointer transition">
+                <div className="flex items-center gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-storm truncate">{h.title}</p>
+                    <p className="text-[11px] text-storm/50">{h.current_thread || "actief"} · {fmtDaysAgo(h.last_activity_date)}</p>
+                  </div>
+                  <button onClick={(e) => { e.stopPropagation(); logActivity(h); }} className="text-[10px] uppercase tracking-wide font-semibold px-2 py-1 rounded-full border border-marble/30 hover:bg-marble/10 transition" style={{ color: LIGHT }}>Log</button>
+                </div>
+              </div>
+            )) : <p className="text-storm/40 text-sm">Niets nu actief.</p>}
+            {g.quiet.length > 0 && (
+              <>
+                <p className="text-storm/50 text-[10px] tracking-[0.25em] mb-2 mt-3">STIL, MAAR LEVEND</p>
+                {g.quiet.slice(0, 4).map(h => (
+                  <div key={h.id} className="flex items-center justify-between rounded-xl border border-marble/20 bg-marble/5 px-3.5 py-2.5">
+                    <div className="min-w-0"><p className="text-sm font-medium text-storm truncate">{h.title}</p><p className="text-[11px] text-storm/40">{fmtDaysAgo(h.last_activity_date)}</p></div>
+                    <button onClick={() => logActivity(h)} className="text-[10px] uppercase tracking-wide font-semibold" style={{ color: LIGHT }}>Reactiveer</button>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </PreviewShell>
   );
 }

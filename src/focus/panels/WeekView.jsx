@@ -1,114 +1,106 @@
-import React, { useMemo, useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import PreviewShell from "@/system/panels/PreviewShell";
+import { AnimatedRing } from "@/glass/components/modules/viz";
 import { base44 } from "@/api/base44Client";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { SectionLabel } from "../../system/panels/previewParts";
-import CountUp from "@/system/widgets/CountUp";
-import { FOCUS } from "@/lib/domainPalettes";
-import { AnimatedRing, ContextGrid, ActionRow, OpenLink, PulseDot } from "@/self/components/SelfViz";
 
-const DAYSHORT = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
-function startOfWeek(d) { const date = new Date(d); const day = (date.getDay() + 6) % 7; date.setDate(date.getDate() - day); date.setHours(0, 0, 0, 0); return date; }
-const iso = (d) => d.toISOString().slice(0, 10);
+const MID = "#94925d", LIGHT = "#d8dab3", URG = "#d5e24a", DEEP = "#595f34";
+const DAYS = ["Ma", "Di", "Wo", "Do", "Vr", "Za", "Zo"];
+const COLOR = { focus: MID, life: LIGHT, self: "#6b6a4a", urgent: URG, default: DEEP };
 
 export default function WeekView() {
-  const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [ref, setRef] = useState(new Date());
+  const [sel, setSel] = useState((new Date().getDay() + 6) % 7 + 1);
 
-  useEffect(() => { (async () => { try { const data = await base44.entities.Event.list("start").catch(() => []); setEvents(data || []); } catch { /* ignore */ } finally { setLoading(false); } })(); }, []);
+  useEffect(() => {
+    base44.entities.CalendarEvent.list("start").then(data => setEvents(data || [])).catch(() => {}).finally(() => setLoading(false));
+  }, []);
 
-  const weekStart = startOfWeek(ref);
-  const days = Array.from({ length: 7 }, (_, i) => { const d = new Date(weekStart); d.setDate(weekStart.getDate() + i); return d; });
-  const byDay = useMemo(() => { const map = {}; days.forEach((d) => (map[iso(d)] = [])); events.forEach((e) => { const d = (e.start || "").slice(0, 10); if (map[d]) map[d].push(e); }); Object.values(map).forEach((a) => a.sort((x, y) => (x.start || "").localeCompare(y.start || ""))); return map; }, [events, ref]);
-  const weekEnd = days[6];
-  const shift = (n) => { const d = new Date(ref); d.setDate(d.getDate() + n * 7); setRef(d); };
-  const todayIso = new Date().toISOString().slice(0, 10);
-  const weekTotal = events.filter((e) => { const t = new Date(e.start).getTime(); return t >= weekStart.getTime() && t < weekEnd.getTime() + 86400000; }).length;
-  const dayCounts = days.map((d) => (byDay[iso(d)] || []).length);
-  const maxDay = Math.max(1, ...dayCounts);
-  const pct = Math.round(((new Date().getDay() + 6) % 7 + 1) / 7 * 100);
+  const today = (new Date().getDay() || 7);
+  const pct = Math.round((today - 1) / 6 * 100);
+
+  const weekTasks = useMemo(() => {
+    const now = new Date();
+    const monday = new Date(now); monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    return events.map(e => {
+      const d = new Date(e.start);
+      const day = ((d.getDay() + 6) % 7) + 1;
+      return { day, t: d.toTimeString().slice(0, 5), dur: e.end ? Math.max(0.5, (new Date(e.end) - d) / 3600000) : 1, title: e.title, cat: e.domain || "default" };
+    }).filter(t => t.day >= 1 && t.day <= 7);
+  }, [events]);
+
+  const selTasks = weekTasks.filter(t => t.day === sel);
 
   return (
-    <div className="space-y-6 text-ivory">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <SectionLabel>Week Planning</SectionLabel>
-          <div className="flex items-center gap-3 mt-1">
-            <h2 className="text-[32px] leading-[0.95] font-display font-semibold tracking-[-0.03em]">{weekTotal} deze week</h2>
-            {weekTotal > 0 && <PulseDot color={FOCUS.mid} size={8} />}
-          </div>
-          <p className="text-sm text-ivory/55 mt-1.5 italic">{weekStart.getDate()} {weekStart.toLocaleDateString("nl-NL", { month: "long" })} – {weekEnd.getDate()} {weekEnd.toLocaleDateString("nl-NL", { month: "long" })}</p>
-        </div>
-        <OpenLink to="/planning" label="Open Planning" color={FOCUS.light} />
-      </div>
-
-      {/* Week progress ring */}
-      <div className="flex items-center gap-6">
-        <AnimatedRing pct={pct} size={120} stroke={8} color={FOCUS.mid}>
-          <span className="text-ivory text-3xl font-bold tabular-nums leading-none"><CountUp value={pct} />%</span>
-          <span className="text-ivory/40 text-[9px] tracking-wider mt-1">VERLOPEN</span>
-        </AnimatedRing>
-        <div className="flex-1">
-          <p className="text-ivory/45 text-[10px] uppercase tracking-[0.22em] mb-3">Belasting per dag</p>
-          <div className="flex items-end gap-2 h-20">
-            {dayCounts.map((v, i) => (
-              <motion.div key={i} initial={{ height: 0 }} animate={{ height: `${Math.max(8, (v / maxDay) * 100)}%` }} transition={{ duration: 0.8, delay: i * 0.1 }} className="flex-1 rounded-t-md flex flex-col justify-end gap-1">
-                <div className="h-full rounded-t-md" style={{ background: i === (new Date().getDay() + 6) % 7 ? FOCUS.urgent : v ? FOCUS.mid : "rgba(255,255,255,0.1)" }} />
-                <span className="text-[9px] text-center text-ivory/40">{DAYSHORT[i]}</span>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Week navigation */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button onClick={() => shift(-1)} className="p-2 rounded-full border border-white/15 glass-1 text-ivory/70 hover:bg-white/10 transition-colors"><ChevronLeft className="w-4 h-4" /></button>
-          <span className="text-ivory text-sm font-medium">{weekStart.getDate()} {weekStart.toLocaleDateString("nl-NL", { month: "long" })} – {weekEnd.getDate()} {weekEnd.toLocaleDateString("nl-NL", { month: "long" })} {weekEnd.getFullYear()}</span>
-          <button onClick={() => shift(1)} className="p-2 rounded-full border border-white/15 glass-1 text-ivory/70 hover:bg-white/10 transition-colors"><ChevronRight className="w-4 h-4" /></button>
-        </div>
-        <button onClick={() => setRef(new Date())} className="text-ivory/60 hover:text-ivory text-xs">Vandaag</button>
-      </div>
-
-      {/* Week grid */}
-      <div className="overflow-x-auto">
-        <div className="grid grid-cols-7 gap-2 min-w-[640px]">
-          {days.map((d, i) => {
-            const items = byDay[iso(d)] || [];
-            const isToday = iso(d) === todayIso;
-            return (
-              <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }} className={`rounded-2xl border p-3 min-h-[260px] flex flex-col ${isToday ? "border-white/30 bg-white/[0.08]" : "border-white/15 bg-white/[0.04]"}`}>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-ivory/55 text-[11px]">{DAYSHORT[i]}</span>
-                  <span className={`w-7 h-7 flex items-center justify-center rounded-full text-sm font-semibold ${isToday ? "text-charcoal" : "text-ivory"}`} style={isToday ? { background: FOCUS.light } : {}}>{d.getDate()}</span>
-                </div>
-                <div className="flex flex-col gap-1.5 flex-1">
-                  {loading ? <span className="text-ivory/30 text-[10px]">…</span> : items.length === 0 ? <span className="text-ivory/30 text-[10px]">—</span> : items.map((e) => (
-                    <motion.div key={e.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-lg bg-white/[0.06] border-l-2 px-2 py-1.5" style={{ borderColor: FOCUS.mid }}>
-                      <p className="text-ivory text-[11px] font-medium leading-tight truncate">{e.title}</p>
-                      <p className="text-ivory/50 text-[9px] tabular-nums mt-0.5">{new Date(e.start).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}</p>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      </div>
-
-      <ContextGrid items={[
+    <PreviewShell index="12" section="WEEK" statement={`WEEK ${Math.ceil((new Date().getDate() + ((new Date().getDay() + 6) % 7)) / 7)}`} kicker={`${DAYS[(new Date().getDay() + 6) % 7]} ${new Date().getDate()}`} accent={URG}
+      context={[
         { label: "VERLOPEN", text: `${pct}% van de week al gepasseerd.` },
-        { label: "BELASTING", text: dayCounts.indexOf(maxDay) >= 0 ? `${DAYSHORT[dayCounts.indexOf(maxDay)]} is de drukste dag — ${maxDay} afspraken.` : "Geen afspraken." },
-        { label: "VRIJ", text: dayCounts.filter((c) => c === 0).length > 0 ? `${dayCounts.filter((c) => c === 0).length} dagen grotendeels open.` : "Geen vrije dagen." },
-      ]} />
-      <ActionRow actions={[
-        { label: "Open Planning", primary: true, color: FOCUS.light, to: "/planning" },
-      ]} />
-    </div>
+        { label: "BELASTING", text: weekTasks.length ? `${DAYS[(weekTasks.reduce((max, t) => weekTasks.filter(x => x.day === t.day).length > weekTasks.filter(x => x.day === max.day).length ? t.day : max.day, weekTasks[0]).day) - 1]} is de drukste dag.` : "Geen afspraken." },
+        { label: "VRIJ", text: DAYS.filter((_, i) => !weekTasks.some(t => t.day === i + 1)).length > 0 ? `${DAYS.filter((_, i) => !weekTasks.some(t => t.day === i + 1)).join(", ")} grotendeels open.` : "Geen vrije dagen." },
+      ]}
+      actions={[{ label: "Today", primary: true, onClick: () => setSel(today) }, { label: "Prev", onClick: () => setSel(s => Math.max(1, s - 1)) }, { label: "Next", onClick: () => setSel(s => Math.min(7, s + 1)) }, { label: "Open Weekplanning", to: "/planning" }]}>
+      <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-6 h-full overflow-hidden">
+        <div className="flex flex-col gap-5 overflow-auto pr-1">
+          <div className="flex flex-col items-center"><AnimatedRing pct={pct} size={150} color={MID} label={`${pct}%`} sub="WEEK VERLOPEN" /></div>
+          <div>
+            <p className="text-storm/50 text-[10px] tracking-[0.25em] mb-3">LEGENDA</p>
+            <div className="flex flex-col gap-2">
+              <span className="flex items-center gap-2 text-[10px] text-storm/70"><span className="w-3 h-3 rounded-sm" style={{ background: MID }} />Focus</span>
+              <span className="flex items-center gap-2 text-[10px] text-storm/70"><span className="w-3 h-3 rounded-sm" style={{ background: LIGHT }} />Life</span>
+              <span className="flex items-center gap-2 text-[10px] text-storm/70"><span className="w-3 h-3 rounded-sm" style={{ background: "#6b6a4a" }} />Self</span>
+              <span className="flex items-center gap-2 text-[10px] text-storm/70"><span className="w-3 h-3 rounded-sm" style={{ background: URG }} />Belangrijk</span>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-marble/20 bg-marble/5 p-3 text-center">
+            <p className="text-storm/50 text-[10px] tracking-[0.25em]">NU</p>
+            <p className="text-urgent text-xl font-bold tabular-nums mt-1">{new Date().toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}</p>
+          </div>
+        </div>
+        <div className="flex flex-col overflow-hidden">
+          <div className="grid grid-cols-7 gap-2 flex-1 min-h-0">
+            {DAYS.map((d, i) => {
+              const day = i + 1;
+              const tasks = weekTasks.filter(t => t.day === day);
+              const load = Math.min(100, tasks.reduce((s, t) => s + t.dur, 0) / 8 * 100);
+              const isToday = day === today;
+              return (
+                <button key={d} onClick={() => setSel(day)} className={`flex flex-col rounded-2xl border p-2 transition-colors ${sel === day ? "border-sand bg-marble/10" : "border-marble/20 bg-marble/5 hover:bg-marble/8"}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-[10px] tracking-wider ${isToday ? "text-urgent" : "text-storm/70"}`}>{d}</span>
+                    {isToday && <span className="w-1.5 h-1.5 rounded-full bg-urgent" />}
+                  </div>
+                  <div className="relative flex-1 min-h-0 rounded-lg bg-marble/5 overflow-hidden">
+                    {tasks.map((t, idx) => {
+                      const sh = parseInt(t.t.split(":")[0]), sm = parseInt(t.t.split(":")[1]);
+                      const top = ((sh + sm / 60 - 8) / 13) * 100;
+                      const h = (t.dur / 13) * 100;
+                      return (
+                        <div key={idx} className="absolute left-1 right-1 rounded-md px-1.5 py-1 text-[8px] text-storm leading-tight overflow-hidden" style={{ top: `${top}%`, height: `${h}%`, background: `${(COLOR[t.cat] || COLOR.default)}55`, borderLeft: `2px solid ${COLOR[t.cat] || COLOR.default}` }}>
+                          {t.title}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-2 h-1 rounded-full bg-marble/10 overflow-hidden">
+                    <div className="h-full transition-all duration-700" style={{ width: `${load}%`, background: MID }} />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-3 rounded-2xl border border-marble/20 bg-marble/5 p-3">
+            <p className="text-storm/50 text-[10px] tracking-[0.25em] mb-2">{DAYS[sel - 1]} · {selTasks.length} TAKEN</p>
+            <div className="flex flex-wrap gap-2">
+              {selTasks.map((t, i) => (
+                <span key={i} className="flex items-center gap-2 rounded-full border border-marble/20 bg-marble/5 px-3 py-1 text-[11px] text-storm">
+                  <span className="w-2 h-2 rounded-full" style={{ background: COLOR[t.cat] || COLOR.default }} />{t.t} {t.title}
+                </span>
+              ))}
+              {selTasks.length === 0 && <span className="text-storm/40 text-xs">Geen taken — vrije dag.</span>}
+            </div>
+          </div>
+        </div>
+      </div>
+    </PreviewShell>
   );
 }
