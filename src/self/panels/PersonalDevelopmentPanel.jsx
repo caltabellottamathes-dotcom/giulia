@@ -1,21 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { SectionLabel, Empty, Card, ActionBtn, Progress } from "@/system/panels/previewParts";
-import { goalStatusColor, goalStatusLabel, goalTypeLabel, fmtDate } from "@/lib/selfUtils";
-import { Plus, Target, ArrowUpRight, Award, BookOpen, TrendingUp } from "lucide-react";
+import { SectionLabel, Empty, ActionBtn } from "@/system/panels/previewParts";
+import { goalStatusLabel, goalTypeLabel } from "@/lib/selfUtils";
+import { BLUE, SAND } from "@/glass/components/self/palette";
+import { Plus, ArrowUpRight, Award, TrendingUp, Target } from "lucide-react";
 
-const SAGE = "hsl(var(--self-accent))";
-
-const SUBNAV = [
-  { key: "", label: "Gebieden" },
-  { key: "?tab=goals", label: "Doelen" },
-  { key: "?tab=growth", label: "Milestones" },
-  { key: "?tab=learning", label: "Leren" },
-  { key: "?tab=timeline", label: "Tijdlijn" },
-];
-
-/** Personal Development panel — actieve gebieden, doelen en voortgang. */
 export default function PersonalDevelopmentPanel() {
   const navigate = useNavigate();
   const [goals, setGoals] = useState([]);
@@ -36,7 +26,6 @@ export default function PersonalDevelopmentPanel() {
     return Array.from(map.entries()).slice(0, 4);
   }, [active]);
   const milestones = useMemo(() => active.filter((g) => g.type === "milestone"), [active]);
-  const learning = useMemo(() => active.filter((g) => g.type === "learning"), [active]);
 
   const add = async () => {
     if (!form.title.trim()) return;
@@ -52,59 +41,46 @@ export default function PersonalDevelopmentPanel() {
         <SectionLabel>Personal Development</SectionLabel>
         <h2 className="text-[32px] leading-[0.95] font-display font-semibold tracking-[-0.03em] mt-1">{active.length} actief</h2>
         <p className="text-sm text-ivory/55 mt-1.5 italic">{areas.length} ontwikkelgebieden · {milestones.length} milestones</p>
-        <nav className="flex flex-wrap gap-x-3 gap-y-1 mt-3">
-          {SUBNAV.map((s) => (
-            <button key={s.key} onClick={() => navigate(`/self/personal-development${s.key}`)} className="text-[11px] uppercase tracking-[0.16em] font-medium text-ivory/45 hover:text-ivory transition-colors border-b border-transparent hover:border-ivory/30 pb-0.5">
-              {s.label}
-            </button>
-          ))}
-        </nav>
+        <button onClick={() => navigate("/self/personal-development")} className="mt-3 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.16em] font-semibold" style={{ color: BLUE }}>
+          Open Development <ArrowUpRight className="w-3 h-3" />
+        </button>
       </div>
 
-      {/* Active areas */}
+      {/* Active areas — node-style cards with progress bars */}
       <div>
         <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/45 font-semibold mb-2.5">Actieve gebieden</p>
         {areas.length ? (
           <div className="flex flex-col gap-2">
-            {areas.map(([name, items]) => {
+            {areas.map(([name, items], idx) => {
               const avg = Math.round(items.reduce((s, g) => s + (g.progress || 0), 0) / items.length);
+              const stalled = items.every((g) => (g.progress || 0) < 15);
+              const tone = stalled ? "rgba(255,255,255,0.35)" : avg >= 50 ? BLUE : SAND;
+              const status = stalled ? "STALLED" : avg >= 50 ? "MOVING" : "ACTIVE";
               return (
-                <Card key={name} accent={SAGE} onClick={() => navigate("/self/personal-development")}>
-                  <div className="mb-1.5">
+                <div key={name} className="glass-card-2 rounded-2xl p-4">
+                  <div className="flex items-center justify-between mb-2">
                     <p className="text-sm font-semibold truncate">{name}</p>
-                    <p className="text-[11px] text-ivory/45">{items.length} doelen · {goalTypeLabel(items[0].type)}</p>
+                    <span className="text-[9px] tracking-[0.15em] font-semibold" style={{ color: tone }}>{status}</span>
                   </div>
-                  <Progress value={avg} accent={SAGE} />
-                </Card>
+                  <p className="text-[10px] text-ivory/45 mb-2">{items.length} doelen · {goalTypeLabel(items[0].type)}</p>
+                  <div className="h-1.5 rounded-full bg-ivory/10 overflow-hidden">
+                    <div className="h-full rounded-full transition-all duration-500" style={{ width: `${avg}%`, background: tone }} />
+                  </div>
+                  <p className="text-ivory/50 text-[10px] mt-1.5 tabular-nums">{avg}%</p>
+                </div>
               );
             })}
           </div>
         ) : <Empty text="Geen actieve doelen." />}
       </div>
 
-      {/* Learning */}
-      {learning.length > 0 && (
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/45 font-semibold mb-2.5">Leren</p>
-          <div className="flex flex-col gap-1.5">
-            {learning.slice(0, 3).map((g) => (
-              <div key={g.id} className="flex items-center justify-between glass-card-2 rounded-xl px-3.5 py-2.5">
-                <p className="text-sm font-medium truncate">{g.title}</p>
-                <span className="text-[10px] tabular-nums text-ivory/55">{g.progress || 0}%</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Quick actions */}
       <div>
         <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/45 font-semibold mb-2.5">Snel</p>
         <div className="grid grid-cols-3 gap-2">
           <ActionBtn label="Doel" icon={Plus} onClick={() => setShowAdd((v) => !v)} />
+          <ActionBtn label="Voortgang" icon={TrendingUp} onClick={() => active[0] && updateProgress(active[0])} />
           <ActionBtn label="Milestone" icon={Award} onClick={() => navigate("/self/personal-development?tab=growth")} />
-          <ActionBtn label="Leren" icon={BookOpen} onClick={() => navigate("/self/personal-development?tab=learning")} />
-          <ActionBtn label="Voortgang" icon={TrendingUp} onClick={() => updateProgress(active[0])} />
           <ActionBtn label="Doelen" icon={Target} onClick={() => navigate("/self/personal-development?tab=goals")} />
           <ActionBtn label="Open" icon={ArrowUpRight} onClick={() => navigate("/self/personal-development")} />
         </div>
@@ -119,7 +95,7 @@ export default function PersonalDevelopmentPanel() {
             </select>
             <input value={form.area} onChange={(e) => setForm((f) => ({ ...f, area: e.target.value }))} placeholder="Ontwikkelgebied" className="flex-1 rounded-xl bg-white/5 border border-white/15 px-3 py-2 text-xs text-ivory placeholder:text-ivory/40 outline-none" />
           </div>
-          <button onClick={add} disabled={!form.title.trim()} className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-charcoal disabled:opacity-40 transition" style={{ background: SAGE }}><Plus className="w-4 h-4" /> Voeg toe</button>
+          <button onClick={add} disabled={!form.title.trim()} className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-charcoal disabled:opacity-40 transition" style={{ background: BLUE }}><Plus className="w-4 h-4" /> Voeg toe</button>
         </div>
       )}
     </div>
