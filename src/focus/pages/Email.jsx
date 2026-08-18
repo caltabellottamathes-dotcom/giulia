@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { cn } from "@/lib/utils";
 import GlassPanel from "@/system/components/glass/GlassPanel";
 import GlassButton from "@/system/components/glass/GlassButton";
@@ -9,9 +9,11 @@ import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import { syncInbox } from "@/lib/emailSync";
 import CategoryBadge from "@/focus/components/email/CategoryBadge";
+import EmailActivityChart from "@/focus/components/email/EmailActivityChart";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Inbox, Star, Send, FileText, Archive, Sparkles,
-  Search, Mail, Check, Edit3, X, RefreshCw, Trash2,
+  Search, Mail, Check, X, RefreshCw, Trash2, Loader2, AlertCircle,
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -33,6 +35,16 @@ const folders = [
   { id: "giulia_drafts", label: "Door Giulia", icon: Sparkles },
 ];
 
+// ── Live clock hook — geeft de pagina een "levend" gevoel ──
+function useClock() {
+  const [time, setTime] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => setTime(new Date()), 1000 * 30);
+    return () => clearInterval(t);
+  }, []);
+  return time;
+}
+
 export default function Email() {
   const [folder, setFolder] = useState("inbox");
   const [selectedEmail, setSelectedEmail] = useState(null);
@@ -46,13 +58,15 @@ export default function Email() {
   const [triaging, setTriaging] = useState(false);
   const [drafting, setDrafting] = useState(false);
   const [bodyLoading, setBodyLoading] = useState(false);
+  const [bodyError, setBodyError] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const clock = useClock();
+  const lastFetchId = useRef(null);
   const { toast } = useToast();
 
   const { data: rawEmails, loading, reload } = useEntityList("Email");
-  // Filter out soft-deleted emails everywhere
   const emails = useMemo(() => (rawEmails || []).filter((e) => !e.deleted), [rawEmails]);
 
   const sync = async () => {
@@ -82,13 +96,8 @@ export default function Email() {
     }
   };
 
-  useEffect(() => {
-    sync();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  useEffect(() => { sync(); /* eslint-disable-next-line */ }, []);
 
-  // Category filter zoekt over ALLE folders — zo zien gebruikers ook
-  // gearchiveerde/getagde emails terug wanneer ze op een categorie klikken.
   const folderEmails = useMemo(() => {
     let list;
     if (activeCategory !== "all") {
@@ -96,7 +105,6 @@ export default function Email() {
     } else {
       list = emails.filter((m) => m.folder === folder);
     }
-    // Giulia-drafts folder is altijd los
     if (folder === "giulia_drafts" && activeCategory === "all") {
       list = emails.filter((m) => m.folder === "giulia_drafts" || m.giulia_draft);
     }
@@ -112,6 +120,7 @@ export default function Email() {
   }, [emails, folder, activeCategory, searchQuery]);
 
   const giuliaDrafts = emails.filter((m) => m.folder === "giulia_drafts" || m.giulia_draft);
+  const unreadCount = emails.filter((m) => m.folder === "inbox" && m.status === "unread").length;
 
   const draftReply = async () => {
     if (!selectedEmail) return;
@@ -120,17 +129,12 @@ export default function Email() {
       const res = await base44.functions.invoke("draftEmailReply", { email_id: selectedEmail.id });
       if (res?.ok) {
         await reload();
-        setFolder("giulia_drafts");
-        setSelectedEmail(null);
+        setFolder("giulia_drafts"); setSelectedEmail(null);
         toast({ title: "Giulia heeft een concept geschreven" });
-      } else {
-        toast({ title: "Concept mislukt", variant: "destructive" });
-      }
+      } else { toast({ title: "Concept mislukt", variant: "destructive" }); }
     } catch (e) {
       toast({ title: "Concept mislukt", description: String(e?.message || e), variant: "destructive" });
-    } finally {
-      setDrafting(false);
-    }
+    } finally { setDrafting(false); }
   };
 
   const approveAndSend = async () => {
@@ -138,18 +142,14 @@ export default function Email() {
     setSending(true);
     try {
       await base44.functions.invoke("sendPrivateEmail", {
-        to: selectedEmail.sender_email,
-        subject: selectedEmail.subject,
-        message: draftBody || selectedEmail.body,
+        to: selectedEmail.sender_email, subject: selectedEmail.subject, message: draftBody || selectedEmail.body,
       });
       await base44.entities.Email.update(selectedEmail.id, { body: draftBody || selectedEmail.body, status: "sent", folder: "sent" });
-      setShowDraftPanel(false);
-      reload();
+      setShowDraftPanel(false); reload();
+      toast({ title: "Verzonden" });
     } catch (e) {
       toast({ title: "Versturen mislukt", description: "Controleer de email-bridge op Render.", variant: "destructive" });
-    } finally {
-      setSending(false);
-    }
+    } finally { setSending(false); }
   };
 
   const openCompose = () => { setCompose({ to: "", subject: "", body: "" }); setShowCompose(true); };
@@ -184,8 +184,6 @@ export default function Email() {
     } finally { setSendingCompose(false); }
   };
 
-  // Soft-delete: zet deleted=true i.p.v. hard delete, zodat de email
-  // niet opnieuw wordt opgehaald bij de volgende sync.
   const delEmail = async () => {
     if (!selectedEmail) return;
     if (!window.confirm("Email verwijderen?")) return;
@@ -194,7 +192,6 @@ export default function Email() {
     toast({ title: "Email verwijderd" });
   };
 
-  // Bulk-verwijder alle emails in de huidige folder (soft-delete)
   const bulkDeleteFolder = async () => {
     const target = activeCategory !== "all"
       ? emails.filter((m) => m.category === activeCategory)
@@ -211,9 +208,7 @@ export default function Email() {
       toast({ title: `${target.length} email${target.length === 1 ? "" : "s"} verwijderd` });
     } catch (e) {
       toast({ title: "Verwijderen mislukt", variant: "destructive" });
-    } finally {
-      setBulkDeleting(false);
-    }
+    } finally { setBulkDeleting(false); }
   };
 
   const toggleRead = async () => {
@@ -224,25 +219,39 @@ export default function Email() {
   };
 
   const selectEmail = async (email) => {
+    const fetchId = email.id + Date.now();
+    lastFetchId.current = fetchId;
     setSelectedEmail(email);
+    setBodyError(false);
     const needsBody = !email.body || email.body === "(geen inhoud)";
     if (needsBody && email.gmail_message_id) {
       setBodyLoading(true);
       try {
         const body = await base44.functions.invoke("fetchPrivateEmailBody", { uid: email.gmail_message_id });
-        const text = body.text || body.html || "(geen inhoud)";
-        setSelectedEmail({ ...email, body: text });
-        await base44.entities.Email.update(email.id, { body: text });
+        // Negeer als de gebruiker intussen een andere email opende
+        if (lastFetchId.current !== fetchId) return;
+        const text = body?.text || body?.html || "(geen inhoud)";
+        if (text && text !== "(geen inhoud)") {
+          setSelectedEmail({ ...email, body: text });
+          await base44.entities.Email.update(email.id, { body: text }).catch(() => {});
+        } else {
+          setBodyError(true);
+        }
       } catch (e) {
-        /* ignore */
+        if (lastFetchId.current !== fetchId) return;
+        setBodyError(true);
       } finally {
-        setBodyLoading(false);
+        if (lastFetchId.current === fetchId) setBodyLoading(false);
       }
     }
   };
 
+  const activeLabel = activeCategory !== "all"
+    ? categoryChips.find((c) => c.id === activeCategory)?.label
+    : folders.find((f) => f.id === folder)?.label;
+
   return (
-    <div className="h-full min-h-0 flex flex-col animate-fade-up">
+    <div className="h-[calc(100svh-11.5rem)] min-h-0 flex flex-col overflow-hidden">
       <PageHero
         page="email"
         icon={Mail}
@@ -260,28 +269,34 @@ export default function Email() {
         </>}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0 lg:h-[calc(100svh-16rem)]">
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0">
         {/* Folder sidebar */}
-        <div className="lg:col-span-2 space-y-1 min-h-0">
+        <div className="hidden lg:flex lg:col-span-2 flex-col min-h-0 gap-1">
+          <div className="flex items-center gap-2 px-3 mb-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-olive animate-pulse-soft" />
+            <span className="text-[10px] font-mono text-muted-foreground tabular-nums">
+              {clock.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}
+            </span>
+            {unreadCount > 0 && <span className="text-[10px] text-olive font-medium">{unreadCount} ongelezen</span>}
+          </div>
           {folders.map((f) => {
             const count = f.id === "inbox"
               ? emails.filter((m) => m.folder === f.id && m.status === "unread").length
               : emails.filter((m) => m.folder === f.id).length;
+            const on = folder === f.id && activeCategory === "all";
             return (
               <button
                 key={f.id}
                 onClick={() => { setFolder(f.id); setSelectedEmail(null); setActiveCategory("all"); }}
                 className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-all rounded-none border-l-2",
-                  folder === f.id && activeCategory === "all"
-                    ? "bg-foreground/[0.04] text-foreground font-medium border-l-olive"
-                    : "text-muted-foreground hover:text-foreground hover:bg-foreground/[0.02] border-l-transparent"
+                  "w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-all rounded-xl",
+                  on ? "bg-foreground/[0.05] text-foreground font-medium" : "text-muted-foreground hover:text-foreground hover:bg-foreground/[0.02]"
                 )}
               >
-                <f.icon className="h-4 w-4 shrink-0" />
+                <f.icon className={cn("h-4 w-4 shrink-0", on && "text-olive")} />
                 <span className="flex-1 text-left truncate">{f.label}</span>
                 {f.id === "giulia_drafts" && giuliaDrafts.length > 0 ? (
-                  <span className="px-1.5 py-0.5 text-[9px] bg-olive/20 text-olive">{giuliaDrafts.length}</span>
+                  <span className="px-1.5 py-0.5 text-[9px] bg-olive/20 text-olive rounded-full">{giuliaDrafts.length}</span>
                 ) : count > 0 ? (
                   <span className="text-[10px] text-muted-foreground tabular-nums">{count}</span>
                 ) : null}
@@ -292,9 +307,13 @@ export default function Email() {
 
         {/* Email list */}
         <div className="lg:col-span-4 min-h-0 flex flex-col">
-          <GlassPanel level={2} className="h-full flex flex-col overflow-hidden">
-            {/* Search + category chips */}
-            <div className="p-3 border-b border-border/40 space-y-2.5">
+          <GlassPanel level={2} className="h-full flex flex-col overflow-hidden rounded-3xl">
+            {/* Header: search + chart + chips */}
+            <div className="p-4 border-b border-border/40 space-y-3 shrink-0">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-display font-semibold text-foreground">{activeLabel}</h3>
+                <span className="text-[10px] text-muted-foreground tabular-nums">{folderEmails.length}</span>
+              </div>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
@@ -304,25 +323,33 @@ export default function Email() {
                   className="w-full glass-1 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none"
                 />
               </div>
+              <EmailActivityChart emails={emails} />
               <div className="flex flex-wrap gap-1.5">
                 {categoryChips.map((c) => (
                   <button
                     key={c.id}
                     onClick={() => setActiveCategory(c.id)}
                     className={cn(
-                      "px-2.5 py-1 text-[11px] font-medium transition-colors rounded-none border-b-2",
+                      "relative px-3 py-1 text-[11px] font-medium transition-colors rounded-full",
                       activeCategory === c.id
-                        ? "bg-charcoal text-ivory border-charcoal"
-                        : "glass-1 text-muted-foreground hover:text-foreground border-transparent"
+                        ? "text-ivory"
+                        : "glass-1 text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    {c.label}
+                    {activeCategory === c.id && (
+                      <motion.span
+                        layoutId="catActive"
+                        className="absolute inset-0 bg-charcoal rounded-full"
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                    <span className="relative z-10">{c.label}</span>
                   </button>
                 ))}
               </div>
               {activeCategory !== "all" && (
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-[10px] text-muted-foreground">{folderEmails.length} emails in "{categoryChips.find((c) => c.id === activeCategory)?.label}"</span>
+                <div className="flex items-center justify-between pt-0.5">
+                  <span className="text-[10px] text-muted-foreground">{folderEmails.length} in "{activeLabel}"</span>
                   <button
                     onClick={bulkDeleteFolder}
                     disabled={bulkDeleting || !folderEmails.length}
@@ -336,34 +363,46 @@ export default function Email() {
             {/* List */}
             <div className="flex-1 overflow-y-auto">
               {loading && [0, 1, 2].map((i) => <div key={i} className="h-20 border-b border-border/30 shimmer" />)}
-              {!loading && folderEmails.map((email) => (
-                <button
-                  key={email.id}
-                  onClick={() => selectEmail(email)}
-                  className={cn(
-                    "w-full text-left p-3.5 border-b border-border/30 transition-colors hover:bg-foreground/[0.02]",
-                    selectedEmail?.id === email.id && "bg-foreground/[0.04]",
-                    email.status === "unread" && "border-l-2 border-l-olive"
-                  )}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className={cn("text-sm truncate", email.status === "unread" ? "font-semibold" : "text-muted-foreground")}>{email.sender}</span>
-                    {email.timestamp && <span className="text-[10px] text-muted-foreground tabular-nums shrink-0 ml-2">{new Date(email.timestamp).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}</span>}
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <p className={cn("text-xs truncate flex-1", email.status === "unread" ? "text-foreground" : "text-muted-foreground")}>{email.subject}</p>
-                    {email.category && email.category !== "important" && <CategoryBadge category={email.category} />}
-                    {email.project_id && <span title="Aan project gekoppeld" className="text-[10px] text-olive shrink-0">◆</span>}
-                  </div>
-                  {email.body && email.body !== "(geen inhoud)" && <p className="text-xs text-muted-foreground/70 truncate mt-1">{email.body.slice(0, 120)}</p>}
-                  {(email.giulia_draft || email.folder === "giulia_drafts") && (
-                    <StatusBadge variant="draft" className="mt-2"><Sparkles className="h-2.5 w-2.5" /> Door Giulia</StatusBadge>
-                  )}
-                </button>
-              ))}
+              <AnimatePresence initial={false}>
+                {!loading && folderEmails.map((email, i) => (
+                  <motion.button
+                    key={email.id}
+                    layout
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.2, delay: Math.min(i * 0.02, 0.15), ease: [0.16, 1, 0.3, 1] }}
+                    onClick={() => selectEmail(email)}
+                    className={cn(
+                      "w-full text-left p-3.5 border-b border-border/30 transition-colors relative",
+                      selectedEmail?.id === email.id ? "bg-foreground/[0.05]" : "hover:bg-foreground/[0.02]"
+                    )}
+                  >
+                    {email.status === "unread" && (
+                      <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-olive" />
+                    )}
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={cn("text-sm truncate", email.status === "unread" ? "font-semibold text-foreground" : "text-muted-foreground")}>{email.sender}</span>
+                      {email.timestamp && <span className="text-[10px] text-muted-foreground tabular-nums shrink-0 ml-2">{new Date(email.timestamp).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}</span>}
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <p className={cn("text-xs truncate flex-1", email.status === "unread" ? "text-foreground/90" : "text-muted-foreground")}>{email.subject}</p>
+                      {email.category && email.category !== "important" && <CategoryBadge category={email.category} />}
+                      {email.project_id && <span title="Aan project gekoppeld" className="text-[10px] text-olive shrink-0">◆</span>}
+                    </div>
+                    {email.body && email.body !== "(geen inhoud)" && <p className="text-xs text-muted-foreground/60 truncate mt-1">{email.body.slice(0, 120)}</p>}
+                    {(email.giulia_draft || email.folder === "giulia_drafts") && (
+                      <StatusBadge variant="draft" className="mt-2"><Sparkles className="h-2.5 w-2.5" /> Door Giulia</StatusBadge>
+                    )}
+                  </motion.button>
+                ))}
+              </AnimatePresence>
               {!loading && folderEmails.length === 0 && (
-                <div className="p-8 text-center text-sm text-muted-foreground">
-                  {folder === "inbox" && activeCategory === "all" ? "Geen emails — druk op Sync om je inbox in te laden." : "Geen emails in deze categorie."}
+                <div className="p-12 text-center">
+                  <Mail className="h-6 w-6 text-muted-foreground/30 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">
+                    {folder === "inbox" && activeCategory === "all" ? "Geen emails — druk op Sync om je inbox in te laden." : "Geen emails in deze categorie."}
+                  </p>
                 </div>
               )}
             </div>
@@ -372,55 +411,83 @@ export default function Email() {
 
         {/* Email detail */}
         <div className="lg:col-span-6 min-h-0">
-          <GlassPanel level={2} className="h-full overflow-y-auto">
-            {!selectedEmail ? (
-              <div className="h-full flex items-center justify-center p-8">
-                <div className="text-center">
-                  <Mail className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
-                  <p className="text-sm text-muted-foreground">Selecteer een email om te lezen</p>
-                </div>
-              </div>
-            ) : (
-              <div className="p-6 space-y-5">
-                <div>
-                  <h2 className="text-lg font-display font-semibold mb-3">{selectedEmail.subject}</h2>
-                  <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-full bg-stone/40 flex items-center justify-center text-sm font-semibold">{(selectedEmail.sender || "?").charAt(0)}</div>
-                    <div>
-                      <p className="text-sm font-medium">{selectedEmail.sender}</p>
-                      <p className="text-xs text-muted-foreground">{selectedEmail.sender_email}</p>
+          <GlassPanel level={2} className="h-full overflow-hidden rounded-3xl">
+            <AnimatePresence mode="wait">
+              {!selectedEmail ? (
+                <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="h-full flex items-center justify-center p-8">
+                  <div className="text-center">
+                    <div className="relative inline-flex mb-4">
+                      <Mail className="h-10 w-10 text-muted-foreground/30" />
+                      <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-olive animate-pulse-soft" />
                     </div>
-                    {selectedEmail.timestamp && <span className="ml-auto text-xs text-muted-foreground">{new Date(selectedEmail.timestamp).toLocaleString("nl-NL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>}
+                    <p className="text-sm text-muted-foreground">Selecteer een email om te lezen</p>
                   </div>
-                </div>
-
-                {(selectedEmail.giulia_draft || selectedEmail.folder === "giulia_drafts") && selectedEmail.context && (
-                  <div className="glass-1 rounded-xl p-4 border-olive/20">
-                    <div className="flex items-center gap-2 mb-2"><Sparkles className="h-4 w-4 text-olive" /><p className="text-xs font-medium uppercase tracking-wider text-olive">Door Giulia</p></div>
-                    <p className="text-xs text-muted-foreground">{selectedEmail.context}</p>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key={selectedEmail.id}
+                  initial={{ opacity: 0, x: 12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -12 }}
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                  className="h-full flex flex-col"
+                >
+                  {/* Detail header */}
+                  <div className="p-5 border-b border-border/40 shrink-0">
+                    <h2 className="text-lg font-display font-semibold mb-3">{selectedEmail.subject}</h2>
+                    <div className="flex items-center gap-3">
+                      <div className="h-9 w-9 rounded-full bg-stone/40 flex items-center justify-center text-sm font-semibold">{(selectedEmail.sender || "?").charAt(0)}</div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{selectedEmail.sender}</p>
+                        <p className="text-xs text-muted-foreground truncate">{selectedEmail.sender_email}</p>
+                      </div>
+                      {selectedEmail.timestamp && <span className="ml-auto text-xs text-muted-foreground shrink-0">{new Date(selectedEmail.timestamp).toLocaleString("nl-NL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>}
+                    </div>
                   </div>
-                )}
 
-                <div className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">{bodyLoading ? "Inhoud laden…" : (selectedEmail.body || "(geen inhoud)")}</div>
+                  {/* Detail body */}
+                  <div className="flex-1 overflow-y-auto p-5">
+                    {(selectedEmail.giulia_draft || selectedEmail.folder === "giulia_drafts") && selectedEmail.context && (
+                      <div className="glass-1 rounded-xl p-4 mb-4">
+                        <div className="flex items-center gap-2 mb-2"><Sparkles className="h-4 w-4 text-olive" /><p className="text-xs font-medium uppercase tracking-wider text-olive">Door Giulia</p></div>
+                        <p className="text-xs text-muted-foreground">{selectedEmail.context}</p>
+                      </div>
+                    )}
+                    {bodyLoading ? (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground py-8">
+                        <Loader2 className="h-4 w-4 animate-spin text-olive" /> Inhoud laden…
+                      </div>
+                    ) : bodyError ? (
+                      <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <AlertCircle className="h-5 w-5 text-muted-foreground/40 mb-2" />
+                        <p className="text-sm text-muted-foreground">Inhoud kon niet geladen worden.</p>
+                        <button onClick={() => selectEmail(selectedEmail)} className="mt-2 text-xs text-olive hover:underline">Opnieuw proberen</button>
+                      </div>
+                    ) : (
+                      <div className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">{selectedEmail.body || "(geen inhoud)"}</div>
+                    )}
+                  </div>
 
-                <div className="flex flex-wrap gap-2 pt-2 border-t border-border/40">
-                  {(selectedEmail.giulia_draft || selectedEmail.folder === "giulia_drafts") ? (
-                    <>
-                      <GlassButton variant="primary" size="sm" onClick={() => { setDraftBody(selectedEmail.body || ""); setShowDraftPanel(true); }}><Check className="h-4 w-4" /> Goedkeuren & Versturen</GlassButton>
-                    </>
-                  ) : (
-                    <>
-                      <GlassButton variant="outline" size="sm" onClick={draftReply} disabled={drafting}>
-                        <Sparkles className="h-4 w-4" /> {drafting ? "Giulia denkt..." : "Laat Giulia antwoorden"}
-                      </GlassButton>
-                      <GlassButton variant="primary" size="sm" onClick={openReply}><Send className="h-4 w-4" /> Beantwoord</GlassButton>
-                      <GlassButton variant="outline" size="sm" onClick={toggleRead}>{selectedEmail.status === "unread" ? "Markeer gelezen" : "Markeer ongelezen"}</GlassButton>
-                    </>
-                  )}
-                  <GlassButton variant="outline" size="sm" onClick={delEmail}><Trash2 className="h-4 w-4" /> Verwijder</GlassButton>
-                </div>
-              </div>
-            )}
+                  {/* Detail actions */}
+                  <div className="p-4 border-t border-border/40 shrink-0">
+                    <div className="flex flex-wrap gap-2">
+                      {(selectedEmail.giulia_draft || selectedEmail.folder === "giulia_drafts") ? (
+                        <GlassButton variant="primary" size="sm" onClick={() => { setDraftBody(selectedEmail.body || ""); setShowDraftPanel(true); }}><Check className="h-4 w-4" /> Goedkeuren & Versturen</GlassButton>
+                      ) : (
+                        <>
+                          <GlassButton variant="outline" size="sm" onClick={draftReply} disabled={drafting}>
+                            <Sparkles className="h-4 w-4" /> {drafting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Giulia antwoordt"}
+                          </GlassButton>
+                          <GlassButton variant="primary" size="sm" onClick={openReply}>Beantwoord</GlassButton>
+                          <GlassButton variant="outline" size="sm" onClick={toggleRead}>{selectedEmail.status === "unread" ? "Gelezen" : "Ongelezen"}</GlassButton>
+                        </>
+                      )}
+                      <GlassButton variant="ghost" size="sm" onClick={delEmail} className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></GlassButton>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </GlassPanel>
         </div>
       </div>

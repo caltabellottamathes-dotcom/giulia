@@ -9,7 +9,7 @@ import QuickLauncher from "@/system/components/glass/QuickLauncher";
 import { WIDGETS } from "@/lib/widgetRegistry";
 import { DEFAULT_BOARDS, loadCustomBoards, createCustomBoard, getActiveBoard, setActiveBoard } from "@/lib/useDashboardBoard";
 
-const actionBtn = "h-9 w-9 flex items-center justify-center text-ivory/60 hover:bg-ivory/10 hover:text-ivory transition-colors shrink-0";
+const actionBtn = "h-9 w-9 flex items-center justify-center text-ivory/60 hover:bg-ivory/10 hover:text-ivory transition-colors shrink-0 rounded-lg";
 
 function useActiveSection(board) {
   const { activeModule } = usePanel();
@@ -129,7 +129,7 @@ export default function WorkspaceToolbar() {
         onMouseEnter={reveal}
         onMouseLeave={scheduleHide}
       >
-        <div className="relative w-full h-14 bg-charcoal border-t border-ivory/15 flex items-center px-4 lg:px-8">
+        <div className="relative w-full h-14 bg-charcoal/35 backdrop-blur-2xl border-t border-white/10 flex items-center px-4 lg:px-8">
           {/* Dashboard tabs (left) — monochrome */}
           <div className="flex items-center gap-0.5 overflow-x-auto shrink-0 max-w-[44%] lg:max-w-[52%] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {all.map((b) => {
@@ -139,12 +139,11 @@ export default function WorkspaceToolbar() {
                   key={b.id}
                   onClick={() => selectBoard(b.id)}
                   className={cn(
-                    "relative px-3 lg:px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap transition-opacity",
-                    on ? "text-ivory opacity-100" : "text-ivory/45 hover:text-ivory/70"
+                    "relative px-3 lg:px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap transition-all rounded-lg",
+                    on ? "text-ivory bg-ivory/10" : "text-ivory/45 hover:text-ivory/70 hover:bg-ivory/5"
                   )}
                 >
                   {b.label}
-                  {on && <span className="absolute top-0 left-3 right-3 h-[2px] bg-ivory" />}
                 </button>
               );
             })}
@@ -170,7 +169,7 @@ export default function WorkspaceToolbar() {
 
       {/* Context-capture popup */}
       {(active || captured) && (
-        <div data-no-capture className="fixed z-40 right-4 lg:right-8 bottom-20 w-[calc(100%-2rem)] lg:w-[360px] bg-charcoal border border-ivory/15 p-4 space-y-3 animate-slide-up text-ivory">
+        <div data-no-capture className="fixed z-40 right-4 lg:right-8 bottom-20 w-[calc(100%-2rem)] lg:w-[360px] bg-charcoal/40 backdrop-blur-2xl border border-white/15 p-4 space-y-3 animate-slide-up text-ivory rounded-2xl">
           {active && !captured ? (
             <>
               <div className="flex items-center justify-between">

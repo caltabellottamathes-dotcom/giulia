@@ -152,7 +152,7 @@ export default function QuickLauncher({ open, onClose }) {
 
   return (
     <>
-      <div className="fixed inset-0 z-[38] bg-charcoal/30 backdrop-blur-[2px] animate-fade-in" onClick={onClose} />
+      <div className="fixed inset-0 z-[38] bg-charcoal/15 backdrop-blur-[1px] animate-fade-in" onClick={onClose} />
       <AnimatePresence>
         <motion.div
           initial={{ opacity: 0, y: 24, scale: 0.97 }}
@@ -161,7 +161,7 @@ export default function QuickLauncher({ open, onClose }) {
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           className="fixed z-[39] left-2 right-2 bottom-[4.75rem] sm:left-auto sm:right-10 sm:w-[440px] sm:max-h-[80vh] flex flex-col"
         >
-          <div className="glass-4 rounded-[26px] overflow-hidden text-ivory border border-white/18 shadow-[0_32px_72px_-20px_rgba(0,0,0,0.6)] flex flex-col max-h-[80vh]">
+          <div className="glass-2 rounded-[26px] overflow-hidden text-ivory border border-white/12 shadow-[0_32px_72px_-20px_rgba(0,0,0,0.4)] flex flex-col max-h-[80vh]">
             {/* Masthead */}
             <div className="px-6 pt-5 pb-4 border-b border-ivory/10 shrink-0">
               <div className="flex items-center justify-between">
