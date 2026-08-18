@@ -1,9 +1,10 @@
 /**
- * sw.js — minimal app-shell service worker for PWA installability.
- * Network-first for navigation/app-shell, cache-first fallback offline.
- * Cross-origin requests (API/backend calls) are never intercepted.
+ * sw.js — app-shell service worker for PWA installability.
+ * Network-first for all same-origin GETs; cross-origin (API) never touched.
+ * Navigation requests bypass the browser HTTP cache entirely so the installed
+ * PWA always picks up the latest published index.html (and its hashed JS).
  */
-const CACHE = "giulia-shell-v1";
+const CACHE = "giulia-shell-v3";
 const SHELL = ["/", "/manifest.json", "/icons/icon.svg", "/icons/icon-maskable.svg"];
 
 self.addEventListener("install", (event) => {
@@ -27,6 +28,21 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return; // never touch cross-origin/API calls
 
+  // Navigation (HTML) — always revalidate, never serve stale HTML
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request, { cache: "no-cache" })
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((cache) => cache.put(request, copy)).catch(() => {});
+          return res;
+        })
+        .catch(() => caches.match(request).then((cached) => cached || caches.match("/")))
+    );
+    return;
+  }
+
+  // Other same-origin GETs — network-first, cache fallback
   event.respondWith(
     fetch(request)
       .then((res) => {
