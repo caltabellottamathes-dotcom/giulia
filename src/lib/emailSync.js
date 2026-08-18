@@ -17,11 +17,6 @@ export async function syncInbox({ limit = 30 } = {}) {
   const existingUids = new Set((existing || []).map((e) => e.gmail_message_id).filter(Boolean));
   const newOnes = fetched.filter((e) => !existingUids.has(e.uid));
 
-  // Bestaande emails zonder body — vul deze aan bij elke sync
-  const existingWithoutBody = (existing || []).filter(
-    (e) => e.gmail_message_id && (!e.body || e.body === "(geen inhoud)")
-  );
-
   const fetchBodies = async (records) => {
     for (let i = 0; i < records.length; i += 5) {
       const batch = records.slice(i, i + 5);
@@ -29,8 +24,8 @@ export async function syncInbox({ limit = 30 } = {}) {
         if (!rec?.id || !rec?.gmail_message_id) return;
         try {
           const bodyRes = await base44.functions.invoke("fetchPrivateEmailBody", { uid: rec.gmail_message_id });
-          const text = bodyRes?.text || bodyRes?.html || "(geen inhoud)";
-          if (text && text !== "(geen inhoud)") {
+          const text = bodyRes?.text || bodyRes?.html || "";
+          if (text && text.length > 10) {
             await base44.entities.Email.update(rec.id, { body: text }).catch(() => {});
           }
         } catch { /* ignore body fetch errors */ }
@@ -52,11 +47,6 @@ export async function syncInbox({ limit = 30 } = {}) {
     ).catch(() => []);
     const records = Array.isArray(created) ? created : [];
     await fetchBodies(records);
-  }
-
-  // Vul ook bodies aan voor bestaande emails die nog geen body hebben
-  if (existingWithoutBody.length) {
-    await fetchBodies(existingWithoutBody);
   }
 
   return { created: newOnes.length, total: fetched.length };

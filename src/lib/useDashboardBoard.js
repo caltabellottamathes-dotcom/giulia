@@ -79,8 +79,9 @@ let _boardsEnsured = false;
  * ensureAllBoards — eenmalig per opstart:
  *  • Nieuwe dag → volledige reset van alle boards (behalve NOW): alle
  *    domein-widgets worden opnieuw gezaaid.
- *  • Dezelfde dag → doe NIETS; de boards blijven zoals de gebruiker ze
- *    het laatst gebruikte (verwijderde widgets blijven weg).
+ *  • Dezelfde dag → boards blijven zoals ze zijn; alleen lege default-boards
+ *    worden hersteld (bug-herstel zonder gebruikerskeuze weg te halen).
+ *  • Alle boards → duplicaten worden verwijderd (houd eerste exemplaar).
  *  • NOW → altijd de volledige widget-set garanderen (urgency-gebaseerd).
  */
 export async function ensureAllBoards() {
@@ -104,15 +105,36 @@ export async function ensureAllBoards() {
       }
     }
 
-    // NOW — altijd de volledige set garanderen (niet reset, wel aanvullen)
-    const nowRecs = await base44.entities.DashboardWidget.filter({ board_id: "now" }, "position").catch(() => []);
-    const nowTypes = domainWidgetTypes("now");
-    const present = (nowRecs || []).map((r) => r.widget_type);
-    const missing = nowTypes.filter((t) => !present.includes(t));
-    if (missing.length) {
-      await base44.entities.DashboardWidget.bulkCreate(
-        missing.map((t, i) => ({ widget_type: t, position: (nowRecs || []).length + i, visible: true, board_id: "now" }))
-      ).catch(() => {});
+    // Voor elk board: deduplicate + aanvullen (NOW altijd, anderen alleen als leeg)
+    for (const b of DEFAULT_BOARDS) {
+      const recs = await base44.entities.DashboardWidget.filter({ board_id: b.id }, "position").catch(() => []);
+      const types = domainWidgetTypes(b.domain);
+
+      // Verwijder duplicaten (houd eerste exemplaar van elk type)
+      const seen = new Set();
+      const toDelete = [];
+      for (const r of (recs || [])) {
+        if (seen.has(r.widget_type)) {
+          toDelete.push(r.id);
+        } else {
+          seen.add(r.widget_type);
+        }
+      }
+      if (toDelete.length) {
+        await base44.entities.DashboardWidget.deleteMany({ id: { $in: toDelete } }).catch(() => {});
+      }
+
+      // NOW: altijd aanvullen; anderen: alleen als board volledig leeg is
+      const isNow = b.id === "now";
+      const isEmpty = (recs || []).length === 0;
+      if (isNow || isEmpty) {
+        const missing = types.filter((t) => !seen.has(t));
+        if (missing.length) {
+          await base44.entities.DashboardWidget.bulkCreate(
+            missing.map((t, i) => ({ widget_type: t, position: (recs || []).length + i, visible: true, board_id: b.id }))
+          ).catch(() => {});
+        }
+      }
     }
   } catch {}
 }
