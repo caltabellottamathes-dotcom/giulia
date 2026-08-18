@@ -434,6 +434,9 @@
   --plum: 319 35% 14%;
   --selfbg: 47 30% 93%;
   --selfpanel: 48 45% 97%;
+  /* Tailwind's marble/metal/sky classes resolve via --slick-* vars; override
+     marble to GlassAgenda's warm beige within this scope only. */
+  --slick-marble: 51 17% 85%;
 }
 
 @keyframes shimmer {

@@ -10,7 +10,7 @@ function GraphicRule({ className = "" }) {
   );
 }
 
-export default function ModuleShell({ index, section, statement, kicker, backTo = "/", backLabel = "← Home", children, context = [], actions = [] }) {
+export default function ModuleShell({ index, section, statement, kicker, backTo = "/glass", backLabel = "← GlassAgenda", children, context = [], actions = [] }) {
   return (
     <div className="h-[100dvh] w-full bg-metal overflow-hidden relative">
       <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 18% 16%, rgba(224,222,211,0.22) 0%, rgba(242,242,240,0.10) 28%, rgba(45,45,35,0) 60%)" }} />
