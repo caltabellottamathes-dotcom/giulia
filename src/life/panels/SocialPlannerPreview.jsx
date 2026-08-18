@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import SocialWeekTimeline from "@/life/components/SocialWeekTimeline";
 import { closeCircle, socialPulse } from "@/lib/domainUtils";
 import { Plus, CalendarHeart, CalendarPlus, MessageCircle, Sparkles, Clock } from "lucide-react";
+import { ContextGrid, ActionRow } from "@/self/components/SelfViz";
 
 const BLUE = "hsl(var(--life-blue-deep))";
 const SAND = "hsl(var(--life-sand))";
@@ -168,6 +169,16 @@ export default function SocialPlannerPreview() {
           <button className="glass-button rounded-xl px-4 py-3 text-left text-sm text-ivory hover:bg-white/10 transition flex items-center gap-2"><Sparkles className="w-4 h-4" style={{ color: BLUE }} /> Vraag Giulia</button>
         </div>
       </div>
+
+      <ContextGrid items={[
+        { label: "STATUS", text: `${freeSlots.length} vrije sociale momenten deze week.` },
+        { label: "OPEN PLANNEN", text: `${openPlans.length} plannen wachten op bevestiging.` },
+        { label: "KANSEN", text: opportunities.length ? `${opportunities.length} sociale kansen gevonden.` : "Geen extra kansen." },
+      ]} />
+      <ActionRow actions={[
+        { label: "Open Social Planner", primary: true, color: "#d8dab3", to: "/life/social-planner" },
+        { label: "Open Social Pulse", to: "/life/social-pulse" },
+      ]} />
     </div>
   );
 }

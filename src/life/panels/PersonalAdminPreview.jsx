@@ -5,6 +5,7 @@ import AdminTimeline from "@/life/components/AdminTimeline";
 import { adminWeather, radarEvents, weatherMap, fmtDate } from "@/lib/adminUtils";
 import { IMAGES } from "@/lib/images";
 import { Plus, FileText, CreditCard, RefreshCw, Sparkles } from "lucide-react";
+import { ContextGrid, ActionRow } from "@/self/components/SelfViz";
 
 const TYPES = [{ k: "payment", l: "Betaling" }, { k: "contract", l: "Document" }, { k: "renewal", l: "Verlenging" }, { k: "subscription", l: "Abonnement" }];
 
@@ -105,6 +106,15 @@ export default function PersonalAdminPreview() {
           </button>
         ))}
       </div>
+
+      <ContextGrid items={[
+        { label: "OP KOMST", text: `${w.counts.coming} administratieve zaken op komst.` },
+        { label: "TE LAAT", text: w.counts.overdue > 0 ? `${w.counts.overdue} zaken zijn al te laat.` : "Niets te laat." },
+        { label: "BEDRAG", text: `€${Math.round(w.counts.money)} aan administratie in de wachtrij.` },
+      ]} />
+      <ActionRow actions={[
+        { label: "Open Personal Admin", primary: true, color: "#d8dab3", to: "/life/personal-admin" },
+      ]} />
     </div>
   );
 }

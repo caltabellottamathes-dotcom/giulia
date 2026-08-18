@@ -10,6 +10,7 @@ import MealCard from "@/life/food/MealCard";
 import RecipeView from "@/life/components/RecipeView";
 import { SAND, SAND_DEEP } from "@/life/food/lifeColors";
 import { Loader2, Sparkles } from "lucide-react";
+import { ContextGrid, ActionRow } from "@/self/components/SelfViz";
 
 /** FoodPreview — grafisch glas-paneel in LIFE-stijl. Reusachtig tellend
  *  cijfer, geanimeerde budget-donut + dagkosten-grafiek (Recharts), en de
@@ -117,6 +118,16 @@ export default function FoodPreview() {
       </div>
 
       {selected && <RecipeView meal={selected} onClose={() => setSelected(null)} onEaten={() => { setSelected(null); reloadMeals(); }} />}
+
+      <ContextGrid items={[
+        { label: "BUDGET", text: `${fmtEuro(week.total_cost)} van ${fmtEuro(week.budget)} — ${Math.round((week.total_cost / week.budget) * 100)}%.` },
+        { label: "MAALTIJDEN", text: `${week.meals_count} gepland · ${made} gegeten.` },
+        { label: "VOLGENDE", text: today[0] ? `${MEAL_LABELS[today[0].meal_type] || "Maaltijd"}: ${today[0].recipe_name}` : "Geen volgende maaltijd." },
+      ]} />
+      <ActionRow actions={[
+        { label: "Open Food", primary: true, color: "#d8dab3", to: "/life/food" },
+        { label: "Plan Nieuwe Week", onClick: planWeek },
+      ]} />
     </div>
   );
 }

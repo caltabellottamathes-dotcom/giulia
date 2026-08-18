@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import HouseholdStateViz from "@/life/components/HouseholdStateViz";
 import { householdZones, mattersItems, householdHeadline, isAttention, accentFor, tileAccent } from "@/lib/householdUtils";
 import { Plus, Wrench, ShoppingCart, Repeat, ListChecks } from "lucide-react";
+import { ContextGrid, ActionRow } from "@/self/components/SelfViz";
 
 const TYPES = [{ k: "task", l: "Taak", icon: ListChecks }, { k: "shopping", l: "Boodschap", icon: ShoppingCart }, { k: "maintenance", l: "Onderhoud", icon: Wrench }, { k: "issue", l: "Issue", icon: Plus }];
 
@@ -118,6 +119,15 @@ export default function HouseholdPreview() {
           </button>
         ))}
       </div>
+
+      <ContextGrid items={[
+        { label: "DINGEN WAARD", text: `${matters.length} zaken verdienen nu aandacht.` },
+        { label: "STATEN", text: `${zones.length} huishoudzones bijgehouden.` },
+        { label: "NU", text: nowItems.length ? `${nowItems.length} items vragen directe actie.` : "Alles onder controle." },
+      ]} />
+      <ActionRow actions={[
+        { label: "Open Household", primary: true, color: "#d8dab3", to: "/life/household" },
+      ]} />
     </div>
   );
 }

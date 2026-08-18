@@ -5,6 +5,7 @@ import { SectionLabel, Empty, Card, ActionBtn } from "../../system/panels/previe
 import { IMAGES } from "@/lib/images";
 import { hobbyGroups, hobbyHeadline, statusLine, hobbyState, hobbyRhythm, fmtDaysAgo, stateColor } from "@/lib/hobbyUtils";
 import { Plus, CalendarPlus, Briefcase, Sparkles, Clock } from "lucide-react";
+import { ContextGrid, ActionRow } from "@/self/components/SelfViz";
 
 const BLUE = "hsl(var(--life-blue-deep))";
 const SAND = "hsl(var(--life-sand-deep))";
@@ -131,6 +132,15 @@ export default function HobbiesPreview() {
           <button onClick={add} disabled={!form.title.trim()} className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-charcoal disabled:opacity-40 transition" style={{ background: "hsl(var(--life-blue))" }}><Plus className="w-4 h-4" /> Voeg toe</button>
         </div>
       )}
+
+      <ContextGrid items={[
+        { label: "ACTIEF", text: `${g.active.length} hobby's zijn nu levend.` },
+        { label: "STIL", text: g.quiet.length ? `${g.quiet.length} hobby's wachten op heractivering.` : "Geen stille hobby's." },
+        { label: "RITME", text: rhythm.some((d) => d.label !== "—") ? "Je hebt deze week actief geweest." : "Nog geen activiteit deze week." },
+      ]} />
+      <ActionRow actions={[
+        { label: "Open Hobby's", primary: true, color: "#d8dab3", to: "/life/hobbies" },
+      ]} />
     </div>
   );
 }

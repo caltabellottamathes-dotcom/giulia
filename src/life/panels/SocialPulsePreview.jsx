@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { socialPulse, closeCircle } from "@/lib/domainUtils";
 import { usePanel } from "@/lib/PanelContext";
 import { MessageCircle, Bell, CalendarHeart, CalendarPlus, Plus, Sparkles, ArrowUpRight } from "lucide-react";
+import { ContextGrid, ActionRow } from "@/self/components/SelfViz";
 
 const BLUE = "hsl(var(--life-blue-deep))";
 const SAND = "hsl(var(--life-sand))";
@@ -158,6 +159,16 @@ export default function SocialPulsePreview({ onOpen }) {
             : `Je ritme voelt natuurlijk. ${activePlans} sociaal${activePlans === 1 ? "" : "le"} plan${activePlans === 1 ? "" : "s"} staat klaar.`}
         </p>
       </div>
+
+      <ContextGrid items={[
+        { label: "INTERACTIES", text: `${interactions} betekenisvolle interacties in 30 dagen.` },
+        { label: "NASTE KRING", text: situations.length ? `${situations.length} relaties wachten op contact.` : "Je naaste kring voelt warm." },
+        { label: "SOCIAAL", text: `${activePlans} sociale plannen staan klaar.` },
+      ]} />
+      <ActionRow actions={[
+        { label: "Open Social Pulse", primary: true, color: "#d8dab3", to: "/life/social-pulse" },
+        { label: "Social Planner", to: "/life/social-planner" },
+      ]} />
     </div>
   );
 }
