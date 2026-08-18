@@ -1,9 +1,11 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useMemo } from "react";
 import { useConversation, ConversationProvider } from "@elevenlabs/react";
+import { useNavigate } from "react-router-dom";
 import { usePanel } from "@/lib/PanelContext";
 import { cn } from "@/lib/utils";
 import { IMAGES } from "@/lib/images";
 import { ELEVEN_AGENT_ID } from "@/lib/voiceNavigation";
+import { buildVoiceClientTools } from "@/lib/voiceClientTools";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import { Mic, Phone, PhoneOff, Volume2, Loader2, X } from "lucide-react";
@@ -20,16 +22,20 @@ import { Mic, Phone, PhoneOff, Volume2, Loader2, X } from "lucide-react";
  * Omzeilt de ElevenLabs client-tool bug (#603).
  */
 function VoiceWindowInner() {
-  const { voiceOpen, closeVoice } = usePanel();
+  const { voiceOpen, closeVoice, openModule } = usePanel();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const endRef = useRef(null);
 
   const [transcript, setTranscript] = useState([]);
   const [giuliaWorking, setGiuliaWorking] = useState(false);
   const processedRef = useRef(new Set());
 
+  const clientTools = useMemo(() => buildVoiceClientTools({ navigate, openModule }), [navigate, openModule]);
+
   const { startSession, endSession, status, isSpeaking } = useConversation({
     agentId: ELEVEN_AGENT_ID,
+    clientTools,
     onMessage: (payload) => {
       const text = String(payload?.message || "").trim();
       const role = payload?.role || (payload?.source === "ai" ? "assistant" : payload?.source || "user");

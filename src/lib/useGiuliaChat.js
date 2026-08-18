@@ -40,14 +40,37 @@ export function useGiuliaChat() {
     const text = (content || "").trim();
     if (!text || sending) return;
     const atts = Array.isArray(opts.attachments) ? opts.attachments : [];
-    const cutoff = Date.now() - 4000; // voor recovery: accept giulia-antwoorden die ná nu zijn opgeslagen
+    const cutoff = Date.now() - 4000;
     setMessages((prev) => [...prev, { id: `u-${Date.now()}`, role: "user", content: text, tool_calls: [], attachments: atts }]);
     setSending(true);
 
-    // Snelste pad: wacht direct op chatWithGiulia (giulia_giulia-pool, 4 keys,
-    // gemini-3.5-flash-lite). Werkt de invoke timeout (ChatWindow), dan
-    // herstelt de poll hieronder het opgeslagen antwoord.
     let settled = false;
+
+    // Poll de Message-entiteit direct — pakt Giulia's antwoord op zodra het
+    // opgeslagen is, ongeacht of de invoke timeout of slaagt. Sneller dan
+    // wachten op een timeout.
+    const poll = async () => {
+      for (let n = 0; n < 50 && !settled; n++) {
+        await new Promise((r) => setTimeout(r, 1800));
+        try {
+          const list = await base44.entities.Message.filter({ channel: "in-app" }, "-created_date", 5).catch(() => []);
+          const fresh = (list || []).find((m) => m.role === "giulia" && new Date(m.created_date).getTime() >= cutoff);
+          if (fresh && !settled) {
+            settled = true;
+            setMessages((prev) => [...prev, { id: `g-${Date.now()}`, role: "assistant", content: fresh.content || "", tool_calls: Array.isArray(fresh.tool_calls) ? fresh.tool_calls : [], attachments: [] }]);
+            setSending(false);
+            return;
+          }
+        } catch { /* ignore */ }
+      }
+      if (!settled) {
+        setSending(false);
+        setMessages((prev) => [...prev, { id: `e-${Date.now()}`, role: "assistant", content: "Giulia is even bezet — probeer het zo weer.", tool_calls: [], attachments: [] }]);
+      }
+    };
+    setTimeout(poll, 1200);
+
+    // Probeer ook directe invoke — als die sneller klaar is, gebruik die.
     try {
       const res = await base44.functions.invoke("chatWithGiulia", {
         message: text,
@@ -55,34 +78,12 @@ export function useGiuliaChat() {
         file_urls: opts.file_urls || atts.map((a) => a.url),
         attachments: atts,
       });
-      if (res?.response) {
+      if (res?.response && !settled) {
         settled = true;
         setMessages((prev) => [...prev, { id: `g-${Date.now()}`, role: "assistant", content: res.response, tool_calls: res.actions_executed || [], attachments: [] }]);
+        setSending(false);
       }
     } catch { /* invoke faalde — poll herstelt het opgeslagen antwoord */ }
-    if (settled) { setSending(false); return; }
-
-    // Recovery: pols de Message-entiteit tot Giulia's antwoord er staat.
-    let n = 0;
-    const tick = async () => {
-      n++;
-      try {
-        const list = await base44.entities.Message.filter({ channel: "in-app" }, "-created_date", 8).catch(() => []);
-        const fresh = (list || []).find((m) => m.role === "giulia" && new Date(m.created_date).getTime() >= cutoff);
-        if (fresh) {
-          setMessages((prev) => [...prev, { id: `g-${Date.now()}`, role: "assistant", content: fresh.content || "", tool_calls: Array.isArray(fresh.tool_calls) ? fresh.tool_calls : [], attachments: [] }]);
-          setSending(false);
-          return;
-        }
-      } catch { /* ignore */ }
-      if (n < 40) {
-        setTimeout(tick, 2500);
-      } else {
-        setSending(false);
-        setMessages((prev) => [...prev, { id: `e-${Date.now()}`, role: "assistant", content: "Giulia is even bezet — probeer het zo weer.", tool_calls: [], attachments: [] }]);
-      }
-    };
-    setTimeout(tick, 2000);
   }, [sending]);
 
   return { messages, send, sending, ready };

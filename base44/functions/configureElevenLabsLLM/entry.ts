@@ -165,7 +165,7 @@ export default async function (req) {
     let input = {};
     try { input = await req.json(); } catch { input = {}; }
     const proxyUrl = input?.proxyUrl;
-    const conversationalOnly = input?.conversationalOnly !== false;
+    const conversationalOnly = input?.conversationalOnly === true;
     const useProxy = !conversationalOnly && !!proxyUrl;
 
     // 1) Api-key secret: direct (Gemini key1) of proxy-token (GIULIA_API_KEY).

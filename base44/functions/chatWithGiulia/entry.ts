@@ -21,7 +21,7 @@ import { logActivity } from '../../shared/learningLayer.ts';
  * routinematige status gaat naar report_to_salvo (Activity-feed), niet naar
  * create_notification.
  */
-const MAX_STEPS = 10;
+const MAX_STEPS = 6;
 
 function sanitizeResult(r) {
   if (r == null) return { ok: true };
@@ -101,20 +101,22 @@ export default async function (req) {
       upcomingEvents,
       activeTherapy
     ] = await Promise.all([
-      sr.entities.Memory.list("-created_date", 150).catch(() => []),
+      sr.entities.Memory.list("-created_date", 30).catch(() => []),
       sr.entities.Project.filter({ status: { $in: ["planning", "in_progress", "waiting"] } }).catch(() => []),
-      sr.entities.Task.filter({ status: { $in: ["todo", "in_progress", "waiting", "delegated", "today", "upcoming", "overdue"] } }, "-created_date", 200).catch(() => []),
-      sr.entities.Task.filter({ status: { $in: ["completed", "archived", "done"] } }, "-updated_date", 40).catch(() => []),
+      sr.entities.Task.filter({ status: { $in: ["todo", "in_progress", "waiting", "delegated", "today", "upcoming", "overdue"] } }, "-created_date", 40).catch(() => []),
+      sr.entities.Task.filter({ status: { $in: ["completed", "archived", "done"] } }, "-updated_date", 10).catch(() => []),
       sr.entities.Approval.filter({ status: "pending" }).catch(() => []),
-      sr.entities.Activity.list("-created_date", 10).catch(() => []),
+      sr.entities.Activity.list("-created_date", 5).catch(() => []),
       sr.entities.Notification.filter({ status: "unread" }).catch(() => []),
       sr.entities.Document.filter({ document_type: "reference" }).catch(() => []),
-      sr.entities.CalendarEvent.filter({ start: { $gte: new Date(Date.now() - 86400000).toISOString() } }, "start", 60).catch(() => []),
+      sr.entities.CalendarEvent.filter({ start: { $gte: new Date(Date.now() - 86400000).toISOString() } }, "start", 15).catch(() => []),
       sr.entities.TherapyTrajectory.filter({ status: "active" }).catch(() => []),
     ]);
 
-    // Semantische geheugen-selectie
-    const queryEmbedding = await geminiEmbed({ text: message, keyName: "GIULIA_GIULIA_MEMORY_GEMINI_API_KEY" }).catch(() => null);
+    // Semantische geheugen-selectie — alleen bij complexere vragen (sla API-call
+    // over voor korte/simple berichten om latency te besparen).
+    const isSimple = message.length < 80;
+    const queryEmbedding = isSimple ? null : await geminiEmbed({ text: message, keyName: "GIULIA_GIULIA_MEMORY_GEMINI_API_KEY" }).catch(() => null);
     let memories = allMemories.slice(0, 20);
     if (queryEmbedding) {
       const withEmb = allMemories.filter((m) => Array.isArray(m.embedding) && m.embedding.length);
@@ -139,24 +141,24 @@ export default async function (req) {
       `Geheugen: ${memories.length ? memories.map(m => `- ${String(m.content).slice(0, 140)}`).join("\n") : "Leeg"}`,
       ``,
       `Actieve Projecten (${activeProjects.length}):`,
-      activeProjects.map(p => `- ID: ${p.id} | ${p.title} | Status: ${p.status} | Voortgang: ${p.progress}%`).join("\n"),
+      activeProjects.slice(0, 8).map(p => `- ID: ${p.id} | ${p.title} | Status: ${p.status} | Voortgang: ${p.progress}%`).join("\n"),
       ``,
       `Openstaande Taken (Totaal: ${openTasks.length}):`,
       `[Er lopen nu ${openTasks.length} taken. Verzin niets nieuws als het niet hoeft.]`,
-      openTasks.slice(0, 30).map(t => `- ID: ${t.id} | ${t.title} | Status: ${t.status}`).join("\n"),
+      openTasks.slice(0, 15).map(t => `- ID: ${t.id} | ${t.title} | Status: ${t.status}`).join("\n"),
       ``,
       `RECENT VERWIJDERD OF AFGEROND (ANTI-ZOMBIE LIJST):`,
       `[MAAK DEZE NOOIT OPNIEUW AAN!]`,
-      deadTasks.map(t => `- ID: ${t.id} | ${t.title} | Status: ${t.status}`).join("\n"),
+      deadTasks.slice(0, 8).map(t => `- ID: ${t.id} | ${t.title} | Status: ${t.status}`).join("\n"),
       ``,
       `Wachtende Goedkeuringen voor externe acties: ${pendingApprovals.length}`,
       `Ongelezen notificaties (vragen/opmerkingen aan Salvo): ${pendingNotifications.length}`,
       `Recente systeem activiteit:`,
-      recentActivity.slice(0, 5).map(a => `- ${String(a.description).slice(0, 140)}`).join("\n"),
+      recentActivity.slice(0, 3).map(a => `- ${String(a.description).slice(0, 120)}`).join("\n"),
       ``,
       `AGENDA — aankomende afspraken (${upcomingEvents.length}):`,
       `[Gebruik deze IDs als Salvo een afspraak noemt of er iets aan koppelt.]`,
-      upcomingEvents.slice(0, 30).map(e => `- ID: ${e.id} | ${e.title} | start: ${e.start} | domain: ${e.domain || "?"} | therapy_trajectory_id: ${e.therapy_trajectory_id || "—"}`).join("\n"),
+      upcomingEvents.slice(0, 12).map(e => `- ID: ${e.id} | ${e.title} | start: ${e.start} | domain: ${e.domain || "?"} | therapy_trajectory_id: ${e.therapy_trajectory_id || "—"}`).join("\n"),
       ``,
       `THERAPIE-/BEGELEIDINGSTRAJECTEN (actief, ${activeTherapy.length}):`,
       activeTherapy.map(t => `- ID: ${t.id} | ${t.title} | type: ${t.type} | therapeut: ${t.therapist_name || "—"} | next: ${t.next_appointment || "—"}`).join("\n")
@@ -195,7 +197,7 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
       : "";
 
     const protocolsText = (protocolDocs && protocolDocs.length)
-      ? protocolDocs.map((d) => `=== ${d.name || d.title || "Protocol"} ===\n${String(d.content || "").slice(0, 8000)}`).join("\n\n")
+      ? protocolDocs.slice(0, 2).map((d) => `=== ${d.name || d.title || "Protocol"} ===\n${String(d.content || "").slice(0, 3000)}`).join("\n\n")
       : "";
     const protocolsBlock = protocolsText
       ? `\n== VOLLEDIG OPERATIONEEL PROTOCOL (bron van waarheid — volg dit strikt) ==\n${protocolsText}\n`
@@ -230,21 +232,30 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
     //    gewikkeld als 'inkomend signaal'.
     let contents;
     if (source === "chat") {
-      const history = await sr.entities.Message.filter({ channel: "in-app" }, "-created_date", 24).catch(() => []);
+      const history = await sr.entities.Message.filter({ channel: "in-app" }, "-created_date", 10).catch(() => []);
       const ordered = (history || []).filter((m) => m.content).reverse();
       contents = ordered.map((m) => ({
         role: m.role === "user" ? "user" : "model",
         parts: [{ text: String(m.content).slice(0, 1200) }],
       }));
-      if (!contents.length) {
-        contents = [{ role: "user", parts: [{ text: fullMessage.slice(0, 3000) }] }];
-      } else if (file_urls.length) {
+      // Zorg dat de nieuwe user-boodschap altijd de laatste turn is.
+      // (persist=false slaat de user-message niet op; soms eindigt de geladen
+      // geschiedenis op een model-turn — beide geven een Gemini 400
+      // "Requests ending with a model turn are not supported".)
+      const lastTurn = contents[contents.length - 1];
+      const alreadyLast = lastTurn && lastTurn.role === "user"
+        && String(lastTurn.parts?.[0]?.text || "").includes(message.slice(0, 30));
+      if (!alreadyLast) {
+        while (contents.length && contents[contents.length - 1].role === "model") {
+          contents.pop();
+        }
+        contents.push({ role: "user", parts: [{ text: fullMessage.slice(0, 3000) }] });
+      }
+      if (file_urls.length) {
         const note = `\n\n[Bijlage(s): ${file_urls.map((u, i) => `${attachments[i]?.name || "bestand"} — ${u}`).join(" | ")}]`;
         const last = contents[contents.length - 1];
         if (last && last.role === "user" && last.parts && last.parts[0]) {
           last.parts[0].text = `${String(last.parts[0].text).slice(0, 2800)}${note}`;
-        } else {
-          contents.push({ role: "user", parts: [{ text: note.slice(0, 3000) }] });
         }
       }
     } else {
