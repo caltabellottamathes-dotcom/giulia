@@ -1,11 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 
 /**
- * syncCalendar — pulls upcoming Google Calendar events into the Event entity
- * (deduped by title+start). Works both with a logged-in user (app-user token,
- * records owned by the user) and without (scheduled/service-role). The
- * Google Calendar connector is shared, so asServiceRole.connectors works
- * in both cases.
+ * syncCalendar — trekt aankomende Google Calendar-events in de CalendarEvent-
+ * entity (deduped op title+start), zodat Giulia (chatWithGiulia/dailyPlanning)
+ * én de Agenda-pagina dezelfde kalender lezen. Domain='focus', status=
+ * 'confirmed'. Werkt met ingelogde user (app-user token) en zonder (service).
  */
 export default async function (req) {
   try {
@@ -30,7 +29,7 @@ export default async function (req) {
     const data = await res.json();
     const items = data.items || [];
 
-    const existing = await ent.Event.list();
+    const existing = await ent.CalendarEvent.list();
     const seen = new Set(
       existing.map((e) => `${(e.title || '').trim()}|${(e.start || '').slice(0, 16)}`)
     );
@@ -42,12 +41,16 @@ export default async function (req) {
       if (!start) continue;
       const key = `${(it.summary || '').trim()}|${(start || '').slice(0, 16)}`;
       if (seen.has(key)) continue;
-      await ent.Event.create({
+      const attendees = (it.attendees || []).map((a) => a.email).filter(Boolean);
+      await ent.CalendarEvent.create({
         title: it.summary || '(geen titel)',
         start,
         end,
         location: it.location || '',
-        attendees: (it.attendees || []).map((a) => a.email).filter(Boolean),
+        participants: attendees.join(', '),
+        domain: 'focus',
+        status: 'confirmed',
+        agent_source: 'syncCalendar',
       });
       added++;
     }
