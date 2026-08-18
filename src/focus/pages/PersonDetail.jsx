@@ -64,20 +64,20 @@ export default function PersonDetail() {
   const del = async () => {
     if (!window.confirm("Contact verwijderen?")) return;
     await base44.entities.Contact.delete(id);
-    navigate("/people");
+    navigate("/");
   };
 
   if (loading) return <div className="space-y-4"><div className="h-40 rounded-2xl shimmer" /><div className="h-64 rounded-2xl shimmer" /></div>;
   if (!contact) return (
     <GlassPanel level={2} className="p-12 text-center">
       <p className="text-sm text-muted-foreground">Contact niet gevonden</p>
-      <GlassButton variant="outline" size="sm" className="mt-4" onClick={() => navigate("/people")}>Terug</GlassButton>
+      <GlassButton variant="outline" size="sm" className="mt-4" onClick={() => navigate("/")}>Terug</GlassButton>
     </GlassPanel>
   );
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <button onClick={() => navigate("/people")} className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
+      <button onClick={() => navigate("/")} className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="h-3 w-3" /> Terug naar contacten
       </button>
 

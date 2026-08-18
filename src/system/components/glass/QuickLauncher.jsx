@@ -11,6 +11,14 @@ import { X, ChevronRight } from "lucide-react";
  * een inklapbare sectie. Minimalistisch, kalm, toetsenbord-vriendelijk:
  * ↑↓ verplaatst de markering over de zichtbare items, ↵ activeert, esc sluit.
  */
+const GROUP_COLORS = {
+  Giulia: "#d8dab3",
+  Focus: "#c4c282",
+  Life: "#d49a98",
+  Self: "#b1bec6",
+  System: "#d5e24a",
+};
+
 const GROUPS = [
   {
     label: "Giulia",
@@ -181,7 +189,8 @@ export default function QuickLauncher({ open, onClose }) {
                 return (
                   <div key={g.label} className="mb-1">
                     <button onClick={() => toggle(g.label)} className="group flex items-center gap-2 w-full px-3 py-2.5 rounded-xl hover:bg-ivory/5 transition-colors">
-                      <span className="text-[9px] uppercase tracking-[0.34em] text-ivory/45 font-bold">{g.label}</span>
+                      <span className="h-2 w-2 rounded-full shrink-0" style={{ background: GROUP_COLORS[g.label] }} />
+                      <span className="text-[9px] uppercase tracking-[0.34em] font-bold" style={{ color: GROUP_COLORS[g.label] }}>{g.label}</span>
                       <span className="flex-1 h-px bg-ivory/8" />
                       <span className="text-[9px] font-mono text-ivory/30 tabular-nums">{String(g.items.length).padStart(2, "0")}</span>
                       <ChevronRight className={"h-3.5 w-3.5 text-ivory/40 transition-transform duration-300 " + (isOpen ? "rotate-90" : "")} />
@@ -199,9 +208,10 @@ export default function QuickLauncher({ open, onClose }) {
                                   key={item.label}
                                   onClick={() => go(item)}
                                   onMouseEnter={() => setActive(flatIdx)}
+                                  style={isActive ? { borderLeft: `2px solid ${GROUP_COLORS[g.label]}`, paddingLeft: "14px" } : {}}
                                   className={"group flex items-baseline gap-3 w-full px-4 py-2.5 rounded-xl text-left transition-colors " + (isActive ? "bg-ivory/8" : "hover:bg-ivory/5")}
                                 >
-                                  <span className={"text-[10px] font-mono tabular-nums leading-none transition-colors " + (isActive ? "text-olive" : "text-ivory/25 group-hover:text-ivory/45")}>{String(ordinal).padStart(2, "0")}</span>
+                                  <span className={"text-[10px] font-mono tabular-nums leading-none transition-colors " + (isActive ? "" : "text-ivory/25 group-hover:text-ivory/45")} style={isActive ? { color: GROUP_COLORS[g.label] } : {}}>{String(ordinal).padStart(2, "0")}</span>
                                   <span className={"text-[15px] font-display font-medium tracking-[-0.012em] truncate transition-colors " + (isActive ? "text-ivory" : "text-ivory/80 group-hover:text-ivory")}>{item.label}</span>
                                   <span className={"ml-auto pl-2 text-[10px] font-mono transition-opacity " + (isActive ? "text-ivory/50 opacity-100" : "text-ivory/30 opacity-0 group-hover:opacity-100")}>{item.route}</span>
                                   <span className={"text-[12px] font-mono leading-none transition-colors " + (isActive ? "text-olive" : "text-ivory/20 group-hover:text-ivory/45")}>↗</span>

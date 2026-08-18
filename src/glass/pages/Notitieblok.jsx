@@ -18,7 +18,7 @@ export default function Notitieblok() {
           <p className="text-marble/50 text-xs">Vrij denken</p>
           <h1 className="text-storm text-2xl sm:text-3xl font-bold tracking-tight">Notitieblok</h1>
         </div>
-        <Link to="/glass"><GlassButton className="px-4 py-2 text-storm text-sm">← Terug</GlassButton></Link>
+        <Link to="/"><GlassButton className="px-4 py-2 text-storm text-sm">← Terug</GlassButton></Link>
       </div>
 
       <div className="rounded-2xl border border-marble/20 bg-marble/5 p-6 min-h-[62vh] flex flex-col">

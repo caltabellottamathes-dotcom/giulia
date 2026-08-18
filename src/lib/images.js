@@ -107,6 +107,10 @@ export const IMAGES = {
   selfHallway: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/3f53bb24e_An_emotionally_ambiguous_wide_shot_202606262231.jpeg",
   selfFolded: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/2b5dd6e9c_Apply_a_consistent_editorial_documentary_20260622005511.jpeg",
   selfPhone: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/6a6df1d13_Apply_a_consistent_editorial_documentary_2026062200563.jpeg",
+  // Dashboard achtergronden — per domein (NOW / LIFE / SELF)
+  dashboardNow: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/eae31a7d1_NOW.jpeg",
+  dashboardLife: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/507183e0f_LIFE.jpeg",
+  dashboardSelf: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/e2ccca3a3_SELF.jpeg",
 };
 
 export const VIDEOS = {

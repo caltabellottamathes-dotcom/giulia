@@ -35,7 +35,7 @@ export default function FocusModus() {
           <p className="text-marble/50 text-xs">Concentratie</p>
           <h1 className="text-storm text-2xl sm:text-3xl font-bold tracking-tight">Focus Modus</h1>
         </div>
-        <Link to="/glass"><GlassButton className="px-4 py-2 text-storm text-sm">← Terug</GlassButton></Link>
+        <Link to="/"><GlassButton className="px-4 py-2 text-storm text-sm">← Terug</GlassButton></Link>
       </div>
 
       <div className="rounded-2xl border border-marble/20 bg-marble/5 p-8 flex flex-col items-center text-center min-h-[60vh] justify-center">

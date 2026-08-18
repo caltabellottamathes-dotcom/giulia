@@ -23,6 +23,16 @@ const DOMAIN_COLOR = {
   system: "#d5e24a",
 };
 
+/* Per-dashboard tekstkleur — leesbaar op donker glas */
+const BOARD_COLOR = {
+  now: "#94B8D1",
+  giulia: "#d8dab3",
+  focus: "#c4c282",
+  life: "#d49a98",
+  self: "#b1bec6",
+  system: "#d5e24a",
+};
+
 const ROUTE_DOMAIN = [
   [/^\/self/, "self"], [/^\/wake$/, "self"],
   [/^\/life/, "life"],
@@ -169,7 +179,7 @@ export default function WorkspaceToolbar() {
         onMouseEnter={reveal}
         onMouseLeave={scheduleHide}
       >
-        <div className="mx-auto max-w-[1700px] px-3 lg:px-6 pb-3">
+        <div className="px-3 lg:px-6 pb-3">
           <div className="relative w-full flex items-center gap-2 lg:gap-3 px-3 lg:px-5 h-14 rounded-[20px] glass-4 border border-white/18 shadow-[0_28px_64px_-26px_rgba(0,0,0,0.5),inset_0_1px_0_0_rgba(255,255,255,0.16)]">
             {/* top live line — animated, active color */}
             <span className="pointer-events-none absolute inset-x-0 top-0 h-[2px] rounded-t-[20px] overflow-hidden">
@@ -184,13 +194,14 @@ export default function WorkspaceToolbar() {
                   <button
                     key={b.id}
                     onClick={() => selectBoard(b.id)}
+                    style={{ color: BOARD_COLOR[b.id] || undefined }}
                     className={cn(
-                      "relative px-2.5 lg:px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] whitespace-nowrap transition-colors",
-                      on ? "text-ivory" : "text-ivory/45 hover:text-ivory/80"
+                      "relative px-2.5 lg:px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] whitespace-nowrap transition-opacity",
+                      on ? "opacity-100" : "opacity-50 hover:opacity-85"
                     )}
                   >
                     {b.label}
-                    {on && <span className="absolute -bottom-0.5 left-2.5 right-2.5 h-px rounded-full" style={{ background: color }} />}
+                    {on && <span className="absolute -bottom-0.5 left-2.5 right-2.5 h-px rounded-full" style={{ background: BOARD_COLOR[b.id] || color }} />}
                   </button>
                 );
               })}

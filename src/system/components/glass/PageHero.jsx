@@ -37,10 +37,7 @@ export default function PageHero({ page, image, icon: Icon, eyebrow = "Space", t
   const navigate = useNavigate();
   const { overrides } = useImageOverrides();
   const src = overrides[page] || image || HERO_IMG[page] || IMAGES.walkingChairs;
-  const back = () => {
-    if (window.history.length > 1) navigate(-1);
-    else navigate("/");
-  };
+  const back = () => navigate("/");
   return (
     <>
       {/* Fixed full-bleed hero — sits behind the transparent app header,

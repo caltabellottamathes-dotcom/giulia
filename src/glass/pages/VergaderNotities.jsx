@@ -15,7 +15,7 @@ export default function VergaderNotities() {
           <p className="text-marble/50 text-xs">Vergaderingen</p>
           <h1 className="text-storm text-2xl sm:text-3xl font-bold tracking-tight">Vergader Notities</h1>
         </div>
-        <Link to="/glass"><GlassButton className="px-4 py-2 text-storm text-sm">← Terug</GlassButton></Link>
+        <Link to="/"><GlassButton className="px-4 py-2 text-storm text-sm">← Terug</GlassButton></Link>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-5">

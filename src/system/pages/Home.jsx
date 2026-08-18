@@ -22,6 +22,15 @@ import { MODULES } from "@/lib/moduleRegistry";
 
 const WIDGET_SPAN = { giulia: 2, goodmorning: 2, concierge: 2, projects: 2, agenda: 2, email: 2, documents: 2, updates: 2, household: 2, selfroutines: 2, selftherapy: 2, selfdevelopment: 2, selfpersonaltime: 2, selfinsights: 2, beeldbank: 2 };
 
+const BOARD_BG = {
+  now: IMAGES.dashboardNow,
+  life: IMAGES.dashboardLife,
+  self: IMAGES.dashboardSelf,
+  giulia: bgImage,
+  focus: bgImage,
+  system: bgImage,
+};
+
 /**
  * Home — in-place multi-dashboard. Vijf domein-dashboards (GIULIA / FOCUS /
  * LIFE / SELF / SYSTEM) + tijdelijke eigen dashboards, wisselbaar via de
@@ -45,6 +54,7 @@ export default function Home() {
   const { toast } = useToast();
 
   const nowMode = activeBoard === "now";
+  const bgImage = BOARD_BG[activeBoard] || bgImage;
   useEffect(() => {
     if (!nowMode) { setUrgentTypes(null); return; }
     let cancelled = false;
@@ -126,15 +136,15 @@ export default function Home() {
 
       {/* Photo — transforms when a panel opens */}
       <div className={cn("hidden lg:block fixed z-0 overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[left,right,top]", panelOpen ? "left-[16%] right-[12%] top-[40vh] bottom-0 rounded-[28px]" : "left-[42%] right-0 top-0 bottom-0 rounded-l-[32px]")}>
-        <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
+        <img src={bgImage} alt="" className="h-full w-full object-cover" draggable={false} />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 via-charcoal/10 to-transparent" />
       </div>
       <div className={cn("lg:hidden fixed top-[26vh] left-3 right-3 h-[40vh] overflow-hidden z-0 rounded-[28px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-[0_24px_60px_-24px_rgba(0,0,0,0.35)]", panelOpen ? "opacity-0 translate-y-6 pointer-events-none" : "opacity-100")}>
-        <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
+        <img src={bgImage} alt="" className="h-full w-full object-cover" draggable={false} />
         <div className="absolute inset-0 bg-gradient-to-b from-charcoal/5 via-transparent to-charcoal/35" />
       </div>
       <div className={cn("lg:hidden fixed left-0 bottom-0 z-0 w-full h-[40vh] overflow-hidden rounded-t-[28px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]", panelOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6 pointer-events-none")}>
-        <img src={IMAGES.feetChair} alt="" className="h-full w-full object-cover" draggable={false} />
+        <img src={bgImage} alt="" className="h-full w-full object-cover" draggable={false} />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/35 to-transparent" />
       </div>
 
@@ -167,13 +177,13 @@ export default function Home() {
 
         <div className="px-5 lg:px-10 pb-10 lg:pb-0">
           {showLoading ? (
-            <div className="max-w-[1280px] columns-1 sm:columns-2 lg:columns-4 xl:columns-5 gap-3 lg:gap-4">
+            <div className="max-w-[1280px] xl:max-w-[1500px] columns-1 sm:columns-2 lg:columns-4 xl:columns-5 gap-3 lg:gap-4">
               {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
                 <div key={i} className="mb-3 lg:mb-4 break-inside-avoid h-[220px] rounded-[24px] shimmer" />
               ))}
             </div>
           ) : visible.length > 0 ? (
-            <MasonryGrid key={activeBoard + resetKey} className="max-w-[1280px]" gap={16} spans={cells.map((c) => c.span)} scale={0.9}>
+            <MasonryGrid key={activeBoard + resetKey} className="max-w-[1280px] xl:max-w-[1500px]" gap={16} spans={cells.map((c) => c.span)} scale={0.9}>
               {cells.map((c) => c.node)}
             </MasonryGrid>
           ) : (

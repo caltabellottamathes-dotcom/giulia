@@ -19,7 +19,7 @@ export default function Tijdsregistratie() {
           <p className="text-marble/50 text-xs">Tijd</p>
           <h1 className="text-storm text-2xl sm:text-3xl font-bold tracking-tight">Tijdsregistratie</h1>
         </div>
-        <Link to="/glass"><GlassButton className="px-4 py-2 text-storm text-sm">← Terug</GlassButton></Link>
+        <Link to="/"><GlassButton className="px-4 py-2 text-storm text-sm">← Terug</GlassButton></Link>
       </div>
 
       <div className="grid grid-cols-3 gap-3 mb-6">

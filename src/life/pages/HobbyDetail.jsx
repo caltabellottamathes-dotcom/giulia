@@ -58,7 +58,7 @@ export default function HobbyDetail() {
   const createProject = async () => { if (!hobby) return; try { const p = await base44.entities.Project.create({ title: `${hobby.title} project`, domain: "life", status: "in_progress" }); await base44.entities.Hobby.update(hobby.id, { linked_project_id: p.id }); await load(); } catch { /* ignore */ } };
 
   if (loading) return <div className="flex items-center justify-center py-20"><div className="h-8 w-8 border-2 border-muted-foreground/20 border-t-muted-foreground rounded-full animate-spin" /></div>;
-  if (!hobby) return <div className="text-center py-20"><p className="text-sm text-muted-foreground">Hobby niet gevonden.</p><Link to="/life/hobbies" className="text-life-blue text-sm mt-2 inline-block">Terug naar hobby's</Link></div>;
+  if (!hobby) return <div className="text-center py-20"><p className="text-sm text-muted-foreground">Hobby niet gevonden.</p><Link to="/" className="text-life-blue text-sm mt-2 inline-block">Terug naar hobby's</Link></div>;
 
   // Activity timeline (conversation → idea → listening → session → file → project)
   const timeline = [
@@ -155,7 +155,7 @@ export default function HobbyDetail() {
           ) : (
             <GlassButton variant="glass" size="sm" onClick={createProject}><Briefcase className="h-3.5 w-3.5" /> Project</GlassButton>
           )}
-          <Link to="/life/hobbies"><GlassButton variant="ghost" size="sm">Alle hobby's</GlassButton></Link>
+          <Link to="/"><GlassButton variant="ghost" size="sm">Alle hobby's</GlassButton></Link>
         </div>
       </GlassPanel>
     </div>

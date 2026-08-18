@@ -37,7 +37,7 @@ export default function LifeLanding() {
 
   return (
     <div className="space-y-8 animate-fade-up">
-      <PageHero page="life" image={IMAGES.salvoWalkingBeach} icon={Heart} eyebrow="LIFE" title="Personal Life Intelligence" subtitle="Een contextlaag over je OS — FOCUS, LIFE en SELF in balans" />
+      <PageHero page="life" image={IMAGES.dashboardLife} icon={Heart} eyebrow="LIFE" title="Personal Life Intelligence" subtitle="Een contextlaag over je OS — FOCUS, LIFE en SELF in balans" />
 
       <div className="grid lg:grid-cols-2 gap-6">
         <GlassPanel level={2} className="p-7 flex flex-col justify-between">

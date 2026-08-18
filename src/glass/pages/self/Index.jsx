@@ -22,7 +22,7 @@ export default function SelfIndex() {
         <div className="rounded-[28px] border border-marble/30 bg-marble/10 backdrop-blur-2xl shadow-[0_8px_40px_rgba(0,0,0,0.25)] p-5 sm:p-8 h-full flex flex-col overflow-hidden">
           <div className="flex items-center justify-between mb-6">
             <span className="text-storm/60 text-[11px] uppercase tracking-[0.3em]">SELF — PANELS</span>
-            <Link to="/glass" className="text-storm/60 hover:text-storm text-sm">← Terug</Link>
+            <Link to="/" className="text-storm/60 hover:text-storm text-sm">← Terug</Link>
           </div>
           <h1 className="text-storm text-2xl sm:text-3xl font-bold tracking-tight">SELF</h1>
           <p className="text-storm/60 text-sm mt-3 max-w-md">Acht panelen. Eén per SELF-widget. Help me understand and act.</p>

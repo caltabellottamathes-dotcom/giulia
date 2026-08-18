@@ -27,7 +27,7 @@ export default function Instellingen() {
           <p className="text-marble/50 text-xs">Account</p>
           <h1 className="text-storm text-2xl sm:text-3xl font-bold tracking-tight">Instellingen</h1>
         </div>
-        <Link to="/glass"><GlassButton className="px-4 py-2 text-storm text-sm">← Terug</GlassButton></Link>
+        <Link to="/"><GlassButton className="px-4 py-2 text-storm text-sm">← Terug</GlassButton></Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

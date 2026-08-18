@@ -49,20 +49,20 @@ export default function ProjectDetail() {
   const delProject = async () => {
     if (!window.confirm("Project verwijderen?")) return;
     await base44.entities.Project.delete(id);
-    navigate("/projects");
+    navigate("/");
   };
 
   if (loading) return <div className="space-y-4"><div className="h-40 rounded-2xl shimmer" /><div className="h-64 rounded-2xl shimmer" /></div>;
   if (!project) return (
     <GlassPanel level={2} className="p-12 text-center">
       <p className="text-sm text-muted-foreground">Project niet gevonden</p>
-      <GlassButton variant="outline" size="sm" className="mt-4" onClick={() => navigate("/projects")}>Terug</GlassButton>
+      <GlassButton variant="outline" size="sm" className="mt-4" onClick={() => navigate("/")}>Terug</GlassButton>
     </GlassPanel>
   );
 
   return (
     <div className="-mt-6 lg:-mt-8">
-      <ProjectHeader project={project} onUpdate={updateProject} onEdit={() => setEditorOpen(true)} onDelete={delProject} onBack={() => navigate("/projects")} />
+      <ProjectHeader project={project} onUpdate={updateProject} onEdit={() => setEditorOpen(true)} onDelete={delProject} onBack={() => navigate("/")} />
       <div className="relative z-10 rounded-t-[28px] mt-[calc(50vh-4.5rem)] lg:mt-[calc(52vh-4.5rem)] px-4 lg:px-6 pt-4 pb-28 space-y-6 min-h-[60vh]">
         <div className="hidden lg:block">
           <ProjectNav active={section} onChange={setSection} variant="top" />

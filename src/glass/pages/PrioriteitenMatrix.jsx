@@ -33,7 +33,7 @@ export default function PrioriteitenMatrix() {
           <p className="text-marble/50 text-xs">Strategie</p>
           <h1 className="text-storm text-2xl sm:text-3xl font-bold tracking-tight">Prioriteiten Matrix</h1>
         </div>
-        <Link to="/glass"><GlassButton className="px-4 py-2 text-storm text-sm">← Terug</GlassButton></Link>
+        <Link to="/"><GlassButton className="px-4 py-2 text-storm text-sm">← Terug</GlassButton></Link>
       </div>
 
       <div className="grid grid-cols-[64px_1fr_1fr] grid-rows-[auto_1fr_1fr] gap-2 min-h-[460px]">

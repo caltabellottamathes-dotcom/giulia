@@ -40,7 +40,7 @@ export default function SelfLanding() {
 
   return (
     <div className="space-y-8 animate-fade-up">
-      <PageHero page="self" image={IMAGES.selfLanding} icon={Heart} eyebrow="SELF" title="Personal Self Intelligence" subtitle="Rust, ritme en groei — de laag die jou onderhoudt" />
+      <PageHero page="self" image={IMAGES.dashboardSelf} icon={Heart} eyebrow="SELF" title="Personal Self Intelligence" subtitle="Rust, ritme en groei — de laag die jou onderhoudt" />
 
       <div className="grid lg:grid-cols-2 gap-6">
         <GlassPanel level={2} className="p-7 flex flex-col justify-between">

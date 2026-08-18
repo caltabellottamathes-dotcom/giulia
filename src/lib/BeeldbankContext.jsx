@@ -20,6 +20,23 @@ const BeeldbankContext = createContext(null);
 const ORIGINAL_IMAGES = { ...IMAGES };
 const keyByCurrentUrl = (url) => Object.keys(IMAGES).find((k) => IMAGES[k] === url);
 
+/** Normaliseer een <img>-URL naar de oorspronkelijke basis-URL.
+ *  De Image-component transformeert media.base44.com URL's naar
+ *  /v1/fill/w_,h_,... varianten. Om de override te koppelen aan de juiste
+ *  IMAGES-sleutel stripsen we het /v1/ gedeelte. */
+function normalizeImgUrl(url) {
+  if (!url) return url;
+  try {
+    const u = new URL(url);
+    if (["media.base44.com", "static.wixstatic.com"].includes(u.hostname)) {
+      const v1 = u.pathname.indexOf("/v1/");
+      const basePath = v1 === -1 ? u.pathname : u.pathname.slice(0, v1);
+      return `${u.origin}${basePath}`;
+    }
+    return url;
+  } catch { return url; }
+}
+
 export function BeeldbankProvider({ children }) {
   const [mode, setMode] = useState(false);
   const [assets, setAssets] = useState([]);
@@ -57,11 +74,17 @@ export function BeeldbankProvider({ children }) {
   useEffect(() => {
     if (!mode || picker.open) return;
     const handler = (e) => {
-      const img = e.target.closest && e.target.closest("img");
+      // elementsFromPoint vindt ook <img>'s die achter een overlay liggen
+      // (gradients in headers, widget-kaarten met text-lagen eroverheen).
+      const els = document.elementsFromPoint(e.clientX, e.clientY);
+      let img = null;
+      for (const el of els) {
+        if (el.tagName === "IMG" && !el.dataset.emptyImage && !el.dataset.errorImage) { img = el; break; }
+      }
       if (!img) return;
       e.preventDefault();
       e.stopPropagation();
-      setPicker({ open: true, originalUrl: img.currentSrc || img.src, imgEl: img });
+      setPicker({ open: true, originalUrl: normalizeImgUrl(img.src || img.currentSrc), imgEl: img });
     };
     document.addEventListener("click", handler, true);
     document.body.classList.add("beeldbank-active");
@@ -77,8 +100,9 @@ export function BeeldbankProvider({ children }) {
   const pick = useCallback(async (chosenUrl) => {
     const { originalUrl, imgEl } = picker;
     if (imgEl) { try { imgEl.src = chosenUrl; } catch {} }
-    const key = keyByCurrentUrl(originalUrl);
-    const orig = key ? ORIGINAL_IMAGES[key] : originalUrl;
+    const norm = normalizeImgUrl(originalUrl);
+    const key = keyByCurrentUrl(norm);
+    const orig = key ? ORIGINAL_IMAGES[key] : norm;
     const next = { ...(overrides || {}) };
     if (chosenUrl) next[orig] = chosenUrl; else delete next[orig];
     setOverrides(next);

@@ -23,7 +23,7 @@ export default function AgendaOverzicht() {
           <p className="text-marble/50 text-xs">Privé</p>
           <h1 className="text-storm text-2xl sm:text-3xl font-bold tracking-tight">Agenda Overzicht</h1>
         </div>
-        <Link to="/glass">
+        <Link to="/">
           <GlassButton className="px-4 py-2 text-storm text-sm">← Terug</GlassButton>
         </Link>
       </div>
