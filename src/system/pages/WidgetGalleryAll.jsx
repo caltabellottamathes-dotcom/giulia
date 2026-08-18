@@ -1,5 +1,5 @@
 import React from "react";
-import { WIDGET_LIST } from "@/lib/widgetRegistry";
+import { GALLERY_WIDGET_LIST } from "@/system/widgets/gallery/registry";
 import MasonryGrid from "@/system/widgets/MasonryGrid";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
@@ -28,7 +28,7 @@ export default function WidgetGalleryAll() {
       {/* Domein-secties */}
       <div className="px-5 lg:px-10 space-y-12">
         {DOMAIN_ORDER.map((dom) => {
-          const domWidgets = WIDGET_LIST.filter((w) => w.domain === dom.id);
+          const domWidgets = GALLERY_WIDGET_LIST.filter((w) => w.domain === dom.id);
           if (!domWidgets.length) return null;
           const cells = domWidgets.map((def) => {
             const W = def.Component;
