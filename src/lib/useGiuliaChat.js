@@ -1,16 +1,14 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 
 /**
  * useGiuliaChat — chat-aansluiting op GIULIA-GIULIA's eigen brein
  * (chatWithGiulia, BYOK Gemini — géén Base44-integrationcredits / InvokeLLM).
  *
- * chatWithGiulia is een multi-step Gemini-loop en kan 7–60s duren; de
- * frontend-invoke timeout vaak vóór de functie klaar is. Daarom wachten we
- * NIET synchroon op de response: we vuren de functie af en polsten de
- * Message-entiteit tot Giulia's antwoord is opgeslagen. Zo verschijnt het
- * antwoord zodra het klaar is — in zowel het ChatWindow als de /chat-pagina,
- * zonder "even bezet" tenzij er écht geen antwoord komt.
+ *chatWithGiulia is een multi-step Gemini-loop en kan 10–30s duren. In plaats
+ * van te pollén, abonneren we ons op de Message-entiteit via realtime
+ * subscriptions. Zodra Giulia haar antwoord opslaat, verschijnt het direct
+ * in het chatvenster — zonder pagina-herlaad.
  */
 const norm = (m) => ({
   id: m.id,
@@ -24,53 +22,57 @@ export function useGiuliaChat() {
   const [messages, setMessages] = useState([]);
   const [sending, setSending] = useState(false);
   const [ready, setReady] = useState(false);
+  const seenIds = useRef(new Set());
+  const settledRef = useRef(false);
+  const fallbackTimer = useRef(null);
 
+  // Initiale berichtengeschiedenis laden
   useEffect(() => {
     (async () => {
       try {
         const list = await base44.entities.Message.filter({ channel: "in-app" }, "-created_date", 60).catch(() => []);
         const ordered = (list || []).filter((m) => m.content).reverse();
-        setMessages(ordered.map(norm));
+        const normalized = ordered.map(norm);
+        normalized.forEach((m) => seenIds.current.add(m.id));
+        setMessages(normalized);
       } catch { /* ignore */ }
       setReady(true);
     })();
+  }, []);
+
+  // Realtime subscription — Giulia's antwoord verschijnt direct zodra opgeslagen
+  useEffect(() => {
+    const unsubscribe = base44.entities.Message.subscribe((event) => {
+      if (event.type !== "create") return;
+      const m = event?.data;
+      if (!m || !m.content || m.channel !== "in-app" || m.role !== "giulia") return;
+      if (seenIds.current.has(m.id)) return;
+      if (settledRef.current) return; // invoke heeft het al toegevoegd
+      seenIds.current.add(m.id);
+      settledRef.current = true;
+      setMessages((prev) => [...prev, norm(m)]);
+      setSending(false);
+      if (fallbackTimer.current) { clearTimeout(fallbackTimer.current); fallbackTimer.current = null; }
+    });
+    return unsubscribe;
   }, []);
 
   const send = useCallback(async (content, opts = {}) => {
     const text = (content || "").trim();
     if (!text || sending) return;
     const atts = Array.isArray(opts.attachments) ? opts.attachments : [];
-    const cutoff = Date.now() - 4000;
     setMessages((prev) => [...prev, { id: `u-${Date.now()}`, role: "user", content: text, tool_calls: [], attachments: atts }]);
+    settledRef.current = false;
     setSending(true);
 
-    let settled = false;
+    // Fallback: als er na 90s geen antwoord via de subscription is gekomen
+    fallbackTimer.current = setTimeout(() => {
+      if (settledRef.current) return;
+      setSending(false);
+      setMessages((prev) => [...prev, { id: `e-${Date.now()}`, role: "assistant", content: "Giulia is even bezet — probeer het zo weer.", tool_calls: [], attachments: [] }]);
+      fallbackTimer.current = null;
+    }, 90000);
 
-    // Poll de Message-entiteit direct — pakt Giulia's antwoord op zodra het
-    // opgeslagen is, ongeacht of de invoke timeout of slaagt. Sneller dan
-    // wachten op een timeout.
-    const poll = async () => {
-      for (let n = 0; n < 50 && !settled; n++) {
-        await new Promise((r) => setTimeout(r, 1800));
-        try {
-          const list = await base44.entities.Message.filter({ channel: "in-app" }, "-created_date", 5).catch(() => []);
-          const fresh = (list || []).find((m) => m.role === "giulia" && new Date(m.created_date).getTime() >= cutoff);
-          if (fresh && !settled) {
-            settled = true;
-            setMessages((prev) => [...prev, { id: `g-${Date.now()}`, role: "assistant", content: fresh.content || "", tool_calls: Array.isArray(fresh.tool_calls) ? fresh.tool_calls : [], attachments: [] }]);
-            setSending(false);
-            return;
-          }
-        } catch { /* ignore */ }
-      }
-      if (!settled) {
-        setSending(false);
-        setMessages((prev) => [...prev, { id: `e-${Date.now()}`, role: "assistant", content: "Giulia is even bezet — probeer het zo weer.", tool_calls: [], attachments: [] }]);
-      }
-    };
-    setTimeout(poll, 1200);
-
-    // Probeer ook directe invoke — als die sneller klaar is, gebruik die.
     try {
       const res = await base44.functions.invoke("chatWithGiulia", {
         message: text,
@@ -78,12 +80,17 @@ export function useGiuliaChat() {
         file_urls: opts.file_urls || atts.map((a) => a.url),
         attachments: atts,
       });
-      if (res?.response && !settled) {
-        settled = true;
+      // Als de invoke slaagt vóór de subscription, gebruik het antwoord direct
+      if (res?.response && !settledRef.current) {
+        settledRef.current = true;
+        if (fallbackTimer.current) { clearTimeout(fallbackTimer.current); fallbackTimer.current = null; }
         setMessages((prev) => [...prev, { id: `g-${Date.now()}`, role: "assistant", content: res.response, tool_calls: res.actions_executed || [], attachments: [] }]);
         setSending(false);
       }
-    } catch { /* invoke faalde — poll herstelt het opgeslagen antwoord */ }
+    } catch {
+      // invoke faalde of timeout — de subscription herstelt het antwoord
+      // zodra Giulia het opslaat; anders vuurt de fallback na 90s
+    }
   }, [sending]);
 
   return { messages, send, sending, ready };

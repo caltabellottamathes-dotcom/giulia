@@ -42,25 +42,32 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // exclusieve sleutels (vrij inwisselbaar, gewoon gelabeld per functie om
 // gestructureerd te blijven) vóór de gedeelde sleutels, zodat een quota-hit
 // op één sleutel nooit de chat blokkeert.
+// GEMINI_API_KEY is exclusief voor ElevenLabs — komt in geen enkele pool voor
+// behalve waar ElevenLabs zelf het als keyName doorgeeft.
+// De chat (GIULIA-GIULIA met Salvo) krijgt een eigen hoofd-sleutel + 2 reserves.
 const KEY_POOLS = {
+  chat: [
+    "GIULIA_GIULIA_CHAT_GEMINI_API_KEY",
+    "GIULIA_GIULIA_GEMINI_API_KEY",
+    "RESERVE_GEMINI_API_KEY",
+  ],
   giulia_giulia: [
     "GIULIA_GIULIA_GEMINI_API_KEY",
-    "GIULIA_GIULIA_CHAT_GEMINI_API_KEY",
     "GIULIA_GIULIA_DELEGATION_GEMINI_API_KEY",
     "GIULIA_GIULIA_MEMORY_GEMINI_API_KEY",
     "RESERVE_GEMINI_API_KEY",
-    "GEMINI_API_KEY",
     "Gemini_Flash_API_Key",
     "UPDATE_GEMINI_API_KEY",
     "BACKDESK_GEMINI_API_KEY",
     "GIULIA_API_KEY",
   ],
-  backdesk: ["BACKDESK_GEMINI_API_KEY", "GEMINI_API_KEY", "GIULIA_API_KEY", "RESERVE_GEMINI_API_KEY"],
-  update: ["UPDATE_GEMINI_API_KEY", "GEMINI_API_KEY", "RESERVE_GEMINI_API_KEY"],
-  memory: ["GIULIA_GIULIA_MEMORY_GEMINI_API_KEY", "GIULIA_GIULIA_GEMINI_API_KEY", "RESERVE_GEMINI_API_KEY", "GEMINI_API_KEY"],
-  default: ["GEMINI_API_KEY", "Gemini_Flash_API_Key", "GIULIA_API_KEY", "RESERVE_GEMINI_API_KEY"],
+  backdesk: ["BACKDESK_GEMINI_API_KEY", "GIULIA_API_KEY", "RESERVE_GEMINI_API_KEY"],
+  update: ["UPDATE_GEMINI_API_KEY", "RESERVE_GEMINI_API_KEY"],
+  memory: ["GIULIA_GIULIA_MEMORY_GEMINI_API_KEY", "GIULIA_GIULIA_GEMINI_API_KEY", "RESERVE_GEMINI_API_KEY"],
+  default: ["Gemini_Flash_API_Key", "GIULIA_API_KEY", "RESERVE_GEMINI_API_KEY"],
 };
 const KEY_ROLE = {
+  GIULIA_GIULIA_CHAT_GEMINI_API_KEY: "chat",
   GIULIA_GIULIA_GEMINI_API_KEY: "giulia_giulia",
   BACKDESK_GEMINI_API_KEY: "backdesk",
   UPDATE_GEMINI_API_KEY: "update",
@@ -70,7 +77,7 @@ function poolFor(keyName) {
   const role = KEY_ROLE[keyName];
   return role ? KEY_POOLS[role] : KEY_POOLS.default;
 }
-const DEFAULT_KEY_NAME = "GEMINI_API_KEY";
+const DEFAULT_KEY_NAME = "RESERVE_GEMINI_API_KEY";
 
 async function rawCallOne(model, body, keyName) {
   const key = secrets.get(keyName);

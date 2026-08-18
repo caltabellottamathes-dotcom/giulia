@@ -270,7 +270,7 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
     }
     const executed = [];
     let responseText = null;
-    const keyName = isBackgroundSource ? "BACKDESK_GEMINI_API_KEY" : "GIULIA_GIULIA_GEMINI_API_KEY";
+    const keyName = isBackgroundSource ? "BACKDESK_GEMINI_API_KEY" : "GIULIA_GIULIA_CHAT_GEMINI_API_KEY";
 
     for (let step = 0; step < MAX_STEPS; step++) {
       const parts = await geminiGenerate({ contents, tools: genTools, systemText: systemInstruction, keyName });
