@@ -2,30 +2,17 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 
 /**
- * useGiuliaChat — de enige chat-aansluiting op de giulia_assistant-agent.
- * Eén gedeeld, persistent gesprek (singleton) dat door zowel de /chat-pagina
- * als het globale ChatWindow-panel wordt gebruikt. Vervangt chatWithGiulia
- * als chat-luik: de agent praat rechtstreeks met Salvo en stuurt CORE aan via
- * haar entity-tools + backend-functies.
+ * useGiuliaChat — directe chat met GIULIA-GIULIA (het brein). De frontend
+ * delegeert elke beurt aan de chatWithGiulia-backendfunctie: een BYOK Gemini
+ * function-calling loop op Giulia's EIGEN sleutels (GIULIA_GIULIA_*), met de
+ * VOLLEDIGE skill-set — entiteit-CRUD, navigatie (route + panel + section +
+ * element), communicatie, food, therapie-koppeling. Hierdoor voert de chat
+ * ÉCHT acties uit en kan Giulia Salvo door de hele app sturen.
  *
- * De agent verwerkt asynchroon; subscribeToConversation streamt elke token.
+ * Eén gedeeld, persistent gesprek (Message-entiteiten, channel "in-app") voor
+ * zowel de /chat-pagina als het globale ChatWindow. Realtime sync via een
+ * Message-subscription (andere tab/venster blijft up-to-date).
  */
-const AGENT = "giulia_assistant";
-let _convPromise = null;
-
-async function ensureConversation() {
-  if (!_convPromise) {
-    _convPromise = (async () => {
-      try {
-        const list = await base44.agents.listConversations({ agent_name: AGENT });
-        if (list && list.length) return list[0];
-      } catch { /* ignore */ }
-      return base44.agents.createConversation({ agent_name: AGENT, metadata: { name: "Giulia" } });
-    })();
-  }
-  return _convPromise;
-}
-
 const norm = (m) => ({
   id: m.id,
   role: m.role === "user" ? "user" : "assistant",
@@ -35,78 +22,85 @@ const norm = (m) => ({
 });
 
 export function useGiuliaChat() {
-  const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [sending, setSending] = useState(false);
   const [ready, setReady] = useState(false);
-  const unsubRef = useRef(null);
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      const conv = await ensureConversation();
-      if (!alive) return;
-      setConversationId(conv.id);
-      const full = await base44.agents.getConversation(conv.id).catch(() => conv);
-      if (!alive) return;
-      setMessages((full?.messages || []).map(norm));
-      setReady(true);
-    })();
-    return () => { alive = false; };
+  const loadHistory = useCallback(async () => {
+    const list = await base44.entities.Message.filter({ channel: "in-app" }, "-created_date", 40).catch(() => []);
+    const ordered = (list || []).slice().reverse();
+    setMessages(ordered.map(norm));
+    setReady(true);
   }, []);
 
   useEffect(() => {
-    if (!conversationId) return;
+    loadHistory();
+    let unsub = null;
     try {
-      unsubRef.current = base44.agents.subscribeToConversation(conversationId, (data) => {
-        setMessages((data?.messages || []).map(norm));
+      unsub = base44.entities.Message.subscribe((event) => {
+        if (!event) return;
+        const m = event.data || event;
+        if (!m || !m.id || m.channel !== "in-app") return;
+        setMessages((prev) => {
+          // update als het bericht al bekend is
+          if (prev.find((x) => x.id === m.id)) {
+            return prev.map((x) => (x.id === m.id ? norm(m) : x));
+          }
+          // echte user-msg die overeenkomt met de optimistic temp → vervang temp
+          if (m.role === "user" && !String(m.id).startsWith("pending-")) {
+            const tempIdx = prev.findIndex(
+              (x) => String(x.id).startsWith("pending-") && x.content === (m.content || "")
+            );
+            if (tempIdx >= 0) {
+              const next = prev.slice();
+              next[tempIdx] = norm(m);
+              return next;
+            }
+          }
+          return [...prev, norm(m)];
+        });
       });
     } catch { /* ignore */ }
-    return () => { try { unsubRef.current?.(); } catch { /* ignore */ } };
-  }, [conversationId]);
+    return () => { try { unsub && unsub(); } catch { /* ignore */ } };
+  }, [loadHistory]);
 
   const send = useCallback(async (content, opts = {}) => {
     const text = (content || "").trim();
     if (!text) return;
-    const conv = await ensureConversation();
     const atts = Array.isArray(opts.attachments) ? opts.attachments : [];
-    setMessages((prev) => [...prev, { id: `pending-${Date.now()}`, role: "user", content: text, tool_calls: [], attachments: atts }]);
+    const file_urls = Array.isArray(opts.file_urls) ? opts.file_urls : atts.map((a) => a.url).filter(Boolean);
+    const tempId = `pending-${Date.now()}`;
+    // Optimistisch user-bericht tonen (de backend slaat het ook op; de
+    // subscription vervangt de temp zodra de echte record binnenkomt).
+    setMessages((prev) => [...prev, { id: tempId, role: "user", content: text, tool_calls: [], attachments: atts }]);
     setSending(true);
     try {
-      await base44.agents.addMessage(conv, {
-        role: "user",
-        content: text,
-        ...(opts.file_urls && opts.file_urls.length ? { file_urls: opts.file_urls } : {}),
+      await base44.functions.invoke("chatWithGiulia", {
+        message: text,
+        source: "chat",
+        persist: true,
+        attachments: atts.map((a) => ({ url: a.url, name: a.name, type: a.type })),
+        ...(file_urls.length ? { file_urls } : {}),
       });
-    } finally {
+      // Haal de waarheid op (user + giulia berichten) — vangnet voor als de
+      // subscription niet (tijdig) vuurt.
+      await loadHistory();
+    } catch { /* ignore */ } finally {
       setSending(false);
     }
-  }, []);
+  }, [loadHistory]);
 
-  return { messages, send, sending, ready, conversationId };
+  return { messages, send, sending, ready };
 }
 
 /**
- * askGiuliaOnce — één shot vraag aan dezelfde giulia_assistant-agent
- * (gebruikt het gedeelde gesprek). Resolvet met de eerste nieuwe
- * assistent-reactie. Gebruikt door het voice-pad zodat spraak ook via
- * de agent loopt in plaats van via chatWithGiulia/interpretInput.
+ * askGiuliaOnce — één shot vraag aan GIULIA-GIULIA via dezelfde
+ * chatWithGiulia-backend (BYOK). Resolvet met de assistent-reactie. Voor paths
+ * die geen volledige chat-draad willen tonen.
  */
 export async function askGiuliaOnce(content) {
   const text = (content || "").trim();
   if (!text) return null;
-  const conv = await ensureConversation();
-  let full = await base44.agents.getConversation(conv.id).catch(() => conv);
-  const beforeIds = new Set((full?.messages || []).map((m) => m.id));
-  return new Promise((resolve) => {
-    let done = false;
-    const finish = (val) => { if (done) return; done = true; try { unsub(); } catch { /* ignore */ } resolve(val); };
-    const unsub = base44.agents.subscribeToConversation(conv.id, (data) => {
-      const msgs = data?.messages || [];
-      const fresh = msgs.find((m) => m.role === "assistant" && m.content && !beforeIds.has(m.id));
-      if (fresh) finish(fresh.content);
-    });
-    setTimeout(() => finish(null), 30000);
-    base44.agents.addMessage(conv, { role: "user", content: text }).catch(() => finish(null));
-  });
+  const res = await base44.functions.invoke("chatWithGiulia", { message: text, source: "chat", persist: true }).catch(() => null);
+  return (res && res.response) || null;
 }

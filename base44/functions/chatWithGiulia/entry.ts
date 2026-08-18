@@ -191,7 +191,7 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
 
     const isBackgroundSource = source !== "chat";
     const sourceRule = isBackgroundSource
-      ? `\n\n== ACHTERGRONDBRON (geen live chat) ==\nJe bent nu het ACHTERGRONDBREIN: live chat wordt afgehandeld door de giulia_assistant-agent, dus jij verwerkt inkomende signalen (whatsapp/email/upload) autonoom. Neem cross-domain acties: koppel herkende objecten aan elkaar (link_objects, bv. taak→project, event→therapie-traject via link_event_to_therapy), plan en leg follow-ups vast. Routinematige status ('sync gelukt', 'X mails verwerkt', 'opstart') hoort in report_to_salvo (Activity-feed), NOOIT in create_notification. Alleen create_notification bij een echte vraag die Salvo zelf moet beantwoorden.\n`
+      ? `\n\n== ACHTERGRONDBRON (geen live chat) ==\nDit signaal komt niet direct van Salvo in de chat (bron: ${source}). Verwerk het autonoom: neem cross-domain acties en koppel herkende objecten aan elkaar (link_objects, bv. taak→project, event→therapie-traject via link_event_to_therapy), plan en leg follow-ups vast. Routinematige status ('sync gelukt', 'X mails verwerkt', 'opstart') hoort in report_to_salvo (Activity-feed), NOOIT in create_notification. Alleen create_notification bij een echte vraag die Salvo zelf moet beantwoorden.\n`
       : "";
 
     const protocolsText = (protocolDocs && protocolDocs.length)

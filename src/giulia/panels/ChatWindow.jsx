@@ -7,10 +7,11 @@ import ChatMarkdown from "@/system/components/glass/ChatMarkdown";
 import { useMediaViewer } from "@/lib/MediaViewerContext";
 
 /**
- * ChatWindow — GIULIA-GIULIA's conversation panel. Praat rechtstreeks met de
- * giulia_assistant-agent (via useGiuliaChat) — dezelfde agent + hetzelfde
- * gedeelde gesprek als de /chat-pagina. De agent stuurt CORE aan via haar
- * entity-tools + backend-functies. Geen chatWithGiulia-luik meer.
+ * ChatWindow — GIULIA-GIULIA's conversation panel. Praat met het brein
+ * (chatWithGiulia, BYOK Gemini) via useGiuliaChat — hetzelfde gedeelde gesprek
+ * als de /chat-pagina. Het brein voert alle acties uit (entiteit-CRUD,
+ * communicatie, food, therapie-koppeling) én navigeert Salvo door de app.
+ * De "Bel"-knop opent de ElevenLabs voice agent (geen browser-TTS).
  */
 const SUGGESTIONS = [
   "Wat staat er vandaag op de agenda?",

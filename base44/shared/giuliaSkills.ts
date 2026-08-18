@@ -152,11 +152,15 @@ export const GIULIA_SKILLS = [
   },
   {
     name: "navigate",
-    description: "Navigeer Salvo's app in real time naar een bepaalde pagina.",
-    inputSchema: { type: "object", properties: { route: { type: "string" }, label: { type: "string" } }, required: ["route"] },
-    execute: async ({ route, label }, base44) => {
-      const n = await navigateApp(base44, route, {}, label, "GIULIA-CORE");
-      return n ? { ok: true } : { error: "failed" };
+    description: "Navigeer Salvo's app in real time. 'route' opent een pagina (/tasks, /email, /agenda, /projects, /projects/<id>, /people, /approvals, /whatsapp, /knowledge, /insights, /memory, /documents, /life/food, /self/therapy, …). 'panel' opent een schuif-paneel (agenda, tasks, email, whatsapp, projects, people, approvals, memory, insights, activity, food, household, …). 'section' scrollt naar een element-id; 'element' highlight het kort. Je mag meerdere tegelijk zetten.",
+    inputSchema: { type: "object", properties: { route: { type: "string" }, panel: { type: "string" }, section: { type: "string" }, element: { type: "string" }, label: { type: "string" } } },
+    execute: async ({ route, panel, section, element, label }, base44) => {
+      const params = {};
+      if (panel) params.panel = panel;
+      if (section) params.section = section;
+      if (element) params.element = element;
+      const n = await navigateApp(base44, route || "", params, label, "GIULIA-CORE");
+      return n ? { ok: true, ...params } : { error: "failed" };
     }
   },
   {
