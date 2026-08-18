@@ -1,31 +1,36 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { SectionLabel, Empty, ActionBtn } from "@/system/panels/previewParts";
+import { SectionLabel, Empty } from "@/system/panels/previewParts";
+import CountUp from "@/system/widgets/CountUp";
 import { therapyStatusLabel, fmtDate, fmtTime } from "@/lib/selfUtils";
 import { BLUE, SAND } from "@/glass/components/self/palette";
-import { Plus, Calendar, ArrowUpRight, FileText, Target } from "lucide-react";
+import { ContextGrid, ActionRow, OpenLink } from "@/self/components/SelfViz";
+import { Plus, Calendar, ArrowLeft } from "lucide-react";
 
-function TrajectoryMini({ name, progress, notes }) {
+function TrajectoryViz({ name, progress, notes }) {
   const nodes = ["START", "MID", "NOW", "NEXT"];
   const currentIdx = progress >= 75 ? 3 : progress >= 50 ? 2 : progress >= 25 ? 1 : 0;
   return (
-    <div className="glass-card-2 rounded-2xl p-4">
-      <p className="text-ivory/80 text-[9px] uppercase tracking-[0.2em] mb-3 font-semibold truncate">{name}</p>
-      <div className="relative flex items-center justify-between px-2">
-        <div className="absolute left-4 right-4 top-1/2 h-0.5 bg-ivory/15 -translate-y-1/2" />
+    <div className="glass-card-2 rounded-2xl p-5">
+      <p className="text-ivory/80 text-[10px] uppercase tracking-[0.22em] mb-5 font-semibold truncate">{name}</p>
+      <div className="relative flex items-center justify-between px-4">
+        <div className="absolute left-8 right-8 top-1/2 h-0.5 bg-ivory/15 -translate-y-1/2" />
         {nodes.map((n, i) => {
           const done = i < currentIdx;
           const current = i === currentIdx;
           return (
-            <div key={i} className="flex flex-col items-center gap-1.5 z-10">
-              <span className={`w-3 h-3 rounded-full border-2 ${current ? "animate-pulse" : ""}`} style={{ background: current ? SAND : done ? BLUE : "transparent", borderColor: current ? SAND : done ? BLUE : "rgba(255,255,255,0.25)" }} />
-              <span className={`text-[7px] tracking-wide ${current ? "" : done ? "text-ivory/60" : "text-ivory/35"}`} style={current ? { color: SAND } : {}}>{n}</span>
+            <div key={i} className="flex flex-col items-center gap-3 z-10">
+              <motion.span className={`w-5 h-5 rounded-full border-2 ${current ? "animate-pulse" : ""}`}
+                initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: i * 0.15 }}
+                style={{ background: current ? SAND : done ? BLUE : "transparent", borderColor: current ? SAND : done ? BLUE : "rgba(255,255,255,0.25)" }} />
+              <span className={`text-[10px] tracking-wide ${current ? "" : done ? "text-ivory/70" : "text-ivory/40"}`} style={current ? { color: SAND } : {}}>{n}</span>
             </div>
           );
         })}
       </div>
-      <div className="flex justify-between mt-2 text-ivory/35 text-[8px] tracking-wider px-2">
+      <div className="flex justify-between mt-3 text-ivory/40 text-[9px] tracking-wider px-4">
         <span>0%</span><span>{notes?.length || 0}N</span><span>{progress || 0}%</span><span>—</span>
       </div>
     </div>
@@ -46,8 +51,7 @@ export default function TherapyPanel() {
         base44.entities.TherapyTrajectory.list().catch(() => []),
         base44.entities.CalendarEvent.filter({ domain: "self" }).catch(() => []),
       ]);
-      setTrajectories(list || []);
-      setEvents(evs || []);
+      setTrajectories(list || []); setEvents(evs || []);
     } catch { /* ignore */ } finally { setLoading(false); }
   };
   useEffect(() => { load(); }, []);
@@ -68,78 +72,108 @@ export default function TherapyPanel() {
 
   if (loading) return <p className="text-sm text-ivory/50">Laden…</p>;
 
+  const upcoming = (events || []).filter((e) => e.therapy_trajectory_id || active.some((t) => (t.event_ids || []).includes(e.id))).filter((e) => e.start && new Date(e.start) >= new Date()).sort((a, b) => new Date(a.start) - new Date(b.start)).slice(0, 3);
+
   return (
-    <div className="space-y-5 text-ivory">
-      <div>
-        <SectionLabel>Therapy</SectionLabel>
-        <h2 className="text-[32px] leading-[0.95] font-display font-semibold tracking-[-0.03em] mt-1">{active.length} actief</h2>
-        <p className="text-sm text-ivory/55 mt-1.5 italic">{nextAppt ? `Volgende: ${fmtDate(nextAppt.start)} ${fmtTime(nextAppt.start)}` : "Geen afspraak gepland"}</p>
-        <button onClick={() => navigate("/self/therapy")} className="mt-3 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.16em] font-semibold" style={{ color: BLUE }}>
-          Open Therapy <ArrowUpRight className="w-3 h-3" />
-        </button>
+    <div className="space-y-6 text-ivory">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <SectionLabel>Therapy</SectionLabel>
+          <h2 className="text-[32px] leading-[0.95] font-display font-semibold tracking-[-0.03em] mt-1">{active.length} actief</h2>
+          <p className="text-sm text-ivory/55 mt-1.5 italic">{nextAppt ? `Volgende: ${fmtDate(nextAppt.start)} ${fmtTime(nextAppt.start)}` : "Geen afspraak gepland"}</p>
+        </div>
+        <OpenLink to="/self/therapy" label="Open Therapy" />
       </div>
 
       {/* Goals / Notes stats */}
-      <div className="grid grid-cols-2 gap-2.5">
-        <div className="glass-card-2 rounded-2xl px-4 py-3.5 flex flex-col gap-1">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="glass-card-2 rounded-2xl px-5 py-4 flex flex-col gap-1">
           <span className="text-[10px] uppercase tracking-[0.2em] text-ivory/55 font-semibold">Open doelen</span>
-          <span className="text-2xl font-display font-semibold text-ivory tabular-nums" style={{ color: BLUE }}>{totalGoals}</span>
+          <span className="text-3xl font-display font-semibold tabular-nums" style={{ color: BLUE }}><CountUp value={totalGoals} /></span>
         </div>
-        <div className="glass-card-2 rounded-2xl px-4 py-3.5 flex flex-col gap-1">
+        <div className="glass-card-2 rounded-2xl px-5 py-4 flex flex-col gap-1">
           <span className="text-[10px] uppercase tracking-[0.2em] text-ivory/55 font-semibold">Notities</span>
-          <span className="text-2xl font-display font-semibold text-ivory tabular-nums" style={{ color: SAND }}>{totalNotes}</span>
+          <span className="text-3xl font-display font-semibold tabular-nums" style={{ color: SAND }}><CountUp value={totalNotes} /></span>
         </div>
       </div>
 
-      {/* Trajectory progress */}
+      {/* Trajectory progress — full glass visualization */}
       {active.length ? (
-        <div className="flex flex-col gap-2">
-          {active.slice(0, 2).map((t) => (
-            <TrajectoryMini key={t.id} name={t.title.toUpperCase()} progress={t.progress || 0} notes={t.notes} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {active.slice(0, 2).map((t, i) => (
+            <motion.div key={t.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
+              <TrajectoryViz name={t.title.toUpperCase()} progress={t.progress || 0} notes={t.notes} />
+            </motion.div>
           ))}
         </div>
       ) : <Empty text="Geen actieve trajecten." />}
 
-      {/* Next appointment */}
+      {/* Next appointment — full glass card */}
       {nextAppt && (
-        <div className="glass-card-2 rounded-2xl px-5 py-4 flex items-center gap-4 border-l-2" style={{ borderColor: SAND }}>
+        <motion.div initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} className="glass-card-2 rounded-2xl px-6 py-6 flex items-center gap-6 border-l-4" style={{ borderColor: SAND }}>
           <div className="text-center">
-            <p className="text-3xl font-bold leading-none" style={{ color: SAND }}>{fmtDate(nextAppt.start).split(" ")[0]}</p>
-            <p className="text-ivory text-sm font-semibold tabular-nums mt-1">{fmtTime(nextAppt.start)}</p>
+            <p className="text-5xl font-bold leading-none" style={{ color: SAND }}>{fmtDate(nextAppt.start).split(" ")[0]}</p>
+            <p className="text-ivory text-2xl font-semibold tabular-nums mt-2">{fmtTime(nextAppt.start)}</p>
           </div>
-          <div className="h-12 w-px bg-ivory/15" />
+          <div className="h-16 w-px bg-ivory/15" />
           <div className="min-w-0 flex-1">
-            <p className="text-[9px] uppercase tracking-[0.2em]" style={{ color: SAND }}>Next appointment</p>
-            <p className="text-ivory text-sm font-medium mt-1 truncate">{nextAppt.title}</p>
-            <p className="text-ivory/50 text-xs mt-0.5 truncate">{nextAppt.location || "—"}</p>
+            <p className="text-[10px] uppercase tracking-[0.22em]" style={{ color: SAND }}>Next appointment</p>
+            <p className="text-ivory text-lg font-medium mt-2 truncate">{nextAppt.title}</p>
+            <p className="text-ivory/50 text-sm mt-1 truncate">{nextAppt.location || "—"}</p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Upcoming list */}
+      {upcoming.length > 0 && (
+        <div className="glass-card-2 rounded-2xl p-5">
+          <p className="text-ivory/50 text-[10px] uppercase tracking-[0.22em] mb-4">Upcoming</p>
+          <div className="flex flex-col gap-3">
+            {upcoming.map((u, i) => {
+              const trj = active.find((t) => t.id === u.therapy_trajectory_id);
+              return (
+                <motion.div key={u.id || i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08 }} className="flex items-center justify-between">
+                  <span className="text-ivory text-sm font-medium">{fmtDate(u.start)} · {fmtTime(u.start)}</span>
+                  <span className="text-[10px] px-2.5 py-1 rounded-full" style={{ background: BLUE, color: "#2D2D23" }}>{trj?.title?.slice(0, 8) || "TRJ"}</span>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       )}
 
-      {/* Quick actions */}
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/45 font-semibold mb-2.5">Snel</p>
-        <div className="grid grid-cols-3 gap-2">
-          <ActionBtn label="Traject" icon={Plus} onClick={() => setShowAdd((v) => !v)} />
-          <ActionBtn label="Afspraak" icon={Calendar} onClick={() => navigate("/self/therapy?tab=appointments")} />
-          <ActionBtn label="Notitie" icon={FileText} onClick={() => navigate("/self/therapy?tab=notes")} />
-          <ActionBtn label="Doel" icon={Target} onClick={() => navigate("/self/therapy?tab=goals")} />
-          <ActionBtn label="Open" icon={ArrowUpRight} onClick={() => navigate("/self/therapy")} />
-        </div>
-      </div>
+      {/* Context section — from glass */}
+      <ContextGrid items={[
+        { label: "CURRENT", text: active[0] ? `${active[0].title} — ${active[0].therapist_name || "therapeut"}.` : "Geen actieve trajecten." },
+        { label: "RECENT", text: active[0]?.notes?.length ? `Laatste notitie: ${active[0].notes[active[0].notes.length - 1]}` : "Nog geen notities." },
+        { label: "NEXT", text: nextAppt ? `${fmtDate(nextAppt.start)} · ${fmtTime(nextAppt.start)}` : "Geen afspraak gepland." },
+      ]} />
 
-      {showAdd && (
-        <div className="rounded-2xl glass-card-2 p-4 space-y-2.5 animate-fade-up">
-          <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="Traject naam" className="w-full rounded-xl bg-white/5 border border-white/15 px-3 py-2 text-sm text-ivory placeholder:text-ivory/40 outline-none" />
-          <div className="flex gap-2">
-            <select value={form.type} onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))} className="rounded-xl bg-white/5 border border-white/15 px-3 py-2 text-xs text-ivory outline-none">
-              {["therapy", "coaching", "counseling", "support", "other"].map((t) => <option key={t} value={t} className="text-charcoal">{therapyStatusLabel(t) || t}</option>)}
-            </select>
-            <input value={form.therapist_name} onChange={(e) => setForm((f) => ({ ...f, therapist_name: e.target.value }))} placeholder="Therapeut naam" className="flex-1 rounded-xl bg-white/5 border border-white/15 px-3 py-2 text-xs text-ivory placeholder:text-ivory/40 outline-none" />
-          </div>
-          <button onClick={add} disabled={!form.title.trim()} className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-charcoal disabled:opacity-40 transition" style={{ background: BLUE }}><Plus className="w-4 h-4" /> Voeg toe</button>
-        </div>
-      )}
+      {/* Actions — from glass */}
+      <ActionRow actions={[
+        { label: "Add Note", onClick: async () => { const t = active[0]; if (!t) return; await base44.entities.TherapyTrajectory.update(t.id, { notes: [...(t.notes || []), "Nieuwe notitie"] }); await load(); } },
+        { label: "Add Appointment", primary: true, to: "/self/therapy" },
+        { label: "Open Therapy", to: "/self/therapy" },
+      ]} />
+
+      {/* Add form */}
+      <AnimatePresence>
+        {showAdd && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+            <div className="rounded-2xl glass-card-2 p-4 space-y-2.5">
+              <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="Traject naam" className="w-full rounded-xl bg-white/5 border border-white/15 px-3 py-2 text-sm text-ivory placeholder:text-ivory/40 outline-none" />
+              <div className="flex gap-2">
+                <select value={form.type} onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))} className="rounded-xl bg-white/5 border border-white/15 px-3 py-2 text-xs text-ivory outline-none">
+                  {["therapy", "coaching", "counseling", "support", "other"].map((t) => <option key={t} value={t} className="text-charcoal">{therapyStatusLabel(t) || t}</option>)}
+                </select>
+                <input value={form.therapist_name} onChange={(e) => setForm((f) => ({ ...f, therapist_name: e.target.value }))} placeholder="Therapeut naam" className="flex-1 rounded-xl bg-white/5 border border-white/15 px-3 py-2 text-xs text-ivory placeholder:text-ivory/40 outline-none" />
+              </div>
+              <button onClick={add} disabled={!form.title.trim()} className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-charcoal disabled:opacity-40 transition" style={{ background: BLUE }}><Plus className="w-4 h-4" /> Voeg toe</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
