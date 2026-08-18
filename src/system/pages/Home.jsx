@@ -26,9 +26,9 @@ const BOARD_BG = {
   now: IMAGES.dashboardNow,
   life: IMAGES.dashboardLife,
   self: IMAGES.dashboardSelf,
-  giulia: bgImage,
-  focus: bgImage,
-  system: bgImage,
+  giulia: IMAGES.feetChair,
+  focus: IMAGES.feetChair,
+  system: IMAGES.feetChair,
 };
 
 /**
@@ -54,7 +54,7 @@ export default function Home() {
   const { toast } = useToast();
 
   const nowMode = activeBoard === "now";
-  const bgImage = BOARD_BG[activeBoard] || bgImage;
+  const bgImage = BOARD_BG[activeBoard] || IMAGES.feetChair;
   useEffect(() => {
     if (!nowMode) { setUrgentTypes(null); return; }
     let cancelled = false;
