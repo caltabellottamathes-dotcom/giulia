@@ -40,19 +40,29 @@ export function useGiuliaChat() {
     const text = (content || "").trim();
     if (!text || sending) return;
     const atts = Array.isArray(opts.attachments) ? opts.attachments : [];
-    const cutoff = Date.now() - 4000; // accept giulia-antwoorden die ná nu zijn opgeslagen
+    const cutoff = Date.now() - 4000; // voor recovery: accept giulia-antwoorden die ná nu zijn opgeslagen
     setMessages((prev) => [...prev, { id: `u-${Date.now()}`, role: "user", content: text, tool_calls: [], attachments: atts }]);
     setSending(true);
 
-    // Fire-and-forget — de functie slaat het antwoord op in de DB; de poll haalt het op.
-    base44.functions.invoke("chatWithGiulia", {
-      message: text,
-      source: "chat",
-      file_urls: opts.file_urls || atts.map((a) => a.url),
-      attachments: atts,
-    }).catch(() => { /* poll herstelt het antwoord al */ });
+    // Snelste pad: wacht direct op chatWithGiulia (giulia_giulia-pool, 4 keys,
+    // gemini-3.5-flash-lite). Werkt de invoke timeout (ChatWindow), dan
+    // herstelt de poll hieronder het opgeslagen antwoord.
+    let settled = false;
+    try {
+      const res = await base44.functions.invoke("chatWithGiulia", {
+        message: text,
+        source: "chat",
+        file_urls: opts.file_urls || atts.map((a) => a.url),
+        attachments: atts,
+      });
+      if (res?.response) {
+        settled = true;
+        setMessages((prev) => [...prev, { id: `g-${Date.now()}`, role: "assistant", content: res.response, tool_calls: res.actions_executed || [], attachments: [] }]);
+      }
+    } catch { /* invoke faalde — poll herstelt het opgeslagen antwoord */ }
+    if (settled) { setSending(false); return; }
 
-    // Pols de Message-entiteit tot Giulia's antwoord er staat.
+    // Recovery: pols de Message-entiteit tot Giulia's antwoord er staat.
     let n = 0;
     const tick = async () => {
       n++;
@@ -66,13 +76,13 @@ export function useGiuliaChat() {
         }
       } catch { /* ignore */ }
       if (n < 40) {
-        setTimeout(tick, 3000);
+        setTimeout(tick, 2500);
       } else {
         setSending(false);
         setMessages((prev) => [...prev, { id: `e-${Date.now()}`, role: "assistant", content: "Giulia is even bezet — probeer het zo weer.", tool_calls: [], attachments: [] }]);
       }
     };
-    setTimeout(tick, 2500);
+    setTimeout(tick, 2000);
   }, [sending]);
 
   return { messages, send, sending, ready };
