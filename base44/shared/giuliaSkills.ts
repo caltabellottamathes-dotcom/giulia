@@ -164,6 +164,19 @@ export const GIULIA_SKILLS = [
     }
   },
   {
+    name: "delegate_to",
+    description: "Delegeer naar een achtergrond-functie (GIULIA-CORE) voor rijke logica met propagatie, sync of planning. 'function_name': manageTasks, manageProjects, managePeople, manageCommunication, manageFiles, manageIdeas, planFoodWeek, dailyPlanning, weeklyPlanning, morningBriefing, compileBriefing, weekReview, researchInsights, runProactivity, runSelfCheckIns, analyzeSelfPatterns, analyzeFocusPatterns, analyzeLifePatterns, buildDailyJournal, detectSelfOverload, detectLifeAttention, interpretInput, giuliaLeader, executeApproval, syncCalendar, syncEmails, syncDrive, eveningFollowUp, generateQuestions, answerQuestion, explainTask, startGiulia. Optioneel 'payload'. De functie draait op BYOK Gemini en voert alles uit.",
+    inputSchema: { type: "object", properties: { function_name: { type: "string" }, payload: { type: "object" } }, required: ["function_name"] },
+    execute: async ({ function_name, payload }, base44) => {
+      try {
+        const res = await base44.functions.invoke(function_name, payload || {});
+        return res;
+      } catch (e) {
+        return { error: String((e && e.message) || e) };
+      }
+    }
+  },
+  {
     name: "create_document",
     description: "Sla een document (referentie, contract, notitie) op voor Salvo of als resultaat van een goedgekeurde 'document_create' approval.",
     inputSchema: { type: "object", properties: { name: { type: "string" }, document_type: { type: "string", enum: ["reference", "contract", "invoice", "notes", "other"] }, content: { type: "string" }, project_id: { type: "string" } }, required: ["name"] },

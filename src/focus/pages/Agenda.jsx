@@ -25,11 +25,8 @@ const PALETTES = [
   { chip: "bg-urgent text-charcoal", dot: "bg-urgent", ring: "ring-urgent/60" },
   { chip: "bg-sand text-charcoal", dot: "bg-sand", ring: "ring-sand/60" },
 ];
-const colorFor = (ev) => {
-  const s = (ev.title || ev.id || "") + "";
-  let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
-  return PALETTES[h % PALETTES.length];
-};
+const DOMAIN_COLOR = { focus: PALETTES[0], life: PALETTES[1], self: PALETTES[2] };
+const colorFor = (ev) => DOMAIN_COLOR[ev.domain] || PALETTES[3];
 
 const sameDay = (a, b) => a.toDateString() === b.toDateString();
 const mondayOf = (d) => { const m = new Date(d); m.setHours(0,0,0,0); m.setDate(m.getDate() - ((m.getDay()+6)%7)); return m; };
@@ -50,10 +47,13 @@ export default function Agenda() {
   const [editing, setEditing] = useState(false);
   const [editDraft, setEditDraft] = useState({});
 
-  const { data: events, loading, reload } = useEntityList("Event", { sort: "start" });
+  const { data: events, loading, reload } = useEntityList("CalendarEvent", { sort: "start" });
   const { data: projects } = useEntityList("Project");
   const { data: tasks } = useEntityList("Task");
   const { data: weeklyPlans } = useEntityList("WeeklyPlan");
+  const { data: checkIns } = useEntityList("SelfCheckIn");
+  const { data: meals } = useEntityList("Meal");
+  const { data: trajectories } = useEntityList("TherapyTrajectory");
   const [syncing, setSyncing] = useState(false);
   const projTitle = (id) => projects.find((p) => p.id === id)?.title;
 
@@ -74,6 +74,11 @@ export default function Agenda() {
   const inWeek = (d) => { const x = new Date(d); x.setHours(0,0,0,0); return x >= weekStart && x <= weekEnd; };
   const weekCount = events.filter((e) => inWeek(new Date(e.start))).length;
   const openDeadlines = tasks.filter((t) => t.deadline && t.status !== "completed").length;
+  // Cross-domain context — SELF-capaciteit vandaag + FOOD-diner vandaag + therapie-titel
+  const _todayStr = new Date().toLocaleDateString("sv-SE");
+  const latestCheckIn = (checkIns || []).filter((c) => c.timestamp && new Date(c.timestamp).toLocaleDateString("sv-SE") === _todayStr).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0] || null;
+  const todayDinner = (meals || []).find((m) => m.date === _todayStr && m.meal_type === "dinner") || null;
+  const trajTitle = (id) => (trajectories || []).find((t) => t.id === id)?.title;
 
   const step = (dir) => {
     const d = new Date(currentDate);
@@ -99,7 +104,7 @@ export default function Agenda() {
     if (!newEvent.title.trim() || !newEvent.date) return;
     const start = new Date(`${newEvent.date}T${newEvent.time || "09:00"}:00`).toISOString();
     const end = new Date(new Date(start).getTime() + 60*60*1000).toISOString();
-    await base44.entities.Event.create({ title: newEvent.title.trim(), start, end, location: newEvent.location });
+    await base44.entities.CalendarEvent.create({ title: newEvent.title.trim(), start, end, location: newEvent.location, domain: "focus", status: "confirmed" });
     setNewEvent({ title: "", date: "", time: "09:00", location: "" });
     setShowNewEvent(false); reload();
   };
@@ -112,7 +117,7 @@ export default function Agenda() {
     if (!selectedEvent || !editDraft.date) return;
     const start = new Date(`${editDraft.date}T${editDraft.time || "09:00"}:00`).toISOString();
     const end = new Date(new Date(start).getTime() + 60*60*1000).toISOString();
-    await base44.entities.Event.update(selectedEvent.id, { title: editDraft.title, start, end, location: editDraft.location });
+    await base44.entities.CalendarEvent.update(selectedEvent.id, { title: editDraft.title, start, end, location: editDraft.location });
     setEditing(false); setSelectedEvent(null); reload();
   };
   const openDay = (d) => { setCurrentDate(d); setView("day"); };
@@ -172,6 +177,18 @@ export default function Agenda() {
           {weekly && (
             <div className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium bg-olive/15 text-olive">
               <Sparkles className="h-3.5 w-3.5" /> Weekplanning actief
+            </div>
+          )}
+          {latestCheckIn && (
+            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium bg-ridge/25 text-charcoal" title="SELF · laatste check-in vandaag">
+              <span className="tabular-nums font-semibold">{latestCheckIn.capacity ?? "—"}</span>
+              <span className="opacity-80">capacity · {latestCheckIn.state || latestCheckIn.mood || "?"}</span>
+            </div>
+          )}
+          {todayDinner && (
+            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium bg-sand/30 text-charcoal" title="FOOD · diner vandaag">
+              <span className="font-medium truncate max-w-[160px]">{todayDinner.recipe_name || "Diner"}</span>
+              {todayDinner.total_time ? <span className="opacity-70">· {todayDinner.total_time}min</span> : null}
             </div>
           )}
           <div className="inline-flex items-center gap-2 rounded-full glass-1 px-3 py-1.5 text-xs text-muted-foreground">
@@ -303,7 +320,7 @@ export default function Agenda() {
         eyebrow="Agenda · Event"
         footer={selectedEvent ? <>
           <GlassButton variant="primary" size="sm" className="flex-1" onClick={() => startEditEvent(selectedEvent)}>Bewerk</GlassButton>
-          <GlassButton variant="outline" size="sm" className="flex-1" onClick={async () => { await base44.entities.Event.delete(selectedEvent.id); setSelectedEvent(null); reload(); }}>Verwijder</GlassButton>
+          <GlassButton variant="outline" size="sm" className="flex-1" onClick={async () => { await base44.entities.CalendarEvent.delete(selectedEvent.id); setSelectedEvent(null); reload(); }}>Verwijder</GlassButton>
         </> : null}
       >
         {selectedEvent && (
@@ -312,8 +329,14 @@ export default function Agenda() {
               <div className="flex items-center gap-3"><Clock className="h-4 w-4 text-muted-foreground" /><span>{new Date(selectedEvent.start).toLocaleString("nl-NL",{weekday:"long",hour:"2-digit",minute:"2-digit"})}{selectedEvent.end && ` — ${new Date(selectedEvent.end).toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"})}`}</span></div>
               {selectedEvent.location && <div className="flex items-center gap-3"><MapPin className="h-4 w-4 text-muted-foreground" /><span>{selectedEvent.location}</span></div>}
             </div>
+            {selectedEvent.domain && (
+              <div className="glass-1 rounded-xl p-3"><p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Domein</p><p className="text-sm font-medium capitalize">{selectedEvent.domain}</p></div>
+            )}
             {selectedEvent.project_id && projTitle(selectedEvent.project_id) && (
               <div className="glass-1 rounded-xl p-3"><p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Gekoppeld project</p><p className="text-sm font-medium">{projTitle(selectedEvent.project_id)}</p></div>
+            )}
+            {selectedEvent.therapy_trajectory_id && (
+              <div className="glass-1 rounded-xl p-3"><p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Therapie-traject</p><p className="text-sm font-medium">{trajTitle(selectedEvent.therapy_trajectory_id) || "Gekoppeld"}</p></div>
             )}
           </>
         )}
