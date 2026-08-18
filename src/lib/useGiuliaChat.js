@@ -2,13 +2,15 @@ import { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 
 /**
- * useGiuliaChat — de chat-aansluiting op GIULIA-GIULIA's eigen brein
+ * useGiuliaChat — chat-aansluiting op GIULIA-GIULIA's eigen brein
  * (chatWithGiulia, BYOK Gemini — géén Base44-integrationcredits / InvokeLLM).
- * Eén gedeeld gesprek: laadt de recente in-app berichtdraad en stuurt nieuwe
- * berichten naar chatWithGiulia, die alle acties uitvoert (entity-CRUD,
- * navigatie via AgentNavigation, delegatie naar achtergrond-functies) en
- * blijft leren via geheugen. Giulia praat als Salvo's beste vriendin:
- * vlot, droog-sarcastisch, uitdagend, stout.
+ *
+ * chatWithGiulia is een multi-step Gemini-loop en kan 7–60s duren; de
+ * frontend-invoke timeout vaak vóór de functie klaar is. Daarom wachten we
+ * NIET synchroon op de response: we vuren de functie af en polsten de
+ * Message-entiteit tot Giulia's antwoord is opgeslagen. Zo verschijnt het
+ * antwoord zodra het klaar is — in zowel het ChatWindow als de /chat-pagina,
+ * zonder "even bezet" tenzij er écht geen antwoord komt.
  */
 const norm = (m) => ({
   id: m.id,
@@ -38,22 +40,39 @@ export function useGiuliaChat() {
     const text = (content || "").trim();
     if (!text || sending) return;
     const atts = Array.isArray(opts.attachments) ? opts.attachments : [];
+    const cutoff = Date.now() - 4000; // accept giulia-antwoorden die ná nu zijn opgeslagen
     setMessages((prev) => [...prev, { id: `u-${Date.now()}`, role: "user", content: text, tool_calls: [], attachments: atts }]);
     setSending(true);
-    try {
-      const res = await base44.functions.invoke("chatWithGiulia", {
-        message: text,
-        source: "chat",
-        file_urls: opts.file_urls || atts.map((a) => a.url),
-        attachments: atts,
-      });
-      const reply = res?.response || "Giulia is even bezet — probeer het zo weer.";
-      setMessages((prev) => [...prev, { id: `g-${Date.now()}`, role: "assistant", content: reply, tool_calls: res?.actions_executed || [], attachments: [] }]);
-    } catch (e) {
-      setMessages((prev) => [...prev, { id: `e-${Date.now()}`, role: "assistant", content: "Giulia is even bezet — probeer het zo weer.", tool_calls: [], attachments: [] }]);
-    } finally {
-      setSending(false);
-    }
+
+    // Fire-and-forget — de functie slaat het antwoord op in de DB; de poll haalt het op.
+    base44.functions.invoke("chatWithGiulia", {
+      message: text,
+      source: "chat",
+      file_urls: opts.file_urls || atts.map((a) => a.url),
+      attachments: atts,
+    }).catch(() => { /* poll herstelt het antwoord al */ });
+
+    // Pols de Message-entiteit tot Giulia's antwoord er staat.
+    let n = 0;
+    const tick = async () => {
+      n++;
+      try {
+        const list = await base44.entities.Message.filter({ channel: "in-app" }, "-created_date", 8).catch(() => []);
+        const fresh = (list || []).find((m) => m.role === "giulia" && new Date(m.created_date).getTime() >= cutoff);
+        if (fresh) {
+          setMessages((prev) => [...prev, { id: `g-${Date.now()}`, role: "assistant", content: fresh.content || "", tool_calls: Array.isArray(fresh.tool_calls) ? fresh.tool_calls : [], attachments: [] }]);
+          setSending(false);
+          return;
+        }
+      } catch { /* ignore */ }
+      if (n < 40) {
+        setTimeout(tick, 3000);
+      } else {
+        setSending(false);
+        setMessages((prev) => [...prev, { id: `e-${Date.now()}`, role: "assistant", content: "Giulia is even bezet — probeer het zo weer.", tool_calls: [], attachments: [] }]);
+      }
+    };
+    setTimeout(tick, 2500);
   }, [sending]);
 
   return { messages, send, sending, ready };
