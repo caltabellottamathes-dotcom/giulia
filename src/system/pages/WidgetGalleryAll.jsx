@@ -4,46 +4,11 @@ import MasonryGrid from "@/system/widgets/MasonryGrid";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
-// Gallery-only LIFE widgets — visueel herontworpen
-import SocialPulseGallery from "@/system/widgets/gallery/life/SocialPulseGallery";
-import SocialPlannerGallery from "@/system/widgets/gallery/life/SocialPlannerGallery";
-import HouseholdGallery from "@/system/widgets/gallery/life/HouseholdGallery";
-import PersonalAdminGallery from "@/system/widgets/gallery/life/PersonalAdminGallery";
-import HobbiesGallery from "@/system/widgets/gallery/life/HobbiesGallery";
-import FoodGallery from "@/system/widgets/gallery/life/FoodGallery";
-
-// Gallery-only SELF widgets — visueel herontworpen
-import DailyStateGallery from "@/system/widgets/gallery/self/DailyStateGallery";
-import RoutinesGallery from "@/system/widgets/gallery/self/RoutinesGallery";
-import WakeGallery from "@/system/widgets/gallery/self/WakeGallery";
-import TherapyGallery from "@/system/widgets/gallery/self/TherapyGallery";
-import JournalGallery from "@/system/widgets/gallery/self/JournalGallery";
-import DevelopmentGallery from "@/system/widgets/gallery/self/DevelopmentGallery";
-import PersonalTimeGallery from "@/system/widgets/gallery/self/PersonalTimeGallery";
-import SelfInsightsGallery from "@/system/widgets/gallery/self/SelfInsightsGallery";
-
-const GALLERY_WIDGETS = {
-  socialpulse: SocialPulseGallery,
-  socialplanner: SocialPlannerGallery,
-  household: HouseholdGallery,
-  personaladmin: PersonalAdminGallery,
-  hobbies: HobbiesGallery,
-  food: FoodGallery,
-  selfdailystate: DailyStateGallery,
-  selfroutines: RoutinesGallery,
-  selfwake: WakeGallery,
-  selftherapy: TherapyGallery,
-  selfjournal: JournalGallery,
-  selfdevelopment: DevelopmentGallery,
-  selfpersonaltime: PersonalTimeGallery,
-  selfinsights: SelfInsightsGallery,
-};
-
 const DOMAIN_ORDER = [
   { id: "giulia", label: "Giulia", desc: "Je AI-assistent — overzicht, inzichten en initiatief" },
   { id: "focus", label: "Focus", desc: "Werk, projecten, communicatie en planning" },
-  { id: "life", label: "Life", desc: "Huishouden, sociaal, hobby's en FOOD — grafisch herontworpen" },
-  { id: "self", label: "Self", desc: "Therapie, routines, journal en ontwikkeling — grafisch herontworpen" },
+  { id: "life", label: "Life", desc: "Huishouden, sociaal, hobby's en FOOD" },
+  { id: "self", label: "Self", desc: "Therapie, routines, journal en ontwikkeling" },
   { id: "system", label: "System", desc: "Geheugen, kennis, media en tools" },
 ];
 
@@ -57,7 +22,7 @@ export default function WidgetGalleryAll() {
         </Link>
         <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/70 mb-2 font-semibold">Overzicht</p>
         <h1 className="text-3xl lg:text-4xl font-display font-semibold tracking-[-0.02em] text-foreground mb-2">Alle Widgets</h1>
-        <p className="text-sm text-muted-foreground max-w-xl">Elke widget in het OS, in zijn juiste formaat, gesorteerd per domein. Life en Self zijn visueel herontworpen met glas, animatie en bewegende grafische elementen.</p>
+        <p className="text-sm text-muted-foreground max-w-xl">Elke widget in het OS, in zijn juiste formaat, gesorteerd per domein. Zo zie je in één oogopslag wat Giulia voor je doet.</p>
       </div>
 
       {/* Domein-secties */}
@@ -65,11 +30,10 @@ export default function WidgetGalleryAll() {
         {DOMAIN_ORDER.map((dom) => {
           const domWidgets = WIDGET_LIST.filter((w) => w.domain === dom.id);
           if (!domWidgets.length) return null;
-          const cells = domWidgets.map((def, i) => {
-            const GalleryCmp = GALLERY_WIDGETS[def.type];
-            const W = GalleryCmp || def.Component;
+          const cells = domWidgets.map((def) => {
+            const W = def.Component;
             return {
-              node: GalleryCmp ? <W key={def.type} delay={i * 0.08} /> : <W key={def.type} />,
+              node: <W key={def.type} />,
               span: def.span || 1,
             };
           });
