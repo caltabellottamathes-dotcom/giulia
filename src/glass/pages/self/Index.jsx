@@ -34,7 +34,7 @@ export default function SelfIndex() {
               <Link key={p.to} to={p.to} className="group rounded-2xl border border-marble/30 bg-marble/5 p-6 hover:bg-marble/10 transition-colors">
                 <div className="flex items-center justify-between">
                   <span className="text-storm/40 text-xs tabular-nums">{p.n}</span>
-                  <ArrowRight className="w-4 h-4 text-storm/40 group-hover:text-urgent transition-colors" />
+                  <ArrowRight className="w-4 h-4 text-storm/40 group-hover:text-storm transition-colors" />
                 </div>
                 <h3 className="text-storm text-lg font-semibold mt-4">{p.title}</h3>
                 <p className="text-storm/60 text-xs mt-1 leading-relaxed">{p.desc}</p>

@@ -1,16 +1,18 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { BLUE } from "./palette";
 
 function GraphicRule({ className = "" }) {
   return (
     <div className={`relative ${className}`}>
       <div className="h-px bg-marble/20" />
-      <div className="absolute left-0 top-0 h-px w-20 bg-plum" />
+      <div className="absolute left-0 top-0 h-px w-20" style={{ background: BLUE }} />
     </div>
   );
 }
 
 export default function PanelShell({ index, section, statement, kicker, children, context = [], actions = [] }) {
+  const navigate = useNavigate();
   return (
     <div className="h-[100dvh] w-full bg-metal overflow-hidden relative">
       <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 18% 16%, rgba(224,222,211,0.22) 0%, rgba(242,242,240,0.10) 28%, rgba(45,45,35,0) 60%)" }} />
@@ -51,11 +53,17 @@ export default function PanelShell({ index, section, statement, kicker, children
 
           <GraphicRule className="my-6" />
           <div className="flex flex-wrap gap-2.5">
-            {actions.map((a, i) => a.primary ? (
-              <button key={i} className="px-6 py-3 rounded-full bg-plum text-storm text-xs font-semibold tracking-[0.15em] uppercase hover:brightness-125 active:scale-95 transition-all">{a.label}</button>
-            ) : (
-              <button key={i} className="px-6 py-3 rounded-full border border-storm/15 bg-marble/5 text-storm/80 text-xs tracking-[0.15em] uppercase hover:bg-marble/10 transition-colors">{a.label}</button>
-            ))}
+            {actions.map((a, i) => {
+              const handle = () => {
+                if (a.onClick) a.onClick();
+                else if (a.to) navigate(a.to);
+              };
+              return a.primary ? (
+                <button key={i} onClick={handle} className="px-6 py-3 rounded-full text-metal text-xs font-semibold tracking-[0.15em] uppercase hover:brightness-95 active:scale-95 transition-all" style={{ background: BLUE }}>{a.label}</button>
+              ) : (
+                <button key={i} onClick={handle} className="px-6 py-3 rounded-full border border-storm/15 bg-marble/5 text-storm/80 text-xs tracking-[0.15em] uppercase hover:bg-marble/10 transition-colors">{a.label}</button>
+              );
+            })}
           </div>
         </div>
       </div>
