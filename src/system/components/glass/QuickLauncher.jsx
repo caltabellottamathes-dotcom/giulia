@@ -12,11 +12,11 @@ import { X, ChevronRight } from "lucide-react";
  * ↑↓ verplaatst de markering over de zichtbare items, ↵ activeert, esc sluit.
  */
 const GROUP_COLORS = {
-  Giulia: "#d8dab3",
-  Focus: "#c4c282",
-  Life: "#d49a98",
-  Self: "#b1bec6",
-  System: "#d5e24a",
+  Giulia: "rgba(255,255,255,0.85)",
+  Focus: "rgba(255,255,255,0.85)",
+  Life: "rgba(255,255,255,0.85)",
+  Self: "rgba(255,255,255,0.85)",
+  System: "rgba(255,255,255,0.85)",
 };
 
 const GROUPS = [

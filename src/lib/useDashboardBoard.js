@@ -5,13 +5,16 @@ import { WIDGETS } from "@/lib/widgetRegistry";
 /**
  * useDashboardBoard — laadt en beheert de widgets van één dashboard-board.
  *
- * Vijf vaste boards (giulia / focus / life / self / system) worden server-side
- * bewaard (DashboardWidget.board_id). Een leeg board wordt bij eerste keer
- * gezaaid met álle widgets van zijn domein; daarna blijven alleen de widgets
- * staan die de gebruiker koos (verwijderen persisteert).
+ * Gedrag:
+ *  • Eerste opstart van de dag (nieuwe kalenderdag): alle dashboards
+ *    behalve NOW tonen al hun eigen widgets volledig.
+ *  • Doorheen de dag blijven widgets zoals de gebruiker ze het laatst
+ *    gebruikte — verwijderde widgets komen NIET terug bij een refresh.
+ *  • Bij volledige afsluit en nieuwe dagopstart: weer alle widgets.
+ *  • NOW toont altijd de widgets met de meest urgente info (urgency-filter).
  *
- * Zelfgemaakte (lege) boards zijn tijdelijk: ze leven in sessionStorage en
- * verdwijnen bij afsluiten/herstart.
+ * De "laatste reset-datum" wordt in localStorage bijgehouden. Is de datum
+ * anders dan vandaag → volledige reset (behalve NOW).
  */
 
 const NOW_WIDGET_TYPES = ["approvals", "tasks", "notifications", "email", "whatsapp", "household", "personaladmin", "selfdailystate", "selfinsights"];
@@ -67,37 +70,49 @@ function sessionRecords(boardId) {
   return sessionWidgets(boardId).map((t, i) => ({ id: `sess_${boardId}_${i}_${t}`, widget_type: t, position: i, visible: true }));
 }
 
+function todayKey() {
+  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+}
+
 let _boardsEnsured = false;
 /**
- * ensureAllBoards — eenmalig per opstart: garandeert dat elk vast dashboard
- * exact zijn domein-widgets bevat (geen duplicaten, geen verkeerde widgets;
- * ontbrekende worden aangezaaid). Daarna worden boards nooit meer
- * automatisch aangevuld — verwijderde widgets blijven weg.
+ * ensureAllBoards — eenmalig per opstart:
+ *  • Nieuwe dag → volledige reset van alle boards (behalve NOW): alle
+ *    domein-widgets worden opnieuw gezaaid.
+ *  • Dezelfde dag → doe NIETS; de boards blijven zoals de gebruiker ze
+ *    het laatst gebruikte (verwijderde widgets blijven weg).
+ *  • NOW → altijd de volledige widget-set garanderen (urgency-gebaseerd).
  */
 export async function ensureAllBoards() {
   if (_boardsEnsured) return;
   _boardsEnsured = true;
   try {
-    for (const b of DEFAULT_BOARDS) {
-      const types = domainWidgetTypes(b.domain);
-      let recs = await base44.entities.DashboardWidget.filter({ board_id: b.id }, "position").catch(() => []);
-      recs = recs || [];
-      const seen = new Set();
-      const dupes = [];
-      const keep = [];
-      for (const r of recs) {
-        if (seen.has(r.widget_type)) dupes.push(r);
-        else { seen.add(r.widget_type); keep.push(r); }
+    const today = todayKey();
+    const lastReset = localStorage.getItem("giulia_last_reset_date");
+    const isNewDay = lastReset !== today;
+
+    if (isNewDay) {
+      localStorage.setItem("giulia_last_reset_date", today);
+      // Volledige reset voor alle boards behalve NOW
+      for (const b of DEFAULT_BOARDS) {
+        if (b.id === "now") continue;
+        await base44.entities.DashboardWidget.deleteMany({ board_id: b.id }).catch(() => {});
+        const types = domainWidgetTypes(b.domain);
+        await base44.entities.DashboardWidget.bulkCreate(
+          types.map((t, i) => ({ widget_type: t, position: i, visible: true, board_id: b.id }))
+        ).catch(() => {});
       }
-      const wrong = keep.filter((r) => !types.includes(r.widget_type));
-      const toDelete = [...dupes, ...wrong];
-      if (toDelete.length) await Promise.all(toDelete.map((r) => base44.entities.DashboardWidget.delete(r.id).catch(() => {})));
-      const kept = keep.filter((r) => types.includes(r.widget_type));
-      const present = kept.map((r) => r.widget_type);
-      const missing = types.filter((t) => !present.includes(t));
-      if (missing.length) {
-        await base44.entities.DashboardWidget.bulkCreate(missing.map((t, i) => ({ widget_type: t, position: kept.length + i, visible: true, board_id: b.id }))).catch(() => {});
-      }
+    }
+
+    // NOW — altijd de volledige set garanderen (niet reset, wel aanvullen)
+    const nowRecs = await base44.entities.DashboardWidget.filter({ board_id: "now" }, "position").catch(() => []);
+    const nowTypes = domainWidgetTypes("now");
+    const present = (nowRecs || []).map((r) => r.widget_type);
+    const missing = nowTypes.filter((t) => !present.includes(t));
+    if (missing.length) {
+      await base44.entities.DashboardWidget.bulkCreate(
+        missing.map((t, i) => ({ widget_type: t, position: (nowRecs || []).length + i, visible: true, board_id: "now" }))
+      ).catch(() => {});
     }
   } catch {}
 }

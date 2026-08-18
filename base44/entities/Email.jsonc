@@ -115,6 +115,11 @@
       "type": "boolean",
       "default": false,
       "title": "Auto Draft Created"
+    },
+    "deleted": {
+      "type": "boolean",
+      "default": false,
+      "title": "Deleted"
     }
   },
   "required": [

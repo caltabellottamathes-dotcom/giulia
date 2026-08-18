@@ -29,10 +29,9 @@ export default async function (req) {
       sr.entities.Email.filter({ folder: 'inbox' }).catch(() => []),
       sr.entities.Project.list().catch(() => []),
     ]);
-    const untriaged = emails.filter((e) => !e.triaged);
-    if (!untriaged.length) {
-      return Response.json({ ok: true, triaged: 0, message: 'Alles al gesorteerd.' });
-    }
+    // Verwerk ALLE inbox-emails bij elke aanroep — de sorteerknop moet
+    // altijd opnieuw sorteren, ook als alles al getriaged was.
+    const untriaged = emails;
 
     // === Laag 1 — heuristische classificatie + project-koppeling (geen credits) ===
     const ADVERTISING = /(unsubscribe|uitgeschreven|afmelden|sale|solden|korting|aanbieding|deal|promo|winkelwagen|cart|free shipping|actie|uitverkoop|offerte|early access|order now|bevestig je|abonnement)/i;
@@ -68,7 +67,7 @@ export default async function (req) {
       const projectId = projectMatch(e);
       const isNoise = category !== 'important';
       const text = `${e.subject || ''} ${e.body || ''}`;
-      const awaiting = !isNoise && AWAITING_RESPONSE.test(text);
+      const awaiting = !isNoise && !e.auto_draft_created && AWAITING_RESPONSE.test(text);
       if (awaiting) awaitingIds.push(e.id);
       updates.push(
         sr.entities.Email.update(e.id, {

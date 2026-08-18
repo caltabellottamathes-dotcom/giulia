@@ -4,48 +4,25 @@ import { useContextCapture } from "@/lib/ContextCaptureContext";
 import { base44 } from "@/api/base44Client";
 import { cn } from "@/lib/utils";
 import { useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
 import { Plus, Phone, MessageSquare, BrainCircuit, X, Send, Loader2 } from "lucide-react";
 import QuickLauncher from "@/system/components/glass/QuickLauncher";
 import { WIDGETS } from "@/lib/widgetRegistry";
 import { DEFAULT_BOARDS, loadCustomBoards, createCustomBoard, getActiveBoard, setActiveBoard } from "@/lib/useDashboardBoard";
 
-const actionBtn = "h-9 w-9 rounded-full flex items-center justify-center text-ivory/80 hover:bg-ivory/15 hover:text-ivory transition-colors shrink-0";
-
-/* ── Active-section → color ─────────────────────────────────────────────
-   FOCUS → groen (olive) · SELF & LIFE → lichtblauw (ridge) ·
-   GIULIA & SYSTEEM → #d8dab3. */
-const DOMAIN_COLOR = {
-  focus: "#94925d",
-  self: "#b1bec6",
-  life: "#301728",
-  giulia: "#d8dab3",
-  system: "#d5e24a",
-};
-
-/* Per-dashboard tekstkleur — leesbaar op donker glas */
-const BOARD_COLOR = {
-  now: "#94B8D1",
-  giulia: "#d8dab3",
-  focus: "#c4c282",
-  life: "#d49a98",
-  self: "#b1bec6",
-  system: "#d5e24a",
-};
-
-const ROUTE_DOMAIN = [
-  [/^\/self/, "self"], [/^\/wake$/, "self"],
-  [/^\/life/, "life"],
-  [/^\/(agenda|projects|tasks|email|whatsapp|documents|people|planning|timetracker)/, "focus"],
-  [/^\/knowledge/, "system"],
-  [/^\/(chat|voice|approvals|insights|updates|briefing|wants-to-know|activity|memory|agents)/, "giulia"],
-  [/^\/(search|integrations|settings|profile)/, "system"],
-];
-const MODULE_DOMAIN_FALLBACK = { chat: "giulia", voice: "giulia", settings: "system", profile: "system", integrations: "system" };
+const actionBtn = "h-9 w-9 flex items-center justify-center text-ivory/60 hover:bg-ivory/10 hover:text-ivory transition-colors shrink-0";
 
 function useActiveSection(board) {
   const { activeModule } = usePanel();
   const loc = useLocation();
+  const ROUTE_DOMAIN = [
+    [/^\/self/, "self"], [/^\/wake$/, "self"],
+    [/^\/life/, "life"],
+    [/^\/(agenda|projects|tasks|email|whatsapp|documents|people|planning|timetracker)/, "focus"],
+    [/^\/knowledge/, "system"],
+    [/^\/(chat|voice|approvals|insights|updates|briefing|wants-to-know|activity|memory|agents)/, "giulia"],
+    [/^\/(search|integrations|settings|profile)/, "system"],
+  ];
+  const MODULE_DOMAIN_FALLBACK = { chat: "giulia", voice: "giulia", settings: "system", profile: "system", integrations: "system" };
   if (activeModule) {
     const d = WIDGETS[activeModule]?.domain || MODULE_DOMAIN_FALLBACK[activeModule];
     if (d) return d;
@@ -62,25 +39,10 @@ function useActiveSection(board) {
   return "giulia";
 }
 
-function LiveLine({ color }) {
-  return (
-    <div className="relative h-full w-full overflow-hidden" style={{ background: color, opacity: 0.5 }}>
-      <motion.span
-        className="absolute top-0 bottom-0 w-1/4 rounded-full"
-        style={{ background: color, filter: "blur(1px)", boxShadow: `0 0 10px ${color}` }}
-        animate={{ x: ["-120%", "520%"] }}
-        transition={{ duration: 3.4, repeat: Infinity, ease: "linear" }}
-      />
-    </div>
-  );
-}
-
 /**
- * WorkspaceToolbar — één volledige glazen werkbalk onderaan over de volle
- * breedte. Levende kleurlijn bovenin (kleur = actieve OS-laag), tabs links,
- * Giulia-invoer rechts. Verdwijnt naar beneden bij inactiviteit; bij hover
- * onderaan verschijnt hij weer. Inactief blijft de levende lijn + een bloom
- * zichtbaar als indicator van het actieve onderdeel.
+ * WorkspaceToolbar — minimalistische volledig-brede werkbalk onderaan.
+ * Scherpe hoeken, solide donkere achtergrond, monochrome tabs. Geen glas,
+ * geen ronde hoeken, geen kleur-chaos. Streep bovenin als actieve indicator.
  */
 export default function WorkspaceToolbar() {
   const { openModule, openChat, openVoice, setPendingMessage } = usePanel();
@@ -93,9 +55,6 @@ export default function WorkspaceToolbar() {
   const [savingCtx, setSavingCtx] = useState(false);
   const [hidden, setHidden] = useState(false);
   const hideTimer = useRef(null);
-
-  const domain = useActiveSection(board);
-  const color = DOMAIN_COLOR[domain] || DOMAIN_COLOR.giulia;
 
   const reveal = () => {
     setHidden(false);
@@ -154,81 +113,64 @@ export default function WorkspaceToolbar() {
       {/* bottom hover-reveal zone */}
       <div className="fixed bottom-0 inset-x-0 h-12 z-20" onMouseEnter={reveal} />
 
-      {/* persistent live line + bloom (inactive indicator) */}
+      {/* persistent indicator (inactive) */}
       {hidden && (
         <div className="fixed bottom-0 inset-x-0 z-30 pointer-events-none">
-          <div className="relative h-[3px] w-full">
-            <LiveLine color={color} />
-            <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 h-6 w-40 rounded-full blur-xl" style={{ background: color, opacity: 0.85 }} />
-            <motion.span
-              className="absolute -bottom-[3px] left-1/2 -translate-x-1/2 h-2.5 w-2.5 rounded-full"
-              style={{ background: color, boxShadow: `0 0 14px 3px ${color}` }}
-              animate={{ opacity: [0.55, 1, 0.55], scale: [1, 1.25, 1] }}
-              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-            />
-          </div>
+          <div className="h-[2px] w-full bg-ivory/20" />
         </div>
       )}
 
-      {/* the bar */}
+      {/* the bar — full width, edge to edge, sharp corners */}
       <div
         className={cn(
           "fixed bottom-0 inset-x-0 z-30 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
-          hidden ? "translate-y-[135%]" : "translate-y-0"
+          hidden ? "translate-y-full" : "translate-y-0"
         )}
         onMouseEnter={reveal}
         onMouseLeave={scheduleHide}
       >
-        <div className="px-3 lg:px-6 pb-3">
-          <div className="relative w-full flex items-center gap-2 lg:gap-3 px-3 lg:px-5 h-14 rounded-[20px] glass-4 border border-white/18 shadow-[0_28px_64px_-26px_rgba(0,0,0,0.5),inset_0_1px_0_0_rgba(255,255,255,0.16)]">
-            {/* top live line — animated, active color */}
-            <span className="pointer-events-none absolute inset-x-0 top-0 h-[2px] rounded-t-[20px] overflow-hidden">
-              <LiveLine color={color} />
-            </span>
-
-            {/* Dashboard tabs (left) — elegant, no pill */}
-            <div className="flex items-center gap-1 overflow-x-auto shrink-0 max-w-[44%] lg:max-w-[52%] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {all.map((b) => {
-                const on = board === b.id;
-                return (
-                  <button
-                    key={b.id}
-                    onClick={() => selectBoard(b.id)}
-                    style={{ color: BOARD_COLOR[b.id] || undefined }}
-                    className={cn(
-                      "relative px-2.5 lg:px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] whitespace-nowrap transition-opacity",
-                      on ? "opacity-100" : "opacity-50 hover:opacity-85"
-                    )}
-                  >
-                    {b.label}
-                    {on && <span className="absolute -bottom-0.5 left-2.5 right-2.5 h-px rounded-full" style={{ background: BOARD_COLOR[b.id] || color }} />}
-                  </button>
-                );
-              })}
-              <button onClick={addBoard} title="Dashboard toevoegen" className="shrink-0 h-7 w-7 rounded-full flex items-center justify-center text-ivory/50 hover:text-ivory hover:bg-ivory/10 transition"><Plus className="h-3.5 w-3.5" /></button>
-            </div>
-
-            {/* spacer pushes the input to the far right */}
-            <div className="flex-1" />
-
-            {/* Giulia input (right, tegen de knoppen) */}
-            <form onSubmit={submit} className="hidden sm:flex items-center gap-2.5 w-[34%] lg:w-[24%]">
-              <span className="h-1.5 w-1.5 rounded-full bg-olive animate-pulse-soft shrink-0" />
-              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Vraag Giulia anything…" className="flex-1 min-w-0 bg-transparent text-sm text-ivory placeholder:text-ivory/45 focus:outline-none text-right" />
-            </form>
-
-            {/* Actions (right) */}
-            <button onClick={() => { reveal(); active ? stop() : start(); }} aria-label="Context toevoegen" className={cn(actionBtn, active && "text-olive")}><BrainCircuit className="h-5 w-5" /></button>
-            <button onClick={() => { reveal(); setLauncherOpen(true); }} aria-label="Snelle acties" className={actionBtn}><Plus className="h-5 w-5" /></button>
-            <button onClick={() => { reveal(); openVoice(); }} aria-label="Bel Giulia" className={actionBtn}><Phone className="h-5 w-5" /></button>
-            <button onClick={() => { reveal(); openChat(); }} aria-label="Chat met Giulia" className={actionBtn}><MessageSquare className="h-5 w-5" /></button>
+        <div className="relative w-full h-14 bg-charcoal border-t border-ivory/15 flex items-center px-4 lg:px-8">
+          {/* Dashboard tabs (left) — monochrome */}
+          <div className="flex items-center gap-0.5 overflow-x-auto shrink-0 max-w-[44%] lg:max-w-[52%] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {all.map((b) => {
+              const on = board === b.id;
+              return (
+                <button
+                  key={b.id}
+                  onClick={() => selectBoard(b.id)}
+                  className={cn(
+                    "relative px-3 lg:px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap transition-opacity",
+                    on ? "text-ivory opacity-100" : "text-ivory/45 hover:text-ivory/70"
+                  )}
+                >
+                  {b.label}
+                  {on && <span className="absolute top-0 left-3 right-3 h-[2px] bg-ivory" />}
+                </button>
+              );
+            })}
+            <button onClick={addBoard} title="Dashboard toevoegen" className="shrink-0 h-7 w-7 flex items-center justify-center text-ivory/40 hover:text-ivory hover:bg-ivory/10 transition"><Plus className="h-3.5 w-3.5" /></button>
           </div>
+
+          {/* spacer */}
+          <div className="flex-1" />
+
+          {/* Giulia input (right) */}
+          <form onSubmit={submit} className="hidden sm:flex items-center gap-2.5 w-[30%] lg:w-[22%]">
+            <span className="h-1.5 w-1.5 rounded-full bg-ivory/60 animate-pulse-soft shrink-0" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Vraag Giulia anything…" className="flex-1 min-w-0 bg-transparent text-sm text-ivory placeholder:text-ivory/35 focus:outline-none text-right" />
+          </form>
+
+          {/* Actions (far right) */}
+          <button onClick={() => { reveal(); active ? stop() : start(); }} aria-label="Context toevoegen" className={cn(actionBtn, active && "text-ivory")}><BrainCircuit className="h-5 w-5" /></button>
+          <button onClick={() => { reveal(); setLauncherOpen(true); }} aria-label="Snelle acties" className={actionBtn}><Plus className="h-5 w-5" /></button>
+          <button onClick={() => { reveal(); openVoice(); }} aria-label="Bel Giulia" className={actionBtn}><Phone className="h-5 w-5" /></button>
+          <button onClick={() => { reveal(); openChat(); }} aria-label="Chat met Giulia" className={actionBtn}><MessageSquare className="h-5 w-5" /></button>
         </div>
       </div>
 
       {/* Context-capture popup */}
       {(active || captured) && (
-        <div data-no-capture className="fixed z-40 right-4 lg:right-6 bottom-24 w-[calc(100%-2rem)] lg:w-[360px] glass-3 rounded-2xl p-4 space-y-3 animate-slide-up text-ivory">
+        <div data-no-capture className="fixed z-40 right-4 lg:right-8 bottom-20 w-[calc(100%-2rem)] lg:w-[360px] bg-charcoal border border-ivory/15 p-4 space-y-3 animate-slide-up text-ivory">
           {active && !captured ? (
             <>
               <div className="flex items-center justify-between">
@@ -243,9 +185,9 @@ export default function WorkspaceToolbar() {
                 <p className="text-[10px] uppercase tracking-wider text-ivory/70 font-semibold">Onthouden</p>
                 <button onClick={clear} className="text-ivory/60 hover:text-ivory"><X className="h-3.5 w-3.5" /></button>
               </div>
-              <p className="text-xs text-ivory/80 line-clamp-3 bg-ivory/10 rounded-lg p-2.5">{captured.text || "(geen tekst gevonden)"}</p>
-              <textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Extra context toevoegen (optioneel)…" className="w-full text-sm bg-ivory/5 border border-ivory/15 rounded-lg px-3 py-2 focus:outline-none text-ivory placeholder:text-ivory/40 min-h-[56px] resize-none" />
-              <button onClick={saveContext} disabled={savingCtx} className="w-full inline-flex items-center justify-center gap-1.5 rounded-full bg-olive text-ivory px-3 py-2 text-xs font-semibold disabled:opacity-50">
+              <p className="text-xs text-ivory/80 line-clamp-3 bg-ivory/10 p-2.5">{captured.text || "(geen tekst gevonden)"}</p>
+              <textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Extra context toevoegen (optioneel)…" className="w-full text-sm bg-ivory/5 border border-ivory/15 px-3 py-2 focus:outline-none text-ivory placeholder:text-ivory/40 min-h-[56px] resize-none" />
+              <button onClick={saveContext} disabled={savingCtx} className="w-full inline-flex items-center justify-center gap-1.5 bg-ivory text-charcoal px-3 py-2 text-xs font-semibold disabled:opacity-50">
                 {savingCtx ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />} Onthoud dit
               </button>
             </>

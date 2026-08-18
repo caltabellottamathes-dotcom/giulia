@@ -616,4 +616,27 @@ export const GIULIA_SKILLS = [
       return { count: list.length, items: list.map((n) => ({ id: n.id, title: n.title, priority: n.priority, status: n.status, category: n.category })) };
     }
   },
+  {
+    name: "delete_emails",
+    description: "Verwijder emails PERMANENT uit de inbox. Soft-delete: zet deleted=true zodat ze verdwijnen uit de app en NIET opnieuw worden opgehaald bij de volgende sync. Gebruik dit als Salvo vraagt om emails te verwijderen — bv. 'verwijder alle gearchiveerde emails' (folder='archived'), 'verwijder reclame' (category='advertising'), of een specifieke email (id).",
+    inputSchema: { type: "object", properties: { id: { type: "string", description: "Specifiek email-ID om te verwijderen" }, folder: { type: "string", enum: ["inbox", "archived", "giulia_drafts", "sent", "drafts"], "description": "Verwijder alle emails in deze folder" }, category: { type: "string", enum: ["important", "advertising", "newsletter", "junk", "spam", "other"], "description": "Verwijder alle emails met deze categorie" } } },
+    execute: async ({ id, folder, category }, base44) => {
+      const sr = base44.asServiceRole;
+      let query = {};
+      if (id) query = { id };
+      else if (folder) query = { folder };
+      else if (category) query = { category };
+      else return { error: "Geef id, folder of category op." };
+      const list = await sr.entities.Email.filter(query, "-created_date", 500).catch(() => []);
+      const ids = list.map((e) => e.id).filter(Boolean);
+      if (!ids.length) return { deleted_count: 0 };
+      for (let i = 0; i < ids.length; i += 100) {
+        await sr.entities.Email.bulkUpdate(
+          ids.slice(i, i + 100).map((eid) => ({ id: eid, deleted: true }))
+        ).catch(() => {});
+      }
+      await logActivity(base44, "GIULIA-CORE", `${ids.length} email${ids.length === 1 ? "" : "s"} permanent verwijderd${folder ? ` uit ${folder}` : category ? ` (${category})` : ""}.`, { action: "delete_emails" }).catch(() => null);
+      return { deleted_count: ids.length };
+    }
+  },
 ];
