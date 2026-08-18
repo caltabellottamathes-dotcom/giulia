@@ -17,7 +17,7 @@ import { WIDGETS } from "@/lib/widgetRegistry";
  * anders dan vandaag → volledige reset (behalve NOW).
  */
 
-const NOW_WIDGET_TYPES = ["approvals", "tasks", "notifications", "email", "whatsapp", "household", "personaladmin", "selfdailystate", "selfinsights"];
+const NOW_WIDGET_TYPES = ["approvals", "tasks", "notifications", "email", "whatsapp", "household", "personaladmin", "selfdailystate", "selfinsights", "giuliaquestions"];
 
 export const DEFAULT_BOARDS = [
   { id: "now", label: "NOW", domain: "now" },

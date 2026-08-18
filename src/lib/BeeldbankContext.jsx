@@ -74,9 +74,13 @@ export function BeeldbankProvider({ children }) {
   useEffect(() => {
     if (!mode || picker.open) return;
     const handler = (e) => {
-      // elementsFromPoint vindt ook <img>'s die achter een overlay liggen
-      // (gradients in headers, widget-kaarten met text-lagen eroverheen).
+      // Negeer clicks op de modus-balk en de kiezer zelf — anders opent de
+      // kiezer zichzelf opnieuw (als er een foto achter de balk ligt) of
+      // kan de modus niet afgesloten worden.
       const els = document.elementsFromPoint(e.clientX, e.clientY);
+      for (const el of els) {
+        if (el?.closest?.("[data-no-capture]")) return;
+      }
       let img = null;
       for (const el of els) {
         if (el.tagName === "IMG" && !el.dataset.emptyImage && !el.dataset.errorImage) { img = el; break; }
@@ -99,7 +103,7 @@ export function BeeldbankProvider({ children }) {
 
   const pick = useCallback(async (chosenUrl) => {
     const { originalUrl, imgEl } = picker;
-    if (imgEl) { try { imgEl.src = chosenUrl; } catch {} }
+    if (imgEl) { try { imgEl.srcset = ""; imgEl.removeAttribute("srcset"); imgEl.src = chosenUrl; } catch {} }
     const norm = normalizeImgUrl(originalUrl);
     const key = keyByCurrentUrl(norm);
     const orig = key ? ORIGINAL_IMAGES[key] : norm;

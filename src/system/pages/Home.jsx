@@ -20,7 +20,7 @@ import StartupSequence from "@/system/components/StartupSequence";
 import { Link } from "react-router-dom";
 import { MODULES } from "@/lib/moduleRegistry";
 
-const WIDGET_SPAN = { giulia: 2, goodmorning: 2, concierge: 2, projects: 2, agenda: 2, email: 2, documents: 2, updates: 2, household: 2, selfroutines: 2, selftherapy: 2, selfdevelopment: 2, selfpersonaltime: 2, selfinsights: 2, beeldbank: 2 };
+const WIDGET_SPAN = { giulia: 2, goodmorning: 2, concierge: 2, projects: 2, agenda: 2, email: 2, documents: 2, updates: 2, household: 2, selfroutines: 2, selftherapy: 2, selfdevelopment: 2, selfpersonaltime: 2, selfinsights: 2, beeldbank: 2, giuliaquestions: 2 };
 
 const BOARD_BG = {
   now: IMAGES.dashboardNow,
@@ -88,19 +88,58 @@ export default function Home() {
 
   const doUpdate = async () => {
     setRefreshing(true);
-    try { await base44.functions.invoke("refreshDashboard", {}).catch(() => {}); } catch {}
+    // 1. Sync alle databronnen parallel
+    await Promise.allSettled([
+      base44.functions.invoke("refreshDashboard", {}),
+      base44.functions.invoke("syncEmails", {}),
+      base44.functions.invoke("syncCalendar", {}),
+    ]);
+    // 2. Ververs het huidige dashboard
     await reload();
-    bumpRefresh(); // alle widgets én panelen via useLearningSync direct verversen
+    // 3. Globale refresh-bus: alle widgets, panelen en pagina's die
+    //    useLearningSync gebruiken horen dit en halen hun data opnieuw op.
+    bumpRefresh();
+    // 4. Forceer her-layout van de masonry (nieuwe data = nieuwe hoogtes)
     setResetKey((k) => k + 1);
+    // 5. Globale event voor componenten die niet via useLearningSync luisteren
+    window.dispatchEvent(new CustomEvent("giulia:global-refresh"));
     setRefreshing(false);
-    toast({ title: "Alles bijgewerkt", description: "Data, widgets en panelen vernieuwd." });
+    toast({ title: "Alles bijgewerkt", description: "Email, agenda, widgets en panelen vernieuwd." });
   };
 
   const hour = new Date().getHours();
-  const greetWord = hour < 12 ? "Goedemorgen" : hour < 18 ? "Goedemiddag" : "Goedenavond";
+  const partOfDay = hour < 6 ? "night" : hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
   const rawFirst = userName ? userName.split(" ")[0] : "";
   const displayName = rawFirst === "Salvatore" ? "Salvo" : rawFirst || "Salvo";
-  const greeting = `${greetWord}, ${displayName}`;
+
+  // Variabele begroetingen in Giulia's stem — wisselt per tijdsvak en per dag.
+  const GREETINGS = {
+    morning: [
+      `Goedemorgen, ${displayName}. Klaar voor vandaag?`,
+      `Goeiemorgen ${displayName} — ik heb je dag voorbereid.`,
+      `${displayName}, een nieuwe dag. Ik ben er klaar voor.`,
+      `Goedemorgen ${displayName}. Rustig beginnen, ik regel de rest.`,
+    ],
+    afternoon: [
+      `Goedemiddag, ${displayName}. Hoe gaat het?`,
+      `Hé ${displayName}, je middag staat klaar.`,
+      `${displayName}, even kijken waar we staan.`,
+      `Goeiemiddag ${displayName} — ik houd alles in de gaten.`,
+    ],
+    evening: [
+      `Goedenavond, ${displayName}. Tijd om los te laten.`,
+      `Hé ${displayName}, de avond is van jou.`,
+      `${displayName}, ik pak de laatste dingen op.`,
+      `Goedenavond ${displayName}. Laat me weten wat je nodig hebt.`,
+    ],
+    night: [
+      `${displayName}, het is laat. Ik bewaak je rust.`,
+      `Slaap lekker, ${displayName}. Ik blijf waken.`,
+    ],
+  };
+  const pool = GREETINGS[partOfDay];
+  const dayIdx = Math.floor(Date.now() / (1000 * 60 * 60 * 6)) % pool.length; // wisselt elke 6 uur
+  const greeting = pool[dayIdx];
 
   const sorted = [...widgets].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
   const visible = nowMode ? (urgentTypes ? sorted.filter((w) => urgentTypes.has(w.widget_type)) : []) : sorted;
@@ -171,7 +210,7 @@ export default function Home() {
         <header className="px-5 lg:px-10 pt-8 lg:pt-8 pb-6 lg:pb-4 flex items-end justify-between gap-4 lg:shrink-0">
           <div>
             <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/70 mb-3 font-semibold">{new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}</p>
-            <h1 className="text-[40px] sm:text-5xl lg:text-6xl font-display font-semibold tracking-[-0.02em] leading-[1.0] text-foreground text-balance">{greeting}.</h1>
+            <h1 className="text-[28px] sm:text-3xl lg:text-4xl font-display font-semibold tracking-[-0.02em] leading-[1.1] text-foreground text-balance">{greeting}.</h1>
           </div>
         </header>
 
@@ -183,7 +222,7 @@ export default function Home() {
               ))}
             </div>
           ) : visible.length > 0 ? (
-            <MasonryGrid key={activeBoard + resetKey} className="max-w-[1280px] xl:max-w-[1500px]" gap={16} spans={cells.map((c) => c.span)} scale={0.9}>
+            <MasonryGrid key={activeBoard + resetKey} className="max-w-[1280px] xl:max-w-[1500px]" gap={24} spans={cells.map((c) => c.span)} scale={0.9}>
               {cells.map((c) => c.node)}
             </MasonryGrid>
           ) : (

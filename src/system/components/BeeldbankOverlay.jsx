@@ -16,7 +16,7 @@ export default function BeeldbankOverlay() {
     <>
       {/* Modus-balk */}
       {mode && !picker.open && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[60] glass-2 rounded-full pl-5 pr-2 py-2 flex items-center gap-3 shadow-lg">
+        <div data-no-capture className="fixed top-16 left-1/2 -translate-x-1/2 z-[60] glass-2 rounded-full pl-5 pr-2 py-2 flex items-center gap-3 shadow-lg">
           <Camera className="h-4 w-4 text-ivory" />
           <span className="text-xs text-ivory font-medium hidden sm:inline">Beeldbank modus — klik een foto om hem te wisselen</span>
           <span className="text-xs text-ivory font-medium sm:hidden">Klik een foto</span>
@@ -31,7 +31,7 @@ export default function BeeldbankOverlay() {
 
       {/* Kiezer */}
       {picker.open && (
-        <div className="fixed inset-0 z-[70] bg-charcoal/75 backdrop-blur-xl flex flex-col animate-fade-in">
+        <div data-no-capture className="fixed inset-0 z-[70] bg-charcoal/75 backdrop-blur-xl flex flex-col animate-fade-in">
           <div className="flex items-center justify-between px-6 py-4 border-b border-ivory/10">
             <div className="flex items-center gap-3 min-w-0">
               <span className="text-ivory font-display font-semibold shrink-0">Wissel foto</span>

@@ -75,6 +75,7 @@ const GROUPS = [
       { label: "Integraties", route: "/integrations" },
       { label: "Instellingen", route: "/settings" },
       { label: "Profiel", route: "/profile" },
+      { label: "Alle Widgets", route: "/widget-gallery" },
       { label: "Experiment", route: "/experiment" },
     ],
   },

@@ -1,9 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
+import { onRefresh } from "@/lib/refreshBus";
 
 /**
  * useEntityList — fetch real entity records (user-scoped via RLS).
  * `reload()` re-fetches after create/update/delete.
+ * Reageert ook op de globale Update-knop (refreshBus).
  */
 export function useEntityList(name, { filter, sort, limit, realtime = true, externalTick } = {}) {
   const [data, setData] = useState([]);
@@ -12,6 +14,9 @@ export function useEntityList(name, { filter, sort, limit, realtime = true, exte
   const key = JSON.stringify(filter || {});
 
   const reload = useCallback(() => setTick((t) => t + 1), []);
+
+  // Update-knop → alle entity-lists wereldwijd verversen
+  useEffect(() => onRefresh(() => setTick((t) => t + 1)), []);
 
   useEffect(() => {
     let active = true;

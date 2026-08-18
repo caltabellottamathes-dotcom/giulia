@@ -9,6 +9,9 @@ import { base44 } from "@/api/base44Client";
  */
 export async function getUrgentTypes() {
   const urgent = new Set();
+  // Giulia wants to know staat altijd op NOW — Giulia's nieuwsgierigheid
+  // verdient permanente aandacht, niet alleen als er iets "dringend" is.
+  urgent.add("giuliaquestions");
   await Promise.all([
     // Comm — alleen als er werkelijk iets ongelezen ligt
     base44.entities.Email.filter({ status: "unread", folder: "inbox", deleted: { $ne: true } })

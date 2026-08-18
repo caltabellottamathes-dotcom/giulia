@@ -64,6 +64,7 @@ import PersonalDevelopmentPage from '@/self/pages/PersonalDevelopmentPage';
 import PersonalTimePage from '@/self/pages/PersonalTimePage';
 import SelfInsightsPage from '@/self/pages/SelfInsightsPage';
 import Beeldbank from '@/system/pages/Beeldbank';
+import WidgetGalleryAll from '@/system/pages/WidgetGalleryAll';
 // GlassAgenda scoped pages
 import GlassLayout from '@/glass/components/GlassLayout';
 import GlassHome from '@/glass/pages/Home';
@@ -188,6 +189,7 @@ const AuthenticatedApp = () => {
           <Route path="/self/personal-time" element={<PersonalTimePage />} />
           <Route path="/self/insights" element={<SelfInsightsPage />} />
           <Route path="/beeldbank" element={<Beeldbank />} />
+          <Route path="/widget-gallery" element={<WidgetGalleryAll />} />
           {/* GlassAgenda — scoped suite */}
           <Route element={<GlassLayout />}>
             <Route path="/glass" element={<GlassHome />} />

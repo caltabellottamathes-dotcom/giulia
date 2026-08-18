@@ -66,7 +66,29 @@ export default async function (req) {
       added++;
     }
 
-    return Response.json({ ok: true, added, updated, total: fetched.length, mode: user ? 'user' : 'service' });
+    // Haal bodies op voor de meest recente emails die nog geen body hebben.
+    // Alleen de laatste 15 — niet de hele inbox (dat duurt te lang).
+    const recent = await ent.Email.filter({ deleted: { $ne: true } }, "-timestamp", 15).catch(() => []);
+    const needBody = recent.filter((e) => (!e.body || e.body.length < 20) && e.gmail_message_id);
+    let bodies = 0;
+    for (const e of needBody) {
+      try {
+        const br = await fetch(base + '/email-body', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (secrets.get('BRIDGE_TOKEN') || '') },
+          body: JSON.stringify({ uid: String(e.gmail_message_id) }),
+        });
+        if (!br.ok) continue;
+        const bd = await br.json();
+        const text = bd.text || bd.html || '';
+        if (text && text.length > 10) {
+          await ent.Email.update(e.id, { body: text }).catch(() => null);
+          bodies++;
+        }
+      } catch { /* skip */ }
+    }
+
+    return Response.json({ ok: true, added, updated, bodies, total: fetched.length, mode: user ? 'user' : 'service' });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
