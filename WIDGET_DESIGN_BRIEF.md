@@ -53,9 +53,9 @@
 ## Design principles to keep applying (from the glanceable-graphic-widgets skill)
 
 - One widget = one primary question, answered by the single largest graphic
-  element (a number, ring, bar-stack, timeline — never a stock icon).
+  element (a number, ring, bar-stack, timeline ).
 - Every widget keeps the manual color-toggle control (transparent / palette).
-- Exactly one purposeful animation idea per widget, not decorative noise.
+- Exact purposeful animation idea per widget.
 - The whole card is tappable; when there's a call to action it's a real pill
   button, sculpted and tactile — not a text link.
 
