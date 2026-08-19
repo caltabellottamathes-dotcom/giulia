@@ -17,34 +17,37 @@ export default function Login() {
   const returnTo = safeReturnTo();
   const { isAuthenticated, authChecked } = useAuth();
 
-  const desktopVidRef = useRef(null);
-  const mobileVidRef = useRef(null);
+  const videoRef = useRef(null);
+  const [isDesktop, setIsDesktop] = useState(() => typeof window !== "undefined" && window.innerWidth >= 1024);
 
   useEffect(() => {
     if (authChecked && isAuthenticated) window.location.href = returnTo;
   }, [authChecked, isAuthenticated, returnTo]);
 
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 1024px)");
+    const onChange = () => setIsDesktop(mql.matches);
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+
   // Forceer onmiddellijke, unmuted autoplay — browsers blokkeren dit vaak,
   // dus blijven we het proberen tot het lukt.
   useEffect(() => {
-    const forcePlay = (vid) => {
-      if (!vid) return;
-      vid.muted = false;
-      vid.volume = 1;
-      const p = vid.play();
-      if (p && typeof p.catch === "function") {
-        p.catch(() => {
-          // Eerste poging faalt (vaak autoplay-beleid) — probeer unmuted opnieuw
-          const retry = () => { vid.muted = false; vid.play().catch(() => {}); };
-          retry();
-          setTimeout(retry, 200);
-          setTimeout(retry, 800);
-        });
-      }
-    };
-    forcePlay(desktopVidRef.current);
-    forcePlay(mobileVidRef.current);
-  }, []);
+    const vid = videoRef.current;
+    if (!vid) return;
+    vid.muted = false;
+    vid.volume = 1;
+    const p = vid.play();
+    if (p && typeof p.catch === "function") {
+      p.catch(() => {
+        const retry = () => { vid.muted = false; vid.play().catch(() => {}); };
+        retry();
+        setTimeout(retry, 200);
+        setTimeout(retry, 800);
+      });
+    }
+  }, [isDesktop]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -63,25 +66,17 @@ export default function Login() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-charcoal">
-      {/* Backdrop — Giulia opening video, full color. Desktop video op desktop, mobile video op mobile. */}
+      {/* Backdrop — Giulia opening video, full color. Eén video per viewport. */}
       <div className="absolute inset-0">
         <video
-          ref={desktopVidRef}
-          src={LOGIN_VIDEO_DESKTOP}
+          key={isDesktop ? "desktop" : "mobile"}
+          ref={videoRef}
+          src={isDesktop ? LOGIN_VIDEO_DESKTOP : LOGIN_VIDEO_MOBILE}
           autoPlay
           loop
           playsInline
           preload="auto"
-          className="hidden lg:block h-full w-full object-cover"
-        />
-        <video
-          ref={mobileVidRef}
-          src={LOGIN_VIDEO_MOBILE}
-          autoPlay
-          loop
-          playsInline
-          preload="auto"
-          className="block lg:hidden h-full w-full object-cover"
+          className="h-full w-full object-cover"
         />
       </div>
 
