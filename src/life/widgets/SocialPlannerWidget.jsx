@@ -8,8 +8,8 @@ import { useLearningSync } from "@/hooks/useLearningSync";
 import { IMAGES } from "@/lib/images";
 
 const DOW = ["MA", "DI", "WO", "DO", "VR", "ZA", "ZO"];
-const SAND = "hsl(var(--life-sand))";
-const BLUE = "hsl(var(--life-blue))";
+const SAND = "hsl(var(--d-life-light))";
+const BLUE = "hsl(var(--d-life-deep))";
 
 const startOfWeek = () => {
   const d = new Date();

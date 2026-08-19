@@ -16,7 +16,7 @@ export default function PersonalAdminWidget() {
   const { data: obs } = useEntityList("AdminObligation", { realtime: true, externalTick: learnTick });
   const w = useMemo(() => adminWeather(obs || []), [obs]);
   const events = useMemo(() => radarEvents(obs || []), [obs]);
-  const accent = w.counts.overdue > 0 ? "hsl(var(--urgent))" : w.counts.coming > 0 ? "hsl(var(--life-sand))" : "hsl(var(--life-blue))";
+  const accent = w.counts.overdue > 0 ? "hsl(var(--d-life-urgent))" : w.counts.coming > 0 ? "hsl(var(--d-life-light))" : "hsl(var(--d-life-deep))";
 
   return (
     <WidgetShell size="1x2" radius="large" interactive onClick={() => openModule("personaladmin")} className="min-h-[340px]" style={{ "--tile-accent": accent }}>
@@ -37,8 +37,8 @@ export default function PersonalAdminWidget() {
           </div>
           <div className="grid grid-cols-3 gap-2 pt-3 border-t border-white/10">
             <Stat n={w.counts.coming} l="aandacht" c={accentFor(w.counts.overdue > 0 ? "urgent" : w.counts.coming > 0 ? "soon" : "later")} />
-            <Stat n={`€${Math.round(w.counts.money)}`} l="op komst" c="hsl(var(--life-blue))" />
-            <Stat n={w.counts.overdue} l="te laat" c={w.counts.overdue > 0 ? "hsl(var(--urgent))" : "hsl(var(--life-blue))"} />
+            <Stat n={`€${Math.round(w.counts.money)}`} l="op komst" c="hsl(var(--d-life-deep))" />
+            <Stat n={w.counts.overdue} l="te laat" c={w.counts.overdue > 0 ? "hsl(var(--d-life-urgent))" : "hsl(var(--d-life-deep))"} />
           </div>
         </div>
       </div>

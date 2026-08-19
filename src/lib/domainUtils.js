@@ -6,9 +6,9 @@
 export const DOMAINS = ["focus", "life", "self"];
 
 export const DOMAIN_HEX = {
-  focus: "hsl(var(--olive))",
-  life: "hsl(var(--life-blue))",
-  self: "hsl(var(--self-primary-soft))",
+  focus: "hsl(var(--d-focus-deep))",
+  life: "hsl(var(--d-life-deep))",
+  self: "hsl(var(--d-life-deep))",
 };
 
 export const DOMAIN_LABEL = { focus: "FOCUS", life: "LIFE", self: "SELF" };
@@ -75,8 +75,8 @@ export function domainBalance({ tasks = [], events = [], projects = [] } = {}) {
   };
 }
 
-export const LIFE_BLUE = "hsl(var(--life-blue))";
-export const LIFE_SAND = "hsl(var(--life-sand))";
+export const LIFE_BLUE = "hsl(var(--d-life-deep))";
+export const LIFE_SAND = "hsl(var(--d-life-light))";
 
 // Close circle — the relationships that actually matter to Salvo. Everything
 // else is noise in the Social Pulse "what matters now" view.

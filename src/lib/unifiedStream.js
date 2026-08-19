@@ -8,10 +8,10 @@ import { base44 } from "@/api/base44Client";
  */
 
 export const DOMAIN_META = {
-  focus: { label: "Focus", color: "hsl(var(--olive))", route: "/tasks" },
-  life: { label: "Life", color: "hsl(var(--life-blue-deep))", route: "/life" },
-  self: { label: "Self", color: "hsl(var(--self-accent-deep))", route: "/self" },
-  giulia: { label: "Giulia", color: "hsl(var(--giulia-coral))", route: "/chat" },
+  focus: { label: "Focus", color: "hsl(var(--d-focus-deep))", route: "/tasks" },
+  life: { label: "Life", color: "hsl(var(--d-life-deep))", route: "/life" },
+  self: { label: "Self", color: "hsl(var(--d-life-deep))", route: "/self" },
+  giulia: { label: "Giulia", color: "hsl(var(--d-giulia-deep))", route: "/chat" },
 };
 
 const todayStr = () => new Date().toLocaleDateString("sv-SE");

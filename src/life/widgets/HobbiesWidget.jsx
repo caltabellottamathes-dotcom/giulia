@@ -6,8 +6,8 @@ import { useLearningSync } from "@/hooks/useLearningSync";
 import { IMAGES } from "@/lib/images";
 import { hobbyGroups, hobbyHeadline, fieldSize, hobbyState, stateColor } from "@/lib/hobbyUtils";
 
-const BLUE = "hsl(var(--life-blue-deep))";
-const SAND = "hsl(var(--life-sand-deep))";
+const BLUE = "hsl(var(--d-life-deep))";
+const SAND = "hsl(var(--d-life-light))";
 
 /** Hobbies widget — editorial veldkaart. Hobby's verschijnen als levende
  *  objecten; grootte = recente activiteit. Actief = life-blue, nieuw = sand,

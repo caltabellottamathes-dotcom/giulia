@@ -81,7 +81,7 @@ export default function LifeLanding() {
                   <h3 className="font-display font-semibold text-foreground">{m.label}</h3>
                   <p className="text-xs text-muted-foreground mt-0.5">{m.desc}</p>
                 </div>
-                <ArrowUpRight className="h-5 w-5 text-life-blue" />
+                <ArrowUpRight className="h-5 w-5 text-d-life-deep" />
               </div>
             </GlassPanel>
           </Link>

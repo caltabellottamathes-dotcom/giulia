@@ -187,7 +187,7 @@ export default function Tasks() {
                 onClick={() => toggleComplete(task)}
                 className={cn(
                   "h-5 w-5 rounded-md border-2 shrink-0 transition-all flex items-center justify-center",
-                  task.status === "completed" ? "bg-olive border-olive" : "border-border/80 hover:border-olive"
+                  task.status === "completed" ? "bg-d-focus-deep border-d-focus-deep" : "border-border/80 hover:border-d-focus-deep"
                 )}
               >
                 {task.status === "completed" && <CheckSquare className="h-3 w-3 text-white" />}
@@ -212,7 +212,7 @@ export default function Tasks() {
                 {task.status === "delegated" && (
                   <StatusBadge variant="draft"><Sparkles className="h-2.5 w-2.5" /> Giulia</StatusBadge>
                 )}
-                <button onClick={() => setStatus(task, "completed")} title="Gedaan" className="h-7 w-7 rounded-lg glass-1 flex items-center justify-center text-muted-foreground hover:text-olive opacity-0 group-hover:opacity-100 transition"><CheckCheck className="h-3.5 w-3.5" /></button>
+                <button onClick={() => setStatus(task, "completed")} title="Gedaan" className="h-7 w-7 rounded-lg glass-1 flex items-center justify-center text-muted-foreground hover:text-d-focus-deep opacity-0 group-hover:opacity-100 transition"><CheckCheck className="h-3.5 w-3.5" /></button>
                 <button onClick={() => setStatus(task, "waiting")} title="Wachten" className="h-7 w-7 rounded-lg glass-1 flex items-center justify-center text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition"><Hourglass className="h-3.5 w-3.5" /></button>
                 <button onClick={() => setStatus(task, "delegated", { delegated_to_giulia: true })} title="Voor Giulia" className="h-7 w-7 rounded-lg glass-1 flex items-center justify-center text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition"><Bot className="h-3.5 w-3.5" /></button>
                 <button onClick={() => startEdit(task)} className="h-7 w-7 rounded-lg glass-1 flex items-center justify-center text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition" aria-label="Bewerk"><Pencil className="h-3.5 w-3.5" /></button>
@@ -240,7 +240,7 @@ export default function Tasks() {
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && createTask()}
-            className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-olive/30"
+            className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-d-focus-deep/30"
             placeholder="Wat staat er te doen?"
           />
         </div>

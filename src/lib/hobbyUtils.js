@@ -68,13 +68,13 @@ export function fieldSize(h) {
 
 export function stateColor(state) {
   switch (state) {
-    case "active": return "hsl(var(--life-blue-deep))";
+    case "active": return "hsl(var(--d-life-deep))";
     case "reactivating":
-    case "emerging": return "hsl(var(--life-sand-deep))";
-    case "new": return "hsl(var(--life-sand))";
+    case "emerging": return "hsl(var(--d-life-light))";
+    case "new": return "hsl(var(--d-life-mid))";
     case "quiet": return "hsl(var(--muted-foreground))";
     case "archived": return "hsl(var(--smoke))";
-    default: return "hsl(var(--life-blue))";
+    default: return "hsl(var(--d-life-deep))";
   }
 }
 

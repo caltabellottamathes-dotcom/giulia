@@ -59,7 +59,7 @@ export const friction = (obs = []) => {
 export const nextThing = (obs = []) => comingUp(obs)[0] || null;
 export const openLoops = (obs = []) => obs.filter((o) => o.status === "open");
 
-export const accentFor = (status) => (status === "urgent" ? "hsl(var(--urgent))" : status === "soon" ? "hsl(var(--life-sand))" : "hsl(var(--life-blue))");
+export const accentFor = (status) => (status === "urgent" ? "hsl(var(--d-life-urgent))" : status === "soon" ? "hsl(var(--d-life-light))" : "hsl(var(--d-life-deep))");
 
 // Weather map — komende 6 weken, dichtheid per datum met een zaak.
 export const weatherMap = (obs = []) => {
