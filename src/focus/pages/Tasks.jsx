@@ -26,7 +26,7 @@ const dateStr = (offset = 0) => {
   return d.toISOString().split("T")[0];
 };
 function bucketFor(task) {
-  if (task.status === "completed") return "gedaan";
+  if (["completed", "klaar", "done", "archived"].includes(task.status)) return "gedaan";
   if (task.status === "waiting") return "wachten";
   if (task.status === "delegated") return "giulia";
   if (task.status === "overdue") return "overdue";
@@ -54,8 +54,15 @@ export default function Tasks() {
 
   const projTitle = (id) => projects.find((p) => p.id === id)?.title;
   // Project-onderdelen die nog niet ingepland zijn (status "unscheduled") zijn geen
-  // taken — ze blijven in het project tot ze ingepland worden.
-  const realTasks = tasks.filter((t) => t.status !== "unscheduled");
+  // taken — ze blijven in het project tot ze ingepland worden. Project-taken met een
+  // project-only status (klaar, gepland, actief, …) verschijnen eveneens niet in de
+  // takenlijst; alleen expliciet ingeplande taken (today/upcoming/…) zijn echte taken.
+  const TASK_LIST_STATUSES = ["today", "upcoming", "overdue", "waiting", "delegated", "completed", "todo", "in_progress"];
+  const realTasks = tasks.filter((t) => {
+    if (t.status === "unscheduled" || t.status === "archived") return false;
+    if (t.project_id && !TASK_LIST_STATUSES.includes(t.status)) return false;
+    return true;
+  });
   const filtered = realTasks.filter((t) => bucketFor(t) === category);
 
   // Deep-link — chat-notificaties kunnen naar /tasks?open=<id> linken.

@@ -11,13 +11,16 @@ import { emitEvent } from "./eventEngine.ts";
 export const GIULIA_SKILLS = [
   {
     name: "create_task",
-    description: "Maak een nieuwe taak aan. Gebruik dit ALLEEN als Salvo expliciet om een nieuwe actie vraagt. Verzin GEEN taken om projecten 'op te vullen'. Er wordt automatisch op duplicaten gecontroleerd (≥85% titel-gelijkenis) — bij een duplicaat wordt de bestaande taak teruggegeven in plaats van een nieuwe aan te maken.",
+    description: "Maak een nieuwe taak aan. Gebruik dit ALLEEN als Salvo expliciet om een nieuwe actie vraagt. Verzin GEEN taken om projecten 'op te vullen'. Er wordt automatisch op duplicaten gecontroleerd (exacte titel + ≥85% gelijkenis) — bij een duplicaat wordt de bestaande taak teruggegeven in plaats van een nieuwe aan te maken. OOK AL GEDAANE taken (completed/klaar/done) worden meegenomen in de check, zodat eenzelfde taak nooit opnieuw wordt aangemaakt. Controleer dus altijd eerst of de taak al bestaat of al gedaan is.",
     inputSchema: { type: "object", properties: { title: { type: "string" }, priority: { type: "string" }, deadline: { type: "string", description: "YYYY-MM-DD" }, project_id: { type: "string" }, description: { type: "string" }, assignee: { type: "string", enum: ["salvo", "giulia"] }, domain: { type: "string", enum: ["focus", "life", "self"], description: "FOCUS=werk/zakelijk, LIFE=relaties/sociaal/huishouden/admin/hobby, SELF=rust/zelfzorg/reflectie. Tag automatisch op basis van inhoud." }, category: { type: "string", description: "Sub-categorie voor LIFE, bv. household" } }, required: ["title"] },
     execute: async (args, base44) => {
       const sr = base44.asServiceRole;
-      const existing = await sr.entities.Task.filter({ status: { $ne: "archived" } }, "-created_date", 300).catch(() => []);
+      const existing = await sr.entities.Task.filter({ status: { $ne: "archived" } }, "-created_date", 500).catch(() => []);
       const dup = findDuplicate(existing, args.title);
-      if (dup) return { id: dup.id, title: dup.title, duplicate: true };
+      if (dup) {
+        const isDone = ["completed", "klaar", "done"].includes(dup.status);
+        return { id: dup.id, title: dup.title, duplicate: true, already_done: isDone, status: dup.status };
+      }
       const t = await createTaskWithApproval(base44, { ...args, source: "GIULIA-CORE", delegated_to_giulia: args.assignee === "giulia" });
       return t ? { id: t.id, title: t.title } : { error: "create failed" };
     }

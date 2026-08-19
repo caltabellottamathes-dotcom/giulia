@@ -146,8 +146,12 @@ export function titleSimilarity(a, b) {
  * duplicaat. Gebruikt door create_task/create_project/create_contact.
  */
 export function findDuplicate(existingList, title, field = "title") {
+  const norm = (s) => String(s || "").toLowerCase().trim();
+  const nt = norm(title);
+  if (!nt) return null;
   let best = null, bestScore = 0;
   for (const item of existingList) {
+    if (norm(item[field]) === nt) return item; // exacte match → altijd duplicaat
     const score = titleSimilarity(item[field], title);
     if (score > bestScore) { bestScore = score; best = item; }
   }
