@@ -1,109 +1,139 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Link } from "react-router-dom";
-import WidgetShell from "../../system/widgets/WidgetShell";
+import { motion, AnimatePresence } from "framer-motion";
+import WidgetShell from "@/system/widgets/WidgetShell";
 import { usePanel } from "@/lib/PanelContext";
 import { base44 } from "@/api/base44Client";
-import { IMAGES } from "@/lib/images";
 import { fetchUnifiedAttention, DOMAIN_META } from "@/lib/unifiedStream";
+import { Plus } from "lucide-react";
+import DagplanningCard from "./jedag/DagplanningCard";
+import UrgentCard from "./jedag/UrgentCard";
+import VoortgangCard from "./jedag/VoortgangCard";
 
-const greetingWord = () => {
-  const h = new Date().getHours();
-  return h < 12 ? "Goedemorgen" : h < 18 ? "Goedemiddag" : "Goedenavond";
+const EASE = [0.22, 1, 0.36, 1];
+
+const dayBounds = () => {
+  const s = new Date(); s.setHours(0, 0, 0, 0);
+  const e = new Date(); e.setHours(23, 59, 59, 999);
+  return [s.toISOString(), e.toISOString()];
 };
 
 /**
- * GiuliaWidget — "Je dag · alles". Versmolten ochtendbriefing: de drie dingen
- * die er vandaag toe doen, getrokken uit Focus (plan/overdue), Life (sociale
- * afspraken/huishouden) én Self (routines/behoeften). Elk item draagt zijn domein.
+ * GiuliaWidget — "Giulia · je dag". Drie uitklapbare glas-kaarten die samen
+ * één vraag beantwoorden: Waar ben ik? Wat vraagt aandacht? Hoe gaat mijn dag?
+ *
+ *  1. Dagplanning — visuele tijdlijn met afspraken + bewegende nu-indicator
+ *  2. Urgent — groot aantal + lijst van meest tijdsgevoelige items
+ *  3. Voortgang — groot percentage + geanimeerde voortgangsbalk
+ *
+ * Eén sectie tegelijk open; Framer Motion regelt hoogte, opacity en progress.
  */
 export default function GiuliaWidget() {
   const { openModule } = usePanel();
-  const [priorities, setPriorities] = useState([]);
-  const [summary, setSummary] = useState("");
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(0); // 0=Dagplanning, 1=Urgent, 2=Voortgang, -1=alle dicht
 
   const load = useCallback(async () => {
-    const now = new Date();
-    const today = now.toLocaleDateString("sv-SE");
-    const [plans, tasks, att] = await Promise.all([
-      base44.entities.DailyPlan.filter({ date: today }).catch(() => []),
+    const [start, end] = dayBounds();
+    const [events, tasks, att] = await Promise.all([
+      base44.entities.CalendarEvent.filter({ start: { $gte: start, $lt: end } }).catch(() => []),
       base44.entities.Task.list().catch(() => []),
       fetchUnifiedAttention(),
     ]);
-    const p = plans[0];
-    const focusItems = Array.isArray(p?.plan_data?.focus_items) ? p.plan_data.focus_items : [];
-    const prio = [];
+    const todayEvents = (events || []).filter((e) => e.start).sort((a, b) => new Date(a.start) - new Date(b.start));
+    const allTasks = tasks || [];
+    const completed = allTasks.filter((t) => t.status === "completed");
+    const active = allTasks.filter((t) => t.status !== "completed" && t.status !== "archived");
 
-    // FOCUS: plan-prioriteiten of overdue taken
-    if (focusItems.length) {
-      focusItems.slice(0, 2).forEach((f) => prio.push({ label: f?.title || "Taak", to: "/tasks", domain: "focus" }));
-    } else {
-      const overdue = (tasks || []).filter((t) => t.status === "overdue").sort((a, b) => new Date(a.deadline || 0) - new Date(b.deadline || 0));
-      overdue.slice(0, 1).forEach((t) => prio.push({ label: `Afronden — ${t.title}`, to: t.project_id ? `/projects/${t.project_id}` : "/tasks", domain: "focus" }));
-    }
+    // Urgent items — versmolten over alle domeinen
+    const urgent = [];
+    (att.approvals || []).slice(0, 2).forEach((a) => urgent.push({ label: `Goedkeuring — ${a.title || a.description || "open"}`, domain: "giulia", to: "/approvals" }));
+    active.filter((t) => t.status === "overdue").slice(0, 3).forEach((t) => urgent.push({ label: t.title, domain: "focus", to: t.project_id ? `/projects/${t.project_id}` : "/tasks" }));
+    (att.unreadEmails || []).filter((e) => e.important).slice(0, 2).forEach((e) => urgent.push({ label: e.subject || "Email", domain: "focus", to: "/email" }));
+    (att.unreadWhatsapps || []).slice(0, 2).forEach((w) => urgent.push({ label: `WhatsApp — ${w.sender_name || "bericht"}`, domain: "focus", to: "/whatsapp" }));
+    (att.lifeItemsDue || []).slice(0, 2).forEach((h) => urgent.push({ label: h.title || h.name || "Huishouden", domain: "life", to: "/life/household" }));
+    (att.selfNeeds || []).filter((n) => n.priority === "high").slice(0, 1).forEach((n) => urgent.push({ label: n.title, domain: "self", to: "/self/daily-state" }));
 
-    // LIFE: sociale afspraken vandaag + huishouden dat aandacht vraagt
-    (att.eventsByDomain.life || []).slice(0, 1).forEach((e) => prio.push({ label: `${e.title}${e.participants ? ` · ${e.participants}` : ""}`, to: "/life/social-planner", domain: "life" }));
-    att.lifeItemsDue.slice(0, 1).forEach((h) => prio.push({ label: h.title, to: "/life/household", domain: "life" }));
+    // Progress
+    const totalTasks = allTasks.length;
+    const doneTasks = completed.length;
+    const progressPct = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
 
-    // SELF: routines die vandaag klaarstaan + dringende behoeften
-    att.routinesDueToday.slice(0, 1).forEach((r) => prio.push({ label: r.title, to: "/self/routines", domain: "self" }));
-    att.selfNeeds.filter((n) => n.priority === "high").slice(0, 1).forEach((n) => prio.push({ label: n.title, to: "/self/daily-state", domain: "self" }));
-
-    // FOCUS fallback: werk-afspraken vandaag
-    (att.eventsByDomain.focus || []).slice(0, 1).forEach((e) => prio.push({ label: e.title, to: "/agenda", domain: "focus" }));
-
-    setPriorities(prio.slice(0, 3));
-    setSummary(prio.length ? "Versmolten over Focus, Life en Self — wat er nu telt." : "Een rustige dag — niets dringends.");
+    setData({ events: todayEvents, urgent, progressPct, doneTasks, totalTasks, routines: att.routinesDueToday || [] });
     setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { const i = setInterval(load, 5 * 60000); return () => clearInterval(i); }, [load]);
 
+  const sections = [
+    { id: "dagplanning", label: "Dagplanning" },
+    { id: "urgent", label: "Urgent" },
+    { id: "voortgang", label: "Voortgang" },
+  ];
+
+  const dateStr = new Date().toLocaleDateString("nl-NL", { weekday: "short", day: "numeric", month: "short" });
+
   return (
-    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("jedag")} className="min-h-[320px]">
-      <div className="flex flex-row h-full">
-        <div className="relative w-[34%] shrink-0 overflow-hidden rounded-r-[24px]">
-          <img src={IMAGES.portraitBootFace} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 via-transparent to-transparent" />
-          <div className="absolute left-3 bottom-3">
-            <p className="text-[9px] uppercase tracking-[0.3em] font-semibold text-ivory/75">Giulia · alles</p>
-            <p className="text-[11px] text-ivory/60">je dag</p>
+    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("jedag")} className="min-h-[340px] p-3.5">
+      <div className="flex flex-col gap-2.5 h-full">
+        {/* Header — clicking opens the full "Je Dag" panel */}
+        <div className="flex items-center justify-between px-1 shrink-0">
+          <div>
+            <p className="text-[9px] uppercase tracking-[0.3em] font-bold text-current/55">Giulia · je dag</p>
+            <p className="text-[13px] font-display font-medium text-current/85 mt-0.5 capitalize">{dateStr}</p>
           </div>
+          <div className="h-2 w-2 rounded-full bg-olive animate-pulse-soft shrink-0" />
         </div>
 
-        <div className="flex-1 p-5 flex flex-col text-current min-h-0">
+        {/* Accordion — stopPropagation so toggles don't open the panel */}
+        <div className="flex flex-col gap-2 flex-1" onClick={(e) => e.stopPropagation()}>
           {loading ? (
-            <div className="flex-1 flex items-center justify-center"><div className="h-7 w-7 border-2 border-current/20 border-t-current rounded-full animate-spin" /></div>
+            <div className="flex-1 flex items-center justify-center py-8">
+              <div className="h-6 w-6 border-2 border-current/20 border-t-current rounded-full animate-spin" />
+            </div>
           ) : (
-            <>
-              <div className="text-left">
-                <p className="text-[10px] uppercase tracking-[0.26em] font-semibold text-current/60">Giulia · je dag</p>
-                <h3 className="text-lg font-display font-semibold text-current leading-tight mt-0.5">{greetingWord()}.</h3>
-                <p className="text-[11px] text-current/65 mt-1 text-balance line-clamp-2">{summary}</p>
-              </div>
+            sections.map((s, i) => {
+              const isOpen = open === i;
+              return (
+                <div
+                  key={s.id}
+                  className={"rounded-[20px] border overflow-hidden transition-colors duration-500 " + (isOpen ? "glass-1 border-white/20" : "border-white/10 bg-current/[0.04]")}
+                >
+                  <button
+                    onClick={() => setOpen(isOpen ? -1 : i)}
+                    className="flex items-center justify-between w-full px-3.5 py-2.5 text-left"
+                  >
+                    <span className={"text-[12px] font-display font-medium transition-colors " + (isOpen ? "text-current" : "text-current/70")}>{s.label}</span>
+                    <motion.span
+                      animate={{ rotate: isOpen ? 135 : 0 }}
+                      transition={{ duration: 0.4, ease: EASE }}
+                      className="shrink-0"
+                    >
+                      <Plus className={"h-4 w-4 transition-colors " + (isOpen ? "text-current" : "text-current/40")} />
+                    </motion.span>
+                  </button>
 
-              <ol className="mt-3.5 space-y-2 flex-1">
-                {priorities.map((p, i) => {
-                  const meta = DOMAIN_META[p.domain] || DOMAIN_META.giulia;
-                  return (
-                    <li key={i} className="animate-fade-up" style={{ animationDelay: `${0.1 + i * 0.08}s` }}>
-                      <Link to={p.to} onClick={(e) => e.stopPropagation()} className="flex items-stretch gap-3 glass-1 rounded-xl px-3 py-2 hover:bg-white/5 transition text-left">
-                        <span className="text-[24px] leading-none font-display font-bold tabular-nums w-7 shrink-0" style={{ color: meta.color }}>{String(i + 1).padStart(2, "0")}</span>
-                        <div className="flex-1 min-w-0">
-                          <span className="text-[9px] uppercase tracking-wider font-bold" style={{ color: meta.color }}>{meta.label}</span>
-                          <p className="text-[12px] leading-snug text-current/90">{p.label}</p>
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.5, ease: EASE }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-3.5 pb-3.5">
+                          {i === 0 && <DagplanningCard events={data.events} />}
+                          {i === 1 && <UrgentCard items={data.urgent} />}
+                          {i === 2 && <VoortgangCard pct={data.progressPct} done={data.doneTasks} total={data.totalTasks} routines={data.routines} />}
                         </div>
-                      </Link>
-                    </li>
-                  );
-                })}
-                {priorities.length === 0 && (
-                  <li className="text-[12px] text-current/55 glass-1 rounded-xl px-3 py-3">Een rustige dag — niets dringends.</li>
-                )}
-              </ol>
-            </>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })
           )}
         </div>
       </div>
