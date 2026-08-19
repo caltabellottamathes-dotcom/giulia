@@ -26,7 +26,7 @@ const BOARD_BG = {
   now: IMAGES.dashboardNow,
   life: IMAGES.dashboardLife,
   self: IMAGES.dashboardSelf,
-  giulia: IMAGES.feetChair,
+  giulia: IMAGES.dashboardGiulia,
   focus: IMAGES.feetChair,
   system: IMAGES.feetChair,
 };

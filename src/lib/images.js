@@ -111,10 +111,12 @@ export const IMAGES = {
   dashboardNow: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/eae31a7d1_NOW.jpeg",
   dashboardLife: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/507183e0f_LIFE.jpeg",
   dashboardSelf: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/e2ccca3a3_SELF.jpeg",
+  dashboardGiulia: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/402769a42_Two_people_playing_in_water_2026081919442.jpeg",
 };
 
 export const VIDEOS = {
   giuliaOpening: "https://media.base44.com/videos/public/6a7608690d4ea2c9edc3d59b/df1828cc2_Please_now_you_just_cropped_it.mp4",
+  daystart: "https://media.base44.com/videos/public/6a7608690d4ea2c9edc3d59b/d4737e173_Daystart.mp4",
 };;
 
 export const editorialImages = [

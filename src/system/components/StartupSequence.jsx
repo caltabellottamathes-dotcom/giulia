@@ -42,7 +42,7 @@ export default function StartupSequence({ onDone }) {
     <div className="fixed inset-0 z-[80] bg-black overflow-hidden">
       <video
         ref={videoRef}
-        src={VIDEOS.giuliaOpening}
+        src={VIDEOS.daystart}
         autoPlay
         playsInline
         onEnded={finish}
