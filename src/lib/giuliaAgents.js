@@ -6,9 +6,9 @@
 export const GIULIA_AGENTS = [
   { key: "interpretInput",      label: "Interpretatie",       role: "Bericht → taak/event" },
   { key: "manageCommunication", label: "Communicatie",        role: "Email & WhatsApp" },
-  { key: "manageTasks",         label: "Taken",               role: "Prioriteit & opdeling" },
-  { key: "manageProjects",      label: "Projecten",           role: "Status & voortgang" },
-  { key: "managePeople",        label: "Mensen",              role: "Contacten & relaties" },
+  { key: "manageTasks",         label: "To Do!",              role: "Prioriteit & opdeling" },
+  { key: "manageProjects",      label: "What I'm Building.",  role: "Status & voortgang" },
+  { key: "managePeople",        label: "People Around Me.",  role: "Contacten & relaties" },
   { key: "manageIdeas",         label: "Ideeën",              role: "Ideeën & notities" },
   { key: "manageFiles",         label: "Bestanden",           role: "Bestandscategorisatie" },
   { key: "dailyPlanning",       label: "Dagplanning",         role: "Dagplanning" },
