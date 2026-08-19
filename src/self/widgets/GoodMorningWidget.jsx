@@ -59,7 +59,7 @@ export default function GoodMorningWidget() {
             style={{
               width: soon ? "130%" : "55%",
               height: soon ? "130%" : "55%",
-              background: "radial-gradient(circle, rgba(210,185,140,0.30), transparent 70%)",
+              background: "radial-gradient(circle, rgba(216,218,179,0.35), transparent 70%)",
               filter: "blur(32px)",
               opacity: soon ? 1 : 0.45,
             }}

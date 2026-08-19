@@ -39,7 +39,7 @@ export default function ApprovalsWidget() {
             <>
               <p className="text-sm font-medium text-ivory line-clamp-2">{top?.description}</p>
               {top?.assignee && (
-                <span className={`mt-2 self-start text-[9px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full ${top.assignee === "giulia" ? "bg-steel/25 text-ivory/80" : "bg-olive/30 text-ivory"}`}>
+                <span className={`mt-2 self-start text-[9px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full ${top.assignee === "giulia" ? "bg-d-giulia-mid/30 text-ivory" : "bg-d-giulia-light/25 text-ivory"}`}>
                   {top.assignee === "giulia" ? "Voor Giulia" : "Voor jou"}
                 </span>
               )}

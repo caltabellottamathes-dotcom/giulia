@@ -28,7 +28,7 @@ export default function DocumentsWidget() {
   return (
     <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("documents")} className="min-h-[208px]">
       <div className="p-5 flex flex-col h-full">
-        <WidgetHeader label="Documenten" count={`${docs.length}`} />
+        <WidgetHeader label="Files to Share." count={`${docs.length}`} />
         {loading ? (
           <div className="flex-1 flex items-center justify-center"><div className="h-8 w-8 border-2 border-current/20 border-t-current rounded-full animate-spin" /></div>
         ) : docs.length > 0 ? (

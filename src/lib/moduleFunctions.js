@@ -6,7 +6,7 @@
 export const MODULE_FUNCTIONS = {
   agenda: [
     { label: "What's Happening?", to: "/agenda" },
-    { label: "Weekplanning", to: "/planning" },
+    { label: "Weekplanning", to: "/agenda" },
     { label: "Where My Time Goes.", to: "/timetracker" },
   ],
   projects: [
@@ -23,7 +23,7 @@ export const MODULE_FUNCTIONS = {
   email: [{ label: "Postvak", to: "/email" }],
   whatsapp: [{ label: "Gesprekken", to: "/whatsapp" }],
   knowledge: [{ label: "What I Know.", to: "/knowledge" }],
-  documents: [{ label: "Documents", to: "/documents" }],
+  documents: [{ label: "Files to Share.", to: "/documents" }],
   people: [{ label: "People Around Me.", to: "/people" }],
   approvals: [{ label: "Waiting on You.", to: "/approvals" }],
   activity: [{ label: "I Do Process!", to: "/activity" }],

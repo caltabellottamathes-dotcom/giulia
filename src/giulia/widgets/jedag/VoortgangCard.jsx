@@ -39,8 +39,8 @@ export default function VoortgangCard({ pct = 0, done = 0, total = 0, routines =
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 1.4, ease: EASE, delay: 0.2 }}
-          className="h-full rounded-full bg-white"
-          style={{ boxShadow: "0 0 8px rgba(255,255,255,0.4)" }}
+          className="h-full rounded-full bg-d-giulia-light"
+          style={{ boxShadow: "0 0 8px rgba(216,218,179,0.45)" }}
         />
       </div>
 

@@ -9,10 +9,10 @@ import { IMAGES } from "@/lib/images";
 import { Sparkles } from "lucide-react";
 
 const PRIORITY_ACCENT = {
-  now: "hsl(var(--urgent))",
-  soon: "hsl(var(--sand))",
-  useful: "hsl(var(--olive))",
-  curious: "hsl(var(--blue-grey))",
+  now: "hsl(var(--d-giulia-urgent))",
+  soon: "hsl(var(--d-giulia-light))",
+  useful: "hsl(var(--d-giulia-mid))",
+  curious: "hsl(var(--d-giulia-deep))",
 };
 
 /** GiuliaQuestionsWidget — Giulia's nieuwsgierigheidslaag op het dashboard. */
@@ -59,7 +59,7 @@ export default function GiuliaQuestionsWidget() {
                 <p className="text-[11px] uppercase tracking-[0.2em] text-ivory/50 mb-2">{questions.length === 1 ? "mysterie" : "mysteries"}</p>
               </div>
               <div className="mt-4 rounded-2xl bg-ivory/5 border border-ivory/10 p-3.5">
-                <span className="text-[9px] uppercase tracking-[0.24em] font-semibold" style={{ color: PRIORITY_ACCENT[top.priority] || "hsl(var(--olive))" }}>
+                <span className="text-[9px] uppercase tracking-[0.24em] font-semibold" style={{ color: PRIORITY_ACCENT[top.priority] || "hsl(var(--d-giulia-mid))" }}>
                   {top.kind.replace(/_/g, " ")} · {top.domain}
                 </span>
                 <p className="text-sm font-medium text-ivory mt-1.5 leading-snug">{top.title}</p>

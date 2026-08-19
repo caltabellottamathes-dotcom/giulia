@@ -71,7 +71,7 @@ export default function Documents() {
         page="documents"
         icon={FileText}
         eyebrow="Werk"
-        title="Documenten"
+        title="Files to Share."
         subtitle="Jouw editoriale documentbibliotheek"
         actions={<>
           <GlassButton variant="primary" size="md" onClick={() => fileRef.current?.click()} disabled={uploading}>

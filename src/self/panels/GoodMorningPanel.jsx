@@ -43,7 +43,7 @@ export default function GoodMorningPanel() {
       {/* Good Morning tabs — Wake (gemigreerd uit SELF) / Instellingen */}
       <div className="flex gap-2">
         {[["wake", "Wake"], ["instellingen", "Instellingen"]].map(([k, l]) => (
-          <button key={k} onClick={() => setTab(k)} className={"px-3.5 py-1.5 rounded-full text-xs font-bold transition " + (tab === k ? "bg-olive text-ivory" : "bg-white/8 text-ivory/55 hover:text-ivory")}>{l}</button>
+          <button key={k} onClick={() => setTab(k)} className={"px-3.5 py-1.5 rounded-full text-xs font-bold transition " + (tab === k ? "bg-d-giulia-deep text-ivory" : "bg-white/8 text-ivory/55 hover:text-ivory")}>{l}</button>
         ))}
       </div>
 
@@ -57,7 +57,7 @@ export default function GoodMorningPanel() {
         <>
       <DailyIntention />
       <div className="flex items-center gap-2 text-ivory/70">
-        <Sunrise className="h-4 w-4 text-olive shrink-0" />
+        <Sunrise className="h-4 w-4 text-d-giulia-mid shrink-0" />
         <p className="text-xs leading-snug">Giulia wakes you gradually — a calm presence, not an alarm.</p>
       </div>
       <WakeSettingsForm settings={settings} onChange={save} />
@@ -67,7 +67,7 @@ export default function GoodMorningPanel() {
       </div>
       <button
         onClick={() => navigate("/wake")}
-        className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-olive text-ivory py-3.5 text-sm font-semibold hover:bg-olive/90 transition"
+        className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-d-giulia-deep text-ivory py-3.5 text-sm font-semibold hover:bg-d-giulia-deep/90 transition"
       >
         <Moon className="h-4 w-4" /> Enter Wake Mode <ArrowRight className="h-4 w-4" />
       </button>

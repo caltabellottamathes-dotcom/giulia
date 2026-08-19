@@ -83,7 +83,7 @@ export default function GiuliaWidget() {
             <p className="text-[9px] uppercase tracking-[0.3em] font-bold text-current/55">What Matters?</p>
             <p className="text-[13px] font-display font-medium text-current/85 mt-0.5 capitalize">{dateStr}</p>
           </div>
-          <div className="h-2 w-2 rounded-full bg-giulia-coral animate-pulse-soft shrink-0" />
+          <div className="h-2 w-2 rounded-full bg-d-giulia-mid animate-pulse-soft shrink-0" />
         </div>
 
         {/* Accordion — stopPropagation so toggles don't open the panel */}
