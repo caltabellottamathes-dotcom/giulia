@@ -51,10 +51,18 @@ export default function WidgetShell({
   const blur = ctx.blur || 0;
   const resolved = ctx.theme === "solid" ? (ctx.color || "charcoal") : "glass";
   const tile = tileMap[resolved] || tileMap.glass;
-  // GIULIA glass tiles → Coral Sunset als accent (domein-bewust)
-  const isGiuliaGlass = resolved === "glass" && ctx.domain === "giulia";
-  const tileAccent = isGiuliaGlass ? "hsl(var(--giulia-coral))" : tile.accent;
-  const tileOnAccent = isGiuliaGlass ? "hsl(var(--ivory))" : tile.on;
+  // Domein-gebaseerd accent voor glas-tegels — finale domein-kleuren (deep per domein)
+  const DOMAIN_GLASS_ACCENT = {
+    giulia: "hsl(var(--d-giulia-deep))",
+    focus: "hsl(var(--d-focus-deep))",
+    life: "hsl(var(--d-life-deep))",
+    self: "hsl(var(--d-life-deep))",
+    system: "hsl(var(--d-system-deep))",
+    now: "hsl(var(--d-giulia-deep))",
+  };
+  const isGlassTile = resolved === "glass";
+  const tileAccent = isGlassTile && ctx.domain ? (DOMAIN_GLASS_ACCENT[ctx.domain] || tile.accent) : tile.accent;
+  const tileOnAccent = tile.on;
 
   const bg =
     resolved === "glass"

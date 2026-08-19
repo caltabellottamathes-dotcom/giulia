@@ -36,7 +36,6 @@ import ForgotPassword from '@/system/pages/ForgotPassword';
 import ResetPassword from '@/system/pages/ResetPassword';
 import OAuthConsent from '@/system/pages/OAuthConsent';
 import Insights from '@/giulia/pages/Insights';
-import Planning from '@/focus/pages/Planning';
 import TimeTracker from '@/focus/pages/TimeTracker';
 import Agents from '@/giulia/pages/Agents';
 import QuickCommand from '@/system/pages/QuickCommand';
@@ -138,7 +137,6 @@ const AuthenticatedApp = () => {
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/agenda" element={<Agenda />} />
-          <Route path="/planning" element={<Planning />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:id" element={<ProjectDetail />} />
           <Route path="/tasks" element={<Tasks />} />

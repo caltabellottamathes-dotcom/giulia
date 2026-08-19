@@ -1,35 +1,40 @@
-// Domain color palettes for GIULIA OS overview panels
-// FOCUS = #595f34, #94925d, #d8dab3, urgent #d5e24a
-// LIFE  = #301728, #d8dab3, urgent #d5e24a
-// GIULIA = warm terracotta #ca6637, Dust #e0ded3, Whipped Pistachio #d8dab3, urgent #d5e24a
-
+// FINALE DOMEIN-KLEUREN — per domein deep/mid/light/urgent (hex bronwaarden).
+// SYSTEM = neutraal. Urgent (#d5e24a) verschijnt alleen wanneer iets urgent is.
 export const TRACK = "rgba(255,255,255,0.08)";
 
+export const GIULIA = {
+  deep: "#595f34",   // EARTH OLIVE
+  mid: "#94925d",    // Olive
+  light: "#d8dab3",  // Whipped Pistachio
+  urgent: "#d5e24a", // Urgent
+  track: TRACK,
+  // legacy keys (backward-compat) → nieuwe palette
+  coral: "#595f34",
+  dust: "#94925d",
+  pistachio: "#d8dab3",
+  plum: "#595f34",
+};
+
 export const FOCUS = {
-  deep: "#595f34",
-  mid: "#94925d",
-  light: "#d8dab3",
-  urgent: "#d5e24a",
+  deep: "#301728",   // Plum
+  mid: "#d8dab3",     // Whipped Pistachio (geen aparte mid → light)
+  light: "#d8dab3",  // Whipped Pistachio
+  urgent: "#d5e24a", // Urgent
   track: TRACK,
 };
 
 export const LIFE = {
-  deep: "#301728",
-  light: "#d8dab3",
-  urgent: "#d5e24a",
+  deep: "#b1bec6",   // Ridge Sky
+  mid: "#cfd9dd",     // Morning dew
+  light: "#d8dab3",   // Whipped Pistachio
+  urgent: "#d5e24a",  // Urgent
   track: TRACK,
 };
 
-export const GIULIA = {
-  // GIULIA domain — warm terracotta #ca6637 (primary), Dust, Whipped Pistachio, Urgent
-  coral: "#ca6637",
-  dust: "#e0ded3",
-  pistachio: "#d8dab3",
-  urgent: "#d5e24a",
-  // legacy keys (backward-compat) → nieuwe palette
-  deep: "#ca6637",
-  mid: "#e0ded3",
-  light: "#d8dab3",
-  plum: "#ca6637",
+export const SYSTEM = {
+  deep: "#3a3a35",   // neutraal dark
+  mid: "#8a8a82",    // smoke
+  light: "#d9d9d4",  // stone
+  urgent: "#d5e24a", // Urgent
   track: TRACK,
 };

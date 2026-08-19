@@ -36,11 +36,10 @@ const GROUPS = [
     label: "Focus",
     items: [
       { label: "To Do!", route: "/tasks", module: "tasks" },
-      { label: "Planning", route: "/planning" },
       { label: "What I'm Building.", route: "/projects", module: "projects" },
-      { label: "Who's Texting?", route: "/email", module: "email" },
+      { label: "Online Postoffice.", route: "/email", module: "email" },
       { label: "Who's Texting?", route: "/whatsapp", module: "whatsapp" },
-      { label: "Documents", route: "/documents", module: "documents" },
+      { label: "Files to Share.", route: "/documents", module: "documents" },
       { label: "People Around Me.", route: "/people", module: "people" },
       { label: "Things to See.", route: "/notifications" },
       { label: "Where My Time Goes.", route: "/timetracker" },
@@ -151,9 +150,9 @@ export default function QuickLauncher({ open, onClose }) {
       <div className="fixed inset-0 z-[38] bg-charcoal/15 backdrop-blur-[1px] animate-fade-in" onClick={onClose} />
       <AnimatePresence>
         <motion.div
-          initial={{ opacity: 0, y: 24, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 24, scale: 0.97 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           className="fixed z-[39] left-2 right-2 bottom-[4.75rem] sm:left-auto sm:right-10 sm:w-[440px] sm:max-h-[80vh] flex flex-col"
         >
@@ -162,7 +161,7 @@ export default function QuickLauncher({ open, onClose }) {
             <div className="px-6 pt-5 pb-4 border-b border-ivory/10 shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-baseline gap-2.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-olive animate-pulse-soft" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-olive" />
                   <span className="text-[11px] uppercase tracking-[0.32em] font-bold text-ivory/75">GIULIA · OS</span>
                 </div>
                 <div className="flex items-center gap-3">
