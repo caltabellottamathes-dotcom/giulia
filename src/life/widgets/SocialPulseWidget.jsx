@@ -9,7 +9,7 @@ import { useLearningSync } from "@/hooks/useLearningSync";
 import { IMAGES } from "@/lib/images";
 import { socialPulse } from "@/lib/domainUtils";
 
-const BLUE = "hsl(var(--life-blue))";
+const BLUE = "hsl(var(--d-life-deep))";
 
 /** Social Pulse widget — een grote visuele informatiekaart, geen lijstje.
  *  Dynamische headline + centraal getal + 8-weekse activiteitstimeline +

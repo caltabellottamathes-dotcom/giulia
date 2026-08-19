@@ -9,7 +9,7 @@ import { IMAGES } from "@/lib/images";
 import { cn } from "@/lib/utils";
 
 const TYPE_MARK = { pdf: "PDF", image: "IMG", doc: "DOC", sheet: "XLS", figma: "FIG", other: "FILE" };
-const TYPE_COLOR = { pdf: "bg-charcoal", image: "bg-olive", doc: "bg-charcoal", sheet: "bg-sand", figma: "bg-olive", other: "bg-charcoal" };
+const TYPE_COLOR = { pdf: "bg-charcoal", image: "bg-d-focus-light", doc: "bg-charcoal", sheet: "bg-sand", figma: "bg-d-focus-light", other: "bg-charcoal" };
 
 /**
  * DocumentsWidget — content as a fanned stack of cards (the top file's own

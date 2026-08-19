@@ -38,8 +38,8 @@ export const statusLabel = (s) => ({ overdue: "Te laat", needs_attention: "Aanda
 
 // Routine cadence: ON TRACK / DUE / UPCOMING / TE LAAT
 export const isVeryUrgent = (s) => s === "overdue";
-export const accentFor = (s) => (isVeryUrgent(s) ? "hsl(var(--urgent))" : isAttention(s) ? "hsl(var(--life-sand))" : "hsl(var(--life-blue))");
-export const tileAccent = (zones) => (zones.some((z) => isVeryUrgent(z.status)) ? "hsl(var(--urgent))" : zones.some((z) => isAttention(z.status)) ? "hsl(var(--life-sand))" : "hsl(var(--life-blue))");
+export const accentFor = (s) => (isVeryUrgent(s) ? "hsl(var(--d-life-urgent))" : isAttention(s) ? "hsl(var(--d-life-light))" : "hsl(var(--d-life-deep))");
+export const tileAccent = (zones) => (zones.some((z) => isVeryUrgent(z.status)) ? "hsl(var(--d-life-urgent))" : zones.some((z) => isAttention(z.status)) ? "hsl(var(--d-life-light))" : "hsl(var(--d-life-deep))");
 
 export const routineState = (item) => {
   if (item.status === "overdue") return { label: "TE LAAT", hot: true };

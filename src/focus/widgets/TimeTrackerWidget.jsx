@@ -27,12 +27,12 @@ export default function TimeTrackerWidget() {
           </select>
         </div>
         <div className="flex items-center gap-3 rounded-2xl bg-foreground/[0.04] border border-foreground/10 px-4 py-3">
-          <Timer className="h-5 w-5 text-olive shrink-0" />
+          <Timer className="h-5 w-5 text-d-focus-light shrink-0" />
           <span className="text-3xl font-display font-semibold tabular-nums tracking-tight">{formatDuration(elapsed)}</span>
         </div>
         <div className="flex gap-2">
           {!running && !paused && (
-            <button onClick={start} disabled={!taskId} className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-olive text-ivory px-4 py-2.5 text-sm font-semibold disabled:opacity-50 hover:bg-olive/90 transition">
+            <button onClick={start} disabled={!taskId} className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-d-focus-deep text-ivory px-4 py-2.5 text-sm font-semibold disabled:opacity-50 hover:bg-d-focus-deep/90 transition">
               <Play className="h-4 w-4" /> Start
             </button>
           )}
@@ -42,7 +42,7 @@ export default function TimeTrackerWidget() {
             </button>
           )}
           {paused && (
-            <button onClick={resume} className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-olive text-ivory px-4 py-2.5 text-sm font-semibold hover:bg-olive/90 transition">
+            <button onClick={resume} className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-d-focus-deep text-ivory px-4 py-2.5 text-sm font-semibold hover:bg-d-focus-deep/90 transition">
               <Play className="h-4 w-4" /> Hervat
             </button>
           )}

@@ -38,7 +38,7 @@ export default function TasksWidget() {
               </Ring>
               <div className="flex-1 min-w-0">
                 {overdue.length > 0 && (
-                  <div className="mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1.5" style={{ background: "var(--tile-accent)", color: "var(--tile-on-accent)" }}>
+                  <div className="mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1.5 bg-d-focus-urgent text-charcoal">
                     <span className="h-1.5 w-1.5 rounded-full bg-current animate-pulse-soft" />
                     <span className="text-[11px] font-semibold tabular-nums">{overdue.length} te laat</span>
                   </div>

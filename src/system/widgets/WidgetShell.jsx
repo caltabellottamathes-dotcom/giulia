@@ -52,17 +52,19 @@ export default function WidgetShell({
   const resolved = ctx.theme === "solid" ? (ctx.color || "charcoal") : "glass";
   const tile = tileMap[resolved] || tileMap.glass;
   // Domein-gebaseerd accent voor glas-tegels — finale domein-kleuren (deep per domein)
-  const DOMAIN_GLASS_ACCENT = {
-    giulia: "hsl(var(--d-giulia-deep))",
-    focus: "hsl(var(--d-focus-deep))",
-    life: "hsl(var(--d-life-deep))",
-    self: "hsl(var(--d-life-deep))",
-    system: "hsl(var(--d-system-deep))",
-    now: "hsl(var(--d-giulia-deep))",
+  // LIFE-accent is licht (Ridge Sky) → donkere tekst voor contrast.
+  const DOMAIN_GLASS = {
+    giulia: { accent: "hsl(var(--d-giulia-deep))", on: "hsl(var(--ivory))" },
+    focus: { accent: "hsl(var(--d-focus-deep))", on: "hsl(var(--ivory))" },
+    life: { accent: "hsl(var(--d-life-deep))", on: "hsl(var(--charcoal))" },
+    self: { accent: "hsl(var(--d-life-deep))", on: "hsl(var(--charcoal))" },
+    system: { accent: "hsl(var(--d-system-deep))", on: "hsl(var(--ivory))" },
+    now: { accent: "hsl(var(--d-giulia-deep))", on: "hsl(var(--ivory))" },
   };
   const isGlassTile = resolved === "glass";
-  const tileAccent = isGlassTile && ctx.domain ? (DOMAIN_GLASS_ACCENT[ctx.domain] || tile.accent) : tile.accent;
-  const tileOnAccent = tile.on;
+  const domainEntry = isGlassTile && ctx.domain ? (DOMAIN_GLASS[ctx.domain] || null) : null;
+  const tileAccent = domainEntry ? domainEntry.accent : tile.accent;
+  const tileOnAccent = domainEntry ? domainEntry.on : tile.on;
 
   const bg =
     resolved === "glass"

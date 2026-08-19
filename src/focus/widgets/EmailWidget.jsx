@@ -36,7 +36,7 @@ export default function EmailWidget() {
                 const filled = i < hero;
                 const isUrgent = i < urgent.length;
                 return (
-                  <span key={i} className="h-8 flex-1 rounded-[3px] transition-all duration-500" style={filled ? { background: isUrgent ? "var(--tile-accent)" : "currentColor", opacity: isUrgent ? 1 : 0.85 } : { background: "currentColor", opacity: 0.1 }} />
+                  <span key={i} className="h-8 flex-1 rounded-[3px] transition-all duration-500" style={filled ? { background: isUrgent ? "hsl(var(--d-focus-urgent))" : "currentColor", opacity: isUrgent ? 1 : 0.85 } : { background: "currentColor", opacity: 0.1 }} />
                 );
               })}
             </div>

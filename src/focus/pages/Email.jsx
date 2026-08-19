@@ -244,8 +244,8 @@ export default function Email() {
           return (
             <button key={t.id} onClick={() => setTab(t.id)} className={cn("relative px-5 py-3 text-base font-display font-semibold transition-colors flex items-center gap-2", on ? "text-foreground" : "text-muted-foreground hover:text-foreground")}>
               <t.icon className="h-4 w-4" /> {t.label}
-              {badge > 0 && <span className={cn("px-1.5 py-0.5 text-[10px] rounded-full tabular-nums", on ? "bg-olive text-ivory" : "bg-foreground/10 text-muted-foreground")}>{badge}</span>}
-              {on && <motion.span layoutId="emailTabActive" className="absolute bottom-0 left-0 right-0 h-0.5 bg-olive" transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
+              {badge > 0 && <span className={cn("px-1.5 py-0.5 text-[10px] rounded-full tabular-nums", on ? "bg-d-focus-deep text-ivory" : "bg-foreground/10 text-muted-foreground")}>{badge}</span>}
+              {on && <motion.span layoutId="emailTabActive" className="absolute bottom-0 left-0 right-0 h-0.5 bg-d-focus-deep" transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
             </button>
           );
         })}

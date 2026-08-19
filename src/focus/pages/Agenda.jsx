@@ -18,14 +18,14 @@ const HOURS = Array.from({ length: 14 }, (_, i) => i + 7); // 7 .. 20
 
 // Vivid palette — every event gets a color from the GIULIA brand palette.
 const PALETTES = [
-  { chip: "bg-olive text-ivory", dot: "bg-olive", ring: "ring-olive/50" },
-  { chip: "bg-powder text-charcoal", dot: "bg-powder", ring: "ring-powder/60" },
-  { chip: "bg-ridge text-charcoal", dot: "bg-ridge", ring: "ring-ridge/60" },
+  { chip: "bg-d-focus-deep text-ivory", dot: "bg-d-focus-deep", ring: "ring-d-focus-deep/50" },
+  { chip: "bg-d-life-deep text-charcoal", dot: "bg-d-life-deep", ring: "ring-d-life-deep/50" },
+  { chip: "bg-d-giulia-deep text-ivory", dot: "bg-d-giulia-deep", ring: "ring-d-giulia-deep/50" },
   { chip: "bg-steel text-ivory", dot: "bg-steel", ring: "ring-steel/50" },
-  { chip: "bg-urgent text-charcoal", dot: "bg-urgent", ring: "ring-urgent/60" },
-  { chip: "bg-sand text-charcoal", dot: "bg-sand", ring: "ring-sand/60" },
+  { chip: "bg-d-life-urgent text-charcoal", dot: "bg-d-life-urgent", ring: "ring-d-life-urgent/60" },
+  { chip: "bg-d-giulia-light text-charcoal", dot: "bg-d-giulia-light", ring: "ring-d-giulia-light/60" },
 ];
-const DOMAIN_COLOR = { focus: PALETTES[0], life: PALETTES[1], self: PALETTES[2] };
+const DOMAIN_COLOR = { focus: PALETTES[0], life: PALETTES[1], self: PALETTES[1] };
 const colorFor = (ev) => DOMAIN_COLOR[ev.domain] || PALETTES[3];
 
 const sameDay = (a, b) => a.toDateString() === b.toDateString();
@@ -222,7 +222,7 @@ export default function Agenda() {
                         );
                       })}
                       {hourPlanned.map((b, pi) => (
-                        <div key={`p${pi}`} className="w-full text-left rounded-lg px-3 py-1.5 flex items-center gap-2 border border-dashed border-olive/50 bg-olive/10 text-olive">
+                        <div key={`p${pi}`} className="w-full text-left rounded-lg px-3 py-1.5 flex items-center gap-2 border border-dashed border-d-giulia-mid/50 bg-d-giulia-mid/10 text-d-giulia-light">
                           <Sparkles className="h-3.5 w-3.5 shrink-0" />
                           <span className="text-sm font-medium truncate flex-1">{b.title}</span>
                           {b.startHour != null && <span className="text-[10px] opacity-80 tabular-nums shrink-0">{String(b.startHour).padStart(2,"0")}:{String(b.startMin).padStart(2,"0")}</span>}
@@ -247,7 +247,7 @@ export default function Agenda() {
                     return (
                       <div key={i} className="text-center pb-1">
                         <p className="text-[10px] uppercase text-muted-foreground">{weekDays[i]}</p>
-                        <p className={cn("text-xs mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full", isToday ? "bg-olive text-ivory font-semibold" : "text-foreground/70")}>{date.getDate()}</p>
+                        <p className={cn("text-xs mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full", isToday ? "bg-d-life-deep text-charcoal font-semibold" : "text-foreground/70")}>{date.getDate()}</p>
                       </div>
                     );
                   })}
@@ -269,7 +269,7 @@ export default function Agenda() {
                             );
                           })}
                           {dayPlanned.map((b, pi) => (
-                            <div key={`p${pi}`} className="w-full text-left px-1.5 py-0.5 rounded text-[10px] font-medium truncate border border-dashed border-olive/50 bg-olive/10 text-olive" title={`Giulia · ${b.title}`}>
+                            <div key={`p${pi}`} className="w-full text-left px-1.5 py-0.5 rounded text-[10px] font-medium truncate border border-dashed border-d-giulia-mid/50 bg-d-giulia-mid/10 text-d-giulia-light" title={`Giulia · ${b.title}`}>
                               {b.title}
                             </div>
                           ))}
@@ -294,8 +294,8 @@ export default function Agenda() {
                   const isToday = sameDay(date, new Date());
                   const dayEvents = eventsForDay(date);
                   return (
-                    <button key={i} onClick={() => openDay(date)} className={cn("rounded-lg p-1.5 min-h-[56px] text-left border transition-all flex flex-col", inMonth ? "border-border/20 glass-1 hover:bg-foreground/5" : "border-transparent text-muted-foreground/40 bg-transparent", isToday && "ring-1 ring-olive/50")}>
-                      <span className={cn("text-[11px] font-medium", isToday && "text-olive font-bold")}>{date.getDate()}</span>
+                    <button key={i} onClick={() => openDay(date)} className={cn("rounded-lg p-1.5 min-h-[56px] text-left border transition-all flex flex-col", inMonth ? "border-border/20 glass-1 hover:bg-foreground/5" : "border-transparent text-muted-foreground/40 bg-transparent", isToday && "ring-1 ring-d-life-deep/50")}>
+                      <span className={cn("text-[11px] font-medium", isToday && "text-d-life-deep font-bold")}>{date.getDate()}</span>
                       <div className="mt-0.5 space-y-0.5 flex-1 overflow-hidden">
                         {dayEvents.slice(0, 3).map((ev) => {
                           const c = colorFor(ev);

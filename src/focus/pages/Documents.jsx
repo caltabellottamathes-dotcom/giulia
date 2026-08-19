@@ -97,8 +97,8 @@ export default function Documents() {
       {category === "giulia" && (
         <GlassPanel level={3} className="p-5">
           <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="h-4 w-4 text-olive" />
-            <p className="text-xs font-medium uppercase tracking-wider text-olive">Giulia gegenereerd</p>
+            <Sparkles className="h-4 w-4 text-d-focus-light" />
+            <p className="text-xs font-medium uppercase tracking-wider text-d-focus-light">Giulia gegenereerd</p>
           </div>
           <p className="text-sm text-muted-foreground">Documenten die Giulia voor je heeft samengevat, geanalyseerd of voorbereid.</p>
         </GlassPanel>
