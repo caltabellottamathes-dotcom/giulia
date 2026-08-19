@@ -21,7 +21,7 @@ export default function TimeTracker() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <PageHero page="timetracker" image={IMAGES.hourglassJacket} icon={Timer} eyebrow="Uren" title="Tijdregistratie" subtitle="Track je uren per taak en project" />
+      <PageHero page="timetracker" image={IMAGES.hourglassJacket} icon={Timer} eyebrow="Uren" title="Where My Time Goes." subtitle="Track je uren per taak en project" />
 
       <div className="grid grid-cols-3 gap-3">
         <GlassPanel level={2} className="p-4">

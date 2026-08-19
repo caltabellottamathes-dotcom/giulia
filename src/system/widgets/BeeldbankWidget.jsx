@@ -20,7 +20,7 @@ export default function BeeldbankWidget() {
   return (
     <WidgetShell size="2x1" radius="medium" className="min-h-[176px]">
       <div className="p-4 h-full flex flex-col text-ivory">
-        <WidgetHeader label="Beeldbank" count={total} />
+        <WidgetHeader label="Change the Look!" count={total} />
         <div className="grid grid-cols-4 gap-1.5 rounded-2xl overflow-hidden mt-1">
           {MONTAGE.map((u, i) => (
             <div key={i} className="aspect-square overflow-hidden">

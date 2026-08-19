@@ -28,7 +28,7 @@ export default function UpdatesWidget() {
           <p className="text-[10px] uppercase tracking-[0.26em] font-semibold text-current/60">Achter de schermen · alles</p>
           <Sparkles className="h-4 w-4" style={{ color: "var(--tile-accent)" }} />
         </div>
-        <h3 className="text-lg font-display font-semibold text-current leading-tight mb-2">Wat er nieuw is</h3>
+        <h3 className="text-lg font-display font-semibold text-current leading-tight mb-2">Meanwhile...</h3>
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="h-5 w-5 border-2 border-current/20 border-t-current rounded-full animate-spin" />

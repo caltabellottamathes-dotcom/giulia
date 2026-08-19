@@ -10,7 +10,7 @@ export default function TimeTrackerWidget() {
   const { tasks, taskId, setTaskId, running, paused, elapsed, start, pause, resume, stop, todayMin } = useTimeTracker();
 
   return (
-    <LayeredWidgetTile image={IMAGES.hourglassJacket} label="Tijd" count={formatMinutes(todayMin)} onHeaderClick={() => openModule("timetracker")}>
+    <LayeredWidgetTile image={IMAGES.hourglassJacket} label="Where My Time Goes." count={formatMinutes(todayMin)} onHeaderClick={() => openModule("timetracker")}>
       <div className="space-y-4">
         <div>
           <label className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">Taak</label>

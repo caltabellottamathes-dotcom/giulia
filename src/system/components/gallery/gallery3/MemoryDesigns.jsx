@@ -19,7 +19,7 @@ export function MemoryDesign2() {
   return (
     <div className="relative w-full rounded-[24px] overflow-hidden glass-3 p-4 text-ivory flex flex-col shadow-[0_28px_60px_-26px_rgba(0,0,0,0.45)]" style={{ aspectRatio: "1/1", ...accentVars("charcoal") }}>
       <div className="flex items-center justify-between mb-2">
-        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Geheugen · veld</p>
+        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">What I Remember. · veld</p>
         <span className="text-[10px] tabular-nums opacity-50">{memories?.length || 0}</span>
       </div>
       <div className="relative flex-1 min-h-0">
@@ -51,7 +51,7 @@ export function MemoryDesign3() {
   return (
     <div className="relative w-full rounded-[24px] overflow-hidden glass-3 p-4 text-ivory flex flex-col shadow-[0_28px_60px_-26px_rgba(0,0,0,0.45)]" style={{ aspectRatio: "3/4", ...accentVars("charcoal") }}>
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Geheugen · zekerheid</p>
+        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">What I Remember. · zekerheid</p>
         <span className="text-[10px] tabular-nums opacity-50">{memories?.length || 0}</span>
       </div>
       <div className="flex-1 space-y-2 overflow-hidden min-h-0">

@@ -16,7 +16,7 @@ export default function ConciergeGallery() {
     <WidgetShell size="1x2" radius="large" interactive onClick={() => openChat()} className="min-h-[220px]" style={{ "--tile-accent": A }}>
       <div className="flex flex-col h-full">
         <div className="p-5 flex flex-col flex-1 min-h-0">
-          <WidgetHeader label="Giulia · Concierge" count="online" />
+          <WidgetHeader label="Ask Me!" count="online" />
           <h3 className="text-[22px] leading-[1.0] font-display font-semibold tracking-[-0.03em] text-current">VRAGEN?</h3>
           <p className="text-[10px] uppercase tracking-[0.2em] opacity-50 mt-1.5">Giulia luistert</p>
           <div className="flex-1 flex flex-col justify-center gap-2">

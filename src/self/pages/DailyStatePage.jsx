@@ -67,7 +67,7 @@ export default function DailyStatePage() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <PageHero page="life-daily-state" image={IMAGES.selfDailyState} icon={ActivityIcon} eyebrow="LIFE" title="Daily State" subtitle="Actuele persoonlijke toestand"
+      <PageHero page="life-daily-state" image={IMAGES.selfDailyState} icon={ActivityIcon} eyebrow="LIFE" title="How I'm Doing." subtitle="Actuele persoonlijke toestand"
         actions={
           <div className="flex items-center gap-2">
             <GlassButton variant="glass" size="icon" onClick={() => navigate("/search")}><Search className="h-4 w-4" /></GlassButton>

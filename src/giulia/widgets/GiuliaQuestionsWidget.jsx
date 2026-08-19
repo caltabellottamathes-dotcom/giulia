@@ -49,7 +49,7 @@ export default function GiuliaQuestionsWidget() {
     <WidgetShell size="2x2" radius="medium" interactive onClick={() => openModule("wantstoknow")} className="min-h-[260px]">
       <div className="flex flex-col h-full">
         <div className="flex-1 -mb-8 rounded-b-[24px] glass-3 p-5 relative z-10 shadow-[0_14px_28px_-12px_rgba(0,0,0,0.35)] text-ivory flex flex-col">
-          <WidgetHeader label="Giulia · Wants to know" count={questions.length ? `${questions.length}` : ""} />
+          <WidgetHeader label="Wants to Know!" count={questions.length ? `${questions.length}` : ""} />
           {loading ? (
             <div className="flex-1 flex items-center justify-center"><div className="h-8 w-8 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" /></div>
           ) : top ? (

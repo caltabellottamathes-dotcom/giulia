@@ -33,7 +33,7 @@ export function WhatsAppDesign2() {
   return (
     <div className="relative w-full rounded-[24px] overflow-hidden glass-3 p-4 text-ivory flex flex-col shadow-[0_28px_60px_-26px_rgba(0,0,0,0.45)]" style={{ aspectRatio: "4/3", ...accentVars("olive") }}>
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">WhatsApp · concept</p>
+        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Who's Texting? · concept</p>
         <span className="text-[10px] tabular-nums opacity-50">{(msgs || []).filter((m) => m.status === "unread").length} ongelezen</span>
       </div>
       <div className="flex-1 grid grid-cols-2 gap-2.5 min-h-0">
@@ -84,7 +84,7 @@ export function WhatsAppDesign3() {
   return (
     <div className="relative w-full rounded-[24px] overflow-hidden glass-3 p-4 text-ivory flex flex-col shadow-[0_28px_60px_-26px_rgba(0,0,0,0.45)]" style={{ aspectRatio: "3/4", ...accentVars("olive") }}>
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">WhatsApp · draden</p>
+        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Who's Texting? · draden</p>
         <span className="text-[10px] tabular-nums opacity-50">{convos.reduce((s, c) => s + c.unread, 0)} ongelezen</span>
       </div>
       <div className="flex-1 space-y-1.5 min-h-0">

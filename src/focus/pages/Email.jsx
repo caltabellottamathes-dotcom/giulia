@@ -227,7 +227,7 @@ export default function Email() {
   return (
     <div className="h-[calc(100svh-11.5rem)] min-h-0 flex flex-col overflow-hidden">
       <PageHero
-        page="email" icon={Mail} eyebrow="Communicatie" title="Email"
+        page="email" icon={Mail} eyebrow="Communicatie" title="Who's Texting?"
         subtitle="mail@salvatorecaltabellotta.com · met Giulia's hulp"
         actions={<>
           <GlassButton variant="outline" size="sm" onClick={triage} disabled={triaging}><Sparkles className="h-4 w-4" /> {triaging ? "Sorteert..." : "Sorteer"}</GlassButton>

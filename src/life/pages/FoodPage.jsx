@@ -38,7 +38,7 @@ export default function FoodPage() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <PageHero page="life-food" image={IMAGES.lifeFood} icon={Utensils} eyebrow="LIFE · FOOD" title="Food Planner" subtitle="Wat eet je deze week — binnen budget, op basis van wat je hebt en wat je lekker vindt" />
+      <PageHero page="life-food" image={IMAGES.lifeFood} icon={Utensils} eyebrow="LIFE · FOOD" title="What's for Dinner?" subtitle="Wat eet je deze week — binnen budget, op basis van wat je hebt en wat je lekker vindt" />
 
       {/* Tabs — LIFE-stijl */}
       <div className="flex items-center gap-1 overflow-x-auto -mx-1 px-1 pb-1">

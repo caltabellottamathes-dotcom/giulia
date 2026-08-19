@@ -60,7 +60,7 @@ export default function Activity() {
 
   return (
     <div className="space-y-5 animate-fade-up">
-      <PageHero page="activity" icon={ActivityIcon} eyebrow="Giulia" title="Activiteit" subtitle="Wat Giulia voor je heeft gedaan — per agent" />
+      <PageHero page="activity" icon={ActivityIcon} eyebrow="Giulia" title="I Do Process!" subtitle="Wat Giulia voor je heeft gedaan — per agent" />
 
       {loading && (
         <GlassPanel level={2} className="p-6 space-y-2">

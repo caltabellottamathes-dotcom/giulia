@@ -133,7 +133,7 @@ export default function SocialPlannerPage() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <PageHero page="life-social-planner" image={IMAGES.lifeSocialPlanner} icon={CalendarHeart} eyebrow="LIFE" title="Social Planner" subtitle={summary}
+      <PageHero page="life-social-planner" image={IMAGES.lifeSocialPlanner} icon={CalendarHeart} eyebrow="LIFE" title="What Social Life?" subtitle={summary}
         actions={<GlassButton variant="primary" size="md" onClick={() => document.getElementById("creator")?.scrollIntoView({ behavior: "smooth" })}><Plus className="h-4 w-4" /> Nieuw plan</GlassButton>} />
 
       {/* Tabs */}

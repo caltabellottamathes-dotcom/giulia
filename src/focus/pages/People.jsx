@@ -55,7 +55,7 @@ export default function People() {
         page="people"
         icon={Users}
         eyebrow="Netwerk"
-        title="Mensen"
+        title="People Around Me."
         subtitle="Jouw contactomgeving"
         actions={
           <GlassButton variant="primary" size="md" onClick={() => setShowNew(true)}>

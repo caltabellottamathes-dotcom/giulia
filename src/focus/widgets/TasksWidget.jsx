@@ -25,7 +25,7 @@ export default function TasksWidget() {
     <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("tasks")} className="min-h-[224px]">
       <div className="flex flex-col h-full">
         <div className="flex-1 -mb-8 rounded-b-[24px] glass-3 p-5 relative z-10 shadow-[0_14px_30px_-12px_rgba(0,0,0,0.35)] text-ivory flex flex-col">
-          <WidgetHeader label="Taken" count={active.length ? `${active.length} open` : "alles klaar"} />
+          <WidgetHeader label="To Do!" count={active.length ? `${active.length} open` : "alles klaar"} />
           {loading ? (
             <div className="flex-1 flex items-center justify-center"><div className="h-8 w-8 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" /></div>
           ) : (

@@ -20,7 +20,7 @@ export function EmailAdaptive({ ratio = "square" }) {
   return (
     <Tile ratio={ratio} radius="large" onClick={() => openModule("email")}>
       <div className="p-4 flex flex-col flex-1 min-h-0">
-        <WidgetHeader label="Email" count={hero ? `${hero} ongelezen` : "alles gelezen"} />
+        <WidgetHeader label="Who's Texting?" count={hero ? `${hero} ongelezen` : "alles gelezen"} />
         {loading ? <div className="flex-1 flex items-center justify-center"><div className="h-6 w-6 border-2 border-current/20 border-t-current rounded-full animate-spin" /></div> : (
           <>
             <div className={cn("flex", row ? "items-end gap-4" : "items-end gap-3")}>
@@ -81,7 +81,7 @@ export function WhatsAppAdaptive({ ratio = "square" }) {
         <BrandPhoto src={IMAGES.stilettoHead} className={cn("-mb-6 rounded-b-[20px] shadow-[0_14px_28px_-12px_rgba(0,0,0,0.3)] relative z-10", ratio === "tall" ? "h-20" : "h-16")} overlay="bg-gradient-to-t from-charcoal/85 to-charcoal/30">
           <div className="absolute inset-0 px-4 flex items-end justify-between pb-2.5">
             <div>
-              <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80 mb-1">WhatsApp</h3>
+              <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80 mb-1">Who's Texting?</h3>
               {unreadTotal > 0 && <div className="flex items-end gap-2"><CountUp value={unreadTotal} className="text-2xl font-display font-semibold tracking-[-0.03em] leading-none text-ivory" /><p className="text-[10px] uppercase tracking-[0.2em] text-ivory/75 mb-0.5">ongelezen</p></div>}
             </div>
             {draftsReady.length > 0 && <span className="text-[10px] uppercase tracking-wider text-ivory/70">{draftsReady.length} concept</span>}
@@ -130,7 +130,7 @@ export function ProjectsAdaptive({ ratio = "square" }) {
           </div>
         </BrandPhoto>
         <div className="p-4 pt-8 flex-1 flex flex-col min-h-0">
-          <WidgetHeader label="Projecten" count={`${active.length} actief`} />
+          <WidgetHeader label="What I'm Building." count={`${active.length} actief`} />
           {loading ? <div className="flex-1 flex items-center justify-center"><div className="h-6 w-6 border-2 border-current/20 border-t-current rounded-full animate-spin" /></div> : active.length > 0 ? (
             <>
               <div className="flex-1 space-y-3 min-h-0">
@@ -168,7 +168,7 @@ export function KnowledgeAdaptive({ ratio = "square" }) {
     <Tile ratio={ratio} radius="medium" onClick={() => openModule("knowledge")}>
       <div className="flex flex-col h-full">
         <div className="flex-1 -mb-6 rounded-b-[20px] glass-3 p-4 relative z-10 shadow-[0_14px_28px_-12px_rgba(0,0,0,0.35)] text-ivory flex flex-col min-h-0">
-          <WidgetHeader label="Kennisbank" count={`${items.length} notities`} />
+          <WidgetHeader label="What I Know." count={`${items.length} notities`} />
           {loading ? <div className="flex-1 flex items-center justify-center"><div className="h-6 w-6 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" /></div> : items.length > 0 ? (
             <div className="flex-1 flex flex-col min-h-0">
               <div className="flex items-end gap-3 mb-3"><CountUp value={items.length} className={cn("font-display font-semibold tracking-[-0.03em] leading-none text-ivory", row ? "text-4xl" : s.big)} /><p className="text-[11px] uppercase tracking-[0.2em] text-ivory/50 mb-1">notities</p></div>

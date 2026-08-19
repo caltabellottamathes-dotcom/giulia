@@ -22,7 +22,7 @@ export default function PeopleWidget() {
         <div className="relative h-20 shrink-0 overflow-hidden">
           <BrandPhoto src={IMAGES.portraitThinking} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/80 to-transparent" />
           <div className="absolute inset-0 px-5 flex items-center justify-between">
-            <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">Mensen</h3>
+            <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">People Around Me.</h3>
             <span className="text-[10px] uppercase tracking-[0.18em] text-ivory/70 tabular-nums">{contacts.length}</span>
           </div>
         </div>

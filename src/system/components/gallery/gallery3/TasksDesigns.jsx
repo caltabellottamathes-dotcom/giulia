@@ -24,7 +24,7 @@ export function TasksDesign2() {
   return (
     <div className="relative w-full rounded-[24px] overflow-hidden glass-3 p-4 text-ivory shadow-[0_28px_60px_-26px_rgba(0,0,0,0.45)]" style={{ aspectRatio: "4/3", ...accentVars("charcoal") }}>
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Taken · energiebord</p>
+        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">To Do! · energiebord</p>
         <span className="text-[10px] tabular-nums opacity-50">{open.length} open</span>
       </div>
       <div className="grid grid-cols-3 gap-2 h-[calc(100%-2rem)]">
@@ -62,7 +62,7 @@ export function TasksDesign3() {
   return (
     <div className="relative w-full rounded-[24px] overflow-hidden glass-3 p-4 text-ivory shadow-[0_28px_60px_-26px_rgba(0,0,0,0.45)]" style={{ aspectRatio: "3/4", ...accentVars("charcoal") }}>
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Taken · op deadline</p>
+        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">To Do! · op deadline</p>
         <span className="text-[10px] tabular-nums opacity-50">{ordered.length} focus</span>
       </div>
       <div className="space-y-2">

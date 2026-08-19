@@ -44,7 +44,7 @@ export default function PersonalAdminPage() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <PageHero page="life-personaladmin" image={IMAGES.lifePersonalAdmin} icon={Shield} eyebrow="LIFE → ADMIN" title="Personal Admin" subtitle={w.counts.overdue === 0 ? "Your administrative life, currently behaving itself." : `${w.counts.overdue} te laat · ${w.counts.coming} op komst · ${w.counts.needsYou} vereist jou`}
+      <PageHero page="life-personaladmin" image={IMAGES.lifePersonalAdmin} icon={Shield} eyebrow="LIFE → ADMIN" title="Things to Handle!" subtitle={w.counts.overdue === 0 ? "Your administrative life, currently behaving itself." : `${w.counts.overdue} te laat · ${w.counts.coming} op komst · ${w.counts.needsYou} vereist jou`}
         actions={<GlassButton variant="primary" size="md" onClick={() => alert("Toevoegen")}><Plus className="h-4 w-4" /> Toevoegen</GlassButton>} />
 
       <div className="flex items-center gap-1 overflow-x-auto -mx-1 px-1 pb-1">

@@ -134,7 +134,7 @@ export default function Agenda() {
         page="agenda"
         icon={Calendar}
         eyebrow="Tijd"
-        title="Agenda"
+        title="What's Happening?"
         subtitle="Jouw tijd, georganiseerd door Giulia"
         actions={<>
           <GlassButton variant="outline" size="sm" onClick={sync} disabled={syncing}>

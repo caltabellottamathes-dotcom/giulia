@@ -32,7 +32,7 @@ export default function HobbiesWidget() {
         <div className="absolute inset-0 bg-gradient-to-br from-charcoal/55 via-charcoal/30 to-transparent" />
         <div className="relative z-10 h-full p-5 flex flex-col text-ivory">
           <div className="flex items-center justify-between">
-            <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">Hobby's</h3>
+            <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">Things I Love.</h3>
             <span className="text-[10px] uppercase tracking-[0.18em] font-semibold" style={{ color: SAND }}>{g.active.length} levend</span>
           </div>
 

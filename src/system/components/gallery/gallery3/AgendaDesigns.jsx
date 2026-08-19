@@ -32,7 +32,7 @@ export function AgendaDesign2() {
         ))}
       </div>
       <div className="relative flex-1 min-w-0">
-        <div className="absolute top-4 left-4 right-4 text-[9px] uppercase tracking-[0.3em] font-semibold text-ivory/70 z-10">Agenda · vandaag</div>
+        <div className="absolute top-4 left-4 right-4 text-[9px] uppercase tracking-[0.3em] font-semibold text-ivory/70 z-10">What's Happening? · vandaag</div>
         {todays.map((e, i) => {
           const s = new Date(e.start); const en = new Date(e.end || e.start);
           const top = Math.max(0, (s.getHours() + s.getMinutes() / 60 - H.start) / span) * 100;
@@ -77,7 +77,7 @@ export function AgendaDesign3() {
       <img src={IMAGES.walkChairsBeach} alt="" className="absolute inset-0 h-full w-full object-cover opacity-25" draggable={false} />
       <div className="absolute inset-0 bg-gradient-to-r from-charcoal/80 via-charcoal/40 to-transparent" />
       <div className="relative flex-1 p-5 flex flex-col justify-center text-ivory min-w-0">
-        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Agenda · volgende</p>
+        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">What's Happening? · volgende</p>
         {next ? (
           <>
             <div className="flex items-baseline gap-2 mt-1">

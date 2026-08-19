@@ -27,7 +27,7 @@ export default function Beeldbank() {
           <Link to="/" className="text-xs text-foreground/60 hover:text-foreground inline-flex items-center gap-1 mb-2">
             <ArrowLeft className="h-3 w-3" /> Dashboard
           </Link>
-          <h1 className="text-3xl font-display font-semibold tracking-[-0.02em]">Beeldbank</h1>
+          <h1 className="text-3xl font-display font-semibold tracking-[-0.02em]">Change the Look!</h1>
           <p className="text-sm text-foreground/60 mt-1 max-w-xl">
             Alle foto's in je systeem. Upload je eigen beeld of wissel elke foto in de app via de Beeldbank modus.
           </p>

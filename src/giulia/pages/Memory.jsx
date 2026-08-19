@@ -47,7 +47,7 @@ export default function Memory() {
         page="memory"
         icon={Brain}
         eyebrow="Giulia"
-        title="Geheugen"
+        title="What I Remember."
         subtitle="Wat Giulia over je onthoudt"
         actions={
           <GlassButton variant="primary" size="md" onClick={() => setShowNew(true)}>

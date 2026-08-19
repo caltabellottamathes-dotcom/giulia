@@ -50,7 +50,7 @@ export default function AgentActivityWidget() {
         >
           <div className="absolute inset-0 p-5 flex items-end justify-between">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.28em] font-semibold text-ivory/80">Giulia · Agenten</p>
+              <p className="text-[10px] uppercase tracking-[0.28em] font-semibold text-ivory/80">Who's Working?</p>
               <p className="text-lg font-display font-semibold text-ivory mt-0.5" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>{done ? "Klaar" : running ? "Activeren…" : "Klaar om te starten"}</p>
             </div>
             <div className="text-right">

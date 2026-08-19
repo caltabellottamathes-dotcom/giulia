@@ -35,7 +35,7 @@ export default function DailyStateEditorial() {
           <img src={SELF_PHOTO.dailyState} alt="" className="h-full w-full object-cover" draggable={false} />
         </div>
         <div className="flex-1 flex flex-col min-h-0">
-          <WidgetHeader label="Daily State" count={latest ? fmtAgo(latest.timestamp) : "07:12"} />
+          <WidgetHeader label="How I'm Doing." count={latest ? fmtAgo(latest.timestamp) : "07:12"} />
           <h3 className="text-[20px] leading-[1.0] font-display font-semibold tracking-[-0.03em]">{headline}</h3>
 
           <div className="mt-2 flex items-stretch gap-2 flex-1 min-h-0">

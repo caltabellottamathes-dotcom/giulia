@@ -41,7 +41,7 @@ export default function WhatsAppWidget() {
         <BrandPhoto src={IMAGES.stilettoHead} className="h-24 -mb-8 rounded-b-[24px] shadow-[0_14px_28px_-12px_rgba(0,0,0,0.3)] relative z-10" overlay="bg-gradient-to-t from-charcoal/85 to-charcoal/30">
           <div className="absolute inset-0 px-5 flex items-end justify-between pb-3">
             <div>
-              <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80 mb-1">WhatsApp</h3>
+              <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80 mb-1">Who's Texting?</h3>
               {unreadTotal > 0 && (
                 <div className="flex items-end gap-2">
                   <CountUp value={unreadTotal} className="text-3xl font-display font-semibold tracking-[-0.03em] leading-none text-ivory" />

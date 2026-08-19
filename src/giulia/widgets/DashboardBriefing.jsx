@@ -112,7 +112,7 @@ export default function DashboardBriefing() {
         <Card title="Wacht op jou · alles" icon={<Bell className="h-3.5 w-3.5 text-ivory/55" />}>
           {loading ? <div className="h-16 rounded-xl bg-ivory/5 animate-pulse" /> : (
             <div className="space-y-2">
-              <Link to="/approvals" className="flex items-center justify-between text-sm text-ivory/85 hover:text-ivory"><span>Goedkeuringen</span><span className="font-display font-bold text-ivory">{waiting.approvals}</span></Link>
+              <Link to="/approvals" className="flex items-center justify-between text-sm text-ivory/85 hover:text-ivory"><span>Waiting on You.</span><span className="font-display font-bold text-ivory">{waiting.approvals}</span></Link>
               <Link to="/email" className="flex items-center justify-between text-sm text-ivory/85 hover:text-ivory"><span>Ongelezen email</span><span className="font-display font-bold text-ivory">{waiting.emails}</span></Link>
               <Link to="/whatsapp" className="flex items-center justify-between text-sm text-ivory/85 hover:text-ivory"><span>WhatsApp</span><span className="font-display font-bold text-ivory">{waiting.whatsapp}</span></Link>
               {waiting.needs > 0 && <Link to="/life/daily-state" className="flex items-center justify-between text-sm text-ivory/85 hover:text-ivory"><span>SELF behoeften</span><span className="font-display font-bold text-ivory">{waiting.needs}</span></Link>}

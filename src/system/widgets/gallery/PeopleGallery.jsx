@@ -27,7 +27,7 @@ export default function PeopleGallery() {
     <WidgetShell size="1x2" radius="large" interactive onClick={() => openModule("people")} className="min-h-[220px]" style={{ "--tile-accent": A }}>
       <div className="flex flex-col h-full">
         <div className="p-5 flex flex-col flex-1 min-h-0">
-          <WidgetHeader label="Mensen" count={count ? `${count}` : ""} />
+          <WidgetHeader label="People Around Me." count={count ? `${count}` : ""} />
           <h3 className="text-[22px] leading-[1.0] font-display font-semibold tracking-[-0.03em] text-current">{headline}</h3>
           <p className="text-[10px] uppercase tracking-[0.2em] opacity-50 mt-1.5">{sub}</p>
           <div className="mt-4 flex items-end gap-3">

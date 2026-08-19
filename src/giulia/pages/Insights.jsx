@@ -75,7 +75,7 @@ export default function Insights() {
         page="insights"
         icon={Telescope}
         eyebrow="Giulia observeert"
-        title="Inzichten"
+        title="What I've Noticed."
         subtitle="Wat ik opval. Patronen. Gedrag. Dingen die ik zie en denk: hmm."
         actions={
           <button

@@ -21,7 +21,7 @@ export function PeopleAdaptive({ ratio = "square" }) {
         <div className={cn("relative shrink-0 overflow-hidden", ratio === "tall" ? "h-16" : ratio === "wide" ? "h-14" : "h-20")}>
           <BrandPhoto src={IMAGES.portraitThinking} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/80 to-transparent" />
           <div className="absolute inset-0 px-4 flex items-center justify-between">
-            <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">Mensen</h3>
+            <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">People Around Me.</h3>
             <span className="text-[10px] uppercase tracking-[0.18em] text-ivory/70 tabular-nums">{contacts.length}</span>
           </div>
         </div>
@@ -97,7 +97,7 @@ export function MemoryAdaptive({ ratio = "square" }) {
     <Tile ratio={ratio} radius="medium" onClick={() => openModule("memory")}>
       <div className="flex flex-col h-full">
         <div className="flex-1 -mb-6 rounded-b-[20px] glass-3 p-4 relative z-10 shadow-[0_14px_28px_-12px_rgba(0,0,0,0.35)] text-ivory flex flex-col min-h-0">
-          <WidgetHeader label="Geheugen" count={`${memories.length} herinneringen`} />
+          <WidgetHeader label="What I Remember." count={`${memories.length} herinneringen`} />
           {loading ? <div className="flex-1 flex items-center justify-center"><div className="h-6 w-6 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" /></div> : memories.length > 0 ? (
             <div className="flex-1 flex items-center gap-4 min-h-0">
               <Ring value={avg} max={1} size={s.ring} stroke={10}>
@@ -123,7 +123,7 @@ export function MemoryAdaptive({ ratio = "square" }) {
 /* ActivityWidget — photo floats over the glass (count on the photo); per-source
  * rows with clear. */
 const SRC_COLOR = { email: "hsl(16 45% 47%)", whatsapp: "hsl(var(--sand))", task: "hsl(var(--olive))", calendar: "hsl(var(--ridge))", system: "hsl(var(--smoke))", giulia: "hsl(var(--olive))" };
-const SRC_LABEL = { email: "Email", whatsapp: "WhatsApp", task: "Taken", calendar: "Agenda", system: "Systeem", giulia: "Giulia" };
+const SRC_LABEL = { email: "Who's Texting?", whatsapp: "Who's Texting?", task: "To Do!", calendar: "What's Happening?", system: "Systeem", giulia: "Giulia" };
 const dot = (s) => SRC_COLOR[(s || "").toLowerCase()] || "hsl(var(--smoke))";
 const label = (s) => SRC_LABEL[(s || "").toLowerCase()] || (s || "Overig");
 export function ActivityAdaptive({ ratio = "square" }) {
@@ -139,7 +139,7 @@ export function ActivityAdaptive({ ratio = "square" }) {
       <div className="flex flex-col h-full">
         <BrandPhoto src={IMAGES.topDownWalk} className={cn("-mb-6 rounded-b-[20px] shadow-[0_14px_24px_-12px_rgba(0,0,0,0.3)] relative z-10", ratio === "tall" ? "h-16" : "h-14")} overlay="bg-gradient-to-t from-charcoal/85 to-charcoal/30">
           <div className="absolute inset-0 px-4 flex items-end justify-between pb-1.5">
-            <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">Activiteit</h3>
+            <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">I Do Process!</h3>
             <span className="text-xl font-display font-semibold text-ivory tabular-nums">{items.length}</span>
           </div>
         </BrandPhoto>

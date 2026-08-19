@@ -17,7 +17,7 @@ export function UpdatesDesign2() {
   return (
     <div className="relative w-full rounded-[24px] overflow-hidden glass-3 p-4 text-ivory flex flex-col shadow-[0_28px_60px_-26px_rgba(0,0,0,0.45)]" style={{ aspectRatio: "16/6", ...accentVars("sand") }}>
       <div className="flex items-center justify-between mb-2">
-        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Updates · klaar</p>
+        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Meanwhile... · klaar</p>
         <span className="text-[10px] tabular-nums opacity-50">{done.length} vandaag</span>
       </div>
       <div className="flex-1 flex items-center overflow-hidden">
@@ -37,7 +37,7 @@ export function UpdatesDesign3() {
   const done = (tasks || []).filter((t) => t.status === "completed").slice(0, 6);
   return (
     <div className="relative w-full rounded-[24px] overflow-hidden glass-3 p-4 text-ivory flex flex-col shadow-[0_28px_60px_-26px_rgba(0,0,0,0.45)]" style={{ aspectRatio: "3/4", ...accentVars("sand") }}>
-      <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65 mb-1">Updates · vandaag</p>
+      <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65 mb-1">Meanwhile... · vandaag</p>
       <motion.span initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="text-5xl font-display font-bold leading-none">{done.length}</motion.span>
       <p className="text-[10px] uppercase tracking-[0.2em] opacity-55 mt-1">afgerond</p>
       <div className="mt-3 flex-1 space-y-1.5 overflow-hidden min-h-0">

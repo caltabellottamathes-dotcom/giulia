@@ -29,7 +29,7 @@ export default function TasksGallery() {
   return (
     <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("tasks")} className="min-h-[220px]" style={{ "--tile-accent": A }}>
       <div className="p-6 flex flex-col flex-1 min-h-0">
-        <WidgetHeader label="Taken" count={urgent ? `${urgent} dringend` : "oké"} />
+        <WidgetHeader label="To Do!" count={urgent ? `${urgent} dringend` : "oké"} />
         <h3 className="text-[26px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current">{headline}</h3>
         <p className="text-[11px] uppercase tracking-[0.18em] opacity-50 mt-1.5">{sub}</p>
         <div className="mt-4 flex items-end gap-4">

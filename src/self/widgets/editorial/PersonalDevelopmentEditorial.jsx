@@ -33,7 +33,7 @@ export default function PersonalDevelopmentEditorial() {
         </div>
 
         <div className="flex-1 flex flex-col min-w-0">
-          <WidgetHeader label="Development" count={`${active.length} doelen`} />
+          <WidgetHeader label="Becoming Me." count={`${active.length} doelen`} />
           <h3 className="text-[20px] leading-[1.0] font-display font-semibold tracking-[-0.03em] mt-0.5">{active.length} DOELEN</h3>
 
           <div className="mt-2 flex items-center gap-3 flex-1 min-h-0">

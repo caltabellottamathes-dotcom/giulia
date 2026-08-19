@@ -11,7 +11,7 @@ import { Sparkles } from "lucide-react";
 export default function Updates() {
   return (
     <div className="space-y-5 animate-fade-up">
-      <PageHero page="updates" icon={Sparkles} eyebrow="Giulia" title="Wat er nieuw is" subtitle="Achter de schermen — recent afgeronde acties" />
+      <PageHero page="updates" icon={Sparkles} eyebrow="Giulia" title="Meanwhile..." subtitle="Achter de schermen — recent afgeronde acties" />
       <SocialFeed />
     </div>
   );

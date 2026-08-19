@@ -41,7 +41,7 @@ export default function AgendaWidget() {
           <BrandPhoto src={IMAGES.walkChairsBeach} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/45 via-transparent to-transparent" />
           <div className="absolute inset-0 p-5 flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">Agenda</h3>
+              <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">What's Happening?</h3>
               <div className="flex gap-0.5 p-0.5 rounded-full bg-ivory/10 border border-ivory/20" onClick={(e) => e.stopPropagation()}>
                 {["today", "tomorrow"].map((d) => (
                   <button key={d} onClick={(e) => { e.stopPropagation(); setDay(d); }} className={cn("px-3 py-1 text-[10px] font-semibold rounded-full transition", day === d ? "text-charcoal" : "text-ivory/80")} style={day === d ? { background: "var(--tile-accent)", color: "var(--tile-on-accent)" } : undefined}>

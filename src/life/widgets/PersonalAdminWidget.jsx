@@ -25,7 +25,7 @@ export default function PersonalAdminWidget() {
           <img src={IMAGES.lifePersonalAdmin} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
           <div className="absolute inset-0 bg-gradient-to-t from-charcoal/85 via-charcoal/30 to-transparent" />
           <div className="absolute inset-0 px-5 flex items-center justify-between">
-            <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/85">Personal Admin</h3>
+            <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/85">Things to Handle!</h3>
             <span className="text-[10px] uppercase tracking-[0.18em] tabular-nums font-semibold" style={{ color: accent }}>{w.counts.coming ? `${w.counts.coming} op komst` : "oké"}</span>
           </div>
         </div>

@@ -126,7 +126,7 @@ export default function Tasks() {
         page="tasks"
         icon={CheckSquare}
         eyebrow="Werk"
-        title="Taken"
+        title="To Do!"
         subtitle="Jouw taken, elegant beheerd"
         actions={
           <GlassButton variant="primary" size="md" onClick={() => setShowNew(true)}>

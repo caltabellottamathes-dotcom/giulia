@@ -29,7 +29,7 @@ export default function ProjectsWidget() {
           </div>
         </BrandPhoto>
         <div className="p-5 pt-10 flex-1 flex flex-col">
-          <WidgetHeader label="Projecten" count={`${active.length} actief`} />
+          <WidgetHeader label="What I'm Building." count={`${active.length} actief`} />
           {loading ? (
             <div className="flex-1 flex items-center justify-center"><div className="h-8 w-8 border-2 border-current/20 border-t-current rounded-full animate-spin" /></div>
           ) : active.length > 0 ? (

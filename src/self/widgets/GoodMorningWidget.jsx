@@ -67,7 +67,7 @@ export default function GoodMorningWidget() {
         )}
         <div className="relative flex items-center gap-2 text-current/60">
           <Sunrise className="h-3.5 w-3.5" />
-          <p className="text-[10px] uppercase tracking-[0.28em] font-semibold">Good Morning</p>
+          <p className="text-[10px] uppercase tracking-[0.28em] font-semibold">Good Morning!</p>
         </div>
         <div className="relative">
           {enabled ? (

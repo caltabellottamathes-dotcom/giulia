@@ -80,7 +80,7 @@ export default function GiuliaWidget() {
         {/* Header — clicking opens the full "Je Dag" panel */}
         <div className="flex items-center justify-between px-1 shrink-0">
           <div>
-            <p className="text-[9px] uppercase tracking-[0.3em] font-bold text-current/55">Giulia · je dag</p>
+            <p className="text-[9px] uppercase tracking-[0.3em] font-bold text-current/55">What Matters?</p>
             <p className="text-[13px] font-display font-medium text-current/85 mt-0.5 capitalize">{dateStr}</p>
           </div>
           <div className="h-2 w-2 rounded-full bg-giulia-coral animate-pulse-soft shrink-0" />

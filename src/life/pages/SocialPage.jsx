@@ -28,7 +28,7 @@ export default function SocialPage() {
     <div className="space-y-6 animate-fade-up">
       <div>
         <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground font-semibold">LIFE</p>
-        <h1 className="text-4xl font-display font-semibold tracking-tight mt-1">Social</h1>
+        <h1 className="text-4xl font-display font-semibold tracking-tight mt-1">What Social Life?</h1>
         <p className="text-sm text-muted-foreground mt-1">Wie aandacht verdient, je plannen en je persoonlijke tijd — samen in één plek.</p>
       </div>
 

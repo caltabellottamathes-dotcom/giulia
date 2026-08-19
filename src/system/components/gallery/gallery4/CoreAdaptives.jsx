@@ -64,7 +64,7 @@ export function GiuliaAdaptive({ ratio = "square" }) {
         <div className="flex-1 p-4 flex flex-col text-current min-h-0">
           {loading ? <div className="flex-1 flex items-center justify-center"><div className="h-6 w-6 border-2 border-current/20 border-t-current rounded-full animate-spin" /></div> : (
             <>
-              <p className="text-[10px] uppercase tracking-[0.26em] font-semibold text-current/60">Giulia · je dag</p>
+              <p className="text-[10px] uppercase tracking-[0.26em] font-semibold text-current/60">What Matters?</p>
               <h3 className="text-base font-display font-semibold text-current leading-tight mt-0.5">{greetingWord()}.</h3>
               <p className="text-[11px] text-current/65 mt-1 line-clamp-2">{summary}</p>
               <ol className="mt-2.5 space-y-1.5 flex-1 min-h-0">
@@ -105,7 +105,7 @@ export function AgendaAdaptive({ ratio = "square" }) {
       <BrandPhoto src={IMAGES.walkChairsBeach} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/45 via-transparent to-transparent" />
       <div className="absolute inset-0 p-4 flex flex-col justify-between">
         <div className="flex items-center justify-between">
-          <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">Agenda</h3>
+          <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">What's Happening?</h3>
           <div className="flex gap-0.5 p-0.5 rounded-full bg-ivory/10 border border-ivory/20" onClick={(e) => e.stopPropagation()}>
             {["today", "tomorrow"].map((d) => (
               <button key={d} onClick={(e) => { e.stopPropagation(); setDay(d); }} className={cn("px-2.5 py-1 text-[10px] font-semibold rounded-full transition", day === d ? "" : "text-ivory/80")} style={day === d ? { background: "var(--tile-accent)", color: "var(--tile-on-accent)" } : undefined}>{d === "today" ? "Vandaag" : "Morgen"}</button>
@@ -162,7 +162,7 @@ export function TasksAdaptive({ ratio = "square" }) {
     <Tile ratio={ratio} radius="medium" onClick={() => openModule("tasks")}>
       <div className="flex flex-col h-full">
         <div className="flex-1 -mb-6 rounded-b-[20px] glass-3 p-4 relative z-10 shadow-[0_14px_30px_-12px_rgba(0,0,0,0.35)] text-ivory flex flex-col min-h-0">
-          <WidgetHeader label="Taken" count={active.length ? `${active.length} open` : "alles klaar"} />
+          <WidgetHeader label="To Do!" count={active.length ? `${active.length} open` : "alles klaar"} />
           {loading ? <div className="flex-1 flex items-center justify-center"><div className="h-6 w-6 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" /></div> : (
             <div className="flex-1 flex items-center gap-4 min-h-0">
               <Ring value={done.length} max={total || 1} size={s.ring} stroke={10}>
@@ -194,7 +194,7 @@ export function ApprovalsAdaptive({ ratio = "square" }) {
         <div className={cn("relative shrink-0 overflow-hidden", ratio === "tall" ? "h-24" : ratio === "wide" ? "h-20" : "h-24")}>
           <BrandPhoto src={IMAGES.leanChair} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/85 via-charcoal/35 to-charcoal/10" />
           <div className="absolute inset-0 p-4 flex flex-col justify-between">
-            <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">Goedkeuringen</h3>
+            <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">Waiting on You.</h3>
             <div className="flex items-end gap-2"><CountUp value={approvals.length} className="text-4xl font-display font-semibold tracking-[-0.03em] leading-none text-ivory" /><p className="text-[10px] uppercase tracking-[0.2em] text-ivory/70 mb-1">wachten op jou</p></div>
           </div>
         </div>

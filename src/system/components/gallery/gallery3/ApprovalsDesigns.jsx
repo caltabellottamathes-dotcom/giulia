@@ -20,7 +20,7 @@ export function ApprovalsDesign2() {
   const go = (d) => { if (cur) decide(cur, d, reload); setI((p) => Math.min(p + 1, Math.max(0, items.length - 1))); };
   return (
     <div className="relative w-full rounded-[24px] overflow-hidden glass-3 flex flex-col items-center justify-center p-5 text-ivory shadow-[0_28px_60px_-26px_rgba(0,0,0,0.45)]" style={{ aspectRatio: "1/1", ...accentVars("olive") }}>
-      <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65 mb-1">Goedkeuringen · {items.length} wacht</p>
+      <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65 mb-1">Waiting on You. · {items.length} wacht</p>
       <AnimatePresence mode="wait">
         {cur ? (
           <motion.div key={cur.id} initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.92 }}
@@ -67,7 +67,7 @@ export function ApprovalsDesign3() {
   return (
     <div className="relative w-full rounded-[24px] overflow-hidden glass-3 p-4 text-ivory flex flex-col shadow-[0_28px_60px_-26px_rgba(0,0,0,0.45)]" style={{ aspectRatio: "4/3", ...accentVars("olive") }}>
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Goedkeuringen · wie handelt</p>
+        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Waiting on You. · wie handelt</p>
         <span className="text-[10px] tabular-nums opacity-50">{items.length}</span>
       </div>
       <div className="flex gap-3 flex-1 min-h-0">

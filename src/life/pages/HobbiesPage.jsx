@@ -80,7 +80,7 @@ export default function HobbiesPage() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <PageHero page="life-hobbies" image={IMAGES.lifeHobbies} icon={Palette} eyebrow="LIFE" title="Hobby's" subtitle="Things you're doing because you want to."
+      <PageHero page="life-hobbies" image={IMAGES.lifeHobbies} icon={Palette} eyebrow="LIFE" title="Things I Love." subtitle="Things you're doing because you want to."
         actions={
           <div className="flex items-center gap-2">
             <GlassButton variant="glass" size="icon" onClick={() => navigate("/search")}><Search className="h-4 w-4" /></GlassButton>

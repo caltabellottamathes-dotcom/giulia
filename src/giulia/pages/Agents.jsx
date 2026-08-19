@@ -61,7 +61,7 @@ export default function Agents() {
         image={IMAGES.feetChair}
         icon={Cpu}
         eyebrow="Giulia"
-        title="Agenten"
+        title="Who's Working?"
         subtitle="Operations & management"
         actions={
           <GlassButton variant="primary" size="md" onClick={runAll} disabled={running}>

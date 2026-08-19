@@ -25,7 +25,7 @@ export default function NotificationsWidget() {
         <div className="relative h-28 shrink-0 overflow-hidden">
           <BrandPhoto src={IMAGES.feetChair} className="absolute inset-0" overlay="bg-gradient-to-t from-charcoal/85 via-charcoal/35 to-charcoal/10" />
           <div className="absolute inset-0 p-5 flex flex-col justify-between">
-            <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">Notificaties</h3>
+            <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">Things to See.</h3>
             <div className="flex items-end gap-2">
               <CountUp value={items.length} className="text-5xl font-display font-semibold tracking-[-0.03em] leading-none text-ivory" />
               <p className="text-[10px] uppercase tracking-[0.2em] text-ivory/70 mb-1.5">nieuw</p>

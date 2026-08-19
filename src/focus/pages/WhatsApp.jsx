@@ -146,7 +146,7 @@ export default function WhatsApp() {
         page="whatsapp"
         icon={MessageCircle}
         eyebrow="Communicatie"
-        title="WhatsApp"
+        title="Who's Texting?"
         subtitle="Giulia houdt je berichten bij — en bereidt antwoorden voor."
         actions={<>
           {totalUnread > 0 && <span className="rounded-full bg-olive/15 text-olive font-semibold px-2.5 py-1">{totalUnread} ongelezen</span>}

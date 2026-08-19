@@ -38,7 +38,7 @@ export default function Projects() {
         page="projects"
         icon={Briefcase}
         eyebrow="Werk"
-        title="Projecten"
+        title="What I'm Building."
         subtitle="Jouw editoriale projectbibliotheek"
         actions={
           <GlassButton variant="primary" size="md" onClick={openNew}>

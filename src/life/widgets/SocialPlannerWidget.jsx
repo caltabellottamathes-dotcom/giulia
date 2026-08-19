@@ -59,7 +59,7 @@ export default function SocialPlannerWidget() {
   return (
     <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("social")} className="min-h-[260px]" style={{ "--tile-accent": BLUE }}>
       <div className="p-6 flex flex-col flex-1 min-h-0">
-        <WidgetHeader label="Social Planner" count={weekPlans.length ? `${weekPlans.length} deze week` : "open"} />
+        <WidgetHeader label="What Social Life?" count={weekPlans.length ? `${weekPlans.length} deze week` : "open"} />
         <h3 className="text-[26px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current">{headline}</h3>
         <p className="text-[11px] uppercase tracking-[0.18em] opacity-50 mt-1.5">{sub}</p>
 

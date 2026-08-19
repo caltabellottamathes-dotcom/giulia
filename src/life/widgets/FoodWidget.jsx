@@ -31,7 +31,7 @@ export default function FoodWidget() {
         <div className="flex flex-col h-full">
           <div className="grid grid-cols-[0.82fr_1.18fr] flex-1 min-h-[150px]">
             <div className="p-5 flex flex-col">
-              <WidgetHeader label="Food" />
+              <WidgetHeader label="What's for Dinner?" />
               <h3 className="text-[26px] leading-[1.02] font-display font-semibold tracking-[-0.02em] mt-1">PLAN JE WEEK</h3>
               <p className="text-[10px] uppercase tracking-[0.18em] opacity-50 mt-1.5">Nog niets gepland</p>
               <div className="flex-1" />
@@ -61,7 +61,7 @@ export default function FoodWidget() {
       <div className="flex flex-col h-full">
         <div className="grid grid-cols-[0.82fr_1.18fr] flex-1 min-h-[150px]">
           <div className="p-5 flex flex-col">
-            <WidgetHeader label="Food" count={`wk ${week.week_number}`} />
+            <WidgetHeader label="What's for Dinner?" count={`wk ${week.week_number}`} />
             <h3 className="text-[26px] leading-[1.02] font-display font-semibold tracking-[-0.02em]">{headline}</h3>
             <p className="text-[10px] uppercase tracking-[0.18em] opacity-50 mt-1.5">{sub}</p>
             <div className="flex-1" />

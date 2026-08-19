@@ -21,7 +21,7 @@ export function ActivityDesign2() {
   return (
     <div className="relative w-full rounded-[24px] overflow-hidden glass-3 p-4 text-ivory flex flex-col shadow-[0_28px_60px_-26px_rgba(0,0,0,0.45)]" style={{ aspectRatio: "16/7", ...accentVars("sand") }}>
       <div className="flex items-center justify-between mb-2">
-        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Activiteit · stroom</p>
+        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">I Do Process! · stroom</p>
         <span className="text-[10px] tabular-nums opacity-50">{items?.length || 0}</span>
       </div>
       <div className="flex-1 flex flex-col justify-around gap-1 min-h-0">
@@ -51,7 +51,7 @@ export function ActivityDesign3() {
   return (
     <div className="relative w-full rounded-[24px] overflow-hidden glass-3 p-4 text-ivory flex flex-col shadow-[0_28px_60px_-26px_rgba(0,0,0,0.45)]" style={{ aspectRatio: "3/4", ...accentVars("sand") }}>
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Activiteit · log</p>
+        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">I Do Process! · log</p>
         <button onClick={clear} className="text-[10px] opacity-50 hover:opacity-100">wis</button>
       </div>
       <div className="relative flex-1 pl-3 min-h-0">

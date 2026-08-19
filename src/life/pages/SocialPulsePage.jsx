@@ -115,7 +115,7 @@ export default function SocialPulsePage() {
 
   return (
     <div className="space-y-6 animate-fade-up pb-12">
-      <PageHero page="life-social-pulse" image={IMAGES.lifeSocialPulse} icon={Heart} eyebrow="LIFE · SOCIAL" title="Social Pulse" subtitle="Your social world, understood in context."
+      <PageHero page="life-social-pulse" image={IMAGES.lifeSocialPulse} icon={Heart} eyebrow="LIFE · SOCIAL" title="What Social Life?" subtitle="Your social world, understood in context."
         actions={<div className="flex items-center gap-2"><button className="glass-button rounded-full h-9 w-9 inline-flex items-center justify-center text-ivory/80"><Search className="h-4 w-4" /></button><button className="glass-button rounded-full h-9 px-3 inline-flex items-center gap-2 text-xs text-ivory/80"><SlidersHorizontal className="h-4 w-4" /> View</button><button className="glass-button rounded-full h-9 w-9 inline-flex items-center justify-center text-ivory/80"><Settings className="h-4 w-4" /></button></div>} />
 
       {/* TABS */}

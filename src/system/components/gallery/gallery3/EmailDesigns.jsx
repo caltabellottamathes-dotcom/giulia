@@ -27,7 +27,7 @@ export function EmailDesign2() {
     <div className="relative w-full rounded-[24px] overflow-hidden glass-3 p-4 text-ivory flex shadow-[0_28px_60px_-26px_rgba(0,0,0,0.45)]" style={{ aspectRatio: "3/4", ...accentVars("ridge") }}>
       <div className="flex-1 flex flex-col min-h-0">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Email · druk</p>
+          <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Who's Texting? · druk</p>
           <button onClick={sync} className="text-ivory/70 hover:text-ivory"><RefreshCw className={`h-3.5 w-3.5 ${syncing ? "animate-spin" : ""}`} /></button>
         </div>
         <div className="flex items-baseline gap-2">
@@ -65,7 +65,7 @@ export function EmailDesign3() {
   return (
     <div className="relative w-full rounded-[24px] overflow-hidden glass-3 p-4 text-ivory shadow-[0_28px_60px_-26px_rgba(0,0,0,0.45)]" style={{ aspectRatio: "16/6", ...accentVars("ridge") }}>
       <div className="flex items-center justify-between mb-2">
-        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Email · stroom</p>
+        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Who's Texting? · stroom</p>
         <span className="text-[10px] tabular-nums opacity-50">{list.filter((e) => e.status === "unread").length} ongelezen</span>
       </div>
       <div className="relative h-[calc(100%-2rem)] flex items-end gap-1.5 overflow-hidden">

@@ -86,7 +86,7 @@ export default function Approvals() {
         page="approvals"
         icon={ClipboardCheck}
         eyebrow="Controle"
-        title="Ter goedkeuring"
+        title="Waiting on You."
         subtitle="Enkel externe acties die op jouw ja wachten"
       />
 

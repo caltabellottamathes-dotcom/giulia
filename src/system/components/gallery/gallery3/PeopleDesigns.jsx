@@ -20,7 +20,7 @@ export function PeopleDesign2() {
   return (
     <div className="relative w-full rounded-[24px] overflow-hidden glass-3 p-4 text-ivory flex flex-col shadow-[0_28px_60px_-26px_rgba(0,0,0,0.45)]" style={{ aspectRatio: "1/1", ...accentVars("ridge") }}>
       <div className="flex items-center justify-between mb-2">
-        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Mensen · ring</p>
+        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">People Around Me. · ring</p>
         <span className="text-[10px] tabular-nums opacity-50">{contacts?.length || 0}</span>
       </div>
       <div className="relative flex-1 flex items-center justify-center">
@@ -57,7 +57,7 @@ export function PeopleDesign3() {
   return (
     <div className="relative w-full rounded-[24px] overflow-hidden glass-3 p-4 text-ivory flex flex-col shadow-[0_28px_60px_-26px_rgba(0,0,0,0.45)]" style={{ aspectRatio: "16/7", ...accentVars("ridge") }}>
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Mensen · recent</p>
+        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">People Around Me. · recent</p>
         <span className="text-[10px] tabular-nums opacity-50">{contacts?.length || 0} contacten</span>
       </div>
       <div className="relative flex-1 flex items-center">

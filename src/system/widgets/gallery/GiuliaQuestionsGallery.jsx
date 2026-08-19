@@ -39,7 +39,7 @@ export default function GiuliaQuestionsGallery() {
   return (
     <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("wantstoknow")} className="min-h-[220px]" style={{ "--tile-accent": A }}>
       <div className="p-6 flex flex-col flex-1 min-h-0">
-        <WidgetHeader label="Giulia · Wants to know" count={count ? `${count}` : ""} />
+        <WidgetHeader label="Wants to Know!" count={count ? `${count}` : ""} />
         <h3 className="text-[26px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current">{headline}</h3>
         <p className="text-[11px] uppercase tracking-[0.18em] opacity-50 mt-1.5">{sub}</p>
         <div className="mt-4 flex items-end gap-3">

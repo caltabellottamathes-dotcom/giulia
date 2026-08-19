@@ -22,7 +22,7 @@ export default function EmailWidget() {
   return (
     <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("email")} className="min-h-[260px]">
       <div className="p-6 flex flex-col flex-1 min-h-0">
-        <WidgetHeader label="Email" count={hero ? `${hero} ongelezen` : "alles gelezen"} />
+        <WidgetHeader label="Who's Texting?" count={hero ? `${hero} ongelezen` : "alles gelezen"} />
         {loading ? (
           <div className="flex-1 flex items-center justify-center"><div className="h-8 w-8 border-2 border-current/20 border-t-current rounded-full animate-spin" /></div>
         ) : (

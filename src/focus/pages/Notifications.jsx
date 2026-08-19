@@ -35,7 +35,7 @@ export default function Notifications() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <PageHero page="notifications" icon={Bell} eyebrow="Giulia" title="Notificaties" subtitle="Vragen en opmerkingen — geen taken, geen goedkeuringen" />
+      <PageHero page="notifications" icon={Bell} eyebrow="Giulia" title="Things to See." subtitle="Vragen en opmerkingen — geen taken, geen goedkeuringen" />
 
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
         {tabs.map((t) => {

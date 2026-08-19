@@ -26,7 +26,7 @@ export function AgentActivityAdaptive({ ratio = "square" }) {
         <BrandPhoto src={IMAGES.feetChair} className={cn("-mb-6 rounded-b-[20px] z-10 shadow-[0_14px_28px_-12px_rgba(0,0,0,0.3)]", ratio === "tall" ? "h-20" : "h-16")} overlay="bg-gradient-to-t from-charcoal/70 via-charcoal/30 to-transparent">
           <div className="absolute inset-0 p-4 flex items-end justify-between">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.28em] font-semibold text-ivory/80">Giulia · Agenten</p>
+              <p className="text-[10px] uppercase tracking-[0.28em] font-semibold text-ivory/80">Who's Working?</p>
               <p className="text-base font-display font-semibold text-ivory mt-0.5" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>{done ? "Klaar" : running ? "Activeren…" : "Klaar om te starten"}</p>
             </div>
             <div className="text-right"><span className="text-2xl font-display font-bold text-ivory tabular-nums leading-none">{progress}%</span><p className="text-[10px] uppercase tracking-wider text-ivory/60 mt-1">actief</p></div>
@@ -63,7 +63,7 @@ export function InsightsAdaptive({ ratio = "square" }) {
     <Tile ratio={ratio} radius="medium" onClick={() => openModule("insights")}>
       <div className="flex flex-col h-full">
         <div className="flex-1 -mb-6 rounded-b-[20px] glass-3 p-4 relative z-10 shadow-[0_14px_28px_-12px_rgba(0,0,0,0.35)] text-ivory flex flex-col min-h-0">
-          <WidgetHeader label="Giulia · Inzichten" count={insights.length ? `${insights.length}` : ""} />
+          <WidgetHeader label="What I've Noticed." count={insights.length ? `${insights.length}` : ""} />
           {loading ? <div className="flex-1 flex items-center justify-center"><div className="h-6 w-6 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" /></div> : insights.length > 0 ? (
             <div className="flex-1 flex flex-col min-h-0">
               <div className="flex items-end gap-3"><CountUp value={fresh.length} className={cn("font-display font-semibold tracking-[-0.04em] leading-none text-ivory", ratio === "wide" ? "text-5xl" : s.big)} /><p className="text-[11px] uppercase tracking-[0.2em] text-ivory/50 mb-2">nieuw</p></div>

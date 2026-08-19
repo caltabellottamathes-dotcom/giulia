@@ -121,7 +121,7 @@ export default function Knowledge() {
         page="knowledge"
         icon={BookOpen}
         eyebrow="Kennis"
-        title="Kennisbank"
+        title="What I Know."
         subtitle="Doorzoek de database"
         actions={<GlassButton variant="primary" size="md" onClick={() => setShowNew(true)}><Plus className="h-4 w-4" /> Nieuwe kennis</GlassButton>}
       />

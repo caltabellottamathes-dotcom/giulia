@@ -26,7 +26,7 @@ export default function ActivityWidget() {
       <div className="flex flex-col h-full">
         <BrandPhoto src={IMAGES.topDownWalk} className="h-20 -mb-8 rounded-b-[20px] shadow-[0_14px_24px_-12px_rgba(0,0,0,0.3)] relative z-10" overlay="bg-gradient-to-t from-charcoal/85 to-charcoal/30">
           <div className="absolute inset-0 px-5 flex items-end justify-between pb-2">
-            <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">Activiteit · alles</h3>
+            <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">I Do Process! · alles</h3>
             <span className="text-2xl font-display font-semibold text-ivory tabular-nums">{items.length}</span>
           </div>
         </BrandPhoto>

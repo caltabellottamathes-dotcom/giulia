@@ -4,9 +4,9 @@ import { cn } from "@/lib/utils";
 
 const PRIMARY = [
   { to: "/", label: "Home", icon: Home, end: true },
-  { to: "/agenda", label: "Agenda", icon: CalendarDays },
-  { to: "/tasks", label: "Taken", icon: ListTodo },
-  { to: "/projects", label: "Projecten", icon: FolderKanban },
+  { to: "/agenda", label: "What's Happening?", icon: CalendarDays },
+  { to: "/tasks", label: "To Do!", icon: ListTodo },
+  { to: "/projects", label: "What I'm Building.", icon: FolderKanban },
   { to: "/life", label: "LIFE", icon: Sparkles },
 ];
 

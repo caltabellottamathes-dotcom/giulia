@@ -24,7 +24,7 @@ export default function BeeldbankGallery() {
     <WidgetShell size="2x1" radius="large" interactive onClick={() => openModule("beeldbank")} className="min-h-[160px]" style={{ "--tile-accent": A }}>
       <div className="flex h-full gap-2.5 p-3">
         <div className="flex-1 flex flex-col min-w-0">
-          <WidgetHeader label="Beeldbank" count={count ? `${count}` : ""} />
+          <WidgetHeader label="Change the Look!" count={count ? `${count}` : ""} />
           <h3 className="text-[20px] leading-[1.0] font-display font-semibold tracking-[-0.03em] text-current">{headline}</h3>
           <p className="text-[9px] uppercase tracking-[0.18em] opacity-50 mt-1">{sub}</p>
         </div>

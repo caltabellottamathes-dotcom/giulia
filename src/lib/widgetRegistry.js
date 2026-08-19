@@ -46,49 +46,49 @@ import BeeldbankWidget from "@/system/widgets/BeeldbankWidget";
  */
 export const WIDGETS = {
   // ── GIULIA ──
-  giulia:          { type: "giulia",          label: "Giulia · je dag",      icon: Sparkles,      Component: GiuliaWidget,          image: IMAGES.bootPhone,        span: 8, category: "core", domain: "giulia" },
-  goodmorning:     { type: "goodmorning",     label: "Good Morning",         icon: Sunrise,       Component: GoodMorningWidget,     image: IMAGES.walkChairsBeach,  span: 3, category: "core", domain: "giulia" },
-  concierge:       { type: "concierge",       label: "Giulia · Concierge",   icon: MessageSquare, Component: ConciergeWidget,        image: IMAGES.giuliaConcierge, span: 3, category: "core", domain: "giulia" },
-  approvals:       { type: "approvals",       label: "Goedkeuringen",         icon: ClipboardCheck,Component: ApprovalsWidget,       image: IMAGES.leanChair,        span: 4, category: "core", domain: "giulia" },
-  memory:          { type: "memory",          label: "Geheugen",             icon: Brain,         Component: MemoryWidget,           image: IMAGES.loungeChairs,     span: 4, category: "intelligence", domain: "system" },
-  activity:        { type: "activity",        label: "Activiteit",           icon: ActivityIcon,  Component: ActivityWidget,        image: IMAGES.topDownWalk,      span: 6, category: "intelligence", domain: "system" },
-  agentactivity:   { type: "agentactivity",   label: "Giulia · Agenten",     icon: Cpu,           Component: AgentActivityWidget,    image: IMAGES.feetChair,        span: 4, category: "intelligence", domain: "system" },
-  insights:        { type: "insights",        label: "Giulia · Inzichten",   icon: Telescope,     Component: InsightsWidget,         image: IMAGES.feetChair,        span: 4, category: "intelligence", domain: "giulia" },
-  updates:         { type: "updates",         label: "Giulia · Updates",     icon: Sparkles,      Component: UpdatesWidget,          image: IMAGES.feetChair,        span: 3, category: "intelligence", domain: "giulia" },
-  giuliaquestions: { type: "giuliaquestions", label: "Giulia · Wants to know", icon: HelpCircle,   Component: GiuliaQuestionsWidget,   image: IMAGES.portraitThinking, span: 4, category: "intelligence", domain: "giulia" },
+  giulia:          { type: "giulia",          label: "What Matters?",      icon: Sparkles,       Component: GiuliaWidget,          image: IMAGES.bootPhone,        span: 8, category: "core", domain: "giulia" },
+  goodmorning:     { type: "goodmorning",     label: "Good Morning!",       icon: Sunrise,        Component: GoodMorningWidget,     image: IMAGES.walkChairsBeach,  span: 3, category: "core", domain: "giulia" },
+  concierge:       { type: "concierge",       label: "Ask Me!",             icon: MessageSquare,  Component: ConciergeWidget,        image: IMAGES.giuliaConcierge, span: 3, category: "core", domain: "giulia" },
+  approvals:       { type: "approvals",       label: "Waiting on You.",     icon: ClipboardCheck, Component: ApprovalsWidget,       image: IMAGES.leanChair,        span: 4, category: "core", domain: "giulia" },
+  memory:          { type: "memory",          label: "What I Remember.",    icon: Brain,          Component: MemoryWidget,           image: IMAGES.loungeChairs,     span: 4, category: "intelligence", domain: "system" },
+  activity:        { type: "activity",        label: "I Do Process!",      icon: ActivityIcon,   Component: ActivityWidget,        image: IMAGES.topDownWalk,      span: 6, category: "intelligence", domain: "system" },
+  agentactivity:   { type: "agentactivity",   label: "Who's Working?",      icon: Cpu,            Component: AgentActivityWidget,    image: IMAGES.feetChair,        span: 4, category: "intelligence", domain: "system" },
+  insights:        { type: "insights",        label: "What I've Noticed.",  icon: Telescope,      Component: InsightsWidget,         image: IMAGES.feetChair,        span: 4, category: "intelligence", domain: "giulia" },
+  updates:         { type: "updates",         label: "Meanwhile...",       icon: Sparkles,       Component: UpdatesWidget,          image: IMAGES.feetChair,        span: 3, category: "intelligence", domain: "giulia" },
+  giuliaquestions: { type: "giuliaquestions", label: "Wants to Know!",      icon: HelpCircle,    Component: GiuliaQuestionsWidget,   image: IMAGES.portraitThinking, span: 4, category: "intelligence", domain: "giulia" },
 
   // ── FOCUS ──
-  agenda:     { type: "agenda",     label: "Agenda",      icon: Calendar,    Component: AgendaWidget,     image: IMAGES.walkChairsBeach, span: 4, category: "core", domain: "life" },
-  tasks:      { type: "tasks",      label: "Taken",       icon: CheckSquare, Component: TasksWidget,      image: IMAGES.feetChairs,       span: 4, category: "work", domain: "focus" },
-  projects:   { type: "projects",   label: "Projecten",   icon: Briefcase,   Component: ProjectsWidget,   image: IMAGES.walkChairsHigh,   span: 5, category: "work", domain: "focus" },
-  email:      { type: "email",      label: "Email",       icon: Mail,        Component: EmailWidget,      image: IMAGES.portraitBoot,     span: 4, category: "comms", domain: "focus" },
-  whatsapp:   { type: "whatsapp",   label: "WhatsApp",    icon: MessageCircle, Component: WhatsAppWidget, image: IMAGES.stilettoHead,   span: 4, category: "comms", domain: "focus" },
-  knowledge:  { type: "knowledge",  label: "Kennisbank",  icon: BookOpen,     Component: KnowledgeWidget,  image: IMAGES.chairWater,       span: 4, category: "work", domain: "system" },
-  documents:  { type: "documents",  label: "Documenten",  icon: FileText,     Component: DocumentsWidget,  image: IMAGES.chairsScattered,  span: 4, category: "work", domain: "focus" },
-  people:     { type: "people",     label: "Mensen",      icon: Users,        Component: PeopleWidget,     image: IMAGES.portraitThinking, span: 3, category: "work", domain: "focus" },
-  timetracker:{ type: "timetracker", label: "Tijd · Timer", icon: Timer,      Component: TimeTrackerWidget, image: IMAGES.hourglassJacket,  span: 4, category: "work", domain: "focus" },
+  agenda:      { type: "agenda",      label: "What's Happening?",  icon: Calendar,      Component: AgendaWidget,     image: IMAGES.walkChairsBeach, span: 4, category: "core", domain: "life" },
+  tasks:       { type: "tasks",       label: "To Do!",             icon: CheckSquare,   Component: TasksWidget,      image: IMAGES.feetChairs,       span: 4, category: "work", domain: "focus" },
+  projects:    { type: "projects",    label: "What I'm Building.", icon: Briefcase,     Component: ProjectsWidget,   image: IMAGES.walkChairsHigh,   span: 5, category: "work", domain: "focus" },
+  email:       { type: "email",       label: "Who's Texting?",     icon: Mail,          Component: EmailWidget,      image: IMAGES.portraitBoot,     span: 4, category: "comms", domain: "focus" },
+  whatsapp:    { type: "whatsapp",    label: "Who's Texting?",     icon: MessageCircle, Component: WhatsAppWidget, image: IMAGES.stilettoHead,   span: 4, category: "comms", domain: "focus" },
+  knowledge:   { type: "knowledge",   label: "What I Know.",       icon: BookOpen,      Component: KnowledgeWidget,  image: IMAGES.chairWater,       span: 4, category: "work", domain: "system" },
+  documents:   { type: "documents",   label: "Documents",          icon: FileText,      Component: DocumentsWidget,  image: IMAGES.chairsScattered,  span: 4, category: "work", domain: "focus" },
+  people:      { type: "people",      label: "People Around Me.",  icon: Users,         Component: PeopleWidget,     image: IMAGES.portraitThinking, span: 3, category: "work", domain: "focus" },
+  timetracker: { type: "timetracker", label: "Where My Time Goes.", icon: Timer,         Component: TimeTrackerWidget, image: IMAGES.hourglassJacket,  span: 4, category: "work", domain: "focus" },
 
   // ── LIFE ──
-  socialpulse:   { type: "socialpulse",   label: "Social Pulse",      icon: Heart,         Component: SocialPulseWidget,    image: IMAGES.lifeSocialPulse,    span: 4, category: "life", domain: "life" },
-  socialplanner: { type: "socialplanner", label: "Social Planner",    icon: CalendarHeart,  Component: SocialPlannerWidget,  image: IMAGES.lifeSocialPlanner,  span: 3, category: "life", domain: "life" },
-  household:     { type: "household",     label: "Huishouden",         icon: Home,          Component: HouseholdWidget,      image: IMAGES.lifeHousehold,      span: 3, category: "life", domain: "life" },
-  personaladmin: { type: "personaladmin", label: "Persoonlijk Admin", icon: ClipboardList,  Component: PersonalAdminWidget,  image: IMAGES.lifePersonalAdmin,  span: 3, category: "life", domain: "life" },
-  hobbies:       { type: "hobbies",       label: "Hobby's",           icon: Palette,        Component: HobbiesWidget,        image: IMAGES.lifeHobbies,        span: 3, category: "life", domain: "life" },
-  food:          { type: "food",          label: "Food",              icon: Utensils,       Component: FoodWidget,           image: IMAGES.lifeFood,           span: 2, category: "life", domain: "life" },
+  socialpulse:   { type: "socialpulse",   label: "What Social Life?",   icon: Heart,         Component: SocialPulseWidget,    image: IMAGES.lifeSocialPulse,    span: 4, category: "life", domain: "life" },
+  socialplanner: { type: "socialplanner", label: "What Social Life?",   icon: CalendarHeart, Component: SocialPlannerWidget,  image: IMAGES.lifeSocialPlanner,  span: 3, category: "life", domain: "life" },
+  household:     { type: "household",     label: "Reminders For Home.", icon: Home,          Component: HouseholdWidget,      image: IMAGES.lifeHousehold,      span: 3, category: "life", domain: "life" },
+  personaladmin: { type: "personaladmin", label: "Things to Handle!",  icon: ClipboardList, Component: PersonalAdminWidget,  image: IMAGES.lifePersonalAdmin,  span: 3, category: "life", domain: "life" },
+  hobbies:       { type: "hobbies",       label: "Things I Love.",      icon: Palette,        Component: HobbiesWidget,        image: IMAGES.lifeHobbies,        span: 3, category: "life", domain: "life" },
+  food:          { type: "food",          label: "What's for Dinner?",  icon: Utensils,       Component: FoodWidget,           image: IMAGES.lifeFood,           span: 2, category: "life", domain: "life" },
 
   // ── LIFE · gemigreerd uit SELF (Daily State & Development blijven als LIFE-modules) ──
-  dailystate:   { type: "dailystate",   label: "Daily State",      icon: ActivityIcon, Component: DailyStateEditorial,          image: IMAGES.selfDailyState,    span: 1, category: "life", domain: "life" },
-  development:  { type: "development",  label: "Development",       icon: Target,       Component: PersonalDevelopmentEditorial,  image: IMAGES.selfDevelopment,   span: 2, category: "life", domain: "life" },
+  dailystate:   { type: "dailystate",   label: "How I'm Doing.",  icon: ActivityIcon, Component: DailyStateEditorial,          image: IMAGES.selfDailyState,    span: 1, category: "life", domain: "life" },
+  development:  { type: "development",  label: "Becoming Me.",    icon: Target,        Component: PersonalDevelopmentEditorial,  image: IMAGES.selfDevelopment,   span: 2, category: "life", domain: "life" },
 
   // ── SYSTEM ──
-  imageviewer: { type: "imageviewer", label: "Afbeeldingen", icon: ImageIcon, Component: ImageViewerWidget, image: IMAGES.notebookChair, span: 1, category: "system", domain: "system" },
-  videoplayer: { type: "videoplayer", label: "Video", icon: Video, Component: VideoPlayerWidget, image: IMAGES.bootPhone, span: 1, category: "system", domain: "system" },
-  musicplayer: { type: "musicplayer", label: "Muziek", icon: Music, Component: MusicPlayerWidget, image: IMAGES.hourglassJacket, span: 1, category: "system", domain: "system" },
-  docviewer:   { type: "docviewer",   label: "Document", icon: FileText, Component: DocViewerWidget,   image: IMAGES.womanFolder, span: 1, category: "system", domain: "system" },
-  notifications: { type: "notifications", label: "Notificaties", icon: Bell, Component: NotificationsWidget, image: IMAGES.feetChair, span: 3, category: "core", domain: "system" },
+  imageviewer:  { type: "imageviewer",  label: "Afbeeldingen", icon: ImageIcon, Component: ImageViewerWidget, image: IMAGES.notebookChair, span: 1, category: "system", domain: "system" },
+  videoplayer:  { type: "videoplayer",  label: "Video",        icon: Video,     Component: VideoPlayerWidget, image: IMAGES.bootPhone,      span: 1, category: "system", domain: "system" },
+  musicplayer:  { type: "musicplayer",  label: "Muziek",       icon: Music,     Component: MusicPlayerWidget, image: IMAGES.hourglassJacket, span: 1, category: "system", domain: "system" },
+  docviewer:    { type: "docviewer",    label: "Document",    icon: FileText,  Component: DocViewerWidget,    image: IMAGES.womanFolder,    span: 1, category: "system", domain: "system" },
+  notifications:{ type: "notifications", label: "Things to See.", icon: Bell,    Component: NotificationsWidget, image: IMAGES.feetChair,      span: 3, category: "core", domain: "system" },
 
   // ── BEELDBANK & VOICE ──
-  beeldbank:  { type: "beeldbank",  label: "Beeldbank",    icon: Images, Component: BeeldbankWidget,  image: IMAGES.feetChair,    span: 2, category: "system", domain: "system" },
+  beeldbank:    { type: "beeldbank",    label: "Change the Look!", icon: Images, Component: BeeldbankWidget,  image: IMAGES.feetChair,    span: 2, category: "system", domain: "system" },
 };
 
 export const WIDGET_LIST = Object.values(WIDGETS);

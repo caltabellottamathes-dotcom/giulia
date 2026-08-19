@@ -98,7 +98,7 @@ export default function HouseholdPage() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <PageHero page="life-household" image={IMAGES.lifeHousehold} icon={Home} eyebrow="LIFE" title="Household" subtitle={matters.length === 0 ? "Alles loopt soepel — niets vraagt om aandacht." : `${matters.length} dingen waard om deze week te doen.`}
+      <PageHero page="life-household" image={IMAGES.lifeHousehold} icon={Home} eyebrow="LIFE" title="Reminders For Home." subtitle={matters.length === 0 ? "Alles loopt soepel — niets vraagt om aandacht." : `${matters.length} dingen waard om deze week te doen.`}
         actions={<GlassButton variant="primary" size="md" onClick={() => document.getElementById("creator")?.scrollIntoView({ behavior: "smooth" })}><Plus className="h-4 w-4" /> Toevoegen</GlassButton>} />
 
       {/* Tabs */}

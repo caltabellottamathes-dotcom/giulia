@@ -30,7 +30,7 @@ export default function TimeTrackerGallery() {
   return (
     <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("timetracker")} className="min-h-[220px]" style={{ "--tile-accent": A }}>
       <div className="p-6 flex flex-col flex-1 min-h-0">
-        <WidgetHeader label="Tijd · Timer" count={active ? "loopt" : "stil"} />
+        <WidgetHeader label="Where My Time Goes." count={active ? "loopt" : "stil"} />
         <h3 className="text-[26px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current">{headline}</h3>
         <p className="text-[11px] uppercase tracking-[0.18em] opacity-50 mt-1.5 truncate">{sub}</p>
         <div className="mt-6 flex items-center justify-center flex-1">

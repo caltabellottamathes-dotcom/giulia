@@ -45,7 +45,7 @@ export default function GiuliaGallery() {
     <WidgetShell size="3x2" radius="xl" interactive onClick={() => openChat()} className="min-h-[280px]" style={{ "--tile-accent": A }}>
       <div className="flex h-full">
         <div className="flex-1 p-6 flex flex-col min-w-0">
-          <WidgetHeader label="Giulia · je dag" count={total ? `${total} items` : "rustig"} />
+          <WidgetHeader label="What Matters?" count={total ? `${total} items` : "rustig"} />
           <h3 className="text-[34px] leading-[0.95] font-display font-semibold tracking-[-0.03em] text-current">{headline}</h3>
           <p className="text-[11px] uppercase tracking-[0.2em] opacity-50 mt-1.5">{sub}</p>
           <div className="mt-5 flex items-end gap-5">

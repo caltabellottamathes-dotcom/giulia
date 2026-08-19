@@ -20,7 +20,7 @@ export function ProjectsDesign2() {
   return (
     <div className="relative w-full rounded-[24px] overflow-hidden glass-3 p-4 text-ivory shadow-[0_28px_60px_-26px_rgba(0,0,0,0.45)]" style={{ aspectRatio: "16/7", ...accentVars("olive") }}>
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Projecten · skyline</p>
+        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">What I'm Building. · skyline</p>
         <span className="text-[10px] tabular-nums opacity-50">{active.length} actief</span>
       </div>
       <div className="flex items-end gap-1.5 h-[calc(100%-2rem)]">
@@ -54,7 +54,7 @@ export function ProjectsDesign3() {
   return (
     <div className="relative w-full rounded-[24px] overflow-hidden glass-3 p-4 text-ivory flex flex-col shadow-[0_28px_60px_-26px_rgba(0,0,0,0.45)]" style={{ aspectRatio: "3/4", ...accentVars("olive") }}>
       <div className="flex items-center justify-between mb-2">
-        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">Projecten · focus</p>
+        <p className="text-[10px] uppercase tracking-[0.3em] font-semibold opacity-65">What I'm Building. · focus</p>
         <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
           <button onClick={() => setIdx((i) => Math.max(0, i - 1))} className="h-6 w-6 rounded-full glass-1 text-xs">‹</button>
           <button onClick={() => setIdx((i) => Math.min(active.length - 1, i + 1))} className="h-6 w-6 rounded-full glass-1 text-xs">›</button>

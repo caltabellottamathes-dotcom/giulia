@@ -29,7 +29,7 @@ export default function FoodGallery() {
     <WidgetShell size="2x1" radius="large" interactive onClick={() => openModule("food")} className="min-h-[160px]" style={{ "--tile-accent": A }}>
       <div className="flex h-full gap-2.5 p-3">
         <div className="flex-1 flex flex-col min-w-0">
-          <WidgetHeader label="Food" count={count ? `${count} maaltijden` : ""} />
+          <WidgetHeader label="What's for Dinner?" count={count ? `${count} maaltijden` : ""} />
           <div className="flex items-end justify-between mt-0.5">
             <h3 className="text-[20px] leading-[1.0] font-display font-semibold tracking-[-0.03em] text-current">{headline}</h3>
           </div>

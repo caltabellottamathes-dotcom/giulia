@@ -53,7 +53,7 @@ export default function PersonalDevelopmentPage() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <PageHero page="life-development" image={IMAGES.selfDevelopment} icon={Target} eyebrow="LIFE" title="Personal Development" subtitle="Groei, doelen en leren"
+      <PageHero page="life-development" image={IMAGES.selfDevelopment} icon={Target} eyebrow="LIFE" title="Becoming Me." subtitle="Groei, doelen en leren"
         actions={
           <div className="flex items-center gap-2">
             <GlassButton variant="glass" size="icon" onClick={() => navigate("/search")}><Search className="h-4 w-4" /></GlassButton>
