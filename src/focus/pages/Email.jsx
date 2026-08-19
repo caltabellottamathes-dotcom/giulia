@@ -183,6 +183,26 @@ export default function Email() {
     setSelectedEmail({ ...selectedEmail, status }); reload();
   };
 
+  const archiveEmail = async () => {
+    if (!selectedEmail) return;
+    const next = selectedEmail.folder === "archived" ? "inbox" : "archived";
+    await base44.entities.Email.update(selectedEmail.id, { folder: next });
+    setSelectedEmail({ ...selectedEmail, folder: next }); reload();
+    toast({ title: next === "archived" ? "Gearchiveerd" : "Terug naar inbox" });
+  };
+
+  const setCategory = async (cat) => {
+    if (!selectedEmail) return;
+    await base44.entities.Email.update(selectedEmail.id, {
+      category: cat || null,
+      triaged: true,
+      important: cat === "important",
+      ...(cat && cat !== "important" ? { folder: "archived" } : {}),
+    });
+    setSelectedEmail({ ...selectedEmail, category: cat || null }); reload();
+    toast({ title: cat ? "Categorie ingesteld" : "Categorie gewist" });
+  };
+
   const selectEmail = async (email) => {
     const fetchId = email.id + Date.now();
     lastFetchId.current = fetchId;
@@ -329,8 +349,8 @@ export default function Email() {
                             <div className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">{selectedEmail.body || "(geen inhoud)"}</div>
                           )}
                         </div>
-                        <div className="p-4 border-t border-border/40 shrink-0">
-                          <div className="flex flex-wrap gap-2">
+                        <div className="p-4 border-t border-border/40 shrink-0 space-y-2.5">
+                          <div className="flex flex-wrap items-center gap-2">
                             {(selectedEmail.giulia_draft || selectedEmail.folder === "giulia_drafts") ? (
                               <GlassButton variant="primary" size="sm" onClick={() => { setDraftBody(selectedEmail.body || ""); setShowDraftPanel(true); }}><Check className="h-4 w-4" /> Goedkeuren & Versturen</GlassButton>
                             ) : (
@@ -338,6 +358,20 @@ export default function Email() {
                                 <GlassButton variant="outline" size="sm" onClick={() => draftReply(selectedEmail)} disabled={drafting}>{drafting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} Giulia antwoordt</GlassButton>
                                 <GlassButton variant="primary" size="sm" onClick={openReply}>Beantwoord</GlassButton>
                                 <GlassButton variant="outline" size="sm" onClick={toggleRead}>{selectedEmail.status === "unread" ? "Gelezen" : "Ongelezen"}</GlassButton>
+                                <GlassButton variant="outline" size="sm" onClick={archiveEmail}><Archive className="h-4 w-4" /> {selectedEmail.folder === "archived" ? "Inbox" : "Archiveer"}</GlassButton>
+                                <div className="flex items-center gap-1.5 ml-auto">
+                                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Categorie</span>
+                                  <select
+                                    value={selectedEmail.category || ""}
+                                    onChange={(e) => setCategory(e.target.value)}
+                                    className="glass-1 rounded-xl px-3 py-2 text-xs focus:outline-none cursor-pointer max-w-[160px]"
+                                  >
+                                    <option value="">—</option>
+                                    {categoryChips.filter((c) => c.id !== "all").map((c) => (
+                                      <option key={c.id} value={c.id}>{c.label}</option>
+                                    ))}
+                                  </select>
+                                </div>
                               </>
                             )}
                             <GlassButton variant="ghost" size="sm" onClick={delEmail} className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></GlassButton>

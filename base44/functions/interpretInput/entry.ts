@@ -217,10 +217,12 @@ export default async function (req) {
     }
 
     // Gatekeeper / Approval: als een reply voorgesteld wordt (niet bij quick
-    // command). Dedup: maak GEEN nieuwe approval aan als er al een pending of
-    // uitgevoerde approval bestaat voor dezelfde actie + thread — voorkomt dat
-    // dezelfde vraag elke cyclus opnieuw terugkeert.
-    if (reply && !isCommand) {
+    // command, en NIET proactief voor email — Salvo vraagt email-antwoorden
+    // zelf aan via de "Giulia antwoordt"-knop). Voor WhatsApp mag Giulia wel
+    // een antwoord-concept voorstellen. Dedup: maak GEEN nieuwe approval aan
+    // als er al een pending of uitgevoerde approval bestaat voor dezelfde
+    // actie + thread — voorkomt dat dezelfde vraag elke cyclus opnieuw terugkeert.
+    if (reply && !isCommand && source !== "email") {
       const actionType = source === "email" ? "email_reply" : "whatsapp_reply";
       const cat = source === "email" ? "email" : "whatsapp";
       const tId = record.thread_id || record.conversation_id || undefined;

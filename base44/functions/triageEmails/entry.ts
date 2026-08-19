@@ -61,14 +61,12 @@ export default async function (req) {
     };
 
     const updates = [];
-    const awaitingIds = [];
     for (const e of untriaged) {
       const category = heurCategory(e);
       const projectId = projectMatch(e);
       const isNoise = category !== 'important';
       const text = `${e.subject || ''} ${e.body || ''}`;
-      const awaiting = !isNoise && !e.auto_draft_created && AWAITING_RESPONSE.test(text);
-      if (awaiting) awaitingIds.push(e.id);
+      const awaiting = !isNoise && AWAITING_RESPONSE.test(text);
       updates.push(
         sr.entities.Email.update(e.id, {
           category,
@@ -80,16 +78,8 @@ export default async function (req) {
     }
     await Promise.all(updates);
 
-    // Domein 8 — automatisch conceptantwoord (Approval) voor mails die op
-    // reactie wachten. Max 5 per run om geen bulk aan drafts te genereren.
-    let autoDrafted = 0;
-    for (const id of awaitingIds.slice(0, 5)) {
-      const res = await base44.functions.invoke('draftEmailReply', { email_id: id }).catch(() => null);
-      if (res && res.data && res.data.ok) {
-        await sr.entities.Email.update(id, { auto_draft_created: true }).catch(() => null);
-        autoDrafted++;
-      }
-    }
+    // GEEN proactieve concept-antwoorden meer — Salvo vraagt dat zelf aan via
+    // de "Giulia antwoordt"-knop bij een email (draftEmailReply).
 
     // === Laag 2 — LLM-agent: verfijning + concept-antwoorden ===
     const tools = {
@@ -134,7 +124,6 @@ export default async function (req) {
       counts,
       linked,
       drafts: drafts.length,
-      auto_drafted: autoDrafted,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

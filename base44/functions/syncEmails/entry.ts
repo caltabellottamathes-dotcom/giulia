@@ -21,13 +21,16 @@ export default async function (req) {
     const base = (secrets.get('BRIDGE_URL') || '').replace(/\/$/, '');
     if (!base) return Response.json({ error: 'BRIDGE_URL not set' }, { status: 500 });
 
+    const reqBody = await req.json().catch(() => ({}));
+    const limit = Number(reqBody?.limit) || 50;
+
     const res = await fetch(base + '/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + (secrets.get('BRIDGE_TOKEN') || ''),
       },
-      body: JSON.stringify({ limit: 50 }),
+      body: JSON.stringify({ limit }),
     });
     const data = await res.json();
     if (!res.ok) return Response.json({ error: data.error || 'bridge error' }, { status: res.status });
