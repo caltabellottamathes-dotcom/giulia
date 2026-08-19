@@ -8,6 +8,7 @@ import { IMAGES } from "@/lib/images";
 import { Empty, Card, Stat, Progress } from "@/system/panels/previewParts";
 import { goalStatusColor, goalStatusLabel, goalTypeLabel, fmtDate } from "@/lib/selfUtils";
 import { Target, Plus, Search, Sliders, Award, BookOpen, TrendingUp, ArrowUpRight } from "lucide-react";
+import TherapyPanel from "@/self/panels/TherapyPanel";
 
 const SAGE = "hsl(var(--self-accent))";
 
@@ -16,6 +17,7 @@ const TABS = [
   { key: "goals", label: "Goals" },
   { key: "growth", label: "Growth" },
   { key: "learning", label: "Learning" },
+  { key: "therapy", label: "Therapy" },
 ];
 
 export default function PersonalDevelopmentPage() {
@@ -47,11 +49,11 @@ export default function PersonalDevelopmentPage() {
     try { await base44.entities.SelfGoal.create({ title: form.title.trim(), type: form.type, area: form.area || undefined, deadline: form.deadline || undefined, status: "active", progress: 0 }); setForm({ title: "", type: "goal", area: "", deadline: "" }); setShowAdd(false); await load(); } catch { /* ignore */ }
   };
   const updateProgress = async (g) => { try { await base44.entities.SelfGoal.update(g.id, { progress: Math.min(100, (g.progress || 0) + 10) }); await load(); } catch { /* ignore */ } };
-  const setTab2 = (t) => { setTab(t); navigate(`/self/personal-development?tab=${t}`, { replace: true }); };
+  const setTab2 = (t) => { setTab(t); navigate(`/life/development?tab=${t}`, { replace: true }); };
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <PageHero page="self-development" image={IMAGES.selfDevelopment} icon={Target} eyebrow="SELF" title="Personal Development" subtitle="Groei, doelen en leren"
+      <PageHero page="life-development" image={IMAGES.selfDevelopment} icon={Target} eyebrow="LIFE" title="Personal Development" subtitle="Groei, doelen en leren"
         actions={
           <div className="flex items-center gap-2">
             <GlassButton variant="glass" size="icon" onClick={() => navigate("/search")}><Search className="h-4 w-4" /></GlassButton>
@@ -149,6 +151,12 @@ export default function PersonalDevelopmentPage() {
                   </div>
                 </Card>
               )) : <Empty text="Geen leerdoelen — voeg er een toe." />}
+            </div>
+          )}
+
+          {tab === "therapy" && (
+            <div className="rounded-[28px] bg-charcoal p-6 text-ivory">
+              <TherapyPanel />
             </div>
           )}
         </>

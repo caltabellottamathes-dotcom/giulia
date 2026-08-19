@@ -39,7 +39,7 @@ export default function SocialPlannerPreview({ onOpen }) {
         { label: "OPEN PLANNEN", text: `${openPlans.length} plannen wachten op bevestiging.` },
         { label: "KANSEN", text: opportunities.length ? `${opportunities.length} sociale kansen gevonden.` : "Geen extra kansen." },
       ]}
-      actions={[{ label: "Open Social Planner", primary: true, to: "/life/social-planner" }, { label: "Open Social Pulse", to: "/life/social-pulse" }]}>
+      actions={[{ label: "Open Social Planner", primary: true, to: "/life/social?view=planner" }, { label: "Open Social Pulse", to: "/life/social-pulse" }]}>
       <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6 h-full overflow-hidden">
         <div className="flex flex-col gap-5 overflow-auto pr-1">
           <div className="flex flex-col items-center"><AnimatedRing pct={Math.min(100, freeSlots.length * 33)} size={140} color={LIGHT} label={String(freeSlots.length)} sub="VRIJ" /></div>

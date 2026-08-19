@@ -102,13 +102,11 @@ const MODULE_ROUTE = {
   timetracker: "/timetracker",
   updates: "/updates",
   goodmorning: "/wake",
-  socialpulse: "/life/social-pulse", socialplanner: "/life/social-planner",
+  social: "/life/social",
   household: "/life/household", personaladmin: "/life/personal-admin", hobbies: "/life/hobbies",
   food: "/life/food",
   wantstoknow: "/wants-to-know",
-  selfdailystate: "/self/daily-state", selfroutines: "/self/routines", selfwake: "/self/wake",
-  selftherapy: "/self/therapy", selfjournal: "/self/journal", selfdevelopment: "/self/personal-development",
-  selfpersonaltime: "/self/personal-time", selfinsights: "/self/insights",
+  dailystate: "/life/daily-state", development: "/life/development",
   jedag: "/agenda",
 };
 

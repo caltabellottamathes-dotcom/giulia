@@ -29,7 +29,7 @@ export default function DailyStateEditorial() {
   }, [checkIns]);
 
   return (
-    <WidgetShell size="1x2" radius="large" interactive onClick={() => openModule("selfdailystate")} className="min-h-[210px]" style={{ "--tile-accent": PLUM }}>
+    <WidgetShell size="1x2" radius="large" interactive onClick={() => openModule("dailystate")} className="min-h-[210px]" style={{ "--tile-accent": PLUM }}>
       <div className="flex flex-col h-full gap-2 p-2.5" style={{ color: PLUM }}>
         <div className="rounded-xl overflow-hidden h-14 shrink-0">
           <img src={SELF_PHOTO.dailyState} alt="" className="h-full w-full object-cover" draggable={false} />

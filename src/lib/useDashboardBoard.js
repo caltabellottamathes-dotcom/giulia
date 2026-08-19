@@ -17,14 +17,13 @@ import { WIDGETS } from "@/lib/widgetRegistry";
  * anders dan vandaag → volledige reset (behalve NOW).
  */
 
-const NOW_WIDGET_TYPES = ["approvals", "tasks", "notifications", "email", "whatsapp", "household", "personaladmin", "selfdailystate", "selfinsights", "giuliaquestions"];
+const NOW_WIDGET_TYPES = ["approvals", "tasks", "notifications", "email", "whatsapp", "household", "personaladmin", "dailystate", "giuliaquestions"];
 
 export const DEFAULT_BOARDS = [
   { id: "now", label: "NOW", domain: "now" },
   { id: "giulia", label: "GIULIA", domain: "giulia" },
   { id: "focus", label: "FOCUS", domain: "focus" },
   { id: "life", label: "LIFE", domain: "life" },
-  { id: "self", label: "SELF", domain: "self" },
   { id: "system", label: "SYSTEM", domain: "system" },
 ];
 
@@ -39,7 +38,9 @@ export function domainWidgetTypes(domain) {
 
 // ── active board (session) ──
 export function getActiveBoard() {
-  return sessionStorage.getItem("giulia_active_board") || "now";
+  const b = sessionStorage.getItem("giulia_active_board") || "now";
+  // SELF-board is verwijderd als domein — remap naar GIULIA.
+  return b === "self" ? "giulia" : b;
 }
 export function setActiveBoard(id) {
   sessionStorage.setItem("giulia_active_board", id);

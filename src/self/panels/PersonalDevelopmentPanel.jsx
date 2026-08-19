@@ -62,7 +62,7 @@ export default function PersonalDevelopmentPanel() {
           </div>
           <p className="text-sm text-ivory/55 mt-1.5 italic">{areas.length} ontwikkelgebieden · {milestones.length} milestones</p>
         </div>
-        <OpenLink to="/self/personal-development" label="Open Development" />
+        <OpenLink to="/life/development" label="Open Development" />
       </div>
 
       {/* Node diagram — full glass visualization */}

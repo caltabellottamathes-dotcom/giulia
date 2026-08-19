@@ -4,12 +4,14 @@ import { useNavigate } from "react-router-dom";
 import WakeSettingsForm from "@/self/components/WakeSettingsForm";
 import RoutineEditor from "@/self/components/RoutineEditor";
 import DailyIntention from "@/self/components/DailyIntention";
+import WakePanel from "@/self/panels/WakePanel";
 import { Sunrise, Moon, ArrowRight } from "lucide-react";
 
 export default function GoodMorningPanel() {
   const navigate = useNavigate();
   const [settings, setSettings] = useState(null);
   const [steps, setSteps] = useState([]);
+  const [tab, setTab] = useState("wake");
 
   const load = useCallback(async () => {
     const [s, st] = await Promise.all([
@@ -38,6 +40,21 @@ export default function GoodMorningPanel() {
 
   return (
     <div className="space-y-6">
+      {/* Good Morning tabs — Wake (gemigreerd uit SELF) / Instellingen */}
+      <div className="flex gap-2">
+        {[["wake", "Wake"], ["instellingen", "Instellingen"]].map(([k, l]) => (
+          <button key={k} onClick={() => setTab(k)} className={"px-3.5 py-1.5 rounded-full text-xs font-bold transition " + (tab === k ? "bg-olive text-ivory" : "bg-white/8 text-ivory/55 hover:text-ivory")}>{l}</button>
+        ))}
+      </div>
+
+      {tab === "wake" && (
+        <div className="rounded-[24px] bg-charcoal/40 p-4 text-ivory">
+          <WakePanel />
+        </div>
+      )}
+
+      {tab === "instellingen" && (
+        <>
       <DailyIntention />
       <div className="flex items-center gap-2 text-ivory/70">
         <Sunrise className="h-4 w-4 text-olive shrink-0" />
@@ -54,6 +71,7 @@ export default function GoodMorningPanel() {
       >
         <Moon className="h-4 w-4" /> Enter Wake Mode <ArrowRight className="h-4 w-4" />
       </button>
+      </>)}
     </div>
   );
 }

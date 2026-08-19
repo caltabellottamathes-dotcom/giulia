@@ -115,7 +115,7 @@ export default function DashboardBriefing() {
               <Link to="/approvals" className="flex items-center justify-between text-sm text-ivory/85 hover:text-ivory"><span>Goedkeuringen</span><span className="font-display font-bold text-ivory">{waiting.approvals}</span></Link>
               <Link to="/email" className="flex items-center justify-between text-sm text-ivory/85 hover:text-ivory"><span>Ongelezen email</span><span className="font-display font-bold text-ivory">{waiting.emails}</span></Link>
               <Link to="/whatsapp" className="flex items-center justify-between text-sm text-ivory/85 hover:text-ivory"><span>WhatsApp</span><span className="font-display font-bold text-ivory">{waiting.whatsapp}</span></Link>
-              {waiting.needs > 0 && <Link to="/self/daily-state" className="flex items-center justify-between text-sm text-ivory/85 hover:text-ivory"><span>SELF behoeften</span><span className="font-display font-bold text-ivory">{waiting.needs}</span></Link>}
+              {waiting.needs > 0 && <Link to="/life/daily-state" className="flex items-center justify-between text-sm text-ivory/85 hover:text-ivory"><span>SELF behoeften</span><span className="font-display font-bold text-ivory">{waiting.needs}</span></Link>}
               {waiting.life > 0 && <Link to="/life/household" className="flex items-center justify-between text-sm text-ivory/85 hover:text-ivory"><span>LIFE aandacht</span><span className="font-display font-bold text-ivory">{waiting.life}</span></Link>}
               {waiting.threads > 0 && <div className="flex items-center justify-between text-sm text-ivory/85"><span>Wacht op info</span><span className="font-display font-bold text-ivory">{waiting.threads}</span></div>}
             </div>

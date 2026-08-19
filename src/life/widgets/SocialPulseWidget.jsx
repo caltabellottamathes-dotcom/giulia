@@ -45,7 +45,7 @@ export default function SocialPulseWidget() {
   const maxW = Math.max(1, ...weeks);
 
   return (
-    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("socialpulse")} className="min-h-[260px]" style={{ "--tile-accent": BLUE }}>
+    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("social")} className="min-h-[260px]" style={{ "--tile-accent": BLUE }}>
       <div className="p-6 flex flex-col flex-1 min-h-0">
         <WidgetHeader label="Social Pulse" count={overdue.length ? `${overdue.length} wacht` : "bij"} />
         <h3 className="text-[26px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current">{headline}</h3>
@@ -70,7 +70,7 @@ export default function SocialPulseWidget() {
             <p className="text-[9px] uppercase tracking-[0.2em] text-ivory/60 font-semibold">{activePlans} plannen · {overdue.length} aandacht</p>
             <p className="text-sm font-semibold text-ivory truncate" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.6)" }}>{topPerson ? topPerson.name : "Netwerk in balans"}</p>
           </div>
-          <button onClick={(e) => { e.stopPropagation(); openModule("socialpulse"); }} className="rounded-full px-3.5 py-1.5 text-[11px] font-semibold border border-ivory/30 text-ivory transition hover:bg-ivory/10 shrink-0">Open</button>
+          <button onClick={(e) => { e.stopPropagation(); openModule("social"); }} className="rounded-full px-3.5 py-1.5 text-[11px] font-semibold border border-ivory/30 text-ivory transition hover:bg-ivory/10 shrink-0">Open</button>
         </div>
       </BrandPhoto>
     </WidgetShell>

@@ -27,21 +27,14 @@ import Agents from "@/giulia/pages/Agents";
 import Updates from "@/giulia/pages/Updates";
 import GoodMorningPanel from "@/self/panels/GoodMorningPanel";
 import JeDagPreview from "@/giulia/panels/JeDagPreview";
-import SocialPulsePage from "@/life/pages/SocialPulsePage";
-import SocialPlannerPage from "@/life/pages/SocialPlannerPage";
+import SocialPage from "@/life/pages/SocialPage";
 import HouseholdPage from "@/life/pages/HouseholdPage";
 import PersonalAdminPage from "@/life/pages/PersonalAdminPage";
 import HobbiesPage from "@/life/pages/HobbiesPage";
 import FoodPage from "@/life/pages/FoodPage";
 import WantsToKnow from "@/giulia/pages/WantsToKnow";
 import DailyStatePanel from "@/self/panels/DailyStatePanel";
-import RoutinesPanel from "@/self/panels/RoutinesPanel";
-import WakePanel from "@/self/panels/WakePanel";
-import TherapyPanel from "@/self/panels/TherapyPanel";
-import JournalPanel from "@/self/panels/JournalPanel";
 import PersonalDevelopmentPanel from "@/self/panels/PersonalDevelopmentPanel";
-import PersonalTimePanel from "@/self/panels/PersonalTimePanel";
-import SelfInsightsPanel from "@/self/panels/SelfInsightsPanel";
 import ImageViewerPanel from "@/system/panels/viewers/ImageViewerPanel";
 import VideoPlayerPanel from "@/system/panels/viewers/VideoPlayerPanel";
 import MusicPlayerPanel from "@/system/panels/viewers/MusicPlayerPanel";
@@ -76,21 +69,14 @@ export const MODULES = {
   updates:     { label: "Updates",       icon: Sparkles,        Component: Updates,       panelWidth: 720 },
   goodmorning: { label: "Good Morning",  icon: Sunrise,          Component: GoodMorningPanel, panelWidth: 560 },
   jedag:     { label: "Je dag",       icon: Sparkles,        Component: JeDagPreview,  panelWidth: 860 },
-  socialpulse:   { label: "Social Pulse",      icon: Heart,           Component: SocialPulsePage,    panelWidth: 760 },
-  socialplanner: { label: "Social Planner",    icon: CalendarHeart,   Component: SocialPlannerPage,  panelWidth: 760 },
+  social:        { label: "Social",             icon: Heart,           Component: SocialPage,         panelWidth: 760 },
   household:     { label: "Huishouden",         icon: Home,            Component: HouseholdPage,      panelWidth: 760 },
   personaladmin: { label: "Persoonlijk Admin",  icon: ClipboardList,   Component: PersonalAdminPage,  panelWidth: 760 },
   hobbies:       { label: "Hobby's",            icon: Palette,         Component: HobbiesPage,        panelWidth: 760 },
   food:          { label: "Food",               icon: Utensils,         Component: FoodPage,          panelWidth: 760 },
   wantstoknow:   { label: "Wants to know",       icon: HelpCircle,      Component: WantsToKnow,        panelWidth: 760 },
-  selfdailystate:    { label: "Daily State",       icon: ActivityIcon,    Component: DailyStatePanel,           panelWidth: 760 },
-  selfroutines:      { label: "Routines",          icon: Repeat,          Component: RoutinesPanel,             panelWidth: 760 },
-  selfwake:          { label: "Wake",              icon: Sunrise,         Component: WakePanel,                 panelWidth: 560 },
-  selftherapy:       { label: "Therapy",           icon: Heart,           Component: TherapyPanel,              panelWidth: 760 },
-  selfjournal:       { label: "Journal",           icon: BookOpen,        Component: JournalPanel,              panelWidth: 760 },
-  selfdevelopment:   { label: "Development",       icon: Target,          Component: PersonalDevelopmentPanel,  panelWidth: 760 },
-  selfpersonaltime:  { label: "Personal Time",     icon: Clock,           Component: PersonalTimePanel,         panelWidth: 760 },
-  selfinsights:      { label: "Self Insights",     icon: Telescope,       Component: SelfInsightsPanel,         panelWidth: 760 },
+  dailystate:        { label: "Daily State",       icon: ActivityIcon,    Component: DailyStatePanel,           panelWidth: 760 },
+  development:      { label: "Development",       icon: Target,          Component: PersonalDevelopmentPanel,  panelWidth: 760 },
   imageviewer:       { label: "Afbeeldingen",       icon: ImageIcon,       Component: ImageViewerPanel,          panelWidth: 1000 },
   videoplayer:       { label: "Video",              icon: Video,           Component: VideoPlayerPanel,          panelWidth: 1000 },
   musicplayer:       { label: "Muziek",             icon: Music,           Component: MusicPlayerPanel,          panelWidth: 760 },

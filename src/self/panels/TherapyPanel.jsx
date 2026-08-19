@@ -83,7 +83,7 @@ export default function TherapyPanel() {
           <h2 className="text-[32px] leading-[0.95] font-display font-semibold tracking-[-0.03em] mt-1">{active.length} actief</h2>
           <p className="text-sm text-ivory/55 mt-1.5 italic">{nextAppt ? `Volgende: ${fmtDate(nextAppt.start)} ${fmtTime(nextAppt.start)}` : "Geen afspraak gepland"}</p>
         </div>
-        <OpenLink to="/self/therapy" label="Open Therapy" />
+        <OpenLink to="/life/development?tab=therapy" label="Open Therapy" />
       </div>
 
       {/* Goals / Notes stats */}

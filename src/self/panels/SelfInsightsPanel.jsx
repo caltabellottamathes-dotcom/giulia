@@ -51,7 +51,7 @@ export default function SelfInsightsPanel() {
           </div>
           <p className="text-sm text-ivory/55 mt-1.5 italic">Wat SELF over langere tijd begrijpt.</p>
         </div>
-        <OpenLink to="/self/insights" label="Open Insights" />
+        <OpenLink to="/insights" label="Open Insights" />
       </div>
 
       {/* Area chart with peak marker — full glass visualization */}

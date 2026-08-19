@@ -48,7 +48,7 @@ export default function SocialPulsePreview({ onOpen }) {
         { label: "NASTE KRING", text: situations.length ? `${situations.length} relaties wachten op contact.` : "Je naaste kring voelt warm." },
         { label: "SOCIAAL", text: `${activePlans} sociale plannen staan klaar.` },
       ]}
-      actions={[{ label: "Open Social Pulse", primary: true, to: "/life/social-pulse" }, { label: "Social Planner", to: "/life/social-planner" }]}>
+      actions={[{ label: "Open Social Pulse", primary: true, to: "/life/social?view=pulse" }, { label: "Social Planner", to: "/life/social-planner" }]}>
       <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6 h-full overflow-hidden">
         <div className="flex flex-col gap-5 overflow-auto pr-1">
           <div className="rounded-2xl border border-marble/20 bg-marble/5 p-4">

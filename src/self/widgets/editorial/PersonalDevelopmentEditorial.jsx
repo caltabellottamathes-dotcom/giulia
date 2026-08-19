@@ -26,7 +26,7 @@ export default function PersonalDevelopmentEditorial() {
   ];
 
   return (
-    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("selfdevelopment")} className="min-h-[210px]" style={{ "--tile-accent": PLUM }}>
+    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("development")} className="min-h-[210px]" style={{ "--tile-accent": PLUM }}>
       <div className="flex h-full gap-2.5 p-2.5" style={{ color: PLUM }}>
         <div className="w-[30%] shrink-0 rounded-xl overflow-hidden">
           <img src={SELF_PHOTO.development} alt="" className="h-full w-full object-cover" draggable={false} />

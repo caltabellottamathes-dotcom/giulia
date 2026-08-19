@@ -62,7 +62,7 @@ export default function RoutinesPanel() {
           </div>
           <p className="text-sm text-ivory/55 mt-1.5 italic">{today.length ? `${today.length - done.length} resterend vandaag` : "Geen routines vandaag"}</p>
         </div>
-        <OpenLink to="/self/routines" label="Open Routines" />
+        <OpenLink to="/life/household?tab=selfcare" label="Open Routines" />
       </div>
 
       {/* Progress ring + description */}

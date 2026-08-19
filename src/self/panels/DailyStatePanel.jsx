@@ -61,7 +61,7 @@ export default function DailyStatePanel() {
           </div>
           <p className="text-sm text-ivory/55 mt-1.5 italic">{latest ? `Last check-in ${fmtAgo(latest.timestamp)}` : "Nog geen check-in vandaag."}</p>
         </div>
-        <OpenLink to="/self/daily-state" label="Open Daily State" />
+        <OpenLink to="/life/daily-state" label="Open Daily State" />
       </div>
 
       {/* 3-column big numbers with sparklines */}

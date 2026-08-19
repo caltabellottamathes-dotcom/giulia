@@ -14,7 +14,6 @@ const DOMAINS = [
   { key: "giulia", label: "GIULIA", accent: "hsl(var(--olive))" },
   { key: "focus", label: "FOCUS", accent: "hsl(var(--sand))" },
   { key: "life", label: "LIFE", accent: "hsl(var(--life-blue))" },
-  { key: "self", label: "SELF", accent: "hsl(var(--self-primary))" },
   { key: "system", label: "SYSTEM", accent: "hsl(var(--muted-foreground))" },
 ];
 

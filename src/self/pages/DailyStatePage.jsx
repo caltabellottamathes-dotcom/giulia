@@ -63,11 +63,11 @@ export default function DailyStatePage() {
       setShowCheckIn(false); await load();
     } catch { /* ignore */ }
   };
-  const setTab2 = (t) => { setTab(t); navigate(`/self/daily-state?tab=${t}`, { replace: true }); };
+  const setTab2 = (t) => { setTab(t); navigate(`/life/daily-state?tab=${t}`, { replace: true }); };
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <PageHero page="self-daily-state" image={IMAGES.selfDailyState} icon={ActivityIcon} eyebrow="SELF" title="Daily State" subtitle="Actuele persoonlijke toestand"
+      <PageHero page="life-daily-state" image={IMAGES.selfDailyState} icon={ActivityIcon} eyebrow="LIFE" title="Daily State" subtitle="Actuele persoonlijke toestand"
         actions={
           <div className="flex items-center gap-2">
             <GlassButton variant="glass" size="icon" onClick={() => navigate("/search")}><Search className="h-4 w-4" /></GlassButton>

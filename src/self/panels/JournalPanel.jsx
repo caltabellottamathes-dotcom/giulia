@@ -61,7 +61,7 @@ export default function JournalPanel() {
           <h2 className="text-[32px] leading-[0.95] font-display font-semibold tracking-[-0.03em] mt-1">{moments.length} momenten</h2>
           <p className="text-sm text-ivory/55 mt-1.5 italic">{today.length ? `${today.length} entries vandaag` : "Vandaag is leeg — voeg iets toe."}</p>
         </div>
-        <OpenLink to="/self/journal" label="Open Journal" />
+        <OpenLink to="/insights?tab=journal" label="Open Journal" />
       </div>
 
       {/* Timeline + magnitude — full glass layout */}

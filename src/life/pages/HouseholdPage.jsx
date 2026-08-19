@@ -11,6 +11,7 @@ import { householdZones, mattersItems, householdHeadline, isAttention, statusLab
 import { Home, Repeat, ShoppingCart, Wrench, Plus, Sparkles, CheckCircle2, Search } from "lucide-react";
 import { logLifeActivity } from "@/lib/lifeActivity";
 import LifeActivityFeed from "@/life/components/LifeActivityFeed";
+import RoutinesPanel from "@/self/panels/RoutinesPanel";
 
 const SAND = "hsl(var(--life-sand))";
 const SAND_DEEP = "hsl(var(--life-sand-deep))";
@@ -24,6 +25,7 @@ const TABS = [
   { key: "SHOPPING", label: "Boodschappen", icon: ShoppingCart },
   { key: "MAINTENANCE", label: "Onderhoud", icon: Wrench },
   { key: "HOUSEHOLD", label: "Huishouden", icon: Sparkles },
+  { key: "SELFCARE", label: "Zelfzorg", icon: Repeat },
 ];
 
 const startOfWeek = () => { const d = new Date(); d.setHours(0, 0, 0, 0); const day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day); return d; };
@@ -343,6 +345,13 @@ export default function HouseholdPage() {
               </div>
             ) : <p className="text-sm text-muted-foreground italic">Nog geen geschiedenis.</p>}
           </GlassPanel>
+        </div>
+      )}
+
+      {/* ZELFCARE — Routines gemigreerd uit SELF */}
+      {tab === "SELFCARE" && (
+        <div className="rounded-[28px] bg-charcoal p-6 text-ivory">
+          <RoutinesPanel />
         </div>
       )}
 

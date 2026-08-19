@@ -32,12 +32,9 @@ export async function getUrgentTypes() {
     // Admin
     base44.entities.AdminObligation.filter({ status: { $in: ["open", "overdue"] } })
       .then((r) => { if ((r || []).length) urgent.add("personaladmin"); }).catch(() => {}),
-    // Self state
+    // Self state → Daily State (LIFE)
     base44.entities.SelfCheckIn.filter({}, "-timestamp", 1)
-      .then((r) => { const c = (r || [])[0]; if (c && (c.state === "overwhelmed" || c.state === "low")) urgent.add("selfdailystate"); }).catch(() => {}),
-    // Self insights
-    base44.entities.SelfInsight.filter({ status: "active" })
-      .then((r) => { if ((r || []).length) urgent.add("selfinsights"); }).catch(() => {}),
+      .then((r) => { const c = (r || [])[0]; if (c && (c.state === "overwhelmed" || c.state === "low")) urgent.add("dailystate"); }).catch(() => {}),
   ]);
   return urgent;
 }

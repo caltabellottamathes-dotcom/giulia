@@ -57,7 +57,7 @@ export default function SocialPlannerWidget() {
   const nextPlan = weekPlans.find((p) => p.status === "planned" || p.status === "confirmed");
 
   return (
-    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("socialplanner")} className="min-h-[260px]" style={{ "--tile-accent": BLUE }}>
+    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("social")} className="min-h-[260px]" style={{ "--tile-accent": BLUE }}>
       <div className="p-6 flex flex-col flex-1 min-h-0">
         <WidgetHeader label="Social Planner" count={weekPlans.length ? `${weekPlans.length} deze week` : "open"} />
         <h3 className="text-[26px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current">{headline}</h3>
@@ -97,7 +97,7 @@ export default function SocialPlannerWidget() {
               {nextPlan ? `${nextPlan.activity} · ${new Date(nextPlan.suggested_date).toLocaleDateString("nl-NL", { weekday: "short", day: "numeric" })}` : "Geen plan deze week"}
             </p>
           </div>
-          <button onClick={(e) => { e.stopPropagation(); openModule("socialplanner"); }} className="rounded-full px-3.5 py-1.5 text-[11px] font-semibold border border-ivory/30 text-ivory transition hover:bg-ivory/10 shrink-0">Open</button>
+          <button onClick={(e) => { e.stopPropagation(); openModule("social"); }} className="rounded-full px-3.5 py-1.5 text-[11px] font-semibold border border-ivory/30 text-ivory transition hover:bg-ivory/10 shrink-0">Open</button>
         </div>
       </BrandPhoto>
     </WidgetShell>

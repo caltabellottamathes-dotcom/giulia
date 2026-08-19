@@ -54,7 +54,7 @@ export default function WakePanel() {
           </div>
           <p className="text-sm text-ivory/55 mt-1.5 italic">{session ? `Phase: ${PHASE_LABEL[phase] || phase.toUpperCase()}` : "Nog geen wake sessie vandaag."}</p>
         </div>
-        <OpenLink to="/self/wake" label="Open Wake" />
+        <OpenLink to="/wake" label="Open Wake" />
       </div>
 
       {/* Big progress ring */}

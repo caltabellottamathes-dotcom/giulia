@@ -43,26 +43,17 @@ import QuickCommand from '@/system/pages/QuickCommand';
 import Updates from '@/giulia/pages/Updates';
 import Briefing from '@/giulia/pages/Briefing';
 import LifeGallery from '@/life/pages/LifeGallery';
-import SelfGallery from '@/self/pages/SelfGallery';
 import WakeMode from '@/self/pages/WakeMode';
 import LifeLanding from '@/life/pages/LifeLanding';
-import SocialPulsePage from '@/life/pages/SocialPulsePage';
-import SocialPlannerPage from '@/life/pages/SocialPlannerPage';
+import SocialPage from '@/life/pages/SocialPage';
 import HouseholdPage from '@/life/pages/HouseholdPage';
 import PersonalAdminPage from '@/life/pages/PersonalAdminPage';
 import HobbiesPage from '@/life/pages/HobbiesPage';
 import HobbyDetail from '@/life/pages/HobbyDetail';
 import FoodPage from '@/life/pages/FoodPage';
 import WantsToKnow from '@/giulia/pages/WantsToKnow';
-import SelfLanding from '@/self/pages/SelfLanding';
 import DailyStatePage from '@/self/pages/DailyStatePage';
-import RoutinesPage from '@/self/pages/RoutinesPage';
-import WakePage from '@/self/pages/WakePage';
-import TherapyPage from '@/self/pages/TherapyPage';
-import JournalPage from '@/self/pages/JournalPage';
 import PersonalDevelopmentPage from '@/self/pages/PersonalDevelopmentPage';
-import PersonalTimePage from '@/self/pages/PersonalTimePage';
-import SelfInsightsPage from '@/self/pages/SelfInsightsPage';
 import Beeldbank from '@/system/pages/Beeldbank';
 import WidgetGalleryAll from '@/system/pages/WidgetGalleryAll';
 // GlassAgenda scoped pages
@@ -171,23 +162,15 @@ const AuthenticatedApp = () => {
           <Route path="/agents" element={<Agents />} />
           <Route path="/updates" element={<Updates />} />
           <Route path="/life" element={<LifeLanding />} />
-          <Route path="/life/social-pulse" element={<SocialPulsePage />} />
-          <Route path="/life/social-planner" element={<SocialPlannerPage />} />
+          <Route path="/life/social" element={<SocialPage />} />
           <Route path="/life/household" element={<HouseholdPage />} />
           <Route path="/life/personal-admin" element={<PersonalAdminPage />} />
           <Route path="/life/hobbies" element={<HobbiesPage />} />
           <Route path="/life/hobbies/:id" element={<HobbyDetail />} />
           <Route path="/life/food" element={<FoodPage />} />
+          <Route path="/life/development" element={<PersonalDevelopmentPage />} />
+          <Route path="/life/daily-state" element={<DailyStatePage />} />
           <Route path="/wants-to-know" element={<WantsToKnow />} />
-          <Route path="/self" element={<SelfLanding />} />
-          <Route path="/self/daily-state" element={<DailyStatePage />} />
-          <Route path="/self/routines" element={<RoutinesPage />} />
-          <Route path="/self/wake" element={<WakePage />} />
-          <Route path="/self/therapy" element={<TherapyPage />} />
-          <Route path="/self/journal" element={<JournalPage />} />
-          <Route path="/self/personal-development" element={<PersonalDevelopmentPage />} />
-          <Route path="/self/personal-time" element={<PersonalTimePage />} />
-          <Route path="/self/insights" element={<SelfInsightsPage />} />
           <Route path="/beeldbank" element={<Beeldbank />} />
           <Route path="/widget-gallery" element={<WidgetGalleryAll />} />
           {/* GlassAgenda — scoped suite */}
@@ -237,7 +220,6 @@ const AuthenticatedApp = () => {
           </Route>
         </Route>
         <Route path="/life-gallery" element={<LifeGallery />} />
-        <Route path="/self-gallery" element={<SelfGallery />} />
         <Route path="/quick" element={<QuickCommand />} />
         <Route path="/briefing" element={<Briefing />} />
         <Route path="/wake" element={<WakeMode />} />

@@ -31,13 +31,7 @@ import HobbiesWidget from "@/life/widgets/HobbiesWidget";
 import FoodWidget from "@/life/widgets/FoodWidget";
 import GiuliaQuestionsWidget from "@/giulia/widgets/GiuliaQuestionsWidget";
 import DailyStateEditorial from "@/self/widgets/editorial/DailyStateEditorial";
-import RoutinesEditorial from "@/self/widgets/editorial/RoutinesEditorial";
-import WakeEditorial from "@/self/widgets/editorial/WakeEditorial";
-import TherapyEditorial from "@/self/widgets/editorial/TherapyEditorial";
-import JournalEditorial from "@/self/widgets/editorial/JournalEditorial";
 import PersonalDevelopmentEditorial from "@/self/widgets/editorial/PersonalDevelopmentEditorial";
-import PersonalTimeEditorial from "@/self/widgets/editorial/PersonalTimeEditorial";
-import SelfInsightsEditorial from "@/self/widgets/editorial/SelfInsightsEditorial";
 import ImageViewerWidget from "@/system/widgets/viewers/ImageViewerWidget";
 import VideoPlayerWidget from "@/system/widgets/viewers/VideoPlayerWidget";
 import MusicPlayerWidget from "@/system/widgets/viewers/MusicPlayerWidget";
@@ -53,7 +47,7 @@ import BeeldbankWidget from "@/system/widgets/BeeldbankWidget";
 export const WIDGETS = {
   // ── GIULIA ──
   giulia:          { type: "giulia",          label: "Giulia · je dag",      icon: Sparkles,      Component: GiuliaWidget,          image: IMAGES.bootPhone,        span: 8, category: "core", domain: "giulia" },
-  goodmorning:     { type: "goodmorning",     label: "Good Morning",         icon: Sunrise,       Component: GoodMorningWidget,     image: IMAGES.walkChairsBeach,  span: 3, category: "core", domain: "self" },
+  goodmorning:     { type: "goodmorning",     label: "Good Morning",         icon: Sunrise,       Component: GoodMorningWidget,     image: IMAGES.walkChairsBeach,  span: 3, category: "core", domain: "giulia" },
   concierge:       { type: "concierge",       label: "Giulia · Concierge",   icon: MessageSquare, Component: ConciergeWidget,        image: IMAGES.giuliaConcierge, span: 3, category: "core", domain: "giulia" },
   approvals:       { type: "approvals",       label: "Goedkeuringen",         icon: ClipboardCheck,Component: ApprovalsWidget,       image: IMAGES.leanChair,        span: 4, category: "core", domain: "giulia" },
   memory:          { type: "memory",          label: "Geheugen",             icon: Brain,         Component: MemoryWidget,           image: IMAGES.loungeChairs,     span: 4, category: "intelligence", domain: "system" },
@@ -82,15 +76,9 @@ export const WIDGETS = {
   hobbies:       { type: "hobbies",       label: "Hobby's",           icon: Palette,        Component: HobbiesWidget,        image: IMAGES.lifeHobbies,        span: 3, category: "life", domain: "life" },
   food:          { type: "food",          label: "Food",              icon: Utensils,       Component: FoodWidget,           image: IMAGES.lifeFood,           span: 2, category: "life", domain: "life" },
 
-  // ── SELF ──
-  selfdailystate:   { type: "selfdailystate",   label: "Daily State",      icon: ActivityIcon, Component: DailyStateEditorial,          image: IMAGES.selfDailyState,    span: 1, category: "self", domain: "self" },
-  selfroutines:     { type: "selfroutines",     label: "Routines",          icon: Repeat,       Component: RoutinesEditorial,             image: IMAGES.selfRoutines,      span: 2, category: "self", domain: "self" },
-  selfwake:         { type: "selfwake",         label: "Wake",              icon: Sunrise,      Component: WakeEditorial,                 image: IMAGES.selfWake,          span: 1, category: "self", domain: "self" },
-  selftherapy:      { type: "selftherapy",      label: "Therapy",          icon: Heart,        Component: TherapyEditorial,              image: IMAGES.selfTherapy,       span: 2, category: "self", domain: "self" },
-  selfjournal:      { type: "selfjournal",      label: "Journal",          icon: BookOpen,     Component: JournalEditorial,              image: IMAGES.selfJournal,       span: 1, category: "self", domain: "self" },
-  selfdevelopment:  { type: "selfdevelopment",  label: "Development",       icon: Target,       Component: PersonalDevelopmentEditorial,  image: IMAGES.selfDevelopment,   span: 2, category: "self", domain: "self" },
-  selfpersonaltime: { type: "selfpersonaltime", label: "Personal Time",    icon: Clock,        Component: PersonalTimeEditorial,         image: IMAGES.selfPersonalTime,  span: 2, category: "self", domain: "self" },
-  selfinsights:     { type: "selfinsights",     label: "Self Insights",    icon: Telescope,    Component: SelfInsightsEditorial,         image: IMAGES.selfInsights,      span: 2, category: "self", domain: "self" },
+  // ── LIFE · gemigreerd uit SELF (Daily State & Development blijven als LIFE-modules) ──
+  dailystate:   { type: "dailystate",   label: "Daily State",      icon: ActivityIcon, Component: DailyStateEditorial,          image: IMAGES.selfDailyState,    span: 1, category: "life", domain: "life" },
+  development:  { type: "development",  label: "Development",       icon: Target,       Component: PersonalDevelopmentEditorial,  image: IMAGES.selfDevelopment,   span: 2, category: "life", domain: "life" },
 
   // ── SYSTEM ──
   imageviewer: { type: "imageviewer", label: "Afbeeldingen", icon: ImageIcon, Component: ImageViewerWidget, image: IMAGES.notebookChair, span: 1, category: "system", domain: "system" },

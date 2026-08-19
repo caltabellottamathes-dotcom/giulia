@@ -38,19 +38,10 @@ export const MODULE_FUNCTIONS = {
   integrations: [{ label: "Integraties", to: "/integrations" }],
   updates: [{ label: "Wat er nieuw is", to: "/updates" }],
   goodmorning: [{ label: "Wake Mode", to: "/wake" }],
-  socialpulse: [
-    { label: "Overview", to: "/life/social-pulse?tab=overview" },
-    { label: "Relaties", to: "/life/social-pulse?tab=relationships" },
-    { label: "Activiteit", to: "/life/social-pulse?tab=activity" },
-    { label: "Momenten", to: "/life/social-pulse?tab=moments" },
-    { label: "Patronen", to: "/life/social-pulse?tab=patterns" },
-  ],
-  socialplanner: [
-    { label: "Overview", to: "/life/social-planner?tab=overview" },
-    { label: "Plannen", to: "/life/social-planner?tab=plans" },
-    { label: "Mensen", to: "/life/social-planner?tab=people" },
-    { label: "Kansen", to: "/life/social-planner?tab=opportunities" },
-    { label: "Open", to: "/life/social-planner?tab=open" },
+  social: [
+    { label: "Pulse", to: "/life/social?view=pulse" },
+    { label: "Planner", to: "/life/social?view=planner" },
+    { label: "Persoonlijke Tijd", to: "/life/social?view=personal-time" },
   ],
   household: [
     { label: "Overview", to: "/life/household?tab=overview" },
@@ -77,44 +68,11 @@ export const MODULE_FUNCTIONS = {
     { label: "Je dag", to: "/agenda" },
     { label: "Briefing", to: "/briefing" },
   ],
-  selfdailystate: [
-    { label: "Daily State", to: "/self/daily-state" },
-    { label: "Inzichten", to: "/self/insights" },
-    { label: "Routines", to: "/self/routines" },
+  dailystate: [
+    { label: "Daily State", to: "/life/daily-state" },
   ],
-  selfroutines: [
-    { label: "Routines", to: "/self/routines" },
-    { label: "Wake", to: "/self/wake" },
-    { label: "Doelen", to: "/self/personal-development" },
-  ],
-  selfwake: [
-    { label: "Wake", to: "/self/wake" },
-    { label: "Routines", to: "/self/routines" },
-    { label: "Daily State", to: "/self/daily-state" },
-  ],
-  selftherapy: [
-    { label: "Therapy", to: "/self/therapy" },
-    { label: "Journal", to: "/self/journal" },
-    { label: "Mensen", to: "/people" },
-  ],
-  selfjournal: [
-    { label: "Journal", to: "/self/journal" },
-    { label: "Daily State", to: "/self/daily-state" },
-    { label: "Inzichten", to: "/self/insights" },
-  ],
-  selfdevelopment: [
-    { label: "Development", to: "/self/personal-development" },
-    { label: "Routines", to: "/self/routines" },
-    { label: "Inzichten", to: "/self/insights" },
-  ],
-  selfpersonaltime: [
-    { label: "Personal Time", to: "/self/personal-time" },
-    { label: "Agenda", to: "/agenda" },
-    { label: "Routines", to: "/self/routines" },
-  ],
-  selfinsights: [
-    { label: "Self Insights", to: "/self/insights" },
-    { label: "Daily State", to: "/self/daily-state" },
-    { label: "Inzichten", to: "/insights" },
+  development: [
+    { label: "Development", to: "/life/development" },
+    { label: "Therapy", to: "/life/development?tab=therapy" },
   ],
 };

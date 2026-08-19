@@ -67,7 +67,7 @@ export default function PersonalTimePanel() {
           <h2 className="text-[32px] leading-[0.95] font-display font-semibold tracking-[-0.03em] mt-1">{fmtDuration(total)}</h2>
           <p className="text-sm text-ivory/55 mt-1.5 italic">{protectedMin > 0 ? `${fmtDuration(protectedMin)} beschermd` : "Geen beschermde tijd vandaag"}</p>
         </div>
-        <OpenLink to="/self/personal-time" label="Open Personal Time" />
+        <OpenLink to="/life/social?view=personal-time" label="Open Personal Time" />
       </div>
 
       {/* Available big clock */}

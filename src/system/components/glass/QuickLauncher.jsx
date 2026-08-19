@@ -15,7 +15,6 @@ const GROUP_COLORS = {
   Giulia: "rgba(255,255,255,0.85)",
   Focus: "rgba(255,255,255,0.85)",
   Life: "rgba(255,255,255,0.85)",
-  Self: "rgba(255,255,255,0.85)",
   System: "rgba(255,255,255,0.85)",
 };
 
@@ -29,6 +28,8 @@ const GROUPS = [
       { label: "Briefing", route: "/briefing" },
       { label: "Insights", route: "/insights", module: "insights" },
       { label: "Updates", route: "/updates", module: "updates" },
+      { label: "Good Morning", route: "/", module: "goodmorning" },
+      { label: "Wake", route: "/wake" },
     ],
   },
   {
@@ -50,18 +51,12 @@ const GROUPS = [
     items: [
       { label: "LIFE", route: "/life" },
       { label: "Agenda", route: "/agenda", module: "agenda" },
-      { label: "Social Pulse", route: "/life/social-pulse", module: "socialpulse" },
-      { label: "Social Planner", route: "/life/social-planner", module: "socialplanner" },
+      { label: "Social", route: "/life/social", module: "social" },
       { label: "Huishouden", route: "/life/household", module: "household" },
       { label: "Persoonlijke Admin", route: "/life/personal-admin", module: "personaladmin" },
       { label: "Hobby's", route: "/life/hobbies", module: "hobbies" },
-    ],
-  },
-  {
-    label: "Self",
-    items: [
-      { label: "Wake", route: "/wake" },
-      { label: "Good Morning", route: "/", module: "goodmorning" },
+      { label: "Development", route: "/life/development", module: "development" },
+      { label: "Daily State", route: "/life/daily-state", module: "dailystate" },
     ],
   },
   {
