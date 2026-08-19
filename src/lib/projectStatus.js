@@ -1,6 +1,7 @@
 // Shared project-management status metadata for the project workspace.
 
 export const taskStatusMeta = {
+  unscheduled: { label: "Te plannen", color: "text-muted-foreground", dot: "bg-muted-foreground/40" },
   klaar: { label: "Klaar", color: "text-olive", dot: "bg-olive" },
   done: { label: "Klaar", color: "text-olive", dot: "bg-olive" },
   completed: { label: "Klaar", color: "text-olive", dot: "bg-olive" },
@@ -20,6 +21,7 @@ export const taskStatusMeta = {
 };
 
 export const taskStatusOptions = [
+  { value: "unscheduled", label: "Te plannen" },
   { value: "klaar", label: "Klaar" },
   { value: "actief", label: "Actief" },
   { value: "gepland", label: "Gepland" },

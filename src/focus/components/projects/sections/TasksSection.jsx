@@ -33,6 +33,14 @@ export default function TasksSection({ project, tasks, reload }) {
     reload();
   };
 
+  // Inplannen — een project-onderdeel wordt een echte taak: status naar "today"
+  // en deadline vandaag, zodat het in de takenlijst verschijnt.
+  const scheduleTask = async (t) => {
+    const today = new Date().toISOString().split("T")[0];
+    await base44.entities.Task.update(t.id, { status: "today", deadline: t.deadline || today });
+    reload();
+  };
+
   const ondCount = new Set(tasks.map((t) => parseContext(t.context).ond)).size;
 
   return (
@@ -56,7 +64,7 @@ export default function TasksSection({ project, tasks, reload }) {
         </div>
       </div>
 
-      {view === "lijst" && <TaskListView tasks={tasks} onEdit={setEditTask} onRenameOnd={renameOnd} />}
+      {view === "lijst" && <TaskListView tasks={tasks} onEdit={setEditTask} onRenameOnd={renameOnd} onSchedule={scheduleTask} />}
       {view === "bord" && <TaskBoardView tasks={tasks} onEdit={setEditTask} />}
       {view === "kalender" && <TaskCalendarView tasks={tasks} onEdit={setEditTask} />}
 

@@ -13,6 +13,7 @@
     "status": {
       "type": "string",
       "enum": [
+        "unscheduled",
         "todo",
         "today",
         "upcoming",

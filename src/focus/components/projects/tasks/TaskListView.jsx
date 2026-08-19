@@ -11,7 +11,7 @@ import { InlineText } from "@/focus/components/projects/InlineEdit";
  * sub-onderdelen with their tasks (title + status dot + deadline), but no
  * deeper detail — exactly the onderverdeling without the smallest details.
  */
-export default function TaskListView({ tasks, onEdit, onRenameOnd }) {
+export default function TaskListView({ tasks, onEdit, onRenameOnd, onSchedule }) {
   const [open, setOpen] = useState({});
 
   const hierarchy = {};
@@ -54,13 +54,21 @@ export default function TaskListView({ tasks, onEdit, onRenameOnd }) {
                     <div className="space-y-0.5">
                       {subTasks.map((t) => {
                         const meta = taskStatusMeta[t.status] || taskStatusMeta.te_specifieren;
+                        const isUnscheduled = t.status === "unscheduled";
                         return (
-                          <button key={t.id} onClick={() => onEdit(t)} className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-foreground/[0.04] transition text-left group">
-                            <span className={cn("h-2 w-2 rounded-full shrink-0", meta.dot)} />
-                            <span className={cn("text-sm flex-1 truncate", isTaskDone(t) && "line-through text-muted-foreground")}>{t.title}</span>
-                            {t.deadline && <span className="text-[10px] text-muted-foreground tabular-nums">{format(parseISO(t.deadline), "d MMM", { locale: nl })}</span>}
-                            <span className={cn("text-[10px] uppercase tracking-wider font-semibold opacity-0 group-hover:opacity-100 transition", meta.color)}>{meta.label}</span>
-                          </button>
+                          <div key={t.id} className="w-full flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-foreground/[0.04] transition text-left group">
+                            <button onClick={() => onEdit(t)} className="flex items-center gap-2.5 flex-1 min-w-0 text-left">
+                              <span className={cn("h-2 w-2 rounded-full shrink-0", meta.dot)} />
+                              <span className={cn("text-sm flex-1 truncate", isTaskDone(t) && "line-through text-muted-foreground")}>{t.title}</span>
+                              {t.deadline && <span className="text-[10px] text-muted-foreground tabular-nums">{format(parseISO(t.deadline), "d MMM", { locale: nl })}</span>}
+                              {!isUnscheduled && <span className={cn("text-[10px] uppercase tracking-wider font-semibold opacity-0 group-hover:opacity-100 transition", meta.color)}>{meta.label}</span>}
+                            </button>
+                            {isUnscheduled && onSchedule && (
+                              <button onClick={() => onSchedule(t)} className="text-[10px] uppercase tracking-wider font-semibold px-2.5 py-1 rounded-full bg-olive/15 text-olive hover:bg-olive hover:text-ivory transition shrink-0">
+                                Inplannen
+                              </button>
+                            )}
+                          </div>
                         );
                       })}
                     </div>

@@ -10,7 +10,7 @@ const priorityOptions = [
   { value: "high", label: "Hoog" },
 ];
 
-const empty = { title: "", description: "", status: "gepland", priority: "medium", deadline: "", context: "" };
+const empty = { title: "", description: "", status: "unscheduled", priority: "medium", deadline: "", context: "" };
 
 /** Panel for creating or editing a single task. */
 export default function TaskEditPanel({ open, onClose, task, context, projectId, onSaved }) {
@@ -22,7 +22,7 @@ export default function TaskEditPanel({ open, onClose, task, context, projectId,
       setForm({
         title: task.title || "",
         description: task.description || "",
-        status: task.status || "gepland",
+        status: task.status || "unscheduled",
         priority: task.priority || "medium",
         deadline: task.deadline ? String(task.deadline).slice(0, 10) : "",
         context: task.context || context || "",

@@ -53,7 +53,10 @@ export default function Tasks() {
   const [detailTask, setDetailTask] = useState(null);
 
   const projTitle = (id) => projects.find((p) => p.id === id)?.title;
-  const filtered = tasks.filter((t) => bucketFor(t) === category);
+  // Project-onderdelen die nog niet ingepland zijn (status "unscheduled") zijn geen
+  // taken — ze blijven in het project tot ze ingepland worden.
+  const realTasks = tasks.filter((t) => t.status !== "unscheduled");
+  const filtered = realTasks.filter((t) => bucketFor(t) === category);
 
   // Deep-link — chat-notificaties kunnen naar /tasks?open=<id> linken.
   useEffect(() => {
@@ -129,7 +132,7 @@ export default function Tasks() {
 
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
         {categories.map((cat) => {
-          const count = tasks.filter((t) => bucketFor(t) === cat).length;
+          const count = realTasks.filter((t) => bucketFor(t) === cat).length;
           return (
             <button
               key={cat}
