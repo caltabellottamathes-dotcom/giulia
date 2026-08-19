@@ -123,7 +123,7 @@ export default function WidgetCell({ def, widget, onRemove, onThemeChange, sessi
         </div>
       )}
 
-      <WidgetThemeProvider value={{ theme, color, opacity: op, blur: bl }}>
+      <WidgetThemeProvider value={{ theme, color, opacity: op, blur: bl, domain: def.domain }}>
         <Comp />
       </WidgetThemeProvider>
     </motion.div>

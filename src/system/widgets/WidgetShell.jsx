@@ -51,6 +51,10 @@ export default function WidgetShell({
   const blur = ctx.blur || 0;
   const resolved = ctx.theme === "solid" ? (ctx.color || "charcoal") : "glass";
   const tile = tileMap[resolved] || tileMap.glass;
+  // GIULIA glass tiles → Coral Sunset als accent (domein-bewust)
+  const isGiuliaGlass = resolved === "glass" && ctx.domain === "giulia";
+  const tileAccent = isGiuliaGlass ? "hsl(var(--giulia-coral))" : tile.accent;
+  const tileOnAccent = isGiuliaGlass ? "hsl(var(--ivory))" : tile.on;
 
   const bg =
     resolved === "glass"
@@ -70,8 +74,8 @@ export default function WidgetShell({
     <div
       onClick={onClick}
       style={{
-        "--tile-accent": tile.accent,
-        "--tile-on-accent": tile.on,
+        "--tile-accent": tileAccent,
+        "--tile-on-accent": tileOnAccent,
         ...bg,
         boxShadow:
           "0 1px 2px rgba(0,0,0,0.06), 0 18px 44px -22px rgba(0,0,0,0.40), inset 0 1px 0 0 rgba(255,255,255,0.16)",

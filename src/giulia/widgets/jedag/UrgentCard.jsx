@@ -53,7 +53,7 @@ export default function UrgentCard({ items = [] }) {
             transition={{ duration: 0.4 }}
             className="flex items-center gap-2"
           >
-            <span className="h-2 w-2 rounded-full bg-olive shrink-0" />
+            <span className="h-2 w-2 rounded-full bg-giulia-coral shrink-0" />
             <span className="text-[12px] font-display text-current/80">Niets dringends.</span>
             <span className="text-[10px] text-current/45">Een rustige dag.</span>
           </motion.div>

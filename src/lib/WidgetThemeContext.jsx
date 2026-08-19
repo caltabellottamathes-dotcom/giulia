@@ -7,7 +7,7 @@ import { createContext, useContext } from "react";
  * opacity: 0..1 background alpha
  * blur: extra backdrop blur in px
  */
-const Ctx = createContext({ theme: "glass", color: "", opacity: 1, blur: 0 });
+const Ctx = createContext({ theme: "glass", color: "", opacity: 1, blur: 0, domain: "" });
 
 export const WidgetThemeProvider = Ctx.Provider;
 export const useWidgetTheme = () => useContext(Ctx);

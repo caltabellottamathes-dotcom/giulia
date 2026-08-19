@@ -51,6 +51,12 @@
     --linen: 72 8% 87%;
     --urgent: 65 72% 59%;
 
+    /* GIULIA domain accents — Coral Sunset, Dust, Whipped Pistachio, Urgent */
+    --giulia-coral: 7 88% 59%;
+    --giulia-dust: 51 17% 85%;
+    --giulia-pistachio: 63 35% 78%;
+    --giulia-urgent: 65 72% 59%;
+
     /* SELF layer — dark plum primary (#301728) + sage accent (#d2d3b1) + urgent yellow (#d5e24a) */
     --self-primary: 203 16% 74%;
     --self-primary-light: 203 12% 85%;
