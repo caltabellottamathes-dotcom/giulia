@@ -85,6 +85,18 @@ import EnergyGlass from "@/self/widgets/editorial9/EnergyGlass";
 import ApprovalsGlass from "@/self/widgets/editorial9/ApprovalsGlass";
 import SocialGlass from "@/self/widgets/editorial9/SocialGlass";
 import GiuliaGlass from "@/self/widgets/editorial9/GiuliaGlass";
+import WhatsAppFilled from "@/self/widgets/editorial10/WhatsAppFilled";
+import KnowledgeFilled from "@/self/widgets/editorial10/KnowledgeFilled";
+import DocumentsFilled from "@/self/widgets/editorial10/DocumentsFilled";
+import NotificationsFilled from "@/self/widgets/editorial10/NotificationsFilled";
+import ActivityFilled from "@/self/widgets/editorial10/ActivityFilled";
+import MemoryFilled from "@/self/widgets/editorial10/MemoryFilled";
+import InsightsFilled from "@/self/widgets/editorial10/InsightsFilled";
+import TimeTrackerFilled from "@/self/widgets/editorial10/TimeTrackerFilled";
+import AgentsFilled from "@/self/widgets/editorial10/AgentsFilled";
+import UpdatesFilled from "@/self/widgets/editorial10/UpdatesFilled";
+import WantsToKnowFilled from "@/self/widgets/editorial10/WantsToKnowFilled";
+import DevelopmentFilled from "@/self/widgets/editorial10/DevelopmentFilled";
 
 /**
  * SelfGallery — standalone pagina met drie reeksen SELF information objects.
@@ -105,6 +117,7 @@ export default function SelfGallery() {
     2, 1, 2, 1, 1, 1, 1, 1, 2, 1,        // reeks 7 — grote foto + glas-kaart
     2, 1, 2, 1, 1, 1, 1, 1, 2, 1,        // reeks 8 — lichte variant
     2, 1, 2, 1, 1, 1, 1, 1, 2, 1,        // reeks 9 — glas-groot + foto-klein
+    2, 1, 2, 1, 2, 1, 2, 2, 1, 2, 2, 1,    // reeks 10 — andere OS-functies
   ];
   return (
     <PanelProvider>
@@ -207,6 +220,19 @@ export default function SelfGallery() {
           <ApprovalsGlass />
           <SocialGlass />
           <GiuliaGlass />
+          {/* Reeks 10 — gevuld glas + foto-klein: andere OS-functies (WhatsApp, Kennis, Bestanden, etc.) */}
+          <WhatsAppFilled />
+          <KnowledgeFilled />
+          <DocumentsFilled />
+          <NotificationsFilled />
+          <ActivityFilled />
+          <MemoryFilled />
+          <InsightsFilled />
+          <TimeTrackerFilled />
+          <AgentsFilled />
+          <UpdatesFilled />
+          <WantsToKnowFilled />
+          <DevelopmentFilled />
         </MasonryGrid>
       </div>
       <ModulePanel />
