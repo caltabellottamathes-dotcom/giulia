@@ -97,6 +97,14 @@ import AgentsFilled from "@/self/widgets/editorial10/AgentsFilled";
 import UpdatesFilled from "@/self/widgets/editorial10/UpdatesFilled";
 import WantsToKnowFilled from "@/self/widgets/editorial10/WantsToKnowFilled";
 import DevelopmentFilled from "@/self/widgets/editorial10/DevelopmentFilled";
+import Risen from "@/self/widgets/editorial11/Risen";
+import Spend from "@/self/widgets/editorial11/Spend";
+import Ticking from "@/self/widgets/editorial11/Ticking";
+import PeopleSeam from "@/self/widgets/editorial11/PeopleSeam";
+import RoutineStars from "@/self/widgets/editorial11/RoutineStars";
+import Reflect from "@/self/widgets/editorial11/Reflect";
+import SessionRings from "@/self/widgets/editorial11/SessionRings";
+import GoalThreads from "@/self/widgets/editorial11/GoalThreads";
 
 /**
  * SelfGallery — standalone pagina met drie reeksen SELF information objects.
@@ -118,6 +126,7 @@ export default function SelfGallery() {
     2, 1, 2, 1, 1, 1, 1, 1, 2, 1,        // reeks 8 — lichte variant
     2, 1, 2, 1, 1, 1, 1, 1, 2, 1,        // reeks 9 — glas-groot + foto-klein
     2, 1, 2, 1, 2, 1, 2, 2, 1, 2, 2, 1,    // reeks 10 — andere OS-functies
+    1, 1, 2, 1, 1, 2, 1, 1,                  // reeks 11 — reeks 3-stijl, andere functies
   ];
   return (
     <PanelProvider>
@@ -233,6 +242,15 @@ export default function SelfGallery() {
           <UpdatesFilled />
           <WantsToKnowFilled />
           <DevelopmentFilled />
+          {/* Reeks 11 — reeks 3-stijl (full-bleed foto + gradient + grafisch element), andere functies */}
+          <Risen />
+          <Spend />
+          <Ticking />
+          <PeopleSeam />
+          <RoutineStars />
+          <Reflect />
+          <SessionRings />
+          <GoalThreads />
         </MasonryGrid>
       </div>
       <ModulePanel />
