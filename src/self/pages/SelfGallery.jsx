@@ -29,6 +29,14 @@ import CountStars from "@/self/widgets/editorial3/CountStars";
 import Breathe from "@/self/widgets/editorial3/Breathe";
 import TwentyThreeDays from "@/self/widgets/editorial3/TwentyThreeDays";
 import Threads from "@/self/widgets/editorial3/Threads";
+import SteadyCard from "@/self/widgets/editorial4/SteadyCard";
+import StackCard from "@/self/widgets/editorial4/StackCard";
+import LacedRing from "@/self/widgets/editorial4/LacedRing";
+import VeiledCard from "@/self/widgets/editorial4/VeiledCard";
+import HandsMedallion from "@/self/widgets/editorial4/HandsMedallion";
+import ThroughStrip from "@/self/widgets/editorial4/ThroughStrip";
+import SignalCard from "@/self/widgets/editorial4/SignalCard";
+import GalleryPolaroid from "@/self/widgets/editorial4/GalleryPolaroid";
 
 /**
  * SelfGallery — standalone pagina met drie reeksen SELF information objects.
@@ -43,6 +51,7 @@ export default function SelfGallery() {
     1, 2, 1, 2, 1, 2, 2, 2,          // reeks 1 — oorspronkelijke 8
     2, 1, 2, 1, 2, 1, 1, 1, 1, 1,    // reeks 2 — tien grafische widgets
     1, 1, 2, 1, 1, 2, 1, 1,          // reeks 3 — acht foto-gedreven widgets
+    1, 1, 1, 1, 2, 2, 1, 1,          // reeks 4 — foto als ontwerpelement in glas
   ];
   return (
     <PanelProvider>
@@ -83,6 +92,15 @@ export default function SelfGallery() {
           <Breathe />
           <TwentyThreeDays />
           <Threads />
+          {/* Reeks 4 — foto als ontwerpelement in glas */}
+          <SteadyCard />
+          <StackCard />
+          <LacedRing />
+          <VeiledCard />
+          <HandsMedallion />
+          <ThroughStrip />
+          <SignalCard />
+          <GalleryPolaroid />
         </MasonryGrid>
       </div>
       <ModulePanel />
