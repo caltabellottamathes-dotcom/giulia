@@ -105,152 +105,111 @@ import RoutineStars from "@/self/widgets/editorial11/RoutineStars";
 import Reflect from "@/self/widgets/editorial11/Reflect";
 import SessionRings from "@/self/widgets/editorial11/SessionRings";
 import GoalThreads from "@/self/widgets/editorial11/GoalThreads";
+import AgendaDag from "@/self/widgets/editorial12/AgendaDag";
+import WeekRoadmap from "@/self/widgets/editorial12/WeekRoadmap";
+import ProcessFlow from "@/self/widgets/editorial12/ProcessFlow";
+import Stappenplan from "@/self/widgets/editorial12/Stappenplan";
+import ProjectTraject from "@/self/widgets/editorial12/ProjectTraject";
+import RoutineSequence from "@/self/widgets/editorial12/RoutineSequence";
+import TherapyTraject from "@/self/widgets/editorial12/TherapyTraject";
+import BriefingFlow from "@/self/widgets/editorial12/BriefingFlow";
+
+/** Nummer-badge — vaste index rechtsboven op elke widget voor eenvoudige selectie. */
+function NumberBadge({ n }) {
+  return (
+    <div className="absolute right-1.5 top-1.5 z-30 h-6 min-w-[24px] px-1.5 rounded-full flex items-center justify-center text-[10px] font-bold tabular-nums pointer-events-none select-none"
+      style={{ background: "rgba(38,40,44,0.72)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", color: "#fff", border: "1px solid rgba(255,255,255,0.22)" }}>
+      {n}
+    </div>
+  );
+}
 
 /**
- * SelfGallery — standalone pagina met drie reeksen SELF information objects.
- * Reeks 1: acht oorspronkelijke editorial widgets (plum, sage, glas).
- * Reeks 2: tien nieuwe grafische widgets (verschillende formaten, live data).
- * Reeks 3: acht foto-gedreven widgets — grote foto's, grote grafische
- * typografie en visuele elementen (motion-driven, ADHD-vriendelijk).
+ * SelfGallery — standalone pagina met alle SELF widget-reeksen.
+ * Elke widget krijgt een nummer (rechtsboven) voor snelle selectie.
+ * Reeks 1: 8 editorial · Reeks 2: 10 grafisch · Reeks 3: 8 foto-gedreven
+ * Reeks 4: 8 foto-in-glas · Reeks 5: 8 ultieme data · Reeks 6: 10 grafisch
+ * Reeks 7: 10 foto+glas · Reeks 8: 10 licht · Reeks 9: 10 omgekeerd
+ * Reeks 10: 12 gevuld · Reeks 11: 8 reeks-3-stijl · Reeks 12: 8 interactieve tijdlijnen
  */
 export default function SelfGallery() {
-  // width spans: 1 = smal, 2 = breed
+  // width spans: 1 = smal, 2 = breed (moet exact gelijk lopen aan widgets-array)
   const spans = [
-    1, 2, 1, 2, 1, 2, 2, 2,          // reeks 1 — oorspronkelijke 8
-    2, 1, 2, 1, 2, 1, 1, 1, 1, 1,    // reeks 2 — tien grafische widgets
-    1, 1, 2, 1, 1, 2, 1, 1,          // reeks 3 — acht foto-gedreven widgets
-    1, 1, 1, 1, 2, 2, 1, 1,          // reeks 4 — foto als ontwerpelement in glas
-    2, 1, 2, 1, 1, 1, 1, 1,          // reeks 5 — ultieme data-widgets
-    2, 2, 1, 1, 1, 1, 2, 1, 1, 1,      // reeks 6 — tien nieuwe grafische widgets
-    2, 1, 2, 1, 1, 1, 1, 1, 2, 1,        // reeks 7 — grote foto + glas-kaart
-    2, 1, 2, 1, 1, 1, 1, 1, 2, 1,        // reeks 8 — lichte variant
-    2, 1, 2, 1, 1, 1, 1, 1, 2, 1,        // reeks 9 — glas-groot + foto-klein
-    2, 1, 2, 1, 2, 1, 2, 2, 1, 2, 2, 1,    // reeks 10 — andere OS-functies
-    1, 1, 2, 1, 1, 2, 1, 1,                  // reeks 11 — reeks 3-stijl, andere functies
+    1, 2, 1, 2, 1, 2, 2, 2,          // reeks 1
+    2, 1, 2, 1, 2, 1, 1, 1, 1, 1,    // reeks 2
+    1, 1, 2, 1, 1, 2, 1, 1,          // reeks 3
+    1, 1, 1, 1, 2, 2, 1, 1,          // reeks 4
+    2, 1, 2, 1, 1, 1, 1, 1,          // reeks 5
+    2, 2, 1, 1, 1, 1, 2, 1, 1, 1,    // reeks 6
+    2, 1, 2, 1, 1, 1, 1, 1, 2, 1,    // reeks 7
+    2, 1, 2, 1, 1, 1, 1, 1, 2, 1,    // reeks 8
+    2, 1, 2, 1, 1, 1, 1, 1, 2, 1,    // reeks 9
+    2, 1, 2, 1, 2, 1, 2, 2, 1, 2, 2, 1, // reeks 10
+    1, 1, 2, 1, 1, 2, 1, 1,          // reeks 11
+    2, 2, 1, 1, 2, 1, 1, 2,          // reeks 12 — interactieve tijdlijnen
   ];
+
+  const widgets = [
+    // Reeks 1
+    <DailyStateEditorial />, <RoutinesEditorial />, <WakeEditorial />, <TherapyEditorial />,
+    <JournalEditorial />, <PersonalDevelopmentEditorial />, <PersonalTimeEditorial />, <SelfInsightsEditorial />,
+    // Reeks 2
+    <EnergyLiveLine />, <CapacityDonut />, <WeeklyRhythm />, <CrossDomainConstellation />,
+    <ApprovalFlow />, <DayAgendaStack />, <SleepTimeline />, <SocialOrbit />,
+    <SystemHeartbeat />, <CountdownVertical />,
+    // Reeks 3
+    <InRhythm />, <Overload />, <DeepWork />, <TwoWorlds />,
+    <CountStars />, <Breathe />, <TwentyThreeDays />, <Threads />,
+    // Reeks 4
+    <SteadyCard />, <StackCard />, <LacedRing />, <VeiledCard />,
+    <HandsMedallion />, <ThroughStrip />, <SignalCard />, <GalleryPolaroid />,
+    // Reeks 5
+    <AgendaTimelineUltimate />, <TaskPulseUltimate />, <EmailFlowUltimate />, <PeopleOrbitUltimate />,
+    <ProjectProgressUltimate />, <FoodBudgetUltimate />, <EnergyLiveUltimate />, <ApprovalQueueUltimate />,
+    // Reeks 6
+    <LiveEnergyCurve />, <FocusVsLife />, <CapacityArc />, <DomainConstellation />,
+    <MilestoneJourney />, <WeekGrid />, <AgentFlow />, <SystemPulse />,
+    <ApprovalStack />, <CrossDomainFlow />,
+    // Reeks 7
+    <AgendaPhotoCard />, <TasksPhotoCard />, <EmailPhotoCard />, <PeoplePhotoCard />,
+    <ProjectsPhotoCard />, <FoodPhotoCard />, <EnergyPhotoCard />, <ApprovalsPhotoCard />,
+    <SocialPhotoCard />, <GiuliaPhotoCard />,
+    // Reeks 8
+    <AgendaLight />, <TasksLight />, <EmailLight />, <PeopleLight />,
+    <ProjectsLight />, <FoodLight />, <EnergyLight />, <ApprovalsLight />,
+    <SocialLight />, <GiuliaLight />,
+    // Reeks 9
+    <AgendaGlass />, <TasksGlass />, <EmailGlass />, <PeopleGlass />,
+    <ProjectsGlass />, <FoodGlass />, <EnergyGlass />, <ApprovalsGlass />,
+    <SocialGlass />, <GiuliaGlass />,
+    // Reeks 10
+    <WhatsAppFilled />, <KnowledgeFilled />, <DocumentsFilled />, <NotificationsFilled />,
+    <ActivityFilled />, <MemoryFilled />, <InsightsFilled />, <TimeTrackerFilled />,
+    <AgentsFilled />, <UpdatesFilled />, <WantsToKnowFilled />, <DevelopmentFilled />,
+    // Reeks 11
+    <Risen />, <Spend />, <Ticking />, <PeopleSeam />,
+    <RoutineStars />, <Reflect />, <SessionRings />, <GoalThreads />,
+    // Reeks 12 — interactieve tijdlijnen (glas-op-foto)
+    <AgendaDag />, <WeekRoadmap />, <ProcessFlow />, <Stappenplan />,
+    <ProjectTraject />, <RoutineSequence />, <TherapyTraject />, <BriefingFlow />,
+  ];
+
   return (
     <PanelProvider>
       <div className="min-h-screen bg-background px-5 lg:px-10 py-8 pb-24">
         <div className="mb-6">
           <Link to="/" className="text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/50 hover:text-foreground transition-colors">← Terug naar OS</Link>
           <h1 className="text-3xl font-display font-semibold tracking-tight mt-1.5">SELF · Galerij</h1>
-          <p className="text-sm text-muted-foreground mt-1">Drie reeksen — editorial objects, grafische widgets, foto-gedreven visuals.</p>
+          <p className="text-sm text-muted-foreground mt-1">{widgets.length} widgets genummerd 1–{widgets.length} · twaalf reeksen. Reeks 12: interactieve tijdlijnen in glas-op-foto.</p>
         </div>
 
         <MasonryGrid spans={spans} gap={16}>
-          {/* Reeks 1 — oorspronkelijk */}
-          <DailyStateEditorial />
-          <RoutinesEditorial />
-          <WakeEditorial />
-          <TherapyEditorial />
-          <JournalEditorial />
-          <PersonalDevelopmentEditorial />
-          <PersonalTimeEditorial />
-          <SelfInsightsEditorial />
-          {/* Reeks 2 — grafische widgets */}
-          <EnergyLiveLine />
-          <CapacityDonut />
-          <WeeklyRhythm />
-          <CrossDomainConstellation />
-          <ApprovalFlow />
-          <DayAgendaStack />
-          <SleepTimeline />
-          <SocialOrbit />
-          <SystemHeartbeat />
-          <CountdownVertical />
-          {/* Reeks 3 — foto-gedreven widgets */}
-          <InRhythm />
-          <Overload />
-          <DeepWork />
-          <TwoWorlds />
-          <CountStars />
-          <Breathe />
-          <TwentyThreeDays />
-          <Threads />
-          {/* Reeks 4 — foto als ontwerpelement in glas */}
-          <SteadyCard />
-          <StackCard />
-          <LacedRing />
-          <VeiledCard />
-          <HandsMedallion />
-          <ThroughStrip />
-          <SignalCard />
-          <GalleryPolaroid />
-          {/* Reeks 5 — ultieme data-widgets (echte OS-data + editorial ontwerp) */}
-          <AgendaTimelineUltimate />
-          <TaskPulseUltimate />
-          <EmailFlowUltimate />
-          <PeopleOrbitUltimate />
-          <ProjectProgressUltimate />
-          <FoodBudgetUltimate />
-          <EnergyLiveUltimate />
-          <ApprovalQueueUltimate />
-          {/* Reeks 6 — tien nieuwe grafische widgets (verschillende formaten) */}
-          <LiveEnergyCurve />
-          <FocusVsLife />
-          <CapacityArc />
-          <DomainConstellation />
-          <MilestoneJourney />
-          <WeekGrid />
-          <AgentFlow />
-          <SystemPulse />
-          <ApprovalStack />
-          <CrossDomainFlow />
-          {/* Reeks 7 — grote foto + glas-kaart over elkaar, alle kernfuncties van Giulia */}
-          <AgendaPhotoCard />
-          <TasksPhotoCard />
-          <EmailPhotoCard />
-          <PeoplePhotoCard />
-          <ProjectsPhotoCard />
-          <FoodPhotoCard />
-          <EnergyPhotoCard />
-          <ApprovalsPhotoCard />
-          <SocialPhotoCard />
-          <GiuliaPhotoCard />
-          {/* Reeks 8 — lichte variant: grote foto + zacht afgerond wit glas, zachter en minder technisch */}
-          <AgendaLight />
-          <TasksLight />
-          <EmailLight />
-          <PeopleLight />
-          <ProjectsLight />
-          <FoodLight />
-          <EnergyLight />
-          <ApprovalsLight />
-          <SocialLight />
-          <GiuliaLight />
-          {/* Reeks 9 — omgekeerd: grote glas-kaart + kleine foto-kaart er bovenop */}
-          <AgendaGlass />
-          <TasksGlass />
-          <EmailGlass />
-          <PeopleGlass />
-          <ProjectsGlass />
-          <FoodGlass />
-          <EnergyGlass />
-          <ApprovalsGlass />
-          <SocialGlass />
-          <GiuliaGlass />
-          {/* Reeks 10 — gevuld glas + foto-klein: andere OS-functies (WhatsApp, Kennis, Bestanden, etc.) */}
-          <WhatsAppFilled />
-          <KnowledgeFilled />
-          <DocumentsFilled />
-          <NotificationsFilled />
-          <ActivityFilled />
-          <MemoryFilled />
-          <InsightsFilled />
-          <TimeTrackerFilled />
-          <AgentsFilled />
-          <UpdatesFilled />
-          <WantsToKnowFilled />
-          <DevelopmentFilled />
-          {/* Reeks 11 — reeks 3-stijl (full-bleed foto + gradient + grafisch element), andere functies */}
-          <Risen />
-          <Spend />
-          <Ticking />
-          <PeopleSeam />
-          <RoutineStars />
-          <Reflect />
-          <SessionRings />
-          <GoalThreads />
+          {widgets.map((w, i) => (
+            <div key={i} className="relative">
+              {w}
+              <NumberBadge n={i + 1} />
+            </div>
+          ))}
         </MasonryGrid>
       </div>
       <ModulePanel />
