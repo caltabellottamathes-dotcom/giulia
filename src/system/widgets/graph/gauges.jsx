@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import React from "react";
 import GraphShell from "./GraphShell";
 import { A, useLiveValue, useMorph } from "./graphData";
 import { polar, arcPath } from "./viz";

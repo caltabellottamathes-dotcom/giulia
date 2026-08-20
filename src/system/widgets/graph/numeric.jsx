@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import GraphShell from "./GraphShell";
-import { A, useCountUp, useLiveValue, useMorph, useTick, fmtEuro } from "./graphData";
+import { A, useCountUp, useLiveValue, useMorph, useTick, useLiveSeries, fmtEuro } from "./graphData";
 import { Sparkline } from "./viz";
 
 /* ── NUMERIC — grote, levende cijfers ───────────────────────── */
@@ -114,7 +114,6 @@ function NumberMorph() {
   return <div className="text-center"><p className="text-4xl font-display tabular-nums">{v.toFixed(0)}</p><p className="text-[9px] uppercase tracking-wider text-foreground/50 mt-1">morph</p></div>;
 }
 
-import { useLiveSeries } from "./graphData";
 function NumberGraphic() {
   const series = useLiveSeries(20, { min: 30, max: 90, vol: 10, ms: 1000 });
   const cur = series[series.length - 1].v;
