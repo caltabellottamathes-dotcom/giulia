@@ -1,135 +1,59 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import PageHero from "@/system/components/glass/PageHero";
+import { useEntityList } from "@/hooks/useEntity";
+import { useLearningSync } from "@/hooks/useLearningSync";
 import { IMAGES } from "@/lib/images";
-import { Utensils, ShoppingCart, CalendarDays, TrendingUp, Recycle } from "lucide-react";
+import { Utensils, CalendarDays, CheckCircle2, CalendarClock, Sparkles } from "lucide-react";
+import ThisWeekTab from "@/life/food/ThisWeekTab";
+import PlanningTab from "@/life/food/PlanningTab";
+import TrackingTab from "@/life/food/TrackingTab";
+import NextWeekTab from "@/life/food/NextWeekTab";
+import GiuliaTab from "@/life/food/GiuliaTab";
 import { SAND } from "@/life/food/lifeColors";
-import {
-  CATEGORIES, CUT_LIST, WEEK, KCAL, REUSE,
-} from "@/life/food/staticMenu";
 
-function SectionTitle({ icon: Icon, kicker, title }) {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="h-9 w-9 rounded-full flex items-center justify-center shrink-0" style={{ background: SAND }}>
-        <Icon className="w-4 h-4 text-charcoal" />
-      </div>
-      <div>
-        <div className="text-[9px] uppercase tracking-[0.28em] font-bold text-foreground/45">{kicker}</div>
-        <h2 className="text-xl font-display font-semibold tracking-tight leading-none mt-0.5">{title}</h2>
-      </div>
-    </div>
-  );
-}
+const TABS = [
+  { id: "deze", label: "Deze week", icon: Utensils },
+  { id: "planning", label: "Planning", icon: CalendarDays },
+  { id: "tracking", label: "Tracking", icon: CheckCircle2 },
+  { id: "volgende", label: "Volgende week", icon: CalendarClock },
+  { id: "giulia", label: "Giulia", icon: Sparkles },
+];
 
 export default function FoodPage() {
+  const learnTick = useLearningSync();
+  const { data: weeks, reload: reloadWeeks } = useEntityList("FoodWeek", { realtime: true, externalTick: learnTick });
+  const { data: meals, reload: reloadMeals } = useEntityList("Meal", { realtime: true, externalTick: learnTick });
+  const [tab, setTab] = useState("deze");
+
+  const today = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }, []);
+  const thisWeek = useMemo(
+    () => weeks.find((w) => w.date_start && w.date_end && new Date(w.date_start) <= today && new Date(w.date_end) >= today) || null,
+    [weeks, today]
+  );
+  const nextWeek = useMemo(
+    () => weeks.filter((w) => (w.status === "planned" || w.status === "active") && new Date(w.date_start) > today).sort((a, b) => new Date(a.date_start) - new Date(b.date_start))[0] || null,
+    [weeks, today]
+  );
+  const reload = () => { reloadWeeks(); reloadMeals(); };
+
   return (
-    <div className="space-y-8 animate-fade-up">
-      <PageHero page="life-food" image={IMAGES.lifeFood} icon={Utensils} eyebrow="LIFE · FOOD" title="What's for Dinner?" subtitle="Vast 7-daags menu + boodschappenlijst — ± €50 bij ALDI België" />
+    <div className="space-y-6 animate-fade-up">
+      <PageHero page="life-food" image={IMAGES.lifeFood} icon={Utensils} eyebrow="LIFE · FOOD" title="What's for Dinner?" subtitle="Wat eet je deze week — binnen budget, op basis van wat je hebt en wat je lekker vindt" />
 
-      {/* Totaal banner */}
-      <div className="rounded-2xl glass-2 border border-border/40 p-5 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="h-11 w-11 rounded-full flex items-center justify-center" style={{ background: SAND }}>
-            <span className="text-xl">💰</span>
-          </div>
-          <div>
-            <div className="text-[9px] uppercase tracking-[0.28em] font-bold text-foreground/45">Totaal</div>
-            <div className="text-2xl font-display font-semibold tracking-tight">Geschat: ± €49–51</div>
-          </div>
-        </div>
-        <p className="text-xs text-foreground/55 max-w-md leading-relaxed">
-          Boven €50? Schrap eerst: {CUT_LIST.join(" · ")}.
-        </p>
+      {/* Tabs — LIFE-stijl */}
+      <div className="flex items-center gap-1 overflow-x-auto -mx-1 px-1 pb-1">
+        {TABS.map((t) => (
+          <button key={t.id} onClick={() => setTab(t.id)} className={`shrink-0 rounded-full px-4 py-2 text-xs font-semibold tracking-wide transition flex items-center gap-1.5 ${tab === t.id ? "text-charcoal" : "text-foreground/55 hover:text-foreground"}`} style={tab === t.id ? { background: SAND } : {}}>
+            <t.icon className="w-3.5 h-3.5" />{t.label}
+          </button>
+        ))}
       </div>
 
-      {/* Boodschappenlijst */}
-      <section className="space-y-4">
-        <SectionTitle icon={ShoppingCart} kicker="🛒 Boodschappen" title="Boodschappenlijst" />
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          {CATEGORIES.map((cat) => (
-            <div key={cat.title} className="rounded-2xl glass border border-border/40 overflow-hidden">
-              <div className="px-4 py-3 flex items-center justify-between border-b border-border/30" style={{ background: SAND }}>
-                <span className="text-sm font-display font-semibold tracking-tight text-charcoal">{cat.emoji} {cat.title}</span>
-                <span className="text-[10px] font-mono text-charcoal/70">{cat.subtotal}</span>
-              </div>
-              <div className="divide-y divide-border/20">
-                {cat.items.map(([name, qty, price]) => (
-                  <div key={name} className="flex items-center justify-between px-4 py-2.5 text-sm">
-                    <span className="text-foreground/85">{name}</span>
-                    <span className="text-foreground/45 text-xs tabular-nums">{qty}</span>
-                    <span className="text-foreground/70 text-xs font-mono tabular-nums w-16 text-right">{price}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Je Week */}
-      <section className="space-y-4">
-        <SectionTitle icon={CalendarDays} kicker="🍽️ Menu" title="Je Week" />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {WEEK.map((d) => (
-            <div key={d.day} className="rounded-2xl glass-2 border border-border/40 overflow-hidden">
-              <div className="px-5 py-3 border-b border-border/30 flex items-center justify-between">
-                <span className="text-sm font-display font-semibold tracking-[0.14em] uppercase text-charcoal">{d.day}</span>
-                <span className="text-[10px] font-mono text-foreground/40">{d.meals.length} maaltijden</span>
-              </div>
-              <div className="divide-y divide-border/20">
-                {d.meals.map((m) => (
-                  <div key={m.slot} className="px-5 py-3.5">
-                    <div className="flex items-baseline justify-between gap-3">
-                      <div className="flex items-baseline gap-2.5 min-w-0">
-                        <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-foreground/40 w-16 shrink-0">{m.slot}</span>
-                        <span className="text-[15px] font-display font-medium tracking-tight truncate">{m.name}</span>
-                      </div>
-                      {m.time && <span className="text-[10px] font-mono text-foreground/45 shrink-0">{m.time}</span>}
-                    </div>
-                    {m.items.length > 0 && (
-                      <ul className="mt-1.5 ml-[4.7rem] flex flex-wrap gap-x-2 gap-y-1 text-xs text-foreground/55">
-                        {m.items.map((it, i) => (
-                          <li key={i} className="after:content-['·'] after:ml-2 after:text-foreground/25 last:after:content-['']">{it}</li>
-                        ))}
-                      </ul>
-                    )}
-                    {m.note && <p className="mt-1.5 ml-[4.7rem] text-[11px] italic text-foreground/45">{m.note}</p>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Wat je hiermee eet + hergebruik */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <section className="space-y-4">
-          <SectionTitle icon={TrendingUp} kicker="📊 Voeding" title="Wat je ongeveer eet" />
-          <div className="rounded-2xl glass border border-border/40 divide-y divide-border/20">
-            {KCAL.map(([slot, kcal, note]) => (
-              <div key={slot} className="flex items-center justify-between px-5 py-3.5">
-                <div>
-                  <div className="text-sm font-display font-medium">{slot}</div>
-                  <div className="text-[11px] text-foreground/45">{note}</div>
-                </div>
-                <span className="text-sm font-mono text-foreground/70 tabular-nums">{kcal}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-        <section className="space-y-4">
-          <SectionTitle icon={Recycle} kicker="🔄 Hergebruik" title="Ingrediënten opgebruikt" />
-          <div className="rounded-2xl glass border border-border/40 divide-y divide-border/20">
-            {REUSE.map(([ing, flow]) => (
-              <div key={ing} className="px-5 py-3">
-                <div className="text-sm font-display font-medium">{ing}</div>
-                <div className="text-[11px] text-foreground/55 mt-0.5">→ {flow}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
+      {tab === "deze" && <ThisWeekTab week={thisWeek} meals={meals} reload={reload} />}
+      {tab === "planning" && <PlanningTab week={thisWeek} meals={meals} reload={reload} />}
+      {tab === "tracking" && <TrackingTab week={thisWeek} meals={meals} reload={reload} />}
+      {tab === "volgende" && <NextWeekTab week={nextWeek} meals={meals} />}
+      {tab === "giulia" && <GiuliaTab weeks={weeks} reload={reload} goToTab={setTab} />}
     </div>
   );
 }

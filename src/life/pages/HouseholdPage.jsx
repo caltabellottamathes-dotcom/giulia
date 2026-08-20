@@ -8,12 +8,10 @@ import HouseholdRoutineCard from "@/life/components/HouseholdRoutineCard";
 import HouseholdItemCard from "@/life/components/HouseholdItemCard";
 import { IMAGES } from "@/lib/images";
 import { householdZones, mattersItems, householdHeadline, isAttention, statusLabel, routineState, nextExpected } from "@/lib/householdUtils";
-import { Link } from "react-router-dom";
 import { Home, Repeat, ShoppingCart, Wrench, Plus, Sparkles, CheckCircle2, Search } from "lucide-react";
 import { logLifeActivity } from "@/lib/lifeActivity";
 import LifeActivityFeed from "@/life/components/LifeActivityFeed";
 import RoutinesPanel from "@/self/panels/RoutinesPanel";
-import { CATEGORIES as FOOD_CATEGORIES, TOTAL_BUDGET as FOOD_BUDGET } from "@/life/food/staticMenu";
 
 const SAND = "hsl(var(--life-sand))";
 const SAND_DEEP = "hsl(var(--life-sand-deep))";
@@ -255,32 +253,24 @@ export default function HouseholdPage() {
           </div>
 
           <GlassPanel level={2} className="p-6">
-            <div className="flex items-end justify-between">
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground font-semibold">Boodschappenlijst · FOOD</p>
-                <p className="text-sm text-muted-foreground mt-1">Vast menu deze week — één uitstapje naar ALDI België.</p>
-              </div>
-              <p className="text-[64px] leading-[0.8] font-display font-semibold tracking-[-0.04em] tabular-nums" style={{ color: BLUE_DEEP }}>±€{FOOD_BUDGET}</p>
+            <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground font-semibold">Volgende boodschap</p>
+            <div className="flex items-end gap-4 mt-2">
+              <p className="text-[64px] leading-[0.8] font-display font-semibold tracking-[-0.04em] tabular-nums" style={{ color: BLUE_DEEP }}>{shopping.length}</p>
+              <p className="text-sm text-muted-foreground mb-3">items samen — één uitstapje</p>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
-              {FOOD_CATEGORIES.map((cat) => (
-                <div key={cat.title} className="rounded-xl p-3" style={{ background: "hsl(var(--life-sand) / 0.14)" }}>
-                  <p className="text-[10px] uppercase tracking-wide font-bold" style={{ color: SAND_DEEP }}>{cat.emoji} {cat.title}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">{cat.subtotal}</p>
-                  <ul className="mt-2 space-y-1">
-                    {cat.items.map(([name, qty]) => (
-                      <li key={name} className="text-xs flex justify-between gap-2">
-                        <span className="text-foreground/80 truncate">{name}</span>
-                        <span className="text-muted-foreground tabular-nums shrink-0">{qty}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+            <div className="flex flex-wrap gap-2 mt-4">
+              {filtered(shopping).length ? filtered(shopping).map((s) => (
+                <span key={s.id} className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium" style={{ background: "hsl(var(--life-sand) / 0.2)", color: SAND_DEEP }}>
+                  {s.title}
+                  <button onClick={() => complete(s)} className="opacity-50 hover:opacity-100"><CheckCircle2 className="w-3.5 h-3.5" /></button>
+                </span>
+              )) : <p className="text-sm text-muted-foreground italic">Niets nodig.</p>}
             </div>
-            <Link to="/life/food" className="inline-flex items-center gap-1.5 mt-4 text-sm font-semibold hover:underline" style={{ color: SAND_DEEP }}>
-              Volledig weekmenu & recepten →
-            </Link>
+          </GlassPanel>
+
+          <GlassPanel level={2} className="p-6">
+            <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground font-semibold mb-3">Patronen</p>
+            <p className="text-sm text-muted-foreground italic">Giulia herkent terugkerende patronen (bv. koffie ~ elke 12 dagen) en signaleert op tijd — niet automatisch bestellen.</p>
           </GlassPanel>
         </div>
       )}
