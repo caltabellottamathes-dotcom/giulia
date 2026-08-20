@@ -37,6 +37,14 @@ import HandsMedallion from "@/self/widgets/editorial4/HandsMedallion";
 import ThroughStrip from "@/self/widgets/editorial4/ThroughStrip";
 import SignalCard from "@/self/widgets/editorial4/SignalCard";
 import GalleryPolaroid from "@/self/widgets/editorial4/GalleryPolaroid";
+import AgendaTimelineUltimate from "@/self/widgets/editorial5/AgendaTimelineUltimate";
+import TaskPulseUltimate from "@/self/widgets/editorial5/TaskPulseUltimate";
+import EmailFlowUltimate from "@/self/widgets/editorial5/EmailFlowUltimate";
+import PeopleOrbitUltimate from "@/self/widgets/editorial5/PeopleOrbitUltimate";
+import ProjectProgressUltimate from "@/self/widgets/editorial5/ProjectProgressUltimate";
+import FoodBudgetUltimate from "@/self/widgets/editorial5/FoodBudgetUltimate";
+import EnergyLiveUltimate from "@/self/widgets/editorial5/EnergyLiveUltimate";
+import ApprovalQueueUltimate from "@/self/widgets/editorial5/ApprovalQueueUltimate";
 
 /**
  * SelfGallery — standalone pagina met drie reeksen SELF information objects.
@@ -52,6 +60,7 @@ export default function SelfGallery() {
     2, 1, 2, 1, 2, 1, 1, 1, 1, 1,    // reeks 2 — tien grafische widgets
     1, 1, 2, 1, 1, 2, 1, 1,          // reeks 3 — acht foto-gedreven widgets
     1, 1, 1, 1, 2, 2, 1, 1,          // reeks 4 — foto als ontwerpelement in glas
+    2, 1, 2, 1, 1, 1, 1, 1,          // reeks 5 — ultieme data-widgets
   ];
   return (
     <PanelProvider>
@@ -101,6 +110,15 @@ export default function SelfGallery() {
           <ThroughStrip />
           <SignalCard />
           <GalleryPolaroid />
+          {/* Reeks 5 — ultieme data-widgets (echte OS-data + editorial ontwerp) */}
+          <AgendaTimelineUltimate />
+          <TaskPulseUltimate />
+          <EmailFlowUltimate />
+          <PeopleOrbitUltimate />
+          <ProjectProgressUltimate />
+          <FoodBudgetUltimate />
+          <EnergyLiveUltimate />
+          <ApprovalQueueUltimate />
         </MasonryGrid>
       </div>
       <ModulePanel />
