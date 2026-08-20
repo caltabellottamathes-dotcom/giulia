@@ -55,6 +55,16 @@ import AgentFlow from "@/self/widgets/editorial6/AgentFlow";
 import SystemPulse from "@/self/widgets/editorial6/SystemPulse";
 import ApprovalStack from "@/self/widgets/editorial6/ApprovalStack";
 import CrossDomainFlow from "@/self/widgets/editorial6/CrossDomainFlow";
+import AgendaPhotoCard from "@/self/widgets/editorial7/AgendaPhotoCard";
+import TasksPhotoCard from "@/self/widgets/editorial7/TasksPhotoCard";
+import EmailPhotoCard from "@/self/widgets/editorial7/EmailPhotoCard";
+import PeoplePhotoCard from "@/self/widgets/editorial7/PeoplePhotoCard";
+import ProjectsPhotoCard from "@/self/widgets/editorial7/ProjectsPhotoCard";
+import FoodPhotoCard from "@/self/widgets/editorial7/FoodPhotoCard";
+import EnergyPhotoCard from "@/self/widgets/editorial7/EnergyPhotoCard";
+import ApprovalsPhotoCard from "@/self/widgets/editorial7/ApprovalsPhotoCard";
+import SocialPhotoCard from "@/self/widgets/editorial7/SocialPhotoCard";
+import GiuliaPhotoCard from "@/self/widgets/editorial7/GiuliaPhotoCard";
 
 /**
  * SelfGallery — standalone pagina met drie reeksen SELF information objects.
@@ -72,6 +82,7 @@ export default function SelfGallery() {
     1, 1, 1, 1, 2, 2, 1, 1,          // reeks 4 — foto als ontwerpelement in glas
     2, 1, 2, 1, 1, 1, 1, 1,          // reeks 5 — ultieme data-widgets
     2, 2, 1, 1, 1, 1, 2, 1, 1, 1,      // reeks 6 — tien nieuwe grafische widgets
+    2, 1, 2, 1, 1, 1, 1, 1, 2, 1,        // reeks 7 — grote foto + glas-kaart
   ];
   return (
     <PanelProvider>
@@ -141,6 +152,17 @@ export default function SelfGallery() {
           <SystemPulse />
           <ApprovalStack />
           <CrossDomainFlow />
+          {/* Reeks 7 — grote foto + glas-kaart over elkaar, alle kernfuncties van Giulia */}
+          <AgendaPhotoCard />
+          <TasksPhotoCard />
+          <EmailPhotoCard />
+          <PeoplePhotoCard />
+          <ProjectsPhotoCard />
+          <FoodPhotoCard />
+          <EnergyPhotoCard />
+          <ApprovalsPhotoCard />
+          <SocialPhotoCard />
+          <GiuliaPhotoCard />
         </MasonryGrid>
       </div>
       <ModulePanel />
