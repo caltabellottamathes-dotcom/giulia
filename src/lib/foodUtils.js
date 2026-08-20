@@ -41,8 +41,13 @@ export function mealsForWeek(meals, weekId) {
     });
 }
 
+export function localTodayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export function mealsToday(meals, weekId) {
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = localTodayStr();
   return mealsForWeek(meals, weekId).filter((m) => m.date === todayStr);
 }
 
@@ -56,7 +61,7 @@ export function mealState(meals, weekId) {
   const next = today.find((m) => timeToMin(m.time) > nowMin);
   if (next) return { state: "NEXT_MEAL", meal: next, today };
   const all = mealsForWeek(meals, weekId);
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = localTodayStr();
   const future = all.find((m) => m.date > todayStr);
   return { state: "NEXT_MEAL", meal: future || null, today };
 }
@@ -85,7 +90,7 @@ export function weekDays(week) {
   return Array.from({ length: 7 }).map((_, i) => {
     const d = new Date(week.date_start + "T00:00:00");
     d.setDate(d.getDate() + i);
-    const ds = d.toISOString().slice(0, 10);
-    return { date: ds, dayKey: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"][i] };
+    const ds = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    return { date: ds, dayKey: dayKeyFor(ds) };
   });
 }
