@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import WidgetShell from "@/system/widgets/WidgetShell";
 import WidgetHeader from "@/system/widgets/WidgetHeader";
 import { PLUM, SAGE, PLUM_FAINT } from "@/self/widgets/editorial3/editorial3Data";
+import { SELF_PHOTO } from "@/self/widgets/editorial/selfEditorial";
 
 /** WeekGrid — AGENDA · 2:3. Zeven dagen als horizontale sporen met
  *  gebeurtenis-blokken gekleurd per domein + dichtheid + vandaag-markering. */
@@ -26,7 +27,12 @@ export default function WeekGrid() {
       <div className="flex flex-col h-full p-3 gap-1" style={{ color: PLUM }}>
         <div className="flex items-center justify-between">
           <WidgetHeader label="Week · grid" />
-          <span className="text-[14px] font-display font-semibold tabular-nums">{total}</span>
+          <div className="flex items-center gap-1.5">
+            <div className="h-5 w-5 rounded-full overflow-hidden ring-1" style={{ "--tw-ring-color": PLUM }}>
+              <img src={SELF_PHOTO.routines} alt="" className="h-full w-full object-cover" draggable={false} />
+            </div>
+            <span className="text-[14px] font-display font-semibold tabular-nums">{total}</span>
+          </div>
         </div>
         <div className="flex-1 flex flex-col gap-1.5 min-h-0 justify-center">
           {DAYS.map((d, i) => (

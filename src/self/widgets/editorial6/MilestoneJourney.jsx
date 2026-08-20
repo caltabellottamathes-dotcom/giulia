@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import WidgetShell from "@/system/widgets/WidgetShell";
 import WidgetHeader from "@/system/widgets/WidgetHeader";
 import { PLUM, SAGE, PLUM_FAINT } from "@/self/widgets/editorial3/editorial3Data";
+import { SELF_PHOTO } from "@/self/widgets/editorial/selfEditorial";
 
 /** MilestoneJourney — TIMELINE · 3:4. Verticale reis-tijdlijn met
  *  mijlpaal-nodes (done / nu / upcoming) en een voortgangslijn die tekent. */
@@ -24,7 +25,10 @@ export default function MilestoneJourney() {
           <WidgetHeader label="Reis · mijlpalen" />
           <span className="text-[16px] font-display font-semibold tabular-nums">{pct}%</span>
         </div>
-        <div className="flex-1 relative pl-5 min-h-0 flex flex-col justify-between py-1">
+        <div className="flex-1 relative pl-5 pr-8 min-h-0 flex flex-col justify-between py-1">
+          <div className="absolute right-0 top-0 bottom-0 w-6 rounded-lg overflow-hidden">
+            <img src={SELF_PHOTO.journal} alt="" className="h-full w-full object-cover" draggable={false} />
+          </div>
           <svg viewBox="0 0 4 100" preserveAspectRatio="none" className="absolute left-1.5 top-0 h-full w-1">
             <line x1="2" y1="0" x2="2" y2="100" stroke={PLUM_FAINT} strokeWidth="2" />
             <motion.line x1="2" y1="0" x2="2" y2="100" stroke={SAGE} strokeWidth="2" initial={{ pathLength: 0 }} animate={{ pathLength: pct / 100 }} transition={{ duration: 1.2, ease: "easeOut" }} />

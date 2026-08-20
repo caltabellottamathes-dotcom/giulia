@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import WidgetShell from "@/system/widgets/WidgetShell";
 import WidgetHeader from "@/system/widgets/WidgetHeader";
 import { PLUM, SAGE, PLUM_FAINT } from "@/self/widgets/editorial3/editorial3Data";
+import { SELF_PHOTO } from "@/self/widgets/editorial/selfEditorial";
 
 /** SystemPulse — LIVE SYSTEM · 9:16. Hartbeat-lijn + morphende state-woord +
  *  activiteitenstream met bewegende highlight. */
@@ -27,6 +28,12 @@ export default function SystemPulse() {
           <line x1="0" y1="30" x2="100" y2="30" stroke={PLUM_FAINT} strokeWidth="0.4" />
           <motion.path d={PATH} fill="none" stroke={PLUM} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.4, ease: "easeInOut", repeat: Infinity }} />
         </svg>
+        <div className="flex items-center gap-2 mb-1">
+          <div className="h-7 w-7 rounded-full overflow-hidden ring-2 shrink-0" style={{ "--tw-ring-color": SAGE }}>
+            <img src={SELF_PHOTO.wake} alt="" className="h-full w-full object-cover" draggable={false} />
+          </div>
+          <span className="text-[8px] uppercase tracking-[0.2em] font-bold opacity-70">Giulia</span>
+        </div>
         <div className="h-[40px] overflow-hidden flex items-center">
           <AnimatePresence mode="wait" initial={false}>
             <motion.h3 key={idx} className="text-[26px] leading-none font-display font-semibold tracking-[-0.04em]" initial={{ y: 22, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -22, opacity: 0 }} transition={{ duration: 0.4, ease: "easeOut" }}>{STATES[idx]}</motion.h3>

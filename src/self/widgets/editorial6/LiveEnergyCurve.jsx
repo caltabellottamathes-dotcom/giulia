@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import WidgetShell from "@/system/widgets/WidgetShell";
 import WidgetHeader from "@/system/widgets/WidgetHeader";
 import { PLUM, SAGE, PLUM_FAINT } from "@/self/widgets/editorial3/editorial3Data";
+import { SELF_PHOTO } from "@/self/widgets/editorial/selfEditorial";
 
 /** LiveEnergyCurve — LIVE GRAPH · 16:9. Streaming X/Y-gebiedsgrafiek met
  *  as-labels, grid, drempellijn (focus) en live data point. */
@@ -30,6 +31,9 @@ export default function LiveEnergyCurve() {
   return (
     <WidgetShell size="1x1" radius="large" interactive onClick={() => {}} className="min-h-0" style={{ aspectRatio: "16 / 9", "--tile-accent": PLUM }}>
       <div className="flex flex-col h-full p-3 gap-1" style={{ color: PLUM }}>
+        <div className="rounded-lg overflow-hidden h-8 shrink-0">
+          <img src={SELF_PHOTO.personalTime} alt="" className="h-full w-full object-cover" draggable={false} />
+        </div>
         <div className="flex items-center justify-between">
           <WidgetHeader label="Energy · Live Curve" />
           <span className="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.2em] font-semibold">

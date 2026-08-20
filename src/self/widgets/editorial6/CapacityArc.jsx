@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import WidgetShell from "@/system/widgets/WidgetShell";
 import WidgetHeader from "@/system/widgets/WidgetHeader";
 import { PLUM, SAGE, PLUM_FAINT } from "@/self/widgets/editorial3/editorial3Data";
+import { SELF_PHOTO } from "@/self/widgets/editorial/selfEditorial";
 
 /** CapacityArc — GAUGE (morphing) · 4:3. 270°-boog met ticks die vloeiend
  *  meebeweegt 64→65→66; nummer morpht telkens. */
@@ -43,12 +44,15 @@ export default function CapacityArc() {
             <circle cx={kx} cy={ky} r="2.4" fill={PLUM} />
           </svg>
           <div className="absolute flex flex-col items-center">
-            <div className="relative h-[40px] overflow-hidden flex items-center">
-              <AnimatePresence mode="popLayout" initial={false}>
-                <motion.span key={val} className="text-[40px] font-display font-semibold tabular-nums leading-none" initial={{ y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -24, opacity: 0 }} transition={{ duration: 0.4, ease: "easeOut" }}>{val}</motion.span>
-              </AnimatePresence>
+            <div className="relative h-16 w-16 rounded-full overflow-hidden ring-2" style={{ "--tw-ring-color": SAGE }}>
+              <img src={SELF_PHOTO.insights} alt="" className="h-full w-full object-cover" draggable={false} />
+              <div className="absolute inset-0 flex items-center justify-center" style={{ background: "rgba(40,42,46,0.45)" }}>
+                <AnimatePresence mode="popLayout" initial={false}>
+                  <motion.span key={val} className="text-[26px] font-display font-semibold tabular-nums leading-none text-white" initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -16, opacity: 0 }} transition={{ duration: 0.4, ease: "easeOut" }}>{val}</motion.span>
+                </AnimatePresence>
+              </div>
             </div>
-            <span className="text-[8px] uppercase tracking-[0.2em] opacity-55">% over</span>
+            <span className="text-[8px] uppercase tracking-[0.2em] opacity-55 mt-1">% over</span>
           </div>
         </div>
       </div>

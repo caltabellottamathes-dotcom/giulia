@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import WidgetShell from "@/system/widgets/WidgetShell";
 import WidgetHeader from "@/system/widgets/WidgetHeader";
 import { PLUM, SAGE, PLUM_FAINT } from "@/self/widgets/editorial3/editorial3Data";
+import { SELF_PHOTO } from "@/self/widgets/editorial/selfEditorial";
 
 /** CrossDomainFlow — CROSS-DOMAIN · 1:1. Oorzaak→gevolg-keten
  *  (SELF capacity↓ → FOCUS herplan → agenda → Giulia adviseert) met
@@ -31,7 +32,13 @@ export default function CrossDomainFlow() {
             return (
               <React.Fragment key={i}>
                 <motion.div className="flex items-center gap-2 rounded-lg px-2 py-1.5" style={{ background: hot ? PLUM_FAINT : "transparent" }} initial={{ opacity: 0, x: 10 }} animate={{ opacity: done || hot ? 1 : 0.45, x: 0 }} transition={{ delay: 0.15 + i * 0.08, duration: 0.4 }}>
-                  <span className="h-2 w-2 rounded-full shrink-0" style={{ background: s.tone }} />
+                  {i === STEPS.length - 1 ? (
+                    <div className="h-5 w-5 rounded-full overflow-hidden ring-2 shrink-0 -ml-1.5" style={{ "--tw-ring-color": PLUM }}>
+                      <img src={SELF_PHOTO.development} alt="" className="h-full w-full object-cover" draggable={false} />
+                    </div>
+                  ) : (
+                    <span className="h-2 w-2 rounded-full shrink-0" style={{ background: s.tone }} />
+                  )}
                   <span className="text-[9px] uppercase tracking-[0.16em] font-bold w-14 shrink-0">{s.tag}</span>
                   <span className="text-[10px] truncate flex-1">{s.label}</span>
                 </motion.div>

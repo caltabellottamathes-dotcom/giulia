@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import WidgetShell from "@/system/widgets/WidgetShell";
 import WidgetHeader from "@/system/widgets/WidgetHeader";
 import { PLUM, SAGE, PLUM_FAINT } from "@/self/widgets/editorial3/editorial3Data";
+import { SELF_PHOTO } from "@/self/widgets/editorial/selfEditorial";
 
 /** AgentFlow — FLOW / PROCESS · 16:9. GIULIA-uitvoeringsstroom
  *  REQUEST→UNDERSTAND→PLAN→ACT→REPORT met een reizend pakket en vullende lijnen. */
@@ -26,7 +27,13 @@ export default function AgentFlow() {
               return (
                 <React.Fragment key={s}>
                   <div className="flex flex-col items-center gap-1 w-12 shrink-0">
+                    {i === STAGES.length - 1 ? (
+                    <div className="h-5 w-5 rounded-full overflow-hidden ring-2" style={{ "--tw-ring-color": PLUM }}>
+                      <img src={SELF_PHOTO.wake} alt="" className="h-full w-full object-cover" draggable={false} />
+                    </div>
+                  ) : (
                     <motion.span className="h-3.5 w-3.5 rounded-full" animate={{ scale: hot ? 1.4 : 1, backgroundColor: done ? SAGE : hot ? PLUM : PLUM_FAINT }} transition={{ duration: 0.3 }} />
+                  )}
                     <span className="text-[6.5px] uppercase tracking-[0.1em] font-bold text-center leading-tight" style={{ opacity: i <= step ? 0.9 : 0.4 }}>{s}</span>
                   </div>
                   {i < STAGES.length - 1 && (

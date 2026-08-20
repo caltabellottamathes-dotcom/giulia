@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import WidgetShell from "@/system/widgets/WidgetShell";
 import WidgetHeader from "@/system/widgets/WidgetHeader";
 import { PLUM, SAGE, PLUM_FAINT } from "@/self/widgets/editorial3/editorial3Data";
+import { SELF_PHOTO } from "@/self/widgets/editorial/selfEditorial";
 
 /** FocusVsLife — DATA GRAPH (multi-series) · 3:2. 7-daagse gegroepeerde
  *  kolomgrafiek focus vs life met as-labels, grid en legend. */
@@ -20,7 +21,7 @@ export default function FocusVsLife() {
       <div className="flex flex-col h-full p-3 gap-1" style={{ color: PLUM }}>
         <div className="flex items-center justify-between">
           <WidgetHeader label="Balans · week" />
-          <div className="flex gap-2.5 text-[8px] uppercase tracking-wider">
+          <div className="flex items-center gap-2 text-[8px] uppercase tracking-wider"><img src={SELF_PHOTO.development} alt="" className="h-6 w-6 rounded-full object-cover ring-1" style={{ "--tw-ring-color": PLUM }} draggable={false} />
             <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full" style={{ background: PLUM }} />focus {totF}u</span>
             <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full" style={{ background: SAGE }} />life {totL}u</span>
           </div>

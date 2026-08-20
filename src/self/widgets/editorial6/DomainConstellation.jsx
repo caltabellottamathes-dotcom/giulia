@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import WidgetShell from "@/system/widgets/WidgetShell";
 import WidgetHeader from "@/system/widgets/WidgetHeader";
 import { PLUM, SAGE } from "@/self/widgets/editorial3/editorial3Data";
+import { SELF_PHOTO } from "@/self/widgets/editorial/selfEditorial";
 
 /** DomainConstellation — NETWORK (flow) · 1:1. Vier domein-nodes met
  *  verbindingen waarlangs pulses reizen wanneer een domein actief wordt. */
@@ -38,6 +39,9 @@ export default function DomainConstellation() {
               );
             })}
           </svg>
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-10 w-10 rounded-full overflow-hidden ring-2" style={{ "--tw-ring-color": PLUM }}>
+            <img src={SELF_PHOTO.dailyState} alt="" className="h-full w-full object-cover" draggable={false} />
+          </div>
           {NODES.map((n, i) => (
             <div key={n.id} className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center" style={{ left: `${n.x}%`, top: `${n.y}%` }}>
               <motion.span className="h-3 w-3 rounded-full" style={{ background: i === active ? PLUM : SAGE }} animate={i === active ? { scale: [1, 1.3, 1] } : { scale: 1 }} transition={{ duration: 1.2, repeat: i === active ? Infinity : 0 }} />
