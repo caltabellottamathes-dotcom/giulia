@@ -43,20 +43,22 @@ export function BudgetRing({ cost, budget, size = 132, stroke = 12 }) {
 }
 
 /** DayDots — 7 dag-dots; gevuld wanneer de dag maaltijden heeft. */
-export function DayDots({ week, weekMeals }) {
+export function DayDots({ week, weekMeals, todayStr }) {
+  const today = todayStr || (() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`; })();
   const days = Array.from({ length: 7 }).map((_, i) => {
     const d = new Date(week.date_start + "T00:00:00");
     d.setDate(d.getDate() + i);
-    const ds = d.toISOString().slice(0, 10);
-    return { ds, has: weekMeals.some((m) => m.date === ds), dayKey: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"][i] };
+    const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    return { ds, has: weekMeals.some((m) => m.date === ds), isToday: ds === today, dayKey: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"][i] };
   });
   return (
     <div className="flex items-center justify-between">
       {days.map((d, i) => (
         <div key={i} className="flex flex-col items-center gap-1.5">
-          <span className="text-[9px] uppercase tracking-wider opacity-50">{DAY_LABELS[d.dayKey]}</span>
+          <span className={cn("text-[9px] uppercase tracking-wider font-semibold", d.isToday ? "" : "opacity-50")} style={d.isToday ? { color: "hsl(var(--life-sand-deep))" } : undefined}>{DAY_LABELS[d.dayKey]}</span>
           <motion.span
-            className={cn("h-2.5 w-2.5 rounded-full", d.has ? "bg-current" : "bg-current/20")}
+            className={cn("rounded-full", d.isToday ? "h-4 w-4" : "h-2.5 w-2.5", d.has ? "" : "bg-current/20")}
+            style={d.isToday ? { background: "hsl(var(--life-sand))" } : d.has ? { background: "hsl(var(--life-blue-deep))" } : undefined}
             animate={d.has ? { scale: [1, 1.18, 1] } : {}}
             transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut", delay: i * 0.12 }}
           />
