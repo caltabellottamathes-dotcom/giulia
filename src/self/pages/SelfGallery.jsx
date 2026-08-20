@@ -45,6 +45,16 @@ import ProjectProgressUltimate from "@/self/widgets/editorial5/ProjectProgressUl
 import FoodBudgetUltimate from "@/self/widgets/editorial5/FoodBudgetUltimate";
 import EnergyLiveUltimate from "@/self/widgets/editorial5/EnergyLiveUltimate";
 import ApprovalQueueUltimate from "@/self/widgets/editorial5/ApprovalQueueUltimate";
+import LiveEnergyCurve from "@/self/widgets/editorial6/LiveEnergyCurve";
+import FocusVsLife from "@/self/widgets/editorial6/FocusVsLife";
+import CapacityArc from "@/self/widgets/editorial6/CapacityArc";
+import DomainConstellation from "@/self/widgets/editorial6/DomainConstellation";
+import MilestoneJourney from "@/self/widgets/editorial6/MilestoneJourney";
+import WeekGrid from "@/self/widgets/editorial6/WeekGrid";
+import AgentFlow from "@/self/widgets/editorial6/AgentFlow";
+import SystemPulse from "@/self/widgets/editorial6/SystemPulse";
+import ApprovalStack from "@/self/widgets/editorial6/ApprovalStack";
+import CrossDomainFlow from "@/self/widgets/editorial6/CrossDomainFlow";
 
 /**
  * SelfGallery — standalone pagina met drie reeksen SELF information objects.
@@ -61,6 +71,7 @@ export default function SelfGallery() {
     1, 1, 2, 1, 1, 2, 1, 1,          // reeks 3 — acht foto-gedreven widgets
     1, 1, 1, 1, 2, 2, 1, 1,          // reeks 4 — foto als ontwerpelement in glas
     2, 1, 2, 1, 1, 1, 1, 1,          // reeks 5 — ultieme data-widgets
+    2, 2, 1, 1, 1, 1, 2, 1, 1, 1,      // reeks 6 — tien nieuwe grafische widgets
   ];
   return (
     <PanelProvider>
@@ -119,6 +130,17 @@ export default function SelfGallery() {
           <FoodBudgetUltimate />
           <EnergyLiveUltimate />
           <ApprovalQueueUltimate />
+          {/* Reeks 6 — tien nieuwe grafische widgets (verschillende formaten) */}
+          <LiveEnergyCurve />
+          <FocusVsLife />
+          <CapacityArc />
+          <DomainConstellation />
+          <MilestoneJourney />
+          <WeekGrid />
+          <AgentFlow />
+          <SystemPulse />
+          <ApprovalStack />
+          <CrossDomainFlow />
         </MasonryGrid>
       </div>
       <ModulePanel />
