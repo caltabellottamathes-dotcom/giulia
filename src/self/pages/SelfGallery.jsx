@@ -113,6 +113,14 @@ import ProjectTraject from "@/self/widgets/editorial12/ProjectTraject";
 import RoutineSequence from "@/self/widgets/editorial12/RoutineSequence";
 import TherapyTraject from "@/self/widgets/editorial12/TherapyTraject";
 import BriefingFlow from "@/self/widgets/editorial12/BriefingFlow";
+import DailyPlanSteps from "@/self/widgets/editorial13/DailyPlanSteps";
+import FocusBlockSteps from "@/self/widgets/editorial13/FocusBlockSteps";
+import MorningRoutineSteps from "@/self/widgets/editorial13/MorningRoutineSteps";
+import TherapySessionSteps from "@/self/widgets/editorial13/TherapySessionSteps";
+import ProjectMilestonesSteps from "@/self/widgets/editorial13/ProjectMilestonesSteps";
+import WeeklyGoalsSteps from "@/self/widgets/editorial13/WeeklyGoalsSteps";
+import CookingRecipeSteps from "@/self/widgets/editorial13/CookingRecipeSteps";
+import EveningWindDownSteps from "@/self/widgets/editorial13/EveningWindDownSteps";
 
 /** Nummer-badge — vaste index rechtsboven op elke widget voor eenvoudige selectie. */
 function NumberBadge({ n }) {
@@ -147,6 +155,7 @@ export default function SelfGallery() {
     2, 1, 2, 1, 2, 1, 2, 2, 1, 2, 2, 1, // reeks 10
     1, 1, 2, 1, 1, 2, 1, 1,          // reeks 11
     2, 2, 1, 1, 2, 1, 1, 2,          // reeks 12 — interactieve tijdlijnen
+    2, 1, 1, 1, 2, 1, 1, 2,          // reeks 13 — afvinkbare stappenplannen
   ];
 
   const widgets = [
@@ -192,6 +201,9 @@ export default function SelfGallery() {
     // Reeks 12 — interactieve tijdlijnen (glas-op-foto)
     <AgendaDag />, <WeekRoadmap />, <ProcessFlow />, <Stappenplan />,
     <ProjectTraject />, <RoutineSequence />, <TherapyTraject />, <BriefingFlow />,
+    // Reeks 13 — afvinkbare stappenplannen (glas-op-foto, echte interactie)
+    <DailyPlanSteps />, <FocusBlockSteps />, <MorningRoutineSteps />, <TherapySessionSteps />,
+    <ProjectMilestonesSteps />, <WeeklyGoalsSteps />, <CookingRecipeSteps />, <EveningWindDownSteps />,
   ];
 
   return (
@@ -200,7 +212,7 @@ export default function SelfGallery() {
         <div className="mb-6">
           <Link to="/" className="text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/50 hover:text-foreground transition-colors">← Terug naar OS</Link>
           <h1 className="text-3xl font-display font-semibold tracking-tight mt-1.5">SELF · Galerij</h1>
-          <p className="text-sm text-muted-foreground mt-1">{widgets.length} widgets genummerd 1–{widgets.length} · twaalf reeksen. Reeks 12: interactieve tijdlijnen in glas-op-foto.</p>
+          <p className="text-sm text-muted-foreground mt-1">{widgets.length} widgets genummerd 1–{widgets.length} · dertien reeksen. Reeks 13: afvinkbare stappenplannen & briefing met sluiten.</p>
         </div>
 
         <MasonryGrid spans={spans} gap={16}>
