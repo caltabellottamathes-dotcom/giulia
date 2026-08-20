@@ -56,6 +56,9 @@ import DailyStatePage from '@/self/pages/DailyStatePage';
 import PersonalDevelopmentPage from '@/self/pages/PersonalDevelopmentPage';
 import Beeldbank from '@/system/pages/Beeldbank';
 import WidgetGalleryAll from '@/system/pages/WidgetGalleryAll';
+import WidgetGallery2 from '@/system/pages/WidgetGallery2';
+import WidgetGallery3 from '@/system/pages/WidgetGallery3';
+import WidgetGallery4 from '@/system/pages/WidgetGallery4';
 // GlassAgenda scoped pages
 import GlassLayout from '@/glass/components/GlassLayout';
 import GlassHome from '@/glass/pages/Home';
@@ -172,6 +175,9 @@ const AuthenticatedApp = () => {
           <Route path="/wants-to-know" element={<WantsToKnow />} />
           <Route path="/beeldbank" element={<Beeldbank />} />
           <Route path="/widget-gallery" element={<WidgetGalleryAll />} />
+          <Route path="/widget-gallery-2" element={<WidgetGallery2 />} />
+          <Route path="/widget-gallery-3" element={<WidgetGallery3 />} />
+          <Route path="/widget-gallery-4" element={<WidgetGallery4 />} />
           {/* GlassAgenda — scoped suite */}
           <Route element={<GlassLayout />}>
             <Route path="/glass" element={<GlassHome />} />
