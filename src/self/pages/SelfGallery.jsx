@@ -65,6 +65,16 @@ import EnergyPhotoCard from "@/self/widgets/editorial7/EnergyPhotoCard";
 import ApprovalsPhotoCard from "@/self/widgets/editorial7/ApprovalsPhotoCard";
 import SocialPhotoCard from "@/self/widgets/editorial7/SocialPhotoCard";
 import GiuliaPhotoCard from "@/self/widgets/editorial7/GiuliaPhotoCard";
+import AgendaLight from "@/self/widgets/editorial8/AgendaLight";
+import TasksLight from "@/self/widgets/editorial8/TasksLight";
+import EmailLight from "@/self/widgets/editorial8/EmailLight";
+import PeopleLight from "@/self/widgets/editorial8/PeopleLight";
+import ProjectsLight from "@/self/widgets/editorial8/ProjectsLight";
+import FoodLight from "@/self/widgets/editorial8/FoodLight";
+import EnergyLight from "@/self/widgets/editorial8/EnergyLight";
+import ApprovalsLight from "@/self/widgets/editorial8/ApprovalsLight";
+import SocialLight from "@/self/widgets/editorial8/SocialLight";
+import GiuliaLight from "@/self/widgets/editorial8/GiuliaLight";
 
 /**
  * SelfGallery — standalone pagina met drie reeksen SELF information objects.
@@ -83,6 +93,7 @@ export default function SelfGallery() {
     2, 1, 2, 1, 1, 1, 1, 1,          // reeks 5 — ultieme data-widgets
     2, 2, 1, 1, 1, 1, 2, 1, 1, 1,      // reeks 6 — tien nieuwe grafische widgets
     2, 1, 2, 1, 1, 1, 1, 1, 2, 1,        // reeks 7 — grote foto + glas-kaart
+    2, 1, 2, 1, 1, 1, 1, 1, 2, 1,        // reeks 8 — lichte variant
   ];
   return (
     <PanelProvider>
@@ -163,6 +174,17 @@ export default function SelfGallery() {
           <ApprovalsPhotoCard />
           <SocialPhotoCard />
           <GiuliaPhotoCard />
+          {/* Reeks 8 — lichte variant: grote foto + zacht afgerond wit glas, zachter en minder technisch */}
+          <AgendaLight />
+          <TasksLight />
+          <EmailLight />
+          <PeopleLight />
+          <ProjectsLight />
+          <FoodLight />
+          <EnergyLight />
+          <ApprovalsLight />
+          <SocialLight />
+          <GiuliaLight />
         </MasonryGrid>
       </div>
       <ModulePanel />
