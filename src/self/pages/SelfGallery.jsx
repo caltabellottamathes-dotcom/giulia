@@ -75,6 +75,16 @@ import EnergyLight from "@/self/widgets/editorial8/EnergyLight";
 import ApprovalsLight from "@/self/widgets/editorial8/ApprovalsLight";
 import SocialLight from "@/self/widgets/editorial8/SocialLight";
 import GiuliaLight from "@/self/widgets/editorial8/GiuliaLight";
+import AgendaGlass from "@/self/widgets/editorial9/AgendaGlass";
+import TasksGlass from "@/self/widgets/editorial9/TasksGlass";
+import EmailGlass from "@/self/widgets/editorial9/EmailGlass";
+import PeopleGlass from "@/self/widgets/editorial9/PeopleGlass";
+import ProjectsGlass from "@/self/widgets/editorial9/ProjectsGlass";
+import FoodGlass from "@/self/widgets/editorial9/FoodGlass";
+import EnergyGlass from "@/self/widgets/editorial9/EnergyGlass";
+import ApprovalsGlass from "@/self/widgets/editorial9/ApprovalsGlass";
+import SocialGlass from "@/self/widgets/editorial9/SocialGlass";
+import GiuliaGlass from "@/self/widgets/editorial9/GiuliaGlass";
 
 /**
  * SelfGallery — standalone pagina met drie reeksen SELF information objects.
@@ -94,6 +104,7 @@ export default function SelfGallery() {
     2, 2, 1, 1, 1, 1, 2, 1, 1, 1,      // reeks 6 — tien nieuwe grafische widgets
     2, 1, 2, 1, 1, 1, 1, 1, 2, 1,        // reeks 7 — grote foto + glas-kaart
     2, 1, 2, 1, 1, 1, 1, 1, 2, 1,        // reeks 8 — lichte variant
+    2, 1, 2, 1, 1, 1, 1, 1, 2, 1,        // reeks 9 — glas-groot + foto-klein
   ];
   return (
     <PanelProvider>
@@ -185,6 +196,17 @@ export default function SelfGallery() {
           <ApprovalsLight />
           <SocialLight />
           <GiuliaLight />
+          {/* Reeks 9 — omgekeerd: grote glas-kaart + kleine foto-kaart er bovenop */}
+          <AgendaGlass />
+          <TasksGlass />
+          <EmailGlass />
+          <PeopleGlass />
+          <ProjectsGlass />
+          <FoodGlass />
+          <EnergyGlass />
+          <ApprovalsGlass />
+          <SocialGlass />
+          <GiuliaGlass />
         </MasonryGrid>
       </div>
       <ModulePanel />
