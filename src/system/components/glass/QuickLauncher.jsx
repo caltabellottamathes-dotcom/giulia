@@ -16,6 +16,7 @@ const GROUP_COLORS = {
   Focus: "rgba(255,255,255,0.85)",
   Life: "rgba(255,255,255,0.85)",
   System: "rgba(255,255,255,0.85)",
+  Gallerieën: "rgba(255,255,255,0.85)",
 };
 
 const GROUPS = [
@@ -69,8 +70,21 @@ const GROUPS = [
       { label: "Integraties", route: "/integrations" },
       { label: "Instellingen", route: "/settings" },
       { label: "Profiel", route: "/profile" },
-      { label: "Alle Widgets", route: "/widget-gallery" },
       { label: "Experiment", route: "/experiment" },
+    ],
+  },
+  {
+    label: "Gallerieën",
+    items: [
+      { label: "Alle Widgets", route: "/widget-gallery" },
+      { label: "Widgets Reeks 2", route: "/widget-gallery-2" },
+      { label: "Widgets Reeks 3", route: "/widget-gallery-3" },
+      { label: "Widgets Reeks 4", route: "/widget-gallery-4" },
+      { label: "Graph Gallery", route: "/graph-gallery" },
+      { label: "SELF Galerij", route: "/self-gallery" },
+      { label: "LIFE Galerij", route: "/life-gallery" },
+      { label: "Beeldbank", route: "/beeldbank" },
+      { label: "UI-items Bibliotheek", route: "/UI-items" },
     ],
   },
 ];
