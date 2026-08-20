@@ -21,18 +21,28 @@ import SleepTimeline from "@/self/widgets/editorial2/SleepTimeline";
 import SocialOrbit from "@/self/widgets/editorial2/SocialOrbit";
 import SystemHeartbeat from "@/self/widgets/editorial2/SystemHeartbeat";
 import CountdownVertical from "@/self/widgets/editorial2/CountdownVertical";
+import InRhythm from "@/self/widgets/editorial3/InRhythm";
+import Overload from "@/self/widgets/editorial3/Overload";
+import DeepWork from "@/self/widgets/editorial3/DeepWork";
+import TwoWorlds from "@/self/widgets/editorial3/TwoWorlds";
+import CountStars from "@/self/widgets/editorial3/CountStars";
+import Breathe from "@/self/widgets/editorial3/Breathe";
+import TwentyThreeDays from "@/self/widgets/editorial3/TwentyThreeDays";
+import Threads from "@/self/widgets/editorial3/Threads";
 
 /**
- * SelfGallery — standalone pagina met de acht oorspronkelijke SELF editorial
- * information objects, plus een tweede reeks van tien nieuwe grafische widgets
- * (verschillende formaten: 16:9, 3:2, 4:3, 1:1, 3:4, 2:3, 9:16). Zelfde stijl:
- * plum, sage, glas, motion.
+ * SelfGallery — standalone pagina met drie reeksen SELF information objects.
+ * Reeks 1: acht oorspronkelijke editorial widgets (plum, sage, glas).
+ * Reeks 2: tien nieuwe grafische widgets (verschillende formaten, live data).
+ * Reeks 3: acht foto-gedreven widgets — grote foto's, grote grafische
+ * typografie en visuele elementen (motion-driven, ADHD-vriendelijk).
  */
 export default function SelfGallery() {
-  // width spans: 1 = smal, 2 = breed — aangepast per widget-inhoud
+  // width spans: 1 = smal, 2 = breed
   const spans = [
-    1, 2, 1, 2, 1, 2, 2, 2,        // reeks 1 — oorspronkelijke 8
-    2, 1, 2, 1, 2, 1, 1, 1, 1, 1,  // reeks 2 — tien nieuwe grafische widgets
+    1, 2, 1, 2, 1, 2, 2, 2,          // reeks 1 — oorspronkelijke 8
+    2, 1, 2, 1, 2, 1, 1, 1, 1, 1,    // reeks 2 — tien grafische widgets
+    1, 1, 2, 1, 1, 2, 1, 1,          // reeks 3 — acht foto-gedreven widgets
   ];
   return (
     <PanelProvider>
@@ -40,7 +50,7 @@ export default function SelfGallery() {
         <div className="mb-6">
           <Link to="/" className="text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/50 hover:text-foreground transition-colors">← Terug naar OS</Link>
           <h1 className="text-3xl font-display font-semibold tracking-tight mt-1.5">SELF · Galerij</h1>
-          <p className="text-sm text-muted-foreground mt-1">Acht editorial objects + tien nieuwe grafische widgets — plum, sage, glas.</p>
+          <p className="text-sm text-muted-foreground mt-1">Drie reeksen — editorial objects, grafische widgets, foto-gedreven visuals.</p>
         </div>
 
         <MasonryGrid spans={spans} gap={16}>
@@ -53,7 +63,7 @@ export default function SelfGallery() {
           <PersonalDevelopmentEditorial />
           <PersonalTimeEditorial />
           <SelfInsightsEditorial />
-          {/* Reeks 2 — tien nieuwe grafische widgets */}
+          {/* Reeks 2 — grafische widgets */}
           <EnergyLiveLine />
           <CapacityDonut />
           <WeeklyRhythm />
@@ -64,6 +74,15 @@ export default function SelfGallery() {
           <SocialOrbit />
           <SystemHeartbeat />
           <CountdownVertical />
+          {/* Reeks 3 — foto-gedreven widgets */}
+          <InRhythm />
+          <Overload />
+          <DeepWork />
+          <TwoWorlds />
+          <CountStars />
+          <Breathe />
+          <TwentyThreeDays />
+          <Threads />
         </MasonryGrid>
       </div>
       <ModulePanel />
