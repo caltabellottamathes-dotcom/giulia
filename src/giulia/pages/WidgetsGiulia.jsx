@@ -30,7 +30,7 @@ export default function WidgetsGiulia() {
         </section>
         <section className="space-y-2 max-w-[300px]">
           <p className="text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/45">
-            03 · Giulia Concierge — GIULIA · 9:16 · foto + #17 SystemHeartbeat
+            03 · Giulia Concierge — GIULIA · 9:16 · foto-shell + licht glas + EKG/chat/bel
           </p>
           <GiuliaConciergeWidget />
         </section>
