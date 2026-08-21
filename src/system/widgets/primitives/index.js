@@ -10,4 +10,6 @@ export { default as FillBar } from "./FillBar";
 export { default as CheckList, CheckChip } from "./CheckList";
 export { default as Sparkline } from "./Sparkline";
 export { default as MiniStat } from "./MiniStat";
+export { default as GlassPhotoWidget } from "./GlassPhotoWidget";
+export { default as PhotoGlassWidget } from "./PhotoGlassWidget";
 export { DOMAIN_ACCENT, URGENT, accentFor } from "./domainAccent";

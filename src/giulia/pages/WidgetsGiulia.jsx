@@ -10,9 +10,12 @@ export default function WidgetsGiulia() {
         ← Terug naar OS
       </Link>
       <h1 className="text-3xl font-display font-semibold tracking-tight mt-1.5">GIULIA · Widget-skelet</h1>
-      <p className="text-sm text-muted-foreground mt-1 mb-8">
+      <p className="text-sm text-muted-foreground mt-1 mb-4">
         Eén skelet — twee referentie-widgets. Zelfde primitieven, andere vorm, elementen en plaatsing.
       </p>
+      <Link to="/shell-collection" className="inline-block text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/50 hover:text-foreground transition-colors mb-8">
+        Bekijk de Shell-collectie →
+      </Link>
 
       <div className="space-y-10">
         <section className="space-y-2 max-w-[585px]">
