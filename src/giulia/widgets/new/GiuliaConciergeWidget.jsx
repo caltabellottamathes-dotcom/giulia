@@ -1,48 +1,59 @@
-import React, { useState, useEffect } from "react";
+import React, { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { MessageSquare, Phone } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useConversation, ConversationProvider } from "@elevenlabs/react";
+import { MessageSquare, Phone, PhoneOff } from "lucide-react";
 import { WidgetShell, WidgetHeader } from "@/system/widgets/primitives";
+import { usePanel } from "@/lib/PanelContext";
+import { ELEVEN_AGENT_ID } from "@/lib/voiceNavigation";
+import { buildVoiceClientTools } from "@/lib/voiceClientTools";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/1d4c3eef3_GiuliaConcierge.jpeg";
 
 /** GiuliaConciergeWidget — "GIULIA'S HOTLINE".
- *  Foto als grote shell. Bovenaan de beweegde header op de foto; onderaan een
- *  hoger, transparant glas (zoals de What-Matters-checklist: rgba white 0.10
- *  + blur 8px) met afgeronde bovenhoeken en een omhooglopende schaduw. Minder
- *  tekst, sterkere Giulia-gekleurde visuals: EKG-hero (olijf→urgent, gloed) +
- *  live-puls + activiteitsstaven (pistachio/urgent) + elegante Chat/Bel. */
-const STATES = ["Listening", "Thinking", "Processing", "Acting", "Waiting"];
-const PATH = "M 0 50 L 18 50 L 24 50 L 30 28 L 36 72 L 42 40 L 48 50 L 60 50 L 66 50 L 72 34 L 78 66 L 84 50 L 100 50";
-
+ *  Foto als grote shell; bovenaan de beweegde header op de foto. Het transparante
+ *  glas (zoals de What-Matters-checklist) bevat slechts twee grafische items —
+ *  chat openen + Giulia bellen — en één live actie-indicator die afgaat telkens
+ *  als Giulia spreekt (ElevenLabs `isSpeaking`), zodat het voelt alsof Giulia
+ *  echt praat. Giulia-kleuren (olijf / pistachio / urgent). */
 const DEEP = "hsl(var(--d-giulia-deep))";     // olijf
 const LIGHT = "hsl(var(--d-giulia-light))";   // pistachio
 const URGENT = "hsl(var(--d-giulia-urgent))"; // urgent geelgroen
 const IVORY = "hsl(var(--ivory))";
 
-export default function GiuliaConciergeWidget() {
-  const [idx, setIdx] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setIdx((i) => (i + 1) % STATES.length), 1800);
-    return () => clearInterval(id);
-  }, []);
+function ConciergeInner() {
+  const { openChat, openModule } = usePanel();
+  const navigate = useNavigate();
+  const clientTools = useMemo(() => buildVoiceClientTools({ navigate, openModule }), [navigate, openModule]);
+
+  const { startSession, endSession, status, isSpeaking } = useConversation({ agentId: ELEVEN_AGENT_ID, clientTools });
+  const connected = status === "connected";
+  const connecting = status === "connecting";
+
+  const toggle = async () => {
+    if (connected) { try { await endSession(); } catch { /* ignore */ } }
+    else { try { await startSession(); } catch { /* ignore */ } }
+  };
+
+  const statusLabel = connecting ? "VERBINDEN" : connected ? (isSpeaking ? "SPREEKT" : "LUISTERT") : "STANDBY";
+  const statusColor = isSpeaking ? URGENT : connected ? LIGHT : "rgba(255,255,255,0.45)";
 
   return (
     <WidgetShell domain="giulia" radius="large" className="aspect-[9/16] w-[290px] min-h-0">
-      {/* foto als grote shell, geen overlay */}
+      {/* foto als grote shell */}
       <img src={PHOTO} alt="Giulia's Hotline" className="absolute inset-0 w-full h-full object-cover" />
 
-      {/* bovenaan in de foto: beweegde header + titel (licht op de foto) */}
+      {/* bovenaan in de foto: beweegde header + titel */}
       <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-8 bg-gradient-to-b from-black/45 to-transparent" style={{ color: IVORY }}>
         <WidgetHeader label="GIULIA'S HOTLINE" type="pulse" />
       </div>
 
-      {/* donkere gloed achter het glas voor leesbaarheid (foto blijft shell) */}
-      <div className="absolute bottom-0 inset-x-0 h-[58%] bg-gradient-to-t from-black/65 via-black/30 to-transparent pointer-events-none" />
+      {/* donkere gloed achter het glas voor leesbaarheid */}
+      <div className="absolute bottom-0 inset-x-0 h-[62%] bg-gradient-to-t from-black/65 via-black/30 to-transparent pointer-events-none" />
 
-      {/* hoger, transparant glas — alleen vanonder, afgeronde bovenhoeken, omhooglopende schaduw */}
+      {/* transparant glas — afgeronde bovenhoeken, omhooglopende schaduw */}
       <div
-        className="absolute inset-x-0 bottom-0 rounded-t-[24px] px-4 pt-5 pb-6"
+        className="absolute inset-x-0 bottom-0 rounded-t-[24px] px-4 pt-5 pb-6 flex flex-col items-center"
         style={{
           background: "rgba(255,255,255,0.10)",
           backdropFilter: "blur(8px)",
@@ -50,66 +61,84 @@ export default function GiuliaConciergeWidget() {
           boxShadow: "0 -28px 60px -14px rgba(0,0,0,0.50), 0 -10px 22px -10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.22)",
         }}
       >
-        {/* EKG-hero — olijf→urgent, gloed, met live-puls rechts (geen tekst) */}
-        <div className="relative h-[72px]">
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full overflow-visible">
-            <defs>
-              <linearGradient id="gk" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor={DEEP} />
-                <stop offset="62%" stopColor={DEEP} />
-                <stop offset="100%" stopColor={URGENT} />
-              </linearGradient>
-            </defs>
-            <line x1="0" y1="50" x2="100" y2="50" stroke={LIGHT} strokeWidth="0.5" strokeOpacity="0.3" />
-            <motion.path
-              d={PATH} fill="none" stroke="url(#gk)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-              style={{ filter: "drop-shadow(0 0 5px rgba(213,226,74,0.45))" }}
-              initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
-              transition={{ duration: 1.4, ease: "easeInOut", repeat: Infinity, repeatType: "loop" }}
+        {/* live actie-indicator — gaat af telkens als Giulia spreekt */}
+        <div className="relative flex items-center justify-center h-[84px] w-full">
+          {isSpeaking && [0, 1, 2].map((i) => (
+            <motion.span
+              key={i} className="absolute rounded-full"
+              style={{ border: `1px solid ${URGENT}` }}
+              initial={{ width: 56, height: 56, opacity: 0.55 }}
+              animate={{ width: 132, height: 132, opacity: 0 }}
+              transition={{ duration: 1.6, repeat: Infinity, delay: i * 0.5, ease: "easeOut" }}
             />
-          </svg>
-          <motion.span
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-2.5 w-2.5 rounded-full"
-            style={{ background: URGENT, boxShadow: "0 0 8px rgba(213,226,74,0.7)" }}
-            animate={{ scale: [1, 1.45, 1], opacity: [1, 0.6, 1] }}
-            transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
-          />
-        </div>
-
-        {/* activiteitsstaven — visuele status, pistachio + urgent (geen tekst) */}
-        <div className="flex items-end justify-between gap-1.5 h-12 mt-3">
-          {STATES.map((s, i) => {
-            const active = i === idx;
-            return (
-              <motion.div
-                key={s} className="flex-1 rounded-full"
-                style={{ background: active ? URGENT : LIGHT, opacity: active ? 1 : 0.55 }}
-                animate={{ height: active ? ["72%", "100%", "72%"] : ["28%", "52%", "28%"] }}
-                transition={{ duration: active ? 1.1 : 1.8, repeat: Infinity, ease: "easeInOut", delay: i * 0.15 }}
+          ))}
+          {isSpeaking && (
+            <span className="absolute rounded-full pointer-events-none" style={{ width: 64, height: 64, boxShadow: "0 0 42px 10px rgba(213,226,74,0.35)" }} />
+          )}
+          <div
+            className="relative h-14 w-14 rounded-full flex items-center justify-center"
+            style={{
+              background: "rgba(255,255,255,0.10)",
+              border: `1px solid ${isSpeaking ? URGENT : connected ? LIGHT : "rgba(255,255,255,0.18)"}`,
+            }}
+          >
+            {isSpeaking ? (
+              <div className="flex items-end gap-[3px] h-6">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <motion.span
+                    key={i} className="w-[3px] rounded-full" style={{ background: URGENT }}
+                    animate={{ height: ["30%", "100%", "45%", "80%", "30%"] }}
+                    transition={{ duration: 0.7, repeat: Infinity, delay: i * 0.08, ease: "easeInOut" }}
+                  />
+                ))}
+              </div>
+            ) : connected ? (
+              <motion.span
+                className="h-3 w-3 rounded-full" style={{ background: LIGHT }}
+                animate={{ scale: [1, 1.35, 1], opacity: [0.6, 1, 0.6] }}
+                transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
               />
-            );
-          })}
+            ) : (
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: "rgba(255,255,255,0.35)" }} />
+            )}
+          </div>
         </div>
 
-        {/* chat met Giulia / bel Giulia — elegant, geen pillen */}
-        <div className="flex items-center mt-3">
-          <Link
-            to="/chat"
-            className="flex-1 inline-flex items-center justify-center gap-2 py-1.5 text-[10px] uppercase tracking-[0.22em] font-semibold transition hover:opacity-70"
-            style={{ color: IVORY }}
+        {/* mini status (enkel woord) */}
+        <p className="text-[9px] uppercase tracking-[0.28em] font-bold mt-1.5" style={{ color: statusColor }}>{statusLabel}</p>
+
+        {/* twee grafische items: chat openen + Giulia bellen */}
+        <div className="flex items-center justify-center gap-5 mt-4">
+          <button
+            onClick={openChat}
+            aria-label="Chat met Giulia"
+            className="h-14 w-14 rounded-full flex items-center justify-center transition hover:scale-105"
+            style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)" }}
           >
-            <MessageSquare className="h-3.5 w-3.5" style={{ color: DEEP }} /> Chat
-          </Link>
-          <span className="h-5 w-px" style={{ background: LIGHT, opacity: 0.5 }} />
-          <Link
-            to="/voice"
-            className="flex-1 inline-flex items-center justify-center gap-2 py-1.5 text-[10px] uppercase tracking-[0.22em] font-semibold transition hover:opacity-70"
-            style={{ color: IVORY }}
+            <MessageSquare className="h-5 w-5" style={{ color: IVORY }} />
+          </button>
+          <button
+            onClick={toggle}
+            aria-label={connected ? "Ophangen" : "Bel Giulia"}
+            className="h-16 w-16 rounded-full flex items-center justify-center transition hover:scale-105"
+            style={{
+              background: connected ? "rgba(200,40,40,0.9)" : DEEP,
+              border: `1px solid ${connected ? "rgba(255,255,255,0.25)" : "transparent"}`,
+              boxShadow: connected ? "0 0 26px rgba(200,40,40,0.45)" : "0 0 22px rgba(0,0,0,0.30)",
+            }}
           >
-            <Phone className="h-3.5 w-3.5" style={{ color: DEEP }} /> Bel
-          </Link>
+            {connected ? <PhoneOff className="h-6 w-6 text-white" /> : <Phone className="h-6 w-6 text-white" />}
+          </button>
         </div>
       </div>
     </WidgetShell>
+  );
+}
+
+export default function GiuliaConciergeWidget() {
+  return (
+    <ConversationProvider>
+      <ConciergeInner />
+    </ConversationProvider>
   );
 }
