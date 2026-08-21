@@ -74,3 +74,23 @@ export function layeredContentPad(pos, frac, base = 16) {
     default:      return { padding: `${base}px` };
   }
 }
+
+// ── Achter de shell (behind) ──────────────────────────────────────────
+// PhotoCard ligt achter de GlassShell en is verschoven (peek) zodat hij
+// aan één kant/hoek erachter uit steekt.
+export const SHELL_PEEK = { tl: "TL", tr: "TR", bl: "BL", br: "BR", t: "T", b: "B", l: "L", r: "R" };
+
+export function peekTransform(peek, amount = 0.08) {
+  const a = `${amount * 100}%`;
+  const map = {
+    tl: `translate(-${a}, -${a})`, tr: `translate(${a}, -${a})`,
+    bl: `translate(-${a}, ${a})`,  br: `translate(${a}, ${a})`,
+    t: `translate(0, -${a})`,       b: `translate(0, ${a})`,
+    l: `translate(-${a}, 0)`,       r: `translate(${a}, 0)`,
+  };
+  return map[peek] || map.tl;
+}
+
+export function buildShellBehindCode({ shape, peek }) {
+  return `G·${SHELL_SHAPE[shape]}·${SHELL_PEEK[peek]}·BEHIND`;
+}

@@ -14,5 +14,6 @@ export { default as GlassPhotoWidget } from "./GlassPhotoWidget";
 export { default as PhotoGlassWidget } from "./PhotoGlassWidget";
 export { default as GlassPhotoLayeredWidget } from "./GlassPhotoLayeredWidget";
 export { default as PhotoGlassLayeredWidget } from "./PhotoGlassLayeredWidget";
+export { default as GlassPhotoBehindWidget } from "./GlassPhotoBehindWidget";
 export * from "./shellCode";
 export { DOMAIN_ACCENT, URGENT, accentFor } from "./domainAccent";
