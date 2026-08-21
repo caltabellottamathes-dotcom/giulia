@@ -1,6 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { accentFor } from "./domainAccent";
+import { SHELL_SHADOW } from "./shellCode";
 
 /** Basisoptie 2 — PhotoShell + GlassCard.
  *  Een foto als full-bleed shell met daarin een zwevende GlassCard die
@@ -36,7 +37,7 @@ export default function PhotoGlassWidget({
 
       {/* zwevende GlassCard */}
       <div
-        className={cn("relative shrink-0 z-10 overflow-hidden", horizontal ? "h-full" : "w-full")}
+        className={cn("relative shrink-0 z-10 overflow-hidden", RADIUS[radius], horizontal ? "h-full" : "w-full")}
         style={{
           "--tile-accent": accent.accent,
           "--tile-on-accent": accent.on,
@@ -45,7 +46,7 @@ export default function PhotoGlassWidget({
           backdropFilter: "blur(14px) saturate(1.4)",
           WebkitBackdropFilter: "blur(14px) saturate(1.4)",
           border: "1px solid rgba(255,255,255,0.18)",
-          boxShadow: "0 14px 34px -14px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.22)",
+          boxShadow: `${SHELL_SHADOW[glassPosition]}, inset 0 1px 0 rgba(255,255,255,0.22)`,
           color: "hsl(var(--ivory))",
         }}
       >

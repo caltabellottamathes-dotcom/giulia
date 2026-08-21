@@ -2,6 +2,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import BrandPhoto from "@/system/widgets/BrandPhoto";
 import { accentFor } from "./domainAccent";
+import { SHELL_SHADOW } from "./shellCode";
 
 /** Basisoptie 1 — GlassShell + PhotoCard.
  *  Een glazen shell (transparant, blur, domein-accent) met daarin een PhotoCard
@@ -48,8 +49,8 @@ export default function GlassPhotoWidget({
 
       {/* PhotoCard */}
       <div
-        className={cn("relative shrink-0 overflow-hidden", horizontal ? "h-full" : "w-full")}
-        style={{ flexBasis: `${photoFraction * 100}%`, order: photoFirst ? 1 : 2 }}
+        className={cn("relative shrink-0 overflow-hidden", RADIUS[radius], horizontal ? "h-full" : "w-full")}
+        style={{ flexBasis: `${photoFraction * 100}%`, order: photoFirst ? 1 : 2, boxShadow: SHELL_SHADOW[photoPosition] }}
       >
         <BrandPhoto src={photo} overlay={overlay} className="h-full w-full">{photoChildren}</BrandPhoto>
       </div>

@@ -1,17 +1,21 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { GlassPhotoWidget, PhotoGlassWidget, WidgetHeader } from "@/system/widgets/primitives";
+import { buildShellCode, iconFor, iconName } from "@/system/widgets/primitives/shellCode";
 
-/** ShellCollection — de twee basis-composities (GlassShell+PhotoCard &
- *  PhotoShell+GlassCard) in alle vormen, alle plaatsingen, en als strips.
- *  Kaarten staan flush tegen de shell-rand. Elke variant genummerd (01–N). */
+/** ShellCollection — 2 basisopties × alle vormen × alle plaatsingen (+ strips).
+ *  Elke widget: eigen geanimeerd icoon (met naam + #nummer), een Naam en een
+ *  productcode (Optie·Vorm·Plaats·Soort). Noem een code → ik maak hem direct. */
 
 const PHOTOS = [
   "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ad59aa090_Whatmatters_GIULIA.jpeg",
   "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/1d4c3eef3_GiuliaConcierge.jpeg",
 ];
 const WORD = { left: "links", right: "rechts", top: "boven", bottom: "onder" };
-const TITLES = ["What Matters?", "A Lot Happening", "Your day in steps.", "In Rhythm"];
+const NAMES = [
+  "What Matters?", "A Lot Happening", "Your day in steps.", "In Rhythm",
+  "Today's Pulse", "Quiet Briefing", "Open Agenda", "Deep Focus",
+];
 
 const SHAPES = [
   { id: "21:9", orient: "Breed", w: 660, variants: [
@@ -70,12 +74,13 @@ const SHAPES = [
   ]},
 ];
 
-function Demo({ label, title, sub, count, type }) {
+function Demo({ num, icon, code, name, sub }) {
   const bars = [42, 78, 55, 92, 60, 70];
   return (
     <>
-      <WidgetHeader label={label} type={type} count={count} />
-      <h3 className="text-[20px] leading-tight font-display font-semibold tracking-tight text-current">{title}</h3>
+      <WidgetHeader label={iconName(icon)} type={icon} count={`#${num}`} />
+      <h3 className="text-[20px] leading-tight font-display font-semibold tracking-tight text-current">{name}</h3>
+      <p className="font-mono text-[10px] tracking-wide opacity-60 mt-1">{code}</p>
       {sub && <p className="text-[10px] uppercase tracking-[0.18em] opacity-50 mt-1.5">{sub}</p>}
       <div className="flex-1" />
       <div className="flex items-end gap-1.5 h-10">
@@ -95,10 +100,20 @@ export default function ShellCollection() {
         ← Terug naar widget-skelet
       </Link>
       <h1 className="text-3xl font-display font-semibold tracking-tight mt-1.5">Shell-collectie · 2 basisopties</h1>
-      <p className="text-sm text-muted-foreground mt-1 mb-10 max-w-2xl">
-        Optie 1 — GlassShell + PhotoCard. Optie 2 — PhotoShell + GlassCard. Kaarten flush tegen de shell-rand.
-        Horizontale shells ook als lange horizontale strips; verticale shells ook als smalle verticale strips. Genummerd 01–36.
+      <p className="text-sm text-muted-foreground mt-1 mb-6 max-w-2xl">
+        Optie 1 — GlassShell + PhotoCard. Optie 2 — PhotoShell + GlassCard. Kaarten flush met 4 afgeronde hoeken + schaduw naar de open kant.
+        Elke widget heeft een eigen geanimeerd icoon, een naam en een productcode. Genummerd 01–36.
       </p>
+
+      <div className="mb-10 rounded-2xl border border-border bg-muted/40 p-4 text-[11px] leading-relaxed text-foreground/70">
+        <span className="font-semibold text-foreground">Productcode:</span>{" "}
+        Optie · Vorm · Plaats · Soort &nbsp;—&nbsp;
+        <b>G</b> = GlassShell+PhotoCard, <b>P</b> = PhotoShell+GlassCard &nbsp;·&nbsp;
+        Vorm: 16x9 / 9x16 / 1x1 / 4x3 / 3x4 / 21x9 / 3x2 / 2x3 / 4x5 &nbsp;·&nbsp;
+        Plaats: L / R / T / B &nbsp;·&nbsp; Soort: SIDE / STRIP
+        <br />
+        <span className="text-foreground/50">Voorbeeld: <span className="font-mono">P·9x16·B·STRIP</span> = Optie 2, 9:16, onder, smalle strip. Noem een code en ik maak hem direct.</span>
+      </div>
 
       <div className="space-y-12">
         {SHAPES.map((s, si) => {
@@ -113,10 +128,11 @@ export default function ShellCollection() {
                 {s.variants.map((v) => {
                   n += 1;
                   const num = String(n).padStart(2, "0");
-                  const title = TITLES[(n - 1) % TITLES.length];
-                  const type = v.opt === 1 ? "tasks" : "pulse";
+                  const code = buildShellCode({ opt: v.opt, shape: s.id, pos: v.pos, strip: v.strip });
+                  const icon = iconFor(n - 1);
+                  const name = NAMES[(n - 1) % NAMES.length];
                   const Widget = v.opt === 1 ? GlassPhotoWidget : PhotoGlassWidget;
-                  const cap = `${num} · Optie ${v.opt} · ${WORD[v.pos]}${v.strip ? " · strip" : ""}`;
+                  const cap = `#${num} · ${code} · ${WORD[v.pos]}${v.strip ? " · strip" : ""}`;
                   return (
                     <figure key={num} className="space-y-2" style={{ width: s.w }}>
                       <Widget
@@ -128,7 +144,7 @@ export default function ShellCollection() {
                         glassFraction={v.frac}
                         domain="giulia"
                       >
-                        <Demo label={`Optie ${v.opt}`} title={title} sub={`${s.id} · ${WORD[v.pos]}`} count={v.strip ? "strip" : "side"} type={type} />
+                        <Demo num={num} icon={icon} code={code} name={name} sub={`${s.id} · ${WORD[v.pos]}`} />
                       </Widget>
                       <figcaption className="text-[10px] uppercase tracking-[0.24em] text-foreground/45">{cap}</figcaption>
                     </figure>
