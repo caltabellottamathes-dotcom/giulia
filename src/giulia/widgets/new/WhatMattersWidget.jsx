@@ -72,10 +72,10 @@ export default function WhatMattersWidget() {
         <div className="flex-[3] relative p-5 sm:p-6 flex flex-col min-w-0">
           <WidgetHeader type="tasks" label="What Matters?" count={total ? `${doneCount}/${total}` : ""} />
 
-          <h3 className="text-[32px] sm:text-[34px] leading-[1.02] font-display font-semibold tracking-[-0.02em] text-current mt-2">
+          <h3 className="text-[26px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current">
             Your day in steps.
           </h3>
-          <p className="text-[12px] uppercase tracking-[0.18em] opacity-50 mt-2 text-current">
+          <p className="text-[11px] uppercase tracking-[0.18em] opacity-50 mt-1.5">
             {weekday} {dayNum} {month} · {hh}:{mm}
           </p>
 
