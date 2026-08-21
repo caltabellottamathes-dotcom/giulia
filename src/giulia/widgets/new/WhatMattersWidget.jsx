@@ -5,34 +5,40 @@ import { useAgendaChecklist } from "@/self/widgets/editorial13/CheckableShell";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ad59aa090_Whatmatters_GIULIA.jpeg";
 const PISTACHIO = "hsl(var(--giulia-pistachio))"; // 2e accentkleur (GIULIA)
-// variatie in vorm — elk item groeit naar een eigen hoogte
-const MAGNITUDES = [0.5, 0.85, 0.38, 0.72, 0.6, 0.95, 0.46, 0.78];
+const DUR_MIN = 15, DUR_MAX = 180, H_MIN = 30, H_MAX = 116;
 
-/** PlanningBars — bolletjes die groeien. Elk agenda-item is een bolletje; bij
- *  afvinken groeit het tot een staaf. Nummers als grafisch element erboven.
- *  1e accent (olive) en 2e accent (pistachio) wisselen; urgent → #d5e24a. */
+/** Staafhoogte op basis van afspraakduur (min). */
+function durHeight(dur) {
+  const d = Math.max(DUR_MIN, Math.min(DUR_MAX, dur || 60));
+  return Math.round(H_MIN + ((d - DUR_MIN) / (DUR_MAX - DUR_MIN)) * (H_MAX - H_MIN));
+}
+
+/** PlanningBars — grote visuele blokken (geen dunne lijntjes). Elk agenda-
+ *  item is een stevig blok; bij afvinken groeit het tot een staaf waarvan de
+ *  hoogte afhangt van de duur. Nummers als grafisch element erboven. 1e accent
+ *  (olive) en 2e accent (pistachio) wisselen; urgent → #d5e24a. */
 function PlanningBars({ items }) {
   return (
-    <div className="flex items-end gap-2 h-[96px]">
+    <div className="flex items-end gap-2 h-[128px]">
       {items.map((it, i) => {
         const num = String(i + 1).padStart(2, "0");
         const urgent = !!it.urgent;
         const soft = i % 2 === 1;
         const color = urgent ? URGENT : soft ? PISTACHIO : "var(--tile-accent)";
-        const targetH = it.done ? Math.round(18 + MAGNITUDES[i % MAGNITUDES.length] * 56) : 10;
+        const targetH = it.done ? durHeight(it.duration) : 20;
         return (
           <div key={it.id || i} className="flex-1 flex flex-col items-center justify-end h-full">
             <span
-              className="text-[9px] font-display font-bold tabular-nums leading-none mb-1.5"
-              style={{ color: it.done ? color : "rgba(255,255,255,0.32)" }}
+              className="text-[13px] font-display font-bold tabular-nums leading-none mb-1.5"
+              style={{ color: it.done ? color : "rgba(255,255,255,0.4)" }}
             >
               {num}
             </span>
-            <motion.span
-              className="w-3 rounded-full"
+            <motion.div
+              className="w-full rounded-[12px]"
               animate={{ height: targetH }}
-              transition={{ type: "spring", stiffness: 200, damping: 20 }}
-              style={{ height: 10, backgroundColor: it.done ? color : "rgba(255,255,255,0.22)" }}
+              transition={{ type: "spring", stiffness: 180, damping: 20 }}
+              style={{ height: 20, backgroundColor: it.done ? color : "rgba(255,255,255,0.16)" }}
             />
           </div>
         );
@@ -42,9 +48,10 @@ function PlanningBars({ items }) {
 }
 
 /** What Matters? — referentie-widget op het GIULIA-skelet, op dashboard-maat
- *  (span-2). Titel/subtitel identiek gestijld aan Social Pulse. Links: titel
- *  + datum + bolletjes-staafgrafiek. Rechts: foto tot tegen de rand, afgerond,
- *  schaduw op het glas. Checklist toont enkel de agenda van vandaag. */
+ *  (span-2). Titelsubtitel identiek gestijld aan Social Pulse (dynamische
+ *  headline + sub). Links: headline + sub + grote bolletjes-staafgrafiek.
+ *  Rechts: foto tot tegen de rand, afgerond, schaduw op het glas. Checklist
+ *  toont enkel de agenda van vandaag (scrollbaar, geen zichtbare scrollbar). */
 export default function WhatMattersWidget() {
   const { items, toggle, doneCount, total, closed, close, reopen } = useAgendaChecklist();
 
@@ -57,18 +64,22 @@ export default function WhatMattersWidget() {
   const dayNum = now.getDate();
   const month = now.toLocaleDateString("nl-NL", { month: "short" });
 
+  const allDone = total > 0 && doneCount === total;
+  const headline = total === 0 ? "Nothing on" : allDone ? "Wrapping up" : total >= 5 ? "A lot happening" : total <= 2 ? "Quieter day" : "On track";
+  const desc = total === 0 ? "vandaag vrij om te focussen" : allDone ? "je rondt de dag af" : total >= 5 ? "je dag zit goed vol" : total <= 2 ? "rustige planning vandaag" : "je planning staat";
+
   return (
-    <WidgetShell domain="giulia" radius="large" size="2x2" className="min-h-[300px]">
+    <WidgetShell domain="giulia" radius="large" size="2x2" className="min-h-[320px]">
       <div className="flex flex-1 min-h-0">
-        {/* LINKS — titel + datum boven, bolletjes-staafgrafiek onder */}
+        {/* LINKS — dynamische headline + sub, grote staafgrafiek onder */}
         <div className="flex-[3] relative p-5 sm:p-6 flex flex-col min-w-0">
           <WidgetHeader type="tasks" label="What Matters?" count={total ? `${doneCount}/${total}` : ""} />
 
           <h3 className="text-[26px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current mt-3">
-            Planning
+            {headline}
           </h3>
           <p className="text-[11px] uppercase tracking-[0.18em] opacity-50 mt-1.5 text-current">
-            {weekday} · {dayNum} {month}
+            {weekday} {dayNum} {month} · {desc}
           </p>
 
           <div className="flex-1" />

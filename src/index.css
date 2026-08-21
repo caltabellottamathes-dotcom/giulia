@@ -518,3 +518,6 @@ body.beeldbank-active img:hover { outline: 2px solid hsl(var(--olive)); outline-
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: hsl(var(--smoke) / 0.25); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: hsl(var(--smoke) / 0.4); }
+
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

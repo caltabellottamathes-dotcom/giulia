@@ -56,11 +56,11 @@ export function useTaskChecklist() {
 }
 
 const MOCK_AGENDA = [
-  { id: "mock1", label: "Standup met team", sub: "09:00 · Zoom", done: false },
-  { id: "mock2", label: "1-op-1 met Laura", sub: "10:30 · Kantoor", done: false },
-  { id: "mock3", label: "Ontwerp-review", sub: "13:00 · Studio", done: false },
-  { id: "mock4", label: "Klantgesprek Acme", sub: "15:30 · Bel", done: false },
-  { id: "mock5", label: "Afronding proposal", sub: "17:00", done: false },
+  { id: "mock1", label: "Standup met team", sub: "09:00 · Zoom", done: false, duration: 30 },
+  { id: "mock2", label: "1-op-1 met Laura", sub: "10:30 · Kantoor", done: false, duration: 60 },
+  { id: "mock3", label: "Ontwerp-review", sub: "13:00 · Studio", done: false, duration: 90, urgent: true },
+  { id: "mock4", label: "Klantgesprek Acme", sub: "15:30 · Bel", done: false, duration: 45 },
+  { id: "mock5", label: "Afronding proposal", sub: "17:00", done: false, duration: 120 },
 ];
 
 /** Checklist gekoppeld aan de agenda van vandaag (CalendarEvent). Geen taken,
@@ -85,7 +85,12 @@ export function useAgendaChecklist() {
           ? evs.map((e) => {
               const t = e.start ? new Date(e.start) : null;
               const time = t ? t.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" }) : "";
-              return { id: e.id, label: e.title, sub: [time, e.location].filter(Boolean).join(" · "), done: false };
+              let duration = 60;
+              if (e.start && e.end) {
+                const mins = (new Date(e.end).getTime() - new Date(e.start).getTime()) / 60000;
+                if (mins > 0) duration = Math.round(mins);
+              }
+              return { id: e.id, label: e.title, sub: [time, e.location].filter(Boolean).join(" · "), done: false, duration, urgent: false };
             })
           : MOCK_AGENDA
       );

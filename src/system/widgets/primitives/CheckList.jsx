@@ -58,7 +58,7 @@ export default function CheckList({ items = [], onToggle, accent, onClose, close
   }
 
   return (
-    <div className="flex flex-col gap-1.5" style={maxH ? { maxHeight: maxH, overflow: "hidden" } : undefined}>
+    <div className="flex flex-col gap-1.5 no-scrollbar" style={maxH ? { maxHeight: maxH, overflowY: "auto" } : undefined}>
       <AnimatePresence>
         {items.map((it, i) => (
           <CheckChip key={it.id || i} it={it} onToggle={() => onToggle(i)} accent={accent} index={i} />
