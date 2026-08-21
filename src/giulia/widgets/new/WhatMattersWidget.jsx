@@ -6,9 +6,9 @@ import { useTaskChecklist } from "@/self/widgets/editorial13/CheckableShell";
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ad59aa090_Whatmatters_GIULIA.jpeg";
 
 /** What Matters? — referentie-widget op het GIULIA-skelet.
- *  Vorm: breed (aspect-video). Elementen: tasks-header + live datum/tijd +
- *  FillBar (pistachio→olive) + BrandPhoto + CheckList. Plaatsing: foto rechts
- *  tegen de rand, tijd laag verankerd net boven de balk. */
+ *  Vorm: breed (aspect-video). Links: grafische typografie (tijd/datum in
+ *  Giulia-kleuren) + ALL-CAPS titel + grote FillBar. Rechts: foto als
+ *  zwevende afgeronde kaart met schaduw op het glas. */
 export default function WhatMattersWidget() {
   const { items, toggle, doneCount, total, closed, close, reopen } = useTaskChecklist();
   const pct = total ? doneCount / total : 0;
@@ -30,28 +30,29 @@ export default function WhatMattersWidget() {
     <div className="w-full aspect-video">
       <WidgetShell domain="giulia" radius="large" size="full" className="h-full">
         <div className="flex flex-1 min-h-0">
-          {/* LINKS — grafische typografie, tijd laag verankerd */}
-          <div className="flex-[3] relative p-6 sm:p-8 flex flex-col min-w-0">
+          {/* LINKS — grafisch, groot, Giulia-kleuren */}
+          <div className="flex-[3.6] relative p-6 sm:p-10 flex flex-col min-w-0">
             <WidgetHeader type="tasks" label="What Matters?" count={total ? `${doneCount}/${total}` : ""} />
 
             <div className="flex-1" />
 
-            <div className="mb-5">
-              <p className="text-xl sm:text-2xl font-display font-bold uppercase tracking-[0.14em] text-current opacity-[0.65] leading-none">
+            {/* tijd + datum, laag verankerd, met kleurspel */}
+            <div className="mb-5 border-l-2 border-giulia-pistachio/60 pl-5">
+              <p className="text-lg sm:text-xl font-display font-bold uppercase tracking-[0.16em] text-giulia-pistachio leading-none">
                 {weekday} · {dayNum} {month}
               </p>
               <div className="flex items-baseline mt-1.5">
                 <motion.span
                   key={hh + mm}
-                  className="text-[5.5rem] sm:text-[6.5rem] leading-[0.82] font-display font-bold tabular-nums tracking-[-0.05em] text-current"
+                  className="text-[5.5rem] sm:text-[7rem] leading-[0.82] font-display font-bold tabular-nums tracking-[-0.05em] text-giulia-dust"
                   initial={{ opacity: 0.7 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}
                 >
                   {hh}:{mm}
                 </motion.span>
                 <motion.span
                   key={ss}
-                  className="text-2xl sm:text-3xl font-display font-bold tabular-nums text-current ml-1"
-                  animate={{ opacity: [0.35, 0.7, 0.35] }}
+                  className="text-2xl sm:text-3xl font-display font-bold tabular-nums text-giulia-urgent ml-1.5"
+                  animate={{ opacity: [0.35, 0.9, 0.35] }}
                   transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
                 >
                   :{ss}
@@ -59,23 +60,29 @@ export default function WhatMattersWidget() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] uppercase tracking-[0.28em] font-bold text-current opacity-60">Voortgang</span>
-              <span className="text-[10px] uppercase tracking-[0.28em] font-bold text-current opacity-60 tabular-nums">
+            {/* ALL-CAPS titel, zoals Social */}
+            <h2 className="text-[2.75rem] sm:text-[4rem] font-display font-bold uppercase tracking-[-0.04em] leading-[0.85] text-giulia-dust mb-6">
+              Dagplanning
+            </h2>
+
+            {/* grote voortgangsbalk */}
+            <div className="flex items-center justify-between mb-2.5">
+              <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-giulia-pistachio">Voortgang</span>
+              <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-giulia-pistachio tabular-nums">
                 {Math.round(pct * 100)}%
               </span>
             </div>
-            <FillBar value={pct} height={12} />
+            <FillBar value={pct} height={26} />
           </div>
 
-          {/* RECHTS — foto tot tegen de rand, geen overlay, alleen schaduw-gradient onderaan */}
-          <div className="flex-[1.6] p-0 min-w-0 relative">
+          {/* RECHTS — foto als zwevende afgeronde kaart, schaduw op het glas */}
+          <div className="flex-[1.4] p-4 sm:p-6 min-w-0 relative flex">
             <BrandPhoto
               src={PHOTO}
-              className="relative h-full w-full"
-              overlay="bg-gradient-to-t from-black/55 via-black/10 to-transparent"
+              className="relative h-full w-full rounded-[22px] shadow-[-34px_34px_80px_-20px_rgba(0,0,0,0.45)]"
+              overlay="bg-gradient-to-t from-black/60 via-black/15 to-transparent"
             >
-              <div className="absolute inset-x-0 bottom-0 p-3 flex flex-col gap-1.5 max-h-[80%]">
+              <div className="absolute inset-x-0 bottom-0 p-3 flex flex-col gap-1.5 max-h-[82%]">
                 <CheckList
                   items={enriched}
                   onToggle={toggle}
