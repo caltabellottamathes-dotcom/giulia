@@ -4,16 +4,20 @@ import { Check, RotateCcw } from "lucide-react";
 import { URGENT } from "./domainAccent";
 
 /** CheckChip — één afvinkrij. Transparant glas over de foto. urgent → #d5e24a. */
-export function CheckChip({ it, onToggle, accent = "var(--tile-accent)" }) {
+export function CheckChip({ it, onToggle, accent = "var(--tile-accent)", index }) {
   const urgent = !!it.urgent;
   const a = urgent ? URGENT : accent;
+  const num = index != null ? String(index + 1).padStart(2, "0") : null;
   return (
     <motion.button
       type="button" onClick={onToggle} layout
       initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
       className="w-full flex items-center gap-2.5 rounded-2xl px-3 py-2 text-left transition-colors"
-      style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
+      style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}
     >
+      {num && (
+        <span className="text-[10px] font-display font-bold tabular-nums text-white/45 shrink-0 w-4">{num}</span>
+      )}
       <span
         className="h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all"
         style={{ borderColor: it.done ? a : urgent ? URGENT : "rgba(255,255,255,0.5)", background: it.done ? a : "transparent" }}
@@ -54,10 +58,10 @@ export default function CheckList({ items = [], onToggle, accent, onClose, close
   }
 
   return (
-    <div className="flex flex-col gap-1.5" style={maxH ? { maxHeight: maxH, overflow: "auto" } : undefined}>
+    <div className="flex flex-col gap-1.5" style={maxH ? { maxHeight: maxH, overflow: "hidden" } : undefined}>
       <AnimatePresence>
         {items.map((it, i) => (
-          <CheckChip key={it.id || i} it={it} onToggle={() => onToggle(i)} accent={accent} />
+          <CheckChip key={it.id || i} it={it} onToggle={() => onToggle(i)} accent={accent} index={i} />
         ))}
       </AnimatePresence>
       {allDone && onClose && (
