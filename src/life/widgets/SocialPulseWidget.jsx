@@ -8,8 +8,7 @@ import { useEntityList } from "@/hooks/useEntity";
 import { useLearningSync } from "@/hooks/useLearningSync";
 import { IMAGES } from "@/lib/images";
 import { socialPulse } from "@/lib/domainUtils";
-
-const BLUE = "hsl(var(--d-life-deep))";
+import { BarPulse } from "@/system/widgets/primitives";
 
 /** Social Pulse widget — een grote visuele informatiekaart, geen lijstje.
  *  Dynamische headline + centraal getal + 8-weekse activiteitstimeline +
@@ -42,10 +41,8 @@ export default function SocialPulseWidget() {
     [...(emails || []), ...(whatsapps || [])].forEach((x) => { if (!x.timestamp) return; const w = Math.floor((now - new Date(x.timestamp).getTime()) / (7 * 86400000)); if (w >= 0 && w < 8) arr[7 - w]++; });
     return arr;
   }, [emails, whatsapps]);
-  const maxW = Math.max(1, ...weeks);
-
   return (
-    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("social")} className="min-h-[260px]" style={{ "--tile-accent": BLUE }}>
+    <WidgetShell size="2x2" radius="large" interactive domain="life" onClick={() => openModule("social")} className="min-h-[260px]">
       <div className="p-6 flex flex-col flex-1 min-h-0">
         <WidgetHeader label="What Social Life?" count={overdue.length ? `${overdue.length} wacht` : "bij"} />
         <h3 className="text-[26px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current">{headline}</h3>
@@ -56,11 +53,7 @@ export default function SocialPulseWidget() {
           <p className="text-[10px] uppercase tracking-[0.2em] opacity-50 mb-3 max-w-[84px] leading-tight">meaningful interactions</p>
         </div>
 
-        <div className="mt-4 flex items-end gap-1.5 h-10">
-          {weeks.map((v, i) => (
-            <span key={i} className="flex-1 rounded-full transition-all duration-700" style={{ height: `${Math.max(8, (v / maxW) * 100)}%`, background: v ? "var(--tile-accent)" : "currentColor", opacity: v ? 0.9 : 0.12 }} />
-          ))}
-        </div>
+        <BarPulse values={weeks} height={40} className="mt-4" />
 
         <div className="flex-1" />
       </div>

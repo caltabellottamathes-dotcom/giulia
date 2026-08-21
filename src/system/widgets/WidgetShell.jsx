@@ -45,6 +45,7 @@ export default function WidgetShell({
   interactive = false,
   style,
   zIndex,
+  domain = "",
 }) {
   const ctx = useWidgetTheme();
   const opacity = ctx.opacity != null ? ctx.opacity : 1;
@@ -61,8 +62,9 @@ export default function WidgetShell({
     system: { accent: "hsl(var(--d-system-deep))", on: "hsl(var(--ivory))" },
     now: { accent: "hsl(var(--d-giulia-deep))", on: "hsl(var(--ivory))" },
   };
+  const effDomain = domain || ctx.domain;
   const isGlassTile = resolved === "glass";
-  const domainEntry = isGlassTile && ctx.domain ? (DOMAIN_GLASS[ctx.domain] || null) : null;
+  const domainEntry = isGlassTile && effDomain ? (DOMAIN_GLASS[effDomain] || null) : null;
   const tileAccent = domainEntry ? domainEntry.accent : tile.accent;
   const tileOnAccent = domainEntry ? domainEntry.on : tile.on;
 
