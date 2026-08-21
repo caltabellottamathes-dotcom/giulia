@@ -48,10 +48,9 @@ function PlanningBars({ items }) {
 }
 
 /** What Matters? — referentie-widget op het GIULIA-skelet, op dashboard-maat
- *  (span-2). Titelsubtitel identiek gestijld aan Social Pulse (dynamische
- *  headline + sub). Links: headline + sub + grote bolletjes-staafgrafiek.
- *  Rechts: foto tot tegen de rand, afgerond, schaduw op het glas. Checklist
- *  toont enkel de agenda van vandaag (scrollbaar, geen zichtbare scrollbar). */
+ *  (span-2). Links: titel "Your day in steps." + datum/tijd + grote staaf-
+ *  grafiek. Rechts: foto volledig bedekt door de genummerde checklist
+ *  (scrollbaar, geen zichtbare scrollbar). */
 export default function WhatMattersWidget() {
   const { items, toggle, doneCount, total, closed, close, reopen } = useAgendaChecklist();
 
@@ -63,23 +62,21 @@ export default function WhatMattersWidget() {
   const weekday = now.toLocaleDateString("nl-NL", { weekday: "long" });
   const dayNum = now.getDate();
   const month = now.toLocaleDateString("nl-NL", { month: "short" });
-
-  const allDone = total > 0 && doneCount === total;
-  const headline = total === 0 ? "Nothing on" : allDone ? "Wrapping up" : total >= 5 ? "A lot happening" : total <= 2 ? "Quieter day" : "On track";
-  const desc = total === 0 ? "vandaag vrij om te focussen" : allDone ? "je rondt de dag af" : total >= 5 ? "je dag zit goed vol" : total <= 2 ? "rustige planning vandaag" : "je planning staat";
+  const hh = String(now.getHours()).padStart(2, "0");
+  const mm = String(now.getMinutes()).padStart(2, "0");
 
   return (
     <WidgetShell domain="giulia" radius="large" size="2x2" className="min-h-[320px]">
       <div className="flex flex-1 min-h-0">
-        {/* LINKS — dynamische headline + sub, grote staafgrafiek onder */}
+        {/* LINKS — titel + datum/tijd + grote staafgrafiek */}
         <div className="flex-[3] relative p-5 sm:p-6 flex flex-col min-w-0">
           <WidgetHeader type="tasks" label="What Matters?" count={total ? `${doneCount}/${total}` : ""} />
 
-          <h3 className="text-[26px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current mt-3">
-            {headline}
+          <h3 className="text-[32px] sm:text-[34px] leading-[1.02] font-display font-semibold tracking-[-0.02em] text-current mt-2">
+            Your day in steps.
           </h3>
-          <p className="text-[11px] uppercase tracking-[0.18em] opacity-50 mt-1.5 text-current">
-            {weekday} {dayNum} {month} · {desc}
+          <p className="text-[12px] uppercase tracking-[0.18em] opacity-50 mt-2 text-current">
+            {weekday} {dayNum} {month} · {hh}:{mm}
           </p>
 
           <div className="flex-1" />
@@ -87,14 +84,14 @@ export default function WhatMattersWidget() {
           <PlanningBars items={items} />
         </div>
 
-        {/* RECHTS — foto tot tegen de rand, afgerond, schaduw op het glas */}
+        {/* RECHTS — foto volledig bedekt door de genummerde checklist */}
         <div className="flex-[2] p-0 min-w-0 relative">
           <BrandPhoto
             src={PHOTO}
             className="relative h-full w-full rounded-[22px] shadow-[-30px_24px_60px_-18px_rgba(0,0,0,0.45)]"
-            overlay="bg-gradient-to-t from-black/60 via-black/15 to-transparent"
+            overlay="bg-gradient-to-t from-black/65 via-black/40 to-black/35"
           >
-            <div className="absolute inset-x-0 bottom-0 p-2.5 flex flex-col gap-1.5 max-h-[82%]">
+            <div className="absolute inset-0 p-3 flex flex-col gap-1.5">
               {total > 0 ? (
                 <CheckList items={items} onToggle={toggle} closed={closed} onClose={close} onReopen={reopen} maxH="100%" />
               ) : (
