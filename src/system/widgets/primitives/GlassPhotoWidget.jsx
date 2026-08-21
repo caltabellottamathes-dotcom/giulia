@@ -8,7 +8,7 @@ import { accentFor } from "./domainAccent";
  *  die afhankelijk van de vorm links/rechts (horizontaal) of boven/onder
  *  (verticaal) geplaatst wordt. De rest van de shell bevat de widget-content. */
 
-const ASPECTS = { "1:1": "aspect-square", "4:3": "aspect-[4/3]", "3:4": "aspect-[3/4]", "16:9": "aspect-[16/9]", "9:16": "aspect-[9/16]" };
+const ASPECTS = { "1:1": "aspect-square", "4:3": "aspect-[4/3]", "3:4": "aspect-[3/4]", "16:9": "aspect-[16/9]", "9:16": "aspect-[9/16]", "21:9": "aspect-[21/9]", "3:2": "aspect-[3/2]", "2:3": "aspect-[2/3]", "4:5": "aspect-[4/5]" };
 const RADIUS = { soft: "rounded-[20px]", medium: "rounded-[24px]", large: "rounded-[28px]", xl: "rounded-[32px]" };
 const INNER = { soft: "rounded-[14px]", medium: "rounded-[18px]", large: "rounded-[22px]", xl: "rounded-[26px]" };
 
@@ -31,7 +31,7 @@ export default function GlassPhotoWidget({
 
   return (
     <div
-      className={cn("relative overflow-hidden flex h-full w-full p-2.5 gap-2.5", horizontal ? "flex-row" : "flex-col", ASPECTS[shape], RADIUS[radius], className)}
+      className={cn("relative overflow-hidden flex h-full w-full", horizontal ? "flex-row" : "flex-col", ASPECTS[shape], RADIUS[radius], className)}
       style={{
         "--tile-accent": accent.accent,
         "--tile-on-accent": accent.on,
@@ -48,14 +48,14 @@ export default function GlassPhotoWidget({
 
       {/* PhotoCard */}
       <div
-        className={cn("relative shrink-0 overflow-hidden", INNER[radius], horizontal ? "h-full" : "w-full")}
-        style={{ flexBasis: `${photoFraction * 100}%`, order: photoFirst ? 1 : 2, boxShadow: "0 10px 26px -14px rgba(0,0,0,0.45)" }}
+        className={cn("relative shrink-0 overflow-hidden", horizontal ? "h-full" : "w-full")}
+        style={{ flexBasis: `${photoFraction * 100}%`, order: photoFirst ? 1 : 2 }}
       >
         <BrandPhoto src={photo} overlay={overlay} className="h-full w-full">{photoChildren}</BrandPhoto>
       </div>
 
       {/* Glass content area */}
-      <div className={cn("relative flex-1 min-w-0 min-h-0 flex flex-col p-3", photoFirst ? "order-2" : "order-1")}>
+      <div className={cn("relative flex-1 min-w-0 min-h-0 flex flex-col p-4", photoFirst ? "order-2" : "order-1")}>
         {children}
       </div>
     </div>

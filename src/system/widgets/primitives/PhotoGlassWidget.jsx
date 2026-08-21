@@ -7,7 +7,7 @@ import { accentFor } from "./domainAccent";
  *  afhankelijk van de vorm links/rechts (horizontaal) of boven/onder
  *  (verticaal) geplaatst wordt. De rest van de shell toont de foto. */
 
-const ASPECTS = { "1:1": "aspect-square", "4:3": "aspect-[4/3]", "3:4": "aspect-[3/4]", "16:9": "aspect-[16/9]", "9:16": "aspect-[9/16]" };
+const ASPECTS = { "1:1": "aspect-square", "4:3": "aspect-[4/3]", "3:4": "aspect-[3/4]", "16:9": "aspect-[16/9]", "9:16": "aspect-[9/16]", "21:9": "aspect-[21/9]", "3:2": "aspect-[3/2]", "2:3": "aspect-[2/3]", "4:5": "aspect-[4/5]" };
 const RADIUS = { soft: "rounded-[20px]", medium: "rounded-[24px]", large: "rounded-[28px]", xl: "rounded-[32px]" };
 const INNER = { soft: "rounded-[14px]", medium: "rounded-[18px]", large: "rounded-[22px]", xl: "rounded-[26px]" };
 
@@ -28,7 +28,7 @@ export default function PhotoGlassWidget({
   const justify = glassPosition === "right" || glassPosition === "bottom" ? "justify-end" : "justify-start";
 
   return (
-    <div className={cn("relative overflow-hidden flex h-full w-full p-2.5", horizontal ? "flex-row" : "flex-col", justify, ASPECTS[shape], RADIUS[radius], className)}>
+    <div       className={cn("relative overflow-hidden flex h-full w-full", horizontal ? "flex-row" : "flex-col", justify, ASPECTS[shape], RADIUS[radius], className)}>
       {/* full-bleed foto-shell */}
       <img src={photo} alt="" draggable={false} className="absolute inset-0 w-full h-full object-cover" />
       <div className={cn("absolute inset-0", overlay)} />
@@ -36,7 +36,7 @@ export default function PhotoGlassWidget({
 
       {/* zwevende GlassCard */}
       <div
-        className={cn("relative shrink-0 z-10 overflow-hidden", INNER[radius], horizontal ? "h-full" : "w-full")}
+        className={cn("relative shrink-0 z-10 overflow-hidden", horizontal ? "h-full" : "w-full")}
         style={{
           "--tile-accent": accent.accent,
           "--tile-on-accent": accent.on,
