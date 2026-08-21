@@ -6,6 +6,7 @@ export { default as BrandPhoto } from "@/system/widgets/BrandPhoto";
 export { default as CountUp } from "@/system/widgets/CountUp";
 export { default as BarPulse } from "./BarPulse";
 export { default as ProgressRing } from "./ProgressRing";
+export { default as FillBar } from "./FillBar";
 export { default as CheckList, CheckChip } from "./CheckList";
 export { default as Sparkline } from "./Sparkline";
 export { default as MiniStat } from "./MiniStat";
