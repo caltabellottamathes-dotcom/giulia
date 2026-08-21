@@ -1,9 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import WhatMattersWidget from "@/giulia/widgets/new/WhatMattersWidget";
 import GiuliaConciergeWidget from "@/giulia/widgets/new/GiuliaConciergeWidget";
 import WhatMattersLayeredWidget from "@/giulia/widgets/new/WhatMattersLayeredWidget";
-import GiuliaHotlineLayeredWidget from "@/giulia/widgets/new/GiuliaHotlineLayeredWidget";
 
 export default function WidgetsGiulia() {
   return (
@@ -20,29 +18,17 @@ export default function WidgetsGiulia() {
       </Link>
 
       <div className="space-y-10">
-        <section className="space-y-2 max-w-[585px]">
-          <p className="text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/45">
-            01 · What Matters? — GIULIA · span-2 · staafgrafiek + agenda
-          </p>
-          <WhatMattersWidget />
-        </section>
         <section className="space-y-2 max-w-[300px]">
           <p className="text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/45">
-            02 · GIULIA'S HOTLINE — GIULIA · 9:16 · foto-shell + glas + voice(ElevenLabs)/chat
+            01 · GIULIA'S HOTLINE — 9:16 · foto-shell + glas · tik op de bloom om te bellen
           </p>
           <GiuliaConciergeWidget />
         </section>
         <section className="space-y-2 max-w-[560px]">
           <p className="text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/45">
-            03 · WHAT MATTERS? — G·16x9·L·SIDE · glas-shell + foto-card links (gelaagd) · live bars + checklist
+            02 · WHAT MATTERS? — G·16x9·L·SIDE · glas-shell + foto-card links (gelaagd) · live bars + checklist
           </p>
           <WhatMattersLayeredWidget />
-        </section>
-        <section className="space-y-2 max-w-[300px]">
-          <p className="text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/45">
-            04 · GIULIA'S HOTLINE? — P·2x3·B·SIDE · foto-shell + glazen card onder (gelaagd) · audio-reactieve bloom + call
-          </p>
-          <GiuliaHotlineLayeredWidget />
         </section>
       </div>
     </div>

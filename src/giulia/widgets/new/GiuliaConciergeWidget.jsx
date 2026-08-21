@@ -21,7 +21,7 @@ const URGENT = "hsl(var(--d-giulia-urgent))"; // urgent geelgroen
 const IVORY = "hsl(var(--ivory))";
 
 function ConciergeInner() {
-  const { openChat, openModule } = usePanel();
+  const { openModule } = usePanel();
   const navigate = useNavigate();
   const clientTools = useMemo(() => buildVoiceClientTools({ navigate, openModule }), [navigate, openModule]);
 
@@ -42,7 +42,7 @@ function ConciergeInner() {
       const level = Math.min(1, levelRef.current);
       const breath = 0.045 * Math.sin(t * 1.1);
       const scale = 0.5 + level * 1.25 + breath;
-      const opacity = 0.34 + level * 0.66;
+      const opacity = 0.5 + level * 0.5;
       const el = bloomRef.current;
       if (el) {
         el.style.transform = `scale(${scale})`;
@@ -59,7 +59,7 @@ function ConciergeInner() {
     else { try { await startSession(); } catch { /* ignore */ } }
   };
 
-  const statusLabel = connecting ? "VERBINDEN" : connected ? (isSpeaking ? "SPREEKT" : "LUISTERT") : "STANDBY";
+  const statusLabel = connecting ? "VERBINDEN" : connected ? (isSpeaking ? "SPREEKT" : "LUISTERT") : "TIK OM TE BELLEN";
   const statusColor = isSpeaking ? URGENT : connected ? LIGHT : "rgba(255,255,255,0.55)";
   const dotColor = isSpeaking ? URGENT : connected ? LIGHT : "rgba(255,255,255,0.35)";
 
@@ -103,24 +103,22 @@ function ConciergeInner() {
             animate={{ x: [-14, 14, -14], y: [-10, 10, -10] }}
             transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
           >
-            <div
+            <button
               ref={bloomRef}
-              className="h-[220px] w-[220px] rounded-full will-change-transform"
+              onClick={toggle}
+              aria-label={connected ? "Gesprek stoppen" : "Giulia bellen"}
+              className="h-[220px] w-[220px] rounded-full will-change-transform cursor-pointer"
               style={{
                 background: `radial-gradient(circle at 38% 34%, ${URGENT} 0%, ${DEEP} 38%, ${LIGHT} 58%, transparent 72%)`,
                 filter: "blur(7px)",
-                opacity: 0.34,
+                opacity: 0.5,
+                border: "none",
               }}
             />
           </motion.div>
         </div>
 
-        {/* minimalistische full-caps teksten — CHAT + BEL */}
-        <div className="shrink-0 flex items-center gap-6 text-[11px] uppercase tracking-[0.28em] font-semibold" style={{ color: IVORY }}>
-          <button onClick={openChat} className="hover:opacity-60 transition-opacity">Chat</button>
-          <span className="opacity-30">·</span>
-          <button onClick={toggle} className="hover:opacity-60 transition-opacity">{connected ? "Stop" : "Bel"}</button>
-        </div>
+
       </div>
     </WidgetShell>
   );
