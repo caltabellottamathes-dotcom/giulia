@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import GiuliaConciergeWidget from "@/giulia/widgets/new/GiuliaConciergeWidget";
 import WhatMattersLayeredWidget from "@/giulia/widgets/new/WhatMattersLayeredWidget";
+import WaitingOnYouWidget from "@/giulia/widgets/new/WaitingOnYouWidget";
 
 export default function WidgetsGiulia() {
   return (
@@ -29,6 +30,12 @@ export default function WidgetsGiulia() {
             02 · WHAT MATTERS? — G·16x9·L·SIDE · glas-shell + foto-card links (gelaagd) · live bars + checklist
           </p>
           <WhatMattersLayeredWidget />
+        </section>
+        <section className="space-y-2 max-w-[560px]">
+          <p className="text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/45">
+            03 · WAITING ON YOU — G·3x2·L·SIDE · foto-card links (live telling) + glas-shell rechts (urgente approvals)
+          </p>
+          <WaitingOnYouWidget />
         </section>
       </div>
     </div>

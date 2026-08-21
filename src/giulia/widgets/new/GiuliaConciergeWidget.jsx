@@ -69,8 +69,16 @@ function ConciergeInner() {
       <img src={PHOTO} alt="Giulia's Hotline" className="absolute inset-0 w-full h-full object-cover" />
 
       {/* bovenaan in de foto: beweegde header + titel */}
-      <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-8 bg-gradient-to-b from-black/45 to-transparent" style={{ color: IVORY }}>
+      <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-8 bg-gradient-to-b from-black/45 to-transparent flex items-start justify-between" style={{ color: IVORY }}>
         <WidgetHeader label="GIULIA'S HOTLINE" type="pulse" />
+        {/* minimale status — piepkleine dot rechtsboven */}
+        <span className="flex items-center gap-1.5 pt-1">
+          <motion.span
+            className="h-1 w-1 rounded-full" style={{ background: dotColor }}
+            animate={isSpeaking ? { scale: [1, 1.9, 1], opacity: [1, 0.35, 1] } : { scale: 1, opacity: connected ? 1 : 0.4 }}
+            transition={{ duration: 0.9, repeat: isSpeaking ? Infinity : 0, ease: "easeInOut" }}
+          />
+        </span>
       </div>
 
       {/* donkere gloed achter het glas voor leesbaarheid */}
@@ -86,8 +94,8 @@ function ConciergeInner() {
           boxShadow: "0 -28px 60px -14px rgba(0,0,0,0.50), 0 -10px 22px -10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.22)",
         }}
       >
-        {/* status — bovenin het glas */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* status — bovenin het glas, links uitgelijnd */}
+        <div className="flex items-center gap-2 shrink-0 self-start">
           <motion.span
             className="h-1.5 w-1.5 rounded-full" style={{ background: dotColor }}
             animate={isSpeaking ? { scale: [1, 1.7, 1], opacity: [1, 0.5, 1] } : { scale: 1, opacity: 1 }}

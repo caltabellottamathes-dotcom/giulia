@@ -73,7 +73,7 @@ export default function WhatMattersLayeredWidget() {
         overhang={0.08}
         domain="giulia"
         radius="large"
-        photoOverlay="bg-gradient-to-t from-black/65 via-black/40 to-black/30"
+        photoOverlay="bg-gradient-to-t from-black/40 via-black/20 to-black/10"
         photoChildren={
           <div className="absolute inset-0 p-3 flex flex-col gap-1.5">
             {total > 0 ? (
