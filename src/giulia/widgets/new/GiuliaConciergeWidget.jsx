@@ -7,9 +7,10 @@ import { WidgetShell, WidgetHeader } from "@/system/widgets/primitives";
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/1d4c3eef3_GiuliaConcierge.jpeg";
 
 /** GiuliaConciergeWidget — omgekeerd Social-gevoel, langwerpig (9:16).
- *  Foto als grote shell (full-bleed, geen overlay); daarvoor een langwerpig,
- *  geblurd licht-glas met 4 afgeronde hoeken. Bovenin beweegde header + titel;
- *  erin de EKG + status; onderaan Chat / Bel Giulia. Giulia-kleuren (olijf). */
+ *  Foto als grote shell (full-bleed, geen overlay); daarvoor een lager,
+ *  geblurd licht-glas dat alleen vanonder komt en tot tegen de randen loopt.
+ *  Bovenin de beweegde header + titel; erin de EKG + status; onderaan twee
+ *  elegante acties (Chat / Bel) — geen pillen. Giulia-kleuren (olijf). */
 const STATES = ["Listening", "Thinking", "Processing", "Acting", "Waiting"];
 const PATH = "M 0 50 L 18 50 L 24 50 L 30 28 L 36 72 L 42 40 L 48 50 L 60 50 L 66 50 L 72 34 L 78 66 L 84 50 L 100 50";
 
@@ -28,15 +29,13 @@ export default function GiuliaConciergeWidget() {
       {/* foto als grote shell, geen overlay */}
       <img src={PHOTO} alt="Giulia Concierge" className="absolute inset-0 w-full h-full object-cover" />
 
-      {/* langwerpig, geblurd licht-glas met 4 afgeronde hoeken, voor op de foto */}
+      {/* lager, geblurd licht-glas — alleen vanonder, tot tegen de randen */}
       <div
-        className="absolute inset-x-4 inset-y-5 rounded-[24px] flex flex-col p-4"
+        className="absolute inset-x-0 bottom-0 px-4 pt-4 pb-5"
         style={{
           background: "rgba(248,248,244,0.50)",
           backdropFilter: "blur(22px) saturate(1.3)",
           WebkitBackdropFilter: "blur(22px) saturate(1.3)",
-          border: "1px solid rgba(255,255,255,0.55)",
-          boxShadow: "0 12px 32px -12px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.6)",
           color: ACC,
         }}
       >
@@ -44,7 +43,7 @@ export default function GiuliaConciergeWidget() {
         <WidgetHeader label="Giulia Concierge" count={STATES[idx]} type="pulse" />
 
         {/* EKG */}
-        <div className="relative mt-1 h-12">
+        <div className="relative mt-1 h-10">
           <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
             <line x1="0" y1="50" x2="100" y2="50" stroke={ACC_FAINT} strokeWidth="0.4" />
             <motion.path
@@ -66,23 +65,22 @@ export default function GiuliaConciergeWidget() {
           ))}
         </div>
 
-        <div className="flex-1" />
-
-        {/* chat met Giulia / bel Giulia */}
-        <div className="flex gap-2 mt-3">
+        {/* chat met Giulia / bel Giulia — elegant, geen pillen */}
+        <div className="flex items-center mt-3">
           <Link
             to="/chat"
-            className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full py-2.5 text-[12px] font-semibold transition hover:opacity-90"
-            style={{ background: ACC, color: "hsl(var(--ivory))" }}
+            className="flex-1 inline-flex items-center justify-center gap-2 py-1.5 text-[10px] uppercase tracking-[0.22em] font-semibold transition hover:opacity-60"
+            style={{ color: ACC }}
           >
             <MessageSquare className="h-3.5 w-3.5" /> Chat
           </Link>
+          <span className="h-5 w-px" style={{ background: ACC_FAINT }} />
           <Link
             to="/voice"
-            className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full py-2.5 text-[12px] font-semibold transition hover:bg-white/70"
-            style={{ background: "rgba(255,255,255,0.55)", border: "1px solid rgba(255,255,255,0.7)", color: ACC }}
+            className="flex-1 inline-flex items-center justify-center gap-2 py-1.5 text-[10px] uppercase tracking-[0.22em] font-semibold transition hover:opacity-60"
+            style={{ color: ACC }}
           >
-            <Phone className="h-3.5 w-3.5" /> Bel
+            <Phone className="h-3.5 w-3.5" /> Bel Giulia
           </Link>
         </div>
       </div>
