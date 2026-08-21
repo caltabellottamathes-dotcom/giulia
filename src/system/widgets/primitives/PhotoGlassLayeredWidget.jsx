@@ -23,6 +23,8 @@ export default function PhotoGlassLayeredWidget({
   photoChildren,
   children,
   className,
+  glassBlur = 14,
+  glassBorder = "1px solid rgba(255,255,255,0.18)",
 }) {
   const accent = accentFor(domain);
   const cardStyle = layeredCardStyle(glassPosition, glassFraction, overhang);
@@ -42,9 +44,9 @@ export default function PhotoGlassLayeredWidget({
         style={{
           ...cardStyle,
           background: "rgba(255,255,255,0.10)",
-          backdropFilter: "blur(14px) saturate(1.4)",
-          WebkitBackdropFilter: "blur(14px) saturate(1.4)",
-          border: "1px solid rgba(255,255,255,0.18)",
+          backdropFilter: `blur(${glassBlur}px) saturate(1.4)`,
+          WebkitBackdropFilter: `blur(${glassBlur}px) saturate(1.4)`,
+          border: glassBorder,
           boxShadow: `${SHELL_SHADOW[glassPosition]}, inset 0 1px 0 rgba(255,255,255,0.22)`,
         }}
       >

@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Phone } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useConversation, ConversationProvider } from "@elevenlabs/react";
 import { PhotoGlassLayeredWidget, WidgetHeader } from "@/system/widgets/primitives";
@@ -9,16 +8,15 @@ import { ELEVEN_AGENT_ID } from "@/lib/voiceNavigation";
 import { buildVoiceClientTools } from "@/lib/voiceClientTools";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/1d4c3eef3_GiuliaConcierge.jpeg";
-const DEEP = "hsl(var(--d-giulia-deep))";      // olijf
-const LIGHT = "hsl(var(--d-giulia-light))";    // pistachio
-const URGENT = "hsl(var(--d-giulia-urgent))";   // urgent geelgroen
+const DEEP = "hsl(var(--d-giulia-deep))";    // olijf
+const LIGHT = "hsl(var(--d-giulia-light))";  // pistachio
 const IVORY = "hsl(var(--ivory))";
 
-/** GiuliaHotlineLayeredWidget — "GIULIA'S HOTLINE?" op P·2x3·B·SIDE (gelaagd).
- *  Foto-shell bovenaan: header + titel "Spill the tea!" + minimalistische
- *  call-knop. Glazen card onderaan (overhangt): status + audio-reactieve
- *  gradient-bloom die via ElevenLabs `getOutputVolume()` op Giulia's stem
- *  reageert (beweegt + pulseert). Call-knop → live stemgesprek. */
+/** GiuliaHotlineLayeredWidget — "GIULIA'S HOTLINE!" op P·2x3·B·SIDE (gelaagd).
+ *  Foto-shell: header + titel "Spill the tea!" net boven het glas. Glazen card
+ *  onderaan: status + audio-reactieve gradient-bloom (alleen de 2 GIULIA-kleuren)
+ *  die via ElevenLabs `getOutputVolume()` op Giulia's stem reageert. Klik op de
+ *  bloom = bellen starten / nog eens klikken = stoppen. */
 
 function HotlineInner() {
   const { openModule } = usePanel();
@@ -33,7 +31,7 @@ function HotlineInner() {
   const rafRef = useRef(0);
   const levelRef = useRef(0);
 
-  // rAF — lees Giulia's audio-output en laat de bloom écht op haar stem reageren.
+  // rAF — lees Giulia's audio-output en laat de bloom op haar stem reageren.
   useEffect(() => {
     const loop = () => {
       const t = performance.now() / 1000;
@@ -41,8 +39,10 @@ function HotlineInner() {
       levelRef.current = levelRef.current * 0.82 + raw * 0.18;
       const level = Math.min(1, levelRef.current);
       const breath = 0.05 * Math.sin(t * 1.1);
-      const scale = 0.6 + level * 1.4 + breath;
-      const opacity = 0.45 + level * 0.55;
+      const baseScale = connected ? 0.62 : 0.5;
+      const baseOpacity = connected ? 0.5 : 0.3;
+      const scale = baseScale + level * 1.3 + breath;
+      const opacity = baseOpacity + level * 0.5;
       const el = bloomRef.current;
       if (el) {
         el.style.transform = `scale(${scale})`;
@@ -59,9 +59,9 @@ function HotlineInner() {
     else { try { await startSession(); } catch { /* ignore */ } }
   };
 
-  const statusLabel = connecting ? "VERBINDEN" : connected ? (isSpeaking ? "SPREEKT" : "LUISTERT") : "STANDBY";
-  const statusColor = isSpeaking ? URGENT : connected ? LIGHT : "rgba(255,255,255,0.55)";
-  const dotColor = isSpeaking ? URGENT : connected ? LIGHT : "rgba(255,255,255,0.4)";
+  const statusLabel = connecting ? "VERBINDEN" : connected ? (isSpeaking ? "SPREEKT" : "LUISTERT") : "TIK OM TE BELLEN";
+  const statusColor = connected ? LIGHT : "rgba(255,255,255,0.55)";
+  const dotColor = connected ? LIGHT : "rgba(255,255,255,0.4)";
 
   return (
     <div className="w-[280px]">
@@ -73,27 +73,16 @@ function HotlineInner() {
         overhang={0.08}
         domain="giulia"
         radius="large"
-        overlay="bg-gradient-to-t from-black/10 via-transparent to-black/50"
+        glassBlur={6}
+        glassBorder="1px solid rgba(255,255,255,0.30)"
+        overlay="bg-gradient-to-t from-black/5 via-transparent to-black/50"
         photoChildren={
-          <div className="absolute inset-0 flex flex-col gap-3 p-4" style={{ color: IVORY }}>
-            <WidgetHeader label="GIULIA'S HOTLINE?" type="pulse" />
+          <div className="absolute top-0 inset-x-0 p-4 flex flex-col" style={{ height: "50%", color: IVORY }}>
+            <WidgetHeader label="GIULIA'S HOTLINE!" type="pulse" />
+            <div className="flex-1" />
             <h3 className="text-[26px] leading-[1.02] font-display font-semibold tracking-[-0.02em]">
               Spill the tea!
             </h3>
-            <button
-              onClick={toggle}
-              className="self-start inline-flex items-center gap-2 px-4 py-2 rounded-full text-[11px] uppercase tracking-[0.28em] font-semibold transition"
-              style={{
-                background: connected ? URGENT : "rgba(255,255,255,0.12)",
-                color: connected ? "hsl(var(--charcoal))" : IVORY,
-                border: "1px solid rgba(255,255,255,0.22)",
-                backdropFilter: "blur(8px)",
-                WebkitBackdropFilter: "blur(8px)",
-              }}
-            >
-              <Phone className="h-3.5 w-3.5" />
-              {connected ? "STOP" : "BEL"}
-            </button>
           </div>
         }
       >
@@ -108,20 +97,23 @@ function HotlineInner() {
           <span className="text-[9px] uppercase tracking-[0.32em] font-bold" style={{ color: statusColor }}>{statusLabel}</span>
         </div>
 
-        {/* dynamische gradient-bloom — reageert op Giulia's audio-output */}
+        {/* dynamische gradient-bloom — klikken = bellen starten/stoppen */}
         <div className="relative flex-1 w-full overflow-hidden flex items-center justify-center">
           <motion.div
             className="absolute inset-0 flex items-center justify-center"
-            animate={{ x: [-16, 16, -16], y: [-12, 12, -12] }}
+            animate={{ x: [-14, 14, -14], y: [-10, 10, -10] }}
             transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
           >
-            <div
+            <button
               ref={bloomRef}
-              className="h-[210px] w-[210px] rounded-full will-change-transform"
+              onClick={toggle}
+              aria-label={connected ? "Gesprek stoppen" : "Giulia bellen"}
+              className="h-[150px] w-[150px] rounded-full will-change-transform cursor-pointer"
               style={{
-                background: `radial-gradient(circle at 38% 34%, ${URGENT} 0%, ${DEEP} 36%, ${LIGHT} 56%, transparent 72%)`,
-                filter: "blur(6px)",
-                opacity: 0.45,
+                background: `radial-gradient(circle at 38% 34%, ${LIGHT} 0%, ${DEEP} 48%, transparent 72%)`,
+                filter: "blur(5px)",
+                opacity: 0.3,
+                border: "none",
               }}
             />
           </motion.div>
