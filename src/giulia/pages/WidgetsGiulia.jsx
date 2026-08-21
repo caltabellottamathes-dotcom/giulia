@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import WhatMattersWidget from "@/giulia/widgets/new/WhatMattersWidget";
 import GiuliaConciergeWidget from "@/giulia/widgets/new/GiuliaConciergeWidget";
 import WhatMattersLayeredWidget from "@/giulia/widgets/new/WhatMattersLayeredWidget";
+import GiuliaHotlineLayeredWidget from "@/giulia/widgets/new/GiuliaHotlineLayeredWidget";
 
 export default function WidgetsGiulia() {
   return (
@@ -36,6 +37,12 @@ export default function WidgetsGiulia() {
             03 · WHAT MATTERS? — G·16x9·L·SIDE · glas-shell + foto-card links (gelaagd) · live bars + checklist
           </p>
           <WhatMattersLayeredWidget />
+        </section>
+        <section className="space-y-2 max-w-[300px]">
+          <p className="text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/45">
+            04 · GIULIA'S HOTLINE? — P·2x3·B·SIDE · foto-shell + glazen card onder (gelaagd) · audio-reactieve bloom + call
+          </p>
+          <GiuliaHotlineLayeredWidget />
         </section>
       </div>
     </div>
