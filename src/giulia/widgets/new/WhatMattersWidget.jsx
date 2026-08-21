@@ -89,7 +89,7 @@ export default function WhatMattersWidget() {
           <BrandPhoto
             src={PHOTO}
             className="relative h-full w-full rounded-[22px] shadow-[-30px_24px_60px_-18px_rgba(0,0,0,0.45)]"
-            overlay="bg-gradient-to-t from-black/65 via-black/40 to-black/35"
+            overlay=""
           >
             <div className="absolute inset-0 p-3 flex flex-col gap-1.5">
               {total > 0 ? (

@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import WhatMattersWidget from "@/giulia/widgets/new/WhatMattersWidget";
-import SocialPulseWidget from "@/life/widgets/SocialPulseWidget";
 import GiuliaConciergeWidget from "@/giulia/widgets/new/GiuliaConciergeWidget";
 
 export default function WidgetsGiulia() {
@@ -22,15 +21,9 @@ export default function WidgetsGiulia() {
           </p>
           <WhatMattersWidget />
         </section>
-        <section className="space-y-2 max-w-[400px]">
-          <p className="text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/45">
-            02 · What Social Life? — LIFE · 2×2 · staafgrafiek + foto
-          </p>
-          <SocialPulseWidget />
-        </section>
         <section className="space-y-2 max-w-[300px]">
           <p className="text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/45">
-            03 · GIULIA'S HOTLINE — GIULIA · 9:16 · foto-shell + glas + voice(ElevenLabs)/chat
+            02 · GIULIA'S HOTLINE — GIULIA · 9:16 · foto-shell + glas + voice(ElevenLabs)/chat
           </p>
           <GiuliaConciergeWidget />
         </section>
