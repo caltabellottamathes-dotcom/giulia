@@ -1,11 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { GlassPhotoWidget, PhotoGlassWidget, WidgetHeader } from "@/system/widgets/primitives";
+import { GlassPhotoLayeredWidget, PhotoGlassLayeredWidget, WidgetHeader } from "@/system/widgets/primitives";
 import { buildShellCode, iconFor, iconName } from "@/system/widgets/primitives/shellCode";
 
-/** ShellCollection — 2 basisopties × alle vormen × alle plaatsingen (+ strips).
- *  Elke widget: eigen geanimeerd icoon (met naam + #nummer), een Naam en een
- *  productcode (Optie·Vorm·Plaats·Soort). Noem een code → ik maak hem direct. */
+/** ShellCollection2 — gelaagde versie. Zelfde shells + cards als de flat
+ *  collectie, maar de cards zweven over de shell-rand (straddlen de rand),
+ *  4 afgeronde hoeken + schaduw naar de open kant. Zelfde productcodes. */
 
 const PHOTOS = [
   "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ad59aa090_Whatmatters_GIULIA.jpeg",
@@ -92,21 +92,22 @@ function Demo({ num, icon, code, name, sub }) {
   );
 }
 
-export default function ShellCollection() {
+export default function ShellCollection2() {
   let n = 0;
   return (
     <div className="min-h-screen bg-background px-5 lg:px-10 py-8 pb-24 max-w-[1500px] mx-auto">
-      <Link to="/widgets-giulia" className="text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/50 hover:text-foreground transition-colors">
-        ← Terug naar widget-skelet
-      </Link>
-      <h1 className="text-3xl font-display font-semibold tracking-tight mt-1.5">Shell-collectie · 2 basisopties</h1>
+      <div className="flex items-center gap-4">
+        <Link to="/widgets-giulia" className="text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/50 hover:text-foreground transition-colors">
+          ← Widget-skelet
+        </Link>
+        <Link to="/shell-collection" className="text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/50 hover:text-foreground transition-colors">
+          ← Flat versie
+        </Link>
+      </div>
+      <h1 className="text-3xl font-display font-semibold tracking-tight mt-1.5">Shell-collectie 2 · Gelaagd</h1>
       <p className="text-sm text-muted-foreground mt-1 mb-6 max-w-2xl">
-        Optie 1 — GlassShell + PhotoCard. Optie 2 — PhotoShell + GlassCard. Kaarten flush met 4 afgeronde hoeken + schaduw naar de open kant.
-        Elke widget heeft een eigen geanimeerd icoon, een naam en een productcode. Genummerd 01–36.
+        Zelfde 2 basisopties, maar de cards zweven over de shell-rand — ze overlappen de shell. 4 afgeronde hoeken, flush op de korte as, schaduw naar de open kant. Genummerd 01–36.
       </p>
-      <Link to="/shell-collection-2" className="inline-block text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/50 hover:text-foreground transition-colors mb-8">
-        Layered versie (cards zweven over de rand) →
-      </Link>
 
       <div className="mb-10 rounded-2xl border border-border bg-muted/40 p-4 text-[11px] leading-relaxed text-foreground/70">
         <span className="font-semibold text-foreground">Productcode:</span>{" "}
@@ -115,7 +116,7 @@ export default function ShellCollection() {
         Vorm: 16x9 / 9x16 / 1x1 / 4x3 / 3x4 / 21x9 / 3x2 / 2x3 / 4x5 &nbsp;·&nbsp;
         Plaats: L / R / T / B &nbsp;·&nbsp; Soort: SIDE / STRIP
         <br />
-        <span className="text-foreground/50">Voorbeeld: <span className="font-mono">P·9x16·B·STRIP</span> = Optie 2, 9:16, onder, smalle strip. Noem een code en ik maak hem direct.</span>
+        <span className="text-foreground/50">Voorbeeld: <span className="font-mono">G·16x9·L·SIDE</span> = Optie 1, 16:9, links, gelaagd. Noem een code en ik maak hem direct.</span>
       </div>
 
       <div className="space-y-12">
@@ -134,7 +135,8 @@ export default function ShellCollection() {
                   const code = buildShellCode({ opt: v.opt, shape: s.id, pos: v.pos, strip: v.strip });
                   const icon = iconFor(n - 1);
                   const name = NAMES[(n - 1) % NAMES.length];
-                  const Widget = v.opt === 1 ? GlassPhotoWidget : PhotoGlassWidget;
+                  const Widget = v.opt === 1 ? GlassPhotoLayeredWidget : PhotoGlassLayeredWidget;
+                  const overhang = v.strip ? 0.08 : 0.1;
                   const cap = `#${num} · ${code} · ${WORD[v.pos]}${v.strip ? " · strip" : ""}`;
                   return (
                     <figure key={num} className="space-y-2" style={{ width: s.w }}>
@@ -145,6 +147,7 @@ export default function ShellCollection() {
                         glassPosition={v.pos}
                         photoFraction={v.frac}
                         glassFraction={v.frac}
+                        overhang={overhang}
                         domain="giulia"
                       >
                         <Demo num={num} icon={icon} code={code} name={name} sub={`${s.id} · ${WORD[v.pos]}`} />

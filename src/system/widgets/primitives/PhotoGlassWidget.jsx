@@ -22,6 +22,7 @@ export default function PhotoGlassWidget({
   overlay = "bg-gradient-to-t from-black/55 via-black/25 to-black/15",
   photoChildren,
   glassChildren,
+  children,
   className,
 }) {
   const horizontal = glassPosition === "left" || glassPosition === "right";
@@ -52,7 +53,7 @@ export default function PhotoGlassWidget({
       >
         <div className="relative h-full w-full flex flex-col p-3.5">
           <span className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${accent.accent} 18%, ${accent.accent} 82%, transparent)` }} />
-          {glassChildren}
+          {glassChildren ?? children}
         </div>
       </div>
     </div>

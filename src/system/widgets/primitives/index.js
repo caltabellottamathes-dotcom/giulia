@@ -12,4 +12,7 @@ export { default as Sparkline } from "./Sparkline";
 export { default as MiniStat } from "./MiniStat";
 export { default as GlassPhotoWidget } from "./GlassPhotoWidget";
 export { default as PhotoGlassWidget } from "./PhotoGlassWidget";
+export { default as GlassPhotoLayeredWidget } from "./GlassPhotoLayeredWidget";
+export { default as PhotoGlassLayeredWidget } from "./PhotoGlassLayeredWidget";
+export * from "./shellCode";
 export { DOMAIN_ACCENT, URGENT, accentFor } from "./domainAccent";

@@ -47,3 +47,30 @@ export function parseShellCode(code) {
     strip: k === "STRIP",
   };
 }
+
+// ── Gelaagd (layered) ────────────────────────────────────────────────
+// De card zweeft over de shell-rand: overhangt buiten de shell met `overhang`
+// en reikt `frac` naar binnen. 4 afgeronde hoeken; flush op de korte as.
+export function layeredCardStyle(pos, frac, overhang = 0.1) {
+  const o = `${overhang * 100}%`;
+  const w = `${(frac + overhang) * 100}%`;
+  switch (pos) {
+    case "left":   return { left: `-${o}`, top: 0, bottom: 0, width: w };
+    case "right":  return { right: `-${o}`, top: 0, bottom: 0, width: w };
+    case "top":    return { top: `-${o}`, left: 0, right: 0, height: w };
+    case "bottom": return { bottom: `-${o}`, left: 0, right: 0, height: w };
+    default:       return { left: `-${o}`, top: 0, bottom: 0, width: w };
+  }
+}
+
+// Padding voor content-op-glas (Optie 1 layered): houdt content vrij van de card.
+export function layeredContentPad(pos, frac, base = 16) {
+  const inset = `calc(${frac * 100}% + 12px)`;
+  switch (pos) {
+    case "left":   return { padding: `${base}px ${base}px ${base}px ${inset}` };
+    case "right":  return { padding: `${base}px ${inset} ${base}px ${base}px` };
+    case "top":    return { padding: `${inset} ${base}px ${base}px ${base}px` };
+    case "bottom": return { padding: `${base}px ${base}px ${inset} ${base}px` };
+    default:      return { padding: `${base}px` };
+  }
+}
