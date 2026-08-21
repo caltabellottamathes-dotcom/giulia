@@ -7,10 +7,10 @@ import { WidgetShell, WidgetHeader } from "@/system/widgets/primitives";
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/1d4c3eef3_GiuliaConcierge.jpeg";
 
 /** GiuliaConciergeWidget — omgekeerd Social-gevoel, langwerpig (9:16).
- *  Foto als grote shell (full-bleed, geen overlay); daarvoor een lager,
- *  geblurd licht-glas dat alleen vanonder komt en tot tegen de randen loopt.
- *  Bovenin de beweegde header + titel; erin de EKG + status; onderaan twee
- *  elegante acties (Chat / Bel) — geen pillen. Giulia-kleuren (olijf). */
+ *  Foto als grote shell. Bovenaan de beweegde header + titel op de foto;
+ *  onderaan een lager, geblurd licht-glas (alleen vanonder, tot tegen de
+ *  randen, afgeronde bovenhoeken) met EKG + status en twee elegante acties
+ *  (Chat / Bel). Giulia-kleuren (olijf). */
 const STATES = ["Listening", "Thinking", "Processing", "Acting", "Waiting"];
 const PATH = "M 0 50 L 18 50 L 24 50 L 30 28 L 36 72 L 42 40 L 48 50 L 60 50 L 66 50 L 72 34 L 78 66 L 84 50 L 100 50";
 
@@ -29,9 +29,14 @@ export default function GiuliaConciergeWidget() {
       {/* foto als grote shell, geen overlay */}
       <img src={PHOTO} alt="Giulia Concierge" className="absolute inset-0 w-full h-full object-cover" />
 
-      {/* lager, geblurd licht-glas — alleen vanonder, tot tegen de randen */}
+      {/* bovenaan in de foto: beweegde header + titel (licht op de foto) */}
+      <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-8 bg-gradient-to-b from-black/45 to-transparent" style={{ color: "hsl(var(--ivory))" }}>
+        <WidgetHeader label="Giulia Concierge" count={STATES[idx]} type="pulse" />
+      </div>
+
+      {/* lager, geblurd licht-glas — alleen vanonder, tot tegen de randen, afgeronde bovenhoeken */}
       <div
-        className="absolute inset-x-0 bottom-0 px-4 pt-4 pb-5"
+        className="absolute inset-x-0 bottom-0 rounded-t-[24px] px-4 pt-4 pb-5"
         style={{
           background: "rgba(248,248,244,0.50)",
           backdropFilter: "blur(22px) saturate(1.3)",
@@ -39,9 +44,6 @@ export default function GiuliaConciergeWidget() {
           color: ACC,
         }}
       >
-        {/* bovenin: beweegde header + titel */}
-        <WidgetHeader label="Giulia Concierge" count={STATES[idx]} type="pulse" />
-
         {/* EKG */}
         <div className="relative mt-1 h-10">
           <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
