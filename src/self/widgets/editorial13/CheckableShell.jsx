@@ -55,6 +55,14 @@ export function useTaskChecklist() {
   return { items, toggle, doneCount, total: items.length, allDone, closed, close, reopen };
 }
 
+const MOCK_AGENDA = [
+  { id: "mock1", label: "Standup met team", sub: "09:00 · Zoom", done: false },
+  { id: "mock2", label: "1-op-1 met Laura", sub: "10:30 · Kantoor", done: false },
+  { id: "mock3", label: "Ontwerp-review", sub: "13:00 · Studio", done: false },
+  { id: "mock4", label: "Klantgesprek Acme", sub: "15:30 · Bel", done: false },
+  { id: "mock5", label: "Afronding proposal", sub: "17:00", done: false },
+];
+
 /** Checklist gekoppeld aan de agenda van vandaag (CalendarEvent). Geen taken,
  *  geen andere dingen — enkel wat er vandaag op de agenda staat. Afvinken is
  *  lokaal (agenda-afspraken zijn geen "taak" die afgesloten wordt). */
@@ -73,11 +81,13 @@ export function useAgendaChecklist() {
       } catch { /* ignore */ }
       if (!m) return;
       setItems(
-        evs.map((e) => {
-          const t = e.start ? new Date(e.start) : null;
-          const time = t ? t.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" }) : "";
-          return { id: e.id, label: e.title, sub: [time, e.location].filter(Boolean).join(" · "), done: false };
-        })
+        evs.length
+          ? evs.map((e) => {
+              const t = e.start ? new Date(e.start) : null;
+              const time = t ? t.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" }) : "";
+              return { id: e.id, label: e.title, sub: [time, e.location].filter(Boolean).join(" · "), done: false };
+            })
+          : MOCK_AGENDA
       );
     })();
     return () => { m = false; };
