@@ -15,9 +15,9 @@ export default function WidgetsGiulia() {
       </p>
 
       <div className="space-y-10">
-        <section className="space-y-2">
+        <section className="space-y-2 max-w-[585px]">
           <p className="text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/45">
-            01 · What Matters? — GIULIA · breed · ring + planning
+            01 · What Matters? — GIULIA · span-2 · staafgrafiek + agenda
           </p>
           <WhatMattersWidget />
         </section>

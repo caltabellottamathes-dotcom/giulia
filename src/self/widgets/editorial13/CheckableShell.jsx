@@ -55,6 +55,42 @@ export function useTaskChecklist() {
   return { items, toggle, doneCount, total: items.length, allDone, closed, close, reopen };
 }
 
+/** Checklist gekoppeld aan de agenda van vandaag (CalendarEvent). Geen taken,
+ *  geen andere dingen — enkel wat er vandaag op de agenda staat. Afvinken is
+ *  lokaal (agenda-afspraken zijn geen "taak" die afgesloten wordt). */
+export function useAgendaChecklist() {
+  const [items, setItems] = useState([]);
+  const [closed, setClosed] = useState(false);
+  useEffect(() => {
+    let m = true;
+    (async () => {
+      const n = new Date();
+      const startISO = new Date(n.getFullYear(), n.getMonth(), n.getDate()).toISOString();
+      const endISO = new Date(n.getFullYear(), n.getMonth(), n.getDate() + 1).toISOString();
+      let evs = [];
+      try {
+        evs = await base44.entities.CalendarEvent.filter({ start: { $gte: startISO, $lt: endISO } }, "start", 30);
+      } catch { /* ignore */ }
+      if (!m) return;
+      setItems(
+        evs.map((e) => {
+          const t = e.start ? new Date(e.start) : null;
+          const time = t ? t.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" }) : "";
+          return { id: e.id, label: e.title, sub: [time, e.location].filter(Boolean).join(" · "), done: false };
+        })
+      );
+    })();
+    return () => { m = false; };
+  }, []);
+  const toggle = (i) => setItems((arr) => arr.map((x, k) => (k === i ? { ...x, done: !x.done } : x)));
+  const doneCount = items.filter((x) => x.done).length;
+  const total = items.length;
+  const allDone = total > 0 && doneCount === total;
+  const close = () => setClosed(true);
+  const reopen = () => { setClosed(false); setItems((arr) => arr.map((x) => ({ ...x, done: false }))); };
+  return { items, toggle, doneCount, total, allDone, closed, close, reopen };
+}
+
 /** Grote geanimeerde voortgangsring. */
 function ProgressRing({ value, size = 84, stroke = 8, color }) {
   const r = (size - stroke) / 2;
