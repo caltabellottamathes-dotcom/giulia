@@ -43,11 +43,11 @@ export default function WidgetsGiulia() {
           <WhatIveNoticedWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[620px]">
-          <Label>05 · MEANWHILE... — P·4:3·R·SIDE · achter de schermen (timeline)</Label>
+          <Label>05 · MEANWHILE... — P·4:3·B·SIDE · weekstaafgrafiek</Label>
           <MeanwhileWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-[300px]">
-          <Label>06 · WANTS TO KNOW — P·4:5·B·SIDE · giulia's mysteries</Label>
+          <Label>06 · WANTS TO KNOW — P·2x3·B·SIDE · comparison gauge (FOCUS/LIFE/URGENT)</Label>
           <WantsToKnowLayeredWidget />
         </div>
       </div>
