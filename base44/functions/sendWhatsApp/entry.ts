@@ -31,18 +31,22 @@ export default async function (req) {
     }
     if (!to) return Response.json({ error: "no recipient phone" }, { status: 400 });
 
-    const token = secrets.get("WHATSAPP_ACCESS_TOKEN");
-    const phoneId = secrets.get("WHATSAPP_PHONE_NUMBER_ID");
-    if (!token || !phoneId) return Response.json({ error: "WhatsApp not configured" }, { status: 500 });
+    // Verstuur via de Evolution API (zelfde kanaal als ontvangst), niet via de
+    // verlopen Meta Cloud API token.
+    const apiUrl = (secrets.get("EVO_API_URL") || "").split("](")[0].trim().replace(/\/+$/, "");
+    const instance = secrets.get("EVO_INSTANCE") || "";
+    const apiKey = secrets.get("EVO_API_KEY") || "";
+    if (!apiUrl || !instance || !apiKey) return Response.json({ error: "Evolution API not configured" }, { status: 500 });
 
-    const res = await fetch(`https://graph.facebook.com/v20.0/${phoneId}/messages`, {
+    const res = await fetch(`${apiUrl}/message/sendText/${instance}`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ messaging_product: "whatsapp", to, type: "text", text: { body: message } }),
+      headers: { "Content-Type": "application/json", apikey: apiKey },
+      body: JSON.stringify({ number: to, text: message, options: { delay: 0, presence: "composing" } }),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data?.messages?.[0]?.id) {
-      return Response.json({ ok: false, error: (data?.error && data.error.message) || "send failed", detail: JSON.stringify(data).slice(0, 300) });
+    const evoMsgId = data?.key?.id || data?.messageId || "";
+    if (!res.ok || (!evoMsgId && !data?.ok)) {
+      return Response.json({ ok: false, error: (data?.error && (data.error.message || data.error)) || "send failed", detail: JSON.stringify(data).slice(0, 300) });
     }
 
     await sr.entities.WhatsAppMessage.create({
@@ -51,9 +55,10 @@ export default async function (req) {
       direction: "sent",
       timestamp: new Date().toISOString(),
       status: "delivered",
+      whatsapp_message_id: evoMsgId || undefined,
     }).catch(() => {});
 
-    return Response.json({ ok: true, sent: true, message_id: data.messages[0].id, to });
+    return Response.json({ ok: true, sent: true, message_id: evoMsgId, to });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
