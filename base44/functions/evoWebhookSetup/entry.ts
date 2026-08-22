@@ -77,8 +77,8 @@ export default async function (req) {
         webhook: {
           url: webhookUrl,
           enabled: true,
-          webhook_by_events: true,
-          webhook_base64: false,
+          webhookByEvents: true,
+          webhookBase64: false,
           events: [
             "MESSAGES_UPSERT",
             "MESSAGES_UPDATE",

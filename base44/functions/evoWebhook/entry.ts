@@ -41,6 +41,22 @@ export default async function (req) {
     const event = body?.event;
     const data = body?.data || {};
 
+    // DIAGNOSE: log elk inkomend verzoek naar Activity zodat we kunnen zien
+    // of Evolution ons raakt en welke structuur het stuurt. (Tijdelijk.)
+    try {
+      const sr0 = createClientFromRequest(req).asServiceRole;
+      const payloadPreview = JSON.stringify(body).slice(0, 800);
+      await sr0.entities.Activity.create({
+        action: "evo_webhook_raw",
+        description: `event=${event || "(none)"} keys=${Object.keys(body).join(",")}`,
+        source: "evoWebhook",
+        event_type: String(event || ""),
+        object_type: "diagnose",
+        domain: "giulia",
+      }).catch(() => {});
+      console.log("[evo-raw] event=", event, "bodyKeys=", Object.keys(body), "preview=", payloadPreview.slice(0, 200));
+    } catch {}
+
     // Beveiliging: controleer de apikey die Evolution meestuurt.
     // Evolution v2 stuurt de apikey in de `apikey` header; sommige flows
     // sturen hem ook in de body — accepteer beide.
