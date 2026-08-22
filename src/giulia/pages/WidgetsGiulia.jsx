@@ -39,11 +39,11 @@ export default function WidgetsGiulia() {
           <WaitingOnYouWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-[340px]">
-          <Label>04 · WHAT I'VE NOTICED — G·1x1·T·STRIP · multi-value gauge ring</Label>
+          <Label>04 · WHAT I'VE NOTICED — P·1x1·B·STRIP · XL gauge-ring + 3 groepen</Label>
           <WhatIveNoticedWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[620px]">
-          <Label>05 · MEANWHILE... — P·4:3·B·SIDE · weekstaafgrafiek</Label>
+          <Label>05 · MEANWHILE... — SYSTEM · P·4:3·B·SIDE · weekstaafgrafiek</Label>
           <MeanwhileWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-[300px]">

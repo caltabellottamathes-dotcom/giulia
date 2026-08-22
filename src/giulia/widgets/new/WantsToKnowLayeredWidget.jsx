@@ -55,7 +55,7 @@ export default function WantsToKnowLayeredWidget() {
         domain="giulia"
         radius="large"
         glassBlur={8}
-        overlay="bg-gradient-to-t from-black/30 via-transparent to-transparent"
+        overlay="bg-gradient-to-t from-black/55 via-black/25 to-black/5"
       >
         <WidgetHeader type="pulse" label="WANTS TO KNOW!" />
 

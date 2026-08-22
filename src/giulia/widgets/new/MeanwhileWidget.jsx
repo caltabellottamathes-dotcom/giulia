@@ -54,7 +54,7 @@ export default function MeanwhileWidget() {
         glassPosition="bottom"
         glassFraction={0.42}
         overhang={0.06}
-        domain="giulia"
+        domain="system"
         radius="large"
         glassBlur={8}
         overlay="bg-gradient-to-t from-black/40 via-black/10 to-transparent"
