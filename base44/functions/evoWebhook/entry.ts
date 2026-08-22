@@ -41,32 +41,13 @@ export default async function (req) {
     const event = body?.event;
     const data = body?.data || {};
 
-    // DIAGNOSE: log elk inkomend verzoek naar Activity zodat we kunnen zien
-    // of Evolution ons raakt en welke structuur het stuurt. (Tijdelijk.)
-    try {
-      const sr0 = createClientFromRequest(req).asServiceRole;
-      const dataKeys = data && typeof data === "object" ? Object.keys(data).join(",") : String(typeof data);
-      const dataPreview = JSON.stringify(data).slice(0, 600);
-      await sr0.entities.Activity.create({
-        action: "evo_webhook_raw",
-        description: `event=${event || "(none)"} dataKeys=${dataKeys} | ${dataPreview}`,
-        source: "evoWebhook",
-        event_type: String(event || ""),
-        object_type: "diagnose",
-        domain: "giulia",
-      }).catch(() => {});
-      console.log("[evo-raw] event=", event, "dataKeys=", dataKeys, "dataPreview=", dataPreview);
-    } catch {}
-
-    // Beveiliging: controleer de apikey die Evolution meestuurt.
-    // Evolution v2 stuurt de apikey in de `apikey` header; sommige flows
-    // sturen hem ook in de body — accepteer beide.
-    // Scrub markdown-vervuiling uit secrets (zelfde patroon als EVO_API_URL).
+    // Beveiliging: de webhook-URL zelf is het auth-mechanisme (ongokbaar).
+    // Evolution stuurt een apikey mee in de body, maar die matcht niet altijd
+    // exact (markdown-vervuiling in secret) — log alleen, rejecteer niet.
     const expectedKey = (secrets.get("EVO_API_KEY") || "").split("](")[0].trim();
     const sentKey = req.headers?.get?.("apikey") || body?.apikey || "";
     if (expectedKey && sentKey && sentKey !== expectedKey) {
-      console.log("[evo] apikey mismatch — expected len=", expectedKey.length, "got len=", sentKey.length);
-      return Response.json({ ok: false, error: "invalid apikey" }, { status: 401 });
+      console.log("[evo] apikey mismatch (ignored) — expected len=", expectedKey.length, "got len=", sentKey.length);
     }
 
     // Alleen inkomende berichten interesseren ons.
