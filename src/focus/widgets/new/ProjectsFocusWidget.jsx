@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ArrowLeft } from "lucide-react";
-import { WidgetHeader, URGENT } from "@/system/widgets/primitives";
+import { WidgetHeader } from "@/system/widgets/primitives";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { IMAGES } from "@/lib/images";
@@ -13,6 +13,7 @@ const LIGHT = "hsl(var(--d-focus-light))";
 const OLIVE = "hsl(var(--olive))";
 const IVORY = "hsl(var(--ivory))";
 const ACTIVE = ["in_progress", "planning", "review", "afwerking"];
+const progressColor = (pct) => (pct < 30 ? DEEP : pct < 70 ? OLIVE : LIGHT);
 
 /** ProjectsFocusWidget — G·4:3·R·SIDE · "What I'm Building."
  *  GlassCard (links): gauge (aantal actieve projecten + gem. % klaar) in
@@ -43,9 +44,8 @@ export default function ProjectsFocusWidget() {
 
       {/* content links */}
       <div className="absolute inset-y-0 left-0 w-[58%] flex flex-col p-4 z-10">
-        <div className="flex items-center justify-between mb-2">
+        <div className="mb-2">
           <WidgetHeader type="tasks" label="What I'm Building." count={total ? String(total) : ""} />
-          <button onClick={() => openModule("projects")} className="text-[8px] uppercase tracking-[0.2em] font-bold pt-1" style={{ color: OLIVE }}>ALLES →</button>
         </div>
         {/* gauge verhuisd naar de PhotoCard */}
         <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar flex flex-col gap-2 justify-end">
@@ -54,14 +54,13 @@ export default function ProjectsFocusWidget() {
           ) : top.length === 0 ? (
             <p className="text-[12px] py-2" style={{ color: "rgba(255,255,255,0.65)" }}>Geen actieve projecten.</p>
           ) : top.map((p, i) => {
-            const crit = p.health === "critical";
-            const color = crit ? URGENT : OLIVE;
+            const color = progressColor(p.progress || 0);
             const sel = selectedId === p.id;
             return (
               <button key={p.id} onClick={(e) => { e.stopPropagation(); setSelectedId(sel ? null : p.id); }} className="group w-full text-left rounded-lg px-1.5 -mx-1.5 py-1 transition-colors hover:bg-white/10">
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <span className="text-[13px] font-display font-bold uppercase leading-tight truncate transition-transform group-hover:translate-x-0.5" style={{ color: sel ? OLIVE : IVORY }}>{p.title}</span>
-                  <span className="text-[11px] font-mono font-bold tabular-nums shrink-0" style={{ color: crit ? URGENT : DEEP }}>{p.progress || 0}%</span>
+                  <span className="text-[11px] font-mono font-bold tabular-nums shrink-0" style={{ color: DEEP }}>{p.progress || 0}%</span>
                 </div>
                 <div className="h-1.5 w-full rounded-full bg-white/12 overflow-hidden">
                   <motion.div className="h-full rounded-full" initial={{ width: "0%" }} animate={{ width: `${p.progress || 0}%` }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 + i * 0.08 }} style={{ backgroundColor: color }} />
@@ -100,7 +99,7 @@ export default function ProjectsFocusWidget() {
                           <span className="text-[11px] font-display font-semibold tabular-nums w-8 text-right" style={{ color: LIGHT }}>{o.pct}%</span>
                         </div>
                         <div className="h-1.5 rounded-full bg-white/15 overflow-hidden">
-                          <div className="h-full rounded-full" style={{ width: `${Math.max(o.pct, 2)}%`, background: OLIVE }} />
+                          <div className="h-full rounded-full" style={{ width: `${Math.max(o.pct, 2)}%`, background: progressColor(o.pct) }} />
                         </div>
                       </button>
                       {open && o.subs.length > 1 && (
@@ -108,7 +107,7 @@ export default function ProjectsFocusWidget() {
                           {o.subs.map((s) => (
                             <div key={s.name} className="flex items-center gap-2">
                               <span className="text-[9px] flex-1 truncate" style={{ color: "rgba(255,255,255,0.65)" }}>{s.name}</span>
-                              <div className="w-12 h-1 bg-white/15 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${s.pct}%`, background: LIGHT }} /></div>
+                              <div className="w-12 h-1 bg-white/15 rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${s.pct}%`, background: progressColor(s.pct) }} /></div>
                               <span className="text-[8px] tabular-nums w-6 text-right" style={{ color: "rgba(255,255,255,0.55)" }}>{s.pct}%</span>
                             </div>
                           ))}
@@ -127,8 +126,8 @@ export default function ProjectsFocusWidget() {
           <img src={PHOTO} alt="What I'm Building" className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/8 to-transparent" />
           <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/55 to-transparent" style={{ color: IVORY }}>
-            <p className="text-[9px] uppercase tracking-[0.18em] font-bold" style={{ color: OLIVE }}>gem. klaar</p>
-            <p className="text-[34px] font-display font-bold leading-none tabular-nums">{avgPct}%</p>
+            <p className="text-[9px] uppercase tracking-[0.18em] font-bold" style={{ color: IVORY }}>gem. klaar</p>
+            <p className="text-[34px] font-display font-bold leading-none tabular-nums" style={{ color: DEEP }}>{avgPct}%</p>
             <p className="text-[9px] uppercase tracking-[0.14em] mt-1" style={{ color: "rgba(255,255,255,0.55)" }}>{total} actieve projecten</p>
           </div>
           <button onClick={() => openModule("projects")} className="absolute inset-0 cursor-pointer" aria-label="Open projecten" />

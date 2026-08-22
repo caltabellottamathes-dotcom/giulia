@@ -37,6 +37,7 @@ export default function TimeTrackerFocusWidget() {
   useEffect(() => { if (!projId && projects?.length) setProjId(projects[0].id); }, [projects, projId]);
 
   const elapsed = running && running.start_time ? (now - new Date(running.start_time).getTime()) / 1000 : 0;
+  const selectedProj = (projects || []).find((p) => p.id === projId);
 
   useEffect(() => {
     const loop = () => {
@@ -73,19 +74,18 @@ export default function TimeTrackerFocusWidget() {
           <div className="absolute top-0 inset-x-0 z-30" onClick={(e) => e.stopPropagation()}>
             <button type="button" onClick={() => !running && setPickerOpen((o) => !o)} disabled={!!running}
               className="w-full flex items-center justify-between px-4 py-2.5 disabled:opacity-70"
-              style={{ background: "rgba(0,0,0,0.22)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.12)" }}>
-              <span className="text-[10px] uppercase tracking-[0.18em] font-bold truncate" style={{ color: LIGHT }}>Aan welk project begin je?</span>
+              style={{ background: "transparent", borderBottom: "1px solid rgba(255,255,255,0.12)" }}>
+              <span className="text-[10px] uppercase tracking-[0.18em] font-bold truncate" style={{ color: LIGHT }}>{selectedProj ? selectedProj.title : "Aan welk project begin je?"}</span>
               <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition-transform ${pickerOpen ? "rotate-180" : ""}`} style={{ color: LIGHT }} />
             </button>
             {pickerOpen && !running && (
-              <div className="absolute inset-x-0 top-full max-h-[180px] overflow-y-auto no-scrollbar"
-                style={{ background: "rgba(48,23,40,0.97)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", border: "1px solid rgba(216,218,179,0.28)", boxShadow: "0 14px 30px -10px rgba(0,0,0,0.5)" }}>
-                <div className="px-4 py-2 text-[10px] uppercase tracking-[0.18em] font-bold" style={{ color: LIGHT }}>Aan welk project begin je?</div>
+              <div className="absolute inset-x-0 top-full max-h-[300px] overflow-y-auto no-scrollbar"
+                style={{ background: "rgba(30,14,25,0.74)", backdropFilter: "blur(20px) saturate(1.4)", WebkitBackdropFilter: "blur(20px) saturate(1.4)", border: "1px solid rgba(216,218,179,0.22)", borderBottomLeftRadius: 16, borderBottomRightRadius: 16, boxShadow: "0 18px 38px -12px rgba(0,0,0,0.55)" }}>
                 {(projects || []).length === 0 ? (
-                  <p className="px-4 py-2 text-[10px] uppercase tracking-[0.18em] font-bold" style={{ color: "rgba(255,255,255,0.6)" }}>Geen projecten</p>
+                  <p className="px-4 py-3 text-[10px] uppercase tracking-[0.18em] font-bold" style={{ color: "rgba(255,255,255,0.6)" }}>Geen projecten</p>
                 ) : (projects || []).map((p) => (
                   <button key={p.id} type="button" onClick={() => { setProjId(p.id); setPickerOpen(false); }}
-                    className="w-full text-left px-4 py-2 text-[10px] uppercase tracking-[0.18em] font-bold truncate transition-colors hover:bg-white/10"
+                    className="w-full text-left px-4 py-2.5 text-[10px] uppercase tracking-[0.18em] font-bold truncate transition-colors hover:bg-white/10"
                     style={{ color: p.id === projId ? LIGHT : IVORY }}>
                     {p.title}
                   </button>

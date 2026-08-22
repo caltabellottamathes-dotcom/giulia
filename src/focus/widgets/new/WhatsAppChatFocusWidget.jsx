@@ -179,7 +179,7 @@ export default function WhatsAppChatFocusWidget() {
               >
                 <span className="h-7 w-[3px] rounded-full shrink-0 transition-colors" style={{ background: unread ? URGENT : LIGHT, opacity: unread ? 1 : 0.55 }} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-semibold leading-tight truncate" style={{ color: IVORY }}>{name}</p>
+                  <p className="text-[12px] font-semibold leading-tight truncate" style={{ color: DEEP }}>{name}</p>
                   <p className="text-[9px] uppercase tracking-wide leading-tight" style={{ color: unread ? URGENT : "rgba(255,255,255,0.45)" }}>
                     {unread ? "Nieuw bericht" : "Gelezen"} · {fmtTime(m.timestamp)}
                   </p>

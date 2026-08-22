@@ -52,7 +52,7 @@ export default function PeopleFocusWidget() {
               <button key={c.id} onClick={() => openModule("people")} className="group flex items-center gap-2.5 py-1.5 pl-2.5 pr-1.5 rounded-xl text-left hover:bg-white/10 transition-colors">
                 <span className="h-7 w-[3px] rounded-full shrink-0" style={{ background: LIGHT, opacity: 0.6 }} />
                 <div className="min-w-0 flex-1">
-                  <p className="text-[12px] font-semibold leading-tight truncate" style={{ color: IVORY }}>{c.name}</p>
+                  <p className="text-[12px] font-semibold leading-tight truncate" style={{ color: DEEP }}>{c.name}</p>
                   <p className="text-[9px] uppercase tracking-wide leading-tight truncate" style={{ color: "rgba(255,255,255,0.45)" }}>{[c.role, c.company].filter(Boolean).join(" · ") || "—"}</p>
                 </div>
               </button>
