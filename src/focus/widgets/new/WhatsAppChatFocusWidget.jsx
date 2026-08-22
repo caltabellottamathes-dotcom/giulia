@@ -15,13 +15,17 @@ const IVORY = "hsl(var(--ivory))";
 
 const fmtTime = (iso) => { try { return new Date(iso).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" }); } catch { return ""; } };
 
+const RING_COLORS = ["#b08968", "#a3b18a", "#8d99ae", "#cb997e", "#5e8b7e"];
+const initials = (name) => (name || "?").trim().split(/\s+/).map((s) => s[0]).slice(0, 2).join("").toUpperCase();
+const colorFor = (name) => RING_COLORS[(name || "").charCodeAt(0) % RING_COLORS.length];
+
 /** WhatsAppChatFocusWidget — P·16x9·L·SIDE · "Who's Texting?"
  *  PhotoShell (rechts) = klein chatvenster: header + contactnaam + glazen
- *  bericht-pil + text-entry met verzendknop. GlassCard (links) = 5 laatste
- *  ongelezen berichten met leesbare contactnaam. Tik op een contact opent de
- *  conversatie in het chatvenster; nog eens tikken sluit; dubbelklik verwijdert
- *  hem uit de widget (markeer gelezen) zodat plaats komt voor een nieuw bericht.
- *  Data: WhatsAppMessage (received/unread) + Contact. Focus-kleuren + Urgent. */
+ *  bericht-pil (geblurd) + text-entry met verzendknop. GlassCard (links) =
+ *  5 laatste contacten die gestuurd hebben, enkel de contactpersoon op een
+ *  visuele grafische manier (initialen-cirkel + naam + ongelezen-punt).
+ *  Tik opent de conversatie in het chatvenster; nog eens tikken sluit;
+ *  dubbelklik markeer gelezen (verwijdert ongelezen-punt). */
 export default function WhatsAppChatFocusWidget() {
   const { toast } = useToast();
   const { openModule } = usePanel();
@@ -40,11 +44,23 @@ export default function WhatsAppChatFocusWidget() {
   }, [contacts]);
 
   const received = useMemo(() => (msgs || []).filter((m) => m.direction === "received"), [msgs]);
-  const unreadAll = useMemo(() => received.filter((m) => m.status === "unread"), [received]);
-  const totalUnread = unreadAll.length;
-  // Toon de 5 laatste ongelezen; zijn er geen, dan vallen de 5 laatste
-  // ontvangen gesprekken in als rustige fallback.
-  const list = (unreadAll.length > 0 ? unreadAll : received).slice(0, 5);
+  const totalUnread = received.filter((m) => m.status === "unread").length;
+
+  // 5 laatste contacten die gestuurd hebben (uniek per contact, recentste
+  // bericht eerst) — ongeacht gelezen/ongelesen.
+  const recentSenders = useMemo(() => {
+    const byContact = new Map();
+    received.forEach((m) => {
+      if (!m.contact_id) return;
+      const prev = byContact.get(m.contact_id);
+      if (!prev || new Date(m.timestamp || m.created_date) > new Date(prev.timestamp || prev.created_date)) {
+        byContact.set(m.contact_id, m);
+      }
+    });
+    return [...byContact.values()]
+      .sort((a, b) => new Date(b.timestamp || b.created_date) - new Date(a.timestamp || a.created_date))
+      .slice(0, 5);
+  }, [received]);
 
   const selectedContact = (contacts || []).find((c) => c.id === selectedId);
   const conversation = useMemo(() => {
@@ -59,7 +75,6 @@ export default function WhatsAppChatFocusWidget() {
     const now = Date.now();
     const id = row.id;
     if (lastTap.current.id === id && now - lastTap.current.t < 360) {
-      // dubbelklik → verwijder uit widget (markeer gelezen)
       base44.entities.WhatsAppMessage.update(id, { status: "read" }).catch(() => {});
       if (selectedId === row.contact_id) setSelectedId(null);
       reloadMsgs();
@@ -67,7 +82,6 @@ export default function WhatsAppChatFocusWidget() {
       return;
     }
     lastTap.current = { id, t: now };
-    // enkele tik → toggle chat
     setSelectedId((cur) => (cur === row.contact_id ? null : row.contact_id));
   };
 
@@ -107,9 +121,9 @@ export default function WhatsAppChatFocusWidget() {
               {selectedContact ? (selectedContact.name || selectedContact.phone || "Onbekend") : "WHO'S TEXTING."}
             </h3>
 
-            {/* glazen bericht-pil */}
+            {/* glazen bericht-pil — iets meer geblurd */}
             <div className="flex-1 min-h-0 mt-2 overflow-hidden rounded-2xl flex flex-col gap-1.5 p-2.5"
-              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)" }}
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
               onClick={(e) => e.stopPropagation()}>
               {!selectedId ? (
                 <p className="text-[11px] text-ivory/55 m-auto text-center">Tik een contact links aan om te antwoorden.</p>
@@ -125,7 +139,6 @@ export default function WhatsAppChatFocusWidget() {
               ))}
             </div>
 
-            {/* text-entry + verzendknop */}
             <div className="mt-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
               <input
                 value={draft}
@@ -149,30 +162,39 @@ export default function WhatsAppChatFocusWidget() {
           </div>
         }
       >
-        {/* GlassCard — 5 laatste ongelezen berichten met contact */}
-        <div className="flex flex-col gap-1 h-full overflow-hidden -mx-1 px-1" onClick={(e) => e.stopPropagation()}>
+        {/* GlassCard — 5 laatste contacten die gestuurd hebben, enkel contact visueel */}
+        <div className="flex flex-col gap-2 h-full overflow-hidden -mx-1 px-1" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between px-1 pb-1.5 mb-0.5 border-b border-white/12">
-            <span className="text-[9px] uppercase tracking-[0.22em] font-bold text-ivory/55">Ongelezen</span>
+            <span className="text-[9px] uppercase tracking-[0.22em] font-bold text-ivory/55">Laatste afzenders</span>
             {totalUnread > 0 && <span className="text-[9px] font-mono tabular-nums" style={{ color: URGENT }}>{totalUnread} nieuw</span>}
           </div>
-          {list.length === 0 ? (
+          {recentSenders.length === 0 ? (
             <p className="text-[11px] text-ivory/55 px-1 py-1">Nog geen berichten.</p>
-          ) : list.map((m) => {
-            const name = (m.contact_id && contactName[m.contact_id]) || "Onbekend";
+          ) : recentSenders.map((m) => {
+            const name = contactName[m.contact_id] || "Onbekend";
             const active = selectedId === m.contact_id;
+            const unread = m.status === "unread";
+            const ring = unread ? URGENT : colorFor(name);
             return (
               <button
                 key={m.id}
                 onClick={() => tap(m)}
-                className="flex items-start gap-2 py-1.5 px-1.5 rounded-lg text-left transition-colors"
+                className="flex items-center gap-2.5 py-1.5 px-1.5 rounded-xl text-left transition-colors"
                 style={{ background: active ? "rgba(255,255,255,0.10)" : "transparent" }}
               >
-                <span className="mt-1 h-1.5 w-1.5 rounded-full shrink-0" style={{ background: m.status === "unread" ? URGENT : "rgba(255,255,255,0.3)" }} />
+                <span
+                  className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-[11px] font-display font-bold"
+                  style={{ background: "rgba(255,255,255,0.08)", color: IVORY, border: `1.5px solid ${ring}` }}
+                >
+                  {initials(name)}
+                </span>
                 <div className="flex-1 min-w-0">
                   <p className="text-[12px] font-semibold leading-tight truncate" style={{ color: IVORY }}>{name}</p>
-                  <p className="text-[11px] leading-tight line-clamp-2 text-ivory/70">{m.message}</p>
+                  <p className="text-[9px] uppercase tracking-wide leading-tight" style={{ color: unread ? URGENT : "rgba(255,255,255,0.4)" }}>
+                    {unread ? "Nieuw bericht" : "Gelezen"} · {fmtTime(m.timestamp)}
+                  </p>
                 </div>
-                {m.timestamp && <span className="text-[9px] text-ivory/40 shrink-0 pt-0.5">{fmtTime(m.timestamp)}</span>}
+                {unread && <span className="h-2 w-2 rounded-full shrink-0" style={{ background: URGENT }} />}
               </button>
             );
           })}

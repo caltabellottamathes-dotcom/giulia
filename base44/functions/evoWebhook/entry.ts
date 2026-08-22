@@ -91,19 +91,34 @@ export default async function (req) {
       if (fromMe) { skipped++; continue; }
       if (!text) { skipped++; continue; }
 
-      // Koppel aan een Contact op genormaliseerd telefoonnummer, indien aanwezig.
-      // Geen match én wel een pushName/phone? Dan auto-creeer een Contact zodat
-      // de afzender zichtbaar wordt in People + WhatsApp.
+      // Koppel aan een Contact op genormaliseerd telefoonnummer. Originele
+      // contacten (met +) blijven altijd de hoofd-contact; duplicaten (zonder +)
+      // worden direct samengevoegd: berichten herkoppeld, dupe verwijderd.
       let contactId = "";
       if (phone) {
-        const matches = await sr.entities.Contact.filter({ phone }).catch(() => []);
-        const found = (matches || []).find((c) => normalizePhone(c.phone) === phone);
-        if (found) {
-          contactId = found.id;
+        const variants = Array.from(new Set([phone, "+" + phone, "00" + phone]));
+        if (phone.startsWith("31")) variants.push("0" + phone.slice(2));
+        const candidates = [];
+        for (const v of variants) {
+          const res = await sr.entities.Contact.filter({ phone: v }).catch(() => []);
+          (res || []).forEach((c) => { if (!candidates.find((x) => x.id === c.id)) candidates.push(c); });
+        }
+        const matching = candidates.filter((c) => normalizePhone(c.phone) === phone);
+        if (matching.length > 0) {
+          matching.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
+          const main = matching[0];
+          contactId = main.id;
+          if (matching.length > 1) {
+            for (const d of matching.slice(1)) {
+              await sr.entities.WhatsAppMessage.updateMany({ contact_id: d.id }, { $set: { contact_id: main.id } }).catch(() => {});
+              await sr.entities.Contact.delete(d.id).catch(() => {});
+              console.log("[evo-merge] merged", d.id, "→", main.id);
+            }
+          }
         } else if (pushName || phone) {
           const created = await sr.entities.Contact.create({
             name: pushName || phone,
-            phone: phone,
+            phone: "+" + phone,
             status: "unconfirmed",
             agent_source: "evoWebhook",
           }).catch((e) => { console.log("[evo-contact] create failed:", e.message); return null; });
