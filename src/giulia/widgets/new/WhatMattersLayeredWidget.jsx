@@ -88,7 +88,7 @@ export default function WhatMattersLayeredWidget() {
         <h3 className="text-[22px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current">
           A PLAN FOR TODAY!
         </h3>
-        <p className="text-[10px] uppercase tracking-[0.18em] opacity-50 mt-1">
+        <p className="text-[10px] uppercase tracking-[0.18em] mt-1" style={{ color: PISTACHIO, opacity: 0.75 }}>
           {weekday} {dayNum} {month} · {hh}:{mm}
         </p>
         <div className="flex-1 min-h-2" />
