@@ -5,6 +5,7 @@ import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 
 const VIDEO = "https://media.base44.com/videos/public/6a7608690d4ea2c9edc3d59b/e78ecc675_IMaLIVE.mp4";
+const POSTER = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/45fa5610d_Alive_.jpeg";
 const IVORY = "hsl(var(--ivory))";
 const DEEP = "hsl(var(--d-giulia-deep))";    // olijf
 const LIGHT = "hsl(var(--d-giulia-light))";  // pistachio
@@ -63,12 +64,12 @@ export default function ImAliveWidget() {
         <video
           ref={videoRef}
           src={VIDEO}
+          poster={POSTER}
           className="absolute inset-0 w-full h-full object-cover"
           muted
           playsInline
-          preload="metadata"
+          preload="auto"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/25 to-black/15" />
 
         {/* Header op de foto */}
         <div

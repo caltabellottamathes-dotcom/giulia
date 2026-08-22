@@ -9,6 +9,7 @@ import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, X } from "lucide-react";
 import Hotline2Widget from "@/giulia/widgets/new/Hotline2Widget";
+import { Image } from "@/components/ui/image";
 
 const VOICE_PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/097f2a860_Voicewindow.jpeg";
 const DEEP = "hsl(var(--d-giulia-deep))";    // olijf
@@ -124,11 +125,11 @@ function VoiceWindowInner() {
         <Hotline2Widget />
       </div>
 
-      {/* Voice paneel — 9:16 PhotoShell + GlassCard onder */}
-      <div className="fixed right-4 lg:right-6 top-1/2 -translate-y-1/2 z-50 w-[min(92vw,400px)] aspect-[9/16] max-h-[calc(100svh-3rem)] animate-slide-right">
+      {/* Voice paneel — zelfde formaat als de andere panelen (rechts, volledige hoogte, schuift in) */}
+      <div className="fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 w-[calc(100%-2rem)] lg:w-[720px] z-50 animate-slide-right">
         <div className="relative w-full h-full rounded-[28px] overflow-hidden">
-          {/* PhotoShell */}
-          <img src={VOICE_PHOTO} alt="" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
+          {/* PhotoShell — Image-component voor snelle WebP-load */}
+          <Image src={VOICE_PHOTO} fittingType="fill" alt="" className="absolute inset-0 w-full h-full" draggable={false} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/25 to-black/30" />
 
           {/* Close — linksboven */}
@@ -175,13 +176,13 @@ function VoiceWindowInner() {
               style={{ background: `linear-gradient(90deg, transparent, ${DEEP} 18%, ${DEEP} 82%, transparent)` }}
             />
 
-            {/* Audio-reactieve bloom — tik om te bellen / op te hangen */}
-            <div className="relative flex items-center justify-center pt-1 pb-3">
+            {/* Audio-reactieve bloom — groter, lager, tik om te bellen / op te hangen */}
+            <div className="relative flex items-center justify-center pt-10 pb-4">
               <button
                 ref={bloomRef}
                 onClick={toggle}
                 aria-label={connected ? "Gesprek stoppen" : "Giulia bellen"}
-                className="h-[140px] w-[140px] rounded-full will-change-transform cursor-pointer"
+                className="h-[190px] w-[190px] rounded-full will-change-transform cursor-pointer"
                 style={{ background: `radial-gradient(circle, ${DEEP} 0%, ${LIGHT} 48%, transparent 72%)`, filter: "blur(2px)", opacity: 0.92, border: "none" }}
               />
             </div>
