@@ -49,8 +49,8 @@ export default function WhatIveNoticedWidget() {
         glassBlur={8}
         overlay="bg-gradient-to-t from-black/55 via-black/25 to-black/5"
         photoChildren={
-          <div className="absolute left-0 right-0 flex items-center justify-center" style={{ top: 0, height: "69%" }}>
-            <div className="relative w-[170px] h-[170px]">
+          <div className="absolute" style={{ left: "50%", top: "43%", transform: "translate(-50%,-50%)" }}>
+            <div className="relative w-[250px] h-[250px]">
               <svg viewBox="0 0 120 120" className="w-full h-full">
                 <g transform="rotate(-90 60 60)">
                   {GROUPS.map((ring, idx) => {
@@ -73,7 +73,7 @@ export default function WhatIveNoticedWidget() {
                 </g>
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ color: "white" }}>
-                <CountUp value={total} className="text-[32px] font-display font-bold leading-none" />
+                <CountUp value={total} className="text-[44px] font-display font-bold leading-none" />
                 <span className="text-[8px] uppercase tracking-[0.24em] opacity-70 mt-0.5">totaal</span>
               </div>
             </div>

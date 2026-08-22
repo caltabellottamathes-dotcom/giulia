@@ -3,6 +3,7 @@ import { GlassPhotoLayeredWidget, WidgetHeader } from "@/system/widgets/primitiv
 import { base44 } from "@/api/base44Client";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/9134a54f7_Good_Morning.jpeg";
+const LIGHT = "hsl(var(--d-giulia-light))";
 
 /** GoodMorningWidget — "GOOD MORNING!" · G·21x9·L·SIDE (gelaagd).
  *  Foto-card links (geüploade foto). Glas-shell rechts: header met klok-icoon
@@ -28,9 +29,8 @@ export default function GoodMorningWidget() {
   const diff = next - now;
   const hh = Math.floor(diff / 3600000);
   const mm = Math.floor((diff % 3600000) / 60000);
-  const ss = Math.floor((diff % 60000) / 1000);
   const pad = (n) => String(n).padStart(2, "0");
-  const countdown = `${pad(hh)} : ${pad(mm)} : ${pad(ss)}`;
+  const countdownHHMM = `${pad(hh)}:${pad(mm)}`;
 
   return (
     <div className="w-full max-w-[680px]">
@@ -45,12 +45,9 @@ export default function GoodMorningWidget() {
         photoOverlay="bg-gradient-to-t from-black/35 via-black/10 to-transparent"
       >
         <WidgetHeader type="briefing" label="GOOD MORNING!" />
-        <div className="flex-1 flex flex-col justify-center">
+        <div className="flex-1 flex flex-col justify-end items-end">
+          <div className="text-[88px] font-display font-bold leading-none tracking-[-0.04em]" style={{ color: LIGHT, opacity: 0.32 }}>{countdownHHMM}</div>
           <div className="text-[88px] font-display font-bold leading-none tracking-[-0.04em]">{alarm}</div>
-          <div className="flex items-baseline gap-3 mt-2">
-            <span className="text-[20px] font-mono tabular-nums tracking-[0.06em]">{countdown}</span>
-            <span className="text-[9px] uppercase tracking-[0.24em] opacity-50">tot de wekker</span>
-          </div>
         </div>
       </GlassPhotoLayeredWidget>
     </div>
