@@ -63,6 +63,7 @@ import GraphGallery from '@/system/pages/GraphGallery';
 import GraphGallery2 from '@/system/pages/GraphGallery2';
 import UiItems from '@/system/pages/UiItems';
 import WidgetsGiulia from '@/giulia/pages/WidgetsGiulia';
+import WidgetsFocus from '@/focus/pages/WidgetsFocus';
 import ShellCollection from '@/system/pages/ShellCollection';
 import ShellCollection2 from '@/system/pages/ShellCollection2';
 // GlassAgenda scoped pages
@@ -188,6 +189,7 @@ const AuthenticatedApp = () => {
           <Route path="/graph-gallery-2" element={<GraphGallery2 />} />
           <Route path="/UI-items" element={<UiItems />} />
           <Route path="/widgets-giulia" element={<WidgetsGiulia />} />
+          <Route path="/widgets-focus" element={<WidgetsFocus />} />
           <Route path="/shell-collection" element={<ShellCollection />} />
           <Route path="/shell-collection-2" element={<ShellCollection2 />} />
           {/* GlassAgenda — scoped suite */}

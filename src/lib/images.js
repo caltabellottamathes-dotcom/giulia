@@ -119,6 +119,19 @@ export const IMAGES = {
   wWhatIveNoticed: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/5f19aeb8d_Noticed_.jpeg",
   wWantsToKnow:    "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ac89b8e63_WTK.jpeg",
   wGoodMorning:    "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/425b14eed_WaKe.jpeg",
+  // FOCUS layer — brutalist editorial (burgundy / olive / concrete / brushed metal)
+  focusPillar:       "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/e0af25c4b_A_graphic_minimalist_photograph_exploring_2026062623011.jpeg",
+  focusCarrels:      "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/7dbbb6999_A_striking_surreal_editorial_photograph_202606262301.jpeg",
+  focusConcreteHand: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/26158a5d2_A_striking_composition_dominated_by_202606262231.jpeg",
+  focusMetalGloves:  "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/10dbc19b4_An_emotionally_ambiguous_close-up_of_202606262301.jpeg",
+  focusSuspended:    "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/2e5c64e07_An_emotionally_ambiguous_wide_shot_202606262231.jpeg",
+  focusMoodboard:    "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/219fbe117_IMG_20260527_005923.jpg",
+  focusLeanPanel:    "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/b4e389416_A_striking_composition_of_graphic_202606262301.jpeg",
+  focusCorridor:     "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/f80ffec63_An_emotionally_ambiguous_surreal_photograph_2026062623011.jpeg",
+  focusAlcove:       "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/2db3c45b6_Apply_a_consistent_editorial_documentary_2026062200557.jpeg",
+  focusCoat:         "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/2ac6b5252_A_high-contrast_medium_shot_of_2026062702281.jpeg",
+  focusOliveYarn:    "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/1dc2ec318_A_graphic_minimalist_photograph_exploring_202606262301.jpeg",
+  focusTrousers:     "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/013507d8b_A_minimalist_deadpan_photograph_of_202606262231.jpeg",
 };
 
 export const VIDEOS = {
