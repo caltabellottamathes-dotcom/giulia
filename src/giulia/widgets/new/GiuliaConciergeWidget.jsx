@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useConversation, ConversationProvider } from "@elevenlabs/react";
@@ -25,34 +25,11 @@ function ConciergeInner() {
   const navigate = useNavigate();
   const clientTools = useMemo(() => buildVoiceClientTools({ navigate, openModule }), [navigate, openModule]);
 
-  const { startSession, endSession, status, isSpeaking, getOutputVolume } = useConversation({ agentId: ELEVEN_AGENT_ID, clientTools });
+  const { startSession, endSession, status, isSpeaking } = useConversation({ agentId: ELEVEN_AGENT_ID, clientTools });
   const connected = status === "connected";
   const connecting = status === "connecting";
 
-  const bloomRef = useRef(null);
-  const rafRef = useRef(0);
-  const levelRef = useRef(0);
-
-  // rAF — lees Giulia's audio-output en laat de bloom echt op haar stem reageren.
-  useEffect(() => {
-    const loop = () => {
-      const t = performance.now() / 1000;
-      const raw = connected && typeof getOutputVolume === "function" ? (getOutputVolume() || 0) : 0;
-      levelRef.current = levelRef.current * 0.82 + raw * 0.18;
-      const level = Math.min(1, levelRef.current);
-      const breath = 0.045 * Math.sin(t * 1.1);
-      const scale = 0.5 + level * 1.25 + breath;
-      const opacity = 0.72 + level * 0.28;
-      const el = bloomRef.current;
-      if (el) {
-        el.style.transform = `scale(${scale})`;
-        el.style.opacity = String(opacity);
-      }
-      rafRef.current = requestAnimationFrame(loop);
-    };
-    rafRef.current = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [connected, getOutputVolume]);
+  // gradient bloom ademt via framer-motion (zie render — speech indicator 06)
 
   const toggle = async () => {
     if (connected) { try { await endSession(); } catch { /* ignore */ } }
@@ -104,26 +81,16 @@ function ConciergeInner() {
           <span className="text-[9px] uppercase tracking-[0.32em] font-bold" style={{ color: statusColor }}>{statusLabel}</span>
         </div>
 
-        {/* dynamische gradient-bloom — reageert op Giulia's audio-output */}
+        {/* gradient bloom — ademt (speech indicator · 06) */}
         <div className="relative flex-1 w-full overflow-hidden flex items-center justify-center">
-          <motion.div
-            className="absolute inset-0 flex items-center justify-center"
-            animate={{ x: [-14, 14, -14], y: [-10, 10, -10] }}
-            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <button
-              ref={bloomRef}
-              onClick={toggle}
-              aria-label={connected ? "Gesprek stoppen" : "Giulia bellen"}
-              className="h-[220px] w-[220px] rounded-full will-change-transform cursor-pointer"
-              style={{
-                background: `radial-gradient(circle at 38% 34%, ${URGENT} 0%, ${DEEP} 38%, ${LIGHT} 58%, transparent 72%)`,
-                filter: "blur(7px)",
-                opacity: 0.72,
-                border: "none",
-              }}
-            />
-          </motion.div>
+          <motion.button
+            onClick={toggle}
+            aria-label={connected ? "Gesprek stoppen" : "Giulia bellen"}
+            className="h-[200px] w-[200px] rounded-full will-change-transform cursor-pointer"
+            style={{ background: `radial-gradient(circle, ${URGENT} 0%, ${DEEP} 45%, transparent 72%)`, filter: "blur(4px)", border: "none" }}
+            animate={{ scale: [0.8, 1.2, 0.8], opacity: [0.5, 0.92, 0.5] }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+          />
         </div>
 
 

@@ -74,7 +74,7 @@ export default function WantsToKnowLayeredWidget() {
                 className="text-left"
               >
                 <div className="flex items-baseline justify-between mb-1">
-                  <span className="text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: g.color }}>{g.key}</span>
+                  <span className="text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: "hsl(var(--ivory))" }}>{g.key}</span>
                   <span className="text-[18px] font-display font-bold tabular-nums leading-none">{loading ? "–" : val}</span>
                 </div>
                 <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
