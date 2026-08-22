@@ -11,6 +11,7 @@ export function PanelProvider({ children }) {
   const [activeModule, setActiveModule] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [voiceOpen, setVoiceOpen] = useState(false);
+  const [hotlineOpen, setHotlineOpen] = useState(false);
   const [pendingMessage, setPendingMessage] = useState(null);
 
   // "chat" opens the dedicated chat window instead of a module panel.
@@ -31,6 +32,8 @@ export function PanelProvider({ children }) {
   const closeChat = () => setChatOpen(false);
   const openVoice = () => setVoiceOpen(true);
   const closeVoice = () => setVoiceOpen(false);
+  const openHotline = () => setHotlineOpen(true);
+  const closeHotline = () => setHotlineOpen(false);
 
   return (
     <PanelContext.Provider
@@ -38,6 +41,7 @@ export function PanelProvider({ children }) {
         activeModule, openModule, closeModule,
         chatOpen, openChat, closeChat,
         voiceOpen, openVoice, closeVoice,
+        hotlineOpen, openHotline, closeHotline,
         pendingMessage, setPendingMessage,
       }}
     >

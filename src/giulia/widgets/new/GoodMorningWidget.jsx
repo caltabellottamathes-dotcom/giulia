@@ -65,8 +65,8 @@ export default function GoodMorningWidget() {
           <span className="text-[88px] font-display font-bold leading-none tracking-[-0.04em] tabular-nums mb-1" style={{ color: LIGHT, opacity: 0.32 }}>{countdownHHMM}</span>
           <div className="flex items-end gap-2">
             <div className="flex items-center gap-1 pb-3">
-              <motion.span className="h-2.5 w-2.5 rounded-full" style={{ background: URGENT }}
-                animate={{ y: [0, -12, 0] }} transition={{ duration: 0.9, repeat: Infinity, ease: "easeInOut" }} />
+              <motion.span className="h-5 w-5 rounded-full" style={{ background: URGENT }}
+                animate={{ y: [0, -18, 0] }} transition={{ duration: 0.9, repeat: Infinity, ease: "easeInOut" }} />
             </div>
             <span className="text-[88px] font-display font-bold leading-none tracking-[-0.04em] tabular-nums">{alarmStr}</span>
           </div>

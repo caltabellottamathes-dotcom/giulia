@@ -46,7 +46,7 @@ export default function WhatIveNoticedWidget() {
         overhang={0}
         domain="giulia"
         radius="large"
-        glassBlur={8}
+        glassBlur={5}
         overlay="bg-gradient-to-t from-black/55 via-black/25 to-black/5"
         photoChildren={
           <div className="absolute" style={{ left: "50%", top: "43%", transform: "translate(-50%,-50%)" }}>
@@ -87,8 +87,8 @@ export default function WhatIveNoticedWidget() {
             <button key={g.key} onClick={() => openModule("insights")} className="flex items-center gap-1.5 text-left hover:opacity-80 transition">
               <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: g.color }} />
               <div className="flex flex-col leading-none">
-                <span className="text-[7.5px] uppercase tracking-[0.16em] opacity-50">{g.label}</span>
-                <span className="text-[13px] font-display font-bold tabular-nums">{counts[g.key]}</span>
+                <span className="text-[9px] uppercase tracking-[0.16em] opacity-50">{g.label}</span>
+                <span className="text-[20px] font-display font-bold tabular-nums">{counts[g.key]}</span>
               </div>
             </button>
           ))}

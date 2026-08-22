@@ -4,6 +4,7 @@ import { IMAGES } from "@/lib/images";
 import ModulePanel from "@/system/panels/ModulePanel";
 import ChatWindow from "@/giulia/panels/ChatWindow";
 import VoiceWindow from "@/giulia/panels/VoiceWindow";
+import DraggableHotline from "@/giulia/components/DraggableHotline";
 import WorkspaceToolbar from "@/system/components/WorkspaceToolbar";
 import { MediaViewerProvider } from "@/lib/MediaViewerContext";
 import { BeeldbankProvider } from "@/lib/BeeldbankContext";
@@ -148,6 +149,9 @@ function LayoutInner() {
 
       {/* Persistent voice window — stays open across dashboard navigation */}
       <VoiceWindow />
+
+      {/* Draggable Giulia Hotline — persists across pages, drag from header */}
+      <DraggableHotline />
 
       {/* Permanent glass interaction bar — bottom-right */}
       <WorkspaceToolbar />
