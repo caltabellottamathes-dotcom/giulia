@@ -154,7 +154,7 @@ const MODULE_TOPIC = {
 
 // Modules whose panel is the interaction surface itself — render full-bleed
 // (no header photo / title) so the panel looks exactly like its widget.
-const FULL_BLEED = { voice: true };
+const FULL_BLEED = {};
 
 export default function ModulePanel() {
   const { activeModule, closeModule } = usePanel();
