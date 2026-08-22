@@ -4,11 +4,11 @@ import {
 } from "lucide-react";
 import { IMAGES } from "@/lib/images";
 
-import GiuliaWidget from "@/giulia/widgets/GiuliaWidget";
-import GoodMorningWidget from "@/self/widgets/GoodMorningWidget";
+import WhatMattersLayeredWidget from "@/giulia/widgets/new/WhatMattersLayeredWidget";
+import GoodMorningWidget from "@/giulia/widgets/new/GoodMorningWidget";
 import AgendaWidget from "@/focus/widgets/AgendaWidget";
 import TasksWidget from "@/focus/widgets/TasksWidget";
-import ApprovalsWidget from "@/giulia/widgets/ApprovalsWidget";
+import WaitingOnYouWidget from "@/giulia/widgets/new/WaitingOnYouWidget";
 import NotificationsWidget from "@/focus/widgets/NotificationsWidget";
 import EmailWidget from "@/focus/widgets/EmailWidget";
 import WhatsAppWidget from "@/focus/widgets/WhatsAppWidget";
@@ -17,10 +17,10 @@ import KnowledgeWidget from "@/focus/widgets/KnowledgeWidget";
 import PeopleWidget from "@/focus/widgets/PeopleWidget";
 import DocumentsWidget from "@/focus/widgets/DocumentsWidget";
 import MemoryWidget from "@/giulia/widgets/MemoryWidget";
-import InsightsWidget from "@/giulia/widgets/InsightsWidget";
+import WhatIveNoticedWidget from "@/giulia/widgets/new/WhatIveNoticedWidget";
 import ActivityWidget from "@/giulia/widgets/ActivityWidget";
 import AgentActivityWidget from "@/giulia/widgets/AgentActivityWidget";
-import ConciergeWidget from "@/giulia/widgets/ConciergeWidget";
+import GiuliaConciergeWidget from "@/giulia/widgets/new/GiuliaConciergeWidget";
 import TimeTrackerWidget from "@/focus/widgets/TimeTrackerWidget";
 import UpdatesWidget from "@/giulia/widgets/UpdatesWidget";
 import SocialPulseWidget from "@/life/widgets/SocialPulseWidget";
@@ -29,7 +29,8 @@ import HouseholdWidget from "@/life/widgets/HouseholdWidget";
 import PersonalAdminWidget from "@/life/widgets/PersonalAdminWidget";
 import HobbiesWidget from "@/life/widgets/HobbiesWidget";
 import FoodWidget from "@/life/widgets/FoodWidget";
-import GiuliaQuestionsWidget from "@/giulia/widgets/GiuliaQuestionsWidget";
+import WantsToKnowLayeredWidget from "@/giulia/widgets/new/WantsToKnowLayeredWidget";
+import ImAliveWidget from "@/giulia/widgets/new/ImAliveWidget";
 import DailyStateEditorial from "@/self/widgets/editorial/DailyStateEditorial";
 import PersonalDevelopmentEditorial from "@/self/widgets/editorial/PersonalDevelopmentEditorial";
 import ImageViewerWidget from "@/system/widgets/viewers/ImageViewerWidget";
@@ -46,16 +47,17 @@ import BeeldbankWidget from "@/system/widgets/BeeldbankWidget";
  */
 export const WIDGETS = {
   // ── GIULIA ──
-  giulia:          { type: "giulia",          label: "What Matters?",      icon: Sparkles,       Component: GiuliaWidget,          image: IMAGES.bootPhone,        span: 8, category: "core", domain: "giulia" },
-  goodmorning:     { type: "goodmorning",     label: "Good Morning!",       icon: Sunrise,        Component: GoodMorningWidget,     image: IMAGES.walkChairsBeach,  span: 3, category: "core", domain: "giulia" },
-  concierge:       { type: "concierge",       label: "Ask Me!",             icon: MessageSquare,  Component: ConciergeWidget,        image: IMAGES.giuliaConcierge, span: 3, category: "core", domain: "giulia" },
-  approvals:       { type: "approvals",       label: "Waiting on You.",     icon: ClipboardCheck, Component: ApprovalsWidget,       image: IMAGES.leanChair,        span: 4, category: "core", domain: "giulia" },
+  giulia:          { type: "giulia",          label: "What Matters?",      icon: Sparkles,       Component: WhatMattersLayeredWidget, image: IMAGES.wWhatMatters,    span: 3, category: "core", domain: "giulia" },
+  goodmorning:     { type: "goodmorning",     label: "Good Morning!",       icon: Sunrise,        Component: GoodMorningWidget,        image: IMAGES.wGoodMorning,    span: 3, category: "core", domain: "giulia" },
+  concierge:       { type: "concierge",       label: "GIULIA'S HOTLINE",    icon: MessageSquare,  Component: GiuliaConciergeWidget,   image: IMAGES.wHotline,        span: 1, category: "core", domain: "giulia" },
+  approvals:       { type: "approvals",       label: "Waiting on You.",     icon: ClipboardCheck, Component: WaitingOnYouWidget,      image: IMAGES.wWaitingOnYou,   span: 2, category: "core", domain: "giulia" },
+  imalive:         { type: "imalive",         label: "I'm Alive!",          icon: ActivityIcon,   Component: ImAliveWidget,           image: IMAGES.topDownWalk,     span: 2, category: "core", domain: "giulia" },
   memory:          { type: "memory",          label: "What I Remember.",    icon: Brain,          Component: MemoryWidget,           image: IMAGES.loungeChairs,     span: 4, category: "intelligence", domain: "system" },
   activity:        { type: "activity",        label: "I Do Process!",      icon: ActivityIcon,   Component: ActivityWidget,        image: IMAGES.topDownWalk,      span: 6, category: "intelligence", domain: "system" },
   agentactivity:   { type: "agentactivity",   label: "Who's Working?",      icon: Cpu,            Component: AgentActivityWidget,    image: IMAGES.feetChair,        span: 4, category: "intelligence", domain: "system" },
-  insights:        { type: "insights",        label: "What I've Noticed.",  icon: Telescope,      Component: InsightsWidget,         image: IMAGES.feetChair,        span: 4, category: "intelligence", domain: "giulia" },
-  updates:         { type: "updates",         label: "Meanwhile...",       icon: Sparkles,       Component: UpdatesWidget,          image: IMAGES.feetChair,        span: 3, category: "intelligence", domain: "giulia" },
-  giuliaquestions: { type: "giuliaquestions", label: "Wants to Know!",      icon: HelpCircle,    Component: GiuliaQuestionsWidget,   image: IMAGES.portraitThinking, span: 4, category: "intelligence", domain: "giulia" },
+  insights:        { type: "insights",        label: "What I've Noticed.",  icon: Telescope,      Component: WhatIveNoticedWidget,   image: IMAGES.wWhatIveNoticed, span: 2, category: "intelligence", domain: "giulia" },
+  updates:         { type: "updates",         label: "Meanwhile...",       icon: Sparkles,       Component: UpdatesWidget,          image: IMAGES.feetChair,        span: 3, category: "intelligence", domain: "system" },
+  giuliaquestions: { type: "giuliaquestions", label: "Wants to Know!",      icon: HelpCircle,    Component: WantsToKnowLayeredWidget, image: IMAGES.wWantsToKnow,    span: 1, category: "intelligence", domain: "giulia" },
 
   // ── FOCUS ──
   agenda:      { type: "agenda",      label: "What's Happening?",  icon: Calendar,      Component: AgendaWidget,     image: IMAGES.walkChairsBeach, span: 4, category: "core", domain: "life" },

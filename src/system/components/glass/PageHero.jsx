@@ -20,17 +20,18 @@ export const HERO_IMG = {
   knowledge: IMAGES.chairWater,
   documents: IMAGES.chairsScattered,
   people: IMAGES.portraitThinking,
-  approvals: IMAGES.leanChair,
+  approvals: IMAGES.wWaitingOnYou,
   notifications: IMAGES.feetChair,
-  insights: IMAGES.feetChair,
+  insights: IMAGES.wWhatIveNoticed,
   memory: IMAGES.loungeChairs,
   activity: IMAGES.topDownWalk,
   chat: IMAGES.portraitBootFace,
-  voice: IMAGES.portraitBootFace,
+  voice: IMAGES.wHotline,
   integrations: IMAGES.sittingChairs,
   settings: IMAGES.walkingChairs,
   profile: IMAGES.portraitBootHands,
   search: IMAGES.topDownWalk,
+  wantstoknow: IMAGES.wWantsToKnow,
 };
 
 export default function PageHero({ page, image, icon: Icon, eyebrow = "Space", title, subtitle, actions, showBack = true }) {

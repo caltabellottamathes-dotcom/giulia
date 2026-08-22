@@ -84,11 +84,11 @@ const MODULE_IMAGE = {
   profile: IMAGES.portraitBootHands,
   integrations: IMAGES.sittingChairs,
   agents: IMAGES.feetChair,
-  jedag: IMAGES.portraitBootFace,
+  jedag: IMAGES.wWhatMatters,
   socialpulse: IMAGES.lifeSocialPulse, socialplanner: IMAGES.lifeSocialPlanner,
   household: IMAGES.lifeHousehold, personaladmin: IMAGES.lifePersonalAdmin, hobbies: IMAGES.lifeHobbies,
   food: IMAGES.lifeFood,
-  wantstoknow: IMAGES.portraitThinking,
+  wantstoknow: IMAGES.wWantsToKnow,
 };
 
 const MODULE_ROUTE = {

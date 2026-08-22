@@ -96,7 +96,7 @@ function VoiceInner() {
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: `url(${IMAGES.giuliaConcierge})`,
+              backgroundImage: `url(${IMAGES.wHotline})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}

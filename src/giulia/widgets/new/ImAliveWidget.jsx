@@ -46,7 +46,7 @@ export default function ImAliveWidget() {
   };
 
   return (
-    <div className="w-[340px]">
+    <div className="w-full">
       <WidgetShell domain="giulia" radius="large" interactive onClick={start} className="min-h-0" style={{ aspectRatio: "4 / 3" }}>
         <div className="flex flex-col h-full p-3" style={{ color: IVORY }}>
           <WidgetHeader type="pulse" label="I'M ALIVE!" />

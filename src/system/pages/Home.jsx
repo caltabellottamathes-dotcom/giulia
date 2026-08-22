@@ -13,14 +13,13 @@ import { Plus, Sparkles, RefreshCw } from "lucide-react";
 import AddWidgetPicker from "@/system/panels/AddWidgetPicker";
 import WidgetCell from "@/system/widgets/WidgetCell";
 import MasonryGrid from "@/system/widgets/MasonryGrid";
-import ConciergeWidget from "@/giulia/widgets/ConciergeWidget";
 
 import StartupSequence from "@/system/components/StartupSequence";
 
 import { Link } from "react-router-dom";
 import { MODULES } from "@/lib/moduleRegistry";
 
-const WIDGET_SPAN = { giulia: 2, goodmorning: 2, concierge: 2, projects: 2, agenda: 2, email: 2, documents: 2, updates: 2, household: 2, dailystate: 2, development: 2, beeldbank: 2, giuliaquestions: 2 };
+const WIDGET_SPAN = { giulia: 3, goodmorning: 3, concierge: 1, approvals: 2, insights: 2, imalive: 2, giuliaquestions: 1, projects: 2, agenda: 2, email: 2, documents: 2, updates: 2, household: 2, dailystate: 2, development: 2, beeldbank: 2 };
 
 const BOARD_BG = {
   now: IMAGES.dashboardNow,
@@ -145,7 +144,6 @@ export default function Home() {
   const cells = visible.map((w) => {
     const def = WIDGETS[w.widget_type];
     if (!def) return null;
-    if (w.widget_type === "concierge") return { node: <ConciergeWidget key={w.id} onRemove={() => removeWidget(w.id)} />, span: 2 };
     return { node: <WidgetCell key={w.id} def={def} widget={w} onRemove={() => removeWidget(w.id)} onThemeChange={patchWidget} sessionMode={isCustom} />, span: WIDGET_SPAN[w.widget_type] || 1 };
   }).filter(Boolean);
   const showLoading = loading || (nowMode && urgentTypes === null);

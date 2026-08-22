@@ -37,7 +37,7 @@ export default function WhatIveNoticedWidget() {
   const max = Math.max(3, counts.observaties, counts.self, counts.journal);
 
   return (
-    <div className="w-[340px]">
+    <div className="w-full">
       <PhotoGlassLayeredWidget
         shape="1:1"
         photo={PHOTO}

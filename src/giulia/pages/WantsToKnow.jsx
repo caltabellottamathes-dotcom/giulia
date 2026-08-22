@@ -65,7 +65,7 @@ export default function WantsToKnow() {
 
   return (
     <div className="animate-fade-up">
-      <PageHero page="wantstoknow" image={IMAGES.portraitThinking} icon={HelpCircle} eyebrow="GIULIA WANTS TO KNOW" title="Wants to Know!" subtitle="Giulia's nieuwsgierigheidslaag — continu op zoek naar ontbrekende context" />
+      <PageHero page="wantstoknow" image={IMAGES.wWantsToKnow} icon={HelpCircle} eyebrow="GIULIA WANTS TO KNOW" title="Wants to Know!" subtitle="Giulia's nieuwsgierigheidslaag — continu op zoek naar ontbrekende context" />
 
       <div className="max-w-3xl mx-auto px-1">
         <div className="flex items-center justify-between mb-6 gap-4">

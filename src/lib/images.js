@@ -112,6 +112,13 @@ export const IMAGES = {
   dashboardLife: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/507183e0f_LIFE.jpeg",
   dashboardSelf: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/e2ccca3a3_SELF.jpeg",
   dashboardGiulia: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/402769a42_Two_people_playing_in_water_2026081919442.jpeg",
+  // GIULIA-widget foto's — gedeeld door widget, panel-hoofd en pagina-hero
+  wHotline:        "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/1d4c3eef3_GiuliaConcierge.jpeg",
+  wWhatMatters:    "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ad59aa090_Whatmatters_GIULIA.jpeg",
+  wWaitingOnYou:   "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/37aed6798_Waiting_on_You.jpeg",
+  wWhatIveNoticed: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/c78cbf3f8_What_Ive_Noticed.jpeg",
+  wWantsToKnow:    "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ac89b8e63_WTK.jpeg",
+  wGoodMorning:    "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/9134a54f7_Good_Morning.jpeg",
 };
 
 export const VIDEOS = {
