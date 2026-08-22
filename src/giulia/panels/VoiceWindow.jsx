@@ -9,6 +9,7 @@ import { buildVoiceClientTools } from "@/lib/voiceClientTools";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import { Mic, Phone, PhoneOff, Volume2, Loader2, X } from "lucide-react";
+import Hotline2Widget from "@/giulia/widgets/new/Hotline2Widget";
 
 /**
  * VoiceWindow — de persistente stem-widget van Giulia. Zweeft als een
@@ -88,6 +89,11 @@ function VoiceWindowInner() {
   return (
     <>
       <div className="fixed inset-0 z-40 bg-charcoal/10 animate-fade-in" onClick={closeVoice} />
+
+      {/* Hotline 2 — zwevende widget naast het voice-paneel (links), boven de backdrop */}
+      <div className="hidden lg:block fixed left-10 bottom-[5.5rem] z-50 w-[560px] animate-fade-up">
+        <Hotline2Widget />
+      </div>
 
       <div className="fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 z-50 w-[calc(100%-2rem)] lg:w-[420px] animate-slide-right">
         <div className="refraction-panel h-full flex flex-col">
