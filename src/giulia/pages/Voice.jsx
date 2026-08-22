@@ -88,14 +88,14 @@ function VoiceInner() {
     <div className={cn("relative overflow-hidden", bleed ? "h-full w-full" : "rounded-[28px] min-h-[300px]")}>
       <img src={IMAGES.wHotline} alt="Giulia's Hotline" className="absolute inset-0 w-full h-full object-cover" />
       <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-8 bg-gradient-to-b from-black/45 to-transparent flex items-start justify-between" style={{ color: IVORY }}>
-        <WidgetHeader label="GIULIA'S HOTLINE." type="pulse" />
+        <WidgetHeader label="GIULIA'S HOTLINE" type="pulse" />
         <span className="flex items-center gap-1.5 pt-1">
           <span className="h-1 w-1 rounded-full" style={{ background: dotColor, opacity: connected ? 1 : 0.4 }} />
         </span>
       </div>
       <div className="absolute bottom-0 inset-x-0 h-[64%] bg-gradient-to-t from-black/65 via-black/30 to-transparent pointer-events-none" />
       <div
-        className="absolute left-1/2 bottom-4 -translate-x-1/2 w-[300px] h-[210px] rounded-[24px] flex flex-col items-center px-4 pt-3.5 pb-4 overflow-hidden"
+        className="absolute left-1/2 bottom-0 -translate-x-1/2 w-[300px] h-[210px] rounded-[24px] flex flex-col items-center px-4 pt-3.5 pb-4 overflow-hidden"
         style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(12px) saturate(1.35)", WebkitBackdropFilter: "blur(12px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.18)", boxShadow: "0 18px 44px -22px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.22)" }}
       >
         <div className="flex items-center gap-2 shrink-0 self-start">

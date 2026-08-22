@@ -52,7 +52,7 @@ export default function AddWidgetPicker({ open, onClose, onAdd, addedTypes = [] 
 
         <div className="grid grid-cols-2 gap-2.5">
           <AnimatePresence mode="wait">
-            <motion.div key={domain} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }} className="col-span-2 grid grid-cols-3 gap-2">
+            <motion.div key={domain} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }} className="col-span-2 grid grid-cols-2 gap-2.5">
               {widgets.map((w, i) => {
                 const added = addedTypes.includes(w.type);
                 return (

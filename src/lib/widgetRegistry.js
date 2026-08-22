@@ -49,9 +49,9 @@ export const WIDGETS = {
   // ── GIULIA ──
   giulia:          { type: "giulia",          label: "What Matters?",      icon: Sparkles,       Component: WhatMattersLayeredWidget, image: IMAGES.wWhatMatters,    span: 2, category: "core", domain: "giulia" },
   goodmorning:     { type: "goodmorning",     label: "Good Morning!",       icon: Sunrise,        Component: GoodMorningWidget,        image: IMAGES.wGoodMorning,    span: 2, category: "core", domain: "giulia" },
-  concierge:       { type: "concierge",       label: "GIULIA'S HOTLINE.",    icon: MessageSquare,  Component: GiuliaConciergeWidget,   image: IMAGES.wHotline,        span: 1, category: "core", domain: "giulia" },
+  concierge:       { type: "concierge",       label: "GIULIA'S HOTLINE",    icon: MessageSquare,  Component: GiuliaConciergeWidget,   image: IMAGES.wHotline,        span: 1, category: "core", domain: "giulia" },
   approvals:       { type: "approvals",       label: "Waiting on You.",     icon: ClipboardCheck, Component: WaitingOnYouWidget,      image: IMAGES.wWaitingOnYou,   span: 2, category: "core", domain: "giulia" },
-  imalive:         { type: "imalive",         label: "I'm Alive!",          icon: ActivityIcon,   Component: ImAliveWidget,           image: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/cc3a9d642_Alive.jpeg",     span: 2, category: "core", domain: "giulia" },
+  imalive:         { type: "imalive",         label: "I'm Alive!",          icon: ActivityIcon,   Component: ImAliveWidget,           image: IMAGES.topDownWalk,     span: 2, category: "core", domain: "giulia" },
   memory:          { type: "memory",          label: "What I Remember.",    icon: Brain,          Component: MemoryWidget,           image: IMAGES.loungeChairs,     span: 4, category: "intelligence", domain: "system" },
   activity:        { type: "activity",        label: "I Do Process!",      icon: ActivityIcon,   Component: ActivityWidget,        image: IMAGES.topDownWalk,      span: 6, category: "intelligence", domain: "system" },
   agentactivity:   { type: "agentactivity",   label: "Who's Working?",      icon: Cpu,            Component: AgentActivityWidget,    image: IMAGES.feetChair,        span: 4, category: "intelligence", domain: "system" },
@@ -83,10 +83,10 @@ export const WIDGETS = {
   development:  { type: "development",  label: "Becoming Me.",    icon: Target,        Component: PersonalDevelopmentEditorial,  image: IMAGES.selfDevelopment,   span: 2, category: "life", domain: "life" },
 
   // ── SYSTEM ──
-  imageviewer:  { type: "imageviewer",  label: "Afbeeldingen.", icon: ImageIcon, Component: ImageViewerWidget, image: IMAGES.notebookChair, span: 1, category: "system", domain: "system" },
-  videoplayer:  { type: "videoplayer",  label: "Video.",        icon: Video,     Component: VideoPlayerWidget, image: IMAGES.bootPhone,      span: 1, category: "system", domain: "system" },
-  musicplayer:  { type: "musicplayer",  label: "Muziek.",       icon: Music,     Component: MusicPlayerWidget, image: IMAGES.hourglassJacket, span: 1, category: "system", domain: "system" },
-  docviewer:    { type: "docviewer",    label: "Document.",    icon: FileText,  Component: DocViewerWidget,    image: IMAGES.womanFolder,    span: 1, category: "system", domain: "system" },
+  imageviewer:  { type: "imageviewer",  label: "Afbeeldingen", icon: ImageIcon, Component: ImageViewerWidget, image: IMAGES.notebookChair, span: 1, category: "system", domain: "system" },
+  videoplayer:  { type: "videoplayer",  label: "Video",        icon: Video,     Component: VideoPlayerWidget, image: IMAGES.bootPhone,      span: 1, category: "system", domain: "system" },
+  musicplayer:  { type: "musicplayer",  label: "Muziek",       icon: Music,     Component: MusicPlayerWidget, image: IMAGES.hourglassJacket, span: 1, category: "system", domain: "system" },
+  docviewer:    { type: "docviewer",    label: "Document",    icon: FileText,  Component: DocViewerWidget,    image: IMAGES.womanFolder,    span: 1, category: "system", domain: "system" },
   notifications:{ type: "notifications", label: "Things to See.", icon: Bell,    Component: NotificationsWidget, image: IMAGES.feetChair,      span: 3, category: "core", domain: "system" },
 
   // ── BEELDBANK & VOICE ──

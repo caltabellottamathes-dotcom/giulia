@@ -15,7 +15,6 @@ const LIGHT = "hsl(var(--d-giulia-light))";  // pistachio
  *  Activity < 10 min). Stil? → platte lijn, dood, "DORMANT". Klik → startGiulia. */
 
 const STATES = ["Listening", "Thinking", "Processing", "Acting", "Waiting"];
-let AGENT_STARTED = false;
 const PATH = "M 0 50 L 18 50 L 24 50 L 30 28 L 36 72 L 42 40 L 48 50 L 60 50 L 66 50 L 72 34 L 78 66 L 84 50 L 100 50";
 const AREA = PATH + " L 100 100 L 0 100 Z";
 
@@ -25,10 +24,9 @@ export default function ImAliveWidget() {
   const [idx, setIdx] = useState(0);
   const [starting, setStarting] = useState(false);
   const [manualActive, setManualActive] = useState(false);
-  const [started, setStarted] = useState(AGENT_STARTED);
 
   const lastTs = activity?.[0]?.created_date || activity?.[0]?.timestamp;
-  const active = started || manualActive || (!!lastTs && now - new Date(lastTs).getTime() < 10 * 60 * 1000);
+  const active = manualActive || (!!lastTs && now - new Date(lastTs).getTime() < 10 * 60 * 1000);
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 15000);
@@ -45,8 +43,6 @@ export default function ImAliveWidget() {
     if (starting) return;
     setStarting(true);
     setManualActive(true);
-    AGENT_STARTED = true;
-    setStarted(true);
     try { await base44.functions.invoke("startGiulia", {}); } catch { /* ignore */ }
     finally { setStarting(false); }
   };

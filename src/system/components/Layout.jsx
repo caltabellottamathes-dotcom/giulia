@@ -17,7 +17,6 @@ import TauriFocusSync from "@/system/components/native/TauriFocusSync";
 import { GiuliaAgentProvider } from "@/lib/GiuliaAgentContext";
 import { useAgentNavigation } from "@/lib/useAgentNavigation";
 import GiuliaBubble from "@/system/components/glass/GiuliaBubble";
-import FloatingWidgetPreview from "@/system/components/FloatingWidgetPreview";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuTrigger,
@@ -143,7 +142,6 @@ function LayoutInner() {
 
       {/* The single sliding glass panel that hosts every module */}
       <ModulePanel />
-      <FloatingWidgetPreview />
 
       {/* Dedicated chat window — the Giulia agent */}
       <ChatWindow />
