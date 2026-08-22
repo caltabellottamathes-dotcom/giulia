@@ -42,7 +42,7 @@ export default function ProjectsFocusWidget() {
       <span className="pointer-events-none absolute inset-x-0 top-0 h-px z-10" style={{ background: `linear-gradient(90deg, transparent, ${OLIVE} 18%, ${OLIVE} 82%, transparent)` }} />
 
       {/* content links */}
-      <div className="absolute inset-y-0 left-0 w-[56%] flex flex-col p-4 z-10">
+      <div className="absolute inset-y-0 left-0 w-[58%] flex flex-col p-4 z-10">
         <div className="flex items-center justify-between mb-2">
           <WidgetHeader type="tasks" label="What I'm Building." count={total ? String(total) : ""} />
           <button onClick={() => openModule("projects")} className="text-[8px] uppercase tracking-[0.2em] font-bold pt-1" style={{ color: OLIVE }}>ALLES →</button>
@@ -65,7 +65,7 @@ export default function ProjectsFocusWidget() {
               <button key={p.id} onClick={(e) => { e.stopPropagation(); setSelectedId(sel ? null : p.id); }} className="group w-full text-left rounded-lg px-1.5 -mx-1.5 py-1 transition-colors hover:bg-white/10">
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <span className="text-[13px] font-display font-bold uppercase leading-tight truncate transition-transform group-hover:translate-x-0.5" style={{ color: sel ? OLIVE : IVORY }}>{p.title}</span>
-                  <span className="text-[10px] font-mono font-bold tabular-nums px-1.5 py-0.5 rounded-md shrink-0" style={{ background: crit ? "rgba(213,226,74,0.18)" : LIGHT, color: crit ? URGENT : DEEP }}>{p.progress || 0}%</span>
+                  <span className="text-[11px] font-mono font-bold tabular-nums shrink-0" style={{ color: crit ? URGENT : DEEP }}>{p.progress || 0}%</span>
                 </div>
                 <div className="h-1.5 w-full rounded-full bg-white/12 overflow-hidden">
                   <motion.div className="h-full rounded-full" initial={{ width: "0%" }} animate={{ width: `${p.progress || 0}%` }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 + i * 0.08 }} style={{ backgroundColor: color }} />
@@ -77,7 +77,7 @@ export default function ProjectsFocusWidget() {
       </div>
 
       {/* photo card rechts — schuift links weg bij selectie */}
-      <div className="absolute top-2 bottom-2 right-2 w-[40%] rounded-[24px] overflow-hidden z-20" style={{ boxShadow: "0 18px 44px -22px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.16)" }}>
+      <div className="absolute inset-y-0 right-0 w-[42%] overflow-hidden z-20">
         {/* status panel achter */}
         <AnimatePresence>
           {selected && (

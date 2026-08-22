@@ -8,6 +8,7 @@ import EmailFocusWidget from "@/focus/widgets/new/EmailFocusWidget";
 import PeopleFocusWidget from "@/focus/widgets/new/PeopleFocusWidget";
 import TimeTrackerFocusWidget from "@/focus/widgets/new/TimeTrackerFocusWidget";
 import AgendaFocusWidget from "@/focus/widgets/new/AgendaFocusWidget";
+import DocumentsFocusWidget from "@/focus/widgets/new/DocumentsFocusWidget";
 
 export default function WidgetsFocus() {
   const Label = ({ children }) => (
@@ -45,13 +46,17 @@ export default function WidgetsFocus() {
           <Label>05 · PEOPLE AROUND ME. — P·2x3·B·SIDE · comparison + aan-beurt (People)</Label>
           <PeopleFocusWidget />
         </div>
-        <div className="break-inside-avoid mb-8 mx-auto w-[200px]">
-          <Label>06 · WHERE MY TIME GOES. — lang & smal · project-timer (TimeTracker)</Label>
+        <div className="break-inside-avoid mb-8 mx-auto w-[315px]">
+          <Label>06 · WHERE MY TIME GOES. — 3:4 · project-timer (TimeTracker)</Label>
           <TimeTrackerFocusWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[680px]">
-          <Label>07 · WHAT'S HAPPENING? — G·21x9·L·SIDE · aftelklok tot volgende afspraak (Agenda)</Label>
+          <Label>07 · WHAT'S HAPPENING? — G·21x9·L·SIDE · aftelklok + tijdlijn (Agenda)</Label>
           <AgendaFocusWidget />
+        </div>
+        <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[460px]">
+          <Label>08 · FILES TO SHARE. — P·3x2·B·SIDE · recente bestanden (Documents)</Label>
+          <DocumentsFocusWidget />
         </div>
       </div>
     </div>

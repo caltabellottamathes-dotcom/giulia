@@ -10,12 +10,9 @@ const DEEP = "hsl(var(--d-focus-deep))";
 const LIGHT = "hsl(var(--d-focus-light))";
 const IVORY = "hsl(var(--ivory))";
 
-const initials = (name) => (name || "?").trim().split(/\s+/).map((s) => s[0]).slice(0, 2).join("").toUpperCase();
-
 /** PeopleFocusWidget — P·2x3·B·SIDE · "People Around Me."
- *  GlassCard: bovenin de geanimeerde header, dan enkel de personen met wie
- *  ik contact had via WhatsApp of mail (geen andere contacten). Onderin een
- *  snelzoekbalk die binnen die groep filtert. Alles in focus-kleuren. */
+ *  PhotoShell-header (geanimeerd + titel) bovenin de foto; GlassCard onder
+ *  met enkel contacten waarmee contact was via WhatsApp/mail + zoekbalk. */
 export default function PeopleFocusWidget() {
   const { openModule } = usePanel();
   const { data: contacts } = useEntityList("Contact", { sort: "-created_date", limit: 200, realtime: true });
@@ -25,18 +22,10 @@ export default function PeopleFocusWidget() {
 
   const contacted = useMemo(() => {
     const lastByContact = new Map();
-    const touch = (id, ts) => {
-      if (!id) return;
-      const t = ts ? new Date(ts).getTime() : 0;
-      const cur = lastByContact.get(id);
-      if (!cur || t > cur) lastByContact.set(id, t);
-    };
+    const touch = (id, ts) => { if (!id) return; const t = ts ? new Date(ts).getTime() : 0; const cur = lastByContact.get(id); if (!cur || t > cur) lastByContact.set(id, t); };
     (msgs || []).forEach((m) => touch(m.contact_id, m.timestamp || m.created_date));
     (emails || []).forEach((e) => touch(e.contact_id, e.timestamp || e.created_date));
-    return (contacts || [])
-      .filter((c) => lastByContact.has(c.id))
-      .map((c) => ({ ...c, last: lastByContact.get(c.id) }))
-      .sort((a, b) => b.last - a.last);
+    return (contacts || []).filter((c) => lastByContact.has(c.id)).map((c) => ({ ...c, last: lastByContact.get(c.id) })).sort((a, b) => b.last - a.last);
   }, [contacts, msgs, emails]);
 
   const filtered = useMemo(() => {
@@ -47,12 +36,15 @@ export default function PeopleFocusWidget() {
 
   return (
     <div className="w-full h-[380px]">
-      <PhotoGlassLayeredWidget shape="2:3" photo={PHOTO} glassPosition="bottom" glassFraction={0.48} overhang={0} domain="focus" radius="large" onClick={() => openModule("people")} overlay="bg-gradient-to-t from-black/55 via-black/25 to-black/5">
-        <div className="flex flex-col h-full overflow-hidden -mx-1 px-1" onClick={(e) => e.stopPropagation()}>
-          <div className="pb-1.5 mb-1 border-b border-white/12">
+      <PhotoGlassLayeredWidget shape="2:3" photo={PHOTO} glassPosition="bottom" glassFraction={0.48} overhang={0} domain="focus" radius="large" onClick={() => openModule("people")} overlay="bg-gradient-to-t from-black/55 via-black/25 to-black/5"
+        photoChildren={
+          <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-10 bg-gradient-to-b from-black/65 to-transparent" style={{ color: IVORY }}>
             <WidgetHeader type="social" label="People Around Me." count={contacted.length ? String(contacted.length) : ""} />
+            <h3 className="text-[20px] leading-tight font-display font-semibold tracking-[-0.02em] mt-1">VIND IEDEREEN.</h3>
           </div>
-
+        }
+      >
+        <div className="flex flex-col h-full overflow-hidden -mx-1 px-1" onClick={(e) => e.stopPropagation()}>
           <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar flex flex-col gap-1.5 mt-1">
             {filtered.length === 0 ? (
               <p className="text-[11px] text-ivory/50 px-1 py-2 text-center">{q ? "Geen contacten gevonden." : "Nog geen contact via WhatsApp of mail."}</p>
@@ -66,16 +58,9 @@ export default function PeopleFocusWidget() {
               </button>
             ))}
           </div>
-
           <div className="relative mt-1.5">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5" style={{ color: "rgba(255,255,255,0.5)" }} />
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Zoek een contact…"
-              className="w-full rounded-full pl-8 pr-3 py-2 text-[12px] focus:outline-none"
-              style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", color: IVORY }}
-            />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Zoek een contact…" className="w-full rounded-full pl-8 pr-3 py-2 text-[12px] focus:outline-none" style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", color: IVORY }} />
           </div>
         </div>
       </PhotoGlassLayeredWidget>

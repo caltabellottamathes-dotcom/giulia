@@ -139,6 +139,8 @@ export const IMAGES = {
   focusBuild:        "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ba1302575_Focus_Build.jpeg",
   focusMail:         "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/d878cf63d_Focus_mail.jpeg",
   focusPeople:       "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/4d4d1eff1_FOCUS_PEOPLE.jpeg",
+  focusHappening:    "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/f5fd70c0a_Whats_Happening.jpeg",
+  focusDocs:         "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/921279d39_Focus_Docs.jpeg",
 };
 
 export const VIDEOS = {
