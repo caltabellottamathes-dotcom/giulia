@@ -61,13 +61,15 @@ export default function WhatsApp() {
   };
 
   const sendMessage = async (text) => {
-    if (!text.trim() || !selectedId) return;
+    if (!text.trim() || !selectedId || busy) return;
+    const payload = text.trim();
+    setDraft("");
     setBusy(true);
     try {
-      const res = await base44.functions.invoke("sendWhatsApp", { contact_id: selectedId, message: text.trim() });
+      const res = await base44.functions.invoke("sendWhatsApp", { contact_id: selectedId, message: payload });
       const r = res?.data ?? res;
-      if (r?.ok) { setDraft(""); reloadMsgs(); toast({ title: "Verzonden" }); }
-      else toast({ title: "Verzenden mislukt", description: r?.error || "", variant: "destructive" });
+      if (r?.ok) { reloadMsgs(); toast({ title: "Verzonden" }); }
+      else { setDraft(payload); toast({ title: "Verzenden mislukt", description: r?.error || "", variant: "destructive" }); }
     } catch (e) {
       toast({ title: "Verzenden mislukt", variant: "destructive" });
     }
