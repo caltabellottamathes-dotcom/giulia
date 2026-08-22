@@ -7,6 +7,7 @@ import WhatIveNoticedWidget from "@/giulia/widgets/new/WhatIveNoticedWidget";
 import WantsToKnowLayeredWidget from "@/giulia/widgets/new/WantsToKnowLayeredWidget";
 import ImAliveWidget from "@/giulia/widgets/new/ImAliveWidget";
 import GoodMorningWidget from "@/giulia/widgets/new/GoodMorningWidget";
+import SpeechIndicatorGallery from "@/giulia/widgets/new/SpeechIndicatorGallery";
 
 export default function WidgetsGiulia() {
   const Label = ({ children }) => (
@@ -55,6 +56,12 @@ export default function WidgetsGiulia() {
           <Label>07 · GOOD MORNING! — G·21x9·L·SIDE · wektijd + aftelklok</Label>
           <GoodMorningWidget />
         </div>
+      </div>
+
+      <div className="mt-10">
+        <h2 className="text-lg font-display font-semibold mb-1">Spraakinstitatoren</h2>
+        <p className="text-sm text-muted-foreground mb-5">Bewegende visuele spraakinstitatoren — een selectie om uit te kiezen.</p>
+        <SpeechIndicatorGallery />
       </div>
     </div>
   );

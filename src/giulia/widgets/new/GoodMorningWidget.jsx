@@ -31,6 +31,7 @@ export default function GoodMorningWidget() {
   const mm = Math.floor((diff % 3600000) / 60000);
   const pad = (n) => String(n).padStart(2, "0");
   const countdownHHMM = `${pad(hh)}:${pad(mm)}`;
+  const alarmStr = `${pad(h)}:${pad(m)}`;
 
   return (
     <div className="w-full max-w-[680px]">
@@ -38,16 +39,22 @@ export default function GoodMorningWidget() {
         shape="21:9"
         photo={PHOTO}
         photoPosition="left"
-        photoFraction={0.40}
+        photoFraction={0.34}
         overhang={0.06}
         domain="giulia"
         radius="large"
         photoOverlay="bg-gradient-to-t from-black/35 via-black/10 to-transparent"
       >
         <WidgetHeader type="briefing" label="GOOD MORNING!" />
-        <div className="flex-1 flex flex-col justify-end items-end">
-          <div className="text-[88px] font-display font-bold leading-none tracking-[-0.04em]" style={{ color: LIGHT, opacity: 0.32 }}>{countdownHHMM}</div>
-          <div className="text-[88px] font-display font-bold leading-none tracking-[-0.04em]">{alarm}</div>
+        <div className="flex-1 flex flex-col justify-end items-end gap-2">
+          <div className="flex flex-col items-start">
+            <span className="text-[8px] uppercase tracking-[0.24em] opacity-50">Time till Wake-up</span>
+            <span className="text-[88px] font-display font-bold leading-none tracking-[-0.04em] tabular-nums" style={{ color: LIGHT, opacity: 0.32 }}>{countdownHHMM}</span>
+          </div>
+          <div className="flex flex-col items-start">
+            <span className="text-[8px] uppercase tracking-[0.24em] opacity-50">Wake-up Time</span>
+            <span className="text-[88px] font-display font-bold leading-none tracking-[-0.04em] tabular-nums">{alarmStr}</span>
+          </div>
         </div>
       </GlassPhotoLayeredWidget>
     </div>

@@ -60,6 +60,7 @@ import WidgetGallery2 from '@/system/pages/WidgetGallery2';
 import WidgetGallery3 from '@/system/pages/WidgetGallery3';
 import WidgetGallery4 from '@/system/pages/WidgetGallery4';
 import GraphGallery from '@/system/pages/GraphGallery';
+import GraphGallery2 from '@/system/pages/GraphGallery2';
 import UiItems from '@/system/pages/UiItems';
 import WidgetsGiulia from '@/giulia/pages/WidgetsGiulia';
 import ShellCollection from '@/system/pages/ShellCollection';
@@ -184,6 +185,7 @@ const AuthenticatedApp = () => {
           <Route path="/widget-gallery-3" element={<WidgetGallery3 />} />
           <Route path="/widget-gallery-4" element={<WidgetGallery4 />} />
           <Route path="/graph-gallery" element={<GraphGallery />} />
+          <Route path="/graph-gallery-2" element={<GraphGallery2 />} />
           <Route path="/UI-items" element={<UiItems />} />
           <Route path="/widgets-giulia" element={<WidgetsGiulia />} />
           <Route path="/shell-collection" element={<ShellCollection />} />
