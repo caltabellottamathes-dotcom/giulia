@@ -45,8 +45,8 @@ export default function WidgetsFocus() {
           <Label>05 · PEOPLE AROUND ME. — P·2x3·B·SIDE · comparison + aan-beurt (People)</Label>
           <PeopleFocusWidget />
         </div>
-        <div className="break-inside-avoid mb-8 mx-auto w-[300px]">
-          <Label>06 · WHERE MY TIME GOES. — P·2x3·B·SIDE · project-timer (TimeTracker)</Label>
+        <div className="break-inside-avoid mb-8 mx-auto w-[268px]">
+          <Label>06 · WHERE MY TIME GOES. — 9:16 · project-timer (TimeTracker)</Label>
           <TimeTrackerFocusWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[680px]">

@@ -124,7 +124,7 @@ export default function WhatsAppChatFocusWidget() {
                     <p className="text-[11px] text-ivory/55 m-auto text-center">Geen berichten.</p>
                   ) : conversation.map((m) => (
                     <div key={m.id} className="flex flex-col">
-                      <span className="text-[9px] uppercase tracking-wide" style={{ color: m.direction === "sent" ? "rgba(255,255,255,0.4)" : LIGHT }}>
+                      <span className="text-[9px] uppercase tracking-wide" style={{ color: DEEP }}>
                         {m.direction === "sent" ? "Ik" : (selectedContact?.name?.split(" ")[0] || "Zij")} · {fmtTime(m.timestamp)}
                       </span>
                       <p className="text-[12px] leading-snug" style={{ color: m.direction === "sent" ? "rgba(255,255,255,0.7)" : IVORY }}>{m.message}</p>
@@ -139,7 +139,7 @@ export default function WhatsAppChatFocusWidget() {
                     onKeyDown={(e) => { if (e.key === "Enter") send(); }}
                     placeholder="Typ een reactie..."
                     className="flex-1 min-w-0 rounded-full px-3.5 py-2 text-[12px] text-ivory placeholder:text-ivory/40 focus:outline-none"
-                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", color: IVORY }}
+                    style={{ background: "rgba(255,255,255,0.12)", backdropFilter: "blur(16px) saturate(1.3)", WebkitBackdropFilter: "blur(16px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.22)", color: IVORY }}
                   />
                   <button
                     onClick={send}

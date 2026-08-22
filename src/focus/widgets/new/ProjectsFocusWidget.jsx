@@ -42,7 +42,7 @@ export default function ProjectsFocusWidget() {
       <span className="pointer-events-none absolute inset-x-0 top-0 h-px z-10" style={{ background: `linear-gradient(90deg, transparent, ${OLIVE} 18%, ${OLIVE} 82%, transparent)` }} />
 
       {/* content links */}
-      <div className="absolute inset-y-0 left-0 w-[56%] flex flex-col p-4 z-10">
+      <div className="absolute inset-y-0 left-0 w-[58%] flex flex-col p-4 z-10">
         <div className="flex items-center justify-between mb-2">
           <WidgetHeader type="tasks" label="What I'm Building." count={total ? String(total) : ""} />
           <button onClick={() => openModule("projects")} className="text-[8px] uppercase tracking-[0.2em] font-bold pt-1" style={{ color: OLIVE }}>ALLES →</button>
@@ -77,7 +77,7 @@ export default function ProjectsFocusWidget() {
       </div>
 
       {/* photo card rechts — schuift links weg bij selectie */}
-      <div className="absolute top-2 bottom-2 right-2 w-[40%] rounded-[24px] overflow-hidden z-20" style={{ boxShadow: "0 18px 44px -22px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.16)" }}>
+      <div className="absolute inset-y-0 right-0 w-[42%] rounded-[28px] overflow-hidden z-20" style={{ boxShadow: "-16px 0 36px -20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.16)" }}>
         {/* status panel achter */}
         <AnimatePresence>
           {selected && (
