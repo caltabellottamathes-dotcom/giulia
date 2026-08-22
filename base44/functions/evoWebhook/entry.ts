@@ -51,48 +51,60 @@ export default async function (req) {
     }
 
     // Alleen inkomende berichten interesseren ons.
-    console.log("[evo] event=", event, "fromMe=", data?.key?.fromMe, "remoteJid=", data?.key?.remoteJid, "msgType=", data?.message ? Object.keys(data.message)[0] : null);
+    // Evolution v2 kan de payload op twee manieren sturen:
+    //   1) data = één bericht-object { key, message, pushName, ... }
+    //   2) data = { messages: [ { key, message, ... }, ... ] }
+    const msgList = Array.isArray(data?.messages) ? data.messages
+      : Array.isArray(data) ? data
+      : (data?.key || data?.message) ? [data]
+      : [];
+    console.log("[evo] event=", event, "msgCount=", msgList.length, "topKeys=", Object.keys(data || {}));
+
     if (event !== "messages.upsert") return Response.json({ ok: true, ignored: event });
-    if (data?.key?.fromMe === true) return Response.json({ ok: true, ignored: "outgoing" });
-
-    const text = extractText(data?.message);
-    if (!text) return Response.json({ ok: true, ignored: "non-text", msgType: data?.message ? Object.keys(data.message)[0] : null });
-
-    const remoteJid = data?.key?.remoteJid || "";
-    const phone = normalizePhone(remoteJid.replace(/@.*$/, ""));
-    const pushName = data?.pushName || "";
-    const evoMsgId = data?.key?.id || "";
-    const ts = data?.messageTimestamp
-      ? new Date(Number(data.messageTimestamp) * 1000).toISOString()
-      : new Date().toISOString();
+    if (msgList.length === 0) return Response.json({ ok: true, ignored: "no-messages", keys: Object.keys(data || {}) });
 
     const base44 = createClientFromRequest(req);
     const sr = base44.asServiceRole;
+    let stored = 0, skipped = 0;
 
-    // Ontdubbel: als dit bericht al is opgeslagen, sla dan niet opnieuw op.
-    if (evoMsgId) {
-      const existing = await sr.entities.WhatsAppMessage.filter({ whatsapp_message_id: evoMsgId }).catch(() => []);
-      if (existing && existing.length > 0) return Response.json({ ok: true, duplicate: true });
+    for (const msg of msgList) {
+      if (msg?.key?.fromMe === true) { skipped++; continue; }
+      const text = extractText(msg?.message);
+      if (!text) { skipped++; continue; }
+
+      const remoteJid = msg?.key?.remoteJid || "";
+      const phone = normalizePhone(remoteJid.replace(/@.*$/, ""));
+      const evoMsgId = msg?.key?.id || "";
+      const ts = msg?.messageTimestamp
+        ? new Date(Number(msg.messageTimestamp) * 1000).toISOString()
+        : new Date().toISOString();
+
+      // Ontdubbel.
+      if (evoMsgId) {
+        const existing = await sr.entities.WhatsAppMessage.filter({ whatsapp_message_id: evoMsgId }).catch(() => []);
+        if (existing && existing.length > 0) { skipped++; continue; }
+      }
+
+      // Koppel aan een Contact op genormaliseerd telefoonnummer, indien aanwezig.
+      let contactId = "";
+      if (phone) {
+        const matches = await sr.entities.Contact.filter({ phone }).catch(() => []);
+        const found = (matches || []).find((c) => normalizePhone(c.phone) === phone);
+        contactId = found?.id || "";
+      }
+
+      await sr.entities.WhatsAppMessage.create({
+        contact_id: contactId || undefined,
+        message: text,
+        direction: "received",
+        status: "unread",
+        timestamp: ts,
+        whatsapp_message_id: evoMsgId || undefined,
+      });
+      stored++;
     }
 
-    // Koppel aan een Contact op genormaliseerd telefoonnummer, indien aanwezig.
-    let contactId = "";
-    if (phone) {
-      const matches = await sr.entities.Contact.filter({ phone }).catch(() => []);
-      const found = (matches || []).find((c) => normalizePhone(c.phone) === phone);
-      contactId = found?.id || "";
-    }
-
-    await sr.entities.WhatsAppMessage.create({
-      contact_id: contactId || undefined,
-      message: text,
-      direction: "received",
-      status: "unread",
-      timestamp: ts,
-      whatsapp_message_id: evoMsgId || undefined,
-    });
-
-    return Response.json({ ok: true, stored: true, phone, pushName, contactId: !!contactId });
+    return Response.json({ ok: true, stored, skipped, count: msgList.length });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
