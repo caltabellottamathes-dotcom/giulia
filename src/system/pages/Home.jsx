@@ -18,12 +18,13 @@ import StartupSequence from "@/system/components/StartupSequence";
 
 import { Link } from "react-router-dom";
 import { MODULES } from "@/lib/moduleRegistry";
+import Hotline2Widget from "@/giulia/widgets/new/Hotline2Widget";
 
 const WIDGET_SPAN = { giulia: 2, goodmorning: 2, concierge: 1, approvals: 2, insights: 1, imalive: 1, giuliaquestions: 1, projects: 2, agenda: 2, email: 2, documents: 2, updates: 2, household: 2, dailystate: 2, development: 2, beeldbank: 2 };
 
 // Some modules open under a different key than their widget — map them so the
 // floating "widget naast het paneel" resolves to the right component.
-const MODULE_WIDGET_OVERRIDE = { jedag: "giulia", wantstoknow: "giuliaquestions", voice: "concierge" };
+const MODULE_WIDGET_OVERRIDE = { jedag: "giulia", wantstoknow: "giuliaquestions" };
 
 const BOARD_BG = {
   now: IMAGES.dashboardNow,
@@ -201,6 +202,15 @@ export default function Home() {
 
       {/* Floating widget when a panel is open */}
       {panelOpen && (() => {
+        // Hotline opent een eigen, eenvoudige zwevende widget naast het
+        // voice-paneel (niet in het registry, geen ElevenLabs).
+        if (activeModule === "voice") {
+          return (
+            <div className="hidden lg:block fixed left-10 bottom-[5.5rem] z-20 w-[560px] animate-fade-up">
+              <Hotline2Widget />
+            </div>
+          );
+        }
         const wType = MODULE_WIDGET_OVERRIDE[activeModule] || activeModule;
         const def = WIDGETS[wType];
         if (!def) return null;
