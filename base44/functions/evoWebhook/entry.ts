@@ -35,7 +35,7 @@ export default async function (req) {
   try {
     // Evolution stuurt geen verification-GET; wel event-POSTs. Laat een
     // eenvoudige GET toe voor handmatige health-checks.
-    if (req.method === "GET") return Response.json({ ok: true, service: "evo-webhook" });
+    if (req.method === "GET") return Response.json({ ok: true, service: "evo-webhook", v: "2026-08-22-v2" });
 
     const body = await req.json().catch(() => ({}));
     const event = body?.event;
