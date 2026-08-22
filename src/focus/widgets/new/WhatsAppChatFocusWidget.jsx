@@ -15,9 +15,7 @@ const IVORY = "hsl(var(--ivory))";
 
 const fmtTime = (iso) => { try { return new Date(iso).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" }); } catch { return ""; } };
 
-const RING_COLORS = ["#b08968", "#a3b18a", "#8d99ae", "#cb997e", "#5e8b7e"];
 const initials = (name) => (name || "?").trim().split(/\s+/).map((s) => s[0]).slice(0, 2).join("").toUpperCase();
-const colorFor = (name) => RING_COLORS[(name || "").charCodeAt(0) % RING_COLORS.length];
 
 /** WhatsAppChatFocusWidget — P·16x9·L·SIDE · "Who's Texting?"
  *  PhotoShell (rechts) = klein chatvenster: header + contactnaam + glazen
@@ -174,7 +172,6 @@ export default function WhatsAppChatFocusWidget() {
             const name = contactName[m.contact_id] || "Onbekend";
             const active = selectedId === m.contact_id;
             const unread = m.status === "unread";
-            const ring = unread ? URGENT : colorFor(name);
             return (
               <button
                 key={m.id}
@@ -184,13 +181,13 @@ export default function WhatsAppChatFocusWidget() {
               >
                 <span
                   className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-[11px] font-display font-bold"
-                  style={{ background: "rgba(255,255,255,0.08)", color: IVORY, border: `1.5px solid ${ring}` }}
+                  style={{ background: DEEP, color: LIGHT, border: `1.5px solid ${unread ? URGENT : LIGHT}` }}
                 >
                   {initials(name)}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-semibold leading-tight truncate" style={{ color: IVORY }}>{name}</p>
-                  <p className="text-[9px] uppercase tracking-wide leading-tight" style={{ color: unread ? URGENT : "rgba(255,255,255,0.4)" }}>
+                  <p className="text-[12px] font-semibold leading-tight truncate" style={{ color: LIGHT }}>{name}</p>
+                  <p className="text-[9px] uppercase tracking-wide leading-tight" style={{ color: unread ? URGENT : "rgba(255,255,255,0.45)" }}>
                     {unread ? "Nieuw bericht" : "Gelezen"} · {fmtTime(m.timestamp)}
                   </p>
                 </div>

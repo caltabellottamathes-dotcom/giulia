@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import WhatsAppFocusWidget from "@/focus/widgets/new/WhatsAppFocusWidget";
+import TasksBloomFocusWidget from "@/focus/widgets/new/TasksBloomFocusWidget";
 import WhatsAppChatFocusWidget from "@/focus/widgets/new/WhatsAppChatFocusWidget";
 import TasksFocusWidget from "@/focus/widgets/new/TasksFocusWidget";
 import ProjectsFocusWidget from "@/focus/widgets/new/ProjectsFocusWidget";
@@ -26,8 +26,8 @@ export default function WidgetsFocus() {
 
       <div className="columns-1 lg:columns-2 gap-8">
         <div className="break-inside-avoid mb-8 mx-auto w-[290px]">
-          <Label>01 · WHO'S TEXTING? — 9:16 · bloom + ontvangen berichten (WhatsApp)</Label>
-          <WhatsAppFocusWidget />
+          <Label>01 · TO DO! — 9:16 · bloom + open Focus-taken (Tasks)</Label>
+          <TasksBloomFocusWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[620px]">
           <Label>02 · WHO'S TEXTING? — P·16x9·L·SIDE · chatvenster + 5 ongelezen berichten (WhatsApp)</Label>
