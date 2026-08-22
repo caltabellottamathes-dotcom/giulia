@@ -6,9 +6,8 @@ import { cn } from "@/lib/utils";
 import { Check, Plus } from "lucide-react";
 
 /**
- * AddWidgetPicker — widget-beheer, ingedeeld in de OS-lagen.
- * Sterke typografische layout: grote index-cijfers, full-caps labels,
- * domein-accent. Geen ronde foto's.
+ * AddWidgetPicker — widget-beheer per OS-laag. Mooie kaarten met de
+ * branding-foto + full-caps naam per widget.
  */
 const DOMAINS = [
   { key: "giulia", label: "GIULIA", accent: "hsl(var(--olive))" },
@@ -29,7 +28,7 @@ export default function AddWidgetPicker({ open, onClose, onAdd, addedTypes = [] 
   };
 
   return (
-    <FloatingPanel open={open} onClose={onClose} position="right" level={3} width={380}>
+    <FloatingPanel open={open} onClose={onClose} position="right" level={3} width={420}>
       <div className="p-5 text-ivory">
         <div className="flex items-center justify-between mb-1">
           <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/70 font-semibold">DASHBOARD</p>
@@ -38,8 +37,7 @@ export default function AddWidgetPicker({ open, onClose, onAdd, addedTypes = [] 
         <h3 className="text-xl font-display font-semibold tracking-tight uppercase">Widget pinnen</h3>
         <p className="text-[11px] uppercase tracking-[0.18em] text-ivory/45 mt-1 mb-4">Tik een widget om hem op dit dashboard te zetten.</p>
 
-        {/* Domain segmented control */}
-        <div className="flex gap-1 p-1 rounded-full glass-card-2 mb-5 overflow-x-auto">
+        <div className="flex gap-1 p-1 rounded-full glass-card-2 mb-4 overflow-x-auto">
           {DOMAINS.map((d) => (
             <button
               key={d.key}
@@ -52,32 +50,28 @@ export default function AddWidgetPicker({ open, onClose, onAdd, addedTypes = [] 
           ))}
         </div>
 
-        {/* List — sterke typografische layout, geen ronde foto's */}
-        <div className="space-y-1">
+        <div className="grid grid-cols-2 gap-2.5">
           <AnimatePresence mode="wait">
-            <motion.div key={domain} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
+            <motion.div key={domain} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }} className="col-span-2 grid grid-cols-2 gap-2.5">
               {widgets.map((w, i) => {
                 const added = addedTypes.includes(w.type);
-                const num = String(i + 1).padStart(2, "0");
                 return (
                   <motion.button
                     key={w.type}
-                    initial={{ opacity: 0, x: -6 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: Math.min(i * 0.025, 0.18), duration: 0.2 }}
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: Math.min(i * 0.03, 0.2), duration: 0.25 }}
                     onClick={() => pick(w)}
                     disabled={added}
-                    className={cn("group w-full flex items-center gap-4 px-3 py-3.5 rounded-2xl text-left transition-colors border", added ? "opacity-50 cursor-default border-white/8" : "border-white/10 hover:border-white/25 hover:bg-ivory/5")}
+                    className={cn("group relative aspect-[4/3] rounded-2xl overflow-hidden text-left border transition", added ? "border-white/10 opacity-60 cursor-default" : "border-white/15 hover:border-white/35 hover:-translate-y-0.5")}
                   >
-                    <span className="text-[26px] font-display font-bold tabular-nums leading-none" style={{ color: accent, opacity: added ? 0.35 : 0.92 }}>{num}</span>
-                    <span className="flex-1 min-w-0 text-[13px] uppercase tracking-[0.1em] font-bold text-ivory truncate">{w.label}</span>
-                    <span className="shrink-0">
-                      {added ? (
-                        <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-[0.18em] text-ivory/50 font-bold"><Check className="h-3.5 w-3.5" /> GEPIND</span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-[0.18em] text-ivory/35 font-bold group-hover:text-olive transition-colors"><Plus className="h-3.5 w-3.5" /> PIN</span>
-                      )}
+                    <img src={w.image} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-charcoal/90 via-charcoal/35 to-transparent" />
+                    <span className="absolute top-2 right-2 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[8px] uppercase tracking-[0.16em] font-bold backdrop-blur-md" style={added ? { background: "rgba(255,255,255,0.16)", color: "hsl(var(--ivory))" } : { background: "rgba(255,255,255,0.10)", color: "rgba(255,255,255,0.7)" }}>
+                      {added ? (<><Check className="h-2.5 w-2.5" /> GEPIND</>) : (<><Plus className="h-2.5 w-2.5" /> PIN</>)}
                     </span>
+                    <span className="absolute bottom-2.5 left-2.5 right-2.5 text-[11px] uppercase tracking-[0.1em] font-bold text-ivory leading-tight" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.6)" }}>{w.label}</span>
+                    <span className="absolute bottom-0 left-0 h-[3px] w-full" style={{ background: accent, opacity: added ? 0.4 : 0.9 }} />
                   </motion.button>
                 );
               })}

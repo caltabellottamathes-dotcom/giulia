@@ -9,6 +9,7 @@ const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/3
 const DEEP = "hsl(var(--d-giulia-deep))";    // olijf
 const LIGHT = "hsl(var(--d-giulia-light))";  // pistachio
 const IVORY = "hsl(var(--ivory))";
+const BLUE = "hsl(var(--ridge))"; // 3e accentkleur — lichtblauw (niet-urgent)
 
 /** WaitingOnYouWidget — G·4:3·R·SIDE (gelaagd). Foto-card rechts (clean, geen
  *  tekst). Glas-shell links: het live aantal open approvals als enorm
@@ -57,7 +58,7 @@ export default function WaitingOnYouWidget() {
       >
         {/* ghost-getal — enorm, asymmetrisch, half achter foto + half achter tekst */}
         <div className="pointer-events-none absolute" style={{ left: "44%", bottom: "0%", transform: "translateX(-50%)" }}>
-          <span style={{ color: "hsl(var(--olive))", opacity: 0.2 }}>
+          <span style={{ color: "hsl(var(--olive))", opacity: 0.32 }}>
             <CountUp value={total} className="text-[320px] font-display font-black leading-none tracking-[-0.06em]" />
           </span>
         </div>
@@ -75,7 +76,7 @@ export default function WaitingOnYouWidget() {
             top3.map((a, i) => {
               const num = String(i + 1).padStart(2, "0");
               const urgent = a.category === "urgent";
-              const color = urgent ? URGENT : i % 2 === 1 ? LIGHT : DEEP;
+              const color = urgent ? URGENT : [DEEP, LIGHT, BLUE][i % 3];
               const words = threeWordSummary(a);
               return (
                 <motion.button

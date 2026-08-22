@@ -5,6 +5,7 @@ import { useAgendaChecklist } from "@/self/widgets/editorial13/CheckableShell";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ad59aa090_Whatmatters_GIULIA.jpeg";
 const PISTACHIO = "hsl(var(--giulia-pistachio))"; // 2e accentkleur (GIULIA)
+const BLUE = "hsl(var(--ridge))"; // 3e accentkleur — lichtblauw (niet-urgent)
 const DUR_MIN = 15, DUR_MAX = 180, H_MIN = 18, H_MAX = 78;
 
 /** Staafhoogte op basis van afspraakduur (min). */
@@ -21,9 +22,7 @@ function PlanningBars({ items }) {
     <div className="flex items-end gap-2 h-[92px]">
       {items.map((it, i) => {
         const num = String(i + 1).padStart(2, "0");
-        const urgent = !!it.urgent;
-        const soft = i % 2 === 1;
-        const color = urgent ? URGENT : soft ? PISTACHIO : "var(--tile-accent)";
+        const color = it.color || "var(--tile-accent)";
         const status = it.active ? "active" : it.done ? "done" : "idle";
         const targetH = status === "done" ? durHeight(it.duration) : 16;
         return (
@@ -66,9 +65,11 @@ export default function WhatMattersLayeredWidget() {
     const next = cur === "idle" ? "active" : cur === "active" ? "done" : "idle";
     return { ...s, [i]: next };
   });
+  const PALETTE = ["var(--tile-accent)", PISTACHIO, BLUE];
   const items = rawItems.map((it, i) => {
     const st = states[i] || "idle";
-    return { ...it, done: st === "done", active: st === "active" };
+    const color = it.urgent ? URGENT : PALETTE[i % 3];
+    return { ...it, done: st === "done", active: st === "active", color };
   });
   const doneCount = items.filter((it) => it.done).length;
 

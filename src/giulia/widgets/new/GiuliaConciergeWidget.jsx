@@ -88,13 +88,13 @@ function ConciergeInner() {
 
       {/* transparant glas — vierkant, 4 hoeken, flush beneden (GIULIA glas) */}
       <div
-        className="absolute left-1/2 bottom-0 -translate-x-1/2 w-[260px] h-[260px] rounded-[24px] flex flex-col items-center px-4 pt-3.5 pb-4 overflow-hidden"
+        className="absolute left-1/2 bottom-0 -translate-x-1/2 w-[300px] h-[210px] rounded-[24px] flex flex-col items-center px-4 pt-3.5 pb-4 overflow-hidden"
         style={{
-          background: "rgba(48,50,55,0.18)",
-          backdropFilter: "blur(22px) saturate(1.35)",
-          WebkitBackdropFilter: "blur(22px) saturate(1.35)",
-          border: "1px solid rgba(255,255,255,0.12)",
-          boxShadow: "0 1px 2px rgba(0,0,0,0.06), 0 18px 44px -22px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.16)",
+          background: "rgba(255,255,255,0.08)",
+          backdropFilter: "blur(12px) saturate(1.35)",
+          WebkitBackdropFilter: "blur(12px) saturate(1.35)",
+          border: "1px solid rgba(255,255,255,0.18)",
+          boxShadow: "0 18px 44px -22px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.22)",
         }}
       >
         {/* status — bovenin het glas, links uitgelijnd */}
@@ -113,8 +113,8 @@ function ConciergeInner() {
             ref={bloomRef}
             onClick={toggle}
             aria-label={connected ? "Gesprek stoppen" : "Giulia bellen"}
-            className="h-[200px] w-[200px] rounded-full will-change-transform cursor-pointer"
-            style={{ background: `radial-gradient(circle, ${LIGHT} 0%, ${DEEP} 50%, transparent 75%)`, filter: "blur(4px)", opacity: 0.72, border: "none" }}
+            className="h-[170px] w-[170px] rounded-full will-change-transform cursor-pointer"
+            style={{ background: `radial-gradient(circle, ${DEEP} 0%, ${LIGHT} 48%, transparent 72%)`, filter: "blur(2px)", opacity: 0.92, border: "none" }}
           />
         </div>
 

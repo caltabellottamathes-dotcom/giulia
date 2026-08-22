@@ -23,8 +23,8 @@ export default function PhotoGlassLayeredWidget({
   photoChildren,
   children,
   className,
-  glassBlur = 22,
-  glassBorder = "1px solid rgba(255,255,255,0.12)",
+  glassBlur = 12,
+  glassBorder = "1px solid rgba(255,255,255,0.18)",
 }) {
   const accent = accentFor(domain);
   const cardStyle = layeredCardStyle(glassPosition, glassFraction, overhang);
@@ -43,11 +43,11 @@ export default function PhotoGlassLayeredWidget({
         className={cn("absolute z-10 overflow-hidden flex flex-col p-3.5", RADIUS[radius])}
         style={{
           ...cardStyle,
-          background: "rgba(48,50,55,0.18)",
+          background: "rgba(255,255,255,0.08)",
           backdropFilter: `blur(${glassBlur}px) saturate(1.35)`,
           WebkitBackdropFilter: `blur(${glassBlur}px) saturate(1.35)`,
           border: glassBorder,
-          boxShadow: `${SHELL_SHADOW[glassPosition]}, inset 0 1px 0 rgba(255,255,255,0.16)`,
+          boxShadow: `${SHELL_SHADOW[glassPosition]}, inset 0 1px 0 rgba(255,255,255,0.22)`,
         }}
       >
         <span className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${accent.accent} 18%, ${accent.accent} 82%, transparent)` }} />

@@ -6,7 +6,7 @@ import { URGENT } from "./domainAccent";
 /** CheckChip — één afvinkrij. Transparant glas over de foto. urgent → #d5e24a. */
 export function CheckChip({ it, onToggle, accent = "var(--tile-accent)", index }) {
   const urgent = !!it.urgent;
-  const a = urgent ? URGENT : accent;
+  const a = it.color || accent;
   const num = index != null ? String(index + 1).padStart(2, "0") : null;
   return (
     <motion.button

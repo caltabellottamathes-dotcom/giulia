@@ -152,6 +152,10 @@ const MODULE_TOPIC = {
   imageviewer: "Jouw afbeeldingen", videoplayer: "Je video's", musicplayer: "Je muziek", docviewer: "Jouw documenten",
 };
 
+// Modules whose panel is the interaction surface itself — render full-bleed
+// (no header photo / title) so the panel looks exactly like its widget.
+const FULL_BLEED = { voice: true };
+
 export default function ModulePanel() {
   const { activeModule, closeModule } = usePanel();
   const navigate = useNavigate();
@@ -187,6 +191,9 @@ export default function ModulePanel() {
   return (
     <FloatingPanel open={!!mod} onClose={closeModule} position="right" level={3} width={mod?.panelWidth || 720} showOverlay dim={false}>
       {mod && (
+        FULL_BLEED[activeModule] ? (
+          <div className="h-full"><ActiveComponent /></div>
+        ) : (
         <div className="flex flex-col h-full">
           <div className="h-[3px] w-full shrink-0" style={{ background: MODULE_ACCENT[activeModule] || "hsl(var(--sand))" }} />
           {/* Clean header photo — no overlay */}
@@ -247,6 +254,7 @@ export default function ModulePanel() {
             </div>
           </div>
         </div>
+        )
       )}
     </FloatingPanel>
   );

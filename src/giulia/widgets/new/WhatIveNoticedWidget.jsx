@@ -54,7 +54,7 @@ export default function WhatIveNoticedWidget() {
                 <g transform="rotate(-90 60 60)">
                   {GROUPS.map((ring, idx) => {
                     const circ = 2 * Math.PI * ring.r;
-                    const frac = max ? counts[ring.key] / max : 0;
+                    const frac = Math.min(1, counts[ring.key] / 50);
                     const offset = circ * (1 - frac);
                     return (
                       <g key={ring.key}>
