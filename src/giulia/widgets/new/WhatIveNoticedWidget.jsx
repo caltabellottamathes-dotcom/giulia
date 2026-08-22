@@ -42,7 +42,7 @@ export default function WhatIveNoticedWidget() {
         shape="1:1"
         photo={PHOTO}
         glassPosition="bottom"
-        glassFraction={0.26}
+        glassFraction={0.34}
         overhang={0}
         domain="giulia"
         radius="large"

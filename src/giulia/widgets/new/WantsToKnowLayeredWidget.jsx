@@ -50,7 +50,7 @@ export default function WantsToKnowLayeredWidget() {
         shape="2:3"
         photo={PHOTO}
         glassPosition="bottom"
-        glassFraction={0.40}
+        glassFraction={0.48}
         overhang={0}
         domain="giulia"
         radius="large"

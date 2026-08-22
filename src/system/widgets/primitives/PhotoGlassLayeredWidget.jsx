@@ -43,7 +43,7 @@ export default function PhotoGlassLayeredWidget({
         className={cn("absolute z-10 overflow-hidden flex flex-col p-3.5", RADIUS[radius])}
         style={{
           ...cardStyle,
-          background: "rgba(255,255,255,0.10)",
+          background: "rgba(255,255,255,0.06)",
           backdropFilter: `blur(${glassBlur}px) saturate(1.4)`,
           WebkitBackdropFilter: `blur(${glassBlur}px) saturate(1.4)`,
           border: glassBorder,

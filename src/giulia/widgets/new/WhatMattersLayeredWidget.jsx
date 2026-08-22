@@ -24,20 +24,29 @@ function PlanningBars({ items }) {
         const urgent = !!it.urgent;
         const soft = i % 2 === 1;
         const color = urgent ? URGENT : soft ? PISTACHIO : "var(--tile-accent)";
-        const targetH = it.done ? durHeight(it.duration) : 16;
+        const status = it.active ? "active" : it.done ? "done" : "idle";
+        const targetH = status === "done" ? durHeight(it.duration) : 16;
         return (
           <div key={it.id || i} className="flex-1 flex flex-col items-center justify-end h-full min-w-0">
             <span
               className="text-[12px] font-display font-bold tabular-nums leading-none mb-1"
-              style={{ color: it.done ? color : "rgba(255,255,255,0.4)" }}
+              style={{ color: status === "done" ? color : "rgba(255,255,255,0.4)" }}
             >
               {num}
             </span>
+            {status === "active" && (
+              <motion.span
+                className="mb-1 h-2 w-2 rounded-full"
+                style={{ background: color }}
+                animate={{ y: [0, -6, 0], opacity: [1, 0.45, 1] }}
+                transition={{ duration: 0.7, repeat: Infinity, ease: "easeInOut" }}
+              />
+            )}
             <motion.div
               className="w-full rounded-[10px]"
               animate={{ height: targetH }}
               transition={{ type: "spring", stiffness: 180, damping: 20 }}
-              style={{ height: 16, backgroundColor: it.done ? color : "rgba(255,255,255,0.16)" }}
+              style={{ height: 16, backgroundColor: status === "done" ? color : "rgba(255,255,255,0.16)" }}
             />
           </div>
         );
@@ -50,7 +59,18 @@ function PlanningBars({ items }) {
  *  "A plan for today!" + datum/tijd + live staafgrafiek; foto-card links met
  *  de afvinkbare agenda-checklist (done → bijbehorende staaf groeit). */
 export default function WhatMattersLayeredWidget() {
-  const { items, toggle, doneCount, total, closed, close, reopen } = useAgendaChecklist();
+  const { items: rawItems, total, closed, close, reopen } = useAgendaChecklist();
+  const [states, setStates] = useState({});
+  const cycle = (i) => setStates((s) => {
+    const cur = s[i] || "idle";
+    const next = cur === "idle" ? "active" : cur === "active" ? "done" : "idle";
+    return { ...s, [i]: next };
+  });
+  const items = rawItems.map((it, i) => {
+    const st = states[i] || "idle";
+    return { ...it, done: st === "done", active: st === "active" };
+  });
+  const doneCount = items.filter((it) => it.done).length;
 
   const [now, setNow] = useState(new Date());
   useEffect(() => {
@@ -77,7 +97,7 @@ export default function WhatMattersLayeredWidget() {
         photoChildren={
           <div className="absolute inset-0 p-3 flex flex-col gap-1.5">
             {total > 0 ? (
-              <CheckList items={items} onToggle={toggle} closed={closed} onClose={close} onReopen={reopen} maxH="100%" />
+              <CheckList items={items} onToggle={cycle} closed={closed} onClose={close} onReopen={reopen} maxH="100%" />
             ) : (
               <p className="text-[11px] text-white/70 px-2 py-1">Niets op de agenda vandaag.</p>
             )}

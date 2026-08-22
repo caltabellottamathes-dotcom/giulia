@@ -46,7 +46,7 @@ export default function ImAliveWidget() {
   };
 
   return (
-    <div className="w-full h-[260px]">
+    <div className="w-full max-w-[240px] mx-auto aspect-square">
       <WidgetShell domain="giulia" radius="large" interactive onClick={start} className="h-full min-h-0">
         <div className="flex flex-col h-full p-3" style={{ color: IVORY }}>
           <WidgetHeader type="pulse" label="I'M ALIVE!" />
@@ -76,10 +76,12 @@ export default function ImAliveWidget() {
               <line x1="0" y1="50" x2="100" y2="50" stroke={DEEP} strokeOpacity="0.22" strokeWidth="0.3" />
               {active ? (
                 <>
-                  <motion.path d={AREA} fill="url(#ekg-fill)" stroke="none"
-                    initial={{ opacity: 0 }} animate={{ opacity: [0.25, 0.55, 0.25] }} transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }} />
-                  <motion.path d={PATH} fill="none" stroke="url(#ekg-stroke)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" filter="url(#ekg-glow)"
-                    initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.4, ease: "easeInOut", repeat: Infinity, repeatType: "loop" }} />
+                  <path d={AREA} fill="url(#ekg-fill)" stroke="none" opacity="0.35" />
+                  <path d={PATH} fill="none" stroke="url(#ekg-stroke)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.28" />
+                  <motion.path d={PATH} fill="none" stroke="url(#ekg-stroke)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" filter="url(#ekg-glow)"
+                    pathLength={100} strokeDasharray="14 86"
+                    animate={{ strokeDashoffset: [0, -100] }}
+                    transition={{ duration: 2.2, repeat: Infinity, ease: "linear" }} />
                 </>
               ) : (
                 <path d="M 0 50 L 100 50" fill="none" stroke={DEEP} strokeOpacity="0.45" strokeWidth="1" />

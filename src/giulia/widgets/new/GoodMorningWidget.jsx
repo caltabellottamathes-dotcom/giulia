@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { GlassPhotoLayeredWidget, WidgetHeader } from "@/system/widgets/primitives";
 import { base44 } from "@/api/base44Client";
 
-const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/9134a54f7_Good_Morning.jpeg";
+const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/425b14eed_WaKe.jpeg";
 const LIGHT = "hsl(var(--d-giulia-light))";
 const DEEP = "hsl(var(--d-giulia-deep))";
 const URGENT = "hsl(var(--d-giulia-urgent))";

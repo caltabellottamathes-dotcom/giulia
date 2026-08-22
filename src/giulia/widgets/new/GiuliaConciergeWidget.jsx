@@ -30,7 +30,6 @@ function ConciergeInner() {
   const connecting = status === "connecting";
 
   const bloomRef = useRef(null);
-  const blobRef = useRef(null);
   const rafRef = useRef(0);
   const levelRef = useRef(0);
 
@@ -49,14 +48,6 @@ function ConciergeInner() {
         el.style.transform = `scale(${scale})`;
         el.style.opacity = String(opacity);
       }
-      const blob = blobRef.current;
-      if (blob) {
-        const bv = level;
-        const bw = 42 + bv * 14, bx = 58 - bv * 14, by = 50 + bv * 12, bz = 50 - bv * 12;
-        blob.style.transform = `scale(${0.78 + bv * 0.45 + breath})`;
-        blob.style.opacity = String(0.5 + bv * 0.35);
-        blob.style.borderRadius = `${bw}% ${bx}% ${by}% ${bz}% / ${by}% ${bz}% ${bx}% ${bw}%`;
-      }
       rafRef.current = requestAnimationFrame(loop);
     };
     rafRef.current = requestAnimationFrame(loop);
@@ -73,7 +64,7 @@ function ConciergeInner() {
   const dotColor = isSpeaking ? URGENT : connected ? LIGHT : "rgba(255,255,255,0.35)";
 
   return (
-    <WidgetShell domain="giulia" radius="large" className="w-full h-[400px] min-h-0">
+    <WidgetShell domain="giulia" radius="large" className="w-full h-[480px] min-h-0">
       {/* foto als grote shell */}
       <img src={PHOTO} alt="Giulia's Hotline" className="absolute inset-0 w-full h-full object-cover" />
 
@@ -95,9 +86,9 @@ function ConciergeInner() {
 
       {/* transparant glas — afgeronde bovenhoeken, omhooglopende schaduw */}
       <div
-        className="absolute inset-x-0 bottom-0 rounded-t-[24px] h-[272px] flex flex-col items-center px-4 pt-3.5 pb-5 overflow-hidden"
+        className="absolute inset-x-0 bottom-0 rounded-t-[24px] h-[352px] flex flex-col items-center px-4 pt-3.5 pb-5 overflow-hidden"
         style={{
-          background: "rgba(255,255,255,0.10)",
+          background: "rgba(255,255,255,0.06)",
           backdropFilter: "blur(8px)",
           WebkitBackdropFilter: "blur(8px)",
           boxShadow: "0 -28px 60px -14px rgba(0,0,0,0.50), 0 -10px 22px -10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.22)",
@@ -122,10 +113,6 @@ function ConciergeInner() {
             className="h-[200px] w-[200px] rounded-full will-change-transform cursor-pointer"
             style={{ background: `radial-gradient(circle, ${URGENT} 0%, ${DEEP} 45%, transparent 72%)`, filter: "blur(4px)", opacity: 0.72, border: "none" }}
           />
-          {/* reactive blob — bovenop de bloom, morpheert op audio-niveau */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div ref={blobRef} className="h-[120px] w-[120px]" style={{ background: `linear-gradient(135deg, ${DEEP}, ${LIGHT})`, filter: "blur(3px)", opacity: 0.5, borderRadius: "50%" }} />
-          </div>
         </div>
 
 

@@ -89,7 +89,7 @@ export const IMAGES = {
   // SELF layer branding — introspective editorial motifs (donker plum / sage / beton)
   selfDailyState: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/f7bdee9b6_Apply_a_consistent_editorial_documentary_2026062122294.jpeg",
   selfRoutines: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/3ff819d08_Apply_a_highly_realistic_editorial_202606212230.jpeg",
-  selfWake: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/76c891531_A_surreal_editorial_photograph_of_a_202606270239.jpeg",
+  selfWake: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/425b14eed_WaKe.jpeg",
   selfTherapy: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0bea9ecdf_Apply_a_consistent_editorial_documentary_202606212036.jpeg",
   selfJournal: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/6f93aecac_Apply_a_consistent_editorial_documentary_2026062122141.jpeg",
   selfDevelopment: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/5ed99c12d_An_extreme_surrealist_editorial_photograph_202606270306.jpeg",
@@ -111,14 +111,14 @@ export const IMAGES = {
   dashboardNow: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/eae31a7d1_NOW.jpeg",
   dashboardLife: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/507183e0f_LIFE.jpeg",
   dashboardSelf: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/e2ccca3a3_SELF.jpeg",
-  dashboardGiulia: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/402769a42_Two_people_playing_in_water_2026081919442.jpeg",
+  dashboardGiulia: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/5cd4573dc_Creating_photo_with_woman_2K_202608211914.jpeg",
   // GIULIA-widget foto's — gedeeld door widget, panel-hoofd en pagina-hero
   wHotline:        "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/1d4c3eef3_GiuliaConcierge.jpeg",
   wWhatMatters:    "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ad59aa090_Whatmatters_GIULIA.jpeg",
   wWaitingOnYou:   "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/37aed6798_Waiting_on_You.jpeg",
   wWhatIveNoticed: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/c78cbf3f8_What_Ive_Noticed.jpeg",
   wWantsToKnow:    "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ac89b8e63_WTK.jpeg",
-  wGoodMorning:    "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/9134a54f7_Good_Morning.jpeg",
+  wGoodMorning:    "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/425b14eed_WaKe.jpeg",
 };
 
 export const VIDEOS = {
