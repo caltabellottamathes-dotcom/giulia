@@ -65,7 +65,6 @@ import UiItems from '@/system/pages/UiItems';
 import WidgetsGiulia from '@/giulia/pages/WidgetsGiulia';
 import WidgetsFocus from '@/focus/pages/WidgetsFocus';
 import ShellCollection from '@/system/pages/ShellCollection';
-import ShellCollection2 from '@/system/pages/ShellCollection2';
 // GlassAgenda scoped pages
 import GlassLayout from '@/glass/components/GlassLayout';
 import GlassHome from '@/glass/pages/Home';
@@ -191,7 +190,6 @@ const AuthenticatedApp = () => {
           <Route path="/widgets-giulia" element={<WidgetsGiulia />} />
           <Route path="/widgets-focus" element={<WidgetsFocus />} />
           <Route path="/shell-collection" element={<ShellCollection />} />
-          <Route path="/shell-collection-2" element={<ShellCollection2 />} />
           {/* GlassAgenda — scoped suite */}
           <Route element={<GlassLayout />}>
             <Route path="/glass" element={<GlassHome />} />
