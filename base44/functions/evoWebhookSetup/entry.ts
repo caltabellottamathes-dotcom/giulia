@@ -63,7 +63,7 @@ export default async function (req) {
       const webhookUrl = body.webhook_url || body.url;
       if (!webhookUrl) return Response.json({ error: "webhook_url required" }, { status: 400 });
 
-      // Evolution v2 set-webhook payload — `webhook` must be an object
+      // Evolution v2 /webhook/set/{instance} vereist een genest `webhook` object.
       const payload = {
         webhook: {
           url: webhookUrl,

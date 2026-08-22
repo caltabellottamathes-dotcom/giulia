@@ -44,9 +44,11 @@ export default async function (req) {
     // Beveiliging: controleer de apikey die Evolution meestuurt.
     // Evolution v2 stuurt de apikey in de `apikey` header; sommige flows
     // sturen hem ook in de body — accepteer beide.
-    const expectedKey = secrets.get("EVO_API_KEY");
+    // Scrub markdown-vervuiling uit secrets (zelfde patroon als EVO_API_URL).
+    const expectedKey = (secrets.get("EVO_API_KEY") || "").split("](")[0].trim();
     const sentKey = req.headers?.get?.("apikey") || body?.apikey || "";
     if (expectedKey && sentKey && sentKey !== expectedKey) {
+      console.log("[evo] apikey mismatch — expected len=", expectedKey.length, "got len=", sentKey.length);
       return Response.json({ ok: false, error: "invalid apikey" }, { status: 401 });
     }
 
