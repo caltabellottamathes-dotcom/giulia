@@ -30,6 +30,7 @@ function ConciergeInner() {
   const connecting = status === "connecting";
 
   const bloomRef = useRef(null);
+  const blobRef = useRef(null);
   const rafRef = useRef(0);
   const levelRef = useRef(0);
 
@@ -47,6 +48,14 @@ function ConciergeInner() {
       if (el) {
         el.style.transform = `scale(${scale})`;
         el.style.opacity = String(opacity);
+      }
+      const blob = blobRef.current;
+      if (blob) {
+        const bv = level;
+        const bw = 42 + bv * 14, bx = 58 - bv * 14, by = 50 + bv * 12, bz = 50 - bv * 12;
+        blob.style.transform = `scale(${0.78 + bv * 0.45 + breath})`;
+        blob.style.opacity = String(0.5 + bv * 0.35);
+        blob.style.borderRadius = `${bw}% ${bx}% ${by}% ${bz}% / ${by}% ${bz}% ${bx}% ${bw}%`;
       }
       rafRef.current = requestAnimationFrame(loop);
     };
@@ -113,6 +122,10 @@ function ConciergeInner() {
             className="h-[200px] w-[200px] rounded-full will-change-transform cursor-pointer"
             style={{ background: `radial-gradient(circle, ${URGENT} 0%, ${DEEP} 45%, transparent 72%)`, filter: "blur(4px)", opacity: 0.72, border: "none" }}
           />
+          {/* reactive blob — bovenop de bloom, morpheert op audio-niveau */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div ref={blobRef} className="h-[120px] w-[120px]" style={{ background: `linear-gradient(135deg, ${DEEP}, ${LIGHT})`, filter: "blur(3px)", opacity: 0.5, borderRadius: "50%" }} />
+          </div>
         </div>
 
 
