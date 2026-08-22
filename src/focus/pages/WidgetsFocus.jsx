@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import WhatsAppFocusWidget from "@/focus/widgets/new/WhatsAppFocusWidget";
+import WhatsAppChatFocusWidget from "@/focus/widgets/new/WhatsAppChatFocusWidget";
 import TasksFocusWidget from "@/focus/widgets/new/TasksFocusWidget";
 import ProjectsFocusWidget from "@/focus/widgets/new/ProjectsFocusWidget";
 import EmailFocusWidget from "@/focus/widgets/new/EmailFocusWidget";
@@ -29,8 +30,8 @@ export default function WidgetsFocus() {
           <WhatsAppFocusWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[620px]">
-          <Label>02 · TO DO! — P·16x9·L·SIDE · live bars + afvinkbare takenlijst (Tasks)</Label>
-          <TasksFocusWidget />
+          <Label>02 · WHO'S TEXTING? — P·16x9·L·SIDE · chatvenster + 5 ongelezen berichten (WhatsApp)</Label>
+          <WhatsAppChatFocusWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[620px]">
           <Label>03 · WHAT I'M BUILDING. — G·4:3·R·SIDE · ghost-telling + voortgang (Projects)</Label>
