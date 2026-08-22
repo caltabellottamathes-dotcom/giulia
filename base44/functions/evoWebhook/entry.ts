@@ -51,11 +51,12 @@ export default async function (req) {
     }
 
     // Alleen inkomende berichten interesseren ons.
+    console.log("[evo] event=", event, "fromMe=", data?.key?.fromMe, "remoteJid=", data?.key?.remoteJid, "msgType=", data?.message ? Object.keys(data.message)[0] : null);
     if (event !== "messages.upsert") return Response.json({ ok: true, ignored: event });
     if (data?.key?.fromMe === true) return Response.json({ ok: true, ignored: "outgoing" });
 
     const text = extractText(data?.message);
-    if (!text) return Response.json({ ok: true, ignored: "non-text" });
+    if (!text) return Response.json({ ok: true, ignored: "non-text", msgType: data?.message ? Object.keys(data.message)[0] : null });
 
     const remoteJid = data?.key?.remoteJid || "";
     const phone = normalizePhone(remoteJid.replace(/@.*$/, ""));
