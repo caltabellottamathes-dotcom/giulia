@@ -68,17 +68,17 @@ export default async function (req) {
     let stored = 0, skipped = 0;
 
     for (const msg of msgList) {
-      console.log("[evo-msg] fromMe=", msg?.key?.fromMe, "jid=", msg?.key?.remoteJid, "msgKeys=", msg?.message ? Object.keys(msg.message) : null, "id=", msg?.key?.id);
-      if (msg?.key?.fromMe === true) { console.log("[evo] skip outgoing"); skipped++; continue; }
-      const text = extractText(msg?.message);
-      if (!text) { console.log("[evo] skip non-text"); skipped++; continue; }
-
       const remoteJid = msg?.key?.remoteJid || "";
       const phone = normalizePhone(remoteJid.replace(/@.*$/, ""));
       const evoMsgId = msg?.key?.id || "";
+      const fromMe = msg?.key?.fromMe === true;
+      const msgKeys = msg?.message ? Object.keys(msg.message) : [];
+      const text = extractText(msg?.message);
       const ts = msg?.messageTimestamp
         ? new Date(Number(msg.messageTimestamp) * 1000).toISOString()
         : new Date().toISOString();
+
+      console.log("[evo-msg] fromMe=", fromMe, "jid=", remoteJid, "msgKeys=", msgKeys, "text=", text ? "yes" : "no", "id=", evoMsgId);
 
       // Ontdubbel.
       if (evoMsgId) {
@@ -94,9 +94,11 @@ export default async function (req) {
         contactId = found?.id || "";
       }
 
+      // DEBUG-modus: sla alles op (incl. fromMe / non-text) met prefix.
+      const debugMsg = `[debug fromMe=${fromMe} keys=${msgKeys.join(",")}] ${text || "(non-text)"}`;
       await sr.entities.WhatsAppMessage.create({
         contact_id: contactId || undefined,
-        message: text,
+        message: debugMsg,
         direction: "received",
         status: "unread",
         timestamp: ts,
