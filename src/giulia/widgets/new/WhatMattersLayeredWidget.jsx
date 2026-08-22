@@ -1,54 +1,40 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { GlassPhotoLayeredWidget, WidgetHeader, CheckList, URGENT } from "@/system/widgets/primitives";
+import { PhotoGlassLayeredWidget, WidgetHeader, CheckList, URGENT } from "@/system/widgets/primitives";
 import { useAgendaChecklist } from "@/self/widgets/editorial13/CheckableShell";
 import { usePanel } from "@/lib/PanelContext";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/02f6f6d0e_Matters.jpeg";
 const PISTACHIO = "hsl(var(--giulia-pistachio))"; // 2e accentkleur (GIULIA)
 const BLUE = "hsl(var(--ridge))"; // 3e accentkleur — lichtblauw (niet-urgent)
-const DUR_MIN = 15, DUR_MAX = 180, H_MIN = 18, H_MAX = 78;
-
-/** Staafhoogte op basis van afspraakduur (min). */
-function durHeight(dur) {
-  const d = Math.max(DUR_MIN, Math.min(DUR_MAX, dur || 60));
-  return Math.round(H_MIN + ((d - DUR_MIN) / (DUR_MAX - DUR_MIN)) * (H_MAX - H_MIN));
-}
-
+const DEEP = "hsl(var(--d-giulia-deep))"; // donkere olijf — 1e accent (GIULIA)
 /** Live staafgrafiek — één staaf per agenda-item vandaag. Bij afvinken
  *  groeit de staaf tot een hoogte op basis van de duur. 1e accent (olive) en
  *  2e accent (pistachio) wisselen; urgent → #d5e24a. */
 function PlanningBars({ items }) {
   return (
-    <div className="flex items-end gap-2 h-[92px]">
+    <div
+      className="flex items-stretch gap-1 h-[42px] rounded-full p-1 overflow-hidden"
+      style={{ background: "rgba(255,255,255,0.06)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.14)" }}
+    >
       {items.map((it, i) => {
         const num = String(i + 1).padStart(2, "0");
         const color = it.color || "var(--tile-accent)";
         const status = it.active ? "active" : it.done ? "done" : "idle";
-        const targetH = status === "done" ? durHeight(it.duration) : 16;
         return (
-          <div key={it.id || i} className="flex-1 flex flex-col items-center justify-end h-full min-w-0">
-            <span
-              className="text-[12px] font-display font-bold tabular-nums leading-none mb-1"
-              style={{ color: status === "done" ? color : "rgba(255,255,255,0.4)" }}
-            >
-              {num}
-            </span>
-            {status === "active" && (
-              <motion.span
-                className="mb-1 h-4 w-4 rounded-full"
-                style={{ background: color }}
-                animate={{ y: [0, -9, 0] }}
-                transition={{ duration: 0.7, repeat: Infinity, ease: "easeInOut" }}
-              />
+          <motion.div
+            key={it.id || i}
+            className="h-full rounded-full flex items-center justify-center min-w-[22px] px-1"
+            animate={{ flexGrow: status === "done" ? 7 : status === "active" ? 3 : 1 }}
+            transition={{ type: "spring", stiffness: 170, damping: 22 }}
+            style={{ backgroundColor: status === "done" ? color : "rgba(255,255,255,0.10)" }}
+          >
+            {status === "active" ? (
+              <motion.span className="h-2 w-2 rounded-full" style={{ background: color }} animate={{ scale: [1, 1.45, 1] }} transition={{ duration: 0.7, repeat: Infinity, ease: "easeInOut" }} />
+            ) : (
+              <span className="text-[10px] font-display font-bold tabular-nums leading-none" style={{ color: status === "done" ? "white" : "rgba(255,255,255,0.5)" }}>{num}</span>
             )}
-            <motion.div
-              className="w-full rounded-[10px]"
-              animate={{ height: targetH }}
-              transition={{ type: "spring", stiffness: 180, damping: 20 }}
-              style={{ height: 16, backgroundColor: status === "done" ? color : "rgba(255,255,255,0.16)" }}
-            />
-          </div>
+          </motion.div>
         );
       })}
     </div>
@@ -67,7 +53,7 @@ export default function WhatMattersLayeredWidget() {
     const next = cur === "idle" ? "active" : cur === "active" ? "done" : "idle";
     return { ...s, [i]: next };
   });
-  const PALETTE = ["var(--tile-accent)", BLUE, PISTACHIO];
+  const PALETTE = [DEEP, BLUE, PISTACHIO];
   const items = rawItems.map((it, i) => {
     const st = states[i] || "idle";
     const color = it.urgent ? URGENT : PALETTE[i % 3];
@@ -88,18 +74,18 @@ export default function WhatMattersLayeredWidget() {
 
   return (
     <div className="w-full h-[300px]">
-      <GlassPhotoLayeredWidget
+      <PhotoGlassLayeredWidget
         shape="16:9"
         photo={PHOTO}
-        photoPosition="left"
-        photoFraction={0.40}
+        glassPosition="right"
+        glassFraction={0.58}
         overhang={0}
         domain="giulia"
         radius="large"
         onClick={() => openModule("jedag")}
-        photoOverlay="bg-gradient-to-t from-black/40 via-black/20 to-black/10"
+        overlay="bg-gradient-to-r from-black/45 via-black/20 to-black/10"
         photoChildren={
-          <div className="absolute inset-0 p-3 flex flex-col gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute left-0 top-0 bottom-0 w-[40%] p-3 flex flex-col gap-1.5" onClick={(e) => e.stopPropagation()}>
             {total > 0 ? (
               <CheckList items={items} onToggle={cycle} closed={closed} onClose={close} onReopen={reopen} maxH="100%" />
             ) : (
@@ -117,7 +103,7 @@ export default function WhatMattersLayeredWidget() {
         </p>
         <div className="flex-1 min-h-2" />
         <PlanningBars items={items} />
-      </GlassPhotoLayeredWidget>
+      </PhotoGlassLayeredWidget>
     </div>
   );
 }
