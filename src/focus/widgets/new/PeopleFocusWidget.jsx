@@ -36,9 +36,9 @@ export default function PeopleFocusWidget() {
 
   return (
     <div className="w-full h-[380px]">
-      <PhotoGlassLayeredWidget shape="2:3" photo={PHOTO} glassPosition="bottom" glassFraction={0.48} overhang={0} domain="focus" radius="large" onClick={() => openModule("people")} overlay="bg-gradient-to-t from-black/55 via-black/25 to-black/5"
+      <PhotoGlassLayeredWidget shape="2:3" photo={PHOTO} glassPosition="bottom" glassFraction={0.48} overhang={0} domain="focus" radius="large" onClick={() => openModule("people")} overlay="bg-gradient-to-t from-black/30 via-black/12 to-transparent"
         photoChildren={
-          <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-10 bg-gradient-to-b from-black/65 to-transparent" style={{ color: IVORY }}>
+          <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-10 bg-gradient-to-b from-black/55 to-transparent" style={{ color: IVORY }}>
             <WidgetHeader type="social" label="People Around Me." count={contacted.length ? String(contacted.length) : ""} />
             <h3 className="text-[20px] leading-tight font-display font-semibold tracking-[-0.02em] mt-1">VIND IEDEREEN.</h3>
           </div>

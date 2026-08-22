@@ -85,7 +85,7 @@ export default function TasksBloomFocusWidget() {
       <button type="button" onClick={() => openModule("tasks")} aria-label="Open Tasks" className="absolute inset-0 z-0 cursor-pointer" />
 
       {/* PhotoShell — glaspill items bovenin */}
-      <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-3 flex flex-col" style={{ color: IVORY, height: "56%", background: "linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0))" }}>
+      <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-3 flex flex-col" style={{ color: IVORY, height: "56%", background: "linear-gradient(to bottom, rgba(0,0,0,0.32), rgba(0,0,0,0))" }}>
         <WidgetHeader type="tasks" label="To Do!" count={total ? `${doneCount}/${total}` : ""} />
         <h3 className="text-[22px] leading-[1.05] font-display font-semibold tracking-[-0.02em] mt-1">GET IT DONE.</h3>
         <p className="text-[10px] uppercase tracking-[0.18em] mt-1" style={{ color: LIGHT }}>{weekday} {dayNum} {month} · {hh}:{mm}</p>
@@ -106,7 +106,7 @@ export default function TasksBloomFocusWidget() {
         </div>
       </div>
 
-      <div className="absolute bottom-0 inset-x-0 h-[44%] bg-gradient-to-t from-black/65 via-black/30 to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 inset-x-0 h-[44%] bg-gradient-to-t from-black/45 via-black/18 to-transparent pointer-events-none" />
 
       {/* Glass Shell — staafgrafiek met bounce dots */}
       <div className="absolute inset-x-0 bottom-0 h-[44%] rounded-t-[28px] flex flex-col p-3.5 overflow-hidden"

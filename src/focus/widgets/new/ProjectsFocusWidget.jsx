@@ -42,7 +42,7 @@ export default function ProjectsFocusWidget() {
       <span className="pointer-events-none absolute inset-x-0 top-0 h-px z-10" style={{ background: `linear-gradient(90deg, transparent, ${OLIVE} 18%, ${OLIVE} 82%, transparent)` }} />
 
       {/* content links */}
-      <div className="absolute inset-y-0 left-0 w-[58%] flex flex-col p-4 z-10">
+      <div className="absolute inset-y-0 left-0 w-[56%] flex flex-col p-4 z-10">
         <div className="flex items-center justify-between mb-2">
           <WidgetHeader type="tasks" label="What I'm Building." count={total ? String(total) : ""} />
           <button onClick={() => openModule("projects")} className="text-[8px] uppercase tracking-[0.2em] font-bold pt-1" style={{ color: OLIVE }}>ALLES →</button>
@@ -52,7 +52,7 @@ export default function ProjectsFocusWidget() {
           <p className="text-[34px] font-display font-bold leading-none tabular-nums" style={{ color: IVORY }}>{avgPct}%</p>
           <p className="text-[9px] uppercase tracking-[0.14em] mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>{total} actieve projecten</p>
         </div>
-        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar flex flex-col gap-2">
+        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar flex flex-col gap-2 justify-end">
           {loading ? (
             <div className="flex items-center justify-center py-4"><div className="h-5 w-5 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" /></div>
           ) : top.length === 0 ? (
@@ -77,7 +77,7 @@ export default function ProjectsFocusWidget() {
       </div>
 
       {/* photo card rechts — schuift links weg bij selectie */}
-      <div className="absolute inset-y-0 right-0 w-[42%] overflow-hidden z-20">
+      <div className="absolute top-2 bottom-2 right-2 w-[40%] rounded-[24px] overflow-hidden z-20" style={{ boxShadow: "0 18px 44px -22px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.16)" }}>
         {/* status panel achter */}
         <AnimatePresence>
           {selected && (
@@ -129,7 +129,7 @@ export default function ProjectsFocusWidget() {
         {/* foto laag boven — schuift links weg */}
         <motion.div className="absolute inset-0" animate={{ x: selectedId ? "-102%" : "0%" }} transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}>
           <img src={PHOTO} alt="What I'm Building" className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/12 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/28 via-black/8 to-transparent" />
           <button onClick={() => openModule("projects")} className="absolute inset-0 cursor-pointer" aria-label="Open projecten" />
         </motion.div>
       </div>

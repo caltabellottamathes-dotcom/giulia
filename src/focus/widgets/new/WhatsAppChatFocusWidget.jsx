@@ -107,7 +107,7 @@ export default function WhatsAppChatFocusWidget() {
         domain="focus"
         radius="large"
         onClick={() => openModule("whatsapp")}
-        overlay="bg-gradient-to-t from-black/55 via-black/28 to-black/14"
+        overlay="bg-gradient-to-t from-black/30 via-black/12 to-black/5"
         photoChildren={
           <div className="absolute inset-0 flex flex-col" style={layeredContentPad("left", 0.40)}>
             <WidgetHeader type="social" label="Who's Texting?" count={totalUnread ? String(totalUnread) : ""} />

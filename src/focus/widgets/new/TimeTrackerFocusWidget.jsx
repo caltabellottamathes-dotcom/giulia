@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { WidgetShell, WidgetHeader } from "@/system/widgets/primitives";
+import { PhotoGlassLayeredWidget, WidgetHeader } from "@/system/widgets/primitives";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
@@ -18,9 +18,9 @@ const fmtClock = (sec) => {
   return `${h}:${String(m).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
 };
 
-/** TimeTrackerFocusWidget — 3:4 · "Where My Time Goes."
- *  Custom project-keuze (geen lelijke native <select>), bloom start/stop met
- *  lopende klok. Tijd wordt als TimeEntry bijgehouden. Focus-kleuren. */
+/** TimeTrackerFocusWidget — P·2x3·B·SIDE · "Where My Time Goes."
+ *  PhotoShell-header bovenin; GlassCard onder met custom project-keuze + bloom
+ *  start/stop met lopende klok. Tijd als TimeEntry. Focus-kleuren. */
 export default function TimeTrackerFocusWidget() {
   const { openModule } = usePanel();
   const { data: entries, reload } = useEntityList("TimeEntry", { sort: "-start_time", limit: 80, realtime: true });
@@ -70,60 +70,57 @@ export default function TimeTrackerFocusWidget() {
   const pickerLabel = running ? (activeProj?.title || "lopend") : (activeProj?.title || "Kies een project…");
 
   return (
-    <WidgetShell domain="focus" radius="large" className="w-full h-[420px] min-h-0">
-      <img src={PHOTO} alt="Where My Time Goes" className="absolute inset-0 w-full h-full object-cover" />
-      <button type="button" onClick={() => openModule("timetracker")} aria-label="Open tijdregistratie" className="absolute inset-0 z-0 cursor-pointer" />
-
-      <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-8 bg-gradient-to-b from-black/45 to-transparent flex items-start justify-between" style={{ color: IVORY }}>
-        <WidgetHeader type="briefing" label="Where My Time Goes." />
-        <span className="flex items-center gap-1.5 pt-1 text-[7px] uppercase tracking-[0.18em] font-bold">
-          <motion.span className="h-1.5 w-1.5 rounded-full" style={{ background: running ? LIGHT : "rgba(255,255,255,0.35)" }} animate={running ? { opacity: [0.3, 1, 0.3] } : { opacity: 0.4 }} transition={{ duration: 1, repeat: running ? Infinity : 0 }} />
-          {running ? "tracking" : "idle"}
-        </span>
-      </div>
-
-      <div className="absolute bottom-0 inset-x-0 h-[52%] bg-gradient-to-t from-black/65 via-black/30 to-transparent pointer-events-none" />
-
-      <div className="absolute inset-x-0 bottom-0 h-[52%] rounded-t-[28px] flex flex-col items-center px-3.5 pt-3 pb-3.5 overflow-hidden"
-        style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(12px) saturate(1.35)", WebkitBackdropFilter: "blur(12px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.18)", boxShadow: "0 18px 44px -22px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.22)" }}>
-        <span className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${LIGHT} 18%, ${LIGHT} 82%, transparent)` }} />
-
-        {/* project-keuze (custom, past bij de widget) */}
-        <div className="relative w-full shrink-0" onClick={(e) => e.stopPropagation()}>
-          <p className="text-[8px] uppercase tracking-[0.18em] font-bold mb-1" style={{ color: LIGHT }}>aan welk project begin je?</p>
-          <button type="button" onClick={() => !running && setPickerOpen((o) => !o)} disabled={!!running}
-            className="w-full flex items-center justify-between gap-2 rounded-full px-3 py-2 text-[12px] disabled:opacity-70"
-            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", color: IVORY }}>
-            <span className="truncate text-left">{pickerLabel}</span>
-            <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition-transform ${pickerOpen ? "rotate-180" : ""}`} style={{ color: LIGHT }} />
-          </button>
-          {pickerOpen && !running && (
-            <div className="absolute z-50 left-0 right-0 top-full mt-1 rounded-2xl overflow-y-auto no-scrollbar max-h-[170px]"
-              style={{ background: "rgba(48,23,40,0.97)", border: "1px solid rgba(216,218,179,0.32)", boxShadow: "0 14px 30px -10px rgba(0,0,0,0.5)" }}>
-              {(projects || []).length === 0 ? (
-                <p className="px-3 py-2.5 text-[11px]" style={{ color: "rgba(255,255,255,0.6)" }}>Geen projecten.</p>
-              ) : (projects || []).map((p) => (
-                <button key={p.id} type="button" onClick={() => { setProjId(p.id); setPickerOpen(false); }}
-                  className="w-full text-left px-3 py-2 text-[12px] truncate transition-colors hover:bg-white/10"
-                  style={{ color: p.id === projId ? LIGHT : IVORY, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                  {p.title}
-                </button>
-              ))}
+    <div className="w-full h-[450px]">
+      <PhotoGlassLayeredWidget shape="2:3" photo={PHOTO} glassPosition="bottom" glassFraction={0.50} overhang={0} domain="focus" radius="large" onClick={() => openModule("timetracker")} overlay="bg-gradient-to-t from-black/30 via-black/12 to-transparent"
+        photoChildren={
+          <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-12 bg-gradient-to-b from-black/55 to-transparent" style={{ color: IVORY }}>
+            <WidgetHeader type="briefing" label="Where My Time Goes." />
+            <h3 className="text-[22px] leading-tight font-display font-semibold tracking-[-0.02em] mt-1">TIJD NAAR PROJECTEN.</h3>
+            <div className="flex items-center gap-1.5 mt-2">
+              <motion.span className="h-1.5 w-1.5 rounded-full" style={{ background: running ? LIGHT : "rgba(255,255,255,0.35)" }} animate={running ? { opacity: [0.3, 1, 0.3] } : { opacity: 0.4 }} transition={{ duration: 1, repeat: running ? Infinity : 0 }} />
+              <span className="text-[8px] uppercase tracking-[0.18em] font-bold" style={{ color: running ? LIGHT : "rgba(255,255,255,0.55)" }}>{running ? "tracking" : "idle"}</span>
             </div>
-          )}
-        </div>
+          </div>
+        }
+      >
+        <div className="flex flex-col h-full overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          {/* project-keuze (custom) */}
+          <div className="relative w-full shrink-0">
+            <p className="text-[8px] uppercase tracking-[0.18em] font-bold mb-1" style={{ color: LIGHT }}>aan welk project begin je?</p>
+            <button type="button" onClick={() => !running && setPickerOpen((o) => !o)} disabled={!!running}
+              className="w-full flex items-center justify-between gap-2 rounded-full px-3 py-2 text-[12px] disabled:opacity-70"
+              style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", color: IVORY }}>
+              <span className="truncate text-left">{pickerLabel}</span>
+              <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition-transform ${pickerOpen ? "rotate-180" : ""}`} style={{ color: LIGHT }} />
+            </button>
+            {pickerOpen && !running && (
+              <div className="absolute z-50 left-0 right-0 top-full mt-1 rounded-2xl overflow-y-auto no-scrollbar max-h-[170px]"
+                style={{ background: "rgba(48,23,40,0.97)", border: "1px solid rgba(216,218,179,0.32)", boxShadow: "0 14px 30px -10px rgba(0,0,0,0.5)" }}>
+                {(projects || []).length === 0 ? (
+                  <p className="px-3 py-2.5 text-[11px]" style={{ color: "rgba(255,255,255,0.6)" }}>Geen projecten.</p>
+                ) : (projects || []).map((p) => (
+                  <button key={p.id} type="button" onClick={() => { setProjId(p.id); setPickerOpen(false); }}
+                    className="w-full text-left px-3 py-2 text-[12px] truncate transition-colors hover:bg-white/10"
+                    style={{ color: p.id === projId ? LIGHT : IVORY, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                    {p.title}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-        {/* bloom + klok */}
-        <div className="relative flex-1 w-full overflow-hidden flex items-center justify-center">
-          <button onClick={(e) => { e.stopPropagation(); toggle(); }} aria-label={running ? "Stop timer" : "Start timer"} className="relative h-[120px] w-[120px] rounded-full cursor-pointer" style={{ border: "none", background: "transparent" }}>
-            <span ref={bloomRef} className="absolute inset-0 rounded-full will-change-transform" style={{ background: `radial-gradient(circle, ${DEEP} 0%, ${LIGHT} 48%, transparent 72%)`, filter: "blur(2px)", opacity: 0.92 }} />
-            <span className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-[22px] font-display font-bold tabular-nums leading-none" style={{ color: IVORY }}>{running ? fmtClock(elapsed) : "00:00:00"}</span>
-              <span className="text-[8px] uppercase tracking-[0.2em] font-bold mt-1.5 text-center px-2" style={{ color: running ? LIGHT : "rgba(255,255,255,0.55)" }}>{running ? "lopend" : "kies & tik"}</span>
-            </span>
-          </button>
+          {/* bloom + klok */}
+          <div className="relative flex-1 w-full overflow-hidden flex items-center justify-center">
+            <button onClick={(e) => { e.stopPropagation(); toggle(); }} aria-label={running ? "Stop timer" : "Start timer"} className="relative h-[130px] w-[130px] rounded-full cursor-pointer" style={{ border: "none", background: "transparent" }}>
+              <span ref={bloomRef} className="absolute inset-0 rounded-full will-change-transform" style={{ background: `radial-gradient(circle, ${DEEP} 0%, ${LIGHT} 48%, transparent 72%)`, filter: "blur(2px)", opacity: 0.92 }} />
+              <span className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-[24px] font-display font-bold tabular-nums leading-none" style={{ color: IVORY }}>{running ? fmtClock(elapsed) : "00:00:00"}</span>
+                <span className="text-[8px] uppercase tracking-[0.2em] font-bold mt-1.5 text-center px-2" style={{ color: running ? LIGHT : "rgba(255,255,255,0.55)" }}>{running ? "lopend" : "kies & tik"}</span>
+              </span>
+            </button>
+          </div>
         </div>
-      </div>
-    </WidgetShell>
+      </PhotoGlassLayeredWidget>
+    </div>
   );
 }
