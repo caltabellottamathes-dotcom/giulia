@@ -35,7 +35,7 @@ export default function GlassPhotoLayeredWidget({
       {/* glass shell — basislaag */}
       <div
         className={cn("absolute inset-0 overflow-hidden", RADIUS[radius])}
-        style={{ background: "rgba(48,50,55,0.16)", backdropFilter: "blur(12px) saturate(1.35)", WebkitBackdropFilter: "blur(12px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 18px 44px -22px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.16)" }}
+        style={{ background: "rgba(48,50,55,0.18)", backdropFilter: "blur(22px) saturate(1.35)", WebkitBackdropFilter: "blur(22px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 1px 2px rgba(0,0,0,0.06), 0 18px 44px -22px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.16)" }}
       >
         <span className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${accent.accent} 18%, ${accent.accent} 82%, transparent)` }} />
         <span className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(130% 90% at 0% 0%, rgba(255,255,255,0.10), transparent 46%)" }} />

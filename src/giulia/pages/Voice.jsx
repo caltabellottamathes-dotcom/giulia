@@ -6,18 +6,18 @@ import { IMAGES } from "@/lib/images";
 import { ELEVEN_AGENT_ID } from "@/lib/voiceNavigation";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
-import { Mic, Phone, PhoneOff, Volume2, Loader2 } from "lucide-react";
+import { Loader2, Volume2 } from "lucide-react";
+import { WidgetHeader } from "@/system/widgets/primitives";
+
+const DEEP = "hsl(var(--d-giulia-deep))";
+const LIGHT = "hsl(var(--d-giulia-light))";
+const IVORY = "hsl(var(--ivory))";
 
 /**
- * Voice — een echt stemgesprek met de ElevenLabs voice agent (inline).
+ * Voice — een echt stemgesprek met de ElevenLabs voice agent.
+ * Visueel identiek aan de GIULIA'S HOTLINE widget: foto-shell + header +
+ * vierkante glas-card flush beneden met een audio-reactieve bloom.
  * Werkt zowel als losse pagina (/voice) als in het ModulePanel.
- *
- * De stem-agent (directe Gemini, conversatie-only) doet ZELF geen acties.
- * Elke uitgesproken gebruikersbeurt wordt hier onderschept en naar
- * chatWithGiulia doorgestuurd — die het echte werk doet: entity-CRUD,
- * navigatie (via AgentNavigation), geheugen, etc. De gesproken reply is
- * alleen bevestiging; het resultaat verschijnt op het scherm + in het
- * chat-paneel. Omzeilt de ElevenLabs client-tool bug (#603).
  */
 function VoiceInner() {
   const { activeModule } = usePanel();
@@ -25,19 +25,11 @@ function VoiceInner() {
   const endRef = useRef(null);
   const inPanel = activeModule === "voice";
 
-  // ── Stem → chatWithGiulia pijplijn ──────────────────────────────────────
-  // useConversation (v1.12.1) geeft GEEN messages-array terug, alleen `message`
-  // (enkelvoudig). Daarom gebruiken we de onMessage-callback: bij elke
-  // gesproken beurt bouwen we hier het transcript op EN sturen we de
-  // gebruikersbeurt direct naar chatWithGiulia — die het echte werk doet
-  // (entity-CRUD, navigatie via AgentNavigation, geheugen). De stem-agent
-  // zelf doet alleen conversatie (directe Gemini, geen tools) en geeft een
-  // korte mondelinge bevestiging. Omzeilt ElevenLabs client-tool bug (#603).
   const [transcript, setTranscript] = useState([]);
   const [giuliaWorking, setGiuliaWorking] = useState(false);
   const processedRef = useRef(new Set());
 
-  const { startSession, endSession, status, isSpeaking } = useConversation({
+  const { startSession, endSession, status, isSpeaking, getOutputVolume } = useConversation({
     agentId: ELEVEN_AGENT_ID,
     onMessage: (payload) => {
       const text = String(payload?.message || "").trim();
@@ -63,112 +55,98 @@ function VoiceInner() {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [transcript]);
 
-  // Sluit de sessie netjes af bij unmount (voorkomt hangend mic bij paneel-sluiten).
   useEffect(() => {
-    return () => {
-      try { endSession(); } catch { /* ignore */ }
-    };
+    return () => { try { endSession(); } catch { /* ignore */ } };
   }, [endSession]);
 
+  // audio-reactieve bloom (identiek aan de Concierge-widget)
+  const bloomRef = useRef(null);
+  const rafRef = useRef(0);
+  const levelRef = useRef(0);
+  useEffect(() => {
+    const loop = () => {
+      const t = performance.now() / 1000;
+      const raw = connected && typeof getOutputVolume === "function" ? (getOutputVolume() || 0) : 0;
+      levelRef.current = levelRef.current * 0.82 + raw * 0.18;
+      const level = Math.min(1, levelRef.current);
+      const breath = 0.08 * Math.sin(t * 1.1);
+      const scale = 0.9 + level * 0.5 + breath;
+      const opacity = 0.6 + level * 0.32 + 0.04 * Math.sin(t * 1.1);
+      const el = bloomRef.current;
+      if (el) { el.style.transform = `scale(${scale})`; el.style.opacity = String(opacity); }
+      rafRef.current = requestAnimationFrame(loop);
+    };
+    rafRef.current = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [connected, getOutputVolume]);
+
   const toggle = async () => {
-    if (connected) {
-      try { await endSession(); } catch {}
-    } else {
-      setTranscript([]);
-      processedRef.current.clear();
-      try { await startSession(); } catch {}
-    }
+    if (connected) { try { await endSession(); } catch {} }
+    else { setTranscript([]); processedRef.current.clear(); try { await startSession(); } catch {} }
   };
+
+  const statusLabel = connecting ? "VERBINDEN" : connected ? (isSpeaking ? "SPREEKT" : "LUISTERT") : "TIK OM TE BELLEN";
+  const statusColor = connected ? LIGHT : "rgba(255,255,255,0.55)";
+  const dotColor = connected ? LIGHT : "rgba(255,255,255,0.35)";
 
   return (
     <div className="h-full min-h-0 flex flex-col animate-fade-up">
       {!inPanel && (
         <div className="shrink-0 px-1 pb-4">
           <p className="text-[10px] uppercase tracking-[0.28em] text-foreground/70 mb-1.5 font-semibold">GIULIA · VOICE</p>
-          <h1 className="text-3xl font-display font-semibold tracking-[-0.02em] leading-none">Bellen met Giulia</h1>
-          <p className="text-sm text-foreground/60 mt-1.5">Echt gesprek met de ElevenLabs agent — voert direct acties uit en navigeert door je systeem.</p>
+          <h1 className="text-3xl font-display font-semibold tracking-[-0.02em] leading-none">GIULIA'S HOTLINE</h1>
+          <p className="text-sm text-foreground/60 mt-1.5">Echt gesprek met Giulia — voert direct acties uit en navigeert door je systeem.</p>
         </div>
       )}
 
       <div className={cn("flex-1 grid grid-cols-1 gap-4 min-h-0", inPanel ? "" : "lg:grid-cols-2 lg:gap-6")}>
-        {/* Voice stage */}
-        <div className="relative overflow-hidden rounded-[20px] min-h-[300px]">
+        {/* Voice stage — identiek aan de Concierge-widget */}
+        <div className="relative overflow-hidden rounded-[28px] min-h-[300px]">
+          <img src={IMAGES.wHotline} alt="Giulia's Hotline" className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-8 bg-gradient-to-b from-black/45 to-transparent flex items-start justify-between" style={{ color: IVORY }}>
+            <WidgetHeader label="GIULIA'S HOTLINE" type="pulse" />
+            <span className="flex items-center gap-1.5 pt-1">
+              <span className="h-1 w-1 rounded-full" style={{ background: dotColor, opacity: connected ? 1 : 0.4 }} />
+            </span>
+          </div>
+          <div className="absolute bottom-0 inset-x-0 h-[64%] bg-gradient-to-t from-black/65 via-black/30 to-transparent pointer-events-none" />
+          {/* vierkante glas-card flush beneden (GIULIA glas) */}
           <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `url(${IMAGES.wHotline})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 via-charcoal/30 to-charcoal/40" />
-
-          <div className="relative h-full flex flex-col items-center justify-center p-6 text-center">
-            <div className="relative mb-5">
-              {connected ? (
-                <div className="relative">
-                  <div className="absolute inset-0 rounded-full bg-olive/20 animate-ping" />
-                  <div className="relative h-24 w-24 rounded-full bg-olive/20 backdrop-blur-xl border border-white/25 flex items-center justify-center">
-                    <span className={cn("h-3 w-3 rounded-full bg-white/80", isSpeaking ? "animate-pulse-soft" : "")} />
-                  </div>
-                </div>
-              ) : (
-                <div className="h-24 w-24 rounded-full bg-olive/15 backdrop-blur-xl border border-white/20 flex items-center justify-center">
-                  <Mic className="h-9 w-9 text-white/70" />
-                </div>
-              )}
+            className="absolute left-1/2 bottom-0 -translate-x-1/2 w-[260px] h-[260px] rounded-[24px] flex flex-col items-center px-4 pt-3.5 pb-4 overflow-hidden"
+            style={{ background: "rgba(48,50,55,0.18)", backdropFilter: "blur(22px) saturate(1.35)", WebkitBackdropFilter: "blur(22px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 1px 2px rgba(0,0,0,0.06), 0 18px 44px -22px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.16)" }}
+          >
+            <div className="flex items-center gap-2 shrink-0 self-start">
+              <span className="h-1.5 w-1.5 rounded-full" style={{ background: dotColor, opacity: connected ? 1 : 0.6 }} />
+              <span className="text-[9px] uppercase tracking-[0.32em] font-bold" style={{ color: statusColor }}>{statusLabel}</span>
             </div>
-
-            <h2 className="text-lg font-display font-semibold text-white mb-1">
-              {connected ? (isSpeaking ? "Giulia spreekt" : "Giulia luistert") : "Bel Giulia"}
-            </h2>
-            <p className="text-xs text-white/60 mb-5 max-w-[26ch]">
-              {connecting
-                ? "Verbinden…"
-                : connected
-                ? "Live gesprek — spreek vrijuit, Giulia doet voor je wat nodig is"
-                : "Start een gesprek; Giulia voert acties uit en opent schermen voor je"}
-            </p>
-
-            <button
-              onClick={toggle}
-              className={cn(
-                "h-14 w-14 rounded-full backdrop-blur-xl border border-white/25 flex items-center justify-center hover:scale-105 transition-transform",
-                connected ? "bg-red-500/80" : "bg-olive/80"
-              )}
-            >
-              {connected ? <PhoneOff className="h-5 w-5 text-white" /> : <Phone className="h-5 w-5 text-white" />}
-            </button>
-
-            {connected && (
-              <div className="mt-5 flex items-center gap-1 h-7">
-                {Array.from({ length: 16 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-1 rounded-full bg-white/40 animate-pulse-soft"
-                    style={{ height: `${20 + Math.random() * 80}%`, animationDelay: `${i * 0.05}s` }}
-                  />
-                ))}
-              </div>
-            )}
+            <div className="relative flex-1 w-full overflow-hidden flex items-center justify-center">
+              <button
+                ref={bloomRef}
+                onClick={toggle}
+                aria-label={connected ? "Gesprek stoppen" : "Giulia bellen"}
+                className="h-[200px] w-[200px] rounded-full will-change-transform cursor-pointer"
+                style={{ background: `radial-gradient(circle, ${LIGHT} 0%, ${DEEP} 50%, transparent 75%)`, filter: "blur(4px)", opacity: 0.72, border: "none" }}
+              />
+            </div>
           </div>
         </div>
 
-        {/* Live transcript */}
-        <div className="glass-card rounded-[20px] p-5 flex flex-col min-h-0">
+        {/* Live transcript — zelfde GIULIA glas */}
+        <div
+          className="rounded-[20px] p-5 flex flex-col min-h-0"
+          style={{ background: "rgba(48,50,55,0.18)", backdropFilter: "blur(22px) saturate(1.35)", WebkitBackdropFilter: "blur(22px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.16)", color: IVORY }}
+        >
           <div className="flex items-center gap-2 mb-3">
-            <Volume2 className="h-4 w-4 text-olive" />
-            <h2 className="text-sm font-display font-semibold">Gesprek</h2>
+            <Volume2 className="h-4 w-4" style={{ color: "hsl(var(--olive))" }} />
+            <h2 className="text-sm font-display font-semibold uppercase tracking-[0.16em]">GESPREK</h2>
             {giuliaWorking && (
-              <span className="ml-auto flex items-center gap-1.5 text-[11px] text-olive">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                Giulia voert uit…
+              <span className="ml-auto flex items-center gap-1.5 text-[11px]" style={{ color: "hsl(var(--olive))" }}>
+                <Loader2 className="h-3 w-3 animate-spin" /> Giulia voert uit…
               </span>
             )}
           </div>
-
           {transcript.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
+            <p className="text-sm text-center py-8" style={{ color: "rgba(255,255,255,0.55)" }}>
               {connected ? "Zeg iets om te beginnen…" : "Start een gesprek om Giulia's antwoorden live te zien"}
             </p>
           ) : (
@@ -178,10 +156,8 @@ function VoiceInner() {
                 return (
                   <div key={m.id} className={cn("flex", isUser ? "justify-end" : "justify-start")}>
                     <div
-                      className={cn(
-                        "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
-                        isUser ? "bg-charcoal text-ivory rounded-br-md" : "glass-1 rounded-bl-md"
-                      )}
+                      className={cn("max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed", isUser ? "bg-charcoal text-ivory rounded-br-md" : "rounded-bl-md")}
+                      style={!isUser ? { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" } : {}}
                     >
                       {m.text}
                     </div>

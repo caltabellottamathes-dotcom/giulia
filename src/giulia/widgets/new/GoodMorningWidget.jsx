@@ -52,7 +52,7 @@ export default function GoodMorningWidget() {
             <div className="relative h-28 w-28">
               {[0, 1, 2].map((i) => (
                 <motion.div key={i} className="absolute inset-0" animate={{ rotate: 360 }} transition={{ duration: 3 + i, repeat: Infinity, ease: "linear" }}>
-                  <span className="absolute top-0 left-1/2 h-3 w-3 -ml-1.5 rounded-full" style={{ background: i === 0 ? URGENT : LIGHT }} />
+                  <span className="absolute top-0 left-1/2 h-3 w-3 -ml-1.5 rounded-full" style={{ background: i === 0 ? DEEP : LIGHT }} />
                 </motion.div>
               ))}
               <span className="absolute inset-0 m-auto h-3.5 w-3.5 rounded-full" style={{ background: DEEP }} />
@@ -65,7 +65,7 @@ export default function GoodMorningWidget() {
           <span className="text-[88px] font-display font-bold leading-none tracking-[-0.04em] tabular-nums mb-1" style={{ color: LIGHT, opacity: 0.32 }}>{countdownHHMM}</span>
           <div className="flex items-end gap-2">
             <div className="flex items-center gap-1 pb-3">
-              <motion.span className="h-5 w-5 rounded-full" style={{ background: URGENT }}
+              <motion.span className="h-5 w-5 rounded-full" style={{ background: LIGHT }}
                 animate={{ y: [0, -16, 0] }} transition={{ duration: 0.9, repeat: Infinity, ease: "easeInOut" }} />
             </div>
             <span className="text-[88px] font-display font-bold leading-none tracking-[-0.04em] tabular-nums">{alarmStr}</span>

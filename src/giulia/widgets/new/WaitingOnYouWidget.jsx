@@ -57,7 +57,7 @@ export default function WaitingOnYouWidget() {
       >
         {/* ghost-getal — enorm, asymmetrisch, half achter foto + half achter tekst */}
         <div className="pointer-events-none absolute" style={{ left: "44%", bottom: "0%", transform: "translateX(-50%)" }}>
-          <span style={{ color: LIGHT, opacity: 0.2 }}>
+          <span style={{ color: "hsl(var(--olive))", opacity: 0.2 }}>
             <CountUp value={total} className="text-[320px] font-display font-black leading-none tracking-[-0.06em]" />
           </span>
         </div>

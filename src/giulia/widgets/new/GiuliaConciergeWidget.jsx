@@ -60,8 +60,8 @@ function ConciergeInner() {
   };
 
   const statusLabel = connecting ? "VERBINDEN" : connected ? (isSpeaking ? "SPREEKT" : "LUISTERT") : "TIK OM TE BELLEN";
-  const statusColor = isSpeaking ? URGENT : connected ? LIGHT : "rgba(255,255,255,0.55)";
-  const dotColor = isSpeaking ? URGENT : connected ? LIGHT : "rgba(255,255,255,0.35)";
+  const statusColor = connected ? LIGHT : "rgba(255,255,255,0.55)";
+  const dotColor = connected ? LIGHT : "rgba(255,255,255,0.35)";
 
   return (
     <WidgetShell domain="giulia" radius="large" className="w-full h-[480px] min-h-0">
@@ -86,14 +86,15 @@ function ConciergeInner() {
       {/* donkere gloed achter het glas voor leesbaarheid */}
       <div className="absolute bottom-0 inset-x-0 h-[64%] bg-gradient-to-t from-black/65 via-black/30 to-transparent pointer-events-none" />
 
-      {/* transparant glas — vierkant, 4 hoeken, flush beneden */}
+      {/* transparant glas — vierkant, 4 hoeken, flush beneden (GIULIA glas) */}
       <div
         className="absolute left-1/2 bottom-0 -translate-x-1/2 w-[260px] h-[260px] rounded-[24px] flex flex-col items-center px-4 pt-3.5 pb-4 overflow-hidden"
         style={{
-          background: "rgba(255,255,255,0.06)",
-          backdropFilter: "blur(4px)",
-          WebkitBackdropFilter: "blur(4px)",
-          boxShadow: "0 -18px 44px -14px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.22)",
+          background: "rgba(48,50,55,0.18)",
+          backdropFilter: "blur(22px) saturate(1.35)",
+          WebkitBackdropFilter: "blur(22px) saturate(1.35)",
+          border: "1px solid rgba(255,255,255,0.12)",
+          boxShadow: "0 1px 2px rgba(0,0,0,0.06), 0 18px 44px -22px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.16)",
         }}
       >
         {/* status — bovenin het glas, links uitgelijnd */}
@@ -113,7 +114,7 @@ function ConciergeInner() {
             onClick={toggle}
             aria-label={connected ? "Gesprek stoppen" : "Giulia bellen"}
             className="h-[200px] w-[200px] rounded-full will-change-transform cursor-pointer"
-            style={{ background: `radial-gradient(circle, ${URGENT} 0%, ${DEEP} 45%, transparent 72%)`, filter: "blur(4px)", opacity: 0.72, border: "none" }}
+            style={{ background: `radial-gradient(circle, ${LIGHT} 0%, ${DEEP} 50%, transparent 75%)`, filter: "blur(4px)", opacity: 0.72, border: "none" }}
           />
         </div>
 

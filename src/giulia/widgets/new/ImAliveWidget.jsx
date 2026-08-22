@@ -59,7 +59,7 @@ export default function ImAliveWidget() {
                 <linearGradient id="ekg-stroke" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0%" stopColor={DEEP} />
                   <stop offset="60%" stopColor={LIGHT} />
-                  <stop offset="100%" stopColor={URGENT} />
+                  <stop offset="100%" stopColor={LIGHT} />
                 </linearGradient>
                 <linearGradient id="ekg-fill" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={DEEP} stopOpacity="0.32" />
@@ -87,12 +87,12 @@ export default function ImAliveWidget() {
 
             {/* beat-dot die pompt */}
             {active && (
-              <motion.span className="absolute rounded-full" style={{ left: "47%", top: "18%", width: 10, height: 10, background: URGENT, boxShadow: `0 0 14px ${URGENT}` }}
+              <motion.span className="absolute rounded-full" style={{ left: "47%", top: "18%", width: 10, height: 10, background: LIGHT, boxShadow: `0 0 14px ${LIGHT}` }}
                 animate={{ scale: [1, 1.9, 1], opacity: [1, 0.35, 1] }} transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }} />
             )}
 
             <span className="absolute right-0 top-0 flex items-center gap-1 text-[7px] uppercase tracking-[0.18em] font-bold" style={{ color: IVORY }}>
-              <motion.span className="h-1.5 w-1.5 rounded-full" style={{ background: active ? URGENT : "rgba(255,255,255,0.35)" }}
+              <motion.span className="h-1.5 w-1.5 rounded-full" style={{ background: active ? LIGHT : "rgba(255,255,255,0.35)" }}
                 animate={active ? { opacity: [0.3, 1, 0.3] } : { opacity: 0.4 }} transition={{ duration: 1, repeat: active ? Infinity : 0 }} />
               {active ? "online" : "dormant"}
             </span>
@@ -100,13 +100,13 @@ export default function ImAliveWidget() {
 
           <div className="flex items-end justify-between mt-1.5">
             <motion.span className="text-[17px] font-display font-bold uppercase tracking-tight leading-none"
-              animate={active ? { color: [URGENT, LIGHT, URGENT] } : { color: "rgba(255,255,255,0.5)" }}
+              animate={active ? { color: [LIGHT, DEEP, LIGHT] } : { color: "rgba(255,255,255,0.5)" }}
               transition={{ duration: 1.4, repeat: active ? Infinity : 0, ease: "easeInOut" }}>
               {active ? "ALIVE" : "DORMANT"}
             </motion.span>
             <div className="flex items-center gap-1">
               {STATES.map((s, i) => (
-                <span key={s} className="text-[6px] uppercase tracking-[0.1em] font-bold" style={{ opacity: active && i === idx ? 1 : 0.3, color: active && i === idx ? URGENT : IVORY }}>{s[0]}</span>
+                <span key={s} className="text-[6px] uppercase tracking-[0.1em] font-bold" style={{ opacity: active && i === idx ? 1 : 0.3, color: active && i === idx ? LIGHT : IVORY }}>{s[0]}</span>
               ))}
             </div>
           </div>

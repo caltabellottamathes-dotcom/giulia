@@ -18,7 +18,7 @@ const URGENT = "hsl(var(--d-giulia-urgent))"; // urgent
 const GROUPS = [
   { key: "observaties", label: "Observaties", r: 50, color: DEEP },
   { key: "self", label: "Self", r: 38, color: LIGHT },
-  { key: "journal", label: "Journal", r: 26, color: URGENT },
+  { key: "journal", label: "Journal", r: 26, color: "hsl(var(--ridge))" },
 ];
 
 export default function WhatIveNoticedWidget() {
@@ -46,7 +46,6 @@ export default function WhatIveNoticedWidget() {
         overhang={0}
         domain="giulia"
         radius="large"
-        glassBlur={5}
         overlay="bg-gradient-to-t from-black/55 via-black/25 to-black/5"
         photoChildren={
           <div className="absolute" style={{ left: "50%", top: "43%", transform: "translate(-50%,-50%)" }}>
