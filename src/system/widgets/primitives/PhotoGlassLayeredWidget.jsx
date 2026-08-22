@@ -23,7 +23,7 @@ export default function PhotoGlassLayeredWidget({
   photoChildren,
   children,
   className,
-  glassBlur = 10,
+  glassBlur = 14,
   glassBorder = "1px solid rgba(255,255,255,0.18)",
 }) {
   const accent = accentFor(domain);

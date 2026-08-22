@@ -5,7 +5,7 @@ import { useAgendaChecklist } from "@/self/widgets/editorial13/CheckableShell";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ad59aa090_Whatmatters_GIULIA.jpeg";
 const PISTACHIO = "hsl(var(--giulia-pistachio))"; // 2e accentkleur (GIULIA)
-const DUR_MIN = 15, DUR_MAX = 180, H_MIN = 28, H_MAX = 140;
+const DUR_MIN = 15, DUR_MAX = 180, H_MIN = 18, H_MAX = 78;
 
 /** Staafhoogte op basis van afspraakduur (min). */
 function durHeight(dur) {
@@ -18,7 +18,7 @@ function durHeight(dur) {
  *  2e accent (pistachio) wisselen; urgent → #d5e24a. */
 function PlanningBars({ items }) {
   return (
-    <div className="flex items-end gap-2 h-[160px]">
+    <div className="flex items-end gap-2 h-[92px]">
       {items.map((it, i) => {
         const num = String(i + 1).padStart(2, "0");
         const urgent = !!it.urgent;
@@ -36,9 +36,9 @@ function PlanningBars({ items }) {
             </span>
             {status === "active" && (
               <motion.span
-                className="mb-1 h-4 w-4 rounded-full"
+                className="mb-1 h-2 w-2 rounded-full"
                 style={{ background: color }}
-                animate={{ y: [0, -12, 0], opacity: [1, 0.45, 1] }}
+                animate={{ y: [0, -6, 0], opacity: [1, 0.45, 1] }}
                 transition={{ duration: 0.7, repeat: Infinity, ease: "easeInOut" }}
               />
             )}
@@ -84,9 +84,9 @@ export default function WhatMattersLayeredWidget() {
   const mm = String(now.getMinutes()).padStart(2, "0");
 
   return (
-    <div className="w-full min-h-[320px]">
+    <div className="w-full h-[300px]">
       <GlassPhotoLayeredWidget
-        shape="1:1"
+        shape="16:9"
         photo={PHOTO}
         photoPosition="left"
         photoFraction={0.40}
@@ -104,11 +104,11 @@ export default function WhatMattersLayeredWidget() {
           </div>
         }
       >
-        <WidgetHeader type="energy" label="What Matters?" count={total ? `${doneCount}/${total}` : ""} />
+        <WidgetHeader type="agenda" label="What Matters?" count={total ? `${doneCount}/${total}` : ""} />
         <h3 className="text-[22px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current">
           A PLAN FOR TODAY!
         </h3>
-        <p className="text-[10px] uppercase tracking-[0.18em] mt-1" style={{ color: "hsl(var(--olive))", opacity: 0.9 }}>
+        <p className="text-[10px] uppercase tracking-[0.18em] mt-1" style={{ color: PISTACHIO, opacity: 0.75 }}>
           {weekday} {dayNum} {month} · {hh}:{mm}
         </p>
         <div className="flex-1 min-h-2" />

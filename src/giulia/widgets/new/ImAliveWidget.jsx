@@ -23,10 +23,9 @@ export default function ImAliveWidget() {
   const [now, setNow] = useState(Date.now());
   const [idx, setIdx] = useState(0);
   const [starting, setStarting] = useState(false);
-  const [manualActive, setManualActive] = useState(false);
 
   const lastTs = activity?.[0]?.created_date || activity?.[0]?.timestamp;
-  const active = manualActive || (!!lastTs && now - new Date(lastTs).getTime() < 10 * 60 * 1000);
+  const active = !!lastTs && now - new Date(lastTs).getTime() < 10 * 60 * 1000;
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 15000);
@@ -42,14 +41,13 @@ export default function ImAliveWidget() {
   const start = async () => {
     if (starting) return;
     setStarting(true);
-    setManualActive(true);
     try { await base44.functions.invoke("startGiulia", {}); } catch { /* ignore */ }
     finally { setStarting(false); }
   };
 
   return (
     <div className="w-full max-w-[240px] mx-auto aspect-square">
-      <WidgetShell domain="giulia" radius="large" interactive onClick={start} className="h-full min-h-0 ring-0 border-0" style={{ boxShadow: "none" }}>
+      <WidgetShell domain="giulia" radius="large" interactive onClick={start} className="h-full min-h-0">
         <div className="flex flex-col h-full p-3" style={{ color: IVORY }}>
           <WidgetHeader type="pulse" label="I'M ALIVE!" />
 
