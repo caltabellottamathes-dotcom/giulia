@@ -21,6 +21,10 @@ import { MODULES } from "@/lib/moduleRegistry";
 
 const WIDGET_SPAN = { giulia: 2, goodmorning: 2, concierge: 1, approvals: 2, insights: 1, imalive: 1, giuliaquestions: 1, projects: 2, agenda: 2, email: 2, documents: 2, updates: 2, household: 2, dailystate: 2, development: 2, beeldbank: 2 };
 
+// Some modules open under a different key than their widget — map them so the
+// floating "widget naast het paneel" resolves to the right component.
+const MODULE_WIDGET_OVERRIDE = { jedag: "giulia", wantstoknow: "giuliaquestions", voice: "concierge" };
+
 const BOARD_BG = {
   now: IMAGES.dashboardNow,
   life: IMAGES.dashboardLife,
@@ -196,11 +200,17 @@ export default function Home() {
       </div>
 
       {/* Floating widget when a panel is open */}
-      {panelOpen && WIDGETS[activeModule] && (() => { const W = WIDGETS[activeModule].Component; return (
-        <div className="hidden lg:block fixed left-10 bottom-[5.5rem] z-20 w-[560px] animate-fade-up">
-          <W />
-        </div>
-      ); })()}
+      {panelOpen && (() => {
+        const wType = MODULE_WIDGET_OVERRIDE[activeModule] || activeModule;
+        const def = WIDGETS[wType];
+        if (!def) return null;
+        const W = def.Component;
+        return (
+          <div className="hidden lg:block fixed left-10 bottom-[5.5rem] z-20 w-[560px] animate-fade-up">
+            <W />
+          </div>
+        );
+      })()}
 
       {/* Content */}
       <div className={cn("relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[6vh] lg:pt-0", panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100")}>
