@@ -88,7 +88,7 @@ function VoiceInner() {
     <div className={cn("relative overflow-hidden", bleed ? "h-full w-full" : "rounded-[28px] min-h-[300px]")}>
       <img src={IMAGES.wHotline} alt="Giulia's Hotline" className="absolute inset-0 w-full h-full object-cover" />
       <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-8 bg-gradient-to-b from-black/45 to-transparent flex items-start justify-between" style={{ color: IVORY }}>
-        <WidgetHeader label="GIULIA'S HOTLINE" type="pulse" />
+        <WidgetHeader label="GIULIA'S HOTLINE!" type="pulse" />
         <span className="flex items-center gap-1.5 pt-1">
           <span className="h-1 w-1 rounded-full" style={{ background: dotColor, opacity: connected ? 1 : 0.4 }} />
         </span>
@@ -123,7 +123,7 @@ function VoiceInner() {
     <div className="h-full min-h-0 flex flex-col animate-fade-up">
       <div className="shrink-0 px-1 pb-4">
         <p className="text-[10px] uppercase tracking-[0.28em] text-foreground/70 mb-1.5 font-semibold">GIULIA · VOICE</p>
-        <h1 className="text-3xl font-display font-semibold tracking-[-0.02em] leading-none">GIULIA'S HOTLINE</h1>
+        <h1 className="text-3xl font-display font-semibold tracking-[-0.02em] leading-none">GIULIA'S HOTLINE!</h1>
         <p className="text-sm text-foreground/60 mt-1.5">Echt gesprek met Giulia — voert direct acties uit en navigeert door je systeem.</p>
       </div>
       <div className="flex-1 grid grid-cols-1 gap-4 min-h-0 lg:grid-cols-2 lg:gap-6">

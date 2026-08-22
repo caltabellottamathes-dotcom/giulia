@@ -54,6 +54,7 @@ export default function WaitingOnYouWidget() {
         overhang={0}
         domain="giulia"
         radius="large"
+        onClick={() => openModule("approvals")}
         photoOverlay="bg-gradient-to-t from-black/45 via-black/12 to-transparent"
       >
         {/* ghost-getal — enorm, asymmetrisch, half achter foto + half achter tekst */}
@@ -81,7 +82,7 @@ export default function WaitingOnYouWidget() {
               return (
                 <motion.button
                   key={a.id}
-                  onClick={() => openModule("approvals")}
+                  onClick={(e) => { e.stopPropagation(); openModule("approvals"); }}
                   initial={{ opacity: 0, x: 8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.08, duration: 0.4 }}

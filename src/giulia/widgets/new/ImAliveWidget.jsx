@@ -75,10 +75,7 @@ export default function ImAliveWidget() {
                 <>
                   <path d={AREA} fill="url(#ekg-fill)" stroke="none" opacity="0.35" />
                   <path d={PATH} fill="none" stroke="url(#ekg-stroke)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.28" />
-                  <motion.path d={PATH} fill="none" stroke="url(#ekg-stroke)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" filter="url(#ekg-glow)"
-                    pathLength={100} strokeDasharray="14 86"
-                    animate={{ strokeDashoffset: [0, -100] }}
-                    transition={{ duration: 2.2, repeat: Infinity, ease: "linear" }} />
+                  <path d={PATH} fill="none" stroke="url(#ekg-stroke)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" filter="url(#ekg-glow)" pathLength={100} strokeDasharray="14 86" className="ekg-sweep" />
                 </>
               ) : (
                 <path d="M 0 50 L 100 50" fill="none" stroke={DEEP} strokeOpacity="0.45" strokeWidth="1" />

@@ -501,6 +501,9 @@
 }
 
 
+@keyframes ekg-sweep { to { stroke-dashoffset: -100; } }
+.ekg-sweep { animation: ekg-sweep 2.2s linear infinite; }
+
 /* Voice highlight — tijdelijke markering door de ElevenLabs agent */
 .voice-highlight {
   outline: 3px solid hsl(var(--olive));

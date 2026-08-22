@@ -46,7 +46,8 @@ export default function WhatIveNoticedWidget() {
         overhang={0}
         domain="giulia"
         radius="large"
-        overlay="bg-gradient-to-t from-black/55 via-black/25 to-black/5"
+        onClick={() => openModule("insights")}
+        overlay="bg-gradient-to-t from-black/30 via-black/12 to-transparent"
         photoChildren={
           <div className="absolute" style={{ left: "50%", top: "43%", transform: "translate(-50%,-50%)" }}>
             <div className="relative w-[250px] h-[250px]">
@@ -80,10 +81,10 @@ export default function WhatIveNoticedWidget() {
         }
       >
         {/* strip-card: header + 3 groepen */}
-        <WidgetHeader type="energy" label="WHAT I'VE NOTICED" />
+        <WidgetHeader type="energy" label="WHAT I'VE NOTICED." />
         <div className="flex justify-between gap-1 mt-1.5">
           {GROUPS.map((g) => (
-            <button key={g.key} onClick={() => openModule("insights")} className="flex items-center gap-1.5 text-left hover:opacity-80 transition">
+            <button key={g.key} onClick={(e) => { e.stopPropagation(); openModule("insights"); }} className="flex items-center gap-1.5 text-left hover:opacity-80 transition">
               <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: g.color }} />
               <div className="flex flex-col leading-none">
                 <span className="text-[7.5px] uppercase tracking-[0.16em] opacity-50">{g.label}</span>

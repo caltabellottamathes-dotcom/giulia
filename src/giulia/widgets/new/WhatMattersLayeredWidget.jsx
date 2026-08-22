@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { GlassPhotoLayeredWidget, WidgetHeader, CheckList, URGENT } from "@/system/widgets/primitives";
 import { useAgendaChecklist } from "@/self/widgets/editorial13/CheckableShell";
+import { usePanel } from "@/lib/PanelContext";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ad59aa090_Whatmatters_GIULIA.jpeg";
 const PISTACHIO = "hsl(var(--giulia-pistachio))"; // 2e accentkleur (GIULIA)
@@ -58,6 +59,7 @@ function PlanningBars({ items }) {
  *  "A plan for today!" + datum/tijd + live staafgrafiek; foto-card links met
  *  de afvinkbare agenda-checklist (done → bijbehorende staaf groeit). */
 export default function WhatMattersLayeredWidget() {
+  const { openModule } = usePanel();
   const { items: rawItems, total, closed, close, reopen } = useAgendaChecklist();
   const [states, setStates] = useState({});
   const cycle = (i) => setStates((s) => {
@@ -65,7 +67,7 @@ export default function WhatMattersLayeredWidget() {
     const next = cur === "idle" ? "active" : cur === "active" ? "done" : "idle";
     return { ...s, [i]: next };
   });
-  const PALETTE = ["var(--tile-accent)", PISTACHIO, BLUE];
+  const PALETTE = ["var(--tile-accent)", BLUE, PISTACHIO];
   const items = rawItems.map((it, i) => {
     const st = states[i] || "idle";
     const color = it.urgent ? URGENT : PALETTE[i % 3];
@@ -94,9 +96,10 @@ export default function WhatMattersLayeredWidget() {
         overhang={0}
         domain="giulia"
         radius="large"
+        onClick={() => openModule("jedag")}
         photoOverlay="bg-gradient-to-t from-black/40 via-black/20 to-black/10"
         photoChildren={
-          <div className="absolute inset-0 p-3 flex flex-col gap-1.5">
+          <div className="absolute inset-0 p-3 flex flex-col gap-1.5" onClick={(e) => e.stopPropagation()}>
             {total > 0 ? (
               <CheckList items={items} onToggle={cycle} closed={closed} onClose={close} onReopen={reopen} maxH="100%" />
             ) : (

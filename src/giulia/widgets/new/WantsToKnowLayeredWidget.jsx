@@ -54,6 +54,7 @@ export default function WantsToKnowLayeredWidget() {
         overhang={0}
         domain="giulia"
         radius="large"
+        onClick={() => openModule("wantstoknow")}
         overlay="bg-gradient-to-t from-black/55 via-black/25 to-black/5"
       >
         <WidgetHeader type="pulse" label="WANTS TO KNOW!" />
@@ -66,7 +67,7 @@ export default function WantsToKnowLayeredWidget() {
             return (
               <motion.button
                 key={g.key}
-                onClick={() => openModule("wantstoknow")}
+                onClick={(e) => { e.stopPropagation(); openModule("wantstoknow"); }}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.08, duration: 0.4 }}
