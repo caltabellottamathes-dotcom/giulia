@@ -40,8 +40,11 @@ export default function WhatsAppChatFocusWidget() {
   }, [contacts]);
 
   const received = useMemo(() => (msgs || []).filter((m) => m.direction === "received"), [msgs]);
-  const unread = useMemo(() => received.filter((m) => m.status === "unread").slice(0, 5), [received]);
-  const totalUnread = received.filter((m) => m.status === "unread").length;
+  const unreadAll = useMemo(() => received.filter((m) => m.status === "unread"), [received]);
+  const totalUnread = unreadAll.length;
+  // Toon de 5 laatste ongelezen; zijn er geen, dan vallen de 5 laatste
+  // ontvangen gesprekken in als rustige fallback.
+  const list = (unreadAll.length > 0 ? unreadAll : received).slice(0, 5);
 
   const selectedContact = (contacts || []).find((c) => c.id === selectedId);
   const conversation = useMemo(() => {
@@ -152,9 +155,9 @@ export default function WhatsAppChatFocusWidget() {
             <span className="text-[9px] uppercase tracking-[0.22em] font-bold text-ivory/55">Ongelezen</span>
             {totalUnread > 0 && <span className="text-[9px] font-mono tabular-nums" style={{ color: URGENT }}>{totalUnread} nieuw</span>}
           </div>
-          {unread.length === 0 ? (
-            <p className="text-[11px] text-ivory/55 px-1 py-1">Geen ongelezen berichten.</p>
-          ) : unread.map((m) => {
+          {list.length === 0 ? (
+            <p className="text-[11px] text-ivory/55 px-1 py-1">Nog geen berichten.</p>
+          ) : list.map((m) => {
             const name = (m.contact_id && contactName[m.contact_id]) || "Onbekend";
             const active = selectedId === m.contact_id;
             return (
@@ -164,7 +167,7 @@ export default function WhatsAppChatFocusWidget() {
                 className="flex items-start gap-2 py-1.5 px-1.5 rounded-lg text-left transition-colors"
                 style={{ background: active ? "rgba(255,255,255,0.10)" : "transparent" }}
               >
-                <span className="mt-1 h-1.5 w-1.5 rounded-full shrink-0" style={{ background: URGENT }} />
+                <span className="mt-1 h-1.5 w-1.5 rounded-full shrink-0" style={{ background: m.status === "unread" ? URGENT : "rgba(255,255,255,0.3)" }} />
                 <div className="flex-1 min-w-0">
                   <p className="text-[12px] font-semibold leading-tight truncate" style={{ color: IVORY }}>{name}</p>
                   <p className="text-[11px] leading-tight line-clamp-2 text-ivory/70">{m.message}</p>
