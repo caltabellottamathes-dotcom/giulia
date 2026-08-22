@@ -43,6 +43,15 @@ export default async function (req) {
       return Response.json({ status: res.status, chats: data });
     }
 
+    if (action === "restart") {
+      const res = await fetch(`${apiUrl}/instance/restart/${instance}`, {
+        method: "POST",
+        headers: { apikey: apiKey },
+      });
+      const data = await res.json().catch(() => null);
+      return Response.json({ status: res.status, restart: data });
+    }
+
     if (action === "status") {
       const res = await fetch(`${apiUrl}/instance/connect/${instance}`, {
         headers: { apikey: apiKey },
