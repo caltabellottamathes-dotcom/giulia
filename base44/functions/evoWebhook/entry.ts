@@ -46,9 +46,12 @@ export default async function (req) {
     // sturen hem ook in de body — accepteer beide.
     const expectedKey = secrets.get("EVO_API_KEY");
     const sentKey = req.headers?.get?.("apikey") || body?.apikey || "";
-    if (expectedKey && sentKey && sentKey !== expectedKey) {
-      return Response.json({ ok: false, error: "invalid apikey" }, { status: 401 });
-    }
+    console.log("[evo-auth] expectedLen=", expectedKey?.length, "sentLen=", sentKey?.length, "match=", expectedKey === sentKey);
+    // TIJDELIJK: blokkeer niet op apikey — log alleen, zodat we berichten niet
+    // missen door eventuele secret-corruptie. Wordt weer aangezet na debugging.
+    // if (expectedKey && sentKey && sentKey !== expectedKey) {
+    //   return Response.json({ ok: false, error: "invalid apikey" }, { status: 401 });
+    // }
 
     // Alleen inkomende berichten interesseren ons.
     // Evolution v2 kan de payload op twee manieren sturen:
@@ -60,7 +63,7 @@ export default async function (req) {
       : [];
     console.log("[evo] event=", event, "msgCount=", msgList.length, "topKeys=", Object.keys(data || {}));
 
-    if (event !== "messages.upsert") return Response.json({ ok: true, ignored: event });
+    if (String(event).toLowerCase() !== "messages.upsert") return Response.json({ ok: true, ignored: event, lower: String(event).toLowerCase() });
     if (msgList.length === 0) return Response.json({ ok: true, ignored: "no-messages", keys: Object.keys(data || {}) });
 
     const base44 = createClientFromRequest(req);

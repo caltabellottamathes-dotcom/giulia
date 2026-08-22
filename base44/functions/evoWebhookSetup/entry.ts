@@ -35,6 +35,22 @@ export default async function (req) {
       return Response.json({ status: res.status, body: text.slice(0, 300), url: webhookUrl });
     }
 
+    if (action === "chats") {
+      const res = await fetch(`${apiUrl}/chat/find/${instance}?limit=5`, {
+        headers: { apikey: apiKey },
+      });
+      const data = await res.json().catch(() => null);
+      return Response.json({ status: res.status, chats: data });
+    }
+
+    if (action === "status") {
+      const res = await fetch(`${apiUrl}/instance/connect/${instance}`, {
+        headers: { apikey: apiKey },
+      });
+      const data = await res.json().catch(() => null);
+      return Response.json({ status: res.status, connection: data });
+    }
+
     if (action === "query") {
       const res = await fetch(`${apiUrl}/webhook/find/${instance}`, {
         headers: { apikey: apiKey },
@@ -47,16 +63,20 @@ export default async function (req) {
       const webhookUrl = body.webhook_url || body.url;
       if (!webhookUrl) return Response.json({ error: "webhook_url required" }, { status: 400 });
 
-      // Evolution v2 set-webhook payload
+      // Evolution v2 set-webhook payload — `webhook` must be an object
       const payload = {
-        url: webhookUrl,
-        webhook_by_events: true,
-        events: [
-          "messages.upsert",
-          "messages.update",
-          "connection.update",
-          "qrcode.updated",
-        ],
+        webhook: {
+          url: webhookUrl,
+          enabled: true,
+          webhook_by_events: true,
+          webhook_base64: false,
+          events: [
+            "MESSAGES_UPSERT",
+            "MESSAGES_UPDATE",
+            "CONNECTION_UPDATE",
+            "QRCODE_UPDATED",
+          ],
+        },
       };
       const res = await fetch(`${apiUrl}/webhook/set/${instance}`, {
         method: "POST",
