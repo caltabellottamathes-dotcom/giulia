@@ -32,7 +32,7 @@ const Timeline = () => (
       <span key={i} className="w-[2px] rounded-full" style={{ height: `${h}%`, background: ACC, opacity: 0.35 }} />
     ))}
     <motion.span
-      className="absolute top-0 w-[3px] rounded-full" style={{ background: ACC }}
+      className="absolute top-0 h-full w-[3px] rounded-full" style={{ background: ACC }}
       animate={{ left: ["-2%", "100%"] }}
       transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", repeatType: "reverse" }}
     />

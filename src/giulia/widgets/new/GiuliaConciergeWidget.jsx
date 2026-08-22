@@ -67,6 +67,8 @@ function ConciergeInner() {
     <WidgetShell domain="giulia" radius="large" className="w-full h-[480px] min-h-0">
       {/* foto als grote shell */}
       <img src={PHOTO} alt="Giulia's Hotline" className="absolute inset-0 w-full h-full object-cover" />
+      {/* klik op de foto opent het voice-paneel */}
+      <button type="button" onClick={() => openModule("voice")} aria-label="Open voice-paneel" className="absolute inset-0 z-0 cursor-pointer" />
 
       {/* bovenaan in de foto: beweegde header + titel */}
       <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-8 bg-gradient-to-b from-black/45 to-transparent flex items-start justify-between" style={{ color: IVORY }}>
@@ -84,14 +86,14 @@ function ConciergeInner() {
       {/* donkere gloed achter het glas voor leesbaarheid */}
       <div className="absolute bottom-0 inset-x-0 h-[64%] bg-gradient-to-t from-black/65 via-black/30 to-transparent pointer-events-none" />
 
-      {/* transparant glas — afgeronde bovenhoeken, omhooglopende schaduw */}
+      {/* transparant glas — vierkant, 4 hoeken, flush beneden */}
       <div
-        className="absolute inset-x-0 bottom-0 rounded-t-[24px] h-[352px] flex flex-col items-center px-4 pt-3.5 pb-5 overflow-hidden"
+        className="absolute left-1/2 bottom-0 -translate-x-1/2 w-[260px] h-[260px] rounded-[24px] flex flex-col items-center px-4 pt-3.5 pb-4 overflow-hidden"
         style={{
           background: "rgba(255,255,255,0.06)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
-          boxShadow: "0 -28px 60px -14px rgba(0,0,0,0.50), 0 -10px 22px -10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.22)",
+          backdropFilter: "blur(4px)",
+          WebkitBackdropFilter: "blur(4px)",
+          boxShadow: "0 -18px 44px -14px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.22)",
         }}
       >
         {/* status — bovenin het glas, links uitgelijnd */}

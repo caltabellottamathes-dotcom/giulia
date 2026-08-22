@@ -36,9 +36,9 @@ function PlanningBars({ items }) {
             </span>
             {status === "active" && (
               <motion.span
-                className="mb-1 h-2 w-2 rounded-full"
+                className="mb-1 h-4 w-4 rounded-full"
                 style={{ background: color }}
-                animate={{ y: [0, -6, 0], opacity: [1, 0.45, 1] }}
+                animate={{ y: [0, -9, 0] }}
                 transition={{ duration: 0.7, repeat: Infinity, ease: "easeInOut" }}
               />
             )}
@@ -108,7 +108,7 @@ export default function WhatMattersLayeredWidget() {
         <h3 className="text-[22px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current">
           A PLAN FOR TODAY!
         </h3>
-        <p className="text-[10px] uppercase tracking-[0.18em] mt-1" style={{ color: PISTACHIO, opacity: 0.75 }}>
+        <p className="text-[10px] uppercase tracking-[0.18em] mt-1" style={{ color: "hsl(var(--olive))" }}>
           {weekday} {dayNum} {month} · {hh}:{mm}
         </p>
         <div className="flex-1 min-h-2" />
