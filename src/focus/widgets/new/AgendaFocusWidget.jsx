@@ -9,11 +9,10 @@ const PHOTO = IMAGES.focusAlcove;
 const LIGHT = "hsl(var(--d-focus-light))";
 const DEEP = "hsl(var(--d-focus-deep))";
 
-/** NextUpFocusWidget — G·21x9·L·SIDE · "NEXT UP!"
- *  Focus-twin van Good Morning. Foto = focusAlcove. Glas-rechts: header +
- *  live aftelklok (HH:MM:SS) tot de volgende Focus-agenda-afspraak + de
- *  tijd + titel. Burgundy/cream. */
-export default function NextUpFocusWidget() {
+/** AgendaFocusWidget — G·21x9·L·SIDE · "What's Happening?"
+ *  Foto = focusAlcove. Glas-rechts: header + live aftelklok (HH:MM:SS) tot de
+ *  volgende agenda-afspraak + tijd + titel + aantal vandaag. Data: CalendarEvent. */
+export default function AgendaFocusWidget() {
   const { openModule } = usePanel();
   const { data: events } = useEntityList("CalendarEvent", { sort: "start", limit: 80, realtime: true });
   const [now, setNow] = useState(new Date());
@@ -21,6 +20,12 @@ export default function NextUpFocusWidget() {
   useEffect(() => { const t = setInterval(() => setNow(new Date()), 1000); return () => clearInterval(t); }, []);
 
   const next = (events || []).filter((e) => e.start && new Date(e.start) > now).sort((a, b) => new Date(a.start) - new Date(b.start))[0];
+  const todayCount = (events || []).filter((e) => {
+    if (!e.start) return false;
+    const d = new Date(e.start); const s = new Date(now); s.setHours(0,0,0,0); const en = new Date(now); en.setHours(23,59,59,999);
+    return d >= s && d <= en;
+  }).length;
+
   const diff = next ? new Date(next.start) - now : 0;
   const hh = Math.floor(diff / 3600000);
   const mm = Math.floor((diff % 3600000) / 60000);
@@ -46,7 +51,7 @@ export default function NextUpFocusWidget() {
         }
       >
         <div className="flex items-start justify-between">
-          <WidgetHeader type="briefing" label="NEXT UP!" />
+          <WidgetHeader type="agenda" label="What's Happening?" count={todayCount ? String(todayCount) : ""} />
           <button onClick={() => openModule("agenda")} className="text-[8px] uppercase tracking-[0.2em] font-bold pt-1" style={{ color: LIGHT }}>AGENDA →</button>
         </div>
         <div className="flex-1 flex flex-col justify-end items-end">
@@ -62,7 +67,7 @@ export default function NextUpFocusWidget() {
               </div>
             </>
           ) : (
-            <p className="text-[12px] text-ivory/60 py-4">Niets gepland.</p>
+            <p className="text-[12px] text-ivory/60 py-4">{todayCount ? `${todayCount} vandaag · niets meer open` : "Niets gepland."}</p>
           )}
         </div>
       </GlassPhotoLayeredWidget>

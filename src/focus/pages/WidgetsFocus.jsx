@@ -1,12 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import FocusHotlineWidget from "@/focus/widgets/new/FocusHotlineWidget";
-import WhatMattersFocusWidget from "@/focus/widgets/new/WhatMattersFocusWidget";
-import WaitingOnYouFocusWidget from "@/focus/widgets/new/WaitingOnYouFocusWidget";
-import WhatIveNoticedFocusWidget from "@/focus/widgets/new/WhatIveNoticedFocusWidget";
-import WantsToKnowFocusWidget from "@/focus/widgets/new/WantsToKnowFocusWidget";
-import ImAliveFocusWidget from "@/focus/widgets/new/ImAliveFocusWidget";
-import NextUpFocusWidget from "@/focus/widgets/new/NextUpFocusWidget";
+import WhatsAppFocusWidget from "@/focus/widgets/new/WhatsAppFocusWidget";
+import TasksFocusWidget from "@/focus/widgets/new/TasksFocusWidget";
+import ProjectsFocusWidget from "@/focus/widgets/new/ProjectsFocusWidget";
+import EmailFocusWidget from "@/focus/widgets/new/EmailFocusWidget";
+import PeopleFocusWidget from "@/focus/widgets/new/PeopleFocusWidget";
+import TimeTrackerFocusWidget from "@/focus/widgets/new/TimeTrackerFocusWidget";
+import AgendaFocusWidget from "@/focus/widgets/new/AgendaFocusWidget";
 
 export default function WidgetsFocus() {
   const Label = ({ children }) => (
@@ -20,37 +20,37 @@ export default function WidgetsFocus() {
       </Link>
       <h1 className="text-3xl font-display font-semibold tracking-tight mt-1.5">FOCUS · Widget-skelet</h1>
       <p className="text-sm text-muted-foreground mt-1 mb-8">
-        GIULIA-widget-skelet, overgezet naar Focus — burgundy, olijf, beton, geborsteld metaal. Eén skelet, ontworpen naar functie. Live data.
+        Focus-widgets in het Giulia-skelet — burgundy, olijf, beton, geborsteld metaal. Echte Focus-functies + juiste data.
       </p>
 
       <div className="columns-1 lg:columns-2 gap-8">
         <div className="break-inside-avoid mb-8 mx-auto w-[290px]">
-          <Label>01 · FOCUS MODE! — 9:16 · foto-shell + glas · 25-min deep-work timer</Label>
-          <FocusHotlineWidget />
+          <Label>01 · WHO'S TEXTING? — 9:16 · bloom + ontvangen berichten (WhatsApp)</Label>
+          <WhatsAppFocusWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[620px]">
-          <Label>02 · WHAT'S HAPPENING? — P·16x9·L·SIDE · live bars + checklist (agenda)</Label>
-          <WhatMattersFocusWidget />
+          <Label>02 · TO DO! — P·16x9·L·SIDE · live bars + afvinkbare takenlijst (Tasks)</Label>
+          <TasksFocusWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[620px]">
-          <Label>03 · WAITING ON YOU. — G·4:3·R·SIDE · ghost-telling + approvals</Label>
-          <WaitingOnYouFocusWidget />
+          <Label>03 · WHAT I'M BUILDING. — G·4:3·R·SIDE · ghost-telling + voortgang (Projects)</Label>
+          <ProjectsFocusWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-[340px]">
-          <Label>04 · WHAT I'VE NOTICED. — P·1x1·B·STRIP · XL gauge-ring (Taken/Projecten/Email)</Label>
-          <WhatIveNoticedFocusWidget />
+          <Label>04 · ONLINE POSTOFFICE. — P·1x1·B·STRIP · gauge-ring (Email)</Label>
+          <EmailFocusWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-[300px]">
-          <Label>05 · WANTS TO KNOW! — P·2x3·B·SIDE · comparison gauge (FOCUS/LIFE/URGENT)</Label>
-          <WantsToKnowFocusWidget />
+          <Label>05 · PEOPLE AROUND ME. — P·2x3·B·SIDE · comparison + aan-beurt (People)</Label>
+          <PeopleFocusWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-[340px]">
-          <Label>06 · I'M ALIVE! — foto-shell + EKG live/dood · tik om te starten</Label>
-          <ImAliveFocusWidget />
+          <Label>06 · WHERE MY TIME GOES. — foto-shell + EKG + uren vandaag (TimeTracker)</Label>
+          <TimeTrackerFocusWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[680px]">
-          <Label>07 · NEXT UP! — G·21x9·L·SIDE · aftelklok tot volgende afspraak</Label>
-          <NextUpFocusWidget />
+          <Label>07 · WHAT'S HAPPENING? — G·21x9·L·SIDE · aftelklok tot volgende afspraak (Agenda)</Label>
+          <AgendaFocusWidget />
         </div>
       </div>
     </div>
