@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { PhotoGlassLayeredWidget, WidgetHeader, CheckList, URGENT } from "@/system/widgets/primitives";
+import { GlassPhotoLayeredWidget, WidgetHeader, CheckList, URGENT } from "@/system/widgets/primitives";
 import { useAgendaChecklist } from "@/self/widgets/editorial13/CheckableShell";
 import { usePanel } from "@/lib/PanelContext";
 
@@ -88,18 +88,18 @@ export default function WhatMattersLayeredWidget() {
 
   return (
     <div className="w-full h-[300px]">
-      <PhotoGlassLayeredWidget
+      <GlassPhotoLayeredWidget
         shape="16:9"
         photo={PHOTO}
-        glassPosition="right"
-        glassFraction={0.58}
+        photoPosition="left"
+        photoFraction={0.40}
         overhang={0}
         domain="giulia"
         radius="large"
         onClick={() => openModule("jedag")}
-        overlay="bg-transparent"
+        photoOverlay="bg-gradient-to-t from-black/40 via-black/20 to-black/10"
         photoChildren={
-          <div className="absolute left-0 top-0 bottom-0 w-[42%] p-3 flex flex-col gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute inset-0 p-3 flex flex-col gap-1.5" onClick={(e) => e.stopPropagation()}>
             {total > 0 ? (
               <CheckList items={items} onToggle={cycle} closed={closed} onClose={close} onReopen={reopen} maxH="100%" />
             ) : (
@@ -117,7 +117,7 @@ export default function WhatMattersLayeredWidget() {
         </p>
         <div className="flex-1 min-h-2" />
         <PlanningBars items={items} />
-      </PhotoGlassLayeredWidget>
+      </GlassPhotoLayeredWidget>
     </div>
   );
 }
