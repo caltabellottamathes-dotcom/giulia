@@ -60,15 +60,15 @@ export const WIDGETS = {
   giuliaquestions: { type: "giuliaquestions", label: "Wants to Know!",      icon: HelpCircle,    Component: WantsToKnowLayeredWidget, image: IMAGES.wWantsToKnow,    span: 1, category: "intelligence", domain: "giulia" },
 
   // ── FOCUS ──
-  agenda:      { type: "agenda",      label: "What's Happening?",  icon: Calendar,      Component: AgendaWidget,     image: IMAGES.walkChairsBeach, span: 4, category: "core", domain: "life" },
-  tasks:       { type: "tasks",       label: "To Do!",             icon: CheckSquare,   Component: TasksWidget,      image: IMAGES.feetChairs,       span: 4, category: "work", domain: "focus" },
-  projects:    { type: "projects",    label: "What I'm Building.", icon: Briefcase,     Component: ProjectsWidget,   image: IMAGES.walkChairsHigh,   span: 5, category: "work", domain: "focus" },
-  email:       { type: "email",       label: "Online Postoffice.",     icon: Mail,          Component: EmailWidget,      image: IMAGES.portraitBoot,     span: 4, category: "comms", domain: "focus" },
-  whatsapp:    { type: "whatsapp",    label: "Who's Texting?",     icon: MessageCircle, Component: WhatsAppWidget, image: IMAGES.stilettoHead,   span: 4, category: "comms", domain: "focus" },
+  agenda:      { type: "agenda",      label: "What's Happening?",  icon: Calendar,      Component: AgendaWidget,     image: IMAGES.focusHappening, span: 4, category: "core", domain: "life" },
+  tasks:       { type: "tasks",       label: "To Do!",             icon: CheckSquare,   Component: TasksWidget,      image: IMAGES.focusTodoNew,       span: 4, category: "work", domain: "focus" },
+  projects:    { type: "projects",    label: "What I'm Building.", icon: Briefcase,     Component: ProjectsWidget,   image: IMAGES.focusBuild,   span: 5, category: "work", domain: "focus" },
+  email:       { type: "email",       label: "Online Postoffice.",     icon: Mail,          Component: EmailWidget,      image: IMAGES.focusMail,     span: 4, category: "comms", domain: "focus" },
+  whatsapp:    { type: "whatsapp",    label: "Who's Texting?",     icon: MessageCircle, Component: WhatsAppWidget, image: IMAGES.focusTodo,   span: 4, category: "comms", domain: "focus" },
   knowledge:   { type: "knowledge",   label: "What I Know.",       icon: BookOpen,      Component: KnowledgeWidget,  image: IMAGES.chairWater,       span: 4, category: "work", domain: "system" },
   documents:   { type: "documents",   label: "Files to Share.",        icon: FileText,      Component: DocumentsWidget,  image: IMAGES.chairsScattered,  span: 4, category: "work", domain: "focus" },
-  people:      { type: "people",      label: "People Around Me.",  icon: Users,         Component: PeopleWidget,     image: IMAGES.portraitThinking, span: 3, category: "work", domain: "focus" },
-  timetracker: { type: "timetracker", label: "Where My Time Goes.", icon: Timer,         Component: TimeTrackerWidget, image: IMAGES.hourglassJacket,  span: 4, category: "work", domain: "focus" },
+  people:      { type: "people",      label: "People Around Me.",  icon: Users,         Component: PeopleWidget,     image: IMAGES.focusPeople, span: 3, category: "work", domain: "focus" },
+  timetracker: { type: "timetracker", label: "Where My Time Goes.", icon: Timer,         Component: TimeTrackerWidget, image: IMAGES.focusTime,  span: 4, category: "work", domain: "focus" },
 
   // ── LIFE ──
   socialpulse:   { type: "socialpulse",   label: "What Social Life?",   icon: Heart,         Component: SocialPulseWidget,    image: IMAGES.lifeSocialPulse,    span: 4, category: "life", domain: "life" },

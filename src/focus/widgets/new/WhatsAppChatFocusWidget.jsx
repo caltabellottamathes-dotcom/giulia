@@ -62,7 +62,7 @@ export default function WhatsAppChatFocusWidget() {
     return (msgs || [])
       .filter((m) => m.contact_id === selectedId)
       .sort((a, b) => new Date(a.timestamp || a.created_date) - new Date(b.timestamp || b.created_date))
-      .slice(-4);
+      .slice(-3);
   }, [msgs, selectedId]);
 
   const tap = (row) => {
@@ -110,9 +110,9 @@ export default function WhatsAppChatFocusWidget() {
         overlay="bg-gradient-to-t from-black/30 via-black/12 to-black/5"
         photoChildren={
           <div className="absolute inset-0 flex flex-col" style={layeredContentPad("left", 0.40)}>
-            <WidgetHeader type="social" label="Who's Texting?" count={totalUnread ? String(totalUnread) : ""} />
+            <WidgetHeader type="social" label="Unread Messages." count="" />
             <h3 className="text-[20px] leading-[1.05] font-display font-semibold tracking-[-0.02em] truncate" style={{ color: IVORY }}>
-              {selectedContact ? (selectedContact.name || selectedContact.phone || "Onbekend") : "WHO'S TEXTING."}
+              {selectedContact ? (selectedContact.name || selectedContact.phone || "Onbekend") : "UNREAD MESSAGES."}
             </h3>
 
             {selectedId && (
@@ -153,6 +153,9 @@ export default function WhatsAppChatFocusWidget() {
                 </div>
               </>
             )}
+            <div className="mt-auto flex items-end justify-end pt-2" onClick={(e) => e.stopPropagation()}>
+              <span className="text-[44px] font-display font-bold leading-none tabular-nums" style={{ color: IVORY, textShadow: "0 2px 14px rgba(0,0,0,0.45)" }}>{totalUnread}</span>
+            </div>
           </div>
         }
       >

@@ -40,7 +40,7 @@ export default function AgendaFocusWidget() {
   const [phase, setPhase] = useState(0);
 
   useEffect(() => { const t = setInterval(() => setNow(new Date()), 1000); return () => clearInterval(t); }, []);
-  useEffect(() => { const t = setInterval(() => setPhase((p) => (p ? 0 : 1)), 5000); return () => clearInterval(t); }, []);
+  useEffect(() => { const t = setInterval(() => setPhase((p) => (p ? 0 : 1)), 6500); return () => clearInterval(t); }, []);
 
   const upcoming = useMemo(() => (events || []).filter((e) => e.start && new Date(e.start) > now).sort((a, b) => new Date(a.start) - new Date(b.start)), [events, now]);
   const next = upcoming[0];
@@ -61,20 +61,22 @@ export default function AgendaFocusWidget() {
       {/* rechts — glas content, focus-kleur (plum) */}
       <div className="absolute inset-y-0 right-0 w-[50%] flex flex-col p-4 z-10">
         <div className="flex items-center justify-between">
-          <WidgetHeader type="agenda" label="What's Happening?" count={todayCount ? String(todayCount) : ""} />
+          <div style={{ color: IVORY }}>
+            <WidgetHeader type="agenda" label="What's Happening?" count={todayCount ? String(todayCount) : ""} />
+          </div>
           <button onClick={() => openModule("agenda")} className="text-[8px] uppercase tracking-[0.2em] font-bold pt-1" style={{ color: DEEP }}>AGENDA →</button>
         </div>
         <div className="flex-1 min-h-0" />
         {next ? (
           <div className="flex flex-col items-end">
-            <p className="text-[10px] uppercase tracking-[0.2em] font-bold" style={{ color: DEEP, opacity: 0.7 }}>{evDate}</p>
-            <p className="text-[16px] font-display font-semibold leading-tight truncate text-right max-w-full mt-0.5" style={{ color: DEEP }}>{next.title}</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] font-bold" style={{ color: OLIVE }}>{evDate}</p>
+            <p className="text-[16px] font-display font-semibold leading-tight truncate text-right max-w-full mt-0.5" style={{ color: OLIVE }}>{next.title}</p>
             <div className="relative h-[58px] mt-1.5 w-full flex justify-end">
               <AnimatePresence mode="wait">
                 {phase === 0 ? (
                   <motion.span key="hour" {...kinetic} className="absolute right-0 top-0 text-[52px] font-display font-bold leading-none tracking-[-0.03em] tabular-nums" style={{ color: DEEP }}>{evTime}</motion.span>
                 ) : (
-                  <motion.span key="cd" {...kinetic} className="absolute right-0 top-0 text-[52px] font-display font-bold leading-none tracking-[-0.03em] tabular-nums" style={{ color: DEEP }}>{countdown}</motion.span>
+                  <motion.span key="cd" {...kinetic} className="absolute right-0 top-0 text-[52px] font-display font-bold leading-none tracking-[-0.03em] tabular-nums" style={{ color: LIGHT }}>{countdown}</motion.span>
                 )}
               </AnimatePresence>
             </div>
@@ -122,7 +124,7 @@ export default function AgendaFocusWidget() {
       </AnimatePresence>
 
       {/* PhotoCard — flush, 4 afgeronde hoeken, schaduw naar de open kant */}
-      <motion.div className="absolute inset-y-0 left-0 w-[50%] rounded-[28px] overflow-hidden cursor-pointer z-20" style={{ boxShadow: "16px 0 34px -20px rgba(0,0,0,0.5)" }} animate={{ x: open ? "110%" : "0%" }} transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }} onClick={() => setOpen((o) => !o)} aria-label="Toon tijdlijn">
+      <motion.div className="absolute inset-y-0 left-0 w-[50%] rounded-[28px] overflow-hidden cursor-pointer z-20" style={{ boxShadow: "16px 0 34px -20px rgba(0,0,0,0.5)" }} animate={{ x: open ? "100%" : "0%" }} transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }} onClick={() => setOpen((o) => !o)} aria-label="Toon tijdlijn">
         <img src={PHOTO} alt="What's Happening" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/22 via-black/8 to-transparent" />
         <div className="absolute bottom-2 left-2 flex items-center gap-1 text-[8px] uppercase tracking-[0.18em] font-bold" style={{ color: IVORY, opacity: 0.75 }}>
