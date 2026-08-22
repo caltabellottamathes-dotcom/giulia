@@ -46,7 +46,7 @@ export default function WhatsAppFocusWidget() {
 
   return (
     <WidgetShell domain="focus" radius="large" className="w-full h-[480px] min-h-0">
-      <img src={IMAGES.focusSuspended} alt="Who's Texting" className="absolute inset-0 w-full h-full object-cover" />
+      <img src={IMAGES.focusWhats} alt="Who's Texting" className="absolute inset-0 w-full h-full object-cover" />
       <button type="button" onClick={() => openModule("whatsapp")} aria-label="Open WhatsApp" className="absolute inset-0 z-0 cursor-pointer" />
 
       <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-10 bg-gradient-to-b from-black/50 to-transparent" style={{ color: IVORY }}>

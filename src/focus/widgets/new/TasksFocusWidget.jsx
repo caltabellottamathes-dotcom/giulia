@@ -8,7 +8,7 @@ import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 
-const PHOTO = IMAGES.focusCarrels;
+const PHOTO = IMAGES.focusTodo;
 const LIGHT = "hsl(var(--d-focus-light))";
 const NEUT = "hsl(var(--smoke))";
 const DUR_MIN = 15, DUR_MAX = 240, H_MIN = 18, H_MAX = 78;

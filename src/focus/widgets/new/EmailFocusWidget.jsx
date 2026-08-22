@@ -5,7 +5,7 @@ import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { IMAGES } from "@/lib/images";
 
-const PHOTO = IMAGES.focusMetalGloves;
+const PHOTO = IMAGES.focusMail;
 const DEEP = "hsl(var(--d-focus-deep))";
 const LIGHT = "hsl(var(--d-focus-light))";
 const NEUT = "hsl(var(--smoke))";

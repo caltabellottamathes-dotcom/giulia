@@ -132,6 +132,12 @@ export const IMAGES = {
   focusCoat:         "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/2ac6b5252_A_high-contrast_medium_shot_of_2026062702281.jpeg",
   focusOliveYarn:    "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/1dc2ec318_A_graphic_minimalist_photograph_exploring_202606262301.jpeg",
   focusTrousers:     "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/013507d8b_A_minimalist_deadpan_photograph_of_202606262231.jpeg",
+  // FOCUS-widget foto's — één per focus-widget (geüpload 2026-08-22)
+  focusWhats:        "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/8d84a1047_Focus_Whats.jpeg",
+  focusTodo:         "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/99e43cf7f_Focus_Todo.jpg",
+  focusBuild:        "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ba1302575_Focus_Build.jpeg",
+  focusMail:         "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/d878cf63d_Focus_mail.jpeg",
+  focusPeople:       "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/4d4d1eff1_FOCUS_PEOPLE.jpeg",
 };
 
 export const VIDEOS = {
