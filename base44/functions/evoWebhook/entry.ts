@@ -68,9 +68,10 @@ export default async function (req) {
     let stored = 0, skipped = 0;
 
     for (const msg of msgList) {
-      if (msg?.key?.fromMe === true) { skipped++; continue; }
+      console.log("[evo-msg] fromMe=", msg?.key?.fromMe, "jid=", msg?.key?.remoteJid, "msgKeys=", msg?.message ? Object.keys(msg.message) : null, "id=", msg?.key?.id);
+      if (msg?.key?.fromMe === true) { console.log("[evo] skip outgoing"); skipped++; continue; }
       const text = extractText(msg?.message);
-      if (!text) { skipped++; continue; }
+      if (!text) { console.log("[evo] skip non-text"); skipped++; continue; }
 
       const remoteJid = msg?.key?.remoteJid || "";
       const phone = normalizePhone(remoteJid.replace(/@.*$/, ""));
