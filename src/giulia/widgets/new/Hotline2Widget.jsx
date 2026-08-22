@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { GlassPhotoLayeredWidget, WidgetHeader } from "@/system/widgets/primitives";
 
-const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/1d4c3eef3_GiuliaConcierge.jpeg";
+const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/a560179c0_Voice_.jpeg";
 const IVORY = "hsl(var(--ivory))";
 const DEEP = "hsl(var(--d-giulia-deep))";
 

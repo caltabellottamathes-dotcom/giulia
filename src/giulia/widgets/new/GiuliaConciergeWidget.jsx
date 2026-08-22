@@ -7,7 +7,7 @@ import { usePanel } from "@/lib/PanelContext";
 import { ELEVEN_AGENT_ID } from "@/lib/voiceNavigation";
 import { buildVoiceClientTools } from "@/lib/voiceClientTools";
 
-const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/1d4c3eef3_GiuliaConcierge.jpeg";
+const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/a560179c0_Voice_.jpeg";
 
 /** GiuliaConciergeWidget — "GIULIA'S HOTLINE".
  *  Foto als grote shell; bovenaan de beweegde header op de foto. Het transparante
