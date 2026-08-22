@@ -18,7 +18,7 @@ const URGENT = "hsl(var(--d-giulia-urgent))"; // urgent
 const GROUPS = [
   { key: "observaties", label: "Observaties", r: 50, color: DEEP },
   { key: "self", label: "Self", r: 38, color: LIGHT },
-  { key: "journal", label: "Journal", r: 26, color: "hsl(var(--ridge))" },
+  { key: "journal", label: "Journal", r: 26, color: "hsl(var(--smoke))" },
 ];
 
 export default function WhatIveNoticedWidget() {

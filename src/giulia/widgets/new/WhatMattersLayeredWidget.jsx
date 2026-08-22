@@ -7,7 +7,7 @@ import { usePanel } from "@/lib/PanelContext";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/02f6f6d0e_Matters.jpeg";
 const PISTACHIO = "hsl(var(--giulia-pistachio))"; // 2e accentkleur (GIULIA)
-const BLUE = "hsl(var(--ridge))"; // 3e accentkleur — lichtblauw (niet-urgent)
+const NEUT = "hsl(var(--smoke))"; // 3e accentkleur — warm neutraal (niet-urgent)
 const DUR_MIN = 15, DUR_MAX = 180, H_MIN = 18, H_MAX = 78;
 
 /** Staafhoogte op basis van afspraakduur (min). */
@@ -68,7 +68,7 @@ export default function WhatMattersLayeredWidget() {
     const next = cur === "idle" ? "active" : cur === "active" ? "done" : "idle";
     return { ...s, [i]: next };
   });
-  const PALETTE = ["var(--tile-accent)", BLUE, PISTACHIO];
+  const PALETTE = ["var(--tile-accent)", NEUT, PISTACHIO];
   const items = rawItems.map((it, i) => {
     const st = states[i] || "idle";
     const color = it.urgent ? URGENT : PALETTE[i % 3];

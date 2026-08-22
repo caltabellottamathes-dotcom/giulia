@@ -18,7 +18,7 @@ const URGENT = "hsl(var(--d-giulia-urgent))"; // urgent — URGENT
 
 const GROUPS = [
   { key: "FOCUS", color: DEEP },
-  { key: "LIFE", color: "hsl(var(--ridge))" },
+  { key: "LIFE", color: LIGHT },
   { key: "URGENT", color: URGENT },
 ];
 

@@ -9,7 +9,7 @@ const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/3
 const DEEP = "hsl(var(--d-giulia-deep))";    // olijf
 const LIGHT = "hsl(var(--d-giulia-light))";  // pistachio
 const IVORY = "hsl(var(--ivory))";
-const BLUE = "hsl(var(--ridge))"; // 3e accentkleur — lichtblauw (niet-urgent)
+const NEUT = "hsl(var(--smoke))"; // 3e accentkleur — warm neutraal (niet-urgent)
 
 /** WaitingOnYouWidget — G·4:3·R·SIDE (gelaagd). Foto-card rechts (clean, geen
  *  tekst). Glas-shell links: het live aantal open approvals als enorm
@@ -77,7 +77,7 @@ export default function WaitingOnYouWidget() {
             top3.map((a, i) => {
               const num = String(i + 1).padStart(2, "0");
               const urgent = a.category === "urgent";
-              const color = urgent ? URGENT : [DEEP, LIGHT, BLUE][i % 3];
+              const color = urgent ? URGENT : [DEEP, LIGHT, NEUT][i % 3];
               const words = threeWordSummary(a);
               return (
                 <motion.button

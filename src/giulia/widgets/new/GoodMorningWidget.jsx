@@ -66,7 +66,7 @@ export default function GoodMorningWidget() {
             <div className="relative h-28 w-28">
               {[0, 1, 2].map((i) => (
                 <motion.div key={i} className="absolute inset-0" animate={{ rotate: 360 }} transition={{ duration: 3 + i, repeat: Infinity, ease: "linear" }}>
-                  <span className="absolute top-0 left-1/2 h-3 w-3 -ml-1.5 rounded-full" style={{ background: [DEEP, LIGHT, "hsl(var(--ridge))"][i] }} />
+                  <span className="absolute top-0 left-1/2 h-3 w-3 -ml-1.5 rounded-full" style={{ background: [DEEP, LIGHT, "hsl(var(--smoke))"][i] }} />
                 </motion.div>
               ))}
               <span className="absolute inset-0 m-auto h-3.5 w-3.5 rounded-full" style={{ background: DEEP }} />
