@@ -4,7 +4,7 @@ import { GlassPhotoLayeredWidget, WidgetHeader, CheckList, URGENT } from "@/syst
 import { useAgendaChecklist } from "@/self/widgets/editorial13/CheckableShell";
 import { usePanel } from "@/lib/PanelContext";
 
-const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ad59aa090_Whatmatters_GIULIA.jpeg";
+const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/02f6f6d0e_Matters.jpeg";
 const PISTACHIO = "hsl(var(--giulia-pistachio))"; // 2e accentkleur (GIULIA)
 const BLUE = "hsl(var(--ridge))"; // 3e accentkleur — lichtblauw (niet-urgent)
 const DUR_MIN = 15, DUR_MAX = 180, H_MIN = 18, H_MAX = 78;

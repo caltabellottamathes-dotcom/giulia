@@ -4,7 +4,7 @@ import { PhotoGlassLayeredWidget, WidgetHeader, CountUp } from "@/system/widgets
 import { usePanel } from "@/lib/PanelContext";
 import { base44 } from "@/api/base44Client";
 
-const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/c78cbf3f8_What_Ive_Noticed.jpeg";
+const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/74381fdf2_Noticed.jpeg";
 const DEEP = "hsl(var(--d-giulia-deep))";    // olijf
 const LIGHT = "hsl(var(--d-giulia-light))";  // pistachio
 const URGENT = "hsl(var(--d-giulia-urgent))"; // urgent

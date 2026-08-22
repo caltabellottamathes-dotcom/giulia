@@ -47,7 +47,7 @@ import BeeldbankWidget from "@/system/widgets/BeeldbankWidget";
  */
 export const WIDGETS = {
   // ── GIULIA ──
-  giulia:          { type: "giulia",          label: "What Matters?",      icon: Sparkles,       Component: WhatMattersLayeredWidget, image: IMAGES.wWhatMatters,    span: 2, category: "core", domain: "giulia" },
+  giulia:          { type: "giulia",          label: "What Matters?",      icon: Sparkles,       Component: WhatMattersLayeredWidget, image: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/02f6f6d0e_Matters.jpeg", span: 2, category: "core", domain: "giulia" },
   goodmorning:     { type: "goodmorning",     label: "Good Morning!",       icon: Sunrise,        Component: GoodMorningWidget,        image: IMAGES.wGoodMorning,    span: 2, category: "core", domain: "giulia" },
   concierge:       { type: "concierge",       label: "GIULIA'S HOTLINE!",   icon: MessageSquare,  Component: GiuliaConciergeWidget,   image: IMAGES.wHotline,        span: 1, category: "core", domain: "giulia" },
   approvals:       { type: "approvals",       label: "Waiting on You.",     icon: ClipboardCheck, Component: WaitingOnYouWidget,      image: IMAGES.wWaitingOnYou,   span: 2, category: "core", domain: "giulia" },
@@ -55,7 +55,7 @@ export const WIDGETS = {
   memory:          { type: "memory",          label: "What I Remember.",    icon: Brain,          Component: MemoryWidget,           image: IMAGES.loungeChairs,     span: 4, category: "intelligence", domain: "system" },
   activity:        { type: "activity",        label: "I Do Process!",      icon: ActivityIcon,   Component: ActivityWidget,        image: IMAGES.topDownWalk,      span: 6, category: "intelligence", domain: "system" },
   agentactivity:   { type: "agentactivity",   label: "Who's Working?",      icon: Cpu,            Component: AgentActivityWidget,    image: IMAGES.feetChair,        span: 4, category: "intelligence", domain: "system" },
-  insights:        { type: "insights",        label: "What I've Noticed.",  icon: Telescope,      Component: WhatIveNoticedWidget,   image: IMAGES.wWhatIveNoticed, span: 1, category: "intelligence", domain: "giulia" },
+  insights:        { type: "insights",        label: "What I've Noticed.",  icon: Telescope,      Component: WhatIveNoticedWidget,   image: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/74381fdf2_Noticed.jpeg", span: 1, category: "intelligence", domain: "giulia" },
   updates:         { type: "updates",         label: "Meanwhile...",       icon: Sparkles,       Component: UpdatesWidget,          image: IMAGES.feetChair,        span: 3, category: "intelligence", domain: "system" },
   giuliaquestions: { type: "giuliaquestions", label: "Wants to Know!",      icon: HelpCircle,    Component: WantsToKnowLayeredWidget, image: IMAGES.wWantsToKnow,    span: 1, category: "intelligence", domain: "giulia" },
 

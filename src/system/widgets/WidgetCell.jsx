@@ -20,6 +20,7 @@ const OPTIONS = [
  */
 export default function WidgetCell({ def, widget, onRemove, onThemeChange, sessionMode = false }) {
   const Comp = def.Component;
+  const isGiulia = def?.domain === "giulia";
   const [open, setOpen] = useState(false);
   const theme = widget?.theme || "glass";
   const color = widget?.color || "";
@@ -58,19 +59,25 @@ export default function WidgetCell({ def, widget, onRemove, onThemeChange, sessi
       whileDrag={{ opacity: 0.85 }}
       className="relative group h-full"
     >
-      <div className="absolute top-2 right-2 z-30 flex gap-1.5">
-        <button
-          onClick={() => setOpen((o) => !o)}
-          className="h-7 px-3 rounded-full bg-ivory text-charcoal shadow-md text-[11px] font-semibold opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all hover:-translate-y-0.5"
-          aria-label="Widget stijl"
-        >
-          Stijl
-        </button>
+      <div className={cn("absolute top-2 z-30 flex gap-1.5", isGiulia ? "left-2" : "right-2")}>
+        {!isGiulia && (
+          <button
+            onClick={() => setOpen((o) => !o)}
+            className="h-7 px-3 rounded-full bg-ivory text-charcoal shadow-md text-[11px] font-semibold opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all hover:-translate-y-0.5"
+            aria-label="Widget stijl"
+          >
+            Stijl
+          </button>
+        )}
         {onRemove && (
           <button
             onClick={onRemove}
-            className="h-7 w-7 rounded-full bg-ivory text-charcoal shadow-md text-base leading-none opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all hover:-translate-y-0.5"
             aria-label="Verwijderen"
+            className={cn(
+              "h-7 w-7 rounded-full text-base leading-none transition-all hover:-translate-y-0.5 opacity-100 lg:opacity-0 lg:group-hover:opacity-100",
+              isGiulia ? "text-ivory/80" : "bg-ivory text-charcoal shadow-md"
+            )}
+            style={isGiulia ? { background: "rgba(255,255,255,0.08)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.18)" } : undefined}
           >
             ×
           </button>
