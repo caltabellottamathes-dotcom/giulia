@@ -28,11 +28,11 @@ export default function WaitingOnYouWidget() {
   const total = (approvals || []).length;
 
   return (
-    <div className="w-full max-w-[560px]">
+    <div className="w-full max-w-[620px]">
       <GlassPhotoLayeredWidget
         shape="3:2"
         photo={PHOTO}
-        photoPosition="left"
+        photoPosition="right"
         photoFraction={0.42}
         overhang={0.08}
         domain="giulia"
