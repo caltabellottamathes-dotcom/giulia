@@ -45,16 +45,17 @@ export default async function (req) {
     // of Evolution ons raakt en welke structuur het stuurt. (Tijdelijk.)
     try {
       const sr0 = createClientFromRequest(req).asServiceRole;
-      const payloadPreview = JSON.stringify(body).slice(0, 800);
+      const dataKeys = data && typeof data === "object" ? Object.keys(data).join(",") : String(typeof data);
+      const dataPreview = JSON.stringify(data).slice(0, 600);
       await sr0.entities.Activity.create({
         action: "evo_webhook_raw",
-        description: `event=${event || "(none)"} keys=${Object.keys(body).join(",")}`,
+        description: `event=${event || "(none)"} dataKeys=${dataKeys} | ${dataPreview}`,
         source: "evoWebhook",
         event_type: String(event || ""),
         object_type: "diagnose",
         domain: "giulia",
       }).catch(() => {});
-      console.log("[evo-raw] event=", event, "bodyKeys=", Object.keys(body), "preview=", payloadPreview.slice(0, 200));
+      console.log("[evo-raw] event=", event, "dataKeys=", dataKeys, "dataPreview=", dataPreview);
     } catch {}
 
     // Beveiliging: controleer de apikey die Evolution meestuurt.
