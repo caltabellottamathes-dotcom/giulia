@@ -70,7 +70,7 @@ export default function TimeTrackerFocusWidget() {
   const activeProj = (projects || []).find((p) => p.id === (running?.project_id || projId));
 
   return (
-    <WidgetShell domain="focus" radius="large" className="w-full h-[480px] min-h-0">
+    <WidgetShell domain="focus" radius="large" className="w-full h-[380px] min-h-0">
       <img src={PHOTO} alt="Where My Time Goes" className="absolute inset-0 w-full h-full object-cover" />
       <button type="button" onClick={() => openModule("timetracker")} aria-label="Open tijdregistratie" className="absolute inset-0 z-0 cursor-pointer" />
 
@@ -82,9 +82,9 @@ export default function TimeTrackerFocusWidget() {
         </span>
       </div>
 
-      <div className="absolute bottom-0 inset-x-0 h-[60%] bg-gradient-to-t from-black/65 via-black/30 to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 inset-x-0 h-[52%] bg-gradient-to-t from-black/65 via-black/30 to-transparent pointer-events-none" />
 
-      <div className="absolute inset-x-0 bottom-0 h-[60%] rounded-t-[28px] flex flex-col items-center px-4 pt-3.5 pb-4 overflow-hidden"
+      <div className="absolute inset-x-0 bottom-0 h-[52%] rounded-t-[28px] flex flex-col items-center px-4 pt-3 pb-3.5 overflow-hidden"
         style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(12px) saturate(1.35)", WebkitBackdropFilter: "blur(12px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.18)", boxShadow: "0 18px 44px -22px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.22)" }}>
         <span className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${LIGHT} 18%, ${LIGHT} 82%, transparent)` }} />
 
@@ -101,10 +101,10 @@ export default function TimeTrackerFocusWidget() {
 
         {/* bloom + klok */}
         <div className="relative flex-1 w-full overflow-hidden flex items-center justify-center">
-          <button onClick={(e) => { e.stopPropagation(); toggle(); }} aria-label={running ? "Stop timer" : "Start timer"} className="relative h-[150px] w-[150px] rounded-full cursor-pointer" style={{ border: "none", background: "transparent" }}>
+          <button onClick={(e) => { e.stopPropagation(); toggle(); }} aria-label={running ? "Stop timer" : "Start timer"} className="relative h-[120px] w-[120px] rounded-full cursor-pointer" style={{ border: "none", background: "transparent" }}>
             <span ref={bloomRef} className="absolute inset-0 rounded-full will-change-transform" style={{ background: `radial-gradient(circle, ${DEEP} 0%, ${LIGHT} 48%, transparent 72%)`, filter: "blur(2px)", opacity: 0.92 }} />
             <span className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-[26px] font-display font-bold tabular-nums leading-none" style={{ color: IVORY }}>{running ? fmtClock(elapsed) : "00:00:00"}</span>
+              <span className="text-[22px] font-display font-bold tabular-nums leading-none" style={{ color: IVORY }}>{running ? fmtClock(elapsed) : "00:00:00"}</span>
               <span className="text-[9px] uppercase tracking-[0.22em] font-bold mt-1.5 text-center px-2" style={{ color: running ? LIGHT : "rgba(255,255,255,0.55)" }}>{running ? (activeProj?.title || "lopend") : "kies & tik"}</span>
             </span>
           </button>

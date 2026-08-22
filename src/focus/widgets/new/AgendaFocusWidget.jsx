@@ -8,10 +8,11 @@ import { IMAGES } from "@/lib/images";
 const PHOTO = IMAGES.focusAlcove;
 const LIGHT = "hsl(var(--d-focus-light))";
 const DEEP = "hsl(var(--d-focus-deep))";
+const IVORY = "hsl(var(--ivory))";
 
-/** AgendaFocusWidget — G·21x9·L·SIDE · "What's Happening?"
- *  Foto = focusAlcove. Glas-rechts: header + live aftelklok (HH:MM:SS) tot de
- *  volgende agenda-afspraak + tijd + titel + aantal vandaag. Data: CalendarEvent. */
+/** AgendaFocusWidget — G·21:9·L·SIDE · "What's Happening?"
+ *  GlassCard: header + focale afspraak (tijd + titel + datum, groot) in het
+ *  midden, live aftelklok onderaan. Data: CalendarEvent. Focus-kleuren. */
 export default function AgendaFocusWidget() {
   const { openModule } = usePanel();
   const { data: events } = useEntityList("CalendarEvent", { sort: "start", limit: 80, realtime: true });
@@ -22,7 +23,7 @@ export default function AgendaFocusWidget() {
   const next = (events || []).filter((e) => e.start && new Date(e.start) > now).sort((a, b) => new Date(a.start) - new Date(b.start))[0];
   const todayCount = (events || []).filter((e) => {
     if (!e.start) return false;
-    const d = new Date(e.start); const s = new Date(now); s.setHours(0,0,0,0); const en = new Date(now); en.setHours(23,59,59,999);
+    const d = new Date(e.start); const s = new Date(now); s.setHours(0, 0, 0, 0); const en = new Date(now); en.setHours(23, 59, 59, 999);
     return d >= s && d <= en;
   }).length;
 
@@ -33,6 +34,7 @@ export default function AgendaFocusWidget() {
   const pad = (n) => String(n).padStart(2, "0");
   const countdown = next ? `${pad(hh)}:${pad(mm)}:${pad(ss)}` : "--:--:--";
   const evTime = next ? new Date(next.start).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" }) : "";
+  const evDate = next ? new Date(next.start).toLocaleDateString("nl-NL", { weekday: "short", day: "numeric", month: "short" }) : "";
 
   return (
     <div className="w-full h-[260px]">
@@ -50,25 +52,28 @@ export default function AgendaFocusWidget() {
           </div>
         }
       >
-        <div className="flex items-start justify-between">
-          <WidgetHeader type="agenda" label="What's Happening?" count={todayCount ? String(todayCount) : ""} />
-          <button onClick={() => openModule("agenda")} className="text-[8px] uppercase tracking-[0.2em] font-bold pt-1" style={{ color: LIGHT }}>AGENDA →</button>
-        </div>
-        <div className="flex-1 flex flex-col justify-end items-end">
-          {next ? (
-            <>
-              <span className="text-[64px] font-display font-bold leading-none tracking-[-0.04em] tabular-nums mb-1" style={{ color: LIGHT, opacity: 0.55 }}>{countdown}</span>
-              <div className="flex items-end gap-2">
-                <motion.span className="h-5 w-5 rounded-full mb-3" style={{ background: LIGHT }} animate={{ y: [0, -16, 0] }} transition={{ duration: 0.9, repeat: Infinity, ease: "easeInOut" }} />
-                <div className="flex flex-col items-end">
-                  <span className="text-[28px] font-display font-bold leading-none tracking-[-0.03em] tabular-nums">{evTime}</span>
-                  <span className="text-[11px] text-ivory/70 truncate max-w-[260px]">{next.title}</span>
-                </div>
-              </div>
-            </>
-          ) : (
-            <p className="text-[12px] text-ivory/60 py-4">{todayCount ? `${todayCount} vandaag · niets meer open` : "Niets gepland."}</p>
-          )}
+        <div className="flex flex-col h-full">
+          <div className="flex items-center justify-between">
+            <WidgetHeader type="agenda" label="What's Happening?" count={todayCount ? String(todayCount) : ""} />
+            <button onClick={() => openModule("agenda")} className="text-[8px] uppercase tracking-[0.2em] font-bold pt-1" style={{ color: LIGHT }}>AGENDA →</button>
+          </div>
+
+          <div className="flex-1 flex flex-col justify-center min-h-0">
+            {next ? (
+              <>
+                <p className="text-[10px] uppercase tracking-[0.2em] font-bold mb-1" style={{ color: LIGHT }}>{evDate}</p>
+                <span className="text-[52px] font-display font-bold leading-none tracking-[-0.03em] tabular-nums" style={{ color: IVORY }}>{evTime}</span>
+                <span className="text-[16px] font-display font-semibold leading-tight truncate mt-1.5" style={{ color: IVORY }}>{next.title}</span>
+              </>
+            ) : (
+              <p className="text-[12px] text-ivory/60">{todayCount ? `${todayCount} vandaag · niets meer open` : "Niets gepland."}</p>
+            )}
+          </div>
+
+          <div className="flex items-end justify-between">
+            <span className="text-[8px] uppercase tracking-[0.18em] font-bold" style={{ color: "rgba(255,255,255,0.5)" }}>tot volgende</span>
+            <span className="text-[30px] font-display font-bold leading-none tracking-[-0.03em] tabular-nums" style={{ color: LIGHT, opacity: 0.7 }}>{countdown}</span>
+          </div>
         </div>
       </GlassPhotoLayeredWidget>
     </div>

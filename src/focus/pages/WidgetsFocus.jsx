@@ -34,7 +34,7 @@ export default function WidgetsFocus() {
           <WhatsAppChatFocusWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[620px]">
-          <Label>03 · WHAT I'M BUILDING. — G·4:3·R·SIDE · ghost-telling + voortgang (Projects)</Label>
+          <Label>03 · WHAT I'M BUILDING. — G·4:3·R·SIDE · gauge + voortgang per project (Projects)</Label>
           <ProjectsFocusWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-[340px]">
@@ -46,7 +46,7 @@ export default function WidgetsFocus() {
           <PeopleFocusWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-[340px]">
-          <Label>06 · WHERE MY TIME GOES. — foto-shell + EKG + uren vandaag (TimeTracker)</Label>
+          <Label>06 · WHERE MY TIME GOES. — foto-shell + bloom + project-timer (TimeTracker)</Label>
           <TimeTrackerFocusWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[680px]">

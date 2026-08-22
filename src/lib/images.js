@@ -135,6 +135,7 @@ export const IMAGES = {
   // FOCUS-widget foto's — één per focus-widget (geüpload 2026-08-22)
   focusWhats:        "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/8d84a1047_Focus_Whats.jpeg",
   focusTodo:         "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/99e43cf7f_Focus_Todo.jpg",
+  focusToDoNew:      "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/bf0483755_Focus_TO_DO.jpeg",
   focusBuild:        "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ba1302575_Focus_Build.jpeg",
   focusMail:         "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/d878cf63d_Focus_mail.jpeg",
   focusPeople:       "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/4d4d1eff1_FOCUS_PEOPLE.jpeg",

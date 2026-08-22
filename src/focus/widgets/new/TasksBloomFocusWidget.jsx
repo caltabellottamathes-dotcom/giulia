@@ -6,7 +6,7 @@ import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 
-const PHOTO = IMAGES.focusTodo;
+const PHOTO = IMAGES.focusToDoNew;
 const DEEP = "hsl(var(--d-focus-deep))";
 const LIGHT = "hsl(var(--d-focus-light))";
 const NEUT = "hsl(var(--smoke))";

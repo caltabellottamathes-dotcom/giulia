@@ -58,11 +58,11 @@ export default function PeopleFocusWidget() {
               <p className="text-[11px] text-ivory/50 px-1 py-2 text-center">{q ? "Geen contacten gevonden." : "Nog geen contact via WhatsApp of mail."}</p>
             ) : filtered.slice(0, 6).map((c) => (
               <button key={c.id} onClick={() => openModule("people")} className="flex items-center gap-2.5 py-1.5 px-1.5 rounded-xl text-left hover:bg-white/10 transition-colors">
-                <span className="h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-[10px] font-display font-bold" style={{ background: DEEP, color: LIGHT, border: `1.5px solid ${LIGHT}` }}>
+                <span className="h-7 w-7 shrink-0 rounded-full flex items-center justify-center text-[10px] font-display font-bold" style={{ background: LIGHT, color: DEEP, border: `1.5px solid ${DEEP}` }}>
                   {initials(c.name)}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[12px] font-semibold leading-tight truncate" style={{ color: LIGHT }}>{c.name}</p>
+                  <p className="text-[12px] font-semibold leading-tight truncate" style={{ color: DEEP }}>{c.name}</p>
                   <p className="text-[9px] uppercase tracking-wide leading-tight truncate" style={{ color: "rgba(255,255,255,0.45)" }}>{[c.role, c.company].filter(Boolean).join(" · ") || "—"}</p>
                 </div>
               </button>
