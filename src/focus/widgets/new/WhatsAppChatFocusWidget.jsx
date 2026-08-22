@@ -171,22 +171,17 @@ export default function WhatsAppChatFocusWidget() {
               <button
                 key={m.id}
                 onClick={() => tap(m)}
-                className="flex items-center gap-2.5 py-1.5 px-1.5 rounded-xl text-left transition-colors"
+                className="group flex items-center gap-2.5 py-1.5 pl-2.5 pr-1.5 rounded-xl text-left transition-colors hover:bg-white/8"
                 style={{ background: active ? "rgba(255,255,255,0.10)" : "transparent" }}
               >
-                <span
-                  className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-[11px] font-display font-bold"
-                  style={{ background: LIGHT, color: DEEP, border: `1.5px solid ${unread ? URGENT : DEEP}` }}
-                >
-                  {initials(name)}
-                </span>
+                <span className="h-7 w-[3px] rounded-full shrink-0 transition-colors" style={{ background: unread ? URGENT : LIGHT, opacity: unread ? 1 : 0.55 }} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-semibold leading-tight truncate" style={{ color: DEEP }}>{name}</p>
+                  <p className="text-[12px] font-semibold leading-tight truncate" style={{ color: IVORY }}>{name}</p>
                   <p className="text-[9px] uppercase tracking-wide leading-tight" style={{ color: unread ? URGENT : "rgba(255,255,255,0.45)" }}>
                     {unread ? "Nieuw bericht" : "Gelezen"} · {fmtTime(m.timestamp)}
                   </p>
                 </div>
-                {unread && <span className="h-2 w-2 rounded-full shrink-0" style={{ background: URGENT }} />}
+                {unread && <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: URGENT }} />}
               </button>
             );
           })}

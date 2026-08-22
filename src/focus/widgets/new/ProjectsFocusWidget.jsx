@@ -14,22 +14,6 @@ const OLIVE = "hsl(var(--olive))";
 const IVORY = "hsl(var(--ivory))";
 const ACTIVE = ["in_progress", "planning", "review", "afwerking"];
 
-function Gauge({ count, pct }) {
-  const r = 34, c = 2 * Math.PI * r;
-  return (
-    <div className="relative w-[86px] h-[86px] shrink-0">
-      <svg className="w-full h-full -rotate-90" viewBox="0 0 80 80">
-        <circle cx="40" cy="40" r={r} fill="none" stroke={DEEP} strokeOpacity="0.45" strokeWidth="6" />
-        <motion.circle cx="40" cy="40" r={r} fill="none" stroke={OLIVE} strokeWidth="6" strokeLinecap="round" strokeDasharray={c} initial={{ strokeDashoffset: c }} animate={{ strokeDashoffset: c - (pct / 100) * c }} transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }} />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[22px] font-display font-bold leading-none tabular-nums" style={{ color: IVORY }}>{count}</span>
-        <span className="text-[7px] uppercase tracking-[0.16em] font-bold mt-0.5" style={{ color: OLIVE }}>actief</span>
-      </div>
-    </div>
-  );
-}
-
 /** ProjectsFocusWidget — G·4:3·R·SIDE · "What I'm Building."
  *  GlassCard (links): gauge (aantal actieve projecten + gem. % klaar) in
  *  plum/olive, dan project-rijen. Tik een project → de PhotoCard (rechts)
@@ -63,13 +47,10 @@ export default function ProjectsFocusWidget() {
           <WidgetHeader type="tasks" label="What I'm Building." count={total ? String(total) : ""} />
           <button onClick={() => openModule("projects")} className="text-[8px] uppercase tracking-[0.2em] font-bold pt-1" style={{ color: OLIVE }}>ALLES →</button>
         </div>
-        <div className="flex items-center gap-3 mb-3">
-          <Gauge count={total} pct={avgPct} />
-          <div>
-            <p className="text-[9px] uppercase tracking-[0.18em] font-bold" style={{ color: OLIVE }}>gem. klaar</p>
-            <p className="text-[28px] font-display font-bold leading-none tabular-nums" style={{ color: IVORY }}>{avgPct}%</p>
-            <p className="text-[9px] uppercase tracking-[0.14em] mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>{total} actieve projecten</p>
-          </div>
+        <div className="mb-3">
+          <p className="text-[9px] uppercase tracking-[0.18em] font-bold" style={{ color: OLIVE }}>gem. klaar</p>
+          <p className="text-[34px] font-display font-bold leading-none tabular-nums" style={{ color: IVORY }}>{avgPct}%</p>
+          <p className="text-[9px] uppercase tracking-[0.14em] mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>{total} actieve projecten</p>
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar flex flex-col gap-2">
           {loading ? (
@@ -81,10 +62,10 @@ export default function ProjectsFocusWidget() {
             const color = crit ? URGENT : OLIVE;
             const sel = selectedId === p.id;
             return (
-              <button key={p.id} onClick={(e) => { e.stopPropagation(); setSelectedId(sel ? null : p.id); }} className="w-full text-left">
+              <button key={p.id} onClick={(e) => { e.stopPropagation(); setSelectedId(sel ? null : p.id); }} className="group w-full text-left rounded-lg px-1.5 -mx-1.5 py-1 transition-colors hover:bg-white/10">
                 <div className="flex items-center justify-between gap-2 mb-1">
-                  <span className="text-[13px] font-display font-bold uppercase leading-tight truncate" style={{ color: sel ? OLIVE : IVORY }}>{p.title}</span>
-                  <span className="text-[11px] font-mono tabular-nums shrink-0" style={{ color: crit ? URGENT : LIGHT }}>{p.progress || 0}%</span>
+                  <span className="text-[13px] font-display font-bold uppercase leading-tight truncate transition-transform group-hover:translate-x-0.5" style={{ color: sel ? OLIVE : IVORY }}>{p.title}</span>
+                  <span className="text-[10px] font-mono font-bold tabular-nums px-1.5 py-0.5 rounded-md shrink-0" style={{ background: crit ? "rgba(213,226,74,0.18)" : LIGHT, color: crit ? URGENT : DEEP }}>{p.progress || 0}%</span>
                 </div>
                 <div className="h-1.5 w-full rounded-full bg-white/12 overflow-hidden">
                   <motion.div className="h-full rounded-full" initial={{ width: "0%" }} animate={{ width: `${p.progress || 0}%` }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 + i * 0.08 }} style={{ backgroundColor: color }} />

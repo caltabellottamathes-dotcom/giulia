@@ -55,24 +55,27 @@ export default function AgendaFocusWidget() {
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between">
             <WidgetHeader type="agenda" label="What's Happening?" count={todayCount ? String(todayCount) : ""} />
-            <button onClick={() => openModule("agenda")} className="text-[8px] uppercase tracking-[0.2em] font-bold pt-1" style={{ color: LIGHT }}>AGENDA →</button>
+            <button onClick={() => openModule("agenda")} className="text-[8px] uppercase tracking-[0.2em] font-bold pt-1" style={{ color: "rgba(255,255,255,0.7)" }}>AGENDA →</button>
           </div>
 
-          <div className="flex-1 flex flex-col justify-center min-h-0">
+          <div className="flex-1 flex flex-col items-end justify-center text-right min-h-0">
             {next ? (
-              <>
-                <p className="text-[10px] uppercase tracking-[0.2em] font-bold mb-1" style={{ color: LIGHT }}>{evDate}</p>
-                <span className="text-[52px] font-display font-bold leading-none tracking-[-0.03em] tabular-nums" style={{ color: IVORY }}>{evTime}</span>
-                <span className="text-[16px] font-display font-semibold leading-tight truncate mt-1.5" style={{ color: IVORY }}>{next.title}</span>
-              </>
+              <div className="flex flex-col items-end">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="h-px w-6" style={{ background: LIGHT, opacity: 0.6 }} />
+                  <p className="text-[10px] uppercase tracking-[0.2em] font-bold" style={{ color: "rgba(255,255,255,0.7)" }}>{evDate}</p>
+                </div>
+                <span className="text-[56px] font-display font-bold leading-none tracking-[-0.03em] tabular-nums" style={{ color: IVORY }}>{evTime}</span>
+                <span className="text-[16px] font-display font-semibold leading-tight truncate mt-1.5 max-w-[300px] text-right" style={{ color: IVORY }}>{next.title}</span>
+              </div>
             ) : (
-              <p className="text-[12px] text-ivory/60">{todayCount ? `${todayCount} vandaag · niets meer open` : "Niets gepland."}</p>
+              <p className="text-[12px] text-ivory/60 text-right">{todayCount ? `${todayCount} vandaag · niets meer open` : "Niets gepland."}</p>
             )}
           </div>
 
-          <div className="flex items-end justify-between">
-            <span className="text-[8px] uppercase tracking-[0.18em] font-bold" style={{ color: "rgba(255,255,255,0.5)" }}>tot volgende</span>
-            <span className="text-[30px] font-display font-bold leading-none tracking-[-0.03em] tabular-nums" style={{ color: LIGHT, opacity: 0.7 }}>{countdown}</span>
+          <div className="flex flex-col items-end">
+            <span className="text-[8px] uppercase tracking-[0.18em] font-bold mb-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>tot volgende</span>
+            <span className="text-[30px] font-display font-bold leading-none tracking-[-0.03em] tabular-nums" style={{ color: "rgba(255,255,255,0.85)" }}>{countdown}</span>
           </div>
         </div>
       </GlassPhotoLayeredWidget>

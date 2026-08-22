@@ -70,7 +70,7 @@ export default function TimeTrackerFocusWidget() {
   const activeProj = (projects || []).find((p) => p.id === (running?.project_id || projId));
 
   return (
-    <WidgetShell domain="focus" radius="large" className="w-full h-[380px] min-h-0">
+    <WidgetShell domain="focus" radius="large" className="w-full h-[460px] min-h-0">
       <img src={PHOTO} alt="Where My Time Goes" className="absolute inset-0 w-full h-full object-cover" />
       <button type="button" onClick={() => openModule("timetracker")} aria-label="Open tijdregistratie" className="absolute inset-0 z-0 cursor-pointer" />
 
