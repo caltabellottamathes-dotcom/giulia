@@ -53,19 +53,19 @@ export default function WorkspaceToolbar() {
   const [custom, setCustom] = useState(loadCustomBoards());
   const [note, setNote] = useState("");
   const [savingCtx, setSavingCtx] = useState(false);
-  const [hidden, setHidden] = useState(false);
-  const hideTimer = useRef(null);
+  const [expanded, setExpanded] = useState(true);
+  const collapseTimer = useRef(null);
 
-  const reveal = () => {
-    setHidden(false);
-    clearTimeout(hideTimer.current);
-    hideTimer.current = setTimeout(() => setHidden(true), 5000);
+  const expand = () => {
+    setExpanded(true);
+    clearTimeout(collapseTimer.current);
+    collapseTimer.current = setTimeout(() => setExpanded(false), 5000);
   };
-  const scheduleHide = () => {
-    clearTimeout(hideTimer.current);
-    hideTimer.current = setTimeout(() => setHidden(true), 1800);
+  const scheduleCollapse = () => {
+    clearTimeout(collapseTimer.current);
+    collapseTimer.current = setTimeout(() => setExpanded(false), 2200);
   };
-  useEffect(() => { reveal(); return () => clearTimeout(hideTimer.current); }, []);
+  useEffect(() => { expand(); return () => clearTimeout(collapseTimer.current); }, []);
 
   useEffect(() => { if (captured) setNote(""); }, [captured]);
   useEffect(() => {
@@ -77,7 +77,7 @@ export default function WorkspaceToolbar() {
   const selectBoard = (id) => {
     setActiveBoard(id);
     setBoard(id);
-    reveal();
+    expand();
     window.dispatchEvent(new CustomEvent("giulia:board-change", { detail: id }));
   };
   const addBoard = () => {
@@ -100,7 +100,7 @@ export default function WorkspaceToolbar() {
     if (e) e.preventDefault();
     const text = query.trim();
     if (!text) return;
-    reveal();
+    expand();
     setQuery("");
     setPendingMessage(text);
     openChat();
@@ -111,59 +111,80 @@ export default function WorkspaceToolbar() {
   return (
     <>
       {/* bottom hover-reveal zone */}
-      <div className="fixed bottom-0 inset-x-0 h-12 z-20" onMouseEnter={reveal} />
+      <div className="fixed bottom-0 inset-x-0 h-14 z-20" onMouseEnter={expand} />
 
-      {/* persistent indicator (inactive) */}
-      {hidden && (
-        <div className="fixed bottom-4 inset-x-4 lg:bottom-6 lg:inset-x-8 z-30 pointer-events-none">
-          <div className="h-[2px] w-full rounded-full bg-ivory/20" />
-        </div>
-      )}
-
-      {/* the bar — full width, edge to edge, sharp corners */}
+      {/* the bar — volledig glasmorfisch, schuift vloeiend in/uit.
+          Ingeklapt: compacte balk links met de belangrijkste items
+          (huidig dashboard + bellen + chat). Uitgeklapt: volledige werkbalk. */}
       <div
         className={cn(
-          "fixed bottom-4 inset-x-4 lg:bottom-6 lg:inset-x-8 z-30 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
-          hidden ? "translate-y-[calc(100%+1.5rem)]" : "translate-y-0"
+          "fixed bottom-4 left-4 lg:bottom-6 lg:left-6 z-30 flex items-center transition-[width,transform] duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+          expanded ? "w-[calc(100vw-2rem)] lg:w-[calc(100vw-3rem)]" : "w-[224px]"
         )}
-        onMouseEnter={reveal}
-        onMouseLeave={scheduleHide}
+        onMouseEnter={expand}
+        onMouseLeave={scheduleCollapse}
       >
-        <div className="relative w-full h-14 rounded-2xl bg-[rgba(48,50,55,0.18)] backdrop-blur-[22px] backdrop-saturate-[1.35] border border-white/15 ring-1 ring-inset ring-white/10 shadow-[0_28px_64px_-26px_rgba(0,0,0,0.42),inset_0_1px_0_0_rgba(255,255,255,0.14)] flex items-center px-4 lg:px-8">
-          {/* Dashboard tabs (left) — monochrome */}
-          <div className="flex items-center gap-0.5 overflow-x-auto shrink-0 max-w-[44%] lg:max-w-[52%] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {all.map((b) => {
-              const on = board === b.id;
-              return (
-                <button
-                  key={b.id}
-                  onClick={() => selectBoard(b.id)}
-                  className={cn(
-                    "relative px-3 lg:px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap transition-all rounded-lg",
-                    on ? "text-ivory bg-ivory/10" : "text-ivory/45 hover:text-ivory/70 hover:bg-ivory/5"
-                  )}
-                >
-                  {b.label}
-                </button>
-              );
-            })}
-            <button onClick={addBoard} title="Dashboard toevoegen" className="shrink-0 h-7 w-7 flex items-center justify-center text-ivory/40 hover:text-ivory hover:bg-ivory/10 transition"><Plus className="h-3.5 w-3.5" /></button>
+        <div
+          className="relative flex items-center h-14 rounded-2xl overflow-hidden w-full"
+          style={{
+            background: "rgba(120,122,128,0.14)",
+            backdropFilter: "blur(48px) saturate(1.4)",
+            WebkitBackdropFilter: "blur(48px) saturate(1.4)",
+            border: "1px solid rgba(255,255,255,0.18)",
+            boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.22), 0 24px 60px -22px rgba(0,0,0,0.36)",
+          }}
+        >
+          {expanded ? (
+            <>
+              {/* Dashboard tabs (left) */}
+              <div className="flex items-center gap-0.5 overflow-x-auto shrink-0 max-w-[46%] lg:max-w-[54%] pl-3 lg:pl-5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {all.map((b) => {
+                  const on = board === b.id;
+                  return (
+                    <button
+                      key={b.id}
+                      onClick={() => selectBoard(b.id)}
+                      className={cn(
+                        "relative px-3 lg:px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap transition-all rounded-lg",
+                        on ? "text-ivory bg-ivory/10" : "text-ivory/45 hover:text-ivory/70 hover:bg-ivory/5"
+                      )}
+                    >
+                      {b.label}
+                    </button>
+                  );
+                })}
+                <button onClick={addBoard} title="Dashboard toevoegen" className="shrink-0 h-7 w-7 flex items-center justify-center text-ivory/40 hover:text-ivory hover:bg-ivory/10 transition"><Plus className="h-3.5 w-3.5" /></button>
+              </div>
+
+              {/* spacer */}
+              <div className="flex-1" />
+
+              {/* Giulia input */}
+              <form onSubmit={submit} className="hidden sm:flex items-center gap-2.5 w-[30%] lg:w-[22%]">
+                <span className="h-1.5 w-1.5 rounded-full bg-ivory/60 animate-pulse-soft shrink-0" />
+                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Vraag Giulia anything…" className="flex-1 min-w-0 bg-transparent text-sm text-ivory placeholder:text-ivory/35 focus:outline-none text-right" />
+              </form>
+            </>
+          ) : (
+            <button
+              onClick={() => setExpanded(true)}
+              className="ml-3 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap text-ivory bg-ivory/10 rounded-lg shrink-0"
+            >
+              {all.find((b) => b.id === board)?.label || "GIULIA"}
+            </button>
+          )}
+
+          {/* Actions — altijd zichtbaar; bij ingeklapt alleen de belangrijkste (bellen + chat) */}
+          <div className={cn("ml-auto flex items-center gap-0.5 shrink-0", expanded ? "px-2 lg:px-3" : "pr-2")}>
+            {expanded && (
+              <>
+                <button onClick={() => { expand(); active ? stop() : start(); }} aria-label="Context toevoegen" className={cn(actionBtn, active && "text-ivory")}><BrainCircuit className="h-5 w-5" /></button>
+                <button onClick={() => { expand(); setLauncherOpen(true); }} aria-label="Snelle acties" className={actionBtn}><Plus className="h-5 w-5" /></button>
+              </>
+            )}
+            <button onClick={() => { expand(); openVoice(); }} aria-label="Bel Giulia" className={actionBtn}><Phone className="h-5 w-5" /></button>
+            <button onClick={() => { expand(); openChat(); }} aria-label="Chat met Giulia" className={actionBtn}><MessageSquare className="h-5 w-5" /></button>
           </div>
-
-          {/* spacer */}
-          <div className="flex-1" />
-
-          {/* Giulia input (right) */}
-          <form onSubmit={submit} className="hidden sm:flex items-center gap-2.5 w-[30%] lg:w-[22%]">
-            <span className="h-1.5 w-1.5 rounded-full bg-ivory/60 animate-pulse-soft shrink-0" />
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Vraag Giulia anything…" className="flex-1 min-w-0 bg-transparent text-sm text-ivory placeholder:text-ivory/35 focus:outline-none text-right" />
-          </form>
-
-          {/* Actions (far right) */}
-          <button onClick={() => { reveal(); active ? stop() : start(); }} aria-label="Context toevoegen" className={cn(actionBtn, active && "text-ivory")}><BrainCircuit className="h-5 w-5" /></button>
-          <button onClick={() => { reveal(); setLauncherOpen(true); }} aria-label="Snelle acties" className={actionBtn}><Plus className="h-5 w-5" /></button>
-          <button onClick={() => { reveal(); openVoice(); }} aria-label="Bel Giulia" className={actionBtn}><Phone className="h-5 w-5" /></button>
-          <button onClick={() => { reveal(); openChat(); }} aria-label="Chat met Giulia" className={actionBtn}><MessageSquare className="h-5 w-5" /></button>
         </div>
       </div>
 

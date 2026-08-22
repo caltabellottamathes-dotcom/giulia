@@ -5,7 +5,6 @@ import { WIDGETS } from "@/lib/widgetRegistry";
 import { MODULE_FUNCTIONS } from "@/lib/moduleFunctions";
 import { useDashboardBoard, ensureAllBoards, getActiveBoard, setActiveBoard } from "@/lib/useDashboardBoard";
 import { bumpRefresh } from "@/lib/refreshBus";
-import { getUrgentTypes } from "@/lib/nowUrgency";
 import { IMAGES } from "@/lib/images";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
@@ -26,7 +25,6 @@ const WIDGET_SPAN = { giulia: 2, goodmorning: 2, concierge: 1, approvals: 2, ins
 const MODULE_WIDGET_OVERRIDE = { jedag: "giulia", wantstoknow: "giuliaquestions" };
 
 const BOARD_BG = {
-  now: IMAGES.dashboardNow,
   life: IMAGES.dashboardLife,
   giulia: IMAGES.dashboardGiulia,
   focus: IMAGES.feetChair,
@@ -48,28 +46,45 @@ export default function Home() {
   const { widgets, loading, addWidget, removeWidget, patchWidget, reload, isCustom } = useDashboardBoard(activeBoard, ready);
   const reloadRef = useRef(null);
   reloadRef.current = reload;
+  const prevPanel = useRef(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [userName, setUserName] = useState("");
   const [resetKey, setResetKey] = useState(0);
-  const [urgentTypes, setUrgentTypes] = useState(null);
   const [startupDone, setStartupDone] = useState(() => sessionStorage.getItem("giulia_startup_done") === "1");
   const { toast } = useToast();
 
-  const nowMode = activeBoard === "now";
   const bgImage = BOARD_BG[activeBoard] || IMAGES.feetChair;
-  useEffect(() => {
-    if (!nowMode) { setUrgentTypes(null); return; }
-    let cancelled = false;
-    setUrgentTypes(null);
-    getUrgentTypes().then((s) => { if (!cancelled) setUrgentTypes(s); }).catch(() => {});
-    return () => { cancelled = true; };
-  }, [nowMode, resetKey]);
 
   useEffect(() => {
     const h = (e) => setActiveBoardState(e.detail);
     window.addEventListener("giulia:board-change", h);
     return () => window.removeEventListener("giulia:board-change", h);
   }, []);
+
+  // Altijd up-to-date: bij terugkeer naar het tabblad of window-focus,
+  // en bij sluiten van een paneel → dashboard opnieuw laden + globale refresh.
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState === "visible") {
+        reloadRef.current?.();
+        bumpRefresh();
+      }
+    };
+    document.addEventListener("visibilitychange", refresh);
+    window.addEventListener("focus", refresh);
+    return () => {
+      document.removeEventListener("visibilitychange", refresh);
+      window.removeEventListener("focus", refresh);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (prevPanel.current && !panelOpen) {
+      reloadRef.current?.();
+      bumpRefresh();
+    }
+    prevPanel.current = panelOpen;
+  }, [panelOpen]);
 
   useEffect(() => {
     base44.auth.me().then((u) => setUserName(u?.full_name || "")).catch(() => {});
@@ -144,13 +159,13 @@ export default function Home() {
   const greeting = pool[dayIdx];
 
   const sorted = [...widgets].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
-  const visible = nowMode ? (urgentTypes ? sorted.filter((w) => urgentTypes.has(w.widget_type)) : []) : sorted;
+  const visible = sorted;
   const cells = visible.map((w) => {
     const def = WIDGETS[w.widget_type];
     if (!def) return null;
     return { node: <WidgetCell key={w.id} def={def} widget={w} onRemove={() => removeWidget(w.id)} onThemeChange={patchWidget} sessionMode={isCustom} />, span: WIDGET_SPAN[w.widget_type] || 1 };
   }).filter(Boolean);
-  const showLoading = loading || (nowMode && urgentTypes === null);
+  const showLoading = loading;
 
   return (
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-mt-8 lg:mb-0 min-h-[calc(100svh-3.5rem)] lg:min-h-[calc(100svh-9.5rem)] overflow-hidden">

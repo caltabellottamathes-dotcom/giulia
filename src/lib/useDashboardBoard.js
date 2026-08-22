@@ -7,20 +7,16 @@ import { WIDGETS } from "@/lib/widgetRegistry";
  *
  * Gedrag:
  *  • Eerste opstart van de dag (nieuwe kalenderdag): alle dashboards
- *    behalve NOW tonen al hun eigen widgets volledig.
+ *    tonen al hun eigen widgets volledig.
  *  • Doorheen de dag blijven widgets zoals de gebruiker ze het laatst
  *    gebruikte — verwijderde widgets komen NIET terug bij een refresh.
  *  • Bij volledige afsluit en nieuwe dagopstart: weer alle widgets.
- *  • NOW toont altijd de widgets met de meest urgente info (urgency-filter).
  *
  * De "laatste reset-datum" wordt in localStorage bijgehouden. Is de datum
  * anders dan vandaag → volledige reset (behalve NOW).
  */
 
-const NOW_WIDGET_TYPES = ["approvals", "tasks", "notifications", "email", "whatsapp", "household", "personaladmin", "dailystate", "giuliaquestions"];
-
 export const DEFAULT_BOARDS = [
-  { id: "now", label: "NOW", domain: "now" },
   { id: "giulia", label: "GIULIA", domain: "giulia" },
   { id: "focus", label: "FOCUS", domain: "focus" },
   { id: "life", label: "LIFE", domain: "life" },
@@ -32,15 +28,14 @@ export function isDefaultBoard(id) {
 }
 
 export function domainWidgetTypes(domain) {
-  if (domain === "now") return NOW_WIDGET_TYPES;
   return Object.values(WIDGETS).filter((w) => w.domain === domain).map((w) => w.type);
 }
 
 // ── active board (session) ──
 export function getActiveBoard() {
-  const b = sessionStorage.getItem("giulia_active_board") || "now";
-  // SELF-board is verwijderd als domein — remap naar GIULIA.
-  return b === "self" ? "giulia" : b;
+  const b = sessionStorage.getItem("giulia_active_board") || "giulia";
+  // SELF- en NOW-boards zijn verwijderd — remap naar GIULIA.
+  return (b === "self" || b === "now") ? "giulia" : b;
 }
 export function setActiveBoard(id) {
   sessionStorage.setItem("giulia_active_board", id);
@@ -95,9 +90,8 @@ export async function ensureAllBoards() {
 
     if (isNewDay) {
       localStorage.setItem("giulia_last_reset_date", today);
-      // Volledige reset voor alle boards behalve NOW
+      // Volledige reset voor alle boards
       for (const b of DEFAULT_BOARDS) {
-        if (b.id === "now") continue;
         await base44.entities.DashboardWidget.deleteMany({ board_id: b.id }).catch(() => {});
         const types = domainWidgetTypes(b.domain);
         await base44.entities.DashboardWidget.bulkCreate(
@@ -125,10 +119,9 @@ export async function ensureAllBoards() {
         await base44.entities.DashboardWidget.deleteMany({ id: { $in: toDelete } }).catch(() => {});
       }
 
-      // NOW: altijd aanvullen; anderen: alleen als board volledig leeg is
-      const isNow = b.id === "now";
+      // Aanvullen alleen als het board volledig leeg is
       const isEmpty = (recs || []).length === 0;
-      if (isNow || isEmpty) {
+      if (isEmpty) {
         const missing = types.filter((t) => !seen.has(t));
         if (missing.length) {
           await base44.entities.DashboardWidget.bulkCreate(

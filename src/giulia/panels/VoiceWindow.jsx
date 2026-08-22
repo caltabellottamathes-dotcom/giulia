@@ -176,19 +176,19 @@ function VoiceWindowInner() {
               style={{ background: `linear-gradient(90deg, transparent, ${DEEP} 18%, ${DEEP} 82%, transparent)` }}
             />
 
-            {/* Audio-reactieve bloom — groter, lager, tik om te bellen / op te hangen */}
-            <div className="relative flex items-center justify-center pt-10 pb-4">
+            {/* Audio-reactieve bloom — veel groter, gecentreerd in de glasscard */}
+            <div className="relative flex-1 flex items-center justify-center min-h-0 py-4">
               <button
                 ref={bloomRef}
                 onClick={toggle}
                 aria-label={connected ? "Gesprek stoppen" : "Giulia bellen"}
-                className="h-[190px] w-[190px] rounded-full will-change-transform cursor-pointer"
-                style={{ background: `radial-gradient(circle, ${DEEP} 0%, ${LIGHT} 48%, transparent 72%)`, filter: "blur(2px)", opacity: 0.92, border: "none" }}
+                className="h-[320px] w-[320px] rounded-full will-change-transform cursor-pointer"
+                style={{ background: `radial-gradient(circle, ${DEEP} 0%, ${LIGHT} 46%, transparent 74%)`, filter: "blur(3px)", opacity: 0.95, border: "none" }}
               />
             </div>
 
-            {/* Live transcript */}
-            <div className="flex-1 min-h-0 flex flex-col">
+            {/* Live transcript — compact onder de bloom */}
+            <div className="shrink-0 min-h-0 max-h-[34%] flex flex-col">
               <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar space-y-2.5">
                 {transcript.length === 0 ? (
                   <p className="text-[12px] text-ivory/55 text-center py-6">
