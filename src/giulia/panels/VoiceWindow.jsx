@@ -128,9 +128,8 @@ function VoiceWindowInner() {
       {/* Voice paneel — zelfde formaat als de andere panelen (rechts, volledige hoogte, schuift in) */}
       <div className="fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 w-[calc(100%-2rem)] lg:w-[720px] z-50 animate-slide-right">
         <div className="relative w-full h-full rounded-[28px] overflow-hidden">
-          {/* PhotoShell — Image-component voor snelle WebP-load */}
+          {/* PhotoShell — Image-component voor snelle WebP-load (geen overlay) */}
           <Image src={VOICE_PHOTO} fittingType="fill" alt="" className="absolute inset-0 w-full h-full" draggable={false} />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/25 to-black/30" />
 
           {/* Close — linksboven */}
           <button

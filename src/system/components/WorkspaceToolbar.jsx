@@ -115,21 +115,21 @@ export default function WorkspaceToolbar() {
 
       {/* persistent indicator (inactive) */}
       {hidden && (
-        <div className="fixed bottom-0 inset-x-0 z-30 pointer-events-none">
-          <div className="h-[2px] w-full bg-ivory/20" />
+        <div className="fixed bottom-4 inset-x-4 lg:bottom-6 lg:inset-x-8 z-30 pointer-events-none">
+          <div className="h-[2px] w-full rounded-full bg-ivory/20" />
         </div>
       )}
 
       {/* the bar — full width, edge to edge, sharp corners */}
       <div
         className={cn(
-          "fixed bottom-0 inset-x-0 z-30 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
-          hidden ? "translate-y-full" : "translate-y-0"
+          "fixed bottom-4 inset-x-4 lg:bottom-6 lg:inset-x-8 z-30 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+          hidden ? "translate-y-[calc(100%+1.5rem)]" : "translate-y-0"
         )}
         onMouseEnter={reveal}
         onMouseLeave={scheduleHide}
       >
-        <div className="relative w-full h-14 bg-charcoal/35 backdrop-blur-2xl border-t border-white/10 flex items-center px-4 lg:px-8">
+        <div className="relative w-full h-14 rounded-2xl bg-[rgba(48,50,55,0.18)] backdrop-blur-[22px] backdrop-saturate-[1.35] border border-white/15 ring-1 ring-inset ring-white/10 shadow-[0_28px_64px_-26px_rgba(0,0,0,0.42),inset_0_1px_0_0_rgba(255,255,255,0.14)] flex items-center px-4 lg:px-8">
           {/* Dashboard tabs (left) — monochrome */}
           <div className="flex items-center gap-0.5 overflow-x-auto shrink-0 max-w-[44%] lg:max-w-[52%] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {all.map((b) => {

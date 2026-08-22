@@ -66,7 +66,6 @@ export default function ImAliveWidget() {
           src={VIDEO}
           poster={POSTER}
           className="absolute inset-0 w-full h-full object-cover"
-          muted
           playsInline
           preload="auto"
         />
