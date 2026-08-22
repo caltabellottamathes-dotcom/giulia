@@ -56,9 +56,9 @@ export default function WaitingOnYouWidget() {
         photoOverlay="bg-gradient-to-t from-black/45 via-black/12 to-transparent"
       >
         {/* ghost-getal — enorm, asymmetrisch, half achter foto + half achter tekst */}
-        <div className="pointer-events-none absolute" style={{ left: "52%", bottom: "0%", transform: "translateX(-50%)" }}>
+        <div className="pointer-events-none absolute" style={{ left: "44%", bottom: "0%", transform: "translateX(-50%)" }}>
           <span style={{ color: LIGHT, opacity: 0.2 }}>
-            <CountUp value={total} className="text-[260px] font-display font-black leading-none tracking-[-0.06em]" />
+            <CountUp value={total} className="text-[320px] font-display font-black leading-none tracking-[-0.06em]" />
           </span>
         </div>
 

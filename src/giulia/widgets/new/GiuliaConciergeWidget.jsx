@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useConversation, ConversationProvider } from "@elevenlabs/react";
@@ -25,11 +25,34 @@ function ConciergeInner() {
   const navigate = useNavigate();
   const clientTools = useMemo(() => buildVoiceClientTools({ navigate, openModule }), [navigate, openModule]);
 
-  const { startSession, endSession, status, isSpeaking } = useConversation({ agentId: ELEVEN_AGENT_ID, clientTools });
+  const { startSession, endSession, status, isSpeaking, getOutputVolume } = useConversation({ agentId: ELEVEN_AGENT_ID, clientTools });
   const connected = status === "connected";
   const connecting = status === "connecting";
 
-  // gradient bloom ademt via framer-motion (zie render — speech indicator 06)
+  const bloomRef = useRef(null);
+  const rafRef = useRef(0);
+  const levelRef = useRef(0);
+
+  // rAF — gradient bloom ademt én reageert op Giulia's audio-output (speech indicator 06, audio-reactief).
+  useEffect(() => {
+    const loop = () => {
+      const t = performance.now() / 1000;
+      const raw = connected && typeof getOutputVolume === "function" ? (getOutputVolume() || 0) : 0;
+      levelRef.current = levelRef.current * 0.82 + raw * 0.18;
+      const level = Math.min(1, levelRef.current);
+      const breath = 0.08 * Math.sin(t * 1.1);
+      const scale = 0.9 + level * 0.5 + breath;
+      const opacity = 0.6 + level * 0.32 + 0.04 * Math.sin(t * 1.1);
+      const el = bloomRef.current;
+      if (el) {
+        el.style.transform = `scale(${scale})`;
+        el.style.opacity = String(opacity);
+      }
+      rafRef.current = requestAnimationFrame(loop);
+    };
+    rafRef.current = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [connected, getOutputVolume]);
 
   const toggle = async () => {
     if (connected) { try { await endSession(); } catch { /* ignore */ } }
@@ -81,15 +104,14 @@ function ConciergeInner() {
           <span className="text-[9px] uppercase tracking-[0.32em] font-bold" style={{ color: statusColor }}>{statusLabel}</span>
         </div>
 
-        {/* gradient bloom — ademt (speech indicator · 06) */}
+        {/* gradient bloom — ademt + audio-reactief (speech indicator · 06) */}
         <div className="relative flex-1 w-full overflow-hidden flex items-center justify-center">
-          <motion.button
+          <button
+            ref={bloomRef}
             onClick={toggle}
             aria-label={connected ? "Gesprek stoppen" : "Giulia bellen"}
             className="h-[200px] w-[200px] rounded-full will-change-transform cursor-pointer"
-            style={{ background: `radial-gradient(circle, ${URGENT} 0%, ${DEEP} 45%, transparent 72%)`, filter: "blur(4px)", border: "none" }}
-            animate={{ scale: [0.8, 1.2, 0.8], opacity: [0.5, 0.92, 0.5] }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+            style={{ background: `radial-gradient(circle, ${URGENT} 0%, ${DEEP} 45%, transparent 72%)`, filter: "blur(4px)", opacity: 0.72, border: "none" }}
           />
         </div>
 

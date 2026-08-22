@@ -86,7 +86,7 @@ export default function WhatMattersLayeredWidget() {
       >
         <WidgetHeader type="agenda" label="What Matters?" count={total ? `${doneCount}/${total}` : ""} />
         <h3 className="text-[22px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current">
-          A plan for today!
+          A PLAN FOR TODAY!
         </h3>
         <p className="text-[10px] uppercase tracking-[0.18em] opacity-50 mt-1">
           {weekday} {dayNum} {month} · {hh}:{mm}

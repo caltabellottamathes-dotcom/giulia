@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { GlassPhotoLayeredWidget, WidgetHeader } from "@/system/widgets/primitives";
 import { base44 } from "@/api/base44Client";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/9134a54f7_Good_Morning.jpeg";
 const LIGHT = "hsl(var(--d-giulia-light))";
+const DEEP = "hsl(var(--d-giulia-deep))";
+const URGENT = "hsl(var(--d-giulia-urgent))";
 
 /** GoodMorningWidget — "GOOD MORNING!" · G·21x9·L·SIDE (gelaagd).
  *  Foto-card links (geüploade foto). Glas-shell rechts: header met klok-icoon
@@ -39,16 +42,27 @@ export default function GoodMorningWidget() {
         shape="21:9"
         photo={PHOTO}
         photoPosition="left"
-        photoFraction={0.28}
+        photoFraction={0.36}
         overhang={0.06}
         domain="giulia"
         radius="large"
         photoOverlay="bg-gradient-to-t from-black/35 via-black/10 to-transparent"
+        photoChildren={
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative h-20 w-20">
+              {[0, 1, 2].map((i) => (
+                <motion.div key={i} className="absolute inset-0" animate={{ rotate: 360 }} transition={{ duration: 3 + i, repeat: Infinity, ease: "linear" }}>
+                  <span className="absolute top-0 left-1/2 h-2 w-2 -ml-1 rounded-full" style={{ background: i === 0 ? URGENT : LIGHT }} />
+                </motion.div>
+              ))}
+              <span className="absolute inset-0 m-auto h-2.5 w-2.5 rounded-full" style={{ background: DEEP }} />
+            </div>
+          </div>
+        }
       >
         <WidgetHeader type="briefing" label="GOOD MORNING!" />
         <div className="flex-1 flex flex-col justify-end items-end gap-2">
           <div className="relative">
-            <span className="absolute top-2 right-0 text-[8px] uppercase tracking-[0.24em] opacity-70 z-10">Time till Wake-up</span>
             <span className="text-[88px] font-display font-bold leading-none tracking-[-0.04em] tabular-nums" style={{ color: LIGHT, opacity: 0.32 }}>{countdownHHMM}</span>
           </div>
           <div className="relative">
