@@ -95,7 +95,7 @@ function VoiceWindowInner() {
         <Hotline2Widget />
       </div>
 
-      <div className="fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 z-50 w-[calc(100%-2rem)] lg:w-[420px] animate-slide-right">
+      <div className="fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 z-50 w-[calc(100%-2rem)] lg:w-[560px] animate-slide-right">
         <div className="refraction-panel h-full flex flex-col">
           {/* Close — top-left */}
           <button

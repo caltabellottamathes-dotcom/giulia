@@ -40,8 +40,8 @@ const BOARD_BG = {
  * widgets; daarna blijven alleen de gekozen widgets staan.
  */
 export default function Home() {
-  const { activeModule, closeModule } = usePanel();
-  const panelOpen = !!activeModule;
+  const { activeModule, closeModule, voiceOpen } = usePanel();
+  const panelOpen = !!(activeModule || voiceOpen);
   const [activeBoard, setActiveBoardState] = useState(getActiveBoard());
   const [ready, setReady] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -189,7 +189,7 @@ export default function Home() {
       </div>
 
       {/* Panel name + function links */}
-      <div className={cn("hidden lg:block fixed top-24 left-10 z-50 max-w-[34rem] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]", panelOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none")}>
+      <div className={cn("hidden lg:block fixed top-24 left-10 z-50 max-w-[34rem] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]", activeModule ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none")}>
         <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/70 mb-3 font-semibold">{new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}</p>
         <h1 className="text-5xl lg:text-6xl font-display font-semibold tracking-[-0.02em] leading-[1.0] text-foreground mb-5">{MODULES[activeModule]?.label}</h1>
         <div className="flex flex-wrap gap-x-5 gap-y-1.5">
