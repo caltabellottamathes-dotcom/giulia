@@ -74,11 +74,12 @@ export default async function (req) {
       const fromMe = msg?.key?.fromMe === true;
       const msgKeys = msg?.message ? Object.keys(msg.message) : [];
       const text = extractText(msg?.message);
+      const pushName = msg?.pushName || "";
       const ts = msg?.messageTimestamp
         ? new Date(Number(msg.messageTimestamp) * 1000).toISOString()
         : new Date().toISOString();
 
-      console.log("[evo-msg] fromMe=", fromMe, "jid=", remoteJid, "msgKeys=", msgKeys, "text=", text ? "yes" : "no", "id=", evoMsgId);
+      console.log("[evo-msg] fromMe=", fromMe, "jid=", remoteJid, "pushName=", pushName, "msgKeys=", msgKeys, "text=", text ? "yes" : "no", "id=", evoMsgId);
 
       // Ontdubbel.
       if (evoMsgId) {
@@ -86,17 +87,29 @@ export default async function (req) {
         if (existing && existing.length > 0) { skipped++; continue; }
       }
 
+      // Sla alleen inkomende tekstberichten op (fromMe === false).
+      if (fromMe) { skipped++; continue; }
+      if (!text) { skipped++; continue; }
+
       // Koppel aan een Contact op genormaliseerd telefoonnummer, indien aanwezig.
+      // Geen match én wel een pushName/phone? Dan auto-creeer een Contact zodat
+      // de afzender zichtbaar wordt in People + WhatsApp.
       let contactId = "";
       if (phone) {
         const matches = await sr.entities.Contact.filter({ phone }).catch(() => []);
         const found = (matches || []).find((c) => normalizePhone(c.phone) === phone);
-        contactId = found?.id || "";
+        if (found) {
+          contactId = found.id;
+        } else if (pushName || phone) {
+          const created = await sr.entities.Contact.create({
+            name: pushName || phone,
+            phone: phone,
+            status: "unconfirmed",
+            agent_source: "evoWebhook",
+          }).catch((e) => { console.log("[evo-contact] create failed:", e.message); return null; });
+          if (created) { contactId = created.id; console.log("[evo-contact] created:", created.id, pushName || phone); }
+        }
       }
-
-      // Sla alleen inkomende tekstberichten op (fromMe === false).
-      if (fromMe) { skipped++; continue; }
-      if (!text) { skipped++; continue; }
 
       await sr.entities.WhatsAppMessage.create({
         contact_id: contactId || undefined,
