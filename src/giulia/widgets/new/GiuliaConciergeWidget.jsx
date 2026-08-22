@@ -88,7 +88,7 @@ function ConciergeInner() {
 
       {/* transparant glas — vierkant, 4 hoeken, flush beneden (GIULIA glas) */}
       <div
-        className="absolute left-1/2 bottom-0 -translate-x-1/2 w-[300px] h-[210px] rounded-[28px] flex flex-col items-center px-4 pt-3.5 pb-4 overflow-hidden"
+        className="absolute inset-x-0 bottom-0 h-[200px] rounded-t-[28px] flex flex-col items-center px-4 pt-3.5 pb-4 overflow-hidden"
         style={{
           background: "rgba(255,255,255,0.08)",
           backdropFilter: "blur(12px) saturate(1.35)",

@@ -18,10 +18,12 @@ export default function GoodMorningWidget() {
   const { openModule } = usePanel();
   const [alarm, setAlarm] = useState("07:00");
   const [now, setNow] = useState(new Date());
+  const [enabled, setEnabled] = useState(false);
+  const [settingsId, setSettingsId] = useState(null);
 
   useEffect(() => {
     base44.entities.MorningSettings.list("-created_date", 1)
-      .then((r) => { if (r && r[0] && r[0].wake_time) setAlarm(r[0].wake_time); })
+      .then((r) => { if (r && r[0]) { if (r[0].wake_time) setAlarm(r[0].wake_time); setEnabled(!!r[0].enabled); setSettingsId(r[0].id); } })
       .catch(() => {});
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
@@ -37,6 +39,15 @@ export default function GoodMorningWidget() {
   const pad = (n) => String(n).padStart(2, "0");
   const countdownHHMM = `${pad(hh)}:${pad(mm)}`;
   const alarmStr = `${pad(h)}:${pad(m)}`;
+
+  const toggleWake = async () => {
+    const next = !enabled;
+    setEnabled(next);
+    try {
+      if (settingsId) await base44.entities.MorningSettings.update(settingsId, { enabled: next });
+      else { const rec = await base44.entities.MorningSettings.create({ wake_time: alarm, enabled: next }); if (rec) setSettingsId(rec.id); }
+    } catch { /* ignore */ }
+  };
 
   return (
     <div className="w-full h-[260px]">
@@ -63,8 +74,16 @@ export default function GoodMorningWidget() {
           </div>
         }
       >
-        <WidgetHeader type="briefing" label="GOOD MORNING!" />
-        <div className="flex-1 flex flex-col justify-end items-end">
+        <div className="flex items-start justify-between">
+          <WidgetHeader type="briefing" label="GOOD MORNING!" />
+          <button onClick={toggleWake} aria-label="Wake modus" className="flex items-center gap-2 pt-0.5">
+            <span className="text-[8px] uppercase tracking-[0.2em] font-bold" style={{ color: enabled ? "hsl(var(--olive))" : "rgba(255,255,255,0.4)" }}>WAKE</span>
+            <span className="relative h-5 w-9 rounded-full transition-colors" style={{ background: enabled ? "hsl(var(--d-giulia-deep))" : "rgba(255,255,255,0.15)" }}>
+              <motion.span className="absolute top-0.5 h-4 w-4 rounded-full bg-ivory shadow" animate={{ left: enabled ? 18 : 2 }} transition={{ type: "spring", stiffness: 300, damping: 25 }} />
+            </span>
+          </button>
+        </div>
+        <div className="flex-1 flex flex-col justify-end items-end" style={{ opacity: enabled ? 1 : 0.4 }}>
           <span className="text-[88px] font-display font-bold leading-none tracking-[-0.04em] tabular-nums mb-1" style={{ color: LIGHT, opacity: 0.5 }}>{countdownHHMM}</span>
           <div className="flex items-end gap-2">
             <div className="flex items-center gap-1 pb-3">

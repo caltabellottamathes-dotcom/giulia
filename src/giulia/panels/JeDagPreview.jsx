@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Sun, Calendar, Sparkles } from "lucide-react";
 import PreviewShell from "@/system/panels/PreviewShell";
 import { base44 } from "@/api/base44Client";
+import WhatMattersLayeredWidget from "@/giulia/widgets/new/WhatMattersLayeredWidget";
 
 const PLUM = "#301728", URG = "#d5e24a", MID = "#94925d";
 
@@ -31,6 +32,7 @@ export default function JeDagPreview({ onOpen }) {
       ]}
       actions={[{ label: "Nieuwe Taak Plannen", primary: true, to: "/tasks" }, { label: "Open Agenda", to: "/agenda" }, { label: "Open Giulia", to: "/chat" }, { label: "Open Chat", to: "/chat" }]}>
       <div className="flex flex-col h-full overflow-hidden">
+        <div className="mb-4"><WhatMattersLayeredWidget /></div>
         <div className="rounded-2xl border border-marble/20 bg-marble/5 p-4 mb-4">
           <div className="flex items-center justify-between">
             <div>
