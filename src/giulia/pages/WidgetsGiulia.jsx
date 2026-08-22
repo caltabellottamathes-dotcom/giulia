@@ -5,6 +5,7 @@ import WhatMattersLayeredWidget from "@/giulia/widgets/new/WhatMattersLayeredWid
 import WaitingOnYouWidget from "@/giulia/widgets/new/WaitingOnYouWidget";
 import WhatIveNoticedWidget from "@/giulia/widgets/new/WhatIveNoticedWidget";
 import MeanwhileWidget from "@/giulia/widgets/new/MeanwhileWidget";
+import WantsToKnowLayeredWidget from "@/giulia/widgets/new/WantsToKnowLayeredWidget";
 
 export default function WidgetsGiulia() {
   const Label = ({ children }) => (
@@ -42,8 +43,12 @@ export default function WidgetsGiulia() {
           <WhatIveNoticedWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[620px]">
-          <Label>05 · MEANWHILE... — G·3x2·R·SIDE · achter de schermen</Label>
+          <Label>05 · MEANWHILE... — P·4:3·R·SIDE · achter de schermen (timeline)</Label>
           <MeanwhileWidget />
+        </div>
+        <div className="break-inside-avoid mb-8 mx-auto w-[300px]">
+          <Label>06 · WANTS TO KNOW — P·4:5·B·SIDE · giulia's mysteries</Label>
+          <WantsToKnowLayeredWidget />
         </div>
       </div>
     </div>
