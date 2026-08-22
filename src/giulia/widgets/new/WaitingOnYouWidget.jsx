@@ -10,11 +10,28 @@ const DEEP = "hsl(var(--d-giulia-deep))";    // olijf
 const LIGHT = "hsl(var(--d-giulia-light))";  // pistachio
 const IVORY = "hsl(var(--ivory))";
 
-/** WaitingOnYouWidget — G·3x2·L·SIDE (gelaagd).
- *  Foto-card links: uploaded foto + grote live-tellende count van het totaal
- *  aantal open approvals. Glas-shell rechts: header "Waiting on you." +
- *  titel "Sign, seal and approve!" + grafische lijst met de 3 meest urgente
- *  approvals (klik opent het approval). Kleursysteem: GIULIA + Urgent. */
+/** WaitingOnYouWidget — G·3x2·R·SIDE (gelaagd).
+ *  Foto-card rechts: uploaded foto + énorme live-tellende count van open
+ *  approvals. Glas-shell links: header "Waiting on you." + sterke, korte
+ *  rijen — per approval een 3-woord-samenvatting (geen lange tekst meer).
+ *  Kleursysteem: GIULIA + Urgent. */
+
+const STOP = new Set(["the", "a", "an", "de", "het", "een", "en", "van", "te", "dat", "die", "is", "voor", "met", "to", "for", "and", "of", "in", "on", "at", "by", "je", "jouw", "uw", "this", "that", "with", "your"]);
+
+function threeWordSummary(a) {
+  let src = (a.description || a.title || a.action_type || a.type || "").toString().trim();
+  if (!src) src = "Wacht op jou";
+  let words = src.split(/\s+/).map((w) => w.replace(/[^\p{L}\p{N}\u2013-]/gu, "")).filter((w) => w.length > 1 && !STOP.has(w.toLowerCase()));
+  if (words.length < 3) {
+    const all = (a.description || a.title || src).split(/\s+/).map((w) => w.replace(/[^\p{L}\p{N}\u2013-]/gu, "")).filter(Boolean);
+    words = all;
+  }
+  const fill = ["wacht", "op", "jou"];
+  let i = 0;
+  while (words.length < 3) words.push(fill[i++ % 3]);
+  return words.slice(0, 3);
+}
+
 export default function WaitingOnYouWidget() {
   const { openModule } = usePanel();
   const { data: approvals, loading } = useEntityList("Approval", { filter: { status: "pending" }, realtime: true });
@@ -37,26 +54,23 @@ export default function WaitingOnYouWidget() {
         overhang={0.08}
         domain="giulia"
         radius="large"
-        photoOverlay="bg-gradient-to-t from-black/55 via-black/15 to-transparent"
+        photoOverlay="bg-gradient-to-t from-black/60 via-black/20 to-transparent"
         photoChildren={
-          <div className="absolute inset-0 p-4 flex flex-col justify-end" style={{ color: IVORY }}>
-            <CountUp value={total} className="text-[56px] font-display font-bold leading-[0.88] tracking-[-0.03em]" />
-            <p className="text-[10px] uppercase tracking-[0.24em] mt-1" style={{ color: "rgba(255,255,255,0.7)" }}>
+          <div className="absolute inset-0 p-5 flex flex-col justify-end" style={{ color: IVORY }}>
+            <CountUp value={total} className="text-[88px] font-display font-bold leading-[0.82] tracking-[-0.04em]" />
+            <p className="text-[10px] uppercase tracking-[0.28em] mt-2" style={{ color: "rgba(255,255,255,0.78)" }}>
               wachten op jou
             </p>
           </div>
         }
       >
-        <WidgetHeader type="pulse" label="Waiting on you." count={total ? `${total}` : ""} />
-        <h3 className="text-[22px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current">
-          Sign, seal and approve!
-        </h3>
+        <WidgetHeader type="tasks" label="Waiting on you." count={total ? `${total}` : ""} />
 
         <div className="flex-1 min-h-2" />
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-2">
           {loading ? (
-            <div className="flex items-center justify-center py-4">
+            <div className="flex items-center justify-center py-5">
               <div className="h-6 w-6 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" />
             </div>
           ) : top3.length > 0 ? (
@@ -64,6 +78,7 @@ export default function WaitingOnYouWidget() {
               const num = String(i + 1).padStart(2, "0");
               const urgent = a.category === "urgent";
               const color = urgent ? URGENT : i % 2 === 1 ? LIGHT : DEEP;
+              const words = threeWordSummary(a);
               return (
                 <motion.button
                   key={a.id}
@@ -73,18 +88,19 @@ export default function WaitingOnYouWidget() {
                   transition={{ delay: i * 0.08, duration: 0.4 }}
                   className="group flex items-center gap-3 w-full text-left rounded-xl px-2 py-2 hover:bg-white/5 transition-colors"
                 >
-                  <span className="text-[18px] font-display font-bold tabular-nums leading-none" style={{ color }}>{num}</span>
-                  <span className="w-[3px] self-stretch rounded-full" style={{ background: color, opacity: urgent ? 1 : 0.55 }} />
+                  <span className="text-[13px] font-mono font-bold tabular-nums leading-none" style={{ color }}>{num}</span>
+                  <span className="w-[3px] self-stretch rounded-full" style={{ background: color, opacity: urgent ? 1 : 0.6 }} />
                   <span className="flex-1 min-w-0">
-                    <span className="block text-[12px] font-medium truncate" style={{ color: IVORY }}>{a.description}</span>
-                    <span className="block text-[9px] uppercase tracking-[0.2em] mt-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>{a.type || a.action_type}</span>
+                    <span className="block text-[15px] font-display font-bold uppercase tracking-[0.01em] leading-tight truncate" style={{ color: IVORY }}>
+                      {words.join(" ")}
+                    </span>
                   </span>
-                  <ArrowRight className="h-3.5 w-3.5 shrink-0 opacity-40 group-hover:opacity-80 group-hover:translate-x-0.5 transition-all" style={{ color: IVORY }} />
+                  <ArrowRight className="h-4 w-4 shrink-0 opacity-40 group-hover:opacity-80 group-hover:translate-x-0.5 transition-all" style={{ color: IVORY }} />
                 </motion.button>
               );
             })
           ) : (
-            <p className="text-[11px] py-3" style={{ color: "rgba(255,255,255,0.6)" }}>Niets staat open.</p>
+            <p className="text-[12px] py-4 font-medium" style={{ color: "rgba(255,255,255,0.65)" }}>Niets staat open.</p>
           )}
         </div>
       </GlassPhotoLayeredWidget>

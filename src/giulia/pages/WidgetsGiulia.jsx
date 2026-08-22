@@ -4,7 +4,6 @@ import GiuliaConciergeWidget from "@/giulia/widgets/new/GiuliaConciergeWidget";
 import WhatMattersLayeredWidget from "@/giulia/widgets/new/WhatMattersLayeredWidget";
 import WaitingOnYouWidget from "@/giulia/widgets/new/WaitingOnYouWidget";
 import WhatIveNoticedWidget from "@/giulia/widgets/new/WhatIveNoticedWidget";
-import MeanwhileWidget from "@/giulia/widgets/new/MeanwhileWidget";
 import WantsToKnowLayeredWidget from "@/giulia/widgets/new/WantsToKnowLayeredWidget";
 
 export default function WidgetsGiulia() {
@@ -42,12 +41,8 @@ export default function WidgetsGiulia() {
           <Label>04 · WHAT I'VE NOTICED — P·1x1·B·STRIP · XL gauge-ring + 3 groepen</Label>
           <WhatIveNoticedWidget />
         </div>
-        <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[620px]">
-          <Label>05 · MEANWHILE... — SYSTEM · P·4:3·B·SIDE · weekstaafgrafiek</Label>
-          <MeanwhileWidget />
-        </div>
         <div className="break-inside-avoid mb-8 mx-auto w-[300px]">
-          <Label>06 · WANTS TO KNOW — P·2x3·B·SIDE · comparison gauge (FOCUS/LIFE/URGENT)</Label>
+          <Label>05 · WANTS TO KNOW — P·2x3·B·SIDE · comparison gauge (FOCUS/LIFE/URGENT)</Label>
           <WantsToKnowLayeredWidget />
         </div>
       </div>

@@ -4,7 +4,7 @@ import { PhotoGlassLayeredWidget, WidgetHeader } from "@/system/widgets/primitiv
 import { usePanel } from "@/lib/PanelContext";
 import { base44 } from "@/api/base44Client";
 
-const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ae0d061fb_WantsToknow.jpeg";
+const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ac89b8e63_WTK.jpeg";
 const DEEP = "hsl(var(--d-giulia-deep))";    // olijf — FOCUS
 const LIGHT = "hsl(var(--d-giulia-light))"; // pistachio — LIFE
 const URGENT = "hsl(var(--d-giulia-urgent))"; // urgent — URGENT
@@ -50,8 +50,8 @@ export default function WantsToKnowLayeredWidget() {
         shape="2:3"
         photo={PHOTO}
         glassPosition="bottom"
-        glassFraction={0.56}
-        overhang={0.06}
+        glassFraction={0.40}
+        overhang={0.05}
         domain="giulia"
         radius="large"
         glassBlur={8}
@@ -60,7 +60,7 @@ export default function WantsToKnowLayeredWidget() {
         <WidgetHeader type="pulse" label="WANTS TO KNOW!" />
 
         {/* comparison gauge — 3 groepen */}
-        <div className="flex flex-col gap-3 mt-3">
+        <div className="flex flex-col gap-2.5 mt-2">
           {GROUPS.map((g, i) => {
             const val = counts[g.key];
             const frac = loading ? 0 : val / max;

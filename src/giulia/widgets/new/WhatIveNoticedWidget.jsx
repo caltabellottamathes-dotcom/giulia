@@ -81,7 +81,7 @@ export default function WhatIveNoticedWidget() {
         }
       >
         {/* strip-card: header + 3 groepen */}
-        <WidgetHeader type="pulse" label="WHAT I'VE NOTICED" />
+        <WidgetHeader type="energy" label="WHAT I'VE NOTICED" />
         <div className="flex justify-between gap-1 mt-1.5">
           {GROUPS.map((g) => (
             <button key={g.key} onClick={() => openModule("insights")} className="flex items-center gap-1.5 text-left hover:opacity-80 transition">
