@@ -50,7 +50,7 @@ export default function WaitingOnYouWidget() {
         photo={PHOTO}
         photoPosition="right"
         photoFraction={0.42}
-        overhang={0.08}
+        overhang={0}
         domain="giulia"
         radius="large"
         photoOverlay="bg-gradient-to-t from-black/45 via-black/12 to-transparent"

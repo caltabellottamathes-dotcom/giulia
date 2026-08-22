@@ -70,7 +70,7 @@ export default function WhatMattersLayeredWidget() {
         photo={PHOTO}
         photoPosition="left"
         photoFraction={0.40}
-        overhang={0.08}
+        overhang={0}
         domain="giulia"
         radius="large"
         photoOverlay="bg-gradient-to-t from-black/40 via-black/20 to-black/10"

@@ -43,7 +43,7 @@ export default function GoodMorningWidget() {
         photo={PHOTO}
         photoPosition="left"
         photoFraction={0.36}
-        overhang={0.06}
+        overhang={0}
         domain="giulia"
         radius="large"
         photoOverlay="bg-gradient-to-t from-black/35 via-black/10 to-transparent"
