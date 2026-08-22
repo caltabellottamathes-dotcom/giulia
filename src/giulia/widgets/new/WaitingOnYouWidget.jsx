@@ -10,11 +10,10 @@ const DEEP = "hsl(var(--d-giulia-deep))";    // olijf
 const LIGHT = "hsl(var(--d-giulia-light))";  // pistachio
 const IVORY = "hsl(var(--ivory))";
 
-/** WaitingOnYouWidget — G·3x2·R·SIDE (gelaagd).
- *  Foto-card rechts: uploaded foto + énorme live-tellende count van open
- *  approvals. Glas-shell links: header "Waiting on you." + sterke, korte
- *  rijen — per approval een 3-woord-samenvatting (geen lange tekst meer).
- *  Kleursysteem: GIULIA + Urgent. */
+/** WaitingOnYouWidget — G·4:3·R·SIDE (gelaagd). Foto-card rechts (clean, geen
+ *  tekst). Glas-shell links: het live aantal open approvals als enorm
+ *  ghost-getal — asymmetrisch geplaatst, half achter de foto, half achter de
+ *  tekst — plus sterke, korte 3-woord-samenvattingen per approval. */
 
 const STOP = new Set(["the", "a", "an", "de", "het", "een", "en", "van", "te", "dat", "die", "is", "voor", "met", "to", "for", "and", "of", "in", "on", "at", "by", "je", "jouw", "uw", "this", "that", "with", "your"]);
 
@@ -45,26 +44,25 @@ export default function WaitingOnYouWidget() {
   const total = (approvals || []).length;
 
   return (
-    <div className="w-full max-w-[620px]">
+    <div className="w-full max-w-[520px]">
       <GlassPhotoLayeredWidget
-        shape="3:2"
+        shape="4:3"
         photo={PHOTO}
         photoPosition="right"
         photoFraction={0.42}
         overhang={0.08}
         domain="giulia"
         radius="large"
-        photoOverlay="bg-gradient-to-t from-black/60 via-black/20 to-transparent"
-        photoChildren={
-          <div className="absolute inset-0 p-5 flex flex-col justify-end" style={{ color: IVORY }}>
-            <CountUp value={total} className="text-[88px] font-display font-bold leading-[0.82] tracking-[-0.04em]" />
-            <p className="text-[10px] uppercase tracking-[0.28em] mt-2" style={{ color: "rgba(255,255,255,0.78)" }}>
-              wachten op jou
-            </p>
-          </div>
-        }
+        photoOverlay="bg-gradient-to-t from-black/45 via-black/12 to-transparent"
       >
-        <WidgetHeader type="tasks" label="Waiting on you." count={total ? `${total}` : ""} />
+        {/* ghost-getal — enorm, asymmetrisch, half achter foto + half achter tekst */}
+        <div className="pointer-events-none absolute" style={{ left: "52%", top: "44%", transform: "translate(-50%,-50%)" }}>
+          <span style={{ color: IVORY, opacity: 0.13 }}>
+            <CountUp value={total} className="text-[280px] font-display font-black leading-none tracking-[-0.06em]" />
+          </span>
+        </div>
+
+        <WidgetHeader type="tasks" label="Waiting on you." />
 
         <div className="flex-1 min-h-2" />
 

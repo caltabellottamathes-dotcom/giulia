@@ -42,7 +42,7 @@ function ConciergeInner() {
       const level = Math.min(1, levelRef.current);
       const breath = 0.045 * Math.sin(t * 1.1);
       const scale = 0.5 + level * 1.25 + breath;
-      const opacity = 0.5 + level * 0.5;
+      const opacity = 0.72 + level * 0.28;
       const el = bloomRef.current;
       if (el) {
         el.style.transform = `scale(${scale})`;
@@ -119,7 +119,7 @@ function ConciergeInner() {
               style={{
                 background: `radial-gradient(circle at 38% 34%, ${URGENT} 0%, ${DEEP} 38%, ${LIGHT} 58%, transparent 72%)`,
                 filter: "blur(7px)",
-                opacity: 0.5,
+                opacity: 0.72,
                 border: "none",
               }}
             />

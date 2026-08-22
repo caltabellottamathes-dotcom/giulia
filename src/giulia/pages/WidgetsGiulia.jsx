@@ -5,6 +5,8 @@ import WhatMattersLayeredWidget from "@/giulia/widgets/new/WhatMattersLayeredWid
 import WaitingOnYouWidget from "@/giulia/widgets/new/WaitingOnYouWidget";
 import WhatIveNoticedWidget from "@/giulia/widgets/new/WhatIveNoticedWidget";
 import WantsToKnowLayeredWidget from "@/giulia/widgets/new/WantsToKnowLayeredWidget";
+import ImAliveWidget from "@/giulia/widgets/new/ImAliveWidget";
+import GoodMorningWidget from "@/giulia/widgets/new/GoodMorningWidget";
 
 export default function WidgetsGiulia() {
   const Label = ({ children }) => (
@@ -44,6 +46,14 @@ export default function WidgetsGiulia() {
         <div className="break-inside-avoid mb-8 mx-auto w-[300px]">
           <Label>05 · WANTS TO KNOW — P·2x3·B·SIDE · comparison gauge (FOCUS/LIFE/URGENT)</Label>
           <WantsToKnowLayeredWidget />
+        </div>
+        <div className="break-inside-avoid mb-8 mx-auto w-[340px]">
+          <Label>06 · I'M ALIVE! — G·1x1 · EKG live/dood · tik om te starten</Label>
+          <ImAliveWidget />
+        </div>
+        <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[680px]">
+          <Label>07 · GOOD MORNING! — G·21x9·L·SIDE · wektijd + aftelklok</Label>
+          <GoodMorningWidget />
         </div>
       </div>
     </div>
