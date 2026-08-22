@@ -45,6 +45,11 @@
       "type": "boolean",
       "default": false,
       "title": "Giulia Suggested"
+    },
+    "whatsapp_message_id": {
+      "type": "string",
+      "title": "Evolution Message ID",
+      "description": "Baileys/Evolution key.id van het bericht \u2014 gebruikt voor ontdubbeling van inkomende webhooks."
     }
   },
   "required": [
