@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import PageHero from "@/system/components/glass/PageHero";
 import GlassPanel from "@/system/components/glass/GlassPanel";
 import { useTimeTracker, formatMinutes } from "@/lib/useTimeTracker";
+import { base44 } from "@/api/base44Client";
 import { useEntityList } from "@/hooks/useEntity";
 import { IMAGES } from "@/lib/images";
 import { Timer, Clock } from "lucide-react";
@@ -19,9 +20,33 @@ export default function TimeTracker() {
   const projEntries = Object.entries(tt.perProject || {}).sort((a, b) => b[1] - a[1]);
   const data = projEntries.map(([id, min]) => ({ name: projName(id), uren: +(min / 60).toFixed(1) }));
 
+  const running = (tt.entries || []).find((e) => e.status === "running");
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { if (!running) return; const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, [running]);
+  const elapsed = running && running.start_time ? (now - new Date(running.start_time).getTime()) / 1000 : 0;
+  const fmtClock = (s) => { const x = Math.floor(s || 0); const h = Math.floor(x / 3600), m = Math.floor((x % 3600) / 60), ss = x % 60; return `${h}:${String(m).padStart(2, "0")}:${String(ss).padStart(2, "0")}`; };
+  const stopRunning = async () => {
+    if (!running) return;
+    const dur = Math.max(1, Math.round(elapsed / 60));
+    await base44.entities.TimeEntry.update(running.id, { end_time: new Date().toISOString(), duration_minutes: dur, status: "stopped" });
+    tt.reload();
+  };
+
   return (
     <div className="space-y-6 animate-fade-up">
       <PageHero page="timetracker" image={IMAGES.hourglassJacket} icon={Timer} eyebrow="Uren" title="Where My Time Goes." subtitle="Track je uren per taak en project" />
+
+      {running && (
+        <GlassPanel level={2} className="p-5 flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Lopend · {projName(running.project_id)}</p>
+            <p className="text-foreground text-2xl font-display font-semibold mt-1 tabular-nums">{fmtClock(elapsed)}</p>
+          </div>
+          <button onClick={stopRunning} className="px-4 py-2 rounded-full bg-olive text-ivory text-sm font-semibold flex items-center gap-2">
+            <Timer className="w-4 h-4" /> Stop
+          </button>
+        </GlassPanel>
+      )}
 
       <div className="grid grid-cols-3 gap-3">
         <GlassPanel level={2} className="p-4">

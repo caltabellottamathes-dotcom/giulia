@@ -9,8 +9,8 @@ import { IMAGES } from "@/lib/images";
 import { useToast } from "@/components/ui/use-toast";
 
 const PHOTO = IMAGES.focusTodo;
-const DEEP = "hsl(var(--d-focus-deep))";   // burgundy
-const LIGHT = "hsl(var(--d-focus-light))";  // cream
+const DEEP = "hsl(var(--d-focus-deep))";
+const LIGHT = "hsl(var(--d-focus-light))";
 const IVORY = "hsl(var(--ivory))";
 
 const fmtTime = (iso) => { try { return new Date(iso).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" }); } catch { return ""; } };
@@ -18,12 +18,10 @@ const fmtTime = (iso) => { try { return new Date(iso).toLocaleTimeString("nl-NL"
 const initials = (name) => (name || "?").trim().split(/\s+/).map((s) => s[0]).slice(0, 2).join("").toUpperCase();
 
 /** WhatsAppChatFocusWidget — P·16x9·L·SIDE · "Who's Texting?"
- *  PhotoShell (rechts) = klein chatvenster: header + contactnaam + glazen
- *  bericht-pil (geblurd) + text-entry met verzendknop. GlassCard (links) =
- *  5 laatste contacten die gestuurd hebben, enkel de contactpersoon op een
- *  visuele grafische manier (initialen-cirkel + naam + ongelezen-punt).
- *  Tik opent de conversatie in het chatvenster; nog eens tikken sluit;
- *  dubbelklik markeer gelezen (verwijdert ongelezen-punt). */
+ *  GlassCard (links) = 5 laatste contacten die gestuurd hebben, in focus-kleuren
+ *  (pistachio namen, plum initialen-rondjes, urgent-geel bij ongelezen).
+ *  PhotoShell (rechts) = chatvenster, enkel zichtbaar als een contact is
+ *  aangeklikt — anders enkel de achtergrond. */
 export default function WhatsAppChatFocusWidget() {
   const { toast } = useToast();
   const { openModule } = usePanel();
@@ -44,8 +42,6 @@ export default function WhatsAppChatFocusWidget() {
   const received = useMemo(() => (msgs || []).filter((m) => m.direction === "received"), [msgs]);
   const totalUnread = received.filter((m) => m.status === "unread").length;
 
-  // 5 laatste contacten die gestuurd hebben (uniek per contact, recentste
-  // bericht eerst) — ongeacht gelezen/ongelesen.
   const recentSenders = useMemo(() => {
     const byContact = new Map();
     received.forEach((m) => {
@@ -119,48 +115,47 @@ export default function WhatsAppChatFocusWidget() {
               {selectedContact ? (selectedContact.name || selectedContact.phone || "Onbekend") : "WHO'S TEXTING."}
             </h3>
 
-            {/* glazen bericht-pil — iets meer geblurd */}
-            <div className="flex-1 min-h-0 mt-2 overflow-hidden rounded-2xl flex flex-col gap-1.5 p-2.5"
-              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
-              onClick={(e) => e.stopPropagation()}>
-              {!selectedId ? (
-                <p className="text-[11px] text-ivory/55 m-auto text-center">Tik een contact links aan om te antwoorden.</p>
-              ) : conversation.length === 0 ? (
-                <p className="text-[11px] text-ivory/55 m-auto text-center">Geen berichten.</p>
-              ) : conversation.map((m) => (
-                <div key={m.id} className="flex flex-col">
-                  <span className="text-[9px] uppercase tracking-wide" style={{ color: m.direction === "sent" ? "rgba(255,255,255,0.4)" : LIGHT }}>
-                    {m.direction === "sent" ? "Ik" : (selectedContact?.name?.split(" ")[0] || "Zij")} · {fmtTime(m.timestamp)}
-                  </span>
-                  <p className="text-[12px] leading-snug" style={{ color: m.direction === "sent" ? "rgba(255,255,255,0.7)" : IVORY }}>{m.message}</p>
+            {selectedId && (
+              <>
+                <div className="flex-1 min-h-0 mt-2 overflow-hidden rounded-2xl flex flex-col gap-1.5 p-2.5"
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
+                  onClick={(e) => e.stopPropagation()}>
+                  {conversation.length === 0 ? (
+                    <p className="text-[11px] text-ivory/55 m-auto text-center">Geen berichten.</p>
+                  ) : conversation.map((m) => (
+                    <div key={m.id} className="flex flex-col">
+                      <span className="text-[9px] uppercase tracking-wide" style={{ color: m.direction === "sent" ? "rgba(255,255,255,0.4)" : LIGHT }}>
+                        {m.direction === "sent" ? "Ik" : (selectedContact?.name?.split(" ")[0] || "Zij")} · {fmtTime(m.timestamp)}
+                      </span>
+                      <p className="text-[12px] leading-snug" style={{ color: m.direction === "sent" ? "rgba(255,255,255,0.7)" : IVORY }}>{m.message}</p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            <div className="mt-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-              <input
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") send(); }}
-                placeholder={selectedId ? "Typ een reactie..." : "Selecteer een contact…"}
-                disabled={!selectedId}
-                className="flex-1 min-w-0 rounded-full px-3.5 py-2 text-[12px] text-ivory placeholder:text-ivory/40 focus:outline-none disabled:opacity-50"
-                style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", color: IVORY }}
-              />
-              <button
-                onClick={send}
-                disabled={!selectedId || !draft.trim() || sending}
-                aria-label="Verstuur"
-                className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center disabled:opacity-40 transition"
-                style={{ background: DEEP, color: IVORY }}
-              >
-                <Send className="h-3.5 w-3.5" />
-              </button>
-            </div>
+                <div className="mt-2 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") send(); }}
+                    placeholder="Typ een reactie..."
+                    className="flex-1 min-w-0 rounded-full px-3.5 py-2 text-[12px] text-ivory placeholder:text-ivory/40 focus:outline-none"
+                    style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", color: IVORY }}
+                  />
+                  <button
+                    onClick={send}
+                    disabled={!draft.trim() || sending}
+                    aria-label="Verstuur"
+                    className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center disabled:opacity-40 transition"
+                    style={{ background: DEEP, color: IVORY }}
+                  >
+                    <Send className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         }
       >
-        {/* GlassCard — 5 laatste contacten die gestuurd hebben, enkel contact visueel */}
         <div className="flex flex-col gap-2 h-full overflow-hidden -mx-1 px-1" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between px-1 pb-1.5 mb-0.5 border-b border-white/12">
             <span className="text-[9px] uppercase tracking-[0.22em] font-bold text-ivory/55">Laatste afzenders</span>

@@ -1,101 +1,115 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { WidgetHeader } from "@/system/widgets/primitives";
-import { useEntityList } from "@/hooks/useEntity";
+import { WidgetShell, WidgetHeader } from "@/system/widgets/primitives";
 import { usePanel } from "@/lib/PanelContext";
+import { useEntityList } from "@/hooks/useEntity";
+import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 
 const PHOTO = IMAGES.focusCoat;
-const IVORY = "hsl(var(--ivory))";
 const DEEP = "hsl(var(--d-focus-deep))";
 const LIGHT = "hsl(var(--d-focus-light))";
+const IVORY = "hsl(var(--ivory))";
 
-const STATES = ["Tracking", "Logging", "Billing", "Pausing", "Done"];
-const PATH = "M 0 50 L 18 50 L 24 50 L 30 28 L 36 72 L 42 40 L 48 50 L 60 50 L 66 50 L 72 34 L 78 66 L 84 50 L 100 50";
-const AREA = PATH + " L 100 100 L 0 100 Z";
+const fmtClock = (sec) => {
+  const s = Math.floor(sec || 0);
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+  return `${h}:${String(m).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
+};
 
-/** TimeTrackerFocusWidget — "Where My Time Goes." · foto-shell + EKG.
- *  Foto = focusCoat. EKG pulseert als er een lopende TimeEntry is; plat als
- *  er niets loopt. Groot getal = uren vandaag. Data: TimeEntry. */
+/** TimeTrackerFocusWidget — "Where My Time Goes." · foto-shell + bloom.
+ *  GlassCard: bovenin een project-keuze, daaronder de bloom. Tik op de bloom
+ *  start de tijd voor het gekozen project (maakt een lopende TimeEntry aan);
+ *  nog eens tiken stopt hem (vult end_time + duur). De lopende klok is zicht-
+ *  baar in de widget, het TimeTracker-paneel en de Project-pagina (via de
+ *  TimeEntry-entity). Focus-kleuren. */
 export default function TimeTrackerFocusWidget() {
   const { openModule } = usePanel();
-  const { data: entries } = useEntityList("TimeEntry", { sort: "-start_time", limit: 80, realtime: true });
+  const { data: entries, reload } = useEntityList("TimeEntry", { sort: "-start_time", limit: 80, realtime: true });
+  const { data: projects } = useEntityList("Project", { sort: "-created_date", limit: 80, realtime: true });
+
+  const running = useMemo(() => (entries || []).find((e) => e.status === "running"), [entries]);
+  const [projId, setProjId] = useState("");
   const [now, setNow] = useState(Date.now());
-  const [idx, setIdx] = useState(0);
+  const bloomRef = useRef(null);
+  const rafRef = useRef(0);
 
-  const { running, todayMin } = useMemo(() => {
-    const all = entries || [];
-    const run = all.some((e) => e.status === "running");
-    const s = new Date(); s.setHours(0, 0, 0, 0);
-    const e = new Date(); e.setHours(23, 59, 59, 999);
-    let min = 0;
-    all.forEach((en) => {
-      if (!en.start_time) return;
-      const st = new Date(en.start_time);
-      if (st < s || st > e) return;
-      if (en.duration_minutes) { min += en.duration_minutes; return; }
-      const end = en.end_time ? new Date(en.end_time) : (en.status === "running" ? new Date() : st);
-      min += Math.max(0, (end - st) / 60000);
-    });
-    return { running: run, todayMin: Math.round(min) };
-  }, [entries]);
+  useEffect(() => { if (!running) return; const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, [running]);
+  useEffect(() => { if (!projId && projects?.length) setProjId(projects[0].id); }, [projects, projId]);
 
-  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 15000); return () => clearInterval(t); }, []);
-  useEffect(() => { if (!running) return; const id = setInterval(() => setIdx((i) => (i + 1) % STATES.length), 1800); return () => clearInterval(id); }, [running]);
+  const elapsed = running && running.start_time ? (now - new Date(running.start_time).getTime()) / 1000 : 0;
 
-  const hours = (todayMin / 60).toFixed(1);
+  useEffect(() => {
+    const loop = () => {
+      const t = performance.now() / 1000;
+      const speed = running ? 1.8 : 1.0;
+      const breath = 0.10 * Math.sin(t * speed);
+      const scale = 0.9 + (running ? 0.16 : 0.05) + breath;
+      const opacity = 0.6 + (running ? 0.25 : 0.05) + 0.04 * Math.sin(t * speed);
+      const el = bloomRef.current;
+      if (el) { el.style.transform = `scale(${scale})`; el.style.opacity = String(opacity); }
+      rafRef.current = requestAnimationFrame(loop);
+    };
+    rafRef.current = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [running]);
+
+  const toggle = async () => {
+    if (running) {
+      const dur = Math.max(1, Math.round(((Date.now() - new Date(running.start_time).getTime()) / 1000) / 60));
+      await base44.entities.TimeEntry.update(running.id, { end_time: new Date().toISOString(), duration_minutes: dur, status: "stopped" }).catch(() => {});
+      reload();
+    } else {
+      if (!projId) return;
+      const proj = (projects || []).find((p) => p.id === projId);
+      await base44.entities.TimeEntry.create({ project_id: projId, project_title: proj?.title || "", start_time: new Date().toISOString(), status: "running", duration_minutes: 0 }).catch(() => {});
+      reload();
+    }
+  };
+
+  const activeProj = (projects || []).find((p) => p.id === (running?.project_id || projId));
 
   return (
-    <div className="w-full h-[480px]">
-      <div className="relative w-full h-full rounded-[28px] overflow-hidden" style={{ "--tile-accent": DEEP, color: IVORY }}>
-        <img src={PHOTO} alt="Where My Time Goes" className="absolute inset-0 w-full h-full object-cover" />
-        <button type="button" onClick={() => openModule("timetracker")} aria-label="Open tijdregistratie" className="absolute inset-0 z-0 cursor-pointer" />
+    <WidgetShell domain="focus" radius="large" className="w-full h-[480px] min-h-0">
+      <img src={PHOTO} alt="Where My Time Goes" className="absolute inset-0 w-full h-full object-cover" />
+      <button type="button" onClick={() => openModule("timetracker")} aria-label="Open tijdregistratie" className="absolute inset-0 z-0 cursor-pointer" />
 
-        <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-8 bg-gradient-to-b from-black/45 to-transparent flex items-start justify-between" style={{ color: IVORY }}>
-          <WidgetHeader type="briefing" label="Where My Time Goes." />
-          <span className="flex items-center gap-1.5 pt-1 text-[7px] uppercase tracking-[0.18em] font-bold">
-            <motion.span className="h-1.5 w-1.5 rounded-full" style={{ background: running ? LIGHT : "rgba(255,255,255,0.35)" }} animate={running ? { opacity: [0.3, 1, 0.3] } : { opacity: 0.4 }} transition={{ duration: 1, repeat: running ? Infinity : 0 }} />
-            {running ? "tracking" : "idle"}
-          </span>
+      <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-8 bg-gradient-to-b from-black/45 to-transparent flex items-start justify-between" style={{ color: IVORY }}>
+        <WidgetHeader type="briefing" label="Where My Time Goes." />
+        <span className="flex items-center gap-1.5 pt-1 text-[7px] uppercase tracking-[0.18em] font-bold">
+          <motion.span className="h-1.5 w-1.5 rounded-full" style={{ background: running ? LIGHT : "rgba(255,255,255,0.35)" }} animate={running ? { opacity: [0.3, 1, 0.3] } : { opacity: 0.4 }} transition={{ duration: 1, repeat: running ? Infinity : 0 }} />
+          {running ? "tracking" : "idle"}
+        </span>
+      </div>
+
+      <div className="absolute bottom-0 inset-x-0 h-[60%] bg-gradient-to-t from-black/65 via-black/30 to-transparent pointer-events-none" />
+
+      <div className="absolute inset-x-0 bottom-0 h-[60%] rounded-t-[28px] flex flex-col items-center px-4 pt-3.5 pb-4 overflow-hidden"
+        style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(12px) saturate(1.35)", WebkitBackdropFilter: "blur(12px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.18)", boxShadow: "0 18px 44px -22px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.22)" }}>
+        <span className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${LIGHT} 18%, ${LIGHT} 82%, transparent)` }} />
+
+        {/* project-keuze */}
+        <div className="w-full shrink-0" onClick={(e) => e.stopPropagation()}>
+          <p className="text-[9px] uppercase tracking-[0.18em] font-bold mb-1.5" style={{ color: LIGHT }}>Aan welk project begin je?</p>
+          <select value={running ? (running.project_id || "") : projId} onChange={(e) => setProjId(e.target.value)} disabled={!!running}
+            className="w-full rounded-full px-3.5 py-2 text-[12px] focus:outline-none disabled:opacity-70"
+            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", color: IVORY }}>
+            <option value="" style={{ color: "#000" }}>Kies een project…</option>
+            {(projects || []).map((p) => <option key={p.id} value={p.id} style={{ color: "#000" }}>{p.title}</option>)}
+          </select>
         </div>
 
-        <button type="button" onClick={() => openModule("timetracker")} aria-label="Open tijdregistratie" className="absolute left-0 right-0 bottom-0 h-[46%] rounded-t-[28px] flex flex-col p-3.5 overflow-hidden cursor-pointer text-left"
-          style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(12px) saturate(1.35)", WebkitBackdropFilter: "blur(12px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.18)", boxShadow: "0 -16px 34px -14px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.22)" }}>
-          <span className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${DEEP} 18%, ${DEEP} 82%, transparent)` }} />
-
-          <div className="flex-1 relative min-h-0 overflow-hidden">
-            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
-              <defs>
-                <linearGradient id="focustime-stroke" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor={DEEP} /><stop offset="60%" stopColor={LIGHT} /><stop offset="100%" stopColor={LIGHT} /></linearGradient>
-                <linearGradient id="focustime-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={DEEP} stopOpacity="0.32" /><stop offset="100%" stopColor={DEEP} stopOpacity="0" /></linearGradient>
-                <filter id="focustime-glow" x="-20%" y="-60%" width="140%" height="220%"><feGaussianBlur stdDeviation="1.1" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
-              </defs>
-              <line x1="0" y1="50" x2="100" y2="50" stroke={DEEP} strokeOpacity="0.22" strokeWidth="0.3" />
-              {running ? (
-                <>
-                  <path d={AREA} fill="url(#focustime-fill)" stroke="none" opacity="0.35" />
-                  <path d={PATH} fill="none" stroke="url(#focustime-stroke)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.28" />
-                  <path d={PATH} fill="none" stroke="url(#focustime-stroke)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" filter="url(#focustime-glow)" pathLength={100} strokeDasharray="14 86" className="ekg-sweep" />
-                </>
-              ) : (
-                <path d="M 0 50 L 100 50" fill="none" stroke={DEEP} strokeOpacity="0.45" strokeWidth="1" />
-              )}
-            </svg>
-          </div>
-
-          <div className="flex items-end justify-between mt-1.5">
-            <div className="flex items-end gap-1">
-              <motion.span className="text-[34px] font-display font-bold leading-none tabular-nums" animate={{ color: running ? [LIGHT, DEEP, LIGHT] : ["rgba(255,255,255,0.5)"] }} transition={{ duration: 1.4, repeat: running ? Infinity : 0, ease: "easeInOut" }}>{hours}</motion.span>
-              <span className="text-[11px] uppercase tracking-[0.18em] pb-1 text-ivory/60">u vandaag</span>
-            </div>
-            <div className="flex items-center gap-1">
-              {STATES.map((s, i) => (
-                <span key={s} className="text-[6px] uppercase tracking-[0.1em] font-bold" style={{ opacity: running && i === idx ? 1 : 0.3, color: running && i === idx ? LIGHT : IVORY }}>{s[0]}</span>
-              ))}
-            </div>
-          </div>
-        </button>
+        {/* bloom + klok */}
+        <div className="relative flex-1 w-full overflow-hidden flex items-center justify-center">
+          <button onClick={(e) => { e.stopPropagation(); toggle(); }} aria-label={running ? "Stop timer" : "Start timer"} className="relative h-[150px] w-[150px] rounded-full cursor-pointer" style={{ border: "none", background: "transparent" }}>
+            <span ref={bloomRef} className="absolute inset-0 rounded-full will-change-transform" style={{ background: `radial-gradient(circle, ${DEEP} 0%, ${LIGHT} 48%, transparent 72%)`, filter: "blur(2px)", opacity: 0.92 }} />
+            <span className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-[26px] font-display font-bold tabular-nums leading-none" style={{ color: IVORY }}>{running ? fmtClock(elapsed) : "00:00:00"}</span>
+              <span className="text-[9px] uppercase tracking-[0.22em] font-bold mt-1.5 text-center px-2" style={{ color: running ? LIGHT : "rgba(255,255,255,0.55)" }}>{running ? (activeProj?.title || "lopend") : "kies & tik"}</span>
+            </span>
+          </button>
+        </div>
       </div>
-    </div>
+    </WidgetShell>
   );
 }

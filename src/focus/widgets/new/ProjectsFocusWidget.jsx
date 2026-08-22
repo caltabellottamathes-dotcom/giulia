@@ -26,7 +26,7 @@ export default function ProjectsFocusWidget() {
     <div className="w-full h-[340px]">
       <GlassPhotoLayeredWidget shape="4:3" photo={PHOTO} photoPosition="right" photoFraction={0.42} overhang={0} domain="focus" radius="large" onClick={() => openModule("projects")} photoOverlay="bg-gradient-to-t from-black/45 via-black/12 to-transparent">
         <div className="pointer-events-none absolute" style={{ left: "44%", bottom: "0%", transform: "translateX(-50%)" }}>
-          <span style={{ color: DEEP, opacity: 0.32 }}>
+          <span style={{ color: LIGHT, opacity: 0.32 }}>
             <CountUp value={total} className="text-[320px] font-display font-black leading-none tracking-[-0.06em]" />
           </span>
         </div>
@@ -40,7 +40,7 @@ export default function ProjectsFocusWidget() {
           ) : top4.length > 0 ? (
             top4.map((p, i) => {
               const crit = p.health === "critical";
-              const color = crit ? URGENT : DEEP;
+              const color = crit ? URGENT : LIGHT;
               return (
                 <motion.button key={p.id} onClick={(e) => { e.stopPropagation(); openModule("projects"); }} initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08, duration: 0.4 }} className="group w-full text-left">
                   <div className="flex items-center justify-between gap-2 mb-1">

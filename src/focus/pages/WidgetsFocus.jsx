@@ -26,7 +26,7 @@ export default function WidgetsFocus() {
 
       <div className="columns-1 lg:columns-2 gap-8">
         <div className="break-inside-avoid mb-8 mx-auto w-[290px]">
-          <Label>01 · TO DO! — 9:16 · bloom + open Focus-taken (Tasks)</Label>
+          <Label>01 · TO DO! — 9:16 · glaspill items + staafgrafiek (Tasks)</Label>
           <TasksBloomFocusWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[620px]">

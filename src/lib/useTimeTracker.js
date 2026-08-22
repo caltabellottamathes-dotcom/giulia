@@ -101,7 +101,7 @@ export function useTimeTracker() {
   return {
     tasks, entries, taskId, setTaskId,
     running, paused, elapsed,
-    start, pause, resume, stop,
+    start, pause, resume, stop, reload: load,
     todayMin, weekMin, perProject,
   };
 }
