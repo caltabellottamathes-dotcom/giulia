@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { GlassPhotoLayeredWidget, WidgetHeader, CheckList, URGENT } from "@/system/widgets/primitives";
+import { PhotoGlassLayeredWidget, WidgetHeader, CheckList, URGENT } from "@/system/widgets/primitives";
+import { layeredContentPad } from "@/system/widgets/primitives/shellCode";
 import { useAgendaChecklist } from "@/self/widgets/editorial13/CheckableShell";
 import { usePanel } from "@/lib/PanelContext";
 
@@ -55,8 +56,8 @@ function PlanningBars({ items }) {
   );
 }
 
-/** What Matters? — G·16x9·L·SIDE (gelaagd). Glas-shell rechts met titel
- *  "A plan for today!" + datum/tijd + live staafgrafiek; foto-card links met
+/** What Matters? — P·16x9·L·SIDE (gelaagd). Foto-shell met titel
+ *  "A plan for today!" + datum/tijd + live staafgrafiek; glas-card links met
  *  de afvinkbare agenda-checklist (done → bijbehorende staaf groeit). */
 export default function WhatMattersLayeredWidget() {
   const { openModule } = usePanel();
@@ -88,36 +89,38 @@ export default function WhatMattersLayeredWidget() {
 
   return (
     <div className="w-full h-[300px]">
-      <GlassPhotoLayeredWidget
+      <PhotoGlassLayeredWidget
         shape="16:9"
         photo={PHOTO}
-        photoPosition="left"
-        photoFraction={0.40}
+        glassPosition="left"
+        glassFraction={0.40}
         overhang={0}
         domain="giulia"
         radius="large"
         onClick={() => openModule("jedag")}
-        photoOverlay="bg-gradient-to-t from-black/40 via-black/20 to-black/10"
+        overlay="bg-gradient-to-t from-black/45 via-black/22 to-black/12"
         photoChildren={
-          <div className="absolute inset-0 p-3 flex flex-col gap-1.5" onClick={(e) => e.stopPropagation()}>
-            {total > 0 ? (
-              <CheckList items={items} onToggle={cycle} closed={closed} onClose={close} onReopen={reopen} maxH="100%" />
-            ) : (
-              <p className="text-[11px] text-white/70 px-2 py-1">Niets op de agenda vandaag.</p>
-            )}
+          <div className="absolute inset-0 flex flex-col gap-2" style={layeredContentPad("left", 0.40)}>
+            <WidgetHeader type="agenda" label="What Matters?" count={total ? `${doneCount}/${total}` : ""} />
+            <h3 className="text-[22px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current">
+              A PLAN FOR TODAY!
+            </h3>
+            <p className="text-[10px] uppercase tracking-[0.18em] mt-1" style={{ color: "hsl(var(--olive))" }}>
+              {weekday} {dayNum} {month} · {hh}:{mm}
+            </p>
+            <div className="flex-1 min-h-2" />
+            <PlanningBars items={items} />
           </div>
         }
       >
-        <WidgetHeader type="agenda" label="What Matters?" count={total ? `${doneCount}/${total}` : ""} />
-        <h3 className="text-[22px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current">
-          A PLAN FOR TODAY!
-        </h3>
-        <p className="text-[10px] uppercase tracking-[0.18em] mt-1" style={{ color: "hsl(var(--olive))" }}>
-          {weekday} {dayNum} {month} · {hh}:{mm}
-        </p>
-        <div className="flex-1 min-h-2" />
-        <PlanningBars items={items} />
-      </GlassPhotoLayeredWidget>
+        <div className="flex flex-col gap-1.5 h-full" onClick={(e) => e.stopPropagation()}>
+          {total > 0 ? (
+            <CheckList items={items} onToggle={cycle} closed={closed} onClose={close} onReopen={reopen} maxH="100%" />
+          ) : (
+            <p className="text-[11px] text-white/70 px-2 py-1">Niets op de agenda vandaag.</p>
+          )}
+        </div>
+      </PhotoGlassLayeredWidget>
     </div>
   );
 }
