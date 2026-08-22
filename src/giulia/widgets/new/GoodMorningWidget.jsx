@@ -62,13 +62,11 @@ export default function GoodMorningWidget() {
       >
         <WidgetHeader type="briefing" label="GOOD MORNING!" />
         <div className="flex-1 flex flex-col justify-end items-end">
-          <span className="text-[88px] font-display font-bold leading-none tracking-[-0.04em] tabular-nums" style={{ color: LIGHT, opacity: 0.32 }}>{countdownHHMM}</span>
+          <span className="text-[88px] font-display font-bold leading-none tracking-[-0.04em] tabular-nums -mb-12" style={{ color: LIGHT, opacity: 0.32 }}>{countdownHHMM}</span>
           <div className="flex items-end gap-2">
             <div className="flex items-center gap-1 pb-3">
-              {[0, 1, 2].map((i) => (
-                <motion.span key={i} className="h-2 w-2 rounded-full" style={{ background: i % 2 ? LIGHT : URGENT }}
-                  animate={{ y: [0, -10, 0] }} transition={{ duration: 0.9, repeat: Infinity, ease: "easeInOut", delay: i * 0.12 }} />
-              ))}
+              <motion.span className="h-2.5 w-2.5 rounded-full" style={{ background: URGENT }}
+                animate={{ y: [0, -12, 0] }} transition={{ duration: 0.9, repeat: Infinity, ease: "easeInOut" }} />
             </div>
             <span className="text-[88px] font-display font-bold leading-none tracking-[-0.04em] tabular-nums">{alarmStr}</span>
           </div>

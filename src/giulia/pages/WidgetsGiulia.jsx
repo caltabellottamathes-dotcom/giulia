@@ -8,6 +8,7 @@ import WantsToKnowLayeredWidget from "@/giulia/widgets/new/WantsToKnowLayeredWid
 import ImAliveWidget from "@/giulia/widgets/new/ImAliveWidget";
 import GoodMorningWidget from "@/giulia/widgets/new/GoodMorningWidget";
 import SpeechIndicatorGallery from "@/giulia/widgets/new/SpeechIndicatorGallery";
+import AudioReactiveGallery from "@/giulia/widgets/new/AudioReactiveGallery";
 
 export default function WidgetsGiulia() {
   const Label = ({ children }) => (
@@ -62,6 +63,12 @@ export default function WidgetsGiulia() {
         <h2 className="text-lg font-display font-semibold mb-1">Spraakinstitatoren</h2>
         <p className="text-sm text-muted-foreground mb-5">Bewegende visuele spraakinstitatoren — een selectie om uit te kiezen.</p>
         <SpeechIndicatorGallery />
+      </div>
+
+      <div className="mt-10">
+        <h2 className="text-lg font-display font-semibold mb-1">Audio-reactief</h2>
+        <p className="text-sm text-muted-foreground mb-5">Bewegende elementen die op audio reageren — gesimuleerde spraak-amplitude.</p>
+        <AudioReactiveGallery />
       </div>
     </div>
   );
