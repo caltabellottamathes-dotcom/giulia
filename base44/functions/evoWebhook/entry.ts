@@ -46,12 +46,9 @@ export default async function (req) {
     // sturen hem ook in de body — accepteer beide.
     const expectedKey = secrets.get("EVO_API_KEY");
     const sentKey = req.headers?.get?.("apikey") || body?.apikey || "";
-    console.log("[evo-auth] expectedLen=", expectedKey?.length, "sentLen=", sentKey?.length, "match=", expectedKey === sentKey);
-    // TIJDELIJK: blokkeer niet op apikey — log alleen, zodat we berichten niet
-    // missen door eventuele secret-corruptie. Wordt weer aangezet na debugging.
-    // if (expectedKey && sentKey && sentKey !== expectedKey) {
-    //   return Response.json({ ok: false, error: "invalid apikey" }, { status: 401 });
-    // }
+    if (expectedKey && sentKey && sentKey !== expectedKey) {
+      return Response.json({ ok: false, error: "invalid apikey" }, { status: 401 });
+    }
 
     // Alleen inkomende berichten interesseren ons.
     // Evolution v2 kan de payload op twee manieren sturen:
@@ -97,11 +94,13 @@ export default async function (req) {
         contactId = found?.id || "";
       }
 
-      // DEBUG-modus: sla alles op (incl. fromMe / non-text) met prefix.
-      const debugMsg = `[debug fromMe=${fromMe} keys=${msgKeys.join(",")}] ${text || "(non-text)"}`;
+      // Sla alleen inkomende tekstberichten op (fromMe === false).
+      if (fromMe) { skipped++; continue; }
+      if (!text) { skipped++; continue; }
+
       await sr.entities.WhatsAppMessage.create({
         contact_id: contactId || undefined,
-        message: debugMsg,
+        message: text,
         direction: "received",
         status: "unread",
         timestamp: ts,
