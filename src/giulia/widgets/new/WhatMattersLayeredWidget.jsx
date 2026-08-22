@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { PhotoGlassLayeredWidget, WidgetHeader, CheckList } from "@/system/widgets/primitives";
+import { GlassPhotoLayeredWidget, WidgetHeader, CheckList, URGENT } from "@/system/widgets/primitives";
 import { useAgendaChecklist } from "@/self/widgets/editorial13/CheckableShell";
 import { usePanel } from "@/lib/PanelContext";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/02f6f6d0e_Matters.jpeg";
 const PISTACHIO = "hsl(var(--giulia-pistachio))"; // 2e accentkleur (GIULIA)
-const DARK_GREEN = "hsl(var(--giulia-coral))"; // donkergroen (GIULIA)
+const BLUE = "hsl(var(--ridge))"; // 3e accentkleur — lichtblauw (niet-urgent)
 const DUR_MIN = 15, DUR_MAX = 180, H_MIN = 18, H_MAX = 78;
 
 /** Staafhoogte op basis van afspraakduur (min). */
@@ -67,10 +67,10 @@ export default function WhatMattersLayeredWidget() {
     const next = cur === "idle" ? "active" : cur === "active" ? "done" : "idle";
     return { ...s, [i]: next };
   });
-  const PALETTE = ["var(--tile-accent)", DARK_GREEN, PISTACHIO];
+  const PALETTE = ["var(--tile-accent)", BLUE, PISTACHIO];
   const items = rawItems.map((it, i) => {
     const st = states[i] || "idle";
-    const color = it.urgent ? PISTACHIO : PALETTE[i % 3];
+    const color = it.urgent ? URGENT : PALETTE[i % 3];
     return { ...it, done: st === "done", active: st === "active", color };
   });
   const doneCount = items.filter((it) => it.done).length;
@@ -88,16 +88,16 @@ export default function WhatMattersLayeredWidget() {
 
   return (
     <div className="w-full h-[300px]">
-      <PhotoGlassLayeredWidget
+      <GlassPhotoLayeredWidget
         shape="16:9"
         photo={PHOTO}
-        glassPosition="right"
-        glassFraction={0.5}
+        photoPosition="left"
+        photoFraction={0.40}
         overhang={0}
         domain="giulia"
         radius="large"
         onClick={() => openModule("jedag")}
-        overlay=""
+        photoOverlay="bg-gradient-to-t from-black/40 via-black/20 to-black/10"
         photoChildren={
           <div className="absolute inset-0 p-3 flex flex-col gap-1.5" onClick={(e) => e.stopPropagation()}>
             {total > 0 ? (
@@ -117,7 +117,7 @@ export default function WhatMattersLayeredWidget() {
         </p>
         <div className="flex-1 min-h-2" />
         <PlanningBars items={items} />
-      </PhotoGlassLayeredWidget>
+      </GlassPhotoLayeredWidget>
     </div>
   );
 }
