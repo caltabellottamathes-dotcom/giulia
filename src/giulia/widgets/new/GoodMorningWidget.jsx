@@ -37,7 +37,7 @@ export default function GoodMorningWidget() {
   const alarmStr = `${pad(h)}:${pad(m)}`;
 
   return (
-    <div className="w-full">
+    <div className="w-full h-[260px]">
       <GlassPhotoLayeredWidget
         shape="21:9"
         photo={PHOTO}

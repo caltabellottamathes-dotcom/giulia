@@ -44,7 +44,7 @@ export default function WaitingOnYouWidget() {
   const total = (approvals || []).length;
 
   return (
-    <div className="w-full">
+    <div className="w-full h-[340px]">
       <GlassPhotoLayeredWidget
         shape="4:3"
         photo={PHOTO}

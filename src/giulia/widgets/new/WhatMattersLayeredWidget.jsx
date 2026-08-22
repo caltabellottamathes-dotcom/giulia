@@ -64,7 +64,7 @@ export default function WhatMattersLayeredWidget() {
   const mm = String(now.getMinutes()).padStart(2, "0");
 
   return (
-    <div className="w-full">
+    <div className="w-full h-[300px]">
       <GlassPhotoLayeredWidget
         shape="16:9"
         photo={PHOTO}

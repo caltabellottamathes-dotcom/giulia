@@ -73,7 +73,7 @@ function ConciergeInner() {
   const dotColor = isSpeaking ? URGENT : connected ? LIGHT : "rgba(255,255,255,0.35)";
 
   return (
-    <WidgetShell domain="giulia" radius="large" className="aspect-[9/16] w-full min-h-0">
+    <WidgetShell domain="giulia" radius="large" className="w-full h-[400px] min-h-0">
       {/* foto als grote shell */}
       <img src={PHOTO} alt="Giulia's Hotline" className="absolute inset-0 w-full h-full object-cover" />
 

@@ -45,7 +45,7 @@ export default function WantsToKnowLayeredWidget() {
   const max = Math.max(1, counts.FOCUS, counts.LIFE, counts.URGENT);
 
   return (
-    <div className="w-full">
+    <div className="w-full h-[380px]">
       <PhotoGlassLayeredWidget
         shape="2:3"
         photo={PHOTO}
