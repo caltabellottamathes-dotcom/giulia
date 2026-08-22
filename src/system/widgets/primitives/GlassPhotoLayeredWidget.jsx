@@ -24,6 +24,7 @@ export default function GlassPhotoLayeredWidget({
   photoChildren,
   children,
   className,
+  onShellClick,
 }) {
   const accent = accentFor(domain);
   const cardStyle = layeredCardStyle(photoPosition, photoFraction, overhang);
@@ -31,7 +32,7 @@ export default function GlassPhotoLayeredWidget({
   const overlay = photoOverlay || "bg-gradient-to-t from-black/45 via-black/20 to-black/15";
 
   return (
-    <div className={cn("relative h-full w-full", ASPECTS[shape], className)} style={{ "--tile-accent": accent.accent, "--tile-on-accent": accent.on, color: "hsl(var(--ivory))" }}>
+    <div onClick={onShellClick} className={cn("relative h-full w-full", ASPECTS[shape], className, onShellClick && "cursor-pointer")} style={{ "--tile-accent": accent.accent, "--tile-on-accent": accent.on, color: "hsl(var(--ivory))" }}>
       {/* glass shell — basislaag */}
       <div
         className={cn("absolute inset-0 overflow-hidden ring-1 ring-inset ring-white/10", RADIUS[radius])}

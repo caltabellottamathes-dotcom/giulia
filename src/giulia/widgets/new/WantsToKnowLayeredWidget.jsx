@@ -55,6 +55,7 @@ export default function WantsToKnowLayeredWidget() {
         domain="giulia"
         radius="large"
         overlay="bg-gradient-to-t from-black/55 via-black/25 to-black/5"
+        onShellClick={() => openModule("wantstoknow")}
       >
         <WidgetHeader type="pulse" label="WANTS TO KNOW!" />
 

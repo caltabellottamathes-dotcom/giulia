@@ -72,7 +72,7 @@ function ConciergeInner() {
 
       {/* bovenaan in de foto: beweegde header + titel */}
       <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-8 bg-gradient-to-b from-black/45 to-transparent flex items-start justify-between" style={{ color: IVORY }}>
-        <WidgetHeader label="GIULIA'S HOTLINE" type="pulse" />
+        <WidgetHeader label="GIULIA'S HOTLINE." type="pulse" />
         {/* minimale status — piepkleine dot rechtsboven */}
         <span className="flex items-center gap-1.5 pt-1">
           <motion.span
@@ -88,7 +88,7 @@ function ConciergeInner() {
 
       {/* transparant glas — vierkant, 4 hoeken, flush beneden (GIULIA glas) */}
       <div
-        className="absolute left-1/2 bottom-0 -translate-x-1/2 w-[300px] h-[210px] rounded-[24px] flex flex-col items-center px-4 pt-3.5 pb-4 overflow-hidden"
+        className="absolute left-1/2 bottom-4 -translate-x-1/2 w-[300px] h-[210px] rounded-[24px] flex flex-col items-center px-4 pt-3.5 pb-4 overflow-hidden"
         style={{
           background: "rgba(255,255,255,0.08)",
           backdropFilter: "blur(12px) saturate(1.35)",

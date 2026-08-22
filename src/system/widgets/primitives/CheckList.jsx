@@ -10,7 +10,7 @@ export function CheckChip({ it, onToggle, accent = "var(--tile-accent)", index }
   const num = index != null ? String(index + 1).padStart(2, "0") : null;
   return (
     <motion.button
-      type="button" onClick={onToggle} layout
+      type="button" onClick={(e) => { e.stopPropagation(); onToggle(); }} layout
       initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
       className="w-full flex items-center gap-2.5 rounded-2xl px-3 py-2 text-left transition-colors"
       style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}

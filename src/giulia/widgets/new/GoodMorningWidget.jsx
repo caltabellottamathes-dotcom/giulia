@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { GlassPhotoLayeredWidget, WidgetHeader } from "@/system/widgets/primitives";
 import { base44 } from "@/api/base44Client";
+import { usePanel } from "@/lib/PanelContext";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/425b14eed_WaKe.jpeg";
 const LIGHT = "hsl(var(--d-giulia-light))";
@@ -14,6 +15,7 @@ const URGENT = "hsl(var(--d-giulia-urgent))";
  *  tot de wekker afgaat. Wektijd uit MorningSettings (fallback 07:00). */
 
 export default function GoodMorningWidget() {
+  const { openModule } = usePanel();
   const [alarm, setAlarm] = useState("07:00");
   const [now, setNow] = useState(new Date());
 
@@ -46,6 +48,7 @@ export default function GoodMorningWidget() {
         overhang={0}
         domain="giulia"
         radius="large"
+        onShellClick={() => openModule("goodmorning")}
         photoOverlay="bg-gradient-to-t from-black/35 via-black/10 to-transparent"
         photoChildren={
           <div className="absolute inset-0 flex items-center justify-center">
@@ -65,7 +68,7 @@ export default function GoodMorningWidget() {
           <span className="text-[88px] font-display font-bold leading-none tracking-[-0.04em] tabular-nums mb-1" style={{ color: LIGHT, opacity: 0.5 }}>{countdownHHMM}</span>
           <div className="flex items-end gap-2">
             <div className="flex items-center gap-1 pb-3">
-              <motion.span className="h-5 w-5 rounded-full" style={{ background: LIGHT }}
+              <motion.span className="h-5 w-5 rounded-full" style={{ background: DEEP }}
                 animate={{ y: [0, -16, 0] }} transition={{ duration: 0.9, repeat: Infinity, ease: "easeInOut" }} />
             </div>
             <span className="text-[88px] font-display font-bold leading-none tracking-[-0.04em] tabular-nums">{alarmStr}</span>

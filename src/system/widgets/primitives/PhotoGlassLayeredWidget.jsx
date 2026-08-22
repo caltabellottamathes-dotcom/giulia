@@ -23,6 +23,7 @@ export default function PhotoGlassLayeredWidget({
   photoChildren,
   children,
   className,
+  onShellClick,
   glassBlur = 12,
   glassBorder = "1px solid rgba(255,255,255,0.18)",
 }) {
@@ -30,7 +31,7 @@ export default function PhotoGlassLayeredWidget({
   const cardStyle = layeredCardStyle(glassPosition, glassFraction, overhang);
 
   return (
-    <div className={cn("relative h-full w-full", ASPECTS[shape], className)} style={{ "--tile-accent": accent.accent, "--tile-on-accent": accent.on, color: "hsl(var(--ivory))" }}>
+    <div onClick={onShellClick} className={cn("relative h-full w-full", ASPECTS[shape], className, onShellClick && "cursor-pointer")} style={{ "--tile-accent": accent.accent, "--tile-on-accent": accent.on, color: "hsl(var(--ivory))" }}>
       {/* foto shell — basislaag */}
       <div className={cn("absolute inset-0 overflow-hidden", RADIUS[radius])}>
         <img src={photo} alt="" draggable={false} className="absolute inset-0 w-full h-full object-cover" />

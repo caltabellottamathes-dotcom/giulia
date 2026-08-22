@@ -54,6 +54,7 @@ export default function WaitingOnYouWidget() {
         overhang={0}
         domain="giulia"
         radius="large"
+        onShellClick={() => openModule("approvals")}
         photoOverlay="bg-gradient-to-t from-black/45 via-black/12 to-transparent"
       >
         {/* ghost-getal — enorm, asymmetrisch, half achter foto + half achter tekst */}
@@ -85,7 +86,8 @@ export default function WaitingOnYouWidget() {
                   initial={{ opacity: 0, x: 8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.08, duration: 0.4 }}
-                  className="group flex items-center gap-3 w-full text-left rounded-xl px-2 py-2 hover:bg-white/5 transition-colors"
+                  className="group flex items-center gap-3 w-full text-left rounded-2xl px-3 py-2.5 transition-colors"
+                  style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}
                 >
                   <span className="text-[13px] font-mono font-bold tabular-nums leading-none" style={{ color }}>{num}</span>
                   <span className="w-[3px] self-stretch rounded-full" style={{ background: color, opacity: urgent ? 1 : 0.6 }} />
