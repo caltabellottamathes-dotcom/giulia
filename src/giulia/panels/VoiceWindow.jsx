@@ -8,10 +8,10 @@ import { buildVoiceClientTools } from "@/lib/voiceClientTools";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, X } from "lucide-react";
-import Hotline2Widget from "@/giulia/widgets/new/Hotline2Widget";
 import { Image } from "@/components/ui/image";
+import VoiceChatWidget from "@/giulia/widgets/new/VoiceChatWidget";
 
-const VOICE_PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/097f2a860_Voicewindow.jpeg";
+const VOICE_PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0439bb842_Giulia_VOICE.jpeg";
 const DEEP = "hsl(var(--d-giulia-deep))";    // olijf
 const LIGHT = "hsl(var(--d-giulia-light))";  // pistachio
 const IVORY = "hsl(var(--ivory))";
@@ -120,9 +120,9 @@ function VoiceWindowInner() {
     <>
       <div className="fixed inset-0 z-40 bg-charcoal/10 animate-fade-in" onClick={closeVoice} />
 
-      {/* Hotline 2 — zwevende widget naast het voice-paneel (links) */}
-      <div className="hidden lg:block fixed left-10 bottom-[5.5rem] z-50 w-[560px] animate-fade-up">
-        <Hotline2Widget />
+      {/* Compact chat-window naast het voice-paneel (links) */}
+      <div className="hidden lg:block fixed left-10 bottom-[5.5rem] z-50">
+        <VoiceChatWidget />
       </div>
 
       {/* Voice paneel — zelfde formaat als de andere panelen (rechts, volledige hoogte, schuift in) */}
