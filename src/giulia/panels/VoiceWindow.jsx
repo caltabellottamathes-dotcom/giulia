@@ -3,24 +3,27 @@ import { useConversation, ConversationProvider } from "@elevenlabs/react";
 import { useNavigate } from "react-router-dom";
 import { usePanel } from "@/lib/PanelContext";
 import { cn } from "@/lib/utils";
-import { IMAGES } from "@/lib/images";
 import { ELEVEN_AGENT_ID } from "@/lib/voiceNavigation";
 import { buildVoiceClientTools } from "@/lib/voiceClientTools";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
-import { Mic, Phone, PhoneOff, Volume2, Loader2, X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import Hotline2Widget from "@/giulia/widgets/new/Hotline2Widget";
 
+const VOICE_PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/097f2a860_Voicewindow.jpeg";
+const DEEP = "hsl(var(--d-giulia-deep))";    // olijf
+const LIGHT = "hsl(var(--d-giulia-light))";  // pistachio
+const IVORY = "hsl(var(--ivory))";
+
 /**
- * VoiceWindow — de persistente stem-widget van Giulia. Zweeft als een
- * refraction-paneel rechts in beeld, op Layout-niveau, zodat het open
- * blijft terwijl je tussen dashboards navigeert. Het gesprek loopt door.
+ * VoiceWindow — #35 · P·9x16·B·SIDE · onder.
+ * PhotoShell = de voice-window foto (9:16 portret, full-bleed).
+ * GlassCard onder = de live transcriptie + audio-reactieve bloom om te bellen.
+ * De bloom ademt en reageert op Giulia's audio-output (getOutputVolume).
  *
  * De stem-agent (directe Gemini, conversatie-only) doet ZELF geen acties.
  * Elke gesproken gebruikersbeurt wordt onderschept en naar chatWithGiulia
- * doorgestuurd — die het echte werk doet (entity-CRUD, navigatie via
- * AgentNavigation, geheugen). De gesproken reply is alleen bevestiging.
- * Omzeilt de ElevenLabs client-tool bug (#603).
+ * doorgestuurd — die het echte werk doet. Omzeilt de ElevenLabs client-tool bug.
  */
 function VoiceWindowInner() {
   const { voiceOpen, closeVoice, openModule } = usePanel();
@@ -32,9 +35,14 @@ function VoiceWindowInner() {
   const [giuliaWorking, setGiuliaWorking] = useState(false);
   const processedRef = useRef(new Set());
 
+  // Audio-reactieve bloom.
+  const bloomRef = useRef(null);
+  const rafRef = useRef(0);
+  const levelRef = useRef(0);
+
   const clientTools = useMemo(() => buildVoiceClientTools({ navigate, openModule }), [navigate, openModule]);
 
-  const { startSession, endSession, status, isSpeaking } = useConversation({
+  const { startSession, endSession, status, isSpeaking, getOutputVolume } = useConversation({
     agentId: ELEVEN_AGENT_ID,
     clientTools,
     onMessage: (payload) => {
@@ -62,12 +70,31 @@ function VoiceWindowInner() {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [transcript]);
 
-  // Sluit de sessie netjes af bij unmount.
+  // Bloom — ademt + reageert op Giulia's audio-output.
+  useEffect(() => {
+    const loop = () => {
+      const t = performance.now() / 1000;
+      const raw = connected && typeof getOutputVolume === "function" ? (getOutputVolume() || 0) : 0;
+      levelRef.current = levelRef.current * 0.82 + raw * 0.18;
+      const level = Math.min(1, levelRef.current);
+      const breath = 0.08 * Math.sin(t * 1.1);
+      const scale = 0.9 + level * 0.5 + breath;
+      const opacity = 0.6 + level * 0.32 + 0.04 * Math.sin(t * 1.1);
+      const el = bloomRef.current;
+      if (el) {
+        el.style.transform = `scale(${scale})`;
+        el.style.opacity = String(opacity);
+      }
+      rafRef.current = requestAnimationFrame(loop);
+    };
+    rafRef.current = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [connected, getOutputVolume]);
+
   useEffect(() => {
     return () => { try { endSession(); } catch { /* ignore */ } };
   }, [endSession]);
 
-  // Escape sluit het venster (niet het gesprek).
   useEffect(() => {
     const h = (e) => { if (e.key === "Escape" && voiceOpen) closeVoice(); };
     window.addEventListener("keydown", h);
@@ -76,28 +103,35 @@ function VoiceWindowInner() {
 
   const toggle = async () => {
     if (connected) {
-      try { await endSession(); } catch {}
+      try { await endSession(); } catch { /* ignore */ }
     } else {
       setTranscript([]);
       processedRef.current.clear();
-      try { await startSession(); } catch {}
+      try { await startSession(); } catch { /* ignore */ }
     }
   };
 
   if (!voiceOpen) return null;
 
+  const statusLabel = connecting ? "Verbinden…" : connected ? (isSpeaking ? "Spreekt" : "Luistert") : "Tik om te bellen";
+
   return (
     <>
       <div className="fixed inset-0 z-40 bg-charcoal/10 animate-fade-in" onClick={closeVoice} />
 
-      {/* Hotline 2 — zwevende widget naast het voice-paneel (links), boven de backdrop */}
+      {/* Hotline 2 — zwevende widget naast het voice-paneel (links) */}
       <div className="hidden lg:block fixed left-10 bottom-[5.5rem] z-50 w-[560px] animate-fade-up">
         <Hotline2Widget />
       </div>
 
-      <div className="fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 z-50 w-[calc(100%-2rem)] lg:w-[560px] animate-slide-right">
-        <div className="refraction-panel h-full flex flex-col">
-          {/* Close — top-left */}
+      {/* Voice paneel — 9:16 PhotoShell + GlassCard onder */}
+      <div className="fixed right-4 lg:right-6 top-1/2 -translate-y-1/2 z-50 w-[min(92vw,400px)] aspect-[9/16] max-h-[calc(100svh-3rem)] animate-slide-right">
+        <div className="relative w-full h-full rounded-[28px] overflow-hidden">
+          {/* PhotoShell */}
+          <img src={VOICE_PHOTO} alt="" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/25 to-black/30" />
+
+          {/* Close — linksboven */}
           <button
             onClick={closeVoice}
             className="absolute top-4 left-4 z-40 h-9 w-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors"
@@ -106,115 +140,79 @@ function VoiceWindowInner() {
             <X className="h-4 w-4" />
           </button>
 
-          {/* Header */}
-          <div className="shrink-0 px-7 pt-7 pb-4 flex items-center gap-3 ml-12">
-            <span className={cn("h-2.5 w-2.5 rounded-full", connected ? "bg-olive animate-pulse-soft" : "bg-ivory/30")} />
-            <div>
+          {/* Header op de foto */}
+          <div className="absolute top-0 inset-x-0 px-5 pt-5 pb-10 bg-gradient-to-b from-black/50 to-transparent flex items-center gap-3 ml-12">
+            <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", connected ? "bg-olive animate-pulse-soft" : "bg-ivory/30")} />
+            <div className="min-w-0">
               <p className="font-display font-semibold tracking-[0.22em] text-[13px] uppercase text-ivory leading-none">
                 GIULIA · VOICE
               </p>
-              <p className="text-[11px] text-ivory/50 mt-1.5 tracking-wide">
-                {connected ? (isSpeaking ? "Spreekt" : "Luistert") : "Bellen met Giulia"}
+              <p className="text-[11px] text-ivory/60 mt-1.5 tracking-wide truncate">
+                {statusLabel}
               </p>
             </div>
             {giuliaWorking && (
-              <span className="ml-auto flex items-center gap-1.5 text-[11px] text-olive">
+              <span className="ml-auto flex items-center gap-1.5 text-[11px] text-olive shrink-0">
                 <Loader2 className="h-3 w-3 animate-spin" /> voert uit…
               </span>
             )}
           </div>
 
-          {/* Voice stage */}
-          <div className="relative shrink-0 overflow-hidden mx-7 rounded-[20px] min-h-[240px]">
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage: `url(${IMAGES.giuliaConcierge})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }}
+          {/* GlassCard onder — bloom + transcript */}
+          <div
+            className="absolute left-0 right-0 bottom-0 h-[64%] rounded-t-[28px] flex flex-col px-4 pt-3 pb-4 overflow-hidden"
+            style={{
+              background: "rgba(255,255,255,0.08)",
+              backdropFilter: "blur(12px) saturate(1.35)",
+              WebkitBackdropFilter: "blur(12px) saturate(1.35)",
+              border: "1px solid rgba(255,255,255,0.18)",
+              boxShadow: "0 -16px 34px -14px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.22)",
+              color: IVORY,
+            }}
+          >
+            <span
+              className="pointer-events-none absolute inset-x-0 top-0 h-px"
+              style={{ background: `linear-gradient(90deg, transparent, ${DEEP} 18%, ${DEEP} 82%, transparent)` }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 via-charcoal/30 to-charcoal/40" />
 
-            <div className="relative h-full flex flex-col items-center justify-center p-6 text-center">
-              <div className="relative mb-5">
-                {connected ? (
-                  <div className="relative">
-                    <div className="absolute inset-0 rounded-full bg-olive/20 animate-ping" />
-                    <div className="relative h-20 w-20 rounded-full bg-olive/20 backdrop-blur-xl border border-white/25 flex items-center justify-center">
-                      <span className={cn("h-3 w-3 rounded-full bg-white/80", isSpeaking ? "animate-pulse-soft" : "")} />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="h-20 w-20 rounded-full bg-olive/15 backdrop-blur-xl border border-white/20 flex items-center justify-center">
-                    <Mic className="h-8 w-8 text-white/70" />
-                  </div>
-                )}
-              </div>
-
-              <p className="text-xs text-white/60 mb-4 max-w-[26ch]">
-                {connecting
-                  ? "Verbinden…"
-                  : connected
-                  ? "Live gesprek — spreek vrijuit"
-                  : "Start een gesprek; Giulia regelt en opent voor je"}
-              </p>
-
+            {/* Audio-reactieve bloom — tik om te bellen / op te hangen */}
+            <div className="relative flex items-center justify-center pt-1 pb-3">
               <button
+                ref={bloomRef}
                 onClick={toggle}
-                className={cn(
-                  "h-14 w-14 rounded-full backdrop-blur-xl border border-white/25 flex items-center justify-center hover:scale-105 transition-transform",
-                  connected ? "bg-red-500/80" : "bg-olive/80"
-                )}
-              >
-                {connected ? <PhoneOff className="h-5 w-5 text-white" /> : <Phone className="h-5 w-5 text-white" />}
-              </button>
-
-              {connected && (
-                <div className="mt-4 flex items-center gap-1 h-6">
-                  {Array.from({ length: 14 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="w-1 rounded-full bg-white/40 animate-pulse-soft"
-                      style={{ height: `${20 + Math.random() * 80}%`, animationDelay: `${i * 0.05}s` }}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Live transcript */}
-          <div className="flex-1 min-h-0 flex flex-col px-7 pt-4 pb-7">
-            <div className="flex items-center gap-2 mb-3 shrink-0">
-              <Volume2 className="h-4 w-4 text-olive" />
-              <h2 className="text-sm font-display font-semibold text-ivory">Gesprek</h2>
+                aria-label={connected ? "Gesprek stoppen" : "Giulia bellen"}
+                className="h-[140px] w-[140px] rounded-full will-change-transform cursor-pointer"
+                style={{ background: `radial-gradient(circle, ${DEEP} 0%, ${LIGHT} 48%, transparent 72%)`, filter: "blur(2px)", opacity: 0.92, border: "none" }}
+              />
             </div>
 
-            {transcript.length === 0 ? (
-              <p className="text-sm text-ivory/55 text-center py-8">
-                {connected ? "Zeg iets om te beginnen…" : "Start een gesprek om Giulia's antwoorden live te zien"}
-              </p>
-            ) : (
-              <div className="space-y-2.5 flex-1 overflow-y-auto">
-                {transcript.map((m) => {
-                  const isUser = m.role === "user";
-                  return (
-                    <div key={m.id} className={cn("flex", isUser ? "justify-end" : "justify-start")}>
-                      <div
-                        className={cn(
-                          "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
-                          isUser ? "bg-charcoal text-ivory rounded-br-md" : "chat-bubble rounded-bl-md"
-                        )}
-                      >
-                        {m.text}
+            {/* Live transcript */}
+            <div className="flex-1 min-h-0 flex flex-col">
+              <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar space-y-2.5">
+                {transcript.length === 0 ? (
+                  <p className="text-[12px] text-ivory/55 text-center py-6">
+                    {connected ? "Zeg iets om te beginnen…" : "Start een gesprek om Giulia's antwoorden live te zien"}
+                  </p>
+                ) : (
+                  transcript.map((m) => {
+                    const isUser = m.role === "user";
+                    return (
+                      <div key={m.id} className={cn("flex", isUser ? "justify-end" : "justify-start")}>
+                        <div
+                          className={cn(
+                            "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed",
+                            isUser ? "bg-charcoal text-ivory rounded-br-md" : "chat-bubble rounded-bl-md"
+                          )}
+                        >
+                          {m.text}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
                 <div ref={endRef} />
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>

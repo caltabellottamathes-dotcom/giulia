@@ -20,7 +20,7 @@ export function CheckChip({ it, onToggle, accent = "var(--tile-accent)", index }
       )}
       <span
         className="h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all"
-        style={{ borderColor: it.done ? a : urgent ? URGENT : "rgba(255,255,255,0.5)", background: it.done ? a : "transparent" }}
+        style={{ borderColor: it.done ? a : it.active ? a : urgent ? URGENT : "rgba(255,255,255,0.5)", background: (it.done || it.active) ? a : "transparent" }}
       >
         {it.done && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
       </span>
