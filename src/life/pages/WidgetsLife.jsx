@@ -47,7 +47,7 @@ export default function WidgetsLife() {
           <ThingsLoveWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[620px]">
-          <Label>05 · WHAT'S FOR DINNER? — P·4:3·B·SIDE · vandaag-grid + budget</Label>
+          <Label>05 · WHAT'S FOR DINNER? — G·4:3·FLIP · vandaag boven, tik kaart → morgen</Label>
           <DinnerWidget />
         </div>
         <div className="break-inside-avoid mb-8 mx-auto w-[340px]">

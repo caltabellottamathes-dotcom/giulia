@@ -92,7 +92,7 @@ export const IMAGES = {
   lifeW2Home:      "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ac5e9c71c_Apply_a_consistent_editorial_documentary_202606212036.jpeg",
   lifeW3Handle:    "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0b5a039c6_Apply_a_consistent_editorial_documentary_2026062120381.jpeg",
   lifeW4Love:      "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/716bed551_An_extreme_surrealist_editorial_photograph_202606270306.jpeg",
-  lifeW5Dinner:    "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/b084bd786_A_surreal_editorial_photograph_of_202606270239.jpeg",
+  lifeW5Dinner:    "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/765b784eb_LIFE_FOOD.jpeg",
   lifeW6Doing:     "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/141da5051_Apply_a_consistent_editorial_documentary_202606212212.jpeg",
   lifeExtraNow:    "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/25c8d5133_NOW.jpeg",
   lifeExtraVeil:   "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/91776bc78_Apply_a_highly_realistic_editorial_202606212230.jpeg",
