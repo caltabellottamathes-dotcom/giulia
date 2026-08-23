@@ -1,0 +1,44 @@
+{
+  "name": "Email Triage",
+  "description": "Sorteert elke 30 min de inbox in categorie\u00ebn (Belangrijk/Reclame/Nieuwsbrief/Onbelangrijk/Spam), markeert non-important als gelezen+gearchiveerd, stelt acties voor als Approval, en verwijdert non-important ouder dan 2 weken.",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "email_triage",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "triage": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "triageEmails"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Sorteer inbox",
+            "description": "Elke 30 min \u2014 categoriseren, auto-gelezen, opruimen >2 weken"
+          }
+        }
+      }
+    ]
+  },
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "*/30 * * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  }
+}

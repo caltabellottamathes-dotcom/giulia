@@ -138,6 +138,25 @@ export default async function (req) {
         await sr.entities.Approval.update(approval_id, { status: "executed" }).catch(() => {});
         return Response.json({ ok: true, executed: "task", detail: "Giulia heeft het voltooid" });
       }
+      // Voorgestelde taak uit een Approval (bv. triageEmails) — maak de Task pas aan bij goedkeuring.
+      if (meta.title) {
+        try {
+          await sr.entities.Task.create({
+            title: meta.title,
+            description: meta.description || ap.content || "",
+            priority: meta.priority || "medium",
+            ...(meta.deadline ? { deadline: meta.deadline } : {}),
+            ...(meta.project_id ? { project_id: meta.project_id } : {}),
+            status: "todo",
+            agent_source: "executeApproval",
+          });
+          await sr.entities.Approval.update(approval_id, { status: "executed" }).catch(() => {});
+          return Response.json({ ok: true, executed: "task", detail: "Taak aangemaakt" });
+        } catch (e) {
+          await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
+          return Response.json({ ok: false, executed: "task", error: String(e.message || e) });
+        }
+      }
       // Salvo-taak-goedkeuring (oud pad met target-taak): behoud.
       await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
       return Response.json({ ok: true, executed: "task", detail: "Taak goedgekeurd" });

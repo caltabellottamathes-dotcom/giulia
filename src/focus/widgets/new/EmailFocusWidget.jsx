@@ -24,11 +24,12 @@ export default function EmailFocusWidget() {
   const { data: emails } = useEntityList("Email", { sort: "-created_date", limit: 200, realtime: true });
 
   const counts = useMemo(() => {
-    const all = emails || [];
+    const live = (emails || []).filter((e) => !e.deleted && e.folder !== "archived");
+    const isImportant = (e) => e.category === "important" || e.important;
     return {
-      unread: all.filter((e) => e.status === "unread").length,
-      important: all.filter((e) => e.status === "unread" && (e.important || e.category === "important")).length,
-      drafts: all.filter((e) => e.status === "draft" || ["drafts", "giulia_drafts"].includes(e.folder)).length,
+      unread: live.filter((e) => e.status === "unread" && isImportant(e)).length,
+      important: live.filter((e) => isImportant(e)).length,
+      drafts: (emails || []).filter((e) => e.folder === "giulia_drafts" || e.giulia_draft).length,
     };
   }, [emails]);
   const total = counts.unread;

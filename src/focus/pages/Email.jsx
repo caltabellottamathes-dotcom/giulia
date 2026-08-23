@@ -53,18 +53,19 @@ export default function Email() {
   const [bodyLoading, setBodyLoading] = useState(false);
   const [bodyError, setBodyError] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeCategory, setActiveCategory] = useState("important");
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const lastFetchId = useRef(null);
   const { toast } = useToast();
 
-  const { data: rawEmails, loading, reload } = useEntityList("Email");
+  const { data: rawEmails, loading, reload } = useEntityList("Email", { sort: "-created_date", limit: 200 });
   const emails = useMemo(() => (rawEmails || []).filter((e) => !e.deleted), [rawEmails]);
 
   const sync = async () => {
     setSyncing(true);
     try {
       const { created } = await syncInbox({ limit: 30 });
+      await base44.functions.invoke("triageEmails", {}).catch(() => {});
       reload();
       if (created) toast({ title: `${created} nieuwe email${created === 1 ? "" : "s"} opgehaald` });
     } catch (e) { toast({ title: "Sync mislukt", description: e?.message || String(e), variant: "destructive" }); }
@@ -353,6 +354,8 @@ export default function Email() {
                           <div className="flex flex-wrap items-center gap-2">
                             {(selectedEmail.giulia_draft || selectedEmail.folder === "giulia_drafts") ? (
                               <GlassButton variant="primary" size="sm" onClick={() => { setDraftBody(selectedEmail.body || ""); setShowDraftPanel(true); }}><Check className="h-4 w-4" /> Goedkeuren & Versturen</GlassButton>
+                            ) : (selectedEmail.category && selectedEmail.category !== "important") || selectedEmail.folder === "archived" ? (
+                              <span className="text-[11px] uppercase tracking-wider text-muted-foreground px-2 py-1.5">Afgehandeld · geen actie nodig</span>
                             ) : (
                               <>
                                 <GlassButton variant="outline" size="sm" onClick={() => draftReply(selectedEmail)} disabled={drafting}>{drafting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} Giulia antwoordt</GlassButton>

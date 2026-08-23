@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { tool, runGiuliaAgent, createTaskWithApproval } from "../../shared/codeAgent.ts";
+import { tool, runGiuliaAgent, createApproval } from "../../shared/codeAgent.ts";
 
 // Domein 8: een directe vraag, deadline of verzoek om reactie → awaiting_response.
 const AWAITING_RESPONSE = /(kun je|kan je|laat.*weten|graag.*reactie|graag.*antwoord|zou je|wanneer.*kan|wat denk je|\?)/i;
@@ -37,7 +37,7 @@ export default async function (req) {
     const ADVERTISING = /(unsubscribe|uitgeschreven|afmelden|sale|solden|korting|aanbieding|deal|promo|winkelwagen|cart|free shipping|actie|uitverkoop|offerte|early access|order now|bevestig je|abonnement)/i;
     const SPAM = /(winner|lottery|crypto|bitcoin|investment opportunity|urgent fund|claim your|congratulations you|viagra|casino|loan offer|prize|secured link|verify your account|suspended)/i;
     const NEWSLETTER = /(newsletter|nieuwsbrief|weekly digest|this week in|issue #|vol \d|digest|roundup|the edition)/i;
-    const JUNK = /(no-?reply|noreply|donotreply|notifications|notify|mailer|updates@|team@)/i;
+    const JUNK = /(no-?reply|noreply|donotreply|do.?not.?reply|notifications?|notify|mailer|updates@|team@|automated|automatisch|postmaster|bounce|alert|monitoring|statusupdate)/i;
     // Bekende mass-mail afzenders die zelden persoonlijk gericht zijn.
     const MASS_SENDER_DOMAINS = /(linkedin\.com|dezeen\.com|substack\.com|mailchimp|sendgrid|hubspot|medium\.com|eventbrite|meetup\.com|glassdoor|indeed\.com)/i;
 
@@ -72,11 +72,18 @@ export default async function (req) {
           category,
           project_id: projectId || null,
           triaged: true,
-          ...(isNoise ? { folder: 'archived' } : { important: true, awaiting_response: awaiting }),
+          ...(isNoise ? { folder: 'archived', status: 'read' } : { important: true, awaiting_response: awaiting }),
         }).catch(() => null)
       );
     }
     await Promise.all(updates);
+
+    // Ruim non-important op: verwijder alles in Reclame/Nieuwsbrief/Onbelangrijk/Spam
+    // dat langer dan 2 weken in de map staat (folder: archived).
+    const cutoff = new Date(Date.now() - 14 * 24 * 3600 * 1000);
+    const archived = await sr.entities.Email.filter({ folder: 'archived' }).catch(() => []);
+    const stale = archived.filter((e) => ["advertising", "newsletter", "junk", "spam"].includes(e.category) && new Date(e.updated_date || e.created_date || 0) < cutoff);
+    if (stale.length) await sr.entities.Email.deleteMany({ id: { $in: stale.map((e) => e.id) } }).catch(() => {});
 
     // GEEN proactieve concept-antwoorden meer — Salvo vraagt dat zelf aan via
     // de "Giulia antwoordt"-knop bij een email (draftEmailReply).
@@ -91,21 +98,25 @@ export default async function (req) {
             .then((l) => l.filter((e) => e.category === 'important').slice(0, 30)
               .map((e) => ({ id: e.id, sender: e.sender, sender_email: e.sender_email, subject: e.subject, body: String(e.body || '').slice(0, 500), project_id: e.project_id }))),
       }),
-      create_task: tool({
-        description: 'Voer een actie/afspraak uit een email direct uit: maak een taak aan. Giulia legt deze meteen ter goedkeuring bij Salvo.',
+      propose_task: tool({
+        description: 'Stel een actie/taak voor uit een email. Giulia legt deze TER GOEDKEURING bij Salvo via een Approval — maak GEEN directe Task aan.',
         inputSchema: { type: 'object', properties: { title: { type: 'string' }, priority: { type: 'string' }, deadline: { type: 'string' }, project_id: { type: 'string' }, description: { type: 'string' } }, required: ['title'] },
         execute: async ({ title, priority, deadline, project_id, description }) => {
-          const t = await createTaskWithApproval(base44, { title, priority, deadline, project_id, description, source: 'triageEmails' });
-          return t ? { id: t.id, title: t.title } : { error: 'create failed' };
+          const ap = await createApproval(base44, 'task', `Voorgestelde taak: ${title}`, description || '', 'Uit email gehaald door Giulia — wacht op goedkeuring.', 'salvo', {
+            category: project_id ? 'projects' : 'intern',
+            ...(project_id ? { project_id } : {}),
+            proposed_action: { title, priority: priority || 'medium', deadline: deadline || '', project_id: project_id || '', description: description || '' },
+          });
+          return ap ? { id: ap.id, title } : { error: 'create failed' };
         },
       }),
     };
 
     const task =
       'Sorteer de inbox is al heuristisch gedaan. Jouw taak: gebruik list_important om emails met category "important" te bekijken. ' +
-      'Haal acties, afspraken, deadlines en commitments uit deze emails en VOER ze direct uit via create_task (Giulia maakt de taak aan én legt deze ter goedkeuring voor bij Salvo). ' +
+      'Haal acties, afspraken, deadlines en commitments uit deze emails en stel ze voor via propose_task (Giulia legt elke voorgestelde taak TER GOEDKEURING bij Salvo via een Approval — maak GEEN directe Task aan). ' +
       'Schrijf ZELF GEEN concept-antwoorden en maak GEEN Approval voor een email-antwoord — Salvo vraagt dat zelf aan via de "Door Giulia"-knop bij een email. ' +
-      'Rapporteer via report_to_salvo kort hoeveel taken je hebt aangemaakt.';
+      'Rapporteer via report_to_salvo kort hoeveel voorstellen je hebt gedaan.';
 
     await runGiuliaAgent(base44, 'triageEmails', task, tools, 10).catch(() => null);
 
