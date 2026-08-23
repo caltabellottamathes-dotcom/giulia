@@ -110,8 +110,8 @@ export default function WhatsAppChatFocusWidget() {
         overlay="bg-gradient-to-t from-black/30 via-black/12 to-black/5"
         photoChildren={
           <div className="absolute inset-0 flex flex-col" style={layeredContentPad("left", 0.40)}>
-            <WidgetHeader type="social" label="Unread Messages." count="" />
-            <h3 className="text-[20px] leading-[1.05] font-display font-semibold tracking-[-0.02em] truncate" style={{ color: IVORY }}>
+            <WidgetHeader type="social" label="Who's Texting?" count="" />
+            <h3 className="text-[20px] leading-[1.05] font-display font-semibold tracking-[-0.02em] truncate" style={{ color: DEEP }}>
               {selectedContact ? (selectedContact.name || selectedContact.phone || "Onbekend") : "UNREAD MESSAGES."}
             </h3>
 
@@ -188,6 +188,17 @@ export default function WhatsAppChatFocusWidget() {
               </button>
             );
           })}
+          <div className="mt-auto pt-2 flex items-end gap-1 h-7" onClick={(e) => e.stopPropagation()}>
+            {recentSenders.length === 0
+              ? [0, 1, 2, 3, 4, 5].map((i) => (
+                  <span key={i} className="flex-1 rounded-sm" style={{ height: `${24 + ((i * 7) % 60)}%`, background: LIGHT, opacity: 0.3 }} />
+                ))
+              : recentSenders.slice(0, 6).map((m) => {
+                  const cnt = received.filter((r) => r.contact_id === m.contact_id).length;
+                  const h = Math.min(100, 25 + cnt * 14);
+                  return <span key={m.id} className="flex-1 rounded-sm" style={{ height: `${h}%`, background: m.status === "unread" ? URGENT : LIGHT, opacity: 0.85 }} />;
+                })}
+          </div>
         </div>
       </PhotoGlassLayeredWidget>
     </div>

@@ -69,7 +69,7 @@ export default function TimeTrackerFocusWidget() {
 
   return (
     <div className="w-full h-[476px]">
-      <PhotoGlassLayeredWidget shape="9:16" photo={PHOTO} glassPosition="bottom" glassFraction={0.50} overhang={0} domain="focus" radius="large" onClick={() => openModule("timetracker")} overlay="bg-gradient-to-t from-charcoal/40 via-charcoal/12 to-charcoal/4"
+      <PhotoGlassLayeredWidget shape="9:16" photo={PHOTO} glassPosition="bottom" glassFraction={0.50} overhang={0} domain="focus" radius="large" onClick={() => openModule("timetracker")} overlay="bg-gradient-to-t from-black/55 via-d-focus-deep/25 to-transparent"
         photoChildren={
           <div className="absolute top-2.5 inset-x-2.5 z-30" onClick={(e) => e.stopPropagation()}>
             <button type="button" onClick={() => !running && setPickerOpen((o) => !o)} disabled={!!running}

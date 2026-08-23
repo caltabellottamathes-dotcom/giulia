@@ -7,7 +7,8 @@ import Avatar from "@/system/components/glass/Avatar";
 import PageHero from "@/system/components/glass/PageHero";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
-import { Search, Plus, Mail, Phone, Users, Pencil, Trash2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { Search, Plus, Mail, Phone, Users, Pencil, Trash2, GitMerge } from "lucide-react";
 import ImageInput from "@/system/components/glass/ImageInput";
 import { groupByLetter } from "@/lib/contacts";
 
@@ -18,6 +19,10 @@ export default function People() {
   const [draft, setDraft] = useState({ name: "", company: "", role: "", email: "", phone: "" });
   const [editContact, setEditContact] = useState(null);
   const [editDraft, setEditDraft] = useState({});
+  const [mergeOpen, setMergeOpen] = useState(false);
+  const [mergeA, setMergeA] = useState(null);
+  const [mergeB, setMergeB] = useState(null);
+  const { toast } = useToast();
 
   const { data: contacts, loading, reload } = useEntityList("Contact");
 
@@ -49,6 +54,26 @@ export default function People() {
     reload();
   };
 
+  const doMerge = async () => {
+    if (!mergeA || !mergeB || mergeA === mergeB) return;
+    const a = contacts.find((c) => c.id === mergeA);
+    const b = contacts.find((c) => c.id === mergeB);
+    if (!a || !b) return;
+    const merged = { ...b };
+    ["name", "company", "role", "email", "phone", "avatar", "notes", "relationship_type", "relationship_domain"].forEach((f) => {
+      if (!merged[f] && a[f]) merged[f] = a[f];
+    });
+    merged.project_ids = Array.from(new Set([...(b.project_ids || []), ...(a.project_ids || [])]));
+    await base44.entities.Contact.update(b.id, merged).catch(() => {});
+    await base44.entities.WhatsAppMessage.updateMany({ contact_id: a.id }, { $set: { contact_id: b.id } }).catch(() => {});
+    await base44.entities.Email.updateMany({ contact_id: a.id }, { $set: { contact_id: b.id } }).catch(() => {});
+    await base44.entities.Task.updateMany({ contact_id: a.id }, { $set: { contact_id: b.id } }).catch(() => {});
+    await base44.entities.Contact.delete(a.id).catch(() => {});
+    toast({ title: "Samengevoegd", description: `${a.name} → ${b.name}` });
+    setMergeOpen(false); setMergeA(null); setMergeB(null);
+    reload();
+  };
+
   return (
     <div className="space-y-6 animate-fade-up">
       <PageHero
@@ -58,9 +83,14 @@ export default function People() {
         title="People Around Me."
         subtitle="Jouw contactomgeving"
         actions={
-          <GlassButton variant="primary" size="md" onClick={() => setShowNew(true)}>
-            <Plus className="h-4 w-4" /> Nieuw contact
-          </GlassButton>
+          <div className="flex gap-2">
+            <GlassButton variant="outline" size="md" onClick={() => setMergeOpen(true)}>
+              <GitMerge className="h-4 w-4" /> Samenvoegen
+            </GlassButton>
+            <GlassButton variant="primary" size="md" onClick={() => setShowNew(true)}>
+              <Plus className="h-4 w-4" /> Nieuw contact
+            </GlassButton>
+          </div>
         }
       />
 
@@ -174,6 +204,35 @@ export default function People() {
         <div>
           <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Notities</label>
           <textarea value={editDraft.notes || ""} onChange={(e) => setEditDraft({ ...editDraft, notes: e.target.value })} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none min-h-[70px] resize-none" />
+        </div>
+      </PanelForm>
+
+      <PanelForm
+        open={mergeOpen}
+        onClose={() => { setMergeOpen(false); setMergeA(null); setMergeB(null); }}
+        title="Contacten samenvoegen"
+        eyebrow="Mensen"
+        footer={<>
+          <GlassButton variant="primary" size="md" className="flex-1" onClick={doMerge} disabled={!mergeA || !mergeB || mergeA === mergeB}>Samenvoegen</GlassButton>
+          <GlassButton variant="outline" size="md" onClick={() => { setMergeOpen(false); setMergeA(null); setMergeB(null); }}>Annuleer</GlassButton>
+        </>}
+      >
+        <p className="text-xs text-muted-foreground mb-3">Kies twee contacten. De tweede behoudt de naam; lege velden worden aangevuld vanuit de eerste. Berichten, e-mails en taken worden overgezet naar het behouden contact.</p>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Van (wordt verwijderd)</label>
+            <select value={mergeA || ""} onChange={(e) => setMergeA(e.target.value)} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+              <option value="">— kies —</option>
+              {contacts.map((c) => <option key={c.id} value={c.id}>{c.name}{c.company ? ` · ${c.company}` : ""}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Naar (wordt behouden)</label>
+            <select value={mergeB || ""} onChange={(e) => setMergeB(e.target.value)} className="w-full mt-1.5 glass-1 rounded-xl px-4 py-2.5 text-sm focus:outline-none">
+              <option value="">— kies —</option>
+              {contacts.filter((c) => c.id !== mergeA).map((c) => <option key={c.id} value={c.id}>{c.name}{c.company ? ` · ${c.company}` : ""}</option>)}
+            </select>
+          </div>
         </div>
       </PanelForm>
     </div>

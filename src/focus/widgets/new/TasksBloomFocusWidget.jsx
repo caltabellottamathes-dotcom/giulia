@@ -99,7 +99,7 @@ export default function TasksBloomFocusWidget() {
               <button key={it.id} onClick={() => toggle(i, it)} className="flex items-center gap-2 rounded-full px-3 py-1.5 text-left transition-colors"
                 style={{ background: st === "active" ? "rgba(216,218,179,0.18)" : "rgba(255,255,255,0.06)", border: `1px solid ${st === "done" || st === "active" ? it.color : "rgba(255,255,255,0.16)"}` }}>
                 <span className="h-2 w-2 rounded-full shrink-0" style={{ background: it.color }} />
-                <span className="text-[12px] truncate flex-1" style={{ color: st === "done" ? "rgba(255,255,255,0.5)" : LIGHT, textDecoration: st === "done" ? "line-through" : "none" }}>{it.title}</span>
+                <span className="text-[12px] truncate flex-1" style={{ color: st === "done" ? "rgba(255,255,255,0.5)" : DEEP, textDecoration: st === "done" ? "line-through" : "none" }}>{it.title}</span>
                 {it.urgent && <span className="text-[8px] uppercase font-bold" style={{ color: URGENT }}>!</span>}
               </button>
             );
