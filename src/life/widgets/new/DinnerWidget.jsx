@@ -120,7 +120,7 @@ function DayTimeline({ meals, mode, dateLabel, dayName }) {
           const ink = isToday ? BLUE_INK : OLIVE;
           const glass = isToday
             ? { background: "rgba(120,150,175,0.42)", border: "1px solid rgba(120,150,175,0.55)", boxShadow: "0 10px 26px -12px rgba(47,74,90,0.40)" }
-            : { background: "rgba(170,185,135,0.42)", border: "1px solid rgba(170,185,135,0.55)", boxShadow: "0 10px 26px -12px rgba(90,90,50,0.36)" };
+            : { background: "rgba(216,218,179,0.58)", border: "1px solid rgba(216,218,179,0.72)", boxShadow: "0 10px 26px -12px rgba(90,90,50,0.36)" };
           return (
             <div className="relative overflow-hidden rounded-xl px-3 py-2 flex items-center justify-between" style={{ ...glass, color: ink, backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}>
               <div className="flex items-center gap-2 min-w-0 relative">
