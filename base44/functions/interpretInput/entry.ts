@@ -89,6 +89,7 @@ export default async function (req) {
         is_complex: { type: "boolean" },
         sub_tasks: { type: "array", items: { type: "string" } },
         clarification_question: { type: "string" },
+        worth_remembering: { type: "boolean" },
       },
     };
 
@@ -101,6 +102,9 @@ export default async function (req) {
       "When in doubt, choose 'information'.\n" +
       "SUGGESTED REPLY: only provide a suggested_reply when the message explicitly asks Salvo a question, requests a response, or needs an RSVP. " +
       "For purely informational messages, leave suggested_reply empty.\n" +
+      "WORTH_REMEMBERING: set worth_remembering=true ONLY when the message contains meaningful info worth tracking — who contacted Salvo, what's happening in their life or work, a real social/Life connection, a commitment or concrete update about a person or project. " +
+      "Set false for trivial/routine/noise: greetings, 'ok', receipts, order confirmations, automated alerts, pure logistics, 'I'll order food tomorrow'. " +
+      "When in doubt, set false.\n" +
       "MISSING-INFO: If the requested action is unactionable because critical information is missing, set intent='missing_info' and provide a concise Dutch clarification_question.\n" +
       "CONFLICT: If the message asks to change/reschedule an existing appointment, set intent='calendar_change' and put the requested new time in entities.date_time_reference.";
 
@@ -124,6 +128,7 @@ export default async function (req) {
     const isComplex = out.is_complex === true;
     const subTasks = Array.isArray(out.sub_tasks) ? out.sub_tasks.map((s) => String(s).trim()).filter(Boolean) : [];
     const clarification = (out.clarification_question || "").trim();
+    const worthRemembering = out.worth_remembering === true;
 
     // ── Step 2.3: Entity Resolution (context matching) ────────────────
     const contactId = personName ? await resolveContact(sr, personName) : null;
@@ -186,6 +191,27 @@ export default async function (req) {
           assignee: "salvo",
         }).catch(() => null);
         if (ap) created.push({ type: "approval", id: ap.id });
+      }
+    }
+
+    // ── Step 2.4d: Insight — bijhouden wie Salvo stuurt + Life-verbinding ─
+    // Alleen voor berichten die de moeite waard zijn om te onthouden (geen
+    // ruis/groetjes/receipts/logistiek). Dit is GEEN taak, enkel een
+    // geheugennotitie zodat Giulia weet wie contact zoekt en hoe het gaat.
+    if (worthRemembering && !isCommand) {
+      const who = personName || (source === "email" ? (record?.sender || record?.sender_email) : "") || "";
+      if (who) {
+        const ins = await sr.entities.Insight.create({
+          title: `${who}${projectName ? ` · ${projectName}` : ""}: ${(action || rawText || "").slice(0, 80)}`,
+          content: `Van ${who}${source === "email" ? " (email)" : " (WhatsApp)"}:\n${rawText.slice(0, 1200)}`,
+          category: "Research",
+          status: "new",
+          confidence: 0.7,
+          source: `interpretInput · ${source}`,
+          topic: who,
+          project_id: projectId || undefined,
+        }).catch(() => null);
+        if (ins) created.push({ type: "insight", id: ins.id });
       }
     }
 

@@ -91,7 +91,8 @@ export default async function (req) {
     // 1. DATA GATHERING (The Anti-Zombie Context)
     const [
       allMemories,
-      activeProjects,
+      allProjects,
+      allContacts,
       openTasks,
       deadTasks,
       pendingApprovals,
@@ -102,7 +103,10 @@ export default async function (req) {
       activeTherapy
     ] = await Promise.all([
       sr.entities.Memory.list("-created_date", 30).catch(() => []),
-      sr.entities.Project.filter({ status: { $in: ["planning", "in_progress", "waiting"] } }).catch(() => []),
+      // ALLE projecten (ook gepauzeerd/afgerond) — Giulia moet alles weten.
+      sr.entities.Project.list("-updated_date", 100).catch(() => []),
+      // ALLE contacten/personen — Giulia is de roddeltante die iedereen kent.
+      sr.entities.Contact.list("-updated_date", 100).catch(() => []),
       sr.entities.Task.filter({ status: { $in: ["todo", "in_progress", "waiting", "delegated", "today", "upcoming", "overdue"] } }, "-created_date", 40).catch(() => []),
       sr.entities.Task.filter({ status: { $in: ["completed", "archived", "done"] } }, "-updated_date", 10).catch(() => []),
       sr.entities.Approval.filter({ status: "pending" }).catch(() => []),
@@ -140,8 +144,11 @@ export default async function (req) {
       `== HUIDIGE STAAT VAN GIULIA OS ==`,
       `Geheugen: ${memories.length ? memories.map(m => `- ${String(m.content).slice(0, 140)}`).join("\n") : "Leeg"}`,
       ``,
-      `Actieve Projecten (${activeProjects.length}):`,
-      activeProjects.slice(0, 8).map(p => `- ID: ${p.id} | ${p.title} | Status: ${p.status} | Voortgang: ${p.progress}%`).join("\n"),
+      `ALLE Projecten (${allProjects.length}) — ook gepauzeerd/afgerond, Giulia weet alles:`,
+      allProjects.slice(0, 60).map(p => `- ID: ${p.id} | ${p.title} | Status: ${p.status} | Voortgang: ${p.progress}%${p.next_milestone ? ` | next: ${p.next_milestone}` : ""}`).join("\n"),
+      ``,
+      `ALLE Contacten / Personen (${allContacts.length}) — wie leeft en beweegt rond Salvo:`,
+      allContacts.slice(0, 80).map(c => `- ${c.name}${c.company ? ` (${c.company})` : ""}${c.role ? ` · ${c.role}` : ""}${c.last_contact_date ? ` · laatste contact: ${new Date(c.last_contact_date).toLocaleDateString("nl-NL")}` : ""}${c.notes ? ` · ${String(c.notes).slice(0, 80)}` : ""}`).join("\n"),
       ``,
       `Openstaande Taken (Totaal: ${openTasks.length}):`,
       `[Er lopen nu ${openTasks.length} taken. Verzin niets nieuws als het niet hoeft.]`,
