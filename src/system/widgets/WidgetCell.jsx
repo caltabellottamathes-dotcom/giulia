@@ -20,7 +20,9 @@ const OPTIONS = [
  */
 export default function WidgetCell({ def, widget, onRemove, onThemeChange, sessionMode = false }) {
   const Comp = def.Component;
-  const isGiulia = def?.domain === "giulia";
+  // Giulia- en Focus-widgets delen dezelfde minimale shell-control:
+  // glazen sluitknop linksboven, geen aparte Stijl-knop.
+  const isMinimal = def?.domain === "giulia" || def?.domain === "focus";
   const [open, setOpen] = useState(false);
   const theme = widget?.theme || "glass";
   const color = widget?.color || "";
@@ -59,8 +61,8 @@ export default function WidgetCell({ def, widget, onRemove, onThemeChange, sessi
       whileDrag={{ opacity: 0.85 }}
       className="relative group h-full"
     >
-      <div className={cn("absolute top-2 z-30 flex gap-1.5", isGiulia ? "left-2" : "right-2")}>
-        {!isGiulia && (
+      <div className={cn("absolute top-2 z-30 flex gap-1.5", isMinimal ? "left-2" : "right-2")}>
+        {!isMinimal && (
           <button
             onClick={() => setOpen((o) => !o)}
             className="h-7 px-3 rounded-full bg-ivory text-charcoal shadow-md text-[11px] font-semibold opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all hover:-translate-y-0.5"
@@ -75,9 +77,9 @@ export default function WidgetCell({ def, widget, onRemove, onThemeChange, sessi
             aria-label="Verwijderen"
             className={cn(
               "h-7 w-7 rounded-full text-base leading-none transition-all hover:-translate-y-0.5 opacity-100 lg:opacity-0 lg:group-hover:opacity-100",
-              isGiulia ? "text-ivory/80" : "bg-ivory text-charcoal shadow-md"
+              isMinimal ? "text-ivory/80" : "bg-ivory text-charcoal shadow-md"
             )}
-            style={isGiulia ? { background: "rgba(255,255,255,0.08)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.18)" } : undefined}
+            style={isMinimal ? { background: "rgba(255,255,255,0.08)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.18)" } : undefined}
           >
             ×
           </button>
