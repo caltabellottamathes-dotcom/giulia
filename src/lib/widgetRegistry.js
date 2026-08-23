@@ -6,22 +6,22 @@ import { IMAGES } from "@/lib/images";
 
 import WhatMattersLayeredWidget from "@/giulia/widgets/new/WhatMattersLayeredWidget";
 import GoodMorningWidget from "@/giulia/widgets/new/GoodMorningWidget";
-import AgendaWidget from "@/focus/widgets/AgendaWidget";
-import TasksWidget from "@/focus/widgets/TasksWidget";
+import AgendaFocusWidget from "@/focus/widgets/new/AgendaFocusWidget";
+import TasksBloomFocusWidget from "@/focus/widgets/new/TasksBloomFocusWidget";
 import WaitingOnYouWidget from "@/giulia/widgets/new/WaitingOnYouWidget";
 import NotificationsWidget from "@/focus/widgets/NotificationsWidget";
-import EmailWidget from "@/focus/widgets/EmailWidget";
-import WhatsAppWidget from "@/focus/widgets/WhatsAppWidget";
-import ProjectsWidget from "@/focus/widgets/ProjectsWidget";
+import EmailFocusWidget from "@/focus/widgets/new/EmailFocusWidget";
+import WhatsAppChatFocusWidget from "@/focus/widgets/new/WhatsAppChatFocusWidget";
+import ProjectsFocusWidget from "@/focus/widgets/new/ProjectsFocusWidget";
 import KnowledgeWidget from "@/focus/widgets/KnowledgeWidget";
-import PeopleWidget from "@/focus/widgets/PeopleWidget";
+import PeopleFocusWidget from "@/focus/widgets/new/PeopleFocusWidget";
 import DocumentsWidget from "@/focus/widgets/DocumentsWidget";
 import MemoryWidget from "@/giulia/widgets/MemoryWidget";
 import WhatIveNoticedWidget from "@/giulia/widgets/new/WhatIveNoticedWidget";
 import ActivityWidget from "@/giulia/widgets/ActivityWidget";
 import AgentActivityWidget from "@/giulia/widgets/AgentActivityWidget";
 import GiuliaConciergeWidget from "@/giulia/widgets/new/GiuliaConciergeWidget";
-import TimeTrackerWidget from "@/focus/widgets/TimeTrackerWidget";
+import TimeTrackerFocusWidget from "@/focus/widgets/new/TimeTrackerFocusWidget";
 import UpdatesWidget from "@/giulia/widgets/UpdatesWidget";
 import SocialPulseWidget from "@/life/widgets/SocialPulseWidget";
 import SocialPlannerWidget from "@/life/widgets/SocialPlannerWidget";
@@ -59,16 +59,18 @@ export const WIDGETS = {
   updates:         { type: "updates",         label: "Meanwhile...",       icon: Sparkles,       Component: UpdatesWidget,          image: IMAGES.feetChair,        span: 3, category: "intelligence", domain: "system" },
   giuliaquestions: { type: "giuliaquestions", label: "Wants to Know!",      icon: HelpCircle,    Component: WantsToKnowLayeredWidget, image: IMAGES.wWantsToKnow,    span: 1, category: "intelligence", domain: "giulia" },
 
-  // ── FOCUS ──
-  agenda:      { type: "agenda",      label: "What's Happening?",  icon: Calendar,      Component: AgendaWidget,     image: IMAGES.focusHappening, span: 4, category: "core", domain: "life" },
-  tasks:       { type: "tasks",       label: "To Do!",             icon: CheckSquare,   Component: TasksWidget,      image: IMAGES.focusTodoNew,       span: 4, category: "work", domain: "focus" },
-  projects:    { type: "projects",    label: "What I'm Building.", icon: Briefcase,     Component: ProjectsWidget,   image: IMAGES.focusBuild,   span: 5, category: "work", domain: "focus" },
-  email:       { type: "email",       label: "Online Postoffice.",     icon: Mail,          Component: EmailWidget,      image: IMAGES.focusMail,     span: 4, category: "comms", domain: "focus" },
-  whatsapp:    { type: "whatsapp",    label: "Who's Texting?",     icon: MessageCircle, Component: WhatsAppWidget, image: IMAGES.focusTodo,   span: 4, category: "comms", domain: "focus" },
-  knowledge:   { type: "knowledge",   label: "What I Know.",       icon: BookOpen,      Component: KnowledgeWidget,  image: IMAGES.chairWater,       span: 4, category: "work", domain: "system" },
-  documents:   { type: "documents",   label: "Files to Share.",        icon: FileText,      Component: DocumentsWidget,  image: IMAGES.chairsScattered,  span: 4, category: "work", domain: "focus" },
-  people:      { type: "people",      label: "People Around Me.",  icon: Users,         Component: PeopleWidget,     image: IMAGES.focusPeople, span: 3, category: "work", domain: "focus" },
-  timetracker: { type: "timetracker", label: "Where My Time Goes.", icon: Timer,         Component: TimeTrackerWidget, image: IMAGES.focusTime,  span: 4, category: "work", domain: "focus" },
+  // ── FOCUS ── (nieuwe Focus-widget-skelet — realtime data + panelen)
+  agenda:      { type: "agenda",      label: "What's Happening?",   icon: Calendar,      Component: AgendaFocusWidget,        image: IMAGES.focusHappening, span: 2, category: "core",  domain: "focus" },
+  tasks:       { type: "tasks",       label: "To Do!",              icon: CheckSquare,   Component: TasksBloomFocusWidget,     image: IMAGES.focusTodoNew,   span: 1, category: "work",  domain: "focus" },
+  projects:    { type: "projects",    label: "What I'm Building.",  icon: Briefcase,     Component: ProjectsFocusWidget,        image: IMAGES.focusBuild,     span: 2, category: "work",  domain: "focus" },
+  email:       { type: "email",       label: "Online Postoffice.",  icon: Mail,          Component: EmailFocusWidget,          image: IMAGES.focusMail,      span: 1, category: "comms", domain: "focus" },
+  whatsapp:    { type: "whatsapp",    label: "Who's Texting?",      icon: MessageCircle, Component: WhatsAppChatFocusWidget,    image: IMAGES.focusTodo,     span: 2, category: "comms", domain: "focus" },
+  people:      { type: "people",      label: "People Around Me.",   icon: Users,         Component: PeopleFocusWidget,         image: IMAGES.focusPeople,    span: 1, category: "work",  domain: "focus" },
+  timetracker: { type: "timetracker", label: "Where My Time Goes.", icon: Timer,         Component: TimeTrackerFocusWidget,     image: IMAGES.focusTime,     span: 1, category: "work",  domain: "focus" },
+
+  // ── SYSTEM (knowledge + documents) ──
+  knowledge:   { type: "knowledge",   label: "What I Know.",        icon: BookOpen,      Component: KnowledgeWidget,  image: IMAGES.chairWater,       span: 4, category: "work", domain: "system" },
+  documents:   { type: "documents",   label: "Files to Share.",     icon: FileText,      Component: DocumentsWidget,  image: IMAGES.chairsScattered,  span: 2, category: "work", domain: "system" },
 
   // ── LIFE ──
   socialpulse:   { type: "socialpulse",   label: "What Social Life?",   icon: Heart,         Component: SocialPulseWidget,    image: IMAGES.lifeSocialPulse,    span: 4, category: "life", domain: "life" },
