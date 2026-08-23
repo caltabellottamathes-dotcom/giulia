@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { WidgetHeader } from "@/system/widgets/primitives";
+import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { IMAGES } from "@/lib/images";
 
@@ -30,6 +31,7 @@ const relTime = (iso, now) => {
  *  opent de glazen agenda-tijdlijn (groter, meer verspreid) met now-marker +
  *  bolletjes. */
 export default function AgendaFocusWidget() {
+  const { openModule } = usePanel();
   const { data: events } = useEntityList("CalendarEvent", { sort: "start", limit: 80, realtime: true });
   const [now, setNow] = useState(new Date());
   const [open, setOpen] = useState(false);
@@ -44,7 +46,7 @@ export default function AgendaFocusWidget() {
   const evDate = next ? new Date(next.start).toLocaleDateString("nl-NL", { weekday: "short", day: "numeric", month: "short" }) : "";
 
   return (
-    <div className="relative w-full h-[260px] rounded-[28px] overflow-hidden cursor-pointer" style={{ "--tile-accent": DEEP, color: DEEP }} onClick={() => setOpen(true)}>
+    <div className="relative w-full h-[260px] rounded-[28px] overflow-hidden cursor-pointer" style={{ "--tile-accent": DEEP, color: DEEP }} onClick={() => openModule("agenda")}>
       <div className="absolute inset-0 overflow-hidden ring-1 ring-inset ring-white/10 rounded-[28px]" style={{ background: "rgba(48,50,55,0.18)", backdropFilter: "blur(22px) saturate(1.35)", WebkitBackdropFilter: "blur(22px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.12)" }} />
 
       {/* rechts — glas content, focus-kleur (plum) */}
@@ -114,9 +116,9 @@ export default function AgendaFocusWidget() {
             <span className="absolute inset-0 m-auto h-6 w-6 rounded-full" style={{ background: LIGHT }} />
           </div>
         </div>
-        <div className="absolute bottom-2 left-2 flex items-center gap-1 text-[8px] uppercase tracking-[0.18em] font-bold" style={{ color: IVORY, opacity: 0.75 }}>
+        <button onClick={(e) => { e.stopPropagation(); setOpen(true); }} className="absolute bottom-2 left-2 flex items-center gap-1 text-[8px] uppercase tracking-[0.18em] font-bold" style={{ color: IVORY, opacity: 0.75 }}>
           <ChevronRight className="h-3 w-3" /> tijdlijn
-        </div>
+        </button>
       </motion.div>
     </div>
   );

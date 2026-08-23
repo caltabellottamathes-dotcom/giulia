@@ -61,10 +61,10 @@ export const WIDGETS = {
 
   // ── FOCUS ── (nieuwe Focus-widget-skelet — realtime data + panelen)
   agenda:      { type: "agenda",      label: "What's Happening?",   icon: Calendar,      Component: AgendaFocusWidget,        image: IMAGES.focusHappening, span: 2, category: "core",  domain: "focus" },
-  tasks:       { type: "tasks",       label: "To Do!",              icon: CheckSquare,   Component: TasksBloomFocusWidget,     image: IMAGES.focusTodoNew,   span: 1, category: "work",  domain: "focus" },
   projects:    { type: "projects",    label: "What I'm Building.",  icon: Briefcase,     Component: ProjectsFocusWidget,        image: IMAGES.focusBuild,     span: 2, category: "work",  domain: "focus" },
-  email:       { type: "email",       label: "Online Postoffice.",  icon: Mail,          Component: EmailFocusWidget,          image: IMAGES.focusMail,      span: 1, category: "comms", domain: "focus" },
+  tasks:       { type: "tasks",       label: "To Do!",              icon: CheckSquare,   Component: TasksBloomFocusWidget,     image: IMAGES.focusToDoNew,   span: 1, category: "work",  domain: "focus" },
   whatsapp:    { type: "whatsapp",    label: "Who's Texting?",      icon: MessageCircle, Component: WhatsAppChatFocusWidget,    image: IMAGES.focusTodo,     span: 2, category: "comms", domain: "focus" },
+  email:       { type: "email",       label: "Online Postoffice.",  icon: Mail,          Component: EmailFocusWidget,          image: IMAGES.focusMail,      span: 1, category: "comms", domain: "focus" },
   people:      { type: "people",      label: "People Around Me.",   icon: Users,         Component: PeopleFocusWidget,         image: IMAGES.focusPeople,    span: 1, category: "work",  domain: "focus" },
   timetracker: { type: "timetracker", label: "Where My Time Goes.", icon: Timer,         Component: TimeTrackerFocusWidget,     image: IMAGES.focusTime,     span: 1, category: "work",  domain: "focus" },
 

@@ -125,7 +125,7 @@ export default function ProjectsFocusWidget() {
         <motion.div className="absolute inset-0" animate={{ x: selectedId ? "-102%" : "0%" }} transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}>
           <img src={PHOTO} alt="What I'm Building" className="absolute inset-0 w-full h-full object-cover" />
           {/* XL ghost getal — wit, volledig onderaan, iets minder transparant */}
-          <span className="pointer-events-none absolute -bottom-7 right-0 text-[150px] font-display font-bold leading-none tabular-nums" style={{ color: IVORY, opacity: 0.4 }}>{avgPct}%</span>
+          <span className="pointer-events-none absolute -bottom-6 -right-3 text-[128px] font-display font-bold leading-none tabular-nums" style={{ color: IVORY, opacity: 0.55 }}>{avgPct}%</span>
           {/* onder: gem. klaar net boven actieve projecten */}
           <div className="absolute bottom-0 inset-x-0 p-3" style={{ color: IVORY, textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>
             <p className="text-[9px] uppercase tracking-[0.18em] font-bold" style={{ color: IVORY, opacity: 0.8 }}>gem. klaar</p>

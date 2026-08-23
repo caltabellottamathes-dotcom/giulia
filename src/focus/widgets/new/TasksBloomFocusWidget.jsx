@@ -49,9 +49,11 @@ export default function TasksBloomFocusWidget() {
   const { data: tasks } = useEntityList("Task", { sort: "-created_date", limit: 80, realtime: true });
   const [states, setStates] = useState({});
 
-  const focus = useMemo(() => (tasks || []).filter((t) => t.domain === "focus" && !["completed", "archived"].includes(t.status)).slice(0, 5), [tasks]);
-  const total = (tasks || []).filter((t) => t.domain === "focus").length;
-  const doneCount = (tasks || []).filter((t) => t.domain === "focus" && t.status === "completed").length;
+  const isOpen = (t) => !["completed", "archived"].includes(t.status);
+  const isFocus = (t) => !t.domain || t.domain === "focus";
+  const focus = useMemo(() => (tasks || []).filter((t) => isFocus(t) && isOpen(t)).slice(0, 5), [tasks]);
+  const total = (tasks || []).filter((t) => isFocus(t)).length;
+  const doneCount = (tasks || []).filter((t) => isFocus(t) && t.status === "completed").length;
 
   const PALETTE = [LIGHT, NEUT, LIGHT];
   const items = focus.map((t, i) => {
@@ -80,9 +82,8 @@ export default function TasksBloomFocusWidget() {
   const mm = String(now.getMinutes()).padStart(2, "0");
 
   return (
-    <WidgetShell domain="focus" radius="large" className="w-full h-[480px] min-h-0">
+    <WidgetShell domain="focus" radius="large" className="w-full h-[480px] min-h-0" onClick={() => openModule("tasks")} interactive>
       <img src={PHOTO} alt="To Do" className="absolute inset-0 w-full h-full object-cover" />
-      <button type="button" onClick={() => openModule("tasks")} aria-label="Open Tasks" className="absolute inset-0 z-0 cursor-pointer" />
 
       {/* PhotoShell — glaspill items bovenin */}
       <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-3 flex flex-col" style={{ color: IVORY, height: "56%", background: "linear-gradient(to bottom, rgba(0,0,0,0.32), rgba(0,0,0,0))" }}>
@@ -116,7 +117,7 @@ export default function TasksBloomFocusWidget() {
           <span className="text-[9px] uppercase tracking-[0.22em] font-bold" style={{ color: LIGHT }}>Planning</span>
           <span className="text-[9px] uppercase tracking-[0.18em] font-bold" style={{ color: "rgba(255,255,255,0.45)" }}>{doneCount}/{total} gedaan</span>
         </div>
-        <div className="flex-1 flex items-end" onClick={(e) => e.stopPropagation()}>
+        <div className="flex-1 flex items-end">
           {items.length === 0 ? <p className="text-[11px] text-ivory/55 m-auto">Geen taken.</p> : <PlanningBars items={items} />}
         </div>
       </div>
