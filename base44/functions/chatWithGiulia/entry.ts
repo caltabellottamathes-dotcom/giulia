@@ -21,7 +21,7 @@ import { logActivity } from '../../shared/learningLayer.ts';
  * routinematige status gaat naar report_to_salvo (Activity-feed), niet naar
  * create_notification.
  */
-const MAX_STEPS = 6;
+const MAX_STEPS = 4;
 
 function sanitizeResult(r) {
   if (r == null) return { ok: true };
@@ -102,24 +102,24 @@ export default async function (req) {
       upcomingEvents,
       activeTherapy
     ] = await Promise.all([
-      sr.entities.Memory.list("-created_date", 30).catch(() => []),
+      sr.entities.Memory.list("-created_date", 20).catch(() => []),
       // ALLE projecten (ook gepauzeerd/afgerond) — Giulia moet alles weten.
-      sr.entities.Project.list("-updated_date", 100).catch(() => []),
+      sr.entities.Project.list("-updated_date", 40).catch(() => []),
       // ALLE contacten/personen — Giulia is de roddeltante die iedereen kent.
-      sr.entities.Contact.list("-updated_date", 100).catch(() => []),
-      sr.entities.Task.filter({ status: { $in: ["todo", "in_progress", "waiting", "delegated", "today", "upcoming", "overdue"] } }, "-created_date", 40).catch(() => []),
-      sr.entities.Task.filter({ status: { $in: ["completed", "archived", "done"] } }, "-updated_date", 10).catch(() => []),
+      sr.entities.Contact.list("-updated_date", 50).catch(() => []),
+      sr.entities.Task.filter({ status: { $in: ["todo", "in_progress", "waiting", "delegated", "today", "upcoming", "overdue"] } }, "-created_date", 25).catch(() => []),
+      sr.entities.Task.filter({ status: { $in: ["completed", "archived", "done"] } }, "-updated_date", 6).catch(() => []),
       sr.entities.Approval.filter({ status: "pending" }).catch(() => []),
       sr.entities.Activity.list("-created_date", 5).catch(() => []),
       sr.entities.Notification.filter({ status: "unread" }).catch(() => []),
       sr.entities.Document.filter({ document_type: "reference" }).catch(() => []),
-      sr.entities.CalendarEvent.filter({ start: { $gte: new Date(Date.now() - 86400000).toISOString() } }, "start", 15).catch(() => []),
+      sr.entities.CalendarEvent.filter({ start: { $gte: new Date(Date.now() - 86400000).toISOString() } }, "start", 10).catch(() => []),
       sr.entities.TherapyTrajectory.filter({ status: "active" }).catch(() => []),
     ]);
 
     // Semantische geheugen-selectie — alleen bij complexere vragen (sla API-call
     // over voor korte/simple berichten om latency te besparen).
-    const isSimple = message.length < 80;
+    const isSimple = message.length < 140;
     const queryEmbedding = isSimple ? null : await geminiEmbed({ text: message, keyName: "GIULIA_GIULIA_MEMORY_GEMINI_API_KEY" }).catch(() => null);
     let memories = allMemories.slice(0, 20);
     if (queryEmbedding) {
@@ -145,14 +145,14 @@ export default async function (req) {
       `Geheugen: ${memories.length ? memories.map(m => `- ${String(m.content).slice(0, 140)}`).join("\n") : "Leeg"}`,
       ``,
       `ALLE Projecten (${allProjects.length}) — ook gepauzeerd/afgerond, Giulia weet alles:`,
-      allProjects.slice(0, 60).map(p => `- ID: ${p.id} | ${p.title} | Status: ${p.status} | Voortgang: ${p.progress}%${p.next_milestone ? ` | next: ${p.next_milestone}` : ""}`).join("\n"),
+      allProjects.slice(0, 40).map(p => `- ID: ${p.id} | ${p.title} | Status: ${p.status} | Voortgang: ${p.progress}%${p.next_milestone ? ` | next: ${p.next_milestone}` : ""}`).join("\n"),
       ``,
       `ALLE Contacten / Personen (${allContacts.length}) — wie leeft en beweegt rond Salvo:`,
-      allContacts.slice(0, 80).map(c => `- ${c.name}${c.company ? ` (${c.company})` : ""}${c.role ? ` · ${c.role}` : ""}${c.last_contact_date ? ` · laatste contact: ${new Date(c.last_contact_date).toLocaleDateString("nl-NL")}` : ""}${c.notes ? ` · ${String(c.notes).slice(0, 80)}` : ""}`).join("\n"),
+      allContacts.slice(0, 50).map(c => `- ${c.name}${c.company ? ` (${c.company})` : ""}${c.role ? ` · ${c.role}` : ""}${c.last_contact_date ? ` · laatste contact: ${new Date(c.last_contact_date).toLocaleDateString("nl-NL")}` : ""}${c.notes ? ` · ${String(c.notes).slice(0, 80)}` : ""}`).join("\n"),
       ``,
       `Openstaande Taken (Totaal: ${openTasks.length}):`,
       `[Er lopen nu ${openTasks.length} taken. Verzin niets nieuws als het niet hoeft.]`,
-      openTasks.slice(0, 15).map(t => `- ID: ${t.id} | ${t.title} | Status: ${t.status}`).join("\n"),
+      openTasks.slice(0, 12).map(t => `- ID: ${t.id} | ${t.title} | Status: ${t.status}`).join("\n"),
       ``,
       `RECENT VERWIJDERD OF AFGEROND (ANTI-ZOMBIE LIJST):`,
       `[MAAK DEZE NOOIT OPNIEUW AAN!]`,

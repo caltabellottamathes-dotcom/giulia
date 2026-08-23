@@ -2,7 +2,8 @@ import React, { useRef, useState, useEffect } from "react";
 import { useGiuliaChat } from "@/lib/useGiuliaChat";
 import { usePanel } from "@/lib/PanelContext";
 import { base44 } from "@/api/base44Client";
-import { X, ArrowUp, Loader2, Phone, Paperclip, Image as ImageIcon, Film, Music, FileText } from "lucide-react";
+import { X, ArrowUp, Phone, Paperclip, Image as ImageIcon, Film, Music, FileText } from "lucide-react";
+import { motion } from "framer-motion";
 import ChatMarkdown from "@/system/components/glass/ChatMarkdown";
 import { useMediaViewer } from "@/lib/MediaViewerContext";
 
@@ -15,10 +16,25 @@ import { useMediaViewer } from "@/lib/MediaViewerContext";
  */
 const SUGGESTIONS = [
   "Wat staat er vandaag op de agenda?",
-  "Bereid een email voor aan Sarah",
+  "Stel een concept-email op",
   "Zijn er agendabotsingen deze week?",
   "Maak een taak aan: review concurrenten",
 ];
+
+function BouncingDots() {
+  return (
+    <span className="inline-flex items-center gap-1">
+      {[0, 1, 2].map((i) => (
+        <motion.span
+          key={i}
+          className="h-1.5 w-1.5 rounded-full bg-ivory/60"
+          animate={{ y: [0, -3, 0], opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 0.9, repeat: Infinity, ease: "easeInOut", delay: i * 0.15 }}
+        />
+      ))}
+    </span>
+  );
+}
 
 export default function ChatWindow() {
   const { chatOpen, closeChat, openVoice, pendingMessage, setPendingMessage } = usePanel();
@@ -103,7 +119,8 @@ export default function ChatWindow() {
       <div className="fixed inset-0 z-40 bg-charcoal/15 animate-fade-in" onClick={closeChat} />
 
       <div className="fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 z-50 w-[calc(100%-2rem)] lg:w-[460px] animate-slide-right">
-        <div className="refraction-panel h-full flex flex-col">
+        <div className="refraction-panel h-full flex flex-col" style={{ background: "rgba(10,12,16,0.34)" }}>
+          <div className="pointer-events-none absolute top-0 inset-x-0 h-44" style={{ background: "radial-gradient(120% 70% at 50% 0%, rgba(255,255,255,0.07), transparent 72%)" }} />
           <button
             onClick={closeChat}
             className="absolute top-4 left-4 z-40 h-9 w-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors"
@@ -133,7 +150,9 @@ export default function ChatWindow() {
             </div>
           </div>
 
-          <div ref={scrollRef} className="relative flex-1 overflow-y-auto px-7 py-4 space-y-4">
+          <div className="px-7 pb-1"><div className="h-px bg-ivory/10" /></div>
+
+          <div ref={scrollRef} className="relative flex-1 overflow-y-auto overflow-x-hidden px-7 py-4 space-y-4">
             {messages.length === 0 && !sending && ready && (
               <div className="flex flex-col items-center text-center py-14 px-4">
                 <p className="font-display font-semibold text-2xl text-ivory mb-3 tracking-[-0.01em]">
@@ -148,8 +167,9 @@ export default function ChatWindow() {
               <MessageBubble key={m.id} message={m} />
             ))}
             {sending && (
-              <div className="flex items-center gap-2 text-ivory/50 text-xs ml-1">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Giulia denkt na…
+              <div className="flex items-center gap-2 text-ivory/60 text-xs ml-1">
+                <BouncingDots />
+                <span>Aan het typen…</span>
               </div>
             )}
           </div>
@@ -228,7 +248,7 @@ function MessageBubble({ message }) {
     return (
       <div className="flex justify-end">
         <div
-          className="max-w-[80%] rounded-[20px] rounded-br-md px-[18px] py-3 text-sm leading-relaxed text-background tracking-[-0.01em]"
+          className="max-w-[80%] break-words rounded-[20px] rounded-br-md px-[18px] py-3 text-sm leading-relaxed text-background tracking-[-0.01em]"
           style={{ background: "rgba(45, 45, 35, 0.92)" }}
         >
           {message.content}
@@ -239,7 +259,7 @@ function MessageBubble({ message }) {
   }
   return (
     <div className="flex justify-start">
-      <div className="max-w-[85%] chat-bubble px-[18px] py-3 text-sm text-ivory leading-relaxed">
+      <div className="max-w-[85%] min-w-0 break-words overflow-hidden chat-bubble px-[18px] py-3 text-sm text-ivory leading-relaxed [&_pre]:overflow-x-auto [&_pre]:max-w-full">
         <ChatMarkdown>{message.content}</ChatMarkdown>
         {atts.map(renderAtt)}
       </div>

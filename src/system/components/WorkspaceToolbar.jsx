@@ -55,15 +55,21 @@ export default function WorkspaceToolbar() {
   const [savingCtx, setSavingCtx] = useState(false);
   const [expanded, setExpanded] = useState(true);
   const collapseTimer = useRef(null);
+  const enterTimer = useRef(null);
 
-  // expand zonder auto-inklappen — blijft open zolang je hoovert.
-  const expand = () => { setExpanded(true); clearTimeout(collapseTimer.current); };
-  // bij verlaten even wachten (±3,2s) voordat hij uitschuift.
-  const scheduleCollapse = (ms = 3200) => {
+  // sensitievere hover — hij wacht nét even (220ms) voor hij opent en blijft
+  // na verlaten ±4s open. Zo "voelt" hij of hij open of dicht wil blijven.
+  const expand = () => {
     clearTimeout(collapseTimer.current);
+    clearTimeout(enterTimer.current);
+    enterTimer.current = setTimeout(() => setExpanded(true), 220);
+  };
+  const scheduleCollapse = (ms = 4000) => {
+    clearTimeout(collapseTimer.current);
+    clearTimeout(enterTimer.current);
     collapseTimer.current = setTimeout(() => setExpanded(false), ms);
   };
-  useEffect(() => { setExpanded(true); scheduleCollapse(6000); return () => clearTimeout(collapseTimer.current); }, []);
+  useEffect(() => { setExpanded(true); scheduleCollapse(6000); return () => { clearTimeout(collapseTimer.current); clearTimeout(enterTimer.current); }; }, []);
 
   useEffect(() => { if (captured) setNote(""); }, [captured]);
   useEffect(() => {
@@ -106,6 +112,15 @@ export default function WorkspaceToolbar() {
 
   const all = [...DEFAULT_BOARDS, ...custom];
 
+  const domain = useActiveSection(board);
+  const ACCENT = {
+    giulia: "hsl(var(--d-giulia-deep))",
+    focus: "hsl(var(--d-focus-deep))",
+    life: "hsl(var(--life-blue))",
+    self: "hsl(var(--self-burgundy))",
+    system: "hsl(var(--d-system-deep))",
+  }[domain] || "hsl(var(--d-giulia-deep))";
+
   return (
     <>
       {/* bottom hover-reveal zone */}
@@ -123,15 +138,16 @@ export default function WorkspaceToolbar() {
         onMouseLeave={scheduleCollapse}
       >
         <div
-          className="relative flex items-center h-14 rounded-2xl overflow-hidden w-full"
+          className="relative flex items-center h-14 rounded-[26px] overflow-hidden w-full"
           style={{
-            background: "rgba(14,16,22,0.42)",
-            backdropFilter: "blur(56px) saturate(1.5)",
-            WebkitBackdropFilter: "blur(56px) saturate(1.5)",
-            border: "1px solid rgba(255,255,255,0.10)",
-            boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.14), 0 28px 64px -24px rgba(0,0,0,0.46)",
+            background: "rgba(16,18,24,0.34)",
+            backdropFilter: "blur(64px) saturate(1.5)",
+            WebkitBackdropFilter: "blur(64px) saturate(1.5)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.16), 0 24px 56px -20px rgba(0,0,0,0.42)",
           }}
         >
+          <span className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${ACCENT} 22%, ${ACCENT} 78%, transparent)` }} />
           {expanded ? (
             <>
               {/* Dashboard tabs (left) */}
@@ -148,6 +164,7 @@ export default function WorkspaceToolbar() {
                       )}
                     >
                       {b.label}
+                      {on && <span className="absolute left-3 right-3 bottom-0.5 h-[2px] rounded-full" style={{ background: ACCENT }} />}
                     </button>
                   );
                 })}
