@@ -88,9 +88,12 @@ export default function Home() {
 
   useEffect(() => {
     base44.auth.me().then((u) => setUserName(u?.full_name || "")).catch(() => {});
-    // Eenmalig per opstart: alle dashboards correct vullen. Daarna niet meer.
+    // Dashboards laden direct (ready=true); ensureAllBoards zaait op de
+    // achtergrond en herlaadt het board zodra klaar. Zo blijft het dashboard
+    // altijd zichtbaar — ook als de seeding traag of gedeeltelijk faalt.
     let cancelled = false;
-    ensureAllBoards().finally(() => { if (!cancelled) setReady(true); });
+    setReady(true);
+    ensureAllBoards().finally(() => { if (!cancelled) reloadRef.current?.(); });
     // De opstart-video zet startGiulia + refreshDashboard op gang. Bij een
     // terugkerende sessie (video al geweest) houden we de throttle-refresh aan.
     if (startupDone) {

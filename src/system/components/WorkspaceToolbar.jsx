@@ -57,14 +57,14 @@ export default function WorkspaceToolbar() {
   const collapseTimer = useRef(null);
   const enterTimer = useRef(null);
 
-  // sensitievere hover — hij wacht nét even (220ms) voor hij opent en blijft
-  // na verlaten ±4s open. Zo "voelt" hij of hij open of dicht wil blijven.
+  // kalme, sensitievere hover — hij wacht 450ms voor hij opent (blijft dus
+  // even dicht bij een snelle muisbeweging) en blijft na verlaten ±6s open.
   const expand = () => {
     clearTimeout(collapseTimer.current);
     clearTimeout(enterTimer.current);
-    enterTimer.current = setTimeout(() => setExpanded(true), 220);
+    enterTimer.current = setTimeout(() => setExpanded(true), 450);
   };
-  const scheduleCollapse = (ms = 4000) => {
+  const scheduleCollapse = (ms = 6000) => {
     clearTimeout(collapseTimer.current);
     clearTimeout(enterTimer.current);
     collapseTimer.current = setTimeout(() => setExpanded(false), ms);
@@ -140,14 +140,14 @@ export default function WorkspaceToolbar() {
         <div
           className="relative flex items-center h-14 rounded-[26px] overflow-hidden w-full"
           style={{
-            background: "rgba(16,18,24,0.34)",
+            background: "rgba(16,18,24,0.22)",
             backdropFilter: "blur(64px) saturate(1.5)",
             WebkitBackdropFilter: "blur(64px) saturate(1.5)",
             border: "1px solid rgba(255,255,255,0.12)",
-            boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.16), 0 24px 56px -20px rgba(0,0,0,0.42)",
+            boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.16), 0 30px 70px -22px rgba(0,0,0,0.55), 0 10px 24px -12px rgba(0,0,0,0.35)",
           }}
         >
-          <span className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${ACCENT} 22%, ${ACCENT} 78%, transparent)` }} />
+          <div className="pointer-events-none absolute inset-0" style={{ background: ACCENT, opacity: 0.16 }} />
           {expanded ? (
             <>
               {/* Dashboard tabs (left) */}
@@ -159,12 +159,11 @@ export default function WorkspaceToolbar() {
                       key={b.id}
                       onClick={() => selectBoard(b.id)}
                       className={cn(
-                        "relative px-3 lg:px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap transition-all rounded-lg",
-                        on ? "text-ivory bg-ivory/15" : "text-ivory/75 hover:text-ivory hover:bg-ivory/10"
+                        "px-3 lg:px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap transition-colors",
+                        on ? "text-ivory" : "text-ivory/55 hover:text-ivory/85"
                       )}
                     >
                       {b.label}
-                      {on && <span className="absolute left-3 right-3 bottom-0.5 h-[2px] rounded-full" style={{ background: ACCENT }} />}
                     </button>
                   );
                 })}
@@ -183,7 +182,7 @@ export default function WorkspaceToolbar() {
           ) : (
             <button
               onClick={() => setExpanded(true)}
-              className="ml-3 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap text-ivory bg-ivory/10 rounded-lg shrink-0"
+              className="ml-3 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap text-ivory shrink-0"
             >
               {all.find((b) => b.id === board)?.label || "GIULIA"}
             </button>
