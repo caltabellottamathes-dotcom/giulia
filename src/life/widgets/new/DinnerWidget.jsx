@@ -123,10 +123,6 @@ function DayTimeline({ meals, mode, dateLabel, dayName }) {
             : { background: "rgba(170,185,135,0.42)", border: "1px solid rgba(170,185,135,0.55)", boxShadow: "0 10px 26px -12px rgba(90,90,50,0.36)" };
           return (
             <div className="relative overflow-hidden rounded-xl px-3 py-2 flex items-center justify-between" style={{ ...glass, color: ink, backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}>
-              {isToday && (
-                <motion.span className="pointer-events-none absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/45 to-transparent"
-                  initial={{ x: "-120%" }} animate={{ x: "320%" }} transition={{ duration: 2.6, ease: "easeInOut", repeat: Infinity, repeatDelay: 1.4 }} />
-              )}
               <div className="flex items-center gap-2 min-w-0 relative">
                 <span className="h-2 w-2 rounded-full shrink-0" style={{ background: ink }} />
                 <span className="text-[9px] uppercase tracking-[0.16em] font-bold">{isToday ? MEAL_LABELS[active] : "eerste"}</span>
@@ -175,12 +171,12 @@ export default function DinnerWidget() {
       <span className="pointer-events-none absolute inset-x-0 top-0 h-px z-20" style={{ background: `linear-gradient(90deg, transparent, ${DEEP} 18%, ${DEEP} 82%, transparent)` }} />
 
       {/* vandaag — boven in de shell */}
-      <div className="absolute top-0 left-0 right-0 h-1/2 z-0 cursor-pointer p-2.5 pb-0.5" onClick={() => openModule("food")}>
+      <div className="absolute top-0 left-0 right-0 h-1/2 z-0 cursor-pointer p-2.5 pb-0.5 pt-3.5" onClick={() => openModule("food")}>
         <DayTimeline meals={today} mode="today" dateLabel="Vandaag" dayName={todayDay} />
       </div>
 
       {/* morgen — onder in de shell */}
-      <div className="absolute bottom-0 left-0 right-0 h-1/2 z-0 cursor-pointer p-2.5 pt-0.5" onClick={() => openModule("food")}>
+      <div className="absolute bottom-0 left-0 right-0 h-1/2 z-0 cursor-pointer p-2.5 pt-6" onClick={() => openModule("food")}>
         <DayTimeline meals={tomorrow} mode="morgen" dateLabel="Morgen" dayName={morgenDay} />
       </div>
 
