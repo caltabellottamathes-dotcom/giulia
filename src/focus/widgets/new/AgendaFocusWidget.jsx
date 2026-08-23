@@ -103,18 +103,17 @@ export default function AgendaFocusWidget() {
       <motion.div className="absolute inset-y-0 left-0 w-[50%] rounded-[28px] overflow-hidden z-20 pointer-events-none" style={{ boxShadow: "16px 0 34px -20px rgba(0,0,0,0.5)" }} animate={{ x: open ? "100%" : "0%" }} transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}>
         <img src={PHOTO} alt="What's Happening" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/22 via-black/8 to-transparent" />
-        {/* Orbit Dots — focus-kleuren, langzaam draaiend */}
-        <motion.div className="absolute inset-0 flex items-center justify-center pointer-events-none" animate={{ rotate: 360 }} transition={{ duration: 38, repeat: Infinity, ease: "linear" }}>
-          <div className="relative h-[120px] w-[120px]">
-            {[0, 60, 120, 180, 240, 300].map((deg, i) => {
-              const col = PAL[i % PAL.length];
-              const r = 58;
-              const x = 60 + Math.cos((deg * Math.PI) / 180) * r - 5;
-              const y = 60 + Math.sin((deg * Math.PI) / 180) * r - 5;
-              return <span key={deg} className="absolute h-2.5 w-2.5 rounded-full" style={{ left: x, top: y, background: col, boxShadow: `0 0 10px ${col}` }} />;
-            })}
+        {/* Orbit Dots — focus-kleuren, drie draaiende ringen (zoals Giulia widget) */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="relative h-28 w-28">
+            {[0, 1, 2].map((i) => (
+              <motion.div key={i} className="absolute inset-0" animate={{ rotate: 360 }} transition={{ duration: 3 + i, repeat: Infinity, ease: "linear" }}>
+                <span className="absolute top-0 left-1/2 h-3 w-3 -ml-1.5 rounded-full" style={{ background: [DEEP, LIGHT, OLIVE][i] }} />
+              </motion.div>
+            ))}
+            <span className="absolute inset-0 m-auto h-3.5 w-3.5 rounded-full" style={{ background: DEEP }} />
           </div>
-        </motion.div>
+        </div>
         <div className="absolute bottom-2 left-2 flex items-center gap-1 text-[8px] uppercase tracking-[0.18em] font-bold" style={{ color: IVORY, opacity: 0.75 }}>
           <ChevronRight className="h-3 w-3" /> tijdlijn
         </div>

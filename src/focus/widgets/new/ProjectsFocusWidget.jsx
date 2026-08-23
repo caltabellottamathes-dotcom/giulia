@@ -30,7 +30,7 @@ export default function ProjectsFocusWidget() {
   const active = useMemo(() => (projects || []).filter((p) => ACTIVE.includes(p.status)), [projects]);
   const total = active.length;
   const avgPct = total ? Math.round(active.reduce((s, p) => s + (p.progress || 0), 0) / total) : 0;
-  const top = active;
+  const top = active.slice(0, 6);
   const selected = (projects || []).find((p) => p.id === selectedId);
   const selTasks = useMemo(() => (tasks || []).filter((t) => t.project_id === selectedId), [tasks, selectedId]);
   const breakdown = useMemo(() => (selected ? buildBreakdown(selTasks) : []), [selected, selTasks]);
@@ -124,8 +124,8 @@ export default function ProjectsFocusWidget() {
         {/* foto laag boven — schuift links weg */}
         <motion.div className="absolute inset-0" animate={{ x: selectedId ? "-102%" : "0%" }} transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}>
           <img src={PHOTO} alt="What I'm Building" className="absolute inset-0 w-full h-full object-cover" />
-          {/* XL ghost getal — wit, asymmetrisch rechtsboven uitlopend */}
-          <span className="pointer-events-none absolute -top-4 right-1 text-[140px] font-display font-bold leading-none tabular-nums" style={{ color: IVORY, opacity: 0.22 }}>{avgPct}%</span>
+          {/* XL ghost getal — wit, volledig onderaan, iets minder transparant */}
+          <span className="pointer-events-none absolute -bottom-7 right-0 text-[150px] font-display font-bold leading-none tabular-nums" style={{ color: IVORY, opacity: 0.3 }}>{avgPct}%</span>
           {/* onder: gem. klaar net boven actieve projecten */}
           <div className="absolute bottom-0 inset-x-0 p-3" style={{ color: IVORY, textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>
             <p className="text-[9px] uppercase tracking-[0.18em] font-bold" style={{ color: IVORY, opacity: 0.8 }}>gem. klaar</p>
