@@ -216,7 +216,7 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
       ? `\n\n== CONVERSATIE-CONTINUNITEIT ==\nJe krijgt de recente berichtdraad mee (user + giulia, afwisselend). Je weet daardoor wat Salvo net zei én wat jij zelf net antwoordde. Blijf in het gesprek: bouw voort op wat er al gezegd is, herhaal of herformuleer je vorige antwoord niet, en vraag niet om dingen die al duidelijk zijn. Reageer vloeiend en natuurlijk — alsof je nooit weg was.\n`
       : "";
 
-    let systemInstruction = `${GIULIA_TONE}${convoRule}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}${sourceRule}${protocolsBlock}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo, als zijn beste vriendin — vlot, warm, droog-sarcastisch, uitdagend, stout. Denk na, roep de functies aan die nodig zijn om zijn verzoek ECHT uit te voeren. Geef daarna een vlot, menselijk antwoord in het Nederlands — to the point, niet treuzelig, met humor, en daag hem uit waar nodig. Stel geen acties voor, bied geen menu aan, sommer geen opties, herhaal niet wat Salvo zei. Wacht met voorstellen tot er een duidelijke, actuele nood is.`;
+    let systemInstruction = `${GIULIA_TONE}${convoRule}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}${sourceRule}${protocolsBlock}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo, als zijn beste vriendin — vlot, warm, droog-sarcastisch, uitdagend, stout. CORE is GEEN terugkanaal: je ontvangt orders en voert ze UIT, je rapporteert niet terug wat je gedaan hebt. RICHTLIJN voor je antwoord: is Salvo's bericht een concrete OPDRACHT (taak aanmaken/wijzigen, iets koppelen, herinnering, verwijderen, verzetten)? Dan voer je de functies aan en geef je HELEMAAL GEEN of maximaal één ultrakorte bevestiging terug — geen opsomming van wat je deed, geen "ik heb X aangepast en Y gekoppeld". Gewoon doen. Geef alleen een écht, menselijk antwoord als Salvo een VRAAG stelt of echt een gesprek wil. Dan: vlot, to the point, niet treuzelig, met humor, en daag hem uit waar nodig. Stel geen acties voor, bied geen menu aan, sommer geen opties, herhaal niet wat Salvo zei. Wacht met voorstellen tot er een duidelijke, actuele nood is.`;
 
     // 3. BUILD TOOLS — elke skill is een direct uitvoerbare GIULIA-CORE-actie.
     const toolsMap = {};
@@ -309,9 +309,7 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
     }
 
     // 5. SAVE RESPONSE
-    const finalText = responseText || (executed.length
-      ? "Ik heb het uitgevoerd."
-      : "Giulia is even bezet — probeer het zo weer.");
+    const finalText = responseText || (executed.length ? "Klaar." : "Giulia is even bezet — probeer het zo weer.");
 
     if (persist && source === "chat" && finalText) {
       await sr.entities.Message.create({
