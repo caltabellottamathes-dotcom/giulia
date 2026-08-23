@@ -96,14 +96,13 @@ export default async function (req) {
       "You are the ingestion engine for GIULIA OS. Extract structured entities from the incoming message. " +
       "Always return valid JSON adhering to the given schema. Use empty strings for absent values, never null. " +
       "date_time_reference must be an ISO8601 string when a date/time is mentioned, otherwise empty.\n\n" +
-      "TASK-SPLITTING: If the user's input implies a multi-step project or a task requiring more than 2 hours of work " +
-      '(e.g. "Prepare the Vivant presentation"), set is_complex=true and put 3-5 logical sub-task titles in sub_tasks. ' +
-      "Do NOT set a single extracted_action in that case — only sub_tasks.\n" +
-      "MISSING-INFO: If the requested action is unactionable because critical information is missing " +
-      '(e.g. recipient unknown, or document unnamed like "Send the document this afternoon"), set intent="missing_info" ' +
-      "and provide a concise Dutch clarification_question.\n" +
-      'CONFLICT: If the message asks to change/reschedule an existing appointment, set intent="calendar_change" ' +
-      "and put the requested new time in entities.date_time_reference.";
+      "INTENT IS STRICT: set intent='task' or 'action_required' ONLY when the message explicitly asks Salvo himself to perform a concrete action with a clear deadline. " +
+      "Informational updates, the sender's own plans (e.g. 'I'll order food tomorrow'), confirmations, receipts, status updates, newsletters, and trivial daily-life mentions are intent='information' with NO extracted_action. " +
+      "When in doubt, choose 'information'.\n" +
+      "SUGGESTED REPLY: only provide a suggested_reply when the message explicitly asks Salvo a question, requests a response, or needs an RSVP. " +
+      "For purely informational messages, leave suggested_reply empty.\n" +
+      "MISSING-INFO: If the requested action is unactionable because critical information is missing, set intent='missing_info' and provide a concise Dutch clarification_question.\n" +
+      "CONFLICT: If the message asks to change/reschedule an existing appointment, set intent='calendar_change' and put the requested new time in entities.date_time_reference.";
 
     const out = await geminiDecide({
       model: "gemini-3.5-flash-lite",
@@ -159,61 +158,35 @@ export default async function (req) {
       if (conflict.created) created.push({ type: "approval", id: conflict.created });
     }
 
-    // ── Step 2.4c: Action execution ──────────────────────────────────
-    if (intent === "task" || intent === "action_required") {
-      if (isComplex && subTasks.length >= 2) {
-        // Task-Splitter: keten sub-tasks met dependencies (parent_task_id)
-        let prevId = null;
-        for (const sub of subTasks) {
-          const t = await sr.entities.Task.create({
-            title: sub,
-            status: prevId ? "waiting" : "todo",
-            parent_task_id: prevId || undefined,
-            priority: urgency,
-            deadline: dtRef || undefined,
-            project_id: projectId || undefined,
-            contact_id: contactId || undefined,
-            delegated_to_giulia: false,
-            agent_source: "interpretInput",
-          }).catch(() => null);
-          if (t) { created.push({ type: "subtask", id: t.id }); prevId = t.id; }
-        }
-      } else if (action) {
-        const task = await sr.entities.Task.create({
-          title: action,
-          status: "todo",
-          priority: urgency,
-          deadline: dtRef || undefined,
+    // ── Step 2.4c: Geen automatische taken/insight-aanmaak ────────────
+    // Een Taak is iets dat Salvo zelf aanmaakt/aanvraagt óf wat eerst met
+    // hem is afgestemd. Giulia creëert NOOIT autonoom Tasks of Insights uit
+    // een binnenkomend bericht. Een echte afspraak wordt als Approval
+    // (type "calendar") voorgesteld — niet direct ingepland. Antwoord-
+    // concepten alleen via Approval (zie 2.4d) wanneer een reactie echt
+    // nodig is.
+    if (intent === "calendar" && dtRef && !isCommand) {
+      const tId = record?.thread_id || record?.conversation_id || undefined;
+      const dupKey = tId
+        ? { action_type: "calendar_invite", thread_id: tId }
+        : { action_type: "calendar_invite", title: `Afspraak${personName ? ` · ${personName}` : ""}` };
+      const existing = await sr.entities.Approval.filter(dupKey).catch(() => []);
+      const dup = existing.find((a) => ["pending", "approved", "executed", "already_done", "edited"].includes(a.status));
+      if (!dup) {
+        const ap = await sr.entities.Approval.create({
+          action_type: "calendar_invite",
+          description: `Afspraak${personName ? ` met ${personName}` : ""}${projectName ? ` · ${projectName}` : ""}${dtRef ? ` · ${dtRef}` : ""}.`,
+          content: action || "",
+          status: "pending",
+          category: "calendar",
+          type: "calendar",
           project_id: projectId || undefined,
-          contact_id: contactId || undefined,
-          delegated_to_giulia: false,
+          thread_id: tId || undefined,
           agent_source: "interpretInput",
+          assignee: "salvo",
         }).catch(() => null);
-        if (task) created.push({ type: "task", id: task.id });
+        if (ap) created.push({ type: "approval", id: ap.id });
       }
-    }
-
-    if (intent === "calendar" && dtRef) {
-      const evt = await sr.entities.CalendarEvent.create({
-        title: action || "Afspraak",
-        start: dtRef,
-        project_id: projectId || undefined,
-        agent_source: "interpretInput",
-      }).catch(() => null);
-      if (evt) created.push({ type: "calendar", id: evt.id });
-    }
-
-    if (intent === "information" && action) {
-      const ins = await sr.entities.Insight.create({
-        title: action.slice(0, 120),
-        content: rawText.slice(0, 2000),
-        category: "Research",
-        status: "new",
-        confidence: 0.6,
-        source: `interpretInput · ${source}`,
-        project_id: projectId || undefined,
-      }).catch(() => null);
-      if (ins) created.push({ type: "insight", id: ins.id });
     }
 
     // Gatekeeper / Approval: als een reply voorgesteld wordt (niet bij quick

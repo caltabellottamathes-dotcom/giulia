@@ -54,13 +54,22 @@ export async function createApproval(base44, type, title, content, context, assi
     // Dedup — voorkom tientallen approvals over exact hetzelfde onderwerp
     // (bv. dezelfde mail die elke cyclus opnieuw wordt aangeboden). Match op
     // thread_id of target (meest betrouwbaar per gesprek/mail), anders op titel.
-    const dupQuery = m.thread_id
-      ? { status: "pending", type, thread_id: m.thread_id }
+    // Dedup — voorkom tientallen approvals over hetzelfde onderwerp én
+    // voorkom dat een al-afgehandelde zaak opnieuw wordt aangeboden. Match
+    // op thread_id of target (meest betrouwbaar per gesprek/mail), anders
+    // op titel. Een approval die al pending/goedgekeurd/uitgevoerd/
+    // already_done is blokkeert een nieuwe — alleen rejected/discarded
+    // laat ruimte om opnieuw voor te stellen.
+    const dupBase = m.thread_id
+      ? { type, thread_id: m.thread_id }
       : m.target
-      ? { status: "pending", type, target: String(m.target) }
-      : { status: "pending", type, title: title || type };
-    const existing = await sr.entities.Approval.filter(dupQuery).catch(() => []);
-    if (existing && existing.length) return existing[0];
+      ? { type, target: String(m.target) }
+      : { type, title: title || type };
+    const existing = await sr.entities.Approval.filter(dupBase).catch(() => []);
+    if (existing && existing.length) {
+      const handled = existing.find((a) => a.status !== "rejected" && a.status !== "discarded");
+      if (handled) return handled;
+    }
 
     return await sr.entities.Approval.create({
       title: title || type,

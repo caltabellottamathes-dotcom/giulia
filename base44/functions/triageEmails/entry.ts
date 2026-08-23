@@ -114,9 +114,11 @@ export default async function (req) {
 
     const task =
       'Sorteer de inbox is al heuristisch gedaan. Jouw taak: gebruik list_important om emails met category "important" te bekijken. ' +
-      'Haal acties, afspraken, deadlines en commitments uit deze emails en stel ze voor via propose_task (Giulia legt elke voorgestelde taak TER GOEDKEURING bij Salvo via een Approval — maak GEEN directe Task aan). ' +
+      'Stel UITSLUITEND een taak voor via propose_task als de email een concrete actie bevat die SALVO ZELF moet uitvoeren met een duidelijke deadline/commitment (iemand verwacht dat hij iets doet). ' +
+      'Negeer informatieve updates, bevestigingen, nieuwsbrieven, de plannen van de afzender, en kleine dagelijkse dingen (eten, boodschappen, "laat je weten", vrijblijvende meldingen, receipts, statusupdates). ' +
+      'Twijfel je? Stel dan NIETS voor — liever nul voorstellen dan rommel. ' +
       'Schrijf ZELF GEEN concept-antwoorden en maak GEEN Approval voor een email-antwoord — Salvo vraagt dat zelf aan via de "Door Giulia"-knop bij een email. ' +
-      'Rapporteer via report_to_salvo kort hoeveel voorstellen je hebt gedaan.';
+      'Rapporteer via report_to_salvo kort hoeveel voorstellen je hebt gedaan (vaak nul).';
 
     await runGiuliaAgent(base44, 'triageEmails', task, tools, 10).catch(() => null);
 

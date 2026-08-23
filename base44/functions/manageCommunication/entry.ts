@@ -53,8 +53,9 @@ export default async function (req) {
       `Ongelezen emails (${emails.length}):\n` + emails.slice(0, 15).map((e) => `- id:${e.id} | ${e.subject || "(geen)"} | van ${e.sender || "?"}`).join("\n") +
       `\n\nOngelezen WhatsApp (${wamsgs.length}):\n` + wamsgs.slice(0, 15).map((w) => `- id:${w.id} | ${String(w.message || "").slice(0, 100)}`).join("\n");
     const message =
-      `Communicatie-scan: haal acties/deadlines/commitments uit deze berichten en voer ze direct uit als taak (create_task). ` +
-      `Bereid GEEN losse email-antwoorden voor. Voor WhatsApp mag je een kort antwoord-concept voorstellen via create_approval (type='whatsapp', category='communication') als een reactie echt nodig is.\n\n${context}`;
+      `Communicatie-scan: GIULIA mag NOOIT autonoom taken aanmaken (geen create_task). Een Taak is iets dat Salvo zelf aanmaakt of wat eerst met hem is afgestemd. ` +
+      `Bereid GEEN losse email-antwoorden voor. Stel UITSLUITEND een WhatsApp-antwoord voor via create_approval (type='whatsapp', category='communication') als de afzender expliciet een reactie van Salvo vraagt — niet bij informatieve updates of vrijblijvende meldingen. ` +
+      `Behandel al-afgehandelde zaken (zoals betaalde/afgesloten CJIB-zaken) NIET opnieuw; als iets al gedaan is, doe dan niets.\n\n${context}`;
 
     await base44.functions.invoke("chatWithGiulia", { message, source: "agent_communication", persist: false }).catch(() => null);
 
