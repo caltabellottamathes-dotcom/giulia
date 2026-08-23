@@ -46,6 +46,13 @@
       "default": "active",
       "title": "Activity Level"
     },
+    "level": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 8,
+      "title": "Level (0-8)"
+    },
     "current_thread": {
       "type": "string",
       "title": "Current Thread"

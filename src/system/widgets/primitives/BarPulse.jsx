@@ -6,33 +6,36 @@ import React from "react";
  *    gekleurde, klikbare staven (Things I Love) — pill-stijl met label. */
 export default function BarPulse({ values = [], items, height = 40, gap = 6, accent = "var(--tile-accent)", className }) {
   if (items) {
-    const max = Math.max(1, ...items.map((i) => i.value));
+    const MAX = 8;
     return (
       <div className={`flex items-end ${className || ""}`} style={{ height, gap }}>
-        {items.map((it, i) => (
-          <button
-            key={it.key ?? i}
-            onClick={it.onClick}
-            type="button"
-            className="flex-1 h-full flex flex-col items-center justify-end"
-            style={{ cursor: it.onClick ? "pointer" : "default" }}
-          >
-            <div
-              className="w-full rounded-full transition-all duration-500"
-              style={{
-                height: `${Math.max(8, (it.value / max) * 100)}%`,
-                background: it.color || accent,
-                opacity: it.inactive ? 0.35 : it.selected ? 1 : 0.78,
-                boxShadow: it.selected ? `0 0 0 2px hsl(var(--ivory)), 0 0 12px ${it.color || accent}` : "none",
-              }}
-            />
-            {it.label != null && (
-              <span className="text-[7px] truncate w-full text-center mt-1 leading-none" style={{ opacity: it.inactive ? 0.4 : 0.72 }}>
-                {it.label}
-              </span>
-            )}
-          </button>
-        ))}
+        {items.map((it, i) => {
+          const zero = it.value === 0;
+          return (
+            <button
+              key={it.key ?? i}
+              onClick={it.onClick}
+              type="button"
+              className="flex-1 h-full flex flex-col items-center justify-end"
+              style={{ cursor: it.onClick ? "pointer" : "default" }}
+            >
+              <div
+                className="w-full rounded-full transition-all duration-500"
+                style={{
+                  height: `${zero ? 3 : Math.max(8, (it.value / MAX) * 100)}%`,
+                  background: it.color || accent,
+                  opacity: it.inactive ? 0.35 : zero ? 0.3 : it.selected ? 1 : 0.78,
+                  boxShadow: it.selected ? `0 0 0 2px hsl(var(--ivory)), 0 0 12px ${it.color || accent}` : "none",
+                }}
+              />
+              {it.label != null && (
+                <span className="text-[7px] truncate w-full text-center mt-1 leading-none" style={{ opacity: it.inactive ? 0.4 : 0.72 }}>
+                  {it.label}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
     );
   }

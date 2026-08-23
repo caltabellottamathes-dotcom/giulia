@@ -6,7 +6,7 @@ import { useEntityList } from "@/hooks/useEntity";
 import { useLearningSync } from "@/hooks/useLearningSync";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
-import { hobbyGroups, hobbyHeadline, hobbyState, stateColor, fieldSize, fmtDaysAgo } from "@/lib/hobbyUtils";
+import { fmtDaysAgo } from "@/lib/hobbyUtils";
 import HobbyEditPanel from "./HobbyEditPanel";
 
 const PHOTO = IMAGES.lifeW4Love;
@@ -14,82 +14,62 @@ const DEEP = "hsl(var(--d-life-deep))";
 const LIGHT = "hsl(var(--d-life-light))";
 const IVORY = "hsl(var(--ivory))";
 
-/* 4 thema's in 4 kleuren — Ridge Sky / Olive / Whipped Pistachio / Morning dew */
-const THEMES = { Muziek: "#b1bec6", Kunst: "#94925d", Sport: "#d8dab3", Social: "#cfd9dd" };
-const LEVEL_FOR = { active: 8, new: 7, reactivating: 6, emerging: 5, quiet: 3, archived: 1 };
+/* 3 categorieën in 3 kleuren — Muziek / Kunst / Sport */
+const THEMES = { Muziek: "#d0d9dd", Kunst: "#d8dab3", Sport: "#dbdbd6" };
 
 function hobbyTheme(h) {
   const cat = String(h.category || "").toLowerCase();
   if (cat === "muziek" || h.type === "music") return { name: "Muziek", color: THEMES.Muziek };
-  if (cat === "kunst" || ["creative", "cultural"].includes(h.type)) return { name: "Kunst", color: THEMES.Kunst };
+  if (cat === "kunst" || h.type === "creative") return { name: "Kunst", color: THEMES.Kunst };
   if (cat === "sport" || h.type === "sport") return { name: "Sport", color: THEMES.Sport };
-  return { name: "Social", color: THEMES.Social };
-}
-function levelFor(h) {
-  const lvl = LEVEL_FOR[h.activity_level];
-  if (lvl != null) return lvl;
-  return Math.max(1, Math.round(fieldSize(h) * 8));
+  return { name: h.category || "Sport", color: h.color || THEMES.Sport };
 }
 
-const _now = Date.now();
-const _d = (days) => new Date(_now - days * 86400000).toISOString();
-const _dd = (days) => new Date(_now - days * 86400000).toISOString().slice(0, 10);
-/* Mock-hobby's — vullen aan tot 6 als er minder echte in de DB staan.
- * Elke op een ander niveau (8,7,6,5,3,1) en verdeeld over de 4 thema's. */
-const MOCK_HOBBIES = [
-  { id: "mock-gitaar", title: "Gitaar Spelen", type: "music", category: "Muziek", status: "active", activity_level: "active", last_activity_date: _d(1), discovered_date: _dd(400), __mock: true },
-  { id: "mock-hardlopen", title: "Hardlopen", type: "sport", category: "Sport", status: "active", activity_level: "new", last_activity_date: _d(2), discovered_date: _dd(3), __mock: true },
-  { id: "mock-schilderen", title: "Schilderen", type: "creative", category: "Kunst", status: "active", activity_level: "reactivating", last_activity_date: _d(9), discovered_date: _dd(300), __mock: true },
-  { id: "mock-fotografie", title: "Fotografie", type: "creative", category: "Kunst", status: "active", activity_level: "emerging", last_activity_date: _d(40), discovered_date: _dd(120), __mock: true },
-  { id: "mock-kookclub", title: "Kookclub", type: "cultural", category: "Social", status: "active", activity_level: "quiet", last_activity_date: _d(25), discovered_date: _dd(200), __mock: true },
-  { id: "mock-piano", title: "Piano", type: "music", category: "Muziek", status: "inactive", activity_level: "archived", last_activity_date: _d(90), discovered_date: _dd(500), __mock: true },
-];
-
-/** ThingsLoveWidget — G·3:2·R·SIDE met gelabelde staven + slide-naar-detail.
- *  Links: 6 gelabelde staven (top 6 op bezigheid), gekleurd per thema.
- *  Rechts: fotokaart (overzicht). Tik op een staaf → fotokaart schuift naar
- *  links, rechts verschijnt een edit-paneel voor die hobby. */
+/** ThingsLoveWidget — G·1:1·SPLIT met BarPulse + fotokaart, horizontale slide.
+ *  Links: BarPulse (6 hobby's, gelabeld, gekleurd per categorie). Rechts:
+ *  fotokaart met de 3 categorieën + kleuren (balans-zicht). Tik op een bar →
+ *  fotokaart schuift naar links (4 afgeronde hoeken, flush), rechts verschijnt
+ *  het edit-paneel voor die hobby. Schuifrichting: links ↔ rechts (zoals
+ *  Dinner boven ↔ beneden). */
 export default function ThingsLoveWidget() {
   const { openModule } = usePanel();
   const learnTick = useLearningSync();
   const { data: hobbies } = useEntityList("Hobby", { realtime: true, externalTick: learnTick });
-  const [mockHobbies, setMockHobbies] = useState(MOCK_HOBBIES);
   const [selectedId, setSelectedId] = useState(null);
 
   const bars = useMemo(() => {
-    const real = hobbies || [];
-    let list = real.slice();
-    if (list.length < 6) list = [...list, ...mockHobbies.slice(0, 6 - list.length)];
-    return list
+    return (hobbies || [])
       .map((h) => ({
         id: h.id,
         title: h.title,
         theme: hobbyTheme(h),
-        level: levelFor(h),
-        state: hobbyState(h),
+        level: typeof h.level === "number" ? h.level : 0,
         status: h.status || "active",
-        isMock: !!h.__mock,
         raw: h,
       }))
       .sort((a, b) => b.level - a.level)
       .slice(0, 6);
-  }, [hobbies, mockHobbies]);
+  }, [hobbies]);
 
-  const groups = useMemo(() => hobbyGroups([...(hobbies || []), ...mockHobbies]), [hobbies, mockHobbies]);
-  const headline = hobbyHeadline(groups);
   const active = bars.filter((b) => b.status !== "inactive").length;
   const selected = bars.find((b) => b.id === selectedId) || null;
 
+  const catStats = useMemo(() => {
+    const out = {};
+    bars.forEach((b) => {
+      if (!out[b.theme.name]) out[b.theme.name] = { count: 0, total: 0 };
+      out[b.theme.name].count += 1;
+      out[b.theme.name].total += b.level;
+    });
+    return out;
+  }, [bars]);
+
   const handleUpdate = async (patch) => {
     if (!selected) return;
-    if (selected.isMock) {
-      setMockHobbies((prev) => prev.map((m) => (m.id === selected.id ? { ...m, ...patch } : m)));
-      return;
-    }
     try {
       await base44.entities.Hobby.update(selected.id, patch);
     } catch {
-      /* realtime refresht de lijst; fout bubbelt visueel niet op */
+      /* realtime refresht de lijst */
     }
   };
 
@@ -105,12 +85,12 @@ export default function ThingsLoveWidget() {
       <div className="absolute inset-0 rounded-[28px] ring-1 ring-inset ring-white/10" style={glassShell} />
       <span className="pointer-events-none absolute inset-x-0 top-0 h-px z-10" style={{ background: `linear-gradient(90deg, transparent, ${DEEP} 18%, ${DEEP} 82%, transparent)` }} />
 
-      {/* LINKS: gelabelde staven (alleen in overzicht) */}
+      {/* LINKS: BarPulse (overzicht) */}
       <AnimatePresence>
         {!selected && (
           <motion.div
             key="bars"
-            className="absolute inset-y-0 left-0 w-[58%] flex flex-col p-4 z-10"
+            className="absolute inset-y-0 left-0 w-1/2 flex flex-col p-4 z-10"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -118,11 +98,11 @@ export default function ThingsLoveWidget() {
           >
             <div className="cursor-pointer" onClick={() => openModule("hobbies")}>
               <WidgetHeader type="energy" label="Things I Love." count={active ? `${active} levend` : ""} />
-              <h3 className="text-[20px] leading-[1.05] font-display font-semibold tracking-[-0.02em] mt-1">{headline}</h3>
-              <p className="text-[10px] uppercase tracking-[0.18em] mt-1 opacity-60">{bars.length} dingen in je veld</p>
+              <h3 className="text-[20px] leading-[1.05] font-display font-semibold tracking-[-0.02em] mt-1">{active > 0 ? `${active} THINGS ALIVE` : "QUIETLY CREATIVE"}</h3>
+              <p className="text-[10px] uppercase tracking-[0.18em] mt-1 opacity-60">{bars.length} hobby's in je veld</p>
             </div>
 
-            {/* thema-legenda */}
+            {/* legenda — 3 categorieën met kleur */}
             <div className="flex flex-wrap gap-x-2.5 gap-y-1 mt-2.5">
               {Object.entries(THEMES).map(([name, color]) => (
                 <div key={name} className="flex items-center gap-1">
@@ -132,7 +112,7 @@ export default function ThingsLoveWidget() {
               ))}
             </div>
 
-            {/* staven — BarPulse, één per hobby, gelabeld + gekleurd per thema */}
+            {/* BarPulse — één per hobby, gelabeld + gekleurd per categorie */}
             <div className="flex-1 flex items-end mt-3 min-h-0">
               <BarPulse
                 items={bars.map((b) => ({
@@ -154,17 +134,14 @@ export default function ThingsLoveWidget() {
         )}
       </AnimatePresence>
 
-      {/* FOTOKAART — schuift van rechts (overzicht) naar links (geselecteerde hobby) */}
+      {/* FOTOKAART — schuift rechts ↔ links (4 hoeken, flush), zoals Dinner boven ↔ beneden */}
       <motion.div
-        className="absolute inset-y-0 z-20 overflow-hidden"
+        className="absolute inset-y-0 z-20 overflow-hidden rounded-[24px]"
         initial={false}
-        animate={{ left: selected ? "0%" : "58%", width: selected ? "58%" : "42%" }}
+        animate={{ left: selected ? "0%" : "50%" }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        style={{
-          boxShadow: selected
-            ? "16px 0 36px -20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.16)"
-            : "-16px 0 36px -20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.16)",
-        }}
+        style={{ width: "50%", boxShadow: "-12px 0 30px -14px rgba(0,0,0,0.42), 12px 0 30px -14px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.18)" }}
+        onClick={selected ? () => setSelectedId(null) : undefined}
       >
         <img src={selected ? selected.raw.image || PHOTO : PHOTO} alt="Things I Love" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
         <div
@@ -181,29 +158,32 @@ export default function ThingsLoveWidget() {
               <span className="h-2 w-2 rounded-full" style={{ background: selected.theme.color }} />
               <span className="text-[9px] uppercase tracking-[0.18em] font-bold">{selected.theme.name}</span>
             </div>
-            <h3 className="text-[24px] leading-[1.05] font-display font-semibold tracking-[-0.02em] mt-1">{selected.title}</h3>
+            <h3 className="text-[22px] leading-[1.05] font-display font-semibold tracking-[-0.02em] mt-1">{selected.title}</h3>
             <p className="text-[10px] uppercase tracking-[0.16em] mt-1 opacity-80">niveau {selected.level}/8 · {fmtDaysAgo(selected.raw.last_activity_date)}</p>
             <div className="flex items-end gap-2 mt-auto">
               <span className="text-[44px] leading-[0.8] font-display font-semibold tabular-nums">{selected.level}</span>
               <p className="text-[9px] uppercase tracking-[0.18em] opacity-60 mb-1">/ 8 bezigheid</p>
             </div>
+            <p className="text-[8px] uppercase tracking-[0.2em] mt-2 opacity-50">tik → terug</p>
           </div>
         ) : (
           <div className="absolute inset-0 p-3.5 flex flex-col" style={{ color: IVORY, textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>
-            <span className="text-[9px] uppercase tracking-[0.18em] font-bold opacity-80">overzicht</span>
-            <div className="flex items-end gap-2 mt-1">
-              <CountUp value={active} className="text-[44px] leading-[0.8] font-display font-semibold tabular-nums" />
-              <p className="text-[9px] uppercase tracking-[0.18em] opacity-55 mb-1.5 leading-tight">actieve<br />hobby's</p>
-            </div>
-            <div className="mt-auto space-y-1.5">
-              <p className="text-[8px] uppercase tracking-[0.18em] opacity-60">top {Math.min(3, bars.length)}</p>
-              {bars.slice(0, 3).map((b) => (
-                <div key={b.id} className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: b.theme.color }} />
-                  <span className="text-[12px] truncate flex-1">{b.title}</span>
-                  <span className="text-[9px] tabular-nums opacity-70">{b.level}/8</span>
-                </div>
-              ))}
+            <span className="text-[9px] uppercase tracking-[0.18em] font-bold opacity-80">Categorieën</span>
+            <h3 className="text-[20px] leading-[1.05] font-display font-semibold tracking-[-0.02em] mt-1">3 Groepen</h3>
+            <p className="text-[10px] uppercase tracking-[0.18em] mt-1 opacity-60">{bars.length} hobby's · {active} actief</p>
+            <div className="mt-auto space-y-2">
+              {Object.entries(THEMES).map(([name, color]) => {
+                const st = catStats[name] || { count: 0, total: 0 };
+                return (
+                  <div key={name} className="flex items-center gap-2">
+                    <span className="h-9 w-2 rounded-full shrink-0" style={{ background: color }} />
+                    <div className="flex-1">
+                      <p className="text-[12px] font-display font-semibold leading-none">{name}</p>
+                      <p className="text-[9px] uppercase tracking-[0.14em] opacity-60 mt-1">{st.count} hobby's · lvl {st.total}</p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -214,7 +194,7 @@ export default function ThingsLoveWidget() {
         {selected && (
           <motion.div
             key="edit"
-            className="absolute inset-y-0 right-0 w-[42%] z-30 rounded-r-[28px] overflow-hidden"
+            className="absolute inset-y-0 right-0 w-1/2 z-30 overflow-hidden rounded-r-[24px]"
             style={glassShell}
             initial={{ x: 40, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}

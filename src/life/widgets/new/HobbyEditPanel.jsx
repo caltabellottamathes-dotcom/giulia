@@ -1,28 +1,14 @@
 import React from "react";
 import { X, Check } from "lucide-react";
 
-const LEVEL_LABELS = [
-  ["active", "Actief"],
-  ["new", "Nieuw"],
-  ["reactivating", "Herlevend"],
-  ["emerging", "Opkomend"],
-  ["quiet", "Stil"],
-  ["archived", "Archief"],
-];
-
 const chip = (on) =>
   `px-2.5 py-1.5 rounded-lg text-[10px] font-semibold flex items-center gap-1 transition-colors ${
     on ? "bg-white/25 text-white" : "bg-white/10 text-white/70 border border-white/15"
   }`;
-const chipSmall = (on) =>
-  `px-2 py-1 rounded-md text-[9px] font-semibold transition-colors ${
-    on ? "bg-white/25 text-white" : "bg-white/10 text-white/60 border border-white/15"
-  }`;
 
 /** HobbyEditPanel — rechterpaneel na selectie van een hobby-bar.
- *  Status (actief/inactief), bezigheid-niveau (activity_level) en
- *  "markeer net bezig" worden via onUpdate naar de Hobby-entity (of mock)
- *  teruggeschreven. */
+ *  Status (actief/inactief), bezigheids-level (0-8 schuifregelaar) en
+ *  "markeer net bezig" worden via onUpdate naar de Hobby-entity teruggeschreven. */
 export default function HobbyEditPanel({ hobby, theme, level, onUpdate, onClose }) {
   if (!hobby) return null;
   const isActive = hobby.status !== "inactive";
@@ -58,18 +44,23 @@ export default function HobbyEditPanel({ hobby, theme, level, onUpdate, onClose 
       </div>
 
       <div className="mt-3.5">
-        <p className="text-[8px] uppercase tracking-[0.18em] opacity-50 mb-1.5">Bezigheid</p>
-        <div className="flex flex-wrap gap-1">
-          {LEVEL_LABELS.map(([k, label]) => (
-            <button key={k} onClick={() => onUpdate({ activity_level: k })} className={chipSmall(hobby.activity_level === k)}>
-              {label}
-            </button>
-          ))}
+        <div className="flex items-center justify-between mb-1.5">
+          <p className="text-[8px] uppercase tracking-[0.18em] opacity-50">Bezigheid</p>
+          <span className="text-[10px] font-bold tabular-nums">{level}/8</span>
         </div>
+        <input
+          type="range"
+          min={0}
+          max={8}
+          step={1}
+          value={level}
+          onChange={(e) => onUpdate({ level: Number(e.target.value) })}
+          className="w-full accent-white"
+        />
       </div>
 
       <button
-        onClick={() => onUpdate({ last_activity_date: new Date().toISOString(), activity_level: "active", status: "active" })}
+        onClick={() => onUpdate({ level: 8, status: "active", last_activity_date: new Date().toISOString() })}
         className="mt-4 rounded-xl px-3 py-2.5 text-[11px] font-semibold flex items-center gap-1.5 bg-white/15 border border-white/20 hover:bg-white/25 transition-colors"
       >
         <Check size={13} /> Markeer net bezig
