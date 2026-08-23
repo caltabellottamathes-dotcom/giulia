@@ -1,0 +1,60 @@
+import React from "react";
+import { Link } from "react-router-dom";
+import SocialLifeWidget from "@/life/widgets/new/SocialLifeWidget";
+import RemindersHomeWidget from "@/life/widgets/new/RemindersHomeWidget";
+import ThingsHandleWidget from "@/life/widgets/new/ThingsHandleWidget";
+import ThingsLoveWidget from "@/life/widgets/new/ThingsLoveWidget";
+import DinnerWidget from "@/life/widgets/new/DinnerWidget";
+import HowDoingWidget from "@/life/widgets/new/HowDoingWidget";
+import { IMAGES } from "@/lib/images";
+
+export default function WidgetsLife() {
+  const Label = ({ children }) => (
+    <p className="text-[10px] uppercase tracking-[0.24em] font-semibold text-charcoal/55 mb-2">{children}</p>
+  );
+
+  return (
+    <div className="relative min-h-screen px-5 lg:px-10 py-8 pb-24 max-w-[1320px] mx-auto">
+      {/* LIFE dashboard achtergrond — LIFE_DASHBOARD_BG */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <img src={IMAGES.lifeDashBg} alt="" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(235,234,229,0.74), rgba(235,234,229,0.88))" }} />
+      </div>
+
+      <Link to="/" className="text-[10px] uppercase tracking-[0.24em] font-semibold text-charcoal/60 hover:text-charcoal transition-colors">
+        ← Terug naar OS
+      </Link>
+      <h1 className="text-3xl font-display font-semibold tracking-tight mt-1.5 text-charcoal">LIFE · Widget-skelet</h1>
+      <p className="text-sm text-charcoal/55 mt-1 mb-8">
+        Zes LIFE-widgets in het Giulia-skelet — ridge-sky, pistache, beton, urgent. Echte LIFE-functies + juiste data.
+      </p>
+
+      <div className="columns-1 lg:columns-2 gap-8">
+        <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[620px]">
+          <Label>01 · WHAT SOCIAL LIFE? — G·16x9·R·SIDE · 8-weekse puls + wachtende relaties</Label>
+          <SocialLifeWidget />
+        </div>
+        <div className="break-inside-avoid mb-8 mx-auto w-[290px]">
+          <Label>02 · REMINDERS FOR HOME. — P·9x16·B·SIDE · vier huishoudzones</Label>
+          <RemindersHomeWidget />
+        </div>
+        <div className="break-inside-avoid mb-8 mx-auto w-[300px]">
+          <Label>03 · THINGS TO HANDLE! — P·2x3·B·SIDE · admin radar + dagen-tot</Label>
+          <ThingsHandleWidget />
+        </div>
+        <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[620px]">
+          <Label>04 · THINGS I LOVE. — G·3:2·R·SIDE · hobby-veld met aandachtsflow</Label>
+          <ThingsLoveWidget />
+        </div>
+        <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[620px]">
+          <Label>05 · WHAT'S FOR DINNER? — P·4:3·B·SIDE · vandaag-grid + budget</Label>
+          <DinnerWidget />
+        </div>
+        <div className="break-inside-avoid mb-8 mx-auto w-[340px]">
+          <Label>06 · HOW I'M DOING. — P·1x1·B·STRIP · drie ringen (E/C/M)</Label>
+          <HowDoingWidget />
+        </div>
+      </div>
+    </div>
+  );
+}
