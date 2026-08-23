@@ -30,7 +30,7 @@ export default function ProjectsFocusWidget() {
   const active = useMemo(() => (projects || []).filter((p) => ACTIVE.includes(p.status)), [projects]);
   const total = active.length;
   const avgPct = total ? Math.round(active.reduce((s, p) => s + (p.progress || 0), 0) / total) : 0;
-  const top = active.slice(0, 4);
+  const top = active;
   const selected = (projects || []).find((p) => p.id === selectedId);
   const selTasks = useMemo(() => (tasks || []).filter((t) => t.project_id === selectedId), [tasks, selectedId]);
   const breakdown = useMemo(() => (selected ? buildBreakdown(selTasks) : []), [selected, selTasks]);
@@ -124,11 +124,12 @@ export default function ProjectsFocusWidget() {
         {/* foto laag boven — schuift links weg */}
         <motion.div className="absolute inset-0" animate={{ x: selectedId ? "-102%" : "0%" }} transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}>
           <img src={PHOTO} alt="What I'm Building" className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/8 to-transparent" />
-          <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/55 to-transparent" style={{ color: IVORY }}>
-            <p className="text-[9px] uppercase tracking-[0.18em] font-bold" style={{ color: IVORY }}>gem. klaar</p>
-            <p className="text-[34px] font-display font-bold leading-none tabular-nums" style={{ color: DEEP }}>{avgPct}%</p>
-            <p className="text-[9px] uppercase tracking-[0.14em] mt-1" style={{ color: "rgba(255,255,255,0.55)" }}>{total} actieve projecten</p>
+          {/* XL ghost getal — wit, asymmetrisch rechtsboven uitlopend */}
+          <span className="pointer-events-none absolute -top-4 right-1 text-[140px] font-display font-bold leading-none tabular-nums" style={{ color: IVORY, opacity: 0.22 }}>{avgPct}%</span>
+          {/* onder: gem. klaar net boven actieve projecten */}
+          <div className="absolute bottom-0 inset-x-0 p-3" style={{ color: IVORY, textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>
+            <p className="text-[9px] uppercase tracking-[0.18em] font-bold" style={{ color: IVORY, opacity: 0.8 }}>gem. klaar</p>
+            <p className="text-[9px] uppercase tracking-[0.14em] mt-0.5" style={{ color: "rgba(255,255,255,0.65)" }}>{total} actieve projecten</p>
           </div>
           <button onClick={() => openModule("projects")} className="absolute inset-0 cursor-pointer" aria-label="Open projecten" />
         </motion.div>

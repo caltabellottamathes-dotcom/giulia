@@ -71,22 +71,22 @@ export default function TimeTrackerFocusWidget() {
     <div className="w-full h-[476px]">
       <PhotoGlassLayeredWidget shape="9:16" photo={PHOTO} glassPosition="bottom" glassFraction={0.50} overhang={0} domain="focus" radius="large" onClick={() => openModule("timetracker")} overlay="bg-gradient-to-t from-black/30 via-black/12 to-transparent"
         photoChildren={
-          <div className="absolute top-0 inset-x-0 z-30" onClick={(e) => e.stopPropagation()}>
+          <div className="absolute top-2.5 inset-x-2.5 z-30" onClick={(e) => e.stopPropagation()}>
             <button type="button" onClick={() => !running && setPickerOpen((o) => !o)} disabled={!!running}
-              className="w-full flex items-center justify-between px-4 py-2.5 disabled:opacity-70"
-              style={{ background: "transparent", borderBottom: "1px solid rgba(255,255,255,0.12)" }}>
-              <span className="text-[10px] uppercase tracking-[0.18em] font-bold truncate" style={{ color: LIGHT }}>{selectedProj ? selectedProj.title : "Aan welk project begin je?"}</span>
-              <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition-transform ${pickerOpen ? "rotate-180" : ""}`} style={{ color: LIGHT }} />
+              className="w-full flex items-center justify-between px-4 py-2.5 rounded-full disabled:opacity-70"
+              style={{ background: "rgba(255,255,255,0.12)", backdropFilter: "blur(20px) saturate(1.4)", WebkitBackdropFilter: "blur(20px) saturate(1.4)", border: "1px solid rgba(255,255,255,0.22)" }}>
+              <span className="text-[10px] uppercase tracking-[0.18em] font-bold truncate" style={{ color: DEEP }}>{selectedProj ? selectedProj.title : "Aan welk project begin je?"}</span>
+              <ChevronDown className={`h-3.5 w-3.5 shrink-0 transition-transform ${pickerOpen ? "rotate-180" : ""}`} style={{ color: DEEP }} />
             </button>
             {pickerOpen && !running && (
-              <div className="absolute inset-x-0 top-full max-h-[300px] overflow-y-auto no-scrollbar"
-                style={{ background: "rgba(30,14,25,0.74)", backdropFilter: "blur(20px) saturate(1.4)", WebkitBackdropFilter: "blur(20px) saturate(1.4)", border: "1px solid rgba(216,218,179,0.22)", borderBottomLeftRadius: 16, borderBottomRightRadius: 16, boxShadow: "0 18px 38px -12px rgba(0,0,0,0.55)" }}>
+              <div className="absolute inset-x-0 top-full mt-1.5 max-h-[280px] overflow-y-auto no-scrollbar"
+                style={{ background: "rgba(255,255,255,0.12)", backdropFilter: "blur(24px) saturate(1.4)", WebkitBackdropFilter: "blur(24px) saturate(1.4)", border: "1px solid rgba(255,255,255,0.20)", borderRadius: 18, boxShadow: "0 18px 38px -12px rgba(0,0,0,0.45)" }}>
                 {(projects || []).length === 0 ? (
-                  <p className="px-4 py-3 text-[10px] uppercase tracking-[0.18em] font-bold" style={{ color: "rgba(255,255,255,0.6)" }}>Geen projecten</p>
+                  <p className="px-4 py-3 text-[10px] uppercase tracking-[0.18em] font-bold" style={{ color: DEEP, opacity: 0.6 }}>Geen projecten</p>
                 ) : (projects || []).map((p) => (
                   <button key={p.id} type="button" onClick={() => { setProjId(p.id); setPickerOpen(false); }}
-                    className="w-full text-left px-4 py-2.5 text-[10px] uppercase tracking-[0.18em] font-bold truncate transition-colors hover:bg-white/10"
-                    style={{ color: p.id === projId ? LIGHT : IVORY }}>
+                    className="w-full text-left px-4 py-2.5 text-[10px] uppercase tracking-[0.18em] font-bold truncate transition-colors hover:bg-white/12"
+                    style={{ color: DEEP, opacity: p.id === projId ? 1 : 0.72, background: p.id === projId ? "rgba(48,23,40,0.10)" : "transparent" }}>
                     {p.title}
                   </button>
                 ))}
