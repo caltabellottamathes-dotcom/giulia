@@ -144,6 +144,9 @@ async function readBody(res) {
 }
 
 async function ensureSecret(xiKey, name, value) {
+  // Secrets kunnen niet in-place worden geüpdatet. Bestaand geheim met deze
+  // naam verwijderen en opnieuw aanmaken, zodat de waarde altijd fris en
+  // correct is (voorkomt een verouderde/wrong-key die de stem-agent stillegt).
   const listRes = await fetch("https://api.elevenlabs.io/v1/convai/secrets", {
     headers: { "xi-api-key": xiKey },
   });
@@ -152,7 +155,12 @@ async function ensureSecret(xiKey, name, value) {
     try { list = await listRes.json(); } catch { list = null; }
     const items = Array.isArray(list) ? list : list?.secrets || list?.data || [];
     const found = items.find((s) => s?.name === name);
-    if (found) return { secret_id: found.id || found.secret_id };
+    if (found) {
+      const oldId = found.id || found.secret_id;
+      await fetch(`https://api.elevenlabs.io/v1/convai/secrets/${oldId}`, {
+        method: "DELETE", headers: { "xi-api-key": xiKey },
+      }).catch(() => null);
+    }
   }
   const createRes = await fetch("https://api.elevenlabs.io/v1/convai/secrets", {
     method: "POST",
