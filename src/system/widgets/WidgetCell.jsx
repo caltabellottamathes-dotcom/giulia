@@ -61,7 +61,7 @@ export default function WidgetCell({ def, widget, onRemove, onThemeChange, sessi
       whileDrag={{ opacity: 0.85 }}
       className="relative group h-full"
     >
-      <div className={cn("absolute top-2 z-30 flex gap-1.5", isMinimal ? "left-2" : "right-2")}>
+      <div className={cn("absolute top-2 z-[60] flex gap-1.5", isMinimal ? "left-2" : "right-2")}>
         {!isMinimal && (
           <button
             onClick={() => setOpen((o) => !o)}
