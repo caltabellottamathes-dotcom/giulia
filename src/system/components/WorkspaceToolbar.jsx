@@ -9,7 +9,7 @@ import QuickLauncher from "@/system/components/glass/QuickLauncher";
 import { WIDGETS } from "@/lib/widgetRegistry";
 import { DEFAULT_BOARDS, loadCustomBoards, createCustomBoard, getActiveBoard, setActiveBoard } from "@/lib/useDashboardBoard";
 
-const actionBtn = "h-9 w-9 flex items-center justify-center text-ivory/60 hover:bg-ivory/10 hover:text-ivory transition-colors shrink-0 rounded-lg";
+const actionBtn = "h-9 w-9 flex items-center justify-center text-ivory/80 hover:bg-ivory/15 hover:text-ivory transition-colors shrink-0 rounded-lg";
 
 function useActiveSection(board) {
   const { activeModule } = usePanel();
@@ -56,16 +56,14 @@ export default function WorkspaceToolbar() {
   const [expanded, setExpanded] = useState(true);
   const collapseTimer = useRef(null);
 
-  const expand = () => {
-    setExpanded(true);
+  // expand zonder auto-inklappen — blijft open zolang je hoovert.
+  const expand = () => { setExpanded(true); clearTimeout(collapseTimer.current); };
+  // bij verlaten even wachten (±3,2s) voordat hij uitschuift.
+  const scheduleCollapse = (ms = 3200) => {
     clearTimeout(collapseTimer.current);
-    collapseTimer.current = setTimeout(() => setExpanded(false), 5000);
+    collapseTimer.current = setTimeout(() => setExpanded(false), ms);
   };
-  const scheduleCollapse = () => {
-    clearTimeout(collapseTimer.current);
-    collapseTimer.current = setTimeout(() => setExpanded(false), 2200);
-  };
-  useEffect(() => { expand(); return () => clearTimeout(collapseTimer.current); }, []);
+  useEffect(() => { setExpanded(true); scheduleCollapse(6000); return () => clearTimeout(collapseTimer.current); }, []);
 
   useEffect(() => { if (captured) setNote(""); }, [captured]);
   useEffect(() => {
@@ -127,11 +125,11 @@ export default function WorkspaceToolbar() {
         <div
           className="relative flex items-center h-14 rounded-2xl overflow-hidden w-full"
           style={{
-            background: "rgba(120,122,128,0.14)",
-            backdropFilter: "blur(48px) saturate(1.4)",
-            WebkitBackdropFilter: "blur(48px) saturate(1.4)",
-            border: "1px solid rgba(255,255,255,0.18)",
-            boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.22), 0 24px 60px -22px rgba(0,0,0,0.36)",
+            background: "rgba(14,16,22,0.42)",
+            backdropFilter: "blur(56px) saturate(1.5)",
+            WebkitBackdropFilter: "blur(56px) saturate(1.5)",
+            border: "1px solid rgba(255,255,255,0.10)",
+            boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.14), 0 28px 64px -24px rgba(0,0,0,0.46)",
           }}
         >
           {expanded ? (
@@ -146,7 +144,7 @@ export default function WorkspaceToolbar() {
                       onClick={() => selectBoard(b.id)}
                       className={cn(
                         "relative px-3 lg:px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap transition-all rounded-lg",
-                        on ? "text-ivory bg-ivory/10" : "text-ivory/45 hover:text-ivory/70 hover:bg-ivory/5"
+                        on ? "text-ivory bg-ivory/15" : "text-ivory/75 hover:text-ivory hover:bg-ivory/10"
                       )}
                     >
                       {b.label}
@@ -162,7 +160,7 @@ export default function WorkspaceToolbar() {
               {/* Giulia input */}
               <form onSubmit={submit} className="hidden sm:flex items-center gap-2.5 w-[30%] lg:w-[22%]">
                 <span className="h-1.5 w-1.5 rounded-full bg-ivory/60 animate-pulse-soft shrink-0" />
-                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Vraag Giulia anything…" className="flex-1 min-w-0 bg-transparent text-sm text-ivory placeholder:text-ivory/35 focus:outline-none text-right" />
+                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Ask Giulia anything…" className="flex-1 min-w-0 bg-transparent text-sm text-ivory placeholder:text-ivory/55 focus:outline-none text-right" />
               </form>
             </>
           ) : (

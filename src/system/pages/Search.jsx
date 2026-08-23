@@ -1,36 +1,58 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { cn } from "@/lib/utils";
 import GlassPanel from "@/system/components/glass/GlassPanel";
 import Avatar from "@/system/components/glass/Avatar";
 import PageHero from "@/system/components/glass/PageHero";
-import {
-  mockProjects, mockTasks, mockEmails, mockContacts,
-  mockEvents, mockKnowledge, mockDocuments,
-} from "@/lib/mockData";
+import { base44 } from "@/api/base44Client";
 import {
   Search as SearchIcon, Briefcase, CheckSquare, Mail, Users, Calendar,
   BookOpen, FileText, MessageSquare, X,
 } from "lucide-react";
 
+/**
+ * Search — doorzoekt de ÉCHTE entiteiten van het ecosysteem (geen mock).
+ * Haalt bij mount een brede set op en filtert lokaal op de query.
+ */
 export default function SearchPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [query, setQuery] = React.useState(searchParams.get("q") || "");
+  const [query, setQuery] = useState(searchParams.get("q") || "");
+  const [data, setData] = useState({
+    projects: [], tasks: [], emails: [], contacts: [],
+    events: [], knowledge: [], documents: [],
+  });
 
-  const results = React.useMemo(() => {
+  useEffect(() => {
+    (async () => {
+      const [
+        projects, tasks, emails, contacts, events, knowledge, documents,
+      ] = await Promise.all([
+        base44.entities.Project.list("-updated_date", 200).catch(() => []),
+        base44.entities.Task.list("-created_date", 300).catch(() => []),
+        base44.entities.Email.list("-created_date", 200).catch(() => []),
+        base44.entities.Contact.list("-updated_date", 300).catch(() => []),
+        base44.entities.CalendarEvent.list("-created_date", 200).catch(() => []),
+        base44.entities.Knowledge.list("-created_date", 200).catch(() => []),
+        base44.entities.Document.list("-created_date", 200).catch(() => []),
+      ]);
+      setData({ projects, tasks, emails, contacts, events, knowledge, documents });
+    })();
+  }, []);
+
+  const results = useMemo(() => {
     if (!query.trim()) return { projects: [], tasks: [], emails: [], contacts: [], events: [], knowledge: [], documents: [] };
     const q = query.toLowerCase();
+    const has = (s) => (s || "").toLowerCase().includes(q);
     return {
-      projects: mockProjects.filter((p) => p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)),
-      tasks: mockTasks.filter((t) => t.title.toLowerCase().includes(q)),
-      emails: mockEmails.filter((m) => m.subject.toLowerCase().includes(q) || m.body.toLowerCase().includes(q)),
-      contacts: mockContacts.filter((c) => c.name.toLowerCase().includes(q) || c.company.toLowerCase().includes(q)),
-      events: mockEvents.filter((e) => e.title.toLowerCase().includes(q)),
-      knowledge: mockKnowledge.filter((k) => k.title.toLowerCase().includes(q) || k.content.toLowerCase().includes(q)),
-      documents: mockDocuments.filter((d) => d.name.toLowerCase().includes(q)),
+      projects: data.projects.filter((p) => has(p.title) || has(p.description)),
+      tasks: data.tasks.filter((t) => has(t.title) || has(t.description)),
+      emails: data.emails.filter((m) => has(m.subject) || has(m.body) || has(m.sender)),
+      contacts: data.contacts.filter((c) => has(c.name) || has(c.company)),
+      events: data.events.filter((e) => has(e.title)),
+      knowledge: data.knowledge.filter((k) => has(k.title) || has(k.content)),
+      documents: data.documents.filter((d) => has(d.name) || has(d.title)),
     };
-  }, [query]);
+  }, [query, data]);
 
   const totalCount = Object.values(results).reduce((sum, arr) => sum + arr.length, 0);
   const hasResults = totalCount > 0;
@@ -40,7 +62,7 @@ export default function SearchPage() {
     { key: "tasks", label: "Tasks", icon: CheckSquare, items: results.tasks, path: () => "/tasks", title: (item) => item.title, sub: () => "Task" },
     { key: "emails", label: "Emails", icon: Mail, items: results.emails, path: () => "/email", title: (item) => item.subject, sub: (item) => item.sender },
     { key: "contacts", label: "People", icon: Users, items: results.contacts, path: (item) => `/people/${item.id}`, title: (item) => item.name, sub: (item) => item.company, avatar: (item) => item.avatar },
-    { key: "events", label: "Calendar", icon: Calendar, items: results.events, path: () => "/agenda", title: (item) => item.title, sub: (item) => new Date(item.start).toLocaleString("nl-NL") },
+    { key: "events", label: "Calendar", icon: Calendar, items: results.events, path: () => "/agenda", title: (item) => item.title, sub: (item) => item.start ? new Date(item.start).toLocaleString("nl-NL") : "" },
     { key: "knowledge", label: "Knowledge", icon: BookOpen, items: results.knowledge, path: () => "/knowledge", title: (item) => item.title, sub: (item) => item.category },
     { key: "documents", label: "Documents", icon: FileText, items: results.documents, path: () => "/documents", title: (item) => item.name, sub: (item) => item.type },
   ];
