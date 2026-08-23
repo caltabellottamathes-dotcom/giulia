@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { WidgetHeader, CountUp } from "@/system/widgets/primitives";
+import { WidgetHeader, CountUp, BarPulse } from "@/system/widgets/primitives";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { useLearningSync } from "@/hooks/useLearningSync";
@@ -132,33 +132,22 @@ export default function ThingsLoveWidget() {
               ))}
             </div>
 
-            {/* staven — één per hobby, gelabeld, gekleurd per thema */}
-            <div className="flex-1 flex items-end gap-1.5 mt-3 min-h-0">
-              {bars.map((b) => {
-                const isSel = selectedId === b.id;
-                const inactive = b.status === "inactive";
-                const fill = inactive ? "hsl(var(--muted-foreground))" : b.theme.color;
-                return (
-                  <button
-                    key={b.id}
-                    onClick={() => setSelectedId(b.id)}
-                    className="flex-1 h-full flex flex-col items-center justify-end"
-                  >
-                    <div
-                      className="w-full rounded-t-md transition-all duration-300"
-                      style={{
-                        height: `${(b.level / 8) * 100}%`,
-                        background: fill,
-                        opacity: inactive ? 0.35 : isSel ? 1 : 0.78,
-                        boxShadow: isSel ? `0 0 0 2px ${IVORY}, 0 0 12px ${b.theme.color}` : "none",
-                      }}
-                    />
-                    <span className="text-[7px] truncate w-full text-center mt-1 leading-none" style={{ opacity: inactive ? 0.4 : 0.72 }}>
-                      {b.title.split(" ")[0]}
-                    </span>
-                  </button>
-                );
-              })}
+            {/* staven — BarPulse, één per hobby, gelabeld + gekleurd per thema */}
+            <div className="flex-1 flex items-end mt-3 min-h-0">
+              <BarPulse
+                items={bars.map((b) => ({
+                  key: b.id,
+                  value: b.level,
+                  label: b.title.split(" ")[0],
+                  color: b.status === "inactive" ? "hsl(var(--muted-foreground))" : b.theme.color,
+                  inactive: b.status === "inactive",
+                  selected: selectedId === b.id,
+                  onClick: () => setSelectedId(b.id),
+                }))}
+                height="100%"
+                gap={6}
+                className="w-full"
+              />
             </div>
             <p className="text-[8px] uppercase tracking-[0.2em] opacity-40 mt-1.5">tik een bar → detail</p>
           </motion.div>
