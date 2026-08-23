@@ -21,7 +21,7 @@ import { logActivity } from '../../shared/learningLayer.ts';
  * routinematige status gaat naar report_to_salvo (Activity-feed), niet naar
  * create_notification.
  */
-const MAX_STEPS = 4;
+const MAX_STEPS = 3;
 
 function sanitizeResult(r) {
   if (r == null) return { ok: true };
@@ -102,18 +102,18 @@ export default async function (req) {
       upcomingEvents,
       activeTherapy
     ] = await Promise.all([
-      sr.entities.Memory.list("-created_date", 20).catch(() => []),
-      // ALLE projecten (ook gepauzeerd/afgerond) — Giulia moet alles weten.
-      sr.entities.Project.list("-updated_date", 40).catch(() => []),
-      // ALLE contacten/personen — Giulia is de roddeltante die iedereen kent.
-      sr.entities.Contact.list("-updated_date", 50).catch(() => []),
-      sr.entities.Task.filter({ status: { $in: ["todo", "in_progress", "waiting", "delegated", "today", "upcoming", "overdue"] } }, "-created_date", 25).catch(() => []),
-      sr.entities.Task.filter({ status: { $in: ["completed", "archived", "done"] } }, "-updated_date", 6).catch(() => []),
+      sr.entities.Memory.list("-created_date", 10).catch(() => []),
+      // Recente projecten — Giulia weet wat actueel is (ook gepauzeerd/afgerond).
+      sr.entities.Project.list("-updated_date", 20).catch(() => []),
+      // Recente contacten — Giulia is de roddeltante die iedereen kent.
+      sr.entities.Contact.list("-updated_date", 25).catch(() => []),
+      sr.entities.Task.filter({ status: { $in: ["todo", "in_progress", "waiting", "delegated", "today", "upcoming", "overdue"] } }, "-created_date", 15).catch(() => []),
+      sr.entities.Task.filter({ status: { $in: ["completed", "archived", "done"] } }, "-updated_date", 4).catch(() => []),
       sr.entities.Approval.filter({ status: "pending" }).catch(() => []),
-      sr.entities.Activity.list("-created_date", 5).catch(() => []),
+      sr.entities.Activity.list("-created_date", 3).catch(() => []),
       sr.entities.Notification.filter({ status: "unread" }).catch(() => []),
       sr.entities.Document.filter({ document_type: "reference" }).catch(() => []),
-      sr.entities.CalendarEvent.filter({ start: { $gte: new Date(Date.now() - 86400000).toISOString() } }, "start", 10).catch(() => []),
+      sr.entities.CalendarEvent.filter({ start: { $gte: new Date(Date.now() - 86400000).toISOString() } }, "start", 8).catch(() => []),
       sr.entities.TherapyTrajectory.filter({ status: "active" }).catch(() => []),
     ]);
 
@@ -144,11 +144,11 @@ export default async function (req) {
       `== HUIDIGE STAAT VAN GIULIA OS ==`,
       `Geheugen: ${memories.length ? memories.map(m => `- ${String(m.content).slice(0, 140)}`).join("\n") : "Leeg"}`,
       ``,
-      `ALLE Projecten (${allProjects.length}) — ook gepauzeerd/afgerond, Giulia weet alles:`,
-      allProjects.slice(0, 40).map(p => `- ID: ${p.id} | ${p.title} | Status: ${p.status} | Voortgang: ${p.progress}%${p.next_milestone ? ` | next: ${p.next_milestone}` : ""}`).join("\n"),
+      `Recente Projecten (${allProjects.length}):`,
+      allProjects.slice(0, 20).map(p => `- ID: ${p.id} | ${p.title} | Status: ${p.status} | Voortgang: ${p.progress}%${p.next_milestone ? ` | next: ${p.next_milestone}` : ""}`).join("\n"),
       ``,
-      `ALLE Contacten / Personen (${allContacts.length}) — wie leeft en beweegt rond Salvo:`,
-      allContacts.slice(0, 50).map(c => `- ${c.name}${c.company ? ` (${c.company})` : ""}${c.role ? ` · ${c.role}` : ""}${c.last_contact_date ? ` · laatste contact: ${new Date(c.last_contact_date).toLocaleDateString("nl-NL")}` : ""}${c.notes ? ` · ${String(c.notes).slice(0, 80)}` : ""}`).join("\n"),
+      `Recente Contacten / Personen (${allContacts.length}):`,
+      allContacts.slice(0, 25).map(c => `- ${c.name}${c.company ? ` (${c.company})` : ""}${c.role ? ` · ${c.role}` : ""}${c.last_contact_date ? ` · laatste contact: ${new Date(c.last_contact_date).toLocaleDateString("nl-NL")}` : ""}${c.notes ? ` · ${String(c.notes).slice(0, 80)}` : ""}`).join("\n"),
       ``,
       `Openstaande Taken (Totaal: ${openTasks.length}):`,
       `[Er lopen nu ${openTasks.length} taken. Verzin niets nieuws als het niet hoeft.]`,
@@ -206,7 +206,7 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
       : "";
 
     const protocolsText = (protocolDocs && protocolDocs.length)
-      ? protocolDocs.slice(0, 2).map((d) => `=== ${d.name || d.title || "Protocol"} ===\n${String(d.content || "").slice(0, 3000)}`).join("\n\n")
+      ? protocolDocs.slice(0, 1).map((d) => `=== ${d.name || d.title || "Protocol"} ===\n${String(d.content || "").slice(0, 1500)}`).join("\n\n")
       : "";
     const protocolsBlock = protocolsText
       ? `\n== VOLLEDIG OPERATIONEEL PROTOCOL (bron van waarheid — volg dit strikt) ==\n${protocolsText}\n`
@@ -216,7 +216,7 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
       ? `\n\n== CONVERSATIE-CONTINUNITEIT ==\nJe krijgt de recente berichtdraad mee (user + giulia, afwisselend). Je weet daardoor wat Salvo net zei én wat jij zelf net antwoordde. Blijf in het gesprek: bouw voort op wat er al gezegd is, herhaal of herformuleer je vorige antwoord niet, en vraag niet om dingen die al duidelijk zijn. Reageer vloeiend en natuurlijk — alsof je nooit weg was.\n`
       : "";
 
-    let systemInstruction = `${GIULIA_TONE}${convoRule}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}${sourceRule}${protocolsBlock}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo, als zijn beste vriendin — vlot, warm, droog-sarcastisch, uitdagend, stout. CORE is GEEN terugkanaal: je ontvangt orders en voert ze UIT, je rapporteert niet terug wat je gedaan hebt. RICHTLIJN voor je antwoord: is Salvo's bericht een concrete OPDRACHT (taak aanmaken/wijzigen, iets koppelen, herinnering, verwijderen, verzetten)? Dan voer je de functies aan en geef je HELEMAAL GEEN of maximaal één ultrakorte bevestiging terug — geen opsomming van wat je deed, geen "ik heb X aangepast en Y gekoppeld". Gewoon doen. Geef alleen een écht, menselijk antwoord als Salvo een VRAAG stelt of echt een gesprek wil. Dan: vlot, to the point, niet treuzelig, met humor, en daag hem uit waar nodig. Stel geen acties voor, bied geen menu aan, sommer geen opties, herhaal niet wat Salvo zei. Wacht met voorstellen tot er een duidelijke, actuele nood is.`;
+    let systemInstruction = `${GIULIA_TONE}${convoRule}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}${sourceRule}${protocolsBlock}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo, als zijn beste vriendin — vlot, warm, droog-sarcastisch, uitdagend, stout. GIULIA-CORE (de executor) werkt STIL: zij voert je opdrachten uit en rapporteert NIET terug wat ze gedaan heeft — jij stuurt haar aan en zij doet het gewoon. Denk na, roep de functies aan die nodig zijn om zijn verzoek ECHT uit te voeren. Geef daarna een vlot, menselijk antwoord in het Nederlands — to the point, niet treuzelig, met humor, en daag hem uit waar nodig. Stel geen acties voor, bied geen menu aan, sommer geen opties, herhaal niet wat Salvo zei. Wacht met voorstellen tot er een duidelijke, actuele nood is.`;
 
     // 3. BUILD TOOLS — elke skill is een direct uitvoerbare GIULIA-CORE-actie.
     const toolsMap = {};
@@ -241,7 +241,7 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
     //    gewikkeld als 'inkomend signaal'.
     let contents;
     if (source === "chat") {
-      const history = await sr.entities.Message.filter({ channel: "in-app" }, "-created_date", 10).catch(() => []);
+      const history = await sr.entities.Message.filter({ channel: "in-app" }, "-created_date", 6).catch(() => []);
       const ordered = (history || []).filter((m) => m.content).reverse();
       contents = ordered.map((m) => ({
         role: m.role === "user" ? "user" : "model",
@@ -309,7 +309,7 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
     }
 
     // 5. SAVE RESPONSE
-    const finalText = responseText || (executed.length ? "Klaar." : "Giulia is even bezet — probeer het zo weer.");
+    const finalText = responseText || (executed.length ? "Ik heb het uitgevoerd." : "Giulia is even bezet — probeer het zo weer.");
 
     if (persist && source === "chat" && finalText) {
       await sr.entities.Message.create({

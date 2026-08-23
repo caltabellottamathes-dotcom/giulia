@@ -5,7 +5,7 @@
  */
 import { createTaskWithApproval, navigateApp, reportToSalvo, createApproval, findDuplicate } from "./codeAgent.ts";
 import { geminiEmbed } from "./gemini.ts";
-import { logActivity, remember, askQuestion } from "./learningLayer.ts";
+import { remember, askQuestion } from "./learningLayer.ts";
 import { emitEvent } from "./eventEngine.ts";
 
 export const GIULIA_SKILLS = [
@@ -119,7 +119,6 @@ export const GIULIA_SKILLS = [
     inputSchema: { type: "object", properties: { content: { type: "string" }, category: { type: "string" } }, required: ["content"] },
     execute: async (args, base44) => {
       const m = await remember(base44, { content: args.content, category: args.category, source: "GIULIA-CORE" });
-      await logActivity(base44, "GIULIA-CORE", `Geheugen opgeslagen: ${String(args.content).slice(0, 80)}`, { action: "remember" });
       return m ? { id: m.id } : { error: "create failed" };
     }
   },
@@ -142,15 +141,6 @@ export const GIULIA_SKILLS = [
         try { await base44.functions.invoke("sendPushNotifications", { title: args.title || "Giulia", message: args.message }); } catch { /* ignore */ }
       }
       return n ? { id: n.id } : { error: "create failed" };
-    }
-  },
-  {
-    name: "report_to_salvo",
-    description: "Log een activiteit in de Activity-feed op de achtergrond. Gebruik dit NIET als antwoord in een live chat.",
-    inputSchema: { type: "object", properties: { message: { type: "string" } }, required: ["message"] },
-    execute: async ({ message }, base44) => {
-      const a = await logActivity(base44, "GIULIA-CORE", message, { action: "report" });
-      return a ? { ok: true } : { error: "failed" };
     }
   },
   {
@@ -239,7 +229,6 @@ export const GIULIA_SKILLS = [
     inputSchema: { type: "object", properties: { title: { type: "string" }, body: { type: "string" }, kind: { type: "string", enum: ["quick_drop", "fill_the_gap", "connect_the_dots", "memory_check", "life_check", "self_discovery"] }, domain: { type: "string", enum: ["life", "self", "projects", "time", "admin", "people", "communication"] }, priority: { type: "string", enum: ["now", "soon", "useful", "curious"] }, options: { type: "array", items: { type: "string" } }, target_type: { type: "string" }, target_ref: { type: "string" } }, required: ["title", "body"] },
     execute: async (args, base44) => {
       const q = await askQuestion(base44, { ...args, source: "GIULIA-GIULIA" });
-      await logActivity(base44, "GIULIA-GIULIA", `Nieuw mysterie: ${String(args.title).slice(0, 80)}`, { action: "ask" });
       return q ? { id: q.id } : { error: "create failed" };
     }
   },
@@ -638,7 +627,6 @@ export const GIULIA_SKILLS = [
           ids.slice(i, i + 100).map((eid) => ({ id: eid, deleted: true }))
         ).catch(() => {});
       }
-      await logActivity(base44, "GIULIA-CORE", `${ids.length} email${ids.length === 1 ? "" : "s"} permanent verwijderd${folder ? ` uit ${folder}` : category ? ` (${category})` : ""}.`, { action: "delete_emails" }).catch(() => null);
       return { deleted_count: ids.length };
     }
   },
