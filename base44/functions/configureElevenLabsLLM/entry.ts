@@ -3,18 +3,16 @@
  *
  * Stelt de ElevenLabs voice-agent in:
  *   1. System-prompt = volledige GIULIA-kennis (base44/shared/elevenPrompt.ts)
- *      + stem-addendum met navigatie- en actie-toolregister.
+ *      + stem-addendum met volledig navigatie- en actie-toolregister.
  *   2. Client-tools = ELEVEN_TOOLS (navigatie + directe acties + delegate).
- *   3. Custom LLM = Google Gemini (OpenAI-endpoint) met ELEVEN_GEMINI_API_KEY.
+ *   3. Custom LLM = via de eigen proxy (elevenLlmProxy) met automatische
+ *      key-fallback EN live OS-context-injectie (elke beurt verse data).
  *
- * AUTOMATISCHE KEY-FALLBACK (proxy-modus):
- *   ElevenLabs custom-LLM cascadeert zelf NIET naar een 2e key. Daarom is er
- *   een proxy-functie (elevenLlmProxy) die key1 → key2 (ELEVEN_2_GEMINI_API_KEY)
- *   automatisch afvalt. Om die te gebruiken moet de custom-LLM naar de
- *   PUBIEKE webhook-URL van die functie wijzen. Roep deze functie dan aan met
- *   { "proxyUrl": "<webhook-url uit dashboard>" } — dan schakelt hij naar de
- *   proxy + automatische fallback. Zonder proxyUrl blijft hij op directe
- *   Gemini (key1) staan, zodat de voice-agent altijd werkt.
+ * AUTOMATISCHE PROXY-ACTIVERING:
+ *   De proxy-URL wordt afgeleid uit de URL van deze functie zelf, zodat de
+ *   stem-agent automatisch via de proxy loopt (live context + key-fallback +
+ *   navigatie-extractie). Geef expliciet `proxyUrl` mee om te overschrijven,
+ *   of `conversationalOnly: true` voor de oude conversatie-only modus.
  */
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
 import { GIULIA_CORE_INSTRUCTIONS } from "../../shared/elevenPrompt.ts";
@@ -24,66 +22,79 @@ const AGENT_ID = "agent_5501kza2zx7hehxbh0ydey1mq5gv";
 const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 const GEMINI_MODEL = "gemini-3.5-flash-lite";
 
+// Volledige navigatie-dekking — elke pagina, paneel, widget en viewer in de
+// hele app (GIULIA, FOCUS, LIFE, SELF, SYSTEM + GlassAgenda-suite + galleries).
 const NAV_PAGES = {
   "/": "Dashboard — vijf domein-borden (GIULIA/FOCUS/LIFE/SELF/SYSTEM)",
-  "/agenda": "Agenda — kalender en afspraken",
-  "/projects": "Projecten — alle projecten",
-  "/tasks": "Taken — takenlijst",
-  "/email": "Online Postoffice — email inbox + Giulia-concepten",
-  "/whatsapp": "WhatsApp — berichten",
-  "/chat": "Chat met Giulia",
-  "/voice": "Voice call met Giulia",
-  "/knowledge": "Kennisbank",
-  "/documents": "Documenten — bestanden",
-  "/people": "Mensen — contacten",
-  "/approvals": "Waiting on You — goedkeuringen",
-  "/notifications": "Things to See — notificaties",
-  "/activity": "I Do Process — activiteitentijdlijn",
-  "/memory": "What I Remember — geheugen",
-  "/insights": "What I've Noticed — inzichten",
-  "/timetracker": "Where My Time Goes — tijd-timer",
-  "/agents": "Who's Working — agenten",
+  "/briefing": "Dagelijkse briefing", "/wake": "Wake-modus — ochtendritueel",
+  "/quick": "Quick command", "/wants-to-know": "Wants to Know — Giulia's open vragen",
+  "/beeldbank": "Change the Look — achtergronden wisselen", "/search": "Zoeken",
+  "/chat": "Chat met Giulia", "/voice": "Voice call met Giulia",
+  "/approvals": "Waiting on You — goedkeuringen", "/notifications": "Things to See — notificaties",
+  "/activity": "I Do Process — activiteitentijdlijn", "/memory": "What I Remember — geheugen",
+  "/insights": "What I've Noticed — inzichten", "/agents": "Who's Working — agenten",
   "/updates": "Meanwhile... — updates",
-  "/integrations": "Connectors — integraties",
-  "/settings": "Instellingen",
-  "/profile": "Profiel",
-  "/search": "Zoeken",
-  "/briefing": "Dagelijkse briefing",
-  "/wake": "Wake-modus — ochtendritueel",
-  "/quick": "Quick command",
-  "/wants-to-know": "Wants to Know — Giulia's open vragen",
-  "/beeldbank": "Change the Look — achtergronden wisselen",
-  "/life": "LIFE — landingspagina",
-  "/life/social": "Social Pulse — sociaal leven",
-  "/life/household": "Huishouden",
-  "/life/personal-admin": "Persoonlijk admin",
-  "/life/hobbies": "Hobby's",
-  "/life/food": "Food — weekmenu en boodschappen",
-  "/life/development": "Becoming Me — persoonlijke ontwikkeling",
-  "/life/daily-state": "How I'm Doing — daily state",
+  "/agenda": "Agenda — kalender en afspraken", "/projects": "Projecten — alle projecten",
+  "/tasks": "Taken — takenlijst", "/email": "Online Postoffice — email inbox + Giulia-concepten",
+  "/whatsapp": "WhatsApp — berichten", "/knowledge": "Kennisbank", "/documents": "Documenten — bestanden",
+  "/people": "Mensen — contacten", "/timetracker": "Where My Time Goes — tijd-timer",
+  "/life": "LIFE — landingspagina", "/life/social": "Social Pulse — sociaal leven",
+  "/life/household": "Huishouden", "/life/personal-admin": "Persoonlijk admin",
+  "/life/hobbies": "Hobby's", "/life/food": "Food — weekmenu en boodschappen",
+  "/life/development": "Becoming Me — persoonlijke ontwikkeling", "/life/daily-state": "How I'm Doing — daily state",
+  "/integrations": "Connectors — integraties", "/settings": "Instellingen", "/profile": "Profiel",
+  "/widget-gallery": "Widget galerij", "/widget-gallery-2": "Widget galerij 2",
+  "/widget-gallery-3": "Widget galerij 3", "/widget-gallery-4": "Widget galerij 4",
+  "/graph-gallery": "Grafiek galerij", "/graph-gallery-2": "Grafiek galerij 2",
+  "/UI-items": "UI items", "/widgets-giulia": "GIULIA widgets", "/widgets-focus": "FOCUS widgets",
+  "/shell-collection": "Shell collectie",
+  "/glass": "GlassAgenda — home", "/glass/archief": "GlassAgenda — archief",
+  "/glass/notitieblok": "GlassAgenda — notitieblok", "/glass/prioriteiten": "GlassAgenda — prioriteitenmatrix",
+  "/glass/inspiratie": "GlassAgenda — inspiratiebord", "/glass/doelen": "GlassAgenda — doelendashboard",
+  "/glass/briefing": "GlassAgenda — dagelijkse briefing", "/glass/dagplanning": "GlassAgenda — dagplanning",
+  "/glass/focus": "GlassAgenda — focusmodus", "/glass/instellingen": "GlassAgenda — instellingen",
+  "/glass/taak-details": "GlassAgenda — taakdetails", "/glass/vergader": "GlassAgenda — vergadernotities",
+  "/glass/contacten": "GlassAgenda — contacten", "/glass/agenda": "GlassAgenda — agendaoverzicht",
+  "/glass/taken": "GlassAgenda — takenoverzicht", "/glass/tijd": "GlassAgenda — tijdsregistratie",
+  "/glass/week": "GlassAgenda — weekplanning", "/glass/projecten": "GlassAgenda — projecten",
+  "/glass/statistieken": "GlassAgenda — statistieken",
+  "/glass/self": "GlassAgenda — SELF overzicht", "/glass/self/daily-state": "GlassAgenda — daily state",
+  "/glass/self/routines": "GlassAgenda — routines", "/glass/self/wake": "GlassAgenda — wake",
+  "/glass/self/therapy": "GlassAgenda — therapie", "/glass/self/journal": "GlassAgenda — journal",
+  "/glass/self/development": "GlassAgenda — ontwikkeling", "/glass/self/personal-time": "GlassAgenda — persoonlijke tijd",
+  "/glass/self/insights": "GlassAgenda — inzichten", "/glass/self/food": "GlassAgenda — food",
+  "/glass/modules/taken": "GlassAgenda — taken module", "/glass/modules/email": "GlassAgenda — email module",
+  "/glass/modules/notifications": "GlassAgenda — notificaties module", "/glass/modules/approvals": "GlassAgenda — approvals module",
+  "/glass/modules/documents": "GlassAgenda — documents module", "/glass/modules/knowledge": "GlassAgenda — knowledge module",
+  "/glass/modules/people": "GlassAgenda — people module", "/glass/modules/project-add": "GlassAgenda — project toevoegen",
+  "/glass/modules/task-archive": "GlassAgenda — taakarchief", "/glass/modules/task-detail": "GlassAgenda — taakdetail",
+  "/glass/modules/time-tracker": "GlassAgenda — time tracker", "/glass/modules/week": "GlassAgenda — weekweergave",
+  "/glass/modules/whatsapp": "GlassAgenda — whatsapp module",
 };
 
 const NAV_PANELS = {
-  agenda: "Agenda paneel", projects: "Projecten paneel", tasks: "Taken paneel",
-  email: "Email paneel", whatsapp: "WhatsApp paneel", people: "Mensen paneel",
-  knowledge: "Kennisbank paneel", documents: "Documenten paneel", chat: "Chat met Giulia",
-  voice: "Voice call paneel", approvals: "Goedkeuringen paneel", notifications: "Notificaties paneel",
-  activity: "Activiteit paneel", memory: "Geheugen paneel", insights: "Inzichten paneel",
-  timetracker: "Tijd-timer paneel", agents: "Agenten paneel", updates: "Updates paneel",
-  integrations: "Integraties paneel", settings: "Instellingen paneel", profile: "Profiel paneel",
-  goodmorning: "Good Morning paneel", jedag: "What Matters paneel (Je Dag)",
-  social: "Social Pulse paneel", household: "Huishouden paneel", personaladmin: "Persoonlijk admin paneel",
-  hobbies: "Hobby's paneel", food: "Food paneel", wantstoknow: "Wants to Know paneel",
-  dailystate: "Daily State paneel", development: "Persoonlijke ontwikkeling paneel",
-  imageviewer: "Afbeeldingen-viewer", videoplayer: "Video-player", musicplayer: "Muziek-player", docviewer: "Document-viewer",
+  chat: "Chat met Giulia", voice: "Voice call paneel", goodmorning: "Good Morning! paneel",
+  jedag: "What Matters? paneel (Je Dag)", wantstoknow: "Wants to Know! paneel",
+  approvals: "Waiting on You. paneel", notifications: "Things to See. paneel",
+  activity: "I Do Process! paneel", memory: "What I Remember. paneel",
+  insights: "What I've Noticed. paneel", agents: "Who's Working? paneel", updates: "Meanwhile... paneel",
+  agenda: "What's Happening? paneel", projects: "What I'm Building. paneel", tasks: "To Do! paneel",
+  email: "Online Postoffice. paneel", whatsapp: "Who's Texting? paneel", knowledge: "What I Know. paneel",
+  documents: "Files to Share. paneel", people: "People Around Me. paneel", timetracker: "Where My Time Goes. paneel",
+  social: "What Social Life? paneel", household: "Reminders For Home. paneel", personaladmin: "Things to Handle! paneel",
+  hobbies: "Things I Love. paneel", food: "What's for Dinner? paneel", dailystate: "How I'm Doing. paneel",
+  development: "Becoming Me. paneel", integrations: "Integrations paneel", settings: "Settings paneel",
+  profile: "Profile paneel", imageviewer: "Afbeeldingen-viewer", videoplayer: "Video-player",
+  musicplayer: "Muziek-player", docviewer: "Document-viewer",
 };
 
 const VOICE_ADDENDUM = `
 == STEM-MODUS (ElevenLabs voice agent) ==
 Je bent nu actief als STEM-AGENT via ElevenLabs. Je praat met Salvo, je typt niet. Aanvullende regels:
 - Spreek KORTE zinnen. Eén gedachte per adem. Geen opsommingen tenzij gevraagd.
+- Je krijgt ELKE BEURT een verse LIVE OS-STATE injectie (projecten, taken, agenda, contacten, approvals, ongelezen mail/whatsapp, geheugen). Gebruik die data om Salvo direct en accuraat te informeren — geen "laat me even kijken", gewoon antwoord geven op basis van de live state.
 - Voer acties METEEN uit via de client-tools terwijl je praat — vraag GEEN toestemming voor interne acties (taken, notities, geheugen, agenda-afspraken, journal, check-ins, needs, notificaties). Bevestig wat je deed in maximaal één korte zin.
-- NAVIGATIE: gebruik navigate_to_page / open_panel / scroll_to_section / highlight_element proactief (breng Salvo ergens naartoe terwijl je praat). Kondig het kort aan ("Ik open je agenda…") en ga meteen door.
+- NAVIGATIE: gebruik navigate_to_page / open_panel / scroll_to_section / highlight_element proactief om Salvo door ELKE pagina, onderdeelpaneel, widget en detail te brengen. Kondig het kort aan ("Ik open je agenda…") en ga meteen door. Je kent het volledige route-register hieronder.
 - EXTERNE VERZENDING (email/whatsapp/agenda-uitnodiging): NOOIT zelfstandig. Gebruik create_approval om een concept klaar te zetten; Salvo moet goedkeuren. Bevestig dat het klaarstaat.
 - VOOR COMPLEXE, MEERSTAP ACTIES (projecten beheren, hobby's koppelen, meerdere entiteiten tegelijk): gebruik delegate_to_giulia({ instruction }) — dat stuurt de opdracht naar het Giulia-core function-calling loop dat alle entity-tools heeft en direct muteert.
 - Antwoorddiscipline blijft keihard: ultrakort, geen herhaling, geen menu's.
@@ -166,11 +177,20 @@ export default async function (req) {
       return Response.json({ error: "ELEVEN_GEMINI_API_KEY niet ingesteld." }, { status: 400 });
     }
 
-    // Input: optioneel { proxyUrl } om naar de fallback-proxy te wijzen.
+    // Input: optioneel { proxyUrl } om de proxy-URL te overschrijven;
+    // { conversationalOnly: true } voor de oude conversatie-only modus.
     let input = {};
     try { input = await req.json(); } catch { input = {}; }
-    const proxyUrl = input?.proxyUrl;
     const conversationalOnly = input?.conversationalOnly === true;
+
+    // Auto-afleiden van de proxy-URL uit de eigen functie-URL, zodat de
+    // stem-agent automatisch via de proxy loopt (live context + key-fallback +
+    // navigatie-extractie).
+    // Publieke proxy-URL van de elevenLlmProxy-functie (default Base44-URL van
+    // deze app). De proxy levert live OS-context + automatische key-fallback +
+    // navigatie-extractie. Expliciete input.proxyUrl overschrijft dit.
+    const derivedProxyUrl = "https://giulia-os-flow.base44.app/functions/elevenLlmProxy";
+    const proxyUrl = input?.proxyUrl || derivedProxyUrl;
     const useProxy = !conversationalOnly && !!proxyUrl;
 
     // 1) Api-key secret: direct (Gemini key1) of proxy-token (GIULIA_API_KEY).
@@ -199,9 +219,6 @@ export default async function (req) {
     cfg.agent = cfg.agent || {};
     cfg.agent.prompt = cfg.agent.prompt || {};
     if (conversationalOnly) {
-      // Conversatie-only: directe Gemini, GEEN tools. De stem-agent praat
-      // alleen. Acties/navigatie lopen via chatWithGiulia, getriggerd vanuit
-      // de frontend (useConversation transcript → invoke("chatWithGiulia")).
       cfg.agent.prompt.prompt = CONVERSATIONAL_PROMPT;
       cfg.agent.prompt.llm = "custom-llm";
       cfg.agent.prompt.custom_llm = {
@@ -225,9 +242,6 @@ export default async function (req) {
         api_type: "chat_completions",
         temperature: 0.5,
       };
-      // Tools horen op conversation_config.agent.prompt.tools (niet op cfg.tools).
-      // ElevenLabs auto-aangemaakt managed tools uit inline defs; daarom tool_ids
-      // leeggemaakt om de "both tools and tool_ids"-conflict te voorkomen.
       cfg.agent.prompt.tool_ids = [];
       cfg.agent.prompt.tools = ELEVEN_TOOLS.map((t) => ({
         name: t.name,
@@ -280,6 +294,8 @@ export default async function (req) {
       fallback_key_available: !!process.env.ELEVEN_2_GEMINI_API_KEY,
       tools: conversationalOnly ? [] : ELEVEN_TOOLS.map((t) => t.name),
       prompt_chars: conversationalOnly ? CONVERSATIONAL_PROMPT.length : SYSTEM_PROMPT.length,
+      nav_pages: Object.keys(NAV_PAGES).length,
+      nav_panels: Object.keys(NAV_PANELS).length,
       orphan_tools_removed: deletedOrphans,
     });
   } catch (e) {

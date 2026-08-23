@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { secrets } from 'base44:runtime';
+import { dedupEmails } from "../../shared/emailDedup.ts";
 
 /**
  * syncEmails — haalt de laatste emails op via de IMAP-bridge (NIET Gmail) en
@@ -90,6 +91,8 @@ export default async function (req) {
         }
       } catch { /* skip */ }
     }
+
+    await dedupEmails(ent).catch(() => null);
 
     return Response.json({ ok: true, added, updated, bodies, total: fetched.length, mode: user ? 'user' : 'service' });
   } catch (error) {

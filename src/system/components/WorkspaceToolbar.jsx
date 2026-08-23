@@ -6,38 +6,10 @@ import { cn } from "@/lib/utils";
 import { useLocation } from "react-router-dom";
 import { Plus, Phone, MessageSquare, BrainCircuit, X, Send, Loader2 } from "lucide-react";
 import QuickLauncher from "@/system/components/glass/QuickLauncher";
-import { WIDGETS } from "@/lib/widgetRegistry";
+import { useActiveDomain } from "@/lib/useActiveDomain";
 import { DEFAULT_BOARDS, loadCustomBoards, createCustomBoard, getActiveBoard, setActiveBoard } from "@/lib/useDashboardBoard";
 
 const actionBtn = "h-9 w-9 flex items-center justify-center text-ivory/80 hover:bg-ivory/15 hover:text-ivory transition-colors shrink-0 rounded-lg";
-
-function useActiveSection(board) {
-  const { activeModule } = usePanel();
-  const loc = useLocation();
-  const ROUTE_DOMAIN = [
-    [/^\/self/, "self"], [/^\/wake$/, "self"],
-    [/^\/life/, "life"],
-    [/^\/(agenda|projects|tasks|email|whatsapp|documents|people|planning|timetracker)/, "focus"],
-    [/^\/knowledge/, "system"],
-    [/^\/(chat|voice|approvals|insights|updates|briefing|wants-to-know|activity|memory|agents)/, "giulia"],
-    [/^\/(search|integrations|settings|profile)/, "system"],
-  ];
-  const MODULE_DOMAIN_FALLBACK = { chat: "giulia", voice: "giulia", settings: "system", profile: "system", integrations: "system" };
-  if (activeModule) {
-    const d = WIDGETS[activeModule]?.domain || MODULE_DOMAIN_FALLBACK[activeModule];
-    if (d) return d;
-  }
-  if (loc.pathname === "/") {
-    const b = (board || "").toLowerCase();
-    if (b === "focus") return "focus";
-    if (b === "self") return "self";
-    if (b === "life") return "life";
-    if (b === "system") return "system";
-    return "giulia";
-  }
-  for (const [re, d] of ROUTE_DOMAIN) if (re.test(loc.pathname)) return d;
-  return "giulia";
-}
 
 /**
  * WorkspaceToolbar — minimalistische volledig-brede werkbalk onderaan.
@@ -62,7 +34,7 @@ export default function WorkspaceToolbar() {
   const expand = () => {
     clearTimeout(collapseTimer.current);
     clearTimeout(enterTimer.current);
-    enterTimer.current = setTimeout(() => setExpanded(true), 450);
+    enterTimer.current = setTimeout(() => setExpanded(true), 1000);
   };
   const scheduleCollapse = (ms = 6000) => {
     clearTimeout(collapseTimer.current);
@@ -112,19 +84,12 @@ export default function WorkspaceToolbar() {
 
   const all = [...DEFAULT_BOARDS, ...custom];
 
-  const domain = useActiveSection(board);
-  const ACCENT = {
-    giulia: "hsl(var(--d-giulia-deep))",
-    focus: "hsl(var(--d-focus-deep))",
-    life: "hsl(var(--life-blue))",
-    self: "hsl(var(--self-burgundy))",
-    system: "hsl(var(--d-system-deep))",
-  }[domain] || "hsl(var(--d-giulia-deep))";
+  const { accent } = useActiveDomain(board);
 
   return (
     <>
       {/* bottom hover-reveal zone */}
-      <div className="fixed bottom-0 inset-x-0 h-14 z-20" onMouseEnter={expand} />
+      <div className="fixed bottom-0 inset-x-0 h-10 z-20" onMouseEnter={expand} />
 
       {/* the bar — volledig glasmorfisch, schuift vloeiend in/uit.
           Ingeklapt: compacte balk links met de belangrijkste items
@@ -147,7 +112,7 @@ export default function WorkspaceToolbar() {
             boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.16), 0 30px 70px -22px rgba(0,0,0,0.55), 0 10px 24px -12px rgba(0,0,0,0.35)",
           }}
         >
-          <div className="pointer-events-none absolute inset-0" style={{ background: ACCENT, opacity: 0.16 }} />
+          <div className="pointer-events-none absolute inset-0" style={{ background: accent, opacity: 0.16 }} />
           {expanded ? (
             <>
               {/* Dashboard tabs (left) */}

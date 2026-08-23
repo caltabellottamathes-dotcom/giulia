@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { secrets } from 'base44:runtime';
+import { loadSeenUids, dedupEmails } from "../../shared/emailDedup.ts";
 
 /**
  * syncGmail — trekt recente inbox-berichten binnen via de IMAP-bridge
@@ -34,8 +35,7 @@ export default async function (req) {
     const data = await res.json();
     const emails = Array.isArray(data.emails) ? data.emails : [];
 
-    const existing = await ent.Email.filter({ folder: 'inbox' }).catch(() => []);
-    const seen = new Set(existing.map((e) => e.gmail_message_id).filter(Boolean));
+    const seen = await loadSeenUids(ent);
 
     let added = 0;
     for (const m of emails) {
@@ -53,6 +53,8 @@ export default async function (req) {
       }).catch(() => {});
       added++;
     }
+
+    await dedupEmails(ent).catch(() => null);
 
     return Response.json({ ok: true, added, total: emails.length, mode: user ? 'user' : 'service' });
   } catch (error) {

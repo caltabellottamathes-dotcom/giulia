@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { X, ArrowUp, Phone, Paperclip, Image as ImageIcon, Film, Music, FileText } from "lucide-react";
 import { motion } from "framer-motion";
 import ChatMarkdown from "@/system/components/glass/ChatMarkdown";
+import { useActiveDomain } from "@/lib/useActiveDomain";
 import { useMediaViewer } from "@/lib/MediaViewerContext";
 
 /**
@@ -44,6 +45,7 @@ export default function ChatWindow() {
   const fileRef = useRef(null);
   const [attachments, setAttachments] = useState([]);
   const { openMedia } = useMediaViewer();
+  const { accent } = useActiveDomain();
 
   useEffect(() => {
     if (chatOpen) {
@@ -131,7 +133,7 @@ export default function ChatWindow() {
 
           <div className="shrink-0 px-7 pt-7 pb-5 flex items-center justify-between">
             <div className="flex items-center gap-3 ml-12">
-              <span className="h-2.5 w-2.5 rounded-full bg-olive animate-pulse-soft" />
+              <span className="h-2.5 w-2.5 rounded-full animate-pulse-soft" style={{ background: accent }} />
               <div>
                 <p className="font-display font-semibold tracking-[0.22em] text-[13px] uppercase text-ivory leading-none">
                   GIULIA-GIULIA
@@ -150,7 +152,7 @@ export default function ChatWindow() {
             </div>
           </div>
 
-          <div className="px-7 pb-1"><div className="h-px bg-ivory/10" /></div>
+          <div className="px-7 pb-1"><div className="h-px" style={{ background: accent, opacity: 0.6 }} /></div>
 
           <div ref={scrollRef} className="relative flex-1 overflow-y-auto overflow-x-hidden px-7 py-4 space-y-4">
             {messages.length === 0 && !sending && ready && (

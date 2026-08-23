@@ -42,6 +42,22 @@ export default function ProjectDetail() {
   };
   useEffect(() => { load(); }, [id]);
 
+  // Live-updates: herlaad het project + gekoppelde data zodra er iets
+  // verandert (nieuwe email/whatsapp/document/notitie gekoppeld aan dit
+  // project, taakwijzigingen, of het project zelf). Zo staat de projectpagina
+  // altijd up-to-date zonder handmatig te vernieuwen.
+  useEffect(() => {
+    const unsubs = [];
+    const reload = () => load();
+    try { unsubs.push(base44.entities.Project.subscribe(reload)); } catch { /* */ }
+    try { unsubs.push(base44.entities.Task.subscribe(reload)); } catch { /* */ }
+    try { unsubs.push(base44.entities.Email.subscribe(reload)); } catch { /* */ }
+    try { unsubs.push(base44.entities.WhatsAppMessage.subscribe(reload)); } catch { /* */ }
+    try { unsubs.push(base44.entities.Document.subscribe(reload)); } catch { /* */ }
+    try { unsubs.push(base44.entities.Note.subscribe(reload)); } catch { /* */ }
+    return () => unsubs.forEach((u) => { try { u && u(); } catch { /* */ } });
+  }, [id]);
+
   const updateProject = async (patch) => {
     await base44.entities.Project.update(id, patch);
     setProject((p) => ({ ...p, ...patch }));

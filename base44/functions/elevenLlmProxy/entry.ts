@@ -21,18 +21,58 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
 const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 
 // Panel-key → pagina-route (voor open_panel navigatie).
+// Panel-key → pagina-route (volledige dekking, gesynchroniseerd met
+// src/lib/voiceNavigation.js NAV_PANEL_ROUTES).
 const PANEL_ROUTES = {
-  agenda: "/agenda", projects: "/projects", tasks: "/tasks",
-  email: "/email", whatsapp: "/whatsapp", people: "/people",
-  knowledge: "/knowledge", documents: "/documents", chat: "/",
-  approvals: "/approvals", activity: "/activity", memory: "/memory",
-  insights: "/insights", timetracker: "/timetracker", agents: "/agents",
-  updates: "/updates", settings: "/settings", profile: "/profile",
-  voice: "/voice", socialpulse: "/life/social-pulse", household: "/life/household",
-  hobbies: "/life/hobbies", wantstoknow: "/wants-to-know",
-  selfdailystate: "/self/daily-state", selfroutines: "/self/routines",
-  selfjournal: "/self/journal",
+  chat: "/chat", voice: "/voice", goodmorning: "/wake", jedag: "/",
+  wantstoknow: "/wants-to-know",
+  approvals: "/approvals", notifications: "/notifications", activity: "/activity",
+  memory: "/memory", insights: "/insights", agents: "/agents", updates: "/updates",
+  agenda: "/agenda", projects: "/projects", tasks: "/tasks", email: "/email",
+  whatsapp: "/whatsapp", knowledge: "/knowledge", documents: "/documents",
+  people: "/people", timetracker: "/timetracker",
+  social: "/life/social", household: "/life/household", personaladmin: "/life/personal-admin",
+  hobbies: "/life/hobbies", food: "/life/food", dailystate: "/life/daily-state",
+  development: "/life/development",
+  integrations: "/integrations", settings: "/settings", profile: "/profile",
+  imageviewer: "/", videoplayer: "/", musicplayer: "/", docviewer: "/",
 };
+
+/**
+ * buildLiveSnapshot — haalt een compacte, actuele OS-state op (projecten,
+ * taken, agenda, contacten, approvals, ongelezen mail/whatsapp, geheugen) en
+ * retourneert deze als tekst. Wordt door de proxy als eerste system-message
+ * in de Gemini-request geïnjecteerd, zodat de stem-agent elke beurt op de
+ * hoogte is van de nieuwste data — "elke seconde up to date".
+ */
+async function buildLiveSnapshot(req) {
+  let base44;
+  try { base44 = createClientFromRequest(req); } catch { return null; }
+  const sr = base44.asServiceRole;
+  const [projects, tasks, events, contacts, approvals, emails, wa, memory] = await Promise.all([
+    sr.entities.Project.list("-updated_date", 12).catch(() => []),
+    sr.entities.Task.filter({ status: { $in: ["todo", "today", "in_progress", "waiting", "upcoming", "overdue"] } }, "-created_date", 12).catch(() => []),
+    sr.entities.CalendarEvent.filter({ start: { $gte: new Date(Date.now() - 3600000).toISOString() } }, "start", 8).catch(() => []),
+    sr.entities.Contact.list("-updated_date", 12).catch(() => []),
+    sr.entities.Approval.filter({ status: "pending" }).catch(() => []),
+    sr.entities.Email.filter({ folder: "inbox", status: "unread" }).catch(() => []),
+    sr.entities.WhatsAppMessage.filter({ status: "unread" }).catch(() => []),
+    sr.entities.Memory.list("-created_date", 6).catch(() => []),
+  ]);
+  const lines = [
+    "== LIVE OS-STATE (actueel, zojuist opgehaald) ==",
+    `Tijdstip: ${new Date().toLocaleString("nl-NL")}`,
+    `Projecten (${projects.length}): ${projects.map((p) => `${p.title}(${p.status},${p.progress || 0}%)`).join(", ") || "geen"}`,
+    `Open taken (${tasks.length}): ${tasks.map((t) => `${t.title}[${t.status}]`).join(", ") || "geen"}`,
+    `Agenda (${events.length}): ${events.map((e) => `${e.title} @ ${(e.start || "").slice(0, 16)}`).join(", ") || "geen"}`,
+    `Contacten (${contacts.length}): ${contacts.map((c) => c.name).join(", ") || "geen"}`,
+    `Wachtende approvals: ${approvals.length}`,
+    `Ongelezen email: ${emails.length} · ongelezen WhatsApp: ${wa.length}`,
+    `Geheugen: ${memory.map((m) => String(m.content).slice(0, 80)).join(" | ") || "leeg"}`,
+    "Gebruik deze live data om Salvo direct en accuraat te informeren. Voor navigatie gebruik navigate_to_page / open_panel met de exacte id's uit je prompt.",
+  ];
+  return lines.join("\n");
+}
 
 const NAV_TOOLS = new Set(["navigate_to_page", "open_panel", "scroll_to_section", "highlight_element"]);
 
@@ -111,6 +151,14 @@ export default async function (req) {
     try { payload = raw ? JSON.parse(raw) : null; } catch { payload = null; }
     if (payload && typeof payload === "object" && !Array.isArray(payload)) {
       payload.stream = true;
+      // Injecteer de live OS-snapshot als eerste system-message zodat de
+      // stem-agent elke beurt op de hoogte is van de nieuwste data.
+      try {
+        const snapshot = await buildLiveSnapshot(req);
+        if (snapshot && Array.isArray(payload.messages)) {
+          payload.messages = [{ role: "system", content: snapshot }, ...payload.messages];
+        }
+      } catch { /* snapshot mag de stream nooit breken */ }
     }
     const sendBody = payload ? JSON.stringify(payload) : raw;
 
