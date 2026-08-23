@@ -11,14 +11,16 @@ const PHOTO = IMAGES.lifeW5Dinner;
 const DEEP = "hsl(var(--d-life-deep))";
 const IVORY = "hsl(var(--ivory))";
 
-/* Vandaag: actieve cel = lichtblauwe achtergrond, inactief = enkel blauwe tekst.
- * Morgen: tekst in een andere (warm-olive) kleur. */
-const BLUE_TEXT = "#6b8ca3";
+/* Vandaag = blauwe familie (actief = lichtblauwe cel), morgen = warm-olive. */
+const BLUE = "#6b8ca3";
 const BLUE_BG = "#c4d6e0";
-const BLUE_BG_TEXT = "#2f4a5a";
-const MORGEN_TEXT = "#8a7d5e";
+const BLUE_INK = "#2f4a5a";
+const OLIVE = "#8a7d5e";
+const OLIVE_BG = "#e7e1cf";
 
 const MEAL_ORDER = ["breakfast", "lunch", "snack", "dinner"];
+const DAY_START = 6 * 60;
+const DAY_END = 23 * 60;
 
 function tomorrowStr() {
   const d = new Date();
@@ -28,8 +30,23 @@ function tomorrowStr() {
 function mealsForDate(meals, weekId, dateStr) {
   return mealsForWeek(meals, weekId).filter((m) => m.date === dateStr);
 }
-/** Actieve maaltijd op basis van huidig tijdstip — de lichtblauwe cel verplaatst
- *  zich door de dag heen. */
+function timeToMin(t) {
+  if (!t) return 9999;
+  const [h, m] = String(t).split(":").map(Number);
+  return (h || 0) * 60 + (m || 0);
+}
+/** positie op de tijdlijn (06:00→23:00), geclamped zodat labels binnen de shell blijven. */
+function timeToX(time, fallbackIdx) {
+  if (!time) return [10, 37, 60, 87][fallbackIdx] ?? 50;
+  const mins = Math.max(DAY_START, Math.min(DAY_END, timeToMin(time)));
+  const pct = ((mins - DAY_START) / (DAY_END - DAY_START)) * 100;
+  return Math.max(7, Math.min(93, pct));
+}
+function nowX() {
+  const d = new Date();
+  const mins = Math.max(DAY_START, Math.min(DAY_END, d.getHours() * 60 + d.getMinutes()));
+  return Math.max(4, Math.min(96, ((mins - DAY_START) / (DAY_END - DAY_START)) * 100));
+}
 function activeMealType() {
   const h = new Date().getHours();
   if (h >= 6 && h < 11) return "breakfast";
@@ -38,42 +55,96 @@ function activeMealType() {
   return "dinner";
 }
 
-function MealGrid({ meals, mode, dateLabel }) {
-  const active = mode === "today" ? activeMealType() : null;
-  const headColor = mode === "today" ? BLUE_TEXT : MORGEN_TEXT;
+/** DayTimeline — visuele dag-tijdlijn met maaltijd-nodes op hun tijdstip, een
+ *  meebewegende "nu"-markering (vandaag) en een detail-chip van de actieve /
+ *  eerste maaltijd. */
+function DayTimeline({ meals, mode, dateLabel, dayName }) {
+  const isToday = mode === "today";
+  const active = isToday ? activeMealType() : null;
+  const accent = isToday ? BLUE : OLIVE;
+  const now = isToday ? nowX() : null;
+  const lead = MEAL_ORDER.map((mt) => meals.find((x) => x.meal_type === mt)).filter(Boolean)[0] || meals[0];
+
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between mb-2 px-1">
-        <span className="text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: headColor }}>{dateLabel}</span>
-        {mode === "today" && (
-          <span className="text-[8px] uppercase tracking-[0.16em] font-semibold" style={{ color: BLUE_TEXT, opacity: 0.75 }}>nu · {MEAL_LABELS[active]}</span>
+      {/* header */}
+      <div className="flex items-center justify-between px-1 shrink-0">
+        <div className="flex items-baseline gap-2">
+          <span className="text-[11px] uppercase tracking-[0.22em] font-bold" style={{ color: accent }}>{dateLabel}</span>
+          {dayName && <span className="text-[9px] uppercase tracking-[0.14em]" style={{ color: accent, opacity: 0.55 }}>{dayName}</span>}
+        </div>
+        {isToday ? (
+          <span className="text-[8px] uppercase tracking-[0.16em] font-bold px-2 py-0.5 rounded-full" style={{ background: BLUE_BG, color: BLUE_INK }}>nu · {MEAL_LABELS[active]}</span>
+        ) : (
+          <span className="text-[8px] uppercase tracking-[0.16em] font-semibold" style={{ color: OLIVE, opacity: 0.7 }}>{meals.length} maaltijden</span>
         )}
       </div>
-      <div className="grid grid-cols-4 gap-1.5 flex-1 min-h-0">
-        {MEAL_ORDER.map((mt) => {
+
+      {/* tijdlijn */}
+      <div className="relative h-[74px] mt-3 shrink-0">
+        {/* track */}
+        <div className="absolute left-0 right-0 top-7 h-px" style={{ background: `linear-gradient(90deg, transparent, ${accent}55 12%, ${accent}55 88%, transparent)` }} />
+        {/* nu-markering (vandaag) */}
+        {now != null && (
+          <div className="absolute top-0 z-20" style={{ left: `${now}%` }}>
+            <span className="absolute -translate-x-1/2 top-0 text-[7px] uppercase tracking-[0.18em] font-bold px-1 rounded leading-none py-[1px]" style={{ background: BLUE_INK, color: BLUE_BG }}>nu</span>
+            <div className="absolute top-4 left-0 -translate-x-1/2 h-7 w-px animate-pulse-soft" style={{ background: BLUE_INK }} />
+          </div>
+        )}
+        {/* nodes */}
+        {MEAL_ORDER.map((mt, idx) => {
           const m = meals.find((x) => x.meal_type === mt);
-          const eaten = m?.status === "eaten";
-          const isActive = mode === "today" && mt === active;
-          const text = mode === "today" ? (isActive ? BLUE_BG_TEXT : BLUE_TEXT) : MORGEN_TEXT;
+          const x = timeToX(m?.time, idx);
+          const isActive = isToday && mt === active;
           return (
-            <div key={mt} className="rounded-xl px-2 py-2 flex flex-col justify-between transition-colors"
-              style={{ background: isActive ? BLUE_BG : "transparent", border: isActive ? "1px solid rgba(47,74,90,0.28)" : "1px solid transparent" }}>
-              <span className="text-[8px] uppercase tracking-[0.12em] font-bold" style={{ color: text, opacity: isActive ? 1 : 0.85 }}>{MEAL_LABELS[mt]}</span>
-              <span className="text-[11px] leading-tight mt-1.5 font-medium" style={{ color: text, textDecoration: eaten ? "line-through" : "none", opacity: eaten ? 0.45 : 1 }}>{m?.recipe_name || "—"}</span>
-              <span className="text-[8px] tabular-nums mt-1" style={{ color: text, opacity: 0.6 }}>{m?.time || ""}</span>
+            <div key={mt} className="absolute -translate-x-1/2" style={{ left: `${x}%`, top: 22 }}>
+              {isActive ? (
+                <span className="relative block h-4 w-4 rounded-full" style={{ background: BLUE_BG, boxShadow: `0 0 0 5px ${BLUE_BG}40` }}>
+                  <span className="absolute inset-0 rounded-full animate-pulse-soft" style={{ background: BLUE_BG, opacity: 0.55 }} />
+                </span>
+              ) : (
+                <span className="block h-2.5 w-2.5 rounded-full border-2" style={{ borderColor: accent, background: "transparent" }} />
+              )}
+              <div className="absolute left-1/2 -translate-x-1/2 mt-2 text-center w-[70px]" style={{ marginLeft: "-35px" }}>
+                <span className="text-[7.5px] uppercase tracking-[0.12em] font-bold block leading-none" style={{ color: isActive ? BLUE_INK : accent, opacity: isActive ? 1 : 0.85 }}>{MEAL_LABELS[mt]}</span>
+                <span className="text-[8px] tabular-nums block mt-0.5" style={{ color: isActive ? BLUE_INK : accent, opacity: 0.55 }}>{m?.time || "—"}</span>
+              </div>
             </div>
           );
         })}
+      </div>
+
+      {/* detail-chip */}
+      <div className="mt-2 shrink-0">
+        {(() => {
+          const m = isToday ? meals.find((x) => x.meal_type === active) : lead;
+          const bg = isToday ? BLUE_BG : OLIVE_BG;
+          const ink = isToday ? BLUE_INK : OLIVE;
+          return (
+            <div className="relative overflow-hidden rounded-xl px-3 py-2 flex items-center justify-between" style={{ background: bg, color: ink }}>
+              {isToday && (
+                <motion.span className="pointer-events-none absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/45 to-transparent"
+                  initial={{ x: "-120%" }} animate={{ x: "320%" }} transition={{ duration: 2.6, ease: "easeInOut", repeat: Infinity, repeatDelay: 1.4 }} />
+              )}
+              <div className="flex items-center gap-2 min-w-0 relative">
+                <span className="h-2 w-2 rounded-full shrink-0" style={{ background: ink }} />
+                <span className="text-[9px] uppercase tracking-[0.16em] font-bold">{isToday ? MEAL_LABELS[active] : "eerste"}</span>
+                <span className="text-[12px] font-display font-semibold truncate">{m?.recipe_name || "niets gepland"}</span>
+              </div>
+              <span className="text-[10px] tabular-nums font-bold shrink-0 ml-2 relative">{m?.time || "—"}</span>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
 }
 
 /** DinnerWidget — G·4:3·SLIDE · "What's for Dinner?"
- *  GlassShell met daarin flush: boven de "Vandaag"-planning (actieve cel =
- *  lichtblauw op tijdstip, rest blauwe tekst) en onder de "Morgen"-planning
- *  (andere kleur). De fotokaart (4 afgeronde hoeken, zachte overlay) schuift van
- *  beneden naar boven en blijft daar hangen — tikken togglet heen en weer. */
+ *  GlassShell, opgesplitst: boven "Vandaag"-tijdlijn (actieve cel lichtblauw op
+ *  tijdstip + meebewegende nu-markering), onder "Morgen"-tijdlijn (olive). De
+ *  fotokaart is flush tegen de shellranden met vier afgeronde hoeken en schuift
+ *  bij een tik van onder naar boven (en weer terug) om beide plannings te tonen. */
 export default function DinnerWidget() {
   const { openModule } = usePanel();
   const learnTick = useLearningSync();
@@ -87,33 +158,38 @@ export default function DinnerWidget() {
 
   const [up, setUp] = useState(false);
 
+  const tDate = new Date();
+  const mDate = new Date(); mDate.setDate(mDate.getDate() + 1);
+  const todayDay = `${tDate.getDate()} ${tDate.toLocaleDateString("nl-NL", { month: "short" })}`;
+  const morgenDay = mDate.toLocaleDateString("nl-NL", { weekday: "long" });
+
   const made = today.filter((m) => m.status === "eaten").length;
   const headline = !week ? "PLAN JE WEEK" : made >= (week.meals_count || 0) ? "WEEK KLAAR" : st.state === "MEAL_NOW" ? "NU ETEN" : "WEEK LOOPT";
   const sub = !week ? "Nog niets gepland" : st.state === "MEAL_NOW" ? (st.meal?.recipe_name || "Tijd om te eten") : st.state === "NEXT_MEAL" && st.meal ? `${MEAL_LABELS[st.meal.meal_type] || st.meal.meal_type}: ${st.meal.recipe_name || "—"}` : `${fmtEuro(week.total_cost)} / ${fmtEuro(week.budget)}`;
 
   return (
-    <div className="relative w-full h-[360px] rounded-[28px] overflow-hidden p-2" style={{ "--tile-accent": DEEP, color: IVORY }}>
+    <div className="relative w-full h-[380px] rounded-[28px] overflow-hidden" style={{ "--tile-accent": DEEP, color: IVORY }}>
       {/* glass shell */}
       <div className="absolute inset-0 rounded-[28px] ring-1 ring-inset ring-white/10" style={{ background: "rgba(120,128,133,0.16)", backdropFilter: "blur(22px) saturate(1.35)", WebkitBackdropFilter: "blur(22px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.14)" }} />
       <span className="pointer-events-none absolute inset-x-0 top-0 h-px z-20" style={{ background: `linear-gradient(90deg, transparent, ${DEEP} 18%, ${DEEP} 82%, transparent)` }} />
 
-      {/* today planning — boven in de shell (opent food-module) */}
-      <div className="absolute top-2 left-2 right-2 h-[calc(50%-12px)] z-0 cursor-pointer" onClick={() => openModule("food")}>
-        <MealGrid meals={today} mode="today" dateLabel="Vandaag" />
+      {/* vandaag — boven in de shell */}
+      <div className="absolute top-0 left-0 right-0 h-1/2 z-0 cursor-pointer p-3 pb-1" onClick={() => openModule("food")}>
+        <DayTimeline meals={today} mode="today" dateLabel="Vandaag" dayName={todayDay} />
       </div>
 
-      {/* morgen planning — onder in de shell */}
-      <div className="absolute bottom-2 left-2 right-2 h-[calc(50%-12px)] z-0">
-        <MealGrid meals={tomorrow} mode="morgen" dateLabel="Morgen" />
+      {/* morgen — onder in de shell */}
+      <div className="absolute bottom-0 left-0 right-0 h-1/2 z-0 cursor-pointer p-3 pt-1" onClick={() => openModule("food")}>
+        <DayTimeline meals={tomorrow} mode="morgen" dateLabel="Morgen" dayName={morgenDay} />
       </div>
 
-      {/* fotokaart — flush, 4 afgeronde hoeken, schuift onder ↔ boven */}
+      {/* fotokaart — flush tegen de randen, 4 afgeronde hoeken, schuift onder ↔ boven */}
       <motion.button
         type="button"
         onClick={() => setUp((v) => !v)}
-        className="absolute left-2 right-2 top-2 h-[calc(50%-12px)] rounded-[20px] overflow-hidden text-left block z-10"
+        className="absolute left-0 right-0 top-0 h-1/2 rounded-[24px] overflow-hidden text-left block z-10"
         initial={false}
-        animate={{ y: up ? 0 : 176 }}
+        animate={{ y: up ? "0%" : "100%" }}
         transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
         style={{ boxShadow: "0 -10px 30px -14px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.18)" }}
       >
