@@ -12,10 +12,9 @@ const DEEP = "hsl(var(--d-life-deep))";
 const IVORY = "hsl(var(--ivory))";
 
 /* Vandaag = blauwe familie (actief = lichtblauwe cel), morgen = warm-olive. */
-const BLUE = "#6b8ca3";
-const BLUE_BG = "#c4d6e0";
-const BLUE_INK = "#2f4a5a";
-const OLIVE = "#8a7d5e";
+const TODAY_CHIP = "#b1bec6";
+const MORGEN_CHIP = "#d8dab3";
+const OLIVE = "#94925d";
 
 const MEAL_ORDER = ["breakfast", "lunch", "snack", "dinner"];
 const DAY_START = 6 * 60;
@@ -60,7 +59,8 @@ function activeMealType() {
 function DayTimeline({ meals, mode, dateLabel, dayName }) {
   const isToday = mode === "today";
   const active = isToday ? activeMealType() : null;
-  const accent = isToday ? BLUE : OLIVE;
+  const accent = OLIVE;
+  const chipColor = isToday ? TODAY_CHIP : MORGEN_CHIP;
   const now = isToday ? nowX() : null;
   const lead = MEAL_ORDER.map((mt) => meals.find((x) => x.meal_type === mt)).filter(Boolean)[0] || meals[0];
 
@@ -73,7 +73,7 @@ function DayTimeline({ meals, mode, dateLabel, dayName }) {
           {dayName && <span className="text-[9px] uppercase tracking-[0.14em]" style={{ color: accent, opacity: 0.55 }}>{dayName}</span>}
         </div>
         {isToday ? (
-          <span className="text-[8px] uppercase tracking-[0.16em] font-bold px-2 py-0.5 rounded-full" style={{ background: BLUE_BG, color: BLUE_INK }}>nu · {MEAL_LABELS[active]}</span>
+          <span className="text-[8px] uppercase tracking-[0.16em] font-bold px-2 py-0.5 rounded-full" style={{ background: chipColor, color: OLIVE }}>nu · {MEAL_LABELS[active]}</span>
         ) : (
           <span className="text-[8px] uppercase tracking-[0.16em] font-semibold" style={{ color: OLIVE, opacity: 0.7 }}>{meals.length} maaltijden</span>
         )}
@@ -86,8 +86,8 @@ function DayTimeline({ meals, mode, dateLabel, dayName }) {
         {/* nu-markering (vandaag) */}
         {now != null && (
           <div className="absolute top-0 z-20" style={{ left: `${now}%` }}>
-            <span className="absolute -translate-x-1/2 top-0 text-[7px] uppercase tracking-[0.18em] font-bold px-1 rounded leading-none py-[1px]" style={{ background: BLUE_INK, color: BLUE_BG }}>nu</span>
-            <div className="absolute top-4 left-0 -translate-x-1/2 h-7 w-px animate-pulse-soft" style={{ background: BLUE_INK }} />
+            <span className="absolute -translate-x-1/2 top-0 text-[7px] uppercase tracking-[0.18em] font-bold px-1 rounded leading-none py-[1px]" style={{ background: OLIVE, color: "hsl(var(--ivory))" }}>nu</span>
+            <div className="absolute top-4 left-0 -translate-x-1/2 h-7 w-px animate-pulse-soft" style={{ background: OLIVE }} />
           </div>
         )}
         {/* nodes */}
@@ -98,15 +98,15 @@ function DayTimeline({ meals, mode, dateLabel, dayName }) {
           return (
             <div key={mt} className="absolute -translate-x-1/2" style={{ left: `${x}%`, top: 22 }}>
               {isActive ? (
-                <span className="relative block h-4 w-4 rounded-full" style={{ background: BLUE_BG, boxShadow: `0 0 0 5px ${BLUE_BG}40` }}>
-                  <span className="absolute inset-0 rounded-full animate-pulse-soft" style={{ background: BLUE_BG, opacity: 0.55 }} />
+                <span className="relative block h-4 w-4 rounded-full" style={{ background: chipColor, boxShadow: `0 0 0 5px ${chipColor}55` }}>
+                  <span className="absolute inset-0 rounded-full animate-pulse-soft" style={{ background: chipColor, opacity: 0.55 }} />
                 </span>
               ) : (
                 <span className="block h-2.5 w-2.5 rounded-full border-2" style={{ borderColor: accent, background: "transparent" }} />
               )}
               <div className="absolute left-1/2 -translate-x-1/2 mt-2 text-center w-[70px]" style={{ marginLeft: "-35px" }}>
-                <span className="text-[7.5px] uppercase tracking-[0.12em] font-bold block leading-none" style={{ color: isActive ? BLUE_INK : accent, opacity: isActive ? 1 : 0.85 }}>{MEAL_LABELS[mt]}</span>
-                <span className="text-[8px] tabular-nums block mt-0.5" style={{ color: isActive ? BLUE_INK : accent, opacity: 0.55 }}>{m?.time || "—"}</span>
+                <span className="text-[7.5px] uppercase tracking-[0.12em] font-bold block leading-none" style={{ color: accent, opacity: isActive ? 1 : 0.85 }}>{MEAL_LABELS[mt]}</span>
+                <span className="text-[8px] tabular-nums block mt-0.5" style={{ color: accent, opacity: 0.55 }}>{m?.time || "—"}</span>
               </div>
             </div>
           );
@@ -117,12 +117,10 @@ function DayTimeline({ meals, mode, dateLabel, dayName }) {
       <div className="mt-1.5 shrink-0">
         {(() => {
           const m = isToday ? meals.find((x) => x.meal_type === active) : lead;
-          const ink = isToday ? BLUE_INK : OLIVE;
-          const glass = isToday
-            ? { background: "rgba(120,150,175,0.42)", border: "1px solid rgba(120,150,175,0.55)", boxShadow: "0 10px 26px -12px rgba(47,74,90,0.40)" }
-            : { background: "rgba(216,218,179,0.58)", border: "1px solid rgba(216,218,179,0.72)", boxShadow: "0 10px 26px -12px rgba(90,90,50,0.36)" };
+          const ink = OLIVE;
+          const glass = { background: isToday ? "rgba(177,190,198,0.55)" : "rgba(216,218,179,0.55)" };
           return (
-            <div className="relative overflow-hidden rounded-xl px-3 py-2 flex items-center justify-between" style={{ ...glass, color: ink, backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}>
+            <div className="relative overflow-hidden rounded-xl px-3 py-2 flex items-center justify-between" style={{ ...glass, color: ink, backdropFilter: "blur(14px) saturate(1.4)", WebkitBackdropFilter: "blur(14px) saturate(1.4)", boxShadow: "0 10px 26px -8px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.28)" }}>
               <div className="flex items-center gap-2 min-w-0 relative">
                 <span className="h-2 w-2 rounded-full shrink-0" style={{ background: ink }} />
                 <span className="text-[9px] uppercase tracking-[0.16em] font-bold">{isToday ? MEAL_LABELS[active] : "eerste"}</span>

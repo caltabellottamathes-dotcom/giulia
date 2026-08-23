@@ -146,11 +146,7 @@ export default function ThingsLoveWidget() {
         <img src={selected ? selected.raw.image || PHOTO : PHOTO} alt="Things I Love" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
         <div
           className="absolute inset-0"
-          style={{
-            background: selected
-              ? `linear-gradient(to top, ${selected.theme.color}cc, rgba(0,0,0,0.35) 60%, rgba(0,0,0,0.2))`
-              : "linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0.18) 60%, rgba(0,0,0,0.3))",
-          }}
+          style={{ background: "linear-gradient(to top, rgba(0,0,0,0.40), rgba(0,0,0,0.08) 55%, rgba(0,0,0,0.18))" }}
         />
         {selected ? (
           <div className="absolute inset-0 p-4 flex flex-col" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>

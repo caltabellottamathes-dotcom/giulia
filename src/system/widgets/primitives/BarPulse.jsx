@@ -25,7 +25,9 @@ export default function BarPulse({ values = [], items, height = 40, gap = 6, acc
                   height: `${zero ? 3 : Math.max(8, (it.value / MAX) * 100)}%`,
                   background: it.color || accent,
                   opacity: it.inactive ? 0.35 : zero ? 0.3 : it.selected ? 1 : 0.78,
-                  boxShadow: it.selected ? `0 0 0 2px hsl(var(--ivory)), 0 0 12px ${it.color || accent}` : "none",
+                  boxShadow: it.selected
+                  ? `0 0 0 2px hsl(var(--ivory)), 0 6px 16px -4px rgba(0,0,0,0.5)`
+                  : `0 5px 12px -4px rgba(0,0,0,0.38)`,
                 }}
               />
               {it.label != null && (
