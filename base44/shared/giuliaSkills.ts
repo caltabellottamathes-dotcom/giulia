@@ -107,7 +107,7 @@ export const GIULIA_SKILLS = [
   {
     name: "create_note",
     description: "Sla een notitie op voor Salvo.",
-    inputSchema: { type: "object", properties: { title: { type: "string" }, content: { type: "string" } }, required: ["title"] },
+    inputSchema: { type: "object", properties: { title: { type: "string" }, content: { type: "string" }, project_id: { type: "string" } }, required: ["title"] },
     execute: async (args, base44) => {
       const n = await base44.asServiceRole.entities.Note.create({ ...args, kind: "note", agent_source: "GIULIA-CORE" }).catch(() => null);
       return n ? { id: n.id } : { error: "create failed" };
@@ -182,7 +182,7 @@ export const GIULIA_SKILLS = [
   {
     name: "create_document",
     description: "Sla een document (referentie, contract, notitie) op voor Salvo of als resultaat van een goedgekeurde 'document_create' approval.",
-    inputSchema: { type: "object", properties: { name: { type: "string" }, document_type: { type: "string", enum: ["reference", "contract", "invoice", "notes", "other"] }, content: { type: "string" }, project_id: { type: "string" } }, required: ["name"] },
+    inputSchema: { type: "object", properties: { name: { type: "string" }, document_type: { type: "string", enum: ["reference", "contract", "invoice", "notes", "other"] }, content: { type: "string" }, url: { type: "string", description: "Bestands-URL (bv. bijlage)" }, project_id: { type: "string" } }, required: ["name"] },
     execute: async (args, base44) => {
       const d = await base44.asServiceRole.entities.Document.create({ ...args, status: "giulia" }).catch(() => null);
       return d ? { id: d.id, name: d.name } : { error: "create failed" };

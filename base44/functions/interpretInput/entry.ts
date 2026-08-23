@@ -70,6 +70,22 @@ export default async function (req) {
       return Response.json({ ok: true, reason: "empty message" });
     }
 
+    // ── Afzender vaststellen (vóór de LLM) — zodat we de afzender-naam
+    //    aan de extractor meegeven en nadien het juiste contact kunnen
+    //    taggen (sociaal) en berichten aan zijn/haar project koppelen.
+    let senderContact = null;
+    if (source === "whatsapp" && record?.contact_id) {
+      senderContact = await sr.entities.Contact.get(record.contact_id).catch(() => null);
+    } else if (source === "email") {
+      if (record?.contact_id) senderContact = await sr.entities.Contact.get(record.contact_id).catch(() => null);
+      else if (record?.sender_email) {
+        const list = await sr.entities.Contact.list("-created_date", 200).catch(() => []);
+        const em = String(record.sender_email).toLowerCase();
+        senderContact = (list || []).find((c) => (c.email || "").toLowerCase() === em) || null;
+      }
+    }
+    const senderName = senderContact?.name || (source === "email" ? (record?.sender || record?.sender_email || "") : "") || "";
+
     // ── Step 2.2: LLM Processing (structured JSON extraction) ─────────
     const schema = {
       type: "object",
@@ -82,6 +98,8 @@ export default async function (req) {
             project_name: { type: "string" },
             date_time_reference: { type: "string" },
             urgency: { type: "string", enum: ["high", "medium", "low"] },
+            relationship_type_hint: { type: "string", enum: ["family", "friend", "colleague", "professional", "client", "other"] },
+            is_social_contact: { type: "boolean" },
           },
         },
         extracted_action: { type: "string" },
@@ -106,14 +124,15 @@ export default async function (req) {
       "Set false for trivial/routine/noise: greetings, 'ok', receipts, order confirmations, automated alerts, pure logistics, 'I'll order food tomorrow'. " +
       "When in doubt, set false.\n" +
       "MISSING-INFO: If the requested action is unactionable because critical information is missing, set intent='missing_info' and provide a concise Dutch clarification_question.\n" +
-      "CONFLICT: If the message asks to change/reschedule an existing appointment, set intent='calendar_change' and put the requested new time in entities.date_time_reference.";
+      "CONFLICT: If the message asks to change/reschedule an existing appointment, set intent='calendar_change' and put the requested new time in entities.date_time_reference.\n" +
+      "SOCIAL CONTACT: set is_social_contact=true when the sender (whose name is given as 'Sender') is a personal/social relation of Salvo — family (mama, papa, sibling), a close friend, a partner — someone who belongs in his LIFE social circle, NOT a work/professional contact. Set relationship_type_hint accordingly (family/friend/colleague/professional/client/other). For work/professional contacts tied to a project, set is_social_contact=false.";
 
     const out = await geminiDecide({
-      model: "gemini-3.5-flash-lite",
-      prompt: `Extract structured entities from this incoming ${source === "email" ? "email" : source === "command" ? "quick command" : "WhatsApp message"}.\n\nMessage:\n"""${rawText.slice(0, 4000)}"""`,
+      prompt: `Extract structured entities from this incoming ${source === "email" ? "email" : source === "command" ? "quick command" : "WhatsApp message"}.\n\nSender (from address book): ${senderName || "unknown"}\n\nMessage:\n"""${rawText.slice(0, 4000)}"""`,
       schema,
       systemText: `${GIULIA_PERSONA}\n\n${systemText}`,
       temperature: 0.2,
+      keyName: "BACKDESK_GEMINI_API_KEY",
     });
     if (!out) return Response.json({ ok: false, error: "LLM extraction failed", source, id: record?.id || null }, { status: 500 });
 
@@ -129,10 +148,41 @@ export default async function (req) {
     const subTasks = Array.isArray(out.sub_tasks) ? out.sub_tasks.map((s) => String(s).trim()).filter(Boolean) : [];
     const clarification = (out.clarification_question || "").trim();
     const worthRemembering = out.worth_remembering === true;
+    const isSocial = ents.is_social_contact === true;
+    const relTypeHint = (ents.relationship_type_hint || "").trim();
+    const relType = ["family", "friend", "colleague", "professional", "client", "other"].includes(relTypeHint) ? relTypeHint : (isSocial ? "social" : "");
 
-    // ── Step 2.3: Entity Resolution (context matching) ────────────────
-    const contactId = personName ? await resolveContact(sr, personName) : null;
-    const projectId = projectName ? await resolveProject(sr, projectName) : null;
+    // ── Step 2.3: Entity Resolution + sociale registratie ────────────
+    let projectId = projectName ? await resolveProject(sr, projectName) : null;
+
+    // Een in de tekst GENOEMDE persoon (niet de afzender) koppelen we aan
+    // het genoemde project (bv. "bel Ardan over BOGÈST" → Ardan → BOGÈST).
+    let mentionedContact = null;
+    if (personName && String(personName).toLowerCase() !== String(senderContact?.name || "").toLowerCase()) {
+      mentionedContact = await registerContact(sr, personName, { isSocial, relType, projectId });
+    }
+
+    // Auto-attributie: als de afzender aan precies één project is gekoppeld
+    // (bv. Ardan → BOGÈST), krijgen zijn/haar berichten automatisch dat
+    // project_id — ook wanneer het bericht het project niet noemt. Zo
+    // verschijnen al hun mails/whatsapp op de projectpagina.
+    if (!projectId && senderContact && Array.isArray(senderContact.project_ids) && senderContact.project_ids.length === 1) {
+      projectId = senderContact.project_ids[0];
+    }
+
+    // Tag de AFZENDER als sociaal contact (LIFE) + update last_contact_date.
+    if (senderContact) {
+      const patch = { last_contact_date: new Date().toISOString() };
+      if (isSocial) {
+        patch.relationship_domain = "life";
+        if (!senderContact.relationship_type && relType) patch.relationship_type = relType;
+      }
+      await sr.entities.Contact.update(senderContact.id, patch).catch(() => null);
+    } else if (personName && !mentionedContact) {
+      mentionedContact = await registerContact(sr, personName, { isSocial, relType, projectId });
+    }
+
+    const contactId = senderContact?.id || mentionedContact?.id || null;
 
     const created = [];
 
@@ -269,11 +319,40 @@ export default async function (req) {
 }
 
 // ── helpers ───────────────────────────────────────────────────────────
-async function resolveContact(sr, name) {
-  const list = await sr.entities.Contact.list("-created_date", 200).catch(() => []);
-  const n = name.toLowerCase();
-  const match = list.find((c) => (c.name || "").toLowerCase().includes(n));
-  return match ? match.id : null;
+async function registerContact(sr, name, { isSocial, relType, projectId } = {}) {
+  if (!name) return null;
+  const list = await sr.entities.Contact.list("-created_date", 300).catch(() => []);
+  const n = String(name).toLowerCase().trim();
+  const match = (list || []).find((c) => {
+    const cn = String(c.name || "").toLowerCase().trim();
+    return cn === n || cn.includes(n) || n.includes(cn);
+  });
+  const now = new Date().toISOString();
+  if (match) {
+    const patch = { last_contact_date: now };
+    if (isSocial) {
+      patch.relationship_domain = "life";
+      if (!match.relationship_type && relType) patch.relationship_type = relType;
+    } else if (projectId && !match.relationship_domain) {
+      patch.relationship_domain = "focus";
+    }
+    if (projectId) {
+      const ids = Array.isArray(match.project_ids) ? match.project_ids : [];
+      if (!ids.includes(projectId)) patch.project_ids = [...ids, projectId];
+    }
+    await sr.entities.Contact.update(match.id, patch).catch(() => null);
+    return { ...match, ...patch };
+  }
+  const data = {
+    name, status: "confirmed",
+    relationship_type: relType || (isSocial ? "social" : ""),
+    last_contact_date: now,
+    project_ids: projectId ? [projectId] : [],
+    agent_source: "interpretInput",
+  };
+  if (isSocial) data.relationship_domain = "life";
+  else if (projectId) data.relationship_domain = "focus";
+  return await sr.entities.Contact.create(data).catch(() => null);
 }
 
 async function resolveProject(sr, name) {

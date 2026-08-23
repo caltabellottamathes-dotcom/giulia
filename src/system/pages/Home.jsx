@@ -27,7 +27,7 @@ const MODULE_WIDGET_OVERRIDE = { jedag: "giulia", wantstoknow: "giuliaquestions"
 const BOARD_BG = {
   life: IMAGES.dashboardLife,
   giulia: IMAGES.dashboardGiulia,
-  focus: IMAGES.feetChair,
+  focus: IMAGES.dashboardFocus,
   system: IMAGES.feetChair,
 };
 

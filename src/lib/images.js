@@ -112,6 +112,7 @@ export const IMAGES = {
   dashboardLife: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/507183e0f_LIFE.jpeg",
   dashboardSelf: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/e2ccca3a3_SELF.jpeg",
   dashboardGiulia: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/198b8d835_GIULIA_Background.jpeg",
+  dashboardFocus: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/9404c2c30_LIFE.jpeg",
   // GIULIA-widget foto's — gedeeld door widget, panel-hoofd en pagina-hero
   wHotline:        "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/a560179c0_Voice_.jpeg",
   wWhatMatters:    "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ad59aa090_Whatmatters_GIULIA.jpeg",

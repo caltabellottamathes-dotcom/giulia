@@ -185,6 +185,8 @@ export default async function (req) {
 6. STRIKT ONDERSCHEID — Taak vs Approval vs Notificatie: Taak = concrete actie voor vandaag/morgen/deze week, alleen bij echte verandering, gesynchroniseerd met agenda. Approval = UITSLUITEND externe actie die verzonden moet worden (kies category zorgvuldig; 'proactive' bijna nooit, nooit 2x over hetzelfde). Echte vraag aan Salvo → create_notification MET requires_response=true of urgent=true. Routinematige status → report_to_salvo (Activity-feed), NOOIT create_notification.
 7. WAT JE DOET MOET ECHT GEBEUREN: om iets te veranderen MOET je de bijbehorende functie aanroepen (bv. update_task, update_project, update_contact). Zeg NOOIT "ik heb het aangepast" als je de functie niet hebt aangeroepen — het antwoord is pas waar als de functionCall is uitgevoerd en je het resultaat hebt gezien.
 8. Bij "doe dit niet meer"/"verander X naar Y": roep de juiste update-functie aan met de nieuwe waarden. Bevestig pas ná het resultaat.
+9. PERSOON ↔ PROJECT: als Salvo zegt dat een persoon bij een project hoort (bv. "Ardan gaat over BOGÈST"), koppel ze dan via link_objects (source_type="Contact", source_id=<persoon-id>, relationship="project_ids", target_id=<project-id>) — zoek IDs via find_objects. Hierdoor verschijnen hun mails/whatsapp automatisch op de projectpagina (Communication + People).
+10. BIJLAGE/BESTAND: als Salvo een bestand of bijlage meestuurt over een project, sla het op via create_document (met url + project_id) zodat het meteen op de projectpagina onder Bestanden verschijnt; bij tekstuele inhoud gebruik create_note (met project_id).
 
 == INTAKE-BESLISBOOM (Domein 4) ==
 Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Insight / Notification / Approval.

@@ -47,7 +47,7 @@ export default function FilesSection({ project, tasks }) {
                   <div key={doc.id} className="group flex items-center gap-3 p-3 rounded-xl glass-1 hover:bg-foreground/[0.03] transition">
                     <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
                     <span className="text-sm flex-1 truncate">{doc.name || doc.filename || "Naamloos bestand"}</span>
-                    {doc.file_url && <a href={doc.file_url} target="_blank" rel="noreferrer" className="text-[11px] text-muted-foreground hover:text-foreground">Openen</a>}
+                    {doc.url && <a href={doc.url} target="_blank" rel="noreferrer" className="text-[11px] text-muted-foreground hover:text-foreground">Openen</a>}
                     <button onClick={() => del(doc)} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-500 transition"><Trash2 className="h-3.5 w-3.5" /></button>
                   </div>
                 ))}
