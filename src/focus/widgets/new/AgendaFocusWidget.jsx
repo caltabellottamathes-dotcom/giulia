@@ -111,7 +111,7 @@ export default function AgendaFocusWidget() {
                 <span className="absolute top-0 left-1/2 h-3 w-3 -ml-1.5 rounded-full" style={{ background: [DEEP, LIGHT, OLIVE][i] }} />
               </motion.div>
             ))}
-            <span className="absolute inset-0 m-auto h-3.5 w-3.5 rounded-full" style={{ background: DEEP }} />
+            <span className="absolute inset-0 m-auto h-3.5 w-3.5 rounded-full" style={{ background: LIGHT }} />
           </div>
         </div>
         <div className="absolute bottom-2 left-2 flex items-center gap-1 text-[8px] uppercase tracking-[0.18em] font-bold" style={{ color: IVORY, opacity: 0.75 }}>
