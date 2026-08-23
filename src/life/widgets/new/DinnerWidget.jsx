@@ -16,7 +16,6 @@ const BLUE = "#6b8ca3";
 const BLUE_BG = "#c4d6e0";
 const BLUE_INK = "#2f4a5a";
 const OLIVE = "#8a7d5e";
-const OLIVE_BG = "#e7e1cf";
 
 const MEAL_ORDER = ["breakfast", "lunch", "snack", "dinner"];
 const DAY_START = 6 * 60;
@@ -81,7 +80,7 @@ function DayTimeline({ meals, mode, dateLabel, dayName }) {
       </div>
 
       {/* tijdlijn */}
-      <div className="relative h-[74px] mt-3 shrink-0">
+      <div className="relative h-[64px] mt-2 shrink-0">
         {/* track */}
         <div className="absolute left-0 right-0 top-7 h-px" style={{ background: `linear-gradient(90deg, transparent, ${accent}55 12%, ${accent}55 88%, transparent)` }} />
         {/* nu-markering (vandaag) */}
@@ -115,13 +114,15 @@ function DayTimeline({ meals, mode, dateLabel, dayName }) {
       </div>
 
       {/* detail-chip */}
-      <div className="mt-2 shrink-0">
+      <div className="mt-1.5 shrink-0">
         {(() => {
           const m = isToday ? meals.find((x) => x.meal_type === active) : lead;
-          const bg = isToday ? BLUE_BG : OLIVE_BG;
           const ink = isToday ? BLUE_INK : OLIVE;
+          const glass = isToday
+            ? { background: "rgba(120,150,175,0.42)", border: "1px solid rgba(120,150,175,0.55)", boxShadow: "0 10px 26px -12px rgba(47,74,90,0.40)" }
+            : { background: "rgba(170,185,135,0.42)", border: "1px solid rgba(170,185,135,0.55)", boxShadow: "0 10px 26px -12px rgba(90,90,50,0.36)" };
           return (
-            <div className="relative overflow-hidden rounded-xl px-3 py-2 flex items-center justify-between" style={{ background: bg, color: ink }}>
+            <div className="relative overflow-hidden rounded-xl px-3 py-2 flex items-center justify-between" style={{ ...glass, color: ink, backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}>
               {isToday && (
                 <motion.span className="pointer-events-none absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/45 to-transparent"
                   initial={{ x: "-120%" }} animate={{ x: "320%" }} transition={{ duration: 2.6, ease: "easeInOut", repeat: Infinity, repeatDelay: 1.4 }} />
@@ -168,18 +169,18 @@ export default function DinnerWidget() {
   const sub = !week ? "Nog niets gepland" : st.state === "MEAL_NOW" ? (st.meal?.recipe_name || "Tijd om te eten") : st.state === "NEXT_MEAL" && st.meal ? `${MEAL_LABELS[st.meal.meal_type] || st.meal.meal_type}: ${st.meal.recipe_name || "—"}` : `${fmtEuro(week.total_cost)} / ${fmtEuro(week.budget)}`;
 
   return (
-    <div className="relative w-full h-[380px] rounded-[28px] overflow-hidden" style={{ "--tile-accent": DEEP, color: IVORY }}>
+    <div className="relative w-full h-[340px] rounded-[28px] overflow-hidden" style={{ "--tile-accent": DEEP, color: IVORY }}>
       {/* glass shell */}
       <div className="absolute inset-0 rounded-[28px] ring-1 ring-inset ring-white/10" style={{ background: "rgba(120,128,133,0.16)", backdropFilter: "blur(22px) saturate(1.35)", WebkitBackdropFilter: "blur(22px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.14)" }} />
       <span className="pointer-events-none absolute inset-x-0 top-0 h-px z-20" style={{ background: `linear-gradient(90deg, transparent, ${DEEP} 18%, ${DEEP} 82%, transparent)` }} />
 
       {/* vandaag — boven in de shell */}
-      <div className="absolute top-0 left-0 right-0 h-1/2 z-0 cursor-pointer p-3 pb-1" onClick={() => openModule("food")}>
+      <div className="absolute top-0 left-0 right-0 h-1/2 z-0 cursor-pointer p-2.5 pb-0.5" onClick={() => openModule("food")}>
         <DayTimeline meals={today} mode="today" dateLabel="Vandaag" dayName={todayDay} />
       </div>
 
       {/* morgen — onder in de shell */}
-      <div className="absolute bottom-0 left-0 right-0 h-1/2 z-0 cursor-pointer p-3 pt-1" onClick={() => openModule("food")}>
+      <div className="absolute bottom-0 left-0 right-0 h-1/2 z-0 cursor-pointer p-2.5 pt-0.5" onClick={() => openModule("food")}>
         <DayTimeline meals={tomorrow} mode="morgen" dateLabel="Morgen" dayName={morgenDay} />
       </div>
 
@@ -191,7 +192,7 @@ export default function DinnerWidget() {
         initial={false}
         animate={{ y: up ? "0%" : "100%" }}
         transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-        style={{ boxShadow: "0 -10px 30px -14px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.18)" }}
+        style={{ boxShadow: "0 -12px 30px -14px rgba(0,0,0,0.42), 0 12px 30px -14px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.18)" }}
       >
         <img src={PHOTO} alt="What's for Dinner" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
         {/* zachte overlay */}
