@@ -36,7 +36,7 @@ export default function HowDoingWidget() {
   ];
 
   return (
-    <div className="relative w-full aspect-square rounded-[28px] overflow-hidden" onClick={() => openModule("dailystate")} style={{ cursor: "pointer" }}>
+    <div className="relative w-full aspect-[2/3] rounded-[28px] overflow-hidden" onClick={() => openModule("dailystate")} style={{ cursor: "pointer" }}>
       <img src={PHOTO} alt="How I'm Doing" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/25 to-black/20" />
 

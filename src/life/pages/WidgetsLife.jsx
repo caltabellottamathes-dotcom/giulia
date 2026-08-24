@@ -52,7 +52,7 @@ export default function WidgetsLife() {
           <DinnerWidget />
         </div>
         <div>
-          <Label>06 · HOW I'M DOING. — P·1x1·B·STRIP · drie ringen (E/C/M)</Label>
+          <Label>06 · HOW I'M DOING. — P·2:3·B·STRIP · drie ringen (E/C/M)</Label>
           <HowDoingWidget />
         </div>
       </MasonryGrid>
