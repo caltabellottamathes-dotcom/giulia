@@ -92,7 +92,7 @@ export default function WhatMattersLayeredWidget() {
       <PhotoGlassLayeredWidget
         shape="16:9"
         photo={PHOTO}
-        glassPosition="left"
+        glassPosition="right"
         glassFraction={0.40}
         overhang={0}
         domain="giulia"
@@ -100,25 +100,25 @@ export default function WhatMattersLayeredWidget() {
         onClick={() => openModule("jedag")}
         overlay="bg-gradient-to-t from-black/45 via-black/22 to-black/12"
         photoChildren={
-          <div className="absolute inset-0 flex flex-col gap-2" style={layeredContentPad("left", 0.40)}>
-            <WidgetHeader type="agenda" label="What Matters?" count={total ? `${doneCount}/${total}` : ""} />
-            <h3 className="text-[22px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current">
-              A PLAN FOR TODAY!
-            </h3>
-            <p className="text-[10px] uppercase tracking-[0.18em] mt-1" style={{ color: "hsl(var(--olive))" }}>
-              {weekday} {dayNum} {month} · {hh}:{mm}
-            </p>
-            <div className="flex-1 min-h-2" />
-            <PlanningBars items={items} />
+          <div className="absolute inset-0 flex flex-col gap-1.5" style={layeredContentPad("right", 0.40)} onClick={(e) => e.stopPropagation()}>
+            {total > 0 ? (
+              <CheckList items={items} onToggle={cycle} closed={closed} onClose={close} onReopen={reopen} maxH="100%" />
+            ) : (
+              <p className="text-[11px] text-white/70 px-2 py-1">Niets op de agenda vandaag.</p>
+            )}
           </div>
         }
       >
-        <div className="flex flex-col gap-1.5 h-full" onClick={(e) => e.stopPropagation()}>
-          {total > 0 ? (
-            <CheckList items={items} onToggle={cycle} closed={closed} onClose={close} onReopen={reopen} maxH="100%" />
-          ) : (
-            <p className="text-[11px] text-white/70 px-2 py-1">Niets op de agenda vandaag.</p>
-          )}
+        <div className="flex flex-col gap-2 h-full">
+          <WidgetHeader type="agenda" label="What Matters?" count={total ? `${doneCount}/${total}` : ""} />
+          <h3 className="text-[22px] leading-[1.05] font-display font-semibold tracking-[-0.02em] text-current">
+            A PLAN FOR TODAY!
+          </h3>
+          <p className="text-[10px] uppercase tracking-[0.18em] mt-1" style={{ color: "hsl(var(--olive))" }}>
+            {weekday} {dayNum} {month} · {hh}:{mm}
+          </p>
+          <div className="flex-1 min-h-2" />
+          <PlanningBars items={items} />
         </div>
       </PhotoGlassLayeredWidget>
     </div>
