@@ -51,18 +51,24 @@ function activeMealType() {
   if (h >= 6 && h < 11) return "breakfast";
   if (h >= 11 && h < 15) return "lunch";
   if (h >= 15 && h < 18) return "snack";
-  return "dinner";
+  if (h >= 18 && h < 22) return "dinner";
+  return "breakfast"; // na dinner → volgend: breakfast (morgen)
+}
+function isDayDone() {
+  const h = new Date().getHours();
+  return h >= 22 || h < 6;
 }
 
 /** DayTimeline — visuele dag-tijdlijn met maaltijd-nodes op hun tijdstip, een
  *  meebewegende "nu"-markering (vandaag) en een detail-chip van de actieve /
  *  eerste maaltijd. */
-function DayTimeline({ meals, mode, dateLabel, dayName }) {
+function DayTimeline({ meals, mode, dateLabel, dayName, nextBreakfast }) {
   const isToday = mode === "today";
-  const active = isToday ? activeMealType() : null;
+  const dayDone = isToday && isDayDone();
+  const active = isToday && !dayDone ? activeMealType() : null;
   const accent = isToday ? TODAY_INK : OLIVE;
   const chipColor = isToday ? TODAY_CHIP : MORGEN_CHIP;
-  const now = isToday ? nowX() : null;
+  const now = isToday && !dayDone ? nowX() : null;
   const lead = MEAL_ORDER.map((mt) => meals.find((x) => x.meal_type === mt)).filter(Boolean)[0] || meals[0];
 
   return (
@@ -74,7 +80,11 @@ function DayTimeline({ meals, mode, dateLabel, dayName }) {
           {dayName && <span className="text-[9px] uppercase tracking-[0.14em]" style={{ color: accent, opacity: 0.55 }}>{dayName}</span>}
         </div>
         {isToday ? (
-          <span className="text-[8px] uppercase tracking-[0.16em] font-bold px-2 py-0.5 rounded-full" style={{ background: chipColor, color: accent }}>nu · {MEAL_LABELS[active]}</span>
+          dayDone ? (
+            <span className="text-[8px] uppercase tracking-[0.16em] font-bold px-2 py-0.5 rounded-full" style={{ background: MORGEN_CHIP, color: OLIVE }}>morgen · breakfast</span>
+          ) : (
+            <span className="text-[8px] uppercase tracking-[0.16em] font-bold px-2 py-0.5 rounded-full" style={{ background: chipColor, color: accent }}>nu · {MEAL_LABELS[active]}</span>
+          )
         ) : (
           <span className="text-[8px] uppercase tracking-[0.16em] font-semibold" style={{ color: OLIVE, opacity: 0.7 }}>{meals.length} maaltijden</span>
         )}
@@ -117,14 +127,14 @@ function DayTimeline({ meals, mode, dateLabel, dayName }) {
       {/* detail-chip */}
       <div className="mt-1.5 shrink-0">
         {(() => {
-          const m = isToday ? meals.find((x) => x.meal_type === active) : lead;
-          const ink = accent;
-          const glass = { background: isToday ? "rgba(177,190,198,0.55)" : "rgba(216,218,179,0.55)" };
+          const m = isToday ? (dayDone ? nextBreakfast : meals.find((x) => x.meal_type === active)) : lead;
+          const ink = isToday && dayDone ? OLIVE : accent;
+          const glass = { background: isToday ? (dayDone ? "rgba(216,218,179,0.55)" : "rgba(177,190,198,0.55)") : "rgba(216,218,179,0.55)" };
           return (
             <div className="relative overflow-hidden rounded-xl px-3 py-2 flex items-center justify-between" style={{ ...glass, color: ink, backdropFilter: "blur(14px) saturate(1.4)", WebkitBackdropFilter: "blur(14px) saturate(1.4)", boxShadow: "0 10px 26px -8px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.28)" }}>
               <div className="flex items-center gap-2 min-w-0 relative">
                 <span className="h-2 w-2 rounded-full shrink-0" style={{ background: ink }} />
-                <span className="text-[9px] uppercase tracking-[0.16em] font-bold">{isToday ? MEAL_LABELS[active] : "eerste"}</span>
+                <span className="text-[9px] uppercase tracking-[0.16em] font-bold">{isToday ? (dayDone ? "Morgen · Breakfast" : MEAL_LABELS[active]) : "eerste"}</span>
                 <span className="text-[12px] font-display font-semibold truncate">{m?.recipe_name || "niets gepland"}</span>
               </div>
               <span className="text-[10px] tabular-nums font-bold shrink-0 ml-2 relative">{m?.time || "—"}</span>
@@ -171,7 +181,7 @@ export default function DinnerWidget() {
 
       {/* vandaag — boven in de shell */}
       <div className="absolute top-0 left-0 right-0 h-1/2 z-0 cursor-pointer p-2.5 pb-0.5 pt-3.5" onClick={() => openModule("food")}>
-        <DayTimeline meals={today} mode="today" dateLabel="Vandaag" dayName={todayDay} />
+        <DayTimeline meals={today} mode="today" dateLabel="Vandaag" dayName={todayDay} nextBreakfast={tomorrow.find((m) => m.meal_type === "breakfast") || tomorrow[0]} />
       </div>
 
       {/* morgen — onder in de shell */}

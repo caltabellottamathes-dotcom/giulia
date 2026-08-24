@@ -139,10 +139,22 @@ export default function HowDoingWidget() {
             <motion.div key="idle" className="flex flex-col h-full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <WidgetHeader type="pulse" label="How I'm Doing." count={stateLabel(latest?.state || "neutral")} />
               <div className="flex-1 flex flex-col items-center justify-center text-center">
-                <span className="h-12 w-12 rounded-full flex items-center justify-center mb-3" style={{ background: PISTACHIO }}><Check size={24} style={{ color: "#3a3d2a" }} /></span>
-                <h3 className="text-[24px] font-display font-black tracking-[-0.03em]" style={{ color: PISTACHIO }}>Ingecheckt.</h3>
-                <p className="text-[11px] uppercase tracking-[0.16em] opacity-60 mt-2">Volgende check-in {nextLabel}</p>
-                {latest?.reflection && <p className="text-[10px] italic mt-3 line-clamp-2 px-2" style={{ opacity: 0.45 }}>"{latest.reflection}"</p>}
+                {/* adem-ring met state erin */}
+                <div className="relative h-24 w-24 flex items-center justify-center">
+                  <motion.span className="absolute inset-0 rounded-full" style={{ border: `2px solid ${PISTACHIO}` }} animate={{ scale: [1, 1.2, 1], opacity: [0.75, 0.18, 0.75] }} transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }} />
+                  <motion.span className="absolute inset-3 rounded-full" style={{ border: `1px solid ${PISTACHIO}` }} animate={{ scale: [1, 1.12, 1], opacity: [0.5, 0.1, 0.5] }} transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut", delay: 0.4 }} />
+                  <span className="text-[15px] font-display font-black tracking-[-0.02em]" style={{ color: PISTACHIO }}>{stateText}</span>
+                </div>
+                <h3 className="text-[22px] font-display font-black tracking-[-0.03em] mt-3" style={{ color: PISTACHIO }}>Ingecheckt.</h3>
+                {/* 3 dagelijkse check-in momenten, huidige gevuld */}
+                <div className="flex items-center gap-2 mt-3">
+                  {[["O", "morning"], ["M", "afternoon"], ["A", "evening"]].map(([l, t]) => {
+                    const done = t === tod;
+                    return <span key={l} className="flex items-center justify-center h-6 w-6 rounded-full text-[9px] font-bold" style={{ background: done ? PISTACHIO : "rgba(255,255,255,0.12)", color: done ? "#3a3d2a" : IVORY, opacity: done ? 1 : 0.5 }}>{l}</span>;
+                  })}
+                </div>
+                <p className="text-[10px] uppercase tracking-[0.18em] opacity-60 mt-3">Volgende check-in {nextLabel}</p>
+                {latest?.reflection && <p className="text-[9.5px] italic mt-2 line-clamp-2 px-2" style={{ opacity: 0.4 }}>"{latest.reflection}"</p>}
               </div>
             </motion.div>
           ) : (

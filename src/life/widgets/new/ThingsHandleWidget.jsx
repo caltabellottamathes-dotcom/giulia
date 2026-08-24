@@ -30,11 +30,10 @@ function pressure(diff) {
 }
 
 /** ThingsHandleWidget — P·9x16·SLIDE · "Things to Handle!"
- *  Titel = WidgetHeader (briefing-klok). Achter: "Next in the list" / bij het
- *  laatste item "Terug naar start" met ← → neon klok (DD:UU:MM:SS, bold,
- *  beschrijvingen boven). Glaskaart: WIT ghost-cijfer links-onder + "HOW /
- *  TO HANDLE?" + status + "op komst" met ernaast het item in pistachio +
- *  weather.sub. */
+ *  Achter: bij start "Next in the list" + → ; na → "← terug naar start" +
+ *  → (tekst verdwijnt). Neon klok DD:UU:MM:SS (bold, beschrijvingen boven),
+ *  breedte vult van links (NEXT) tot rechts (pijl). Glaskaart: WIT ghost +
+ *  "WHEN / TO HANDLE?" + status + op komst met item + weather.sub. */
 export default function ThingsHandleWidget() {
   const { openModule } = usePanel();
   const learnTick = useLearningSync();
@@ -46,7 +45,7 @@ export default function ThingsHandleWidget() {
 
   const [idx, setIdx] = useState(0);
   const current = coming.length ? coming[idx % coming.length] : null;
-  const atLast = coming.length > 0 && idx >= coming.length - 1;
+  const atStart = idx === 0;
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
   const diff = current?.due_date ? new Date(current.due_date).getTime() - now : null;
@@ -72,25 +71,31 @@ export default function ThingsHandleWidget() {
       <motion.img src={PHOTO} alt="Things to Handle" className="absolute inset-0 h-full w-full object-cover" initial={{ scale: 1.14, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }} draggable={false} />
       <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(20,22,26,0.92) 8%, rgba(20,22,26,0.42) 50%, rgba(20,22,26,0.20) 100%)" }} />
 
-      {/* ACHTER: Next/Terug + neon klok */}
-      <div className="absolute inset-x-0 bottom-0 h-1/2 z-0 flex flex-col justify-end px-4 pb-4 gap-3" style={{ color: IVORY }} onClick={() => openModule("personaladmin")}>
+      {/* ACHTER: Next/Terug + neon klok (vult breedte) */}
+      <div className="absolute inset-x-0 bottom-0 h-1/2 z-0 flex flex-col justify-end px-3 pb-4 gap-3" style={{ color: IVORY }} onClick={() => openModule("personaladmin")}>
         <div className="flex items-center justify-between">
-          <p className="text-[8px] uppercase tracking-[0.22em] opacity-55">{atLast ? "Terug naar start" : "Next in the list"}</p>
+          {atStart ? (
+            <p className="text-[8px] uppercase tracking-[0.22em] opacity-55">Next in the list</p>
+          ) : (
+            <button onClick={(e) => { e.stopPropagation(); setIdx(0); }} className="p-0.5" aria-label="terug naar start">
+              <ArrowLeft size={13} style={{ color: IVORY, opacity: 0.85 }} />
+            </button>
+          )}
           {coming.length > 1 && (
-            <button onClick={(e) => { e.stopPropagation(); atLast ? setIdx(0) : setIdx((i) => (i + 1) % coming.length); }} className="p-0.5" aria-label={atLast ? "terug" : "volgende"}>
-              {atLast ? <ArrowLeft size={13} style={{ color: IVORY, opacity: 0.85 }} /> : <ArrowRight size={13} style={{ color: IVORY, opacity: 0.85 }} />}
+            <button onClick={(e) => { e.stopPropagation(); setIdx((i) => (i + 1) % coming.length); }} className="p-0.5" aria-label="volgende">
+              <ArrowRight size={13} style={{ color: IVORY, opacity: 0.85 }} />
             </button>
           )}
         </div>
-        <div className="flex items-end justify-center">
+        <div className="flex items-end justify-between">
           {units.map((u, i) => (
             <React.Fragment key={i}>
               <div className="flex flex-col items-center">
                 <span className="text-[6.5px] uppercase tracking-[0.14em] mb-1" style={{ color: NEON, opacity: 0.6 }}>{u.l}</span>
-                <span className="text-[34px] font-display font-black tabular-nums leading-none tracking-[-0.05em]" style={{ color: NEON, textShadow: `0 0 8px ${NEON}, 0 0 18px ${NEON}99` }}>{hasCurrent ? u.v : "—"}</span>
+                <span className="text-[36px] font-display font-black tabular-nums leading-none tracking-[-0.05em]" style={{ color: NEON, textShadow: `0 0 8px ${NEON}, 0 0 18px ${NEON}99` }}>{hasCurrent ? u.v : "—"}</span>
               </div>
               {i < units.length - 1 && (
-                <span className="text-[34px] font-display font-black leading-none" style={{ color: NEON, opacity: 0.7, textShadow: `0 0 8px ${NEON}` }}>:</span>
+                <span className="text-[36px] font-display font-black leading-none" style={{ color: NEON, opacity: 0.7, textShadow: `0 0 8px ${NEON}` }}>:</span>
               )}
             </React.Fragment>
           ))}
@@ -117,7 +122,7 @@ export default function ThingsHandleWidget() {
 
         <div className="absolute inset-0 p-4 flex flex-col justify-between" style={{ color: IVORY, textShadow: "0 1px 6px rgba(0,0,0,0.45)" }}>
           <div>
-            <p className="text-[26px] font-black leading-[0.9] opacity-85 tracking-[-0.02em]">HOW</p>
+            <p className="text-[26px] font-black leading-[0.9] opacity-85 tracking-[-0.02em]">WHEN</p>
             <p className="text-[26px] font-black leading-[0.9] opacity-85 tracking-[-0.02em]">TO HANDLE?</p>
             <motion.p key={status.label} className="text-[26px] font-display font-black leading-[0.9] mt-2 tracking-[-0.03em]" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} style={{ color: status.color }}>{status.label}</motion.p>
           </div>
