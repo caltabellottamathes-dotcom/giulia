@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { usePanel } from "@/lib/PanelContext";
 import { useLocation } from "react-router-dom";
 import { WIDGETS } from "@/lib/widgetRegistry";
@@ -25,9 +26,18 @@ const MODULE_DOMAIN_FALLBACK = {
 export const DOMAIN_ACCENT = {
   giulia: "hsl(var(--d-giulia-deep))",
   focus: "hsl(var(--d-focus-deep))",
-  life: "hsl(var(--life-blue))",
+  life: "hsl(var(--ridge))",
   self: "hsl(var(--self-burgundy))",
   system: "hsl(var(--d-system-deep))",
+};
+
+/** Tekstkleur voor verzonden chat-bubbles per domein (licht accent → donkere tekst). */
+export const DOMAIN_BUBBLE_TEXT = {
+  giulia: "text-ivory",
+  focus: "text-ivory",
+  life: "text-charcoal",
+  self: "text-ivory",
+  system: "text-ivory",
 };
 
 export function resolveDomain(board, activeModule, pathname) {
@@ -50,8 +60,15 @@ export function resolveDomain(board, activeModule, pathname) {
 export function useActiveDomain(board) {
   const { activeModule } = usePanel();
   const loc = useLocation();
-  const activeBoard = board ?? getActiveBoard();
-  const domain = resolveDomain(activeBoard, activeModule, loc.pathname);
+  const [sessionBoard, setSessionBoard] = useState(board ?? getActiveBoard());
+  useEffect(() => {
+    if (board) return;
+    const h = (e) => setSessionBoard(e.detail);
+    window.addEventListener("giulia:board-change", h);
+    return () => window.removeEventListener("giulia:board-change", h);
+  }, [board]);
+  const domain = resolveDomain(sessionBoard, activeModule, loc.pathname);
   const accent = DOMAIN_ACCENT[domain] || DOMAIN_ACCENT.giulia;
-  return { domain, accent };
+  const bubbleText = DOMAIN_BUBBLE_TEXT[domain] || "text-ivory";
+  return { domain, accent, bubbleText };
 }

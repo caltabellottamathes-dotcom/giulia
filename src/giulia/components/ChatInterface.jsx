@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 import { cn } from "@/lib/utils";
+import { useActiveDomain } from "@/lib/useActiveDomain";
 import { Send, AlertCircle, RefreshCw } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
@@ -20,6 +21,7 @@ export default function ChatInterface({ threadId = "in-app-main", suggestions = 
   const [thinking, setThinking] = useState(false);
   const [error, setError] = useState(null);
   const [initials, setInitials] = useState("SC");
+  const { accent, bubbleText } = useActiveDomain();
   const scrollRef = useRef(null);
   const lastInput = useRef("");
 
@@ -89,7 +91,7 @@ export default function ChatInterface({ threadId = "in-app-main", suggestions = 
             <p className="text-xs text-foreground/55 max-w-xs">Je digitale assistent. Vraag me anything.</p>
           </div>
         ) : (
-          messages.map((m) => <Bubble key={m.id} m={m} initials={initials} />)
+          messages.map((m) => <Bubble key={m.id} m={m} initials={initials} accent={accent} bubbleText={bubbleText} />)
         )}
 
         {thinking && (
@@ -138,12 +140,12 @@ export default function ChatInterface({ threadId = "in-app-main", suggestions = 
   );
 }
 
-function Bubble({ m, initials }) {
+function Bubble({ m, initials, accent, bubbleText }) {
   const isUser = m.role === "user";
   if (isUser) {
     return (
       <div className="flex justify-end gap-2 items-end">
-        <div className="max-w-[80%] rounded-2xl rounded-br-md bg-charcoal text-ivory px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap">{m.content}</div>
+        <div className={cn("max-w-[80%] rounded-2xl rounded-br-md px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap", bubbleText)} style={{ background: accent }}>{m.content}</div>
         <span className="h-7 w-7 rounded-full bg-foreground/10 flex items-center justify-center text-[10px] font-semibold text-foreground/70 shrink-0">{initials}</span>
       </div>
     );

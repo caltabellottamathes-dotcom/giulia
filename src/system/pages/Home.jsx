@@ -25,7 +25,7 @@ const WIDGET_SPAN = { giulia: 2, goodmorning: 2, concierge: 1, approvals: 2, ins
 const MODULE_WIDGET_OVERRIDE = { jedag: "giulia", wantstoknow: "giuliaquestions", social: "sociallife", food: "dinner", household: "remindershome", personaladmin: "thinghandle", hobbies: "thingslove", dailystate: "howdoing" };
 
 const BOARD_BG = {
-  life: IMAGES.dashboardLife,
+  life: IMAGES.lifeBgPhoto,
   giulia: IMAGES.dashboardGiulia,
   focus: IMAGES.dashboardFocus,
   system: IMAGES.feetChair,

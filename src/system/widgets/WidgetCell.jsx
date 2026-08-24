@@ -22,7 +22,7 @@ export default function WidgetCell({ def, widget, onRemove, onThemeChange, sessi
   const Comp = def.Component;
   // Giulia- en Focus-widgets delen dezelfde minimale shell-control:
   // glazen sluitknop linksboven, geen aparte Stijl-knop.
-  const isMinimal = def?.domain === "giulia" || def?.domain === "focus";
+  const isMinimal = def?.domain === "giulia" || def?.domain === "focus" || def?.domain === "life";
   const [open, setOpen] = useState(false);
   const theme = widget?.theme || "glass";
   const color = widget?.color || "";

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Home, CalendarDays, ListTodo, FolderKanban, Sparkles, LayoutGrid, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useActiveDomain } from "@/lib/useActiveDomain";
 
 const PRIMARY = [
   { to: "/", label: "Home", icon: Home, end: true },
@@ -13,9 +14,12 @@ const PRIMARY = [
 
 export default function BottomNav() {
   const { pathname } = useLocation();
+  const { domain } = useActiveDomain();
   const [collapsed, setCollapsed] = useState(false);
   // Op projectdetail-pagina's neemt het project zelf de bottom bar over.
   if (/^\/projects\/[^/]+/.test(pathname)) return null;
+
+  const lifeTint = domain === "life";
 
   return (
     <nav className="fixed bottom-3 left-3 lg:bottom-5 lg:left-10 z-20 flex items-center gap-2">
@@ -24,6 +28,7 @@ export default function BottomNav() {
         onClick={() => setCollapsed((c) => !c)}
         aria-label={collapsed ? "Navigatie tonen" : "Navigatie verbergen"}
         className="h-11 w-11 rounded-full glass-1 border border-foreground/12 flex items-center justify-center shrink-0 shadow-[0_14px_36px_-14px_rgba(0,0,0,0.28)] text-foreground/60 hover:text-foreground transition-colors"
+        style={lifeTint ? { background: "hsl(var(--ridge) / 0.22)", borderColor: "hsl(var(--ridge) / 0.5)" } : undefined}
       >
         {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
       </button>
@@ -34,6 +39,7 @@ export default function BottomNav() {
           "flex items-center gap-0.5 rounded-full glass-1 border border-foreground/12 px-1.5 py-1.5 shadow-[0_14px_36px_-14px_rgba(0,0,0,0.28)] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] origin-left",
           collapsed ? "-translate-x-[calc(100%+0.5rem)] opacity-0 pointer-events-none" : "translate-x-0 opacity-100"
         )}
+        style={lifeTint ? { background: "hsl(var(--ridge) / 0.18)", borderColor: "hsl(var(--ridge) / 0.45)" } : undefined}
       >
         {PRIMARY.map((l) => {
           const active = l.end ? pathname === l.to : pathname.startsWith(l.to);

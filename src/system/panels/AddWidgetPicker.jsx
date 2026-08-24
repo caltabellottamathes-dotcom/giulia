@@ -12,7 +12,7 @@ import { Check, Plus } from "lucide-react";
 const DOMAINS = [
   { key: "giulia", label: "GIULIA", accent: "hsl(var(--olive))" },
   { key: "focus", label: "FOCUS", accent: "hsl(var(--d-focus-deep))" },
-  { key: "life", label: "LIFE", accent: "hsl(var(--life-blue))" },
+  { key: "life", label: "LIFE", accent: "hsl(var(--ridge))" },
   { key: "system", label: "SYSTEM", accent: "hsl(var(--muted-foreground))" },
 ];
 

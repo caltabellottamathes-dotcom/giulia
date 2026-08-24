@@ -123,6 +123,7 @@ export const IMAGES = {
   // Dashboard achtergronden — per domein (NOW / LIFE / SELF)
   dashboardNow: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/eae31a7d1_NOW.jpeg",
   dashboardLife: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/507183e0f_LIFE.jpeg",
+  lifeBgPhoto: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/120f1d167_LIFE_DASHBOARD_BG.jpeg",
   dashboardSelf: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/e2ccca3a3_SELF.jpeg",
   dashboardGiulia: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/198b8d835_GIULIA_Background.jpeg",
   dashboardFocus: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/9404c2c30_LIFE.jpeg",

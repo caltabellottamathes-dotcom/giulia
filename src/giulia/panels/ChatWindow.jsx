@@ -6,6 +6,7 @@ import { X, ArrowUp, Phone, Paperclip, Image as ImageIcon, Film, Music, FileText
 import { motion } from "framer-motion";
 import ChatMarkdown from "@/system/components/glass/ChatMarkdown";
 import { useActiveDomain } from "@/lib/useActiveDomain";
+import { cn } from "@/lib/utils";
 import { useMediaViewer } from "@/lib/MediaViewerContext";
 
 /**
@@ -45,7 +46,7 @@ export default function ChatWindow() {
   const fileRef = useRef(null);
   const [attachments, setAttachments] = useState([]);
   const { openMedia } = useMediaViewer();
-  const { accent } = useActiveDomain();
+  const { accent, bubbleText } = useActiveDomain();
 
   useEffect(() => {
     if (chatOpen) {
@@ -166,7 +167,7 @@ export default function ChatWindow() {
               </div>
             )}
             {messages.map((m) => (
-              <MessageBubble key={m.id} message={m} />
+              <MessageBubble key={m.id} message={m} accent={accent} bubbleText={bubbleText} />
             ))}
             {sending && (
               <div className="flex items-center gap-2 text-ivory/60 text-xs ml-1">
@@ -236,7 +237,7 @@ export default function ChatWindow() {
   );
 }
 
-function MessageBubble({ message }) {
+function MessageBubble({ message, accent, bubbleText }) {
   const isUser = message.role === "user";
   const { openMedia } = useMediaViewer();
   const atts = message.attachments || [];
@@ -250,8 +251,8 @@ function MessageBubble({ message }) {
     return (
       <div className="flex justify-end">
         <div
-          className="max-w-[80%] break-words rounded-[20px] rounded-br-md px-[18px] py-3 text-sm leading-relaxed text-background tracking-[-0.01em]"
-          style={{ background: "rgba(45, 45, 35, 0.92)" }}
+          className={cn("max-w-[80%] break-words rounded-[20px] rounded-br-md px-[18px] py-3 text-sm leading-relaxed tracking-[-0.01em]", bubbleText)}
+          style={{ background: accent }}
         >
           {message.content}
           {atts.map(renderAtt)}
