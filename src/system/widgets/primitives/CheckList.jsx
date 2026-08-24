@@ -4,7 +4,7 @@ import { Check, RotateCcw } from "lucide-react";
 import { URGENT } from "./domainAccent";
 
 /** CheckChip — één afvinkrij. Transparant glas over de foto. urgent → #d5e24a. */
-export function CheckChip({ it, onToggle, accent = "var(--tile-accent)", index }) {
+export function CheckChip({ it, onToggle, accent = "var(--tile-accent)", index, darker }) {
   const urgent = !!it.urgent;
   const a = it.color || accent;
   const num = index != null ? String(index + 1).padStart(2, "0") : null;
@@ -13,7 +13,7 @@ export function CheckChip({ it, onToggle, accent = "var(--tile-accent)", index }
       type="button" onClick={onToggle} layout
       initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
       className="w-full flex items-center gap-2.5 rounded-2xl px-3 py-2 text-left transition-colors"
-      style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.18)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}
+      style={{ background: darker ? "rgba(16,18,24,0.55)" : "rgba(255,255,255,0.10)", border: `1px solid ${darker ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.18)"}`, backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}
     >
       {num && (
         <span className="text-[10px] font-display font-bold tabular-nums text-white/45 shrink-0 w-4">{num}</span>
@@ -34,7 +34,7 @@ export function CheckChip({ it, onToggle, accent = "var(--tile-accent)", index }
 }
 
 /** CheckList — lijst + sluiten/heropenen-state. Accent + urgent-aware. */
-export default function CheckList({ items = [], onToggle, accent, onClose, closed, onReopen, title = "Gedaan", maxH }) {
+export default function CheckList({ items = [], onToggle, accent, onClose, closed, onReopen, title = "Gedaan", maxH, darker }) {
   const doneCount = items.filter((it) => it.done).length;
   const allDone = items.length > 0 && doneCount === items.length;
 
@@ -61,7 +61,7 @@ export default function CheckList({ items = [], onToggle, accent, onClose, close
     <div className="flex flex-col gap-1.5 no-scrollbar" style={maxH ? { maxHeight: maxH, overflowY: "auto" } : undefined}>
       <AnimatePresence>
         {items.map((it, i) => (
-          <CheckChip key={it.id || i} it={it} onToggle={() => onToggle(i)} accent={accent} index={i} />
+          <CheckChip key={it.id || i} it={it} onToggle={() => onToggle(i)} accent={accent} index={i} darker={darker} />
         ))}
       </AnimatePresence>
       {allDone && onClose && (
