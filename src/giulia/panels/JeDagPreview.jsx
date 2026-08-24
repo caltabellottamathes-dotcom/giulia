@@ -91,8 +91,6 @@ export default function JeDagPreview({ onOpen }) {
   const buffer = nextUp ? (nextUp.travel || 0) + (nextUp.prep || 0) : 0;
   const tight = nextUp && minsToNext !== null && minsToNext > 0 && minsToNext < buffer + 10 && buffer > 0;
 
-  const dateStr = now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }).toUpperCase();
-
   const completeTask = async (task) => {
     setCompleting(true);
     try {
@@ -106,10 +104,6 @@ export default function JeDagPreview({ onOpen }) {
 
   return (
     <PreviewShell
-      index="01"
-      section="WHAT MATTERS?"
-      statement={onTrack ? "ON TRACK" : "ATTENTION NEEDED"}
-      kicker={dateStr}
       accent={DEEP}
       context={[
         { label: "DAY COMPLETE", text: `${pct}% — ${done} van ${total} taken voltooid${overdue ? `, ${overdue} achter` : ""}.` },
