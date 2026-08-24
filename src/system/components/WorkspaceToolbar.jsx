@@ -100,7 +100,7 @@ export default function WorkspaceToolbar() {
           expanded ? "w-[calc(100vw-2rem)] lg:w-[calc(100vw-3rem)]" : "w-[224px]"
         )}
         onMouseEnter={expand}
-        onMouseLeave={scheduleCollapse}
+        onMouseLeave={() => scheduleCollapse(8000)}
       >
         <div
           className="relative flex items-center h-14 rounded-[26px] overflow-hidden w-full"
