@@ -30,7 +30,6 @@ import PersonalAdminPreview from "@/life/panels/PersonalAdminPreview";
 import HobbiesPreview from "@/life/panels/HobbiesPreview";
 import FoodPreview from "@/life/panels/FoodPreview";
 import QuestionsPreview from "@/giulia/panels/QuestionsPreview";
-import { AnimatedPicto } from "@/system/panels/previewParts";
 
 /** LEVEL 02 quick-context previews — one per data module. Modules without
  *  a preview (chat, voice, settings, profile, integrations) keep the full
@@ -208,7 +207,7 @@ export default function ModulePanel() {
           {/* 2. GlassShellPanel */}
           <div className="flex-1 -mt-10 rounded-t-[28px] glass-3 flex flex-col min-h-0 overflow-hidden">
             {/* HEADER */}
-            <div className="px-7 lg:px-9 pt-7 pb-4 shrink-0">
+            <div className="px-7 lg:px-9 pt-7 pb-6 shrink-0">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/55 font-medium mb-1.5">Snelle context</p>
@@ -230,7 +229,6 @@ export default function ModulePanel() {
                       <HelpCircle className="h-4 w-4" />
                     </button>
                   )}
-                  <AnimatedPicto icon={mod.icon} accent={accent} />
                 </div>
               </div>
 
@@ -256,6 +254,8 @@ export default function ModulePanel() {
               )}
             </div>
 
+            <div className="mx-7 lg:mx-9 h-px bg-storm/10 shrink-0" />
+
             {/* Help-strip (universele info over de Body-inhoud) */}
             {helpOpen && TAB_HELP[bodyModule] && (
               <div className="mx-7 lg:mx-9 mb-3 shrink-0 rounded-2xl border border-storm/10 bg-marble/5 px-4 py-3">
@@ -264,17 +264,18 @@ export default function ModulePanel() {
             )}
 
             {/* BODY — vaste hoogte tussen header en footer */}
-            <div className={`flex-1 min-h-0 px-7 lg:px-9 ${Preview ? "overflow-hidden" : "overflow-y-auto pb-8"}`}>
+            <div className={`flex-1 min-h-0 px-7 lg:px-9 pt-5 ${Preview ? "overflow-hidden" : "overflow-y-auto pb-8"}`}>
               {Preview ? <Preview key={bodyModule} onOpen={openSpace} onFooter={setFooter} /> : <ActiveComponent />}
             </div>
+
+            <div className="mx-7 lg:mx-9 h-px bg-storm/10 shrink-0" />
 
             {/* FOOTER — contextrij + knoppen uit de preview, vast, zonder achtergrond */}
             {footer && (footer.context?.length > 0 || footer.actions?.length > 0) && (
               <div className="shrink-0 px-7 lg:px-9 pt-5 pb-8">
                 {footer.context?.length > 0 && (
                   <>
-                    <GraphicRule accent={accent} />
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                       {footer.context.map((c, i) => (
                         <div key={i}>
                           <div className="flex items-center gap-2.5">
@@ -289,7 +290,7 @@ export default function ModulePanel() {
                 )}
                 {footer.actions?.length > 0 && (
                   <>
-                    <GraphicRule accent={accent} className={footer.context?.length > 0 ? "mt-4" : ""} />
+                    {footer.context?.length > 0 && <GraphicRule accent={accent} className="mt-4" />}
                     <div className="flex flex-wrap gap-2 mt-4">
                       {footer.actions.map((a, i) => a.primary ? (
                         <button key={i} onClick={() => runAction(a)}
