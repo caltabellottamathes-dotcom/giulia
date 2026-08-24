@@ -249,7 +249,7 @@ export default function ModulePanel() {
 
             {/* Content — LEVEL 02 quick-context preview, or full component for
                 interaction surfaces (chat/voice/settings/profile/integrations). */}
-            <div className="flex-1 min-h-0 px-7 lg:px-9 overflow-y-auto">
+            <div className="flex-1 min-h-0 px-7 lg:px-9 pb-8 overflow-y-auto">
               {Preview ? <Preview onOpen={openSpace} /> : <ActiveComponent />}
             </div>
           </div>
