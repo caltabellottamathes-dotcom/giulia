@@ -32,11 +32,11 @@ export default function WidgetsLife() {
 
       <MasonryGrid gap={24} spans={[2, 2, 1, 2, 2, 1]}>
         <div>
-          <Label>01 · WHAT SOCIAL LIFE? — G·16x9·R·SIDE · 8-weekse puls + wachtende relaties</Label>
+          <Label>01 · WHAT SOCIAL LIFE? — P·4:5·GLAS · close-circle orbit (SocialOrbit #16) + foto-strip</Label>
           <SocialLifeWidget />
         </div>
         <div>
-          <Label>02 · REMINDERS FOR HOME. — G·16x9·B·SIDE · vier huishoudzones</Label>
+          <Label>02 · REMINDERS FOR HOME. — G·21x9·PHOTOSHELL · flush glaskaart links + cijfer rechts</Label>
           <RemindersHomeWidget />
         </div>
         <div>
