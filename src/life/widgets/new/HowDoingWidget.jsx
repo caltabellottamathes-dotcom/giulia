@@ -56,8 +56,6 @@ export default function HowDoingWidget() {
   const [justDone, setJustDone] = useState(false);
 
   const latest = (checkIns || [])[0];
-  const stateText = latest ? stateLabel(latest.state).toUpperCase() : "CHECK IN";
-
   const h = new Date().getHours();
   const tod = h >= 5 && h < 12 ? "morning" : h >= 12 && h < 18 ? "afternoon" : "evening";
   const title = tod === "morning" ? "OCHTEND" : tod === "afternoon" ? "MIDDAG" : "AVOND";
@@ -123,11 +121,6 @@ export default function HowDoingWidget() {
       <motion.img src={PHOTO} alt="How I'm Doing" className="absolute inset-0 w-full h-full object-cover" initial={{ scale: 1.1, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }} draggable={false} />
       <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(20,22,26,0.9) 14%, rgba(20,22,26,0.32) 58%, rgba(20,22,26,0.12))" }} />
 
-      {/* foto boven: How I'm Doing. + state (géén herhaling van ochtend) */}
-      <div className="absolute top-0 inset-x-0 p-4 z-10 flex items-start justify-between" style={{ color: IVORY, textShadow: "0 1px 6px rgba(0,0,0,0.55)" }}>
-        <p className="text-[9px] uppercase tracking-[0.24em] opacity-75 font-bold">How I'm Doing.</p>
-        <span className="text-[20px] font-display font-black leading-none tracking-[-0.03em]">{stateText}</span>
-      </div>
 
       {/* glaskaart */}
       <div className="absolute left-0 right-0 bottom-0 h-[62%] rounded-t-[28px] flex flex-col p-4 overflow-hidden" style={glass}>
@@ -143,9 +136,8 @@ export default function HowDoingWidget() {
                 <div className="relative h-24 w-24 flex items-center justify-center">
                   <motion.span className="absolute inset-0 rounded-full" style={{ border: `2px solid ${PISTACHIO}` }} animate={{ scale: [1, 1.2, 1], opacity: [0.75, 0.18, 0.75] }} transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }} />
                   <motion.span className="absolute inset-3 rounded-full" style={{ border: `1px solid ${PISTACHIO}` }} animate={{ scale: [1, 1.12, 1], opacity: [0.5, 0.1, 0.5] }} transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut", delay: 0.4 }} />
-                  <span className="text-[15px] font-display font-black tracking-[-0.02em]" style={{ color: PISTACHIO }}>{stateText}</span>
+                  <span className="text-[12px] font-display font-black tracking-[0.02em] whitespace-nowrap" style={{ color: IVORY }}>INGECHECKT</span>
                 </div>
-                <h3 className="text-[22px] font-display font-black tracking-[-0.03em] mt-3" style={{ color: PISTACHIO }}>Ingecheckt.</h3>
                 {/* 3 dagelijkse check-in momenten, huidige gevuld */}
                 <div className="flex items-center gap-2 mt-3">
                   {[["O", "morning"], ["M", "afternoon"], ["A", "evening"]].map(([l, t]) => {
