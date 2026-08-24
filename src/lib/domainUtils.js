@@ -3,7 +3,7 @@
 // credits are available); this provides an immediate, always-working fallback
 // so the domain chips and balance snapshot stay meaningful.
 
-export const DOMAINS = ["focus", "life", "self"];
+export const DOMAINS = ["focus", "life"];
 
 export const DOMAIN_HEX = {
   focus: "hsl(var(--d-focus-deep))",
@@ -11,7 +11,7 @@ export const DOMAIN_HEX = {
   self: "hsl(var(--d-life-deep))",
 };
 
-export const DOMAIN_LABEL = { focus: "FOCUS", life: "LIFE", self: "SELF" };
+export const DOMAIN_LABEL = { focus: "FOCUS", life: "LIFE", self: "LIFE" };
 
 const LIFE_KW = ["lunch", "diner", "koffie", "borrel", "bel", "bellen", "mama", "papa", "familie", "vriend", "vriendin", "verjaardag", "feest", "vakantie", "weekend", "sociaal", "date", "cafe", "café", "eten", "sport", "gym", "lopen", "hardlopen", "muziek", "gitaar", "oefenen", "repetitie", "schoonmaak", "boodschappen", "wassen", "was", "huis", "tuin", "klussen", "dokter", "tandarts", "kapper", "hobby", "verjaardag"];
 const SELF_KW = ["meditatie", "journal", "journaling", "therapie", "therapeut", "rust", "slaap", "zelfzorg", "lezen", "reflectie", "reflecteren", "adem", "yoga", "wandelen", "stilte", "afsluiten", "dagboek"];
@@ -21,7 +21,7 @@ export function tagDomain(text = "") {
   const t = (text || "").toLowerCase();
   if (!t) return null;
   const hit = (arr) => arr.some((k) => t.includes(k));
-  if (hit(SELF_KW)) return "self";
+  if (hit(SELF_KW)) return "life";
   if (hit(LIFE_KW)) return "life";
   if (hit(FOCUS_KW)) return "focus";
   return null;
@@ -60,7 +60,7 @@ export function socialPulse(contacts = []) {
 // Domain balance across tasks + calendar events (and optionally projects).
 export function domainBalance({ tasks = [], events = [], projects = [] } = {}) {
   const counts = { focus: 0, life: 0, self: 0, none: 0 };
-  const tally = (d) => { counts[d in counts ? d : "none"]++; };
+  const tally = (d) => { if (d === "self") { counts.life++; return; } counts[d in counts ? d : "none"]++; };
   tasks.forEach((t) => tally(t.domain));
   events.forEach((e) => tally(e.domain));
   const total = (tasks.length + events.length) || 1;
@@ -69,7 +69,7 @@ export function domainBalance({ tasks = [], events = [], projects = [] } = {}) {
     counts,
     focus: pct("focus"),
     life: pct("life"),
-    self: pct("self"),
+    self: 0,
     none: pct("none"),
     total: tasks.length + events.length,
   };
