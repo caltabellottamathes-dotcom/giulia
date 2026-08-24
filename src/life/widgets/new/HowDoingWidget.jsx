@@ -36,12 +36,12 @@ export default function HowDoingWidget() {
   ];
 
   return (
-    <div className="relative w-[340px] h-[340px] rounded-[28px] overflow-hidden" onClick={() => openModule("dailystate")} style={{ cursor: "pointer" }}>
+    <div className="relative w-full aspect-square rounded-[28px] overflow-hidden" onClick={() => openModule("dailystate")} style={{ cursor: "pointer" }}>
       <img src={PHOTO} alt="How I'm Doing" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/25 to-black/20" />
 
-      <div className="absolute" style={{ left: "50%", top: "40%", transform: "translate(-50%,-50%)" }}>
-        <div className="relative w-[220px] h-[220px]">
+      <div className="absolute" style={{ left: "50%", top: "34%", transform: "translate(-50%,-50%)", width: "68%" }}>
+        <div className="relative aspect-square w-full">
           <svg viewBox="0 0 120 120" className="w-full h-full">
             <g transform="rotate(-90 60 60)">
               {RINGS.map((ring, idx) => {

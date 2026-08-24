@@ -50,7 +50,7 @@ export default function ThingsHandleWidget() {
   };
 
   return (
-    <div className="relative w-[300px] h-[450px] rounded-[28px] overflow-hidden" onClick={() => openModule("personaladmin")} style={{ cursor: "pointer" }}>
+    <div className="relative w-full aspect-[2/3] rounded-[28px] overflow-hidden" onClick={() => openModule("personaladmin")} style={{ cursor: "pointer" }}>
       <img src={PHOTO} alt="Things to Handle" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
 
       <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-3 flex flex-col" style={{ color: IVORY, height: "34%", background: "linear-gradient(to bottom, rgba(0,0,0,0.42), rgba(0,0,0,0))" }}>

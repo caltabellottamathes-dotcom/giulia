@@ -81,7 +81,7 @@ export default function ThingsLoveWidget() {
   };
 
   return (
-    <div className="relative w-full h-[340px] rounded-[28px] overflow-hidden" style={{ "--tile-accent": DEEP, color: IVORY }}>
+    <div className="relative w-full aspect-[3/2] rounded-[28px] overflow-hidden" style={{ "--tile-accent": DEEP, color: IVORY }}>
       <div className="absolute inset-0 rounded-[28px] ring-1 ring-inset ring-white/10" style={glassShell} />
       <span className="pointer-events-none absolute inset-x-0 top-0 h-px z-10" style={{ background: `linear-gradient(90deg, transparent, ${DEEP} 18%, ${DEEP} 82%, transparent)` }} />
 

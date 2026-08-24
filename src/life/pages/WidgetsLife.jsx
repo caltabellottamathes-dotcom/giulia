@@ -7,6 +7,7 @@ import ThingsLoveWidget from "@/life/widgets/new/ThingsLoveWidget";
 import DinnerWidget from "@/life/widgets/new/DinnerWidget";
 import HowDoingWidget from "@/life/widgets/new/HowDoingWidget";
 import { IMAGES } from "@/lib/images";
+import MasonryGrid from "@/system/widgets/MasonryGrid";
 
 export default function WidgetsLife() {
   const Label = ({ children }) => (
@@ -14,7 +15,7 @@ export default function WidgetsLife() {
   );
 
   return (
-    <div className="relative min-h-screen px-5 lg:px-10 py-8 pb-24 max-w-[1320px] mx-auto">
+    <div className="relative min-h-screen px-5 lg:px-10 py-8 pb-24 max-w-[1500px] mx-auto">
       {/* LIFE dashboard achtergrond — LIFE_DASHBOARD_BG */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
         <img src={IMAGES.lifeDashBg} alt="" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
@@ -29,32 +30,32 @@ export default function WidgetsLife() {
         Zes LIFE-widgets in het Giulia-skelet — ridge-sky, pistache, beton, urgent. Echte LIFE-functies + juiste data.
       </p>
 
-      <div className="columns-1 lg:columns-2 gap-8">
-        <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[620px]">
+      <MasonryGrid gap={24} spans={[2, 2, 1, 2, 2, 1]}>
+        <div>
           <Label>01 · WHAT SOCIAL LIFE? — G·16x9·R·SIDE · 8-weekse puls + wachtende relaties</Label>
           <SocialLifeWidget />
         </div>
-        <div className="break-inside-avoid mb-8 mx-auto w-[290px]">
-          <Label>02 · REMINDERS FOR HOME. — P·9x16·B·SIDE · vier huishoudzones</Label>
+        <div>
+          <Label>02 · REMINDERS FOR HOME. — G·16x9·B·SIDE · vier huishoudzones</Label>
           <RemindersHomeWidget />
         </div>
-        <div className="break-inside-avoid mb-8 mx-auto w-[300px]">
+        <div>
           <Label>03 · THINGS TO HANDLE! — P·2x3·B·SIDE · admin radar + dagen-tot</Label>
           <ThingsHandleWidget />
         </div>
-        <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[620px]">
+        <div>
           <Label>04 · THINGS I LOVE. — G·3:2·R·SIDE · hobby-veld met aandachtsflow</Label>
           <ThingsLoveWidget />
         </div>
-        <div className="break-inside-avoid mb-8 mx-auto w-full max-w-[620px]">
+        <div>
           <Label>05 · WHAT'S FOR DINNER? — G·4:3·SLIDE · dag-tijdlijn vandaag/morgen, flush kaart</Label>
           <DinnerWidget />
         </div>
-        <div className="break-inside-avoid mb-8 mx-auto w-[340px]">
+        <div>
           <Label>06 · HOW I'M DOING. — P·1x1·B·STRIP · drie ringen (E/C/M)</Label>
           <HowDoingWidget />
         </div>
-      </div>
+      </MasonryGrid>
     </div>
   );
 }

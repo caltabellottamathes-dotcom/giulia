@@ -39,7 +39,7 @@ export default function SocialLifeWidget() {
   const sub = interactions >= 10 ? "Je sociale leven beweegt" : overdueCount > 3 ? "Enkele relaties doven uit" : "Je netwerk voelt warm";
 
   return (
-    <div className="relative w-full h-[480px] rounded-[28px] overflow-hidden" onClick={() => openModule("social")} style={{ cursor: "pointer" }}>
+    <div className="relative w-full aspect-[16/9] rounded-[28px] overflow-hidden" onClick={() => openModule("social")} style={{ cursor: "pointer" }}>
       <img src={PHOTO} alt="What Social Life" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
 
       <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-3 flex flex-col" style={{ color: IVORY, height: "56%", background: "linear-gradient(to bottom, rgba(0,0,0,0.36), rgba(0,0,0,0))" }}>
