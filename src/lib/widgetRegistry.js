@@ -70,7 +70,7 @@ export const WIDGETS = {
   knowledge:   { type: "knowledge",   label: "What I Know.",        icon: BookOpen,      Component: KnowledgeWidget,  image: IMAGES.chairWater,       span: 4, category: "work", domain: "system" },
   documents:   { type: "documents",   label: "Files to Share.",     icon: FileText,      Component: DocumentsWidget,  image: IMAGES.chairsScattered,  span: 2, category: "work", domain: "system" },
 
-  // ── LIFE (nieuwe LIFE-widget-skelet) ──
+  // ── LIFE (nieuwe LIFE-widget-skelet · 01–06) ── Social / Reminders / Handle / Love / Dinner / HowDoing
   sociallife:    { type: "sociallife",    label: "What Social Life?",    icon: Heart,         Component: SocialLifeWidget,    image: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ae8a21262_Social_.jpeg", span: 1, category: "life", domain: "life" },
   remindershome: { type: "remindershome", label: "Reminders For Home.", icon: Home,          Component: RemindersHomeWidget, image: IMAGES.lifeHousehold,      span: 2, category: "life", domain: "life" },
   thinghandle:   { type: "thinghandle",   label: "Things to Handle!",   icon: ClipboardList, Component: ThingsHandleWidget,  image: IMAGES.lifePersonalAdmin,  span: 1, category: "life", domain: "life" },
