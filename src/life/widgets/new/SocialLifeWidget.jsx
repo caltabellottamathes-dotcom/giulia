@@ -46,7 +46,7 @@ export default function SocialLifeWidget() {
   const RINGS = [12, 22, 32, 42, 48];
 
   return (
-    <div className="relative aspect-[4/5] rounded-[28px] overflow-hidden mx-auto" onClick={() => openModule("social")} style={{ width: "53.33%", cursor: "pointer" }}>
+    <div className="relative w-full aspect-[4/5] rounded-[28px] overflow-hidden" onClick={() => openModule("social")} style={{ cursor: "pointer" }}>
       {/* foto full-bleed, géén overlay */}
       <img src={PHOTO} alt="What Social Life" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
 

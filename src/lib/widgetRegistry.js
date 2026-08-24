@@ -1,6 +1,6 @@
 import {
   Sparkles, Calendar, CheckSquare, ClipboardCheck, Mail, MessageCircle,
-  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu, MessageSquare, Timer, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle, Repeat, Target, Clock, Image as ImageIcon, Music, Video, Images, Utensils,
+  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu, MessageSquare, Timer, Sunrise, Bell, Heart, Home, ClipboardList, Palette, HelpCircle, Repeat, Clock, Image as ImageIcon, Music, Video, Images, Utensils,
 } from "lucide-react";
 import { IMAGES } from "@/lib/images";
 
@@ -23,16 +23,14 @@ import AgentActivityWidget from "@/giulia/widgets/AgentActivityWidget";
 import GiuliaConciergeWidget from "@/giulia/widgets/new/GiuliaConciergeWidget";
 import TimeTrackerFocusWidget from "@/focus/widgets/new/TimeTrackerFocusWidget";
 import UpdatesWidget from "@/giulia/widgets/UpdatesWidget";
-import SocialPulseWidget from "@/life/widgets/SocialPulseWidget";
-import SocialPlannerWidget from "@/life/widgets/SocialPlannerWidget";
-import HouseholdWidget from "@/life/widgets/HouseholdWidget";
-import PersonalAdminWidget from "@/life/widgets/PersonalAdminWidget";
-import HobbiesWidget from "@/life/widgets/HobbiesWidget";
-import FoodWidget from "@/life/widgets/FoodWidget";
+import SocialLifeWidget from "@/life/widgets/new/SocialLifeWidget";
+import RemindersHomeWidget from "@/life/widgets/new/RemindersHomeWidget";
+import ThingsHandleWidget from "@/life/widgets/new/ThingsHandleWidget";
+import ThingsLoveWidget from "@/life/widgets/new/ThingsLoveWidget";
+import DinnerWidget from "@/life/widgets/new/DinnerWidget";
+import HowDoingWidget from "@/life/widgets/new/HowDoingWidget";
 import WantsToKnowLayeredWidget from "@/giulia/widgets/new/WantsToKnowLayeredWidget";
 import ImAliveWidget from "@/giulia/widgets/new/ImAliveWidget";
-import DailyStateEditorial from "@/self/widgets/editorial/DailyStateEditorial";
-import PersonalDevelopmentEditorial from "@/self/widgets/editorial/PersonalDevelopmentEditorial";
 import ImageViewerWidget from "@/system/widgets/viewers/ImageViewerWidget";
 import VideoPlayerWidget from "@/system/widgets/viewers/VideoPlayerWidget";
 import MusicPlayerWidget from "@/system/widgets/viewers/MusicPlayerWidget";
@@ -72,17 +70,13 @@ export const WIDGETS = {
   knowledge:   { type: "knowledge",   label: "What I Know.",        icon: BookOpen,      Component: KnowledgeWidget,  image: IMAGES.chairWater,       span: 4, category: "work", domain: "system" },
   documents:   { type: "documents",   label: "Files to Share.",     icon: FileText,      Component: DocumentsWidget,  image: IMAGES.chairsScattered,  span: 2, category: "work", domain: "system" },
 
-  // ── LIFE ──
-  socialpulse:   { type: "socialpulse",   label: "What Social Life?",   icon: Heart,         Component: SocialPulseWidget,    image: IMAGES.lifeSocialPulse,    span: 4, category: "life", domain: "life" },
-  socialplanner: { type: "socialplanner", label: "What Social Life?",   icon: CalendarHeart, Component: SocialPlannerWidget,  image: IMAGES.lifeSocialPlanner,  span: 3, category: "life", domain: "life" },
-  household:     { type: "household",     label: "Reminders For Home.", icon: Home,          Component: HouseholdWidget,      image: IMAGES.lifeHousehold,      span: 3, category: "life", domain: "life" },
-  personaladmin: { type: "personaladmin", label: "Things to Handle!",  icon: ClipboardList, Component: PersonalAdminWidget,  image: IMAGES.lifePersonalAdmin,  span: 3, category: "life", domain: "life" },
-  hobbies:       { type: "hobbies",       label: "Things I Love.",      icon: Palette,        Component: HobbiesWidget,        image: IMAGES.lifeHobbies,        span: 3, category: "life", domain: "life" },
-  food:          { type: "food",          label: "What's for Dinner?",  icon: Utensils,       Component: FoodWidget,           image: IMAGES.lifeFood,           span: 2, category: "life", domain: "life" },
-
-  // ── LIFE · gemigreerd uit SELF (Daily State & Development blijven als LIFE-modules) ──
-  dailystate:   { type: "dailystate",   label: "How I'm Doing.",  icon: ActivityIcon, Component: DailyStateEditorial,          image: IMAGES.selfDailyState,    span: 1, category: "life", domain: "life" },
-  development:  { type: "development",  label: "Becoming Me.",    icon: Target,        Component: PersonalDevelopmentEditorial,  image: IMAGES.selfDevelopment,   span: 2, category: "life", domain: "life" },
+  // ── LIFE (nieuwe LIFE-widget-skelet) ──
+  sociallife:    { type: "sociallife",    label: "What Social Life?",    icon: Heart,         Component: SocialLifeWidget,    image: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ae8a21262_Social_.jpeg", span: 1, category: "life", domain: "life" },
+  remindershome: { type: "remindershome", label: "Reminders For Home.", icon: Home,          Component: RemindersHomeWidget, image: IMAGES.lifeHousehold,      span: 2, category: "life", domain: "life" },
+  thinghandle:   { type: "thinghandle",   label: "Things to Handle!",   icon: ClipboardList, Component: ThingsHandleWidget,  image: IMAGES.lifePersonalAdmin,  span: 1, category: "life", domain: "life" },
+  thingslove:    { type: "thingslove",    label: "Things I Love.",      icon: Palette,        Component: ThingsLoveWidget,    image: IMAGES.lifeHobbies,        span: 2, category: "life", domain: "life" },
+  dinner:        { type: "dinner",        label: "What's for Dinner?",  icon: Utensils,       Component: DinnerWidget,         image: IMAGES.lifeFood,           span: 2, category: "life", domain: "life" },
+  howdoing:      { type: "howdoing",      label: "How I'm Doing.",      icon: ActivityIcon,  Component: HowDoingWidget,       image: IMAGES.selfDailyState,     span: 1, category: "life", domain: "life" },
 
   // ── SYSTEM ──
   imageviewer:  { type: "imageviewer",  label: "Afbeeldingen.", icon: ImageIcon, Component: ImageViewerWidget, image: IMAGES.notebookChair, span: 1, category: "system", domain: "system" },
