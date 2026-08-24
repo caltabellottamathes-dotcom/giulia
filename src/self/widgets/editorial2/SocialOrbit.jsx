@@ -19,7 +19,7 @@ export default function SocialOrbit() {
       <div className="flex flex-col h-full p-3" style={{ color: PLUM }}>
         <WidgetHeader label="Social Pulse · close circle" count="4 mensen" />
         <div className="flex-1 relative min-h-0 flex items-center justify-center">
-          <div className="relative w-full h-full max-w-[150px] max-h-[150px] aspect-square">
+          <div className="relative w-full h-full max-w-[320px] max-h-[320px] aspect-square">
             <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full">
               {[18, 30, 42].map((rr, i) => (
                 <circle key={i} cx="50" cy="50" r={rr} fill="none" stroke={PLUM} strokeWidth="0.4" opacity="0.18" strokeDasharray="2 2.5" />
@@ -37,7 +37,7 @@ export default function SocialOrbit() {
                 );
               })}
             </svg>
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-8 w-8 rounded-full overflow-hidden ring-2" style={{ "--tw-ring-color": PLUM }}>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-14 w-14 rounded-full overflow-hidden ring-2" style={{ "--tw-ring-color": PLUM }}>
               <img src={SELF_PHOTO.dailyState} alt="" className="h-full w-full object-cover" draggable={false} />
             </div>
             {CONTACTS.map((c) => {
@@ -46,8 +46,8 @@ export default function SocialOrbit() {
               const y = 50 + Math.sin(rad) * c.r;
               return (
                 <motion.div key={c.name} className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center" style={{ left: `${x}%`, top: `${y}%` }} animate={{ y: [0, -2, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
-                  <span className="text-[7px] font-bold whitespace-nowrap">{c.name}</span>
-                  <span className="text-[6px] opacity-55">{c.days}d</span>
+                  <span className="text-[11px] font-bold whitespace-nowrap">{c.name}</span>
+                  <span className="text-[8px] opacity-55">{c.days}d</span>
                 </motion.div>
               );
             })}

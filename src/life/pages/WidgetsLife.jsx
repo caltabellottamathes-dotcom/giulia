@@ -56,7 +56,7 @@ export default function WidgetsLife() {
         Zes LIFE-widgets in het Giulia-skelet — ridge-sky, pistache, beton, urgent. Echte LIFE-functies + juiste data.
       </p>
 
-      <MasonryGrid className="max-w-[1280px] xl:max-w-[1500px]" gap={24} spans={[2, 2, 1, 2, 2, 1, 1, 1]} scale={0.9}>
+      <MasonryGrid className="max-w-[1280px] xl:max-w-[1500px]" gap={24} spans={[2, 2, 1, 2, 2, 1, 2, 1]} scale={0.9}>
         <div>
           <Label>01 · WHAT SOCIAL LIFE? — P·4:5·GLAS · close-circle orbit (SocialOrbit #16) + foto-strip</Label>
           <SocialLifeWidget />
