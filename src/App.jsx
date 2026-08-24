@@ -67,6 +67,7 @@ import WidgetsFocus from '@/focus/pages/WidgetsFocus';
 import WidgetsLife from '@/life/pages/WidgetsLife';
 import ShellCollection from '@/system/pages/ShellCollection';
 import PanelDesign from '@/system/pages/PanelDesign';
+import QuestionsPanelPage from '@/system/pages/QuestionsPanelPage';
 
 
 const AuthenticatedApp = () => {
@@ -150,6 +151,7 @@ const AuthenticatedApp = () => {
           <Route path="/widgets-life" element={<WidgetsLife />} />
           <Route path="/shell-collection" element={<ShellCollection />} />
           <Route path="/panel-design" element={<PanelDesign />} />
+          <Route path="/questions-panel" element={<QuestionsPanelPage />} />
         </Route>
         <Route path="/life-gallery" element={<LifeGallery />} />
         <Route path="/self-gallery" element={<SelfGallery />} />
