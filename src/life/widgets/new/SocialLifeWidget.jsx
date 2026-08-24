@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
-import { GlassPhotoWidget, WidgetHeader } from "@/system/widgets/primitives";
+import { WidgetHeader } from "@/system/widgets/primitives";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { useLearningSync } from "@/hooks/useLearningSync";
@@ -8,15 +8,32 @@ import { CONTACTS } from "@/self/widgets/editorial2/SocialOrbit";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/bfc15b81f_ALOT_SOCIAL.jpeg";
 const CENTER = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/3da3623a2_SOCIALCIRCLEPROFILE.jpg";
-const DEEP = "hsl(var(--d-life-deep))";   // ridge sky
-const LIGHT = "hsl(var(--d-life-light))"; // whipped pistachio
 const IVORY = "hsl(var(--ivory))";
+const PISTACHIO = "#d8dab3"; // fresh ≤7d
+const RIDGE = "#b1bec6";    // 8–14d
+const OLIVE = "#94925d";     // 15–21d
+const SMOKE = "hsl(var(--smoke))"; // >21d vergeten
+
+/** orbitColor — 4 tiers (uitgebreid met Olive + Smoke), verschaald naar
+ *  recentie: vers = pistachio (sterk), oud = smoke (vaag). */
+function orbitColor(days) {
+  if (days <= 7) return PISTACHIO;
+  if (days <= 14) return RIDGE;
+  if (days <= 21) return OLIVE;
+  return SMOKE;
+}
+function orbitOpacity(days) {
+  if (days <= 7) return 0.95;
+  if (days <= 14) return 0.6;
+  if (days <= 21) return 0.42;
+  return 0.28;
+}
 
 /** SocialLifeWidget — 01 · WHAT SOCIAL LIFE?
- *  Skelet #21 (GlassPhotoWidget · 4:5 · foto boven) + de exacte #16 SocialOrbit
- *  als glasinhouud: dezelfde data (CONTACTS), kleurgebruik (stale=DEEP ridge,
- *  fresh=LIGHT pistachio) en afstanden (rings 18/30/42, r/a per contact) als
- *  #16 — alleen groter weergegeven en in LIFE-palette (géén Urgent). */
+ *  3:2 (zelfde hoogte als 04). Foto full-bleed ZONDER overlay. Rechts een
+ *  glaspanel (zelfde glas als andere widgets) met WidgetHeader (equalizer-
+ *  embleem) + de #16 SocialOrbit: zelfde data (CONTACTS) + afstanden, 5
+ *  duidelijke rings, uitgebreid kleurenlogica (pistachio/ridge/olive/smoke). */
 export default function SocialLifeWidget() {
   const { openModule } = usePanel();
   const learnTick = useLearningSync();
@@ -28,76 +45,61 @@ export default function SocialLifeWidget() {
     return [...(emails || []), ...(whatsapps || [])].filter((x) => x.timestamp && new Date(x.timestamp).getTime() >= cut).length;
   }, [emails, whatsapps]);
 
-  const overdueCount = CONTACTS.filter((c) => c.days > 14).length;
-  const headline = interactions >= 10 ? "A LOT HAPPENING" : overdueCount > 1 ? "QUIETER" : "CONNECTED";
+  const RINGS = [12, 22, 32, 42, 48];
 
   return (
-    <div onClick={() => openModule("social")} className="cursor-pointer">
-      <GlassPhotoWidget
-        shape="4:5"
-        photo={PHOTO}
-        photoPosition="top"
-        photoFraction={0.38}
-        domain="life"
-        photoChildren={
-          <>
-            <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.58), rgba(0,0,0,0.12) 55%, rgba(0,0,0,0.28))" }} />
-            <div className="absolute inset-0 flex flex-col justify-between p-4" style={{ color: IVORY, textShadow: "0 1px 6px rgba(0,0,0,0.55)" }}>
-              <div className="flex items-center justify-between">
-                <span className="text-[9px] uppercase tracking-[0.22em] font-bold">What Social Life?</span>
-                <span className="text-[8px] uppercase tracking-[0.14em] opacity-65">{overdueCount ? `${overdueCount} wacht` : "bij"}</span>
-              </div>
-              <div>
-                <h3 className="text-[20px] leading-[1.05] font-display font-semibold tracking-[-0.02em]">{headline}</h3>
-                <div className="flex items-end gap-2 mt-1.5">
-                  <span className="text-[36px] leading-[0.8] font-display font-semibold tabular-nums" style={{ color: overdueCount ? LIGHT : IVORY }}>{interactions}</span>
-                  <p className="text-[8px] uppercase tracking-[0.16em] opacity-70 mb-1 leading-tight">interacties<br />30 dagen</p>
-                </div>
-              </div>
-            </div>
-          </>
-        }
+    <div className="relative w-full aspect-[3/2] rounded-[28px] overflow-hidden" onClick={() => openModule("social")} style={{ cursor: "pointer" }}>
+      {/* foto full-bleed, géén overlay */}
+      <img src={PHOTO} alt="What Social Life" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
+
+      {/* glas rechts — zelfde glas als andere widgets (04) */}
+      <div
+        className="absolute inset-y-0 right-0 w-[64%] rounded-l-[24px] flex flex-col p-4 overflow-hidden"
+        style={{ "--tile-accent": PISTACHIO, background: "rgba(120,128,133,0.16)", backdropFilter: "blur(22px) saturate(1.35)", WebkitBackdropFilter: "blur(22px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.14)", boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.18), 0 12px 36px -16px rgba(0,0,0,0.18)", color: IVORY }}
       >
-        {/* #16 SocialOrbit — exacte data/kleur/afstand, LIFE-palette, groot */}
-        <div className="flex flex-col h-full" style={{ color: DEEP }}>
-          <WidgetHeader label="Social Pulse · close circle" count={`${CONTACTS.length} mensen`} />
-          <div className="flex-1 relative min-h-0 flex items-center justify-center">
-            <div className="relative w-full h-full max-w-[320px] max-h-[320px] aspect-square">
-              <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full">
-                {[18, 30, 42].map((rr, i) => (
-                  <circle key={i} cx="50" cy="50" r={rr} fill="none" stroke={DEEP} strokeWidth="0.4" opacity="0.18" strokeDasharray="2 2.5" />
-                ))}
-                {CONTACTS.map((c, i) => {
-                  const rad = (c.a * Math.PI) / 180;
-                  const x = 50 + Math.cos(rad) * c.r;
-                  const y = 50 + Math.sin(rad) * c.r;
-                  const stale = c.days > 14;
-                  return (
-                    <g key={i}>
-                      <line x1="50" y1="50" x2={x} y2={y} stroke={stale ? DEEP : LIGHT} strokeWidth="0.6" opacity={stale ? 0.75 : 0.4} />
-                      <circle cx={x} cy={y} r="2.6" fill={stale ? DEEP : LIGHT} />
-                    </g>
-                  );
-                })}
-              </svg>
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-16 w-16 rounded-full overflow-hidden ring-2" style={{ "--tw-ring-color": IVORY }}>
-                <img src={CENTER} alt="" className="h-full w-full object-cover" draggable={false} />
-              </div>
+        <span className="pointer-events-none absolute inset-0 rounded-l-[24px] ring-1 ring-inset ring-white/10" />
+        <span className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${PISTACHIO} 18%, ${PISTACHIO} 82%, transparent)` }} />
+
+        <WidgetHeader type="social" label="What Social Life?" count={`${interactions} interacties`} />
+
+        <div className="flex-1 relative min-h-0 flex items-center justify-center">
+          <div className="relative w-full h-full max-w-[260px] max-h-[260px] aspect-square">
+            <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full">
+              {RINGS.map((rr, i) => (
+                <circle key={i} cx="50" cy="50" r={rr} fill="none" stroke={IVORY} strokeWidth="0.4" opacity={0.1 + i * 0.03} strokeDasharray="1.6 2.4" />
+              ))}
               {CONTACTS.map((c, i) => {
                 const rad = (c.a * Math.PI) / 180;
                 const x = 50 + Math.cos(rad) * c.r;
                 const y = 50 + Math.sin(rad) * c.r;
+                const col = orbitColor(c.days);
+                const op = orbitOpacity(c.days);
                 return (
-                  <motion.div key={i} className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center" style={{ left: `${x}%`, top: `${y}%`, color: IVORY }} animate={{ y: [0, -2, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
-                    <span className="text-[12px] font-bold whitespace-nowrap leading-none">{c.name}</span>
-                    <span className="text-[9px] opacity-55 mt-0.5">{c.days}d</span>
-                  </motion.div>
+                  <g key={i}>
+                    <line x1="50" y1="50" x2={x} y2={y} stroke={col} strokeWidth="0.6" opacity={op} />
+                    <circle cx={x} cy={y} r="2.8" fill={col} />
+                  </g>
                 );
               })}
+            </svg>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-14 w-14 rounded-full overflow-hidden ring-2" style={{ "--tw-ring-color": IVORY }}>
+              <img src={CENTER} alt="" className="h-full w-full object-cover" draggable={false} />
             </div>
+            {CONTACTS.map((c, i) => {
+              const rad = (c.a * Math.PI) / 180;
+              const x = 50 + Math.cos(rad) * c.r;
+              const y = 50 + Math.sin(rad) * c.r;
+              const col = orbitColor(c.days);
+              return (
+                <motion.div key={i} className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center" style={{ left: `${x}%`, top: `${y}%`, color: IVORY }} animate={{ y: [0, -2, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 }}>
+                  <span className="text-[11px] font-bold whitespace-nowrap leading-none">{c.name}</span>
+                  <span className="text-[8px] mt-0.5" style={{ color: col }}>{c.days}d</span>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
-      </GlassPhotoWidget>
+      </div>
     </div>
   );
 }

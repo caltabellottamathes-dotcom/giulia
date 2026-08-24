@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 import { WidgetHeader } from "@/system/widgets/primitives";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
@@ -30,11 +30,11 @@ function pressure(diff) {
 }
 
 /** ThingsHandleWidget — P·9x16·SLIDE · "Things to Handle!"
- *  Titel = WidgetHeader (briefing-klok, zelfde animatie als 02). Achter:
- *  "Next in the list" + kale pijl → grote neon klok (DD:UU:MM:SS, bold,
- *  beschrijvingen boven). Glaskaart (minder blur, flush): ghost-cijfer
- *  links-onder + "HOW / TO HANDLE?" + status (3 LIFE-tiers) + "op komst"
- *  met ernaast het eerstvolgende item in Whipped Pistachio. Tik kaart → omhoog. */
+ *  Titel = WidgetHeader (briefing-klok). Achter: "Next in the list" / bij het
+ *  laatste item "Terug naar start" met ← → neon klok (DD:UU:MM:SS, bold,
+ *  beschrijvingen boven). Glaskaart: WIT ghost-cijfer links-onder + "HOW /
+ *  TO HANDLE?" + status + "op komst" met ernaast het item in pistachio +
+ *  weather.sub. */
 export default function ThingsHandleWidget() {
   const { openModule } = usePanel();
   const learnTick = useLearningSync();
@@ -46,6 +46,7 @@ export default function ThingsHandleWidget() {
 
   const [idx, setIdx] = useState(0);
   const current = coming.length ? coming[idx % coming.length] : null;
+  const atLast = coming.length > 0 && idx >= coming.length - 1;
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
   const diff = current?.due_date ? new Date(current.due_date).getTime() - now : null;
@@ -59,8 +60,6 @@ export default function ThingsHandleWidget() {
   const status = pressure(diff);
 
   const [up, setUp] = useState(false);
-  const next = () => setIdx((i) => (i + 1) % Math.max(1, coming.length));
-
   const units = [
     { v: pad(dDay), l: "Dagen" },
     { v: pad(dHr), l: "Uren" },
@@ -73,13 +72,13 @@ export default function ThingsHandleWidget() {
       <motion.img src={PHOTO} alt="Things to Handle" className="absolute inset-0 h-full w-full object-cover" initial={{ scale: 1.14, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }} draggable={false} />
       <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(20,22,26,0.92) 8%, rgba(20,22,26,0.42) 50%, rgba(20,22,26,0.20) 100%)" }} />
 
-      {/* ACHTER: Next in the list + kale pijl → neon klok */}
+      {/* ACHTER: Next/Terug + neon klok */}
       <div className="absolute inset-x-0 bottom-0 h-1/2 z-0 flex flex-col justify-end px-4 pb-4 gap-3" style={{ color: IVORY }} onClick={() => openModule("personaladmin")}>
         <div className="flex items-center justify-between">
-          <p className="text-[8px] uppercase tracking-[0.22em] opacity-55">Next in the list</p>
+          <p className="text-[8px] uppercase tracking-[0.22em] opacity-55">{atLast ? "Terug naar start" : "Next in the list"}</p>
           {coming.length > 1 && (
-            <button onClick={(e) => { e.stopPropagation(); next(); }} className="p-0.5" aria-label="volgende">
-              <ArrowRight size={13} style={{ color: IVORY, opacity: 0.85 }} />
+            <button onClick={(e) => { e.stopPropagation(); atLast ? setIdx(0) : setIdx((i) => (i + 1) % coming.length); }} className="p-0.5" aria-label={atLast ? "terug" : "volgende"}>
+              {atLast ? <ArrowLeft size={13} style={{ color: IVORY, opacity: 0.85 }} /> : <ArrowRight size={13} style={{ color: IVORY, opacity: 0.85 }} />}
             </button>
           )}
         </div>
@@ -98,12 +97,12 @@ export default function ThingsHandleWidget() {
         </div>
       </div>
 
-      {/* HEADER — WidgetHeader (briefing-klok), zelfde animatie als 02 */}
+      {/* HEADER — WidgetHeader (briefing-klok) */}
       <div className="absolute top-0 inset-x-0 px-4 pt-4 z-10" style={{ color: IVORY, "--tile-accent": PISTACHIO, textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>
         <WidgetHeader type="briefing" label="Things to Handle!" count={overdue.length ? `${overdue.length} te laat` : ""} />
       </div>
 
-      {/* GLASKAART (onderste helft, flush, minder blur) — schuift omhoog bij tik */}
+      {/* GLASKAART (flush, minder blur) — schuift omhoog bij tik */}
       <motion.button
         type="button"
         onClick={() => setUp((v) => !v)}
@@ -113,8 +112,8 @@ export default function ThingsHandleWidget() {
         transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
         style={{ background: "rgba(120,128,133,0.18)", backdropFilter: "blur(16px) saturate(1.3)", WebkitBackdropFilter: "blur(16px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.16)", boxShadow: "0 -14px 32px -14px rgba(0,0,0,0.42), 0 14px 32px -14px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.2)" }}
       >
-        {/* extra-extra-large ghost-cijfer links-onder, half afgesneden */}
-        <span className="absolute pointer-events-none select-none" style={{ left: "-12px", bottom: "-48px", fontSize: "190px", lineHeight: "0.78", fontWeight: 800, color: status.color, opacity: 0.13, fontFamily: "var(--font-display)", letterSpacing: "-0.04em" }}>{coming.length}</span>
+        {/* WIT ghost-cijfer links-onder, half afgesneden */}
+        <span className="absolute pointer-events-none select-none" style={{ left: "-12px", bottom: "-48px", fontSize: "190px", lineHeight: "0.78", fontWeight: 800, color: IVORY, opacity: 0.16, fontFamily: "var(--font-display)", letterSpacing: "-0.04em" }}>{coming.length}</span>
 
         <div className="absolute inset-0 p-4 flex flex-col justify-between" style={{ color: IVORY, textShadow: "0 1px 6px rgba(0,0,0,0.45)" }}>
           <div>
@@ -122,9 +121,12 @@ export default function ThingsHandleWidget() {
             <p className="text-[26px] font-black leading-[0.9] opacity-85 tracking-[-0.02em]">TO HANDLE?</p>
             <motion.p key={status.label} className="text-[26px] font-display font-black leading-[0.9] mt-2 tracking-[-0.03em]" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} style={{ color: status.color }}>{status.label}</motion.p>
           </div>
-          <div className="flex items-baseline gap-2">
-            <p className="text-[10px] uppercase tracking-[0.2em] opacity-70 shrink-0">op komst</p>
-            <p className="text-[10px] uppercase tracking-[0.2em] truncate" style={{ color: PISTACHIO }}>{hasCurrent ? `${current.title} · €${current.amount || 0}` : "—"}</p>
+          <div>
+            <div className="flex items-baseline gap-2">
+              <p className="text-[10px] uppercase tracking-[0.2em] opacity-70 shrink-0">op komst</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] truncate" style={{ color: PISTACHIO }}>{hasCurrent ? `${current.title} · €${current.amount || 0}` : "—"}</p>
+            </div>
+            <p className="text-[9px] uppercase tracking-[0.16em] opacity-50 mt-1">{weather.sub}</p>
           </div>
         </div>
       </motion.button>
