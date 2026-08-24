@@ -45,7 +45,7 @@ export default async function (req) {
       });
       if (ins && !ins.skipped) {
         signals++;
-        await emitEvent(base44, { event_type: "SELF_OVERLOAD_DETECTED", object_type: "SelfCheckIn", object_id: latest?.id || null, domain: "self", description: title, source: "detectSelfOverload" });
+        await emitEvent(base44, { event_type: "SELF_OVERLOAD_DETECTED", object_type: "SelfCheckIn", object_id: latest?.id || null, domain: "life", description: title, source: "detectSelfOverload" });
       }
       await notify(base44, {
         title: "Zware dag, lage batterij",
@@ -64,7 +64,7 @@ export default async function (req) {
       });
       if (ins && !ins.skipped) {
         signals++;
-        await emitEvent(base44, { event_type: "PERSONAL_TIME_CONFLICT", object_type: "PersonalTimeBlock", object_id: conflicts[0].block.id, domain: "self", description: title, source: "detectSelfOverload" });
+        await emitEvent(base44, { event_type: "PERSONAL_TIME_CONFLICT", object_type: "PersonalTimeBlock", object_id: conflicts[0].block.id, domain: "life", description: title, source: "detectSelfOverload" });
       }
       await notify(base44, {
         title: "Beschermde tijd in gevaar",

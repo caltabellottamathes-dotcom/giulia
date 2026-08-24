@@ -36,7 +36,6 @@
       "enum": [
         "focus",
         "life",
-        "self",
         "giulia"
       ],
       "title": "Domain"

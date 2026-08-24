@@ -15,6 +15,9 @@
  *  - HOUSEHOLD/SHOPPING_ITEM_COMPLETED (routine met frequency_days) → next_due herzien
  */
 export async function emitEvent(base44, { event_type, object_type, object_id, domain, description, source }) {
+  // SELF is gefuseerd in LIFE — normaliseer op de schrijf-grens zodat Activity
+  // nóóit meer domain="self" opslaat, ongeacht welke caller het meesteurt.
+  const d = domain === "self" ? "life" : domain;
   try {
     const a = await base44.asServiceRole.entities.Activity.create({
       action: event_type,
@@ -24,10 +27,10 @@ export async function emitEvent(base44, { event_type, object_type, object_id, do
       event_type,
       object_type,
       object_id,
-      domain,
+      domain: d,
     });
     // Propagate cross-object dependencies (fire-and-forget — breekt nooit de flow)
-    propagate(base44, { event_type, object_type, object_id, domain, description }).catch(() => {});
+    propagate(base44, { event_type, object_type, object_id, domain: d, description }).catch(() => {});
     return a;
   } catch { return null; }
 }

@@ -95,13 +95,15 @@ export function moodPattern(checkIns: CheckIn[] = []) {
 
 /* ── Balans (FOCUS / LIFE / SELF) ────────────────────────────── */
 export function calculateSelfBalance(focusMin = 0, lifeMin = 0, selfMin = 0) {
-  const total = focusMin + lifeMin + selfMin || 1;
+  // SELF is gefuseerd in LIFE — zelfzorg-tijd (selfMin) telt nu mee als LIFE.
+  const lifeCombined = lifeMin + selfMin;
+  const total = focusMin + lifeCombined || 1;
   const focusPct = Math.round((focusMin / total) * 100);
-  const lifePct = Math.round((lifeMin / total) * 100);
-  const selfPct = Math.round((selfMin / total) * 100);
-  // Imbalance: SELF < 15% van totale tijd terwijl FOCUS > 60%
-  const imbalance = selfPct < 15 && focusPct > 60;
-  const underRecovery = selfPct < 10;
+  const lifePct = Math.round((lifeCombined / total) * 100);
+  const selfPct = 0;
+  // Imbalance: LIFE (incl. zelfzorg) < 15% van totale tijd terwijl FOCUS > 60%
+  const imbalance = lifePct < 15 && focusPct > 60;
+  const underRecovery = lifePct < 15;
   return { focusPct, lifePct, selfPct, imbalance, underRecovery, total };
 }
 

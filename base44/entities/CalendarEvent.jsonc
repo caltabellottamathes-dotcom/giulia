@@ -45,7 +45,7 @@
     "therapy_trajectory_id": {
       "type": "string",
       "title": "Therapy Trajectory ID",
-      "description": "ID van het gekoppelde TherapyTrajectory (SELF) \u2014 bidirectionele koppeling met TherapyTrajectory.event_ids."
+      "description": "ID van het gekoppelde TherapyTrajectory \u2014 bidirectionele koppeling met TherapyTrajectory.event_ids."
     },
     "travel_time": {
       "type": "number",
@@ -63,8 +63,7 @@
       "type": "string",
       "enum": [
         "focus",
-        "life",
-        "self"
+        "life"
       ],
       "title": "Domain"
     }

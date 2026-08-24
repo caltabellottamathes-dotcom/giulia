@@ -50,14 +50,15 @@ export function neglectedContacts(contacts, { minDays = 14 } = {}) {
 }
 
 export function domainBalance(focus = 0, life = 0, self = 0) {
-  const total = focus + life + self || 1;
+  // SELF is gefuseerd in LIFE — zelfzorg-tijd telt nu mee als LIFE.
+  const lifeCombined = life + self;
+  const total = focus + lifeCombined || 1;
   const focusPct = Math.round((focus / total) * 100);
-  const lifePct = Math.round((life / total) * 100);
-  const selfPct = Math.round((self / total) * 100);
+  const lifePct = Math.round((lifeCombined / total) * 100);
   return {
-    focusPct, lifePct, selfPct, total,
-    imbalance: selfPct < 15 && focusPct > 60,
-    underRecovery: selfPct < 10,
+    focusPct, lifePct, selfPct: 0, total,
+    imbalance: lifePct < 15 && focusPct > 60,
+    underRecovery: lifePct < 15,
     lifeNeglected: lifePct < 15 && focusPct > 55,
   };
 }

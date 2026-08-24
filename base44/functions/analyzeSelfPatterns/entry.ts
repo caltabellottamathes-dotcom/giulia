@@ -55,10 +55,10 @@ export default async function (req) {
     const selfMin = sumDuration((timeEntries || []).filter((e) => e.domain === "self"), "duration_min") + sumDuration((timeBlocks || []).filter((b) => new Date(b.start).toDateString() === now.toDateString() && b.status !== "cancelled"), "duration_min");
     const bal = domainBalance(focusMin, lifeMin, selfMin);
     if (bal.imbalance) {
-      findings.push({ type: "imbalance", category: "capacity", title: "FOCUS domineert, SELF ondermaat", description: `Verdeling FOCUS ${bal.focusPct}% · LIFE ${bal.lifePct}% · SELF ${bal.selfPct}%. Risico op overbelasting.` });
+      findings.push({ type: "imbalance", category: "capacity", title: "FOCUS domineert, zelfzorg ondermaat", description: `Verdeling FOCUS ${bal.focusPct}% · LIFE ${bal.lifePct}%. Risico op overbelasting.` });
     }
     if (bal.underRecovery) {
-      findings.push({ type: "under_recovery", category: "rest", title: "Onderherstel", description: `Zelfzorg/rust slechts ${bal.selfPct}% van je tijd. Herstel is structureel ondermaat.` });
+      findings.push({ type: "under_recovery", category: "rest", title: "Onderherstel", description: `Zelfzorg/rust is structureel ondermaat in je LIFE-tijd.` });
     }
 
     if (!findings.length) {
@@ -91,7 +91,7 @@ export default async function (req) {
       });
       if (ins && !ins.skipped) {
         created++;
-        await emitEvent(base44, { event_type: "SELF_INSIGHT_CREATED", object_type: "SelfInsight", object_id: ins.id, domain: "self", description: f.title, source: "analyzeSelfPatterns" });
+        await emitEvent(base44, { event_type: "SELF_INSIGHT_CREATED", object_type: "SelfInsight", object_id: ins.id, domain: "life", description: f.title, source: "analyzeSelfPatterns" });
       }
     }
 

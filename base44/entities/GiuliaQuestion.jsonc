@@ -27,7 +27,6 @@
       "type": "string",
       "enum": [
         "life",
-        "self",
         "projects",
         "time",
         "admin",

@@ -74,7 +74,7 @@ export default async function (req) {
     });
     await emitEvent(base44, {
       event_type: "JOURNAL_ENTRY_CREATED", object_type: "JournalEntry", object_id: entry?.id || null,
-      domain: "self", description: title, source: "buildDailyJournal",
+      domain: "life", description: title, source: "buildDailyJournal",
     });
 
     return Response.json({

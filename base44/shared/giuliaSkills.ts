@@ -12,7 +12,7 @@ export const GIULIA_SKILLS = [
   {
     name: "create_task",
     description: "Maak een nieuwe taak aan. Gebruik dit ALLEEN als Salvo expliciet om een nieuwe actie vraagt. Verzin GEEN taken om projecten 'op te vullen'. Er wordt automatisch op duplicaten gecontroleerd (exacte titel + ≥85% gelijkenis) — bij een duplicaat wordt de bestaande taak teruggegeven in plaats van een nieuwe aan te maken. OOK AL GEDAANE taken (completed/klaar/done) worden meegenomen in de check, zodat eenzelfde taak nooit opnieuw wordt aangemaakt. Controleer dus altijd eerst of de taak al bestaat of al gedaan is.",
-    inputSchema: { type: "object", properties: { title: { type: "string" }, priority: { type: "string" }, deadline: { type: "string", description: "YYYY-MM-DD" }, project_id: { type: "string" }, description: { type: "string" }, assignee: { type: "string", enum: ["salvo", "giulia"] }, domain: { type: "string", enum: ["focus", "life", "self"], description: "FOCUS=werk/zakelijk, LIFE=relaties/sociaal/huishouden/admin/hobby, SELF=rust/zelfzorg/reflectie. Tag automatisch op basis van inhoud." }, category: { type: "string", description: "Sub-categorie voor LIFE, bv. household" } }, required: ["title"] },
+    inputSchema: { type: "object", properties: { title: { type: "string" }, priority: { type: "string" }, deadline: { type: "string", description: "YYYY-MM-DD" }, project_id: { type: "string" }, description: { type: "string" }, assignee: { type: "string", enum: ["salvo", "giulia"] }, domain: { type: "string", enum: ["focus", "life"], description: "FOCUS=werk/zakelijk, LIFE=relaties/sociaal/huishouden/admin/hobby/zelfzorg/rust/reflectie. Tag automatisch op basis van inhoud." }, category: { type: "string", description: "Sub-categorie voor LIFE, bv. household" } }, required: ["title"] },
     execute: async (args, base44) => {
       const sr = base44.asServiceRole;
       const existing = await sr.entities.Task.filter({ status: { $ne: "archived" } }, "-created_date", 500).catch(() => []);
@@ -53,7 +53,7 @@ export const GIULIA_SKILLS = [
   {
     name: "create_project",
     description: "Maak een nieuw project aan. Automatische duplicaat-check (≥85% titel-gelijkenis).",
-    inputSchema: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, category: { type: "string" }, deadline: { type: "string" }, domain: { type: "string", enum: ["focus", "life", "self"], description: "FOCUS=werk, LIFE=levensproject/hobby, SELF=persoonlijke groei" } }, required: ["title"] },
+    inputSchema: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, category: { type: "string" }, deadline: { type: "string" }, domain: { type: "string", enum: ["focus", "life"], description: "FOCUS=werk, LIFE=levensproject/hobby/persoonlijke groei" } }, required: ["title"] },
     execute: async (args, base44) => {
       const sr = base44.asServiceRole;
       const existing = await sr.entities.Project.filter({ status: { $ne: "archived" } }, "-created_date", 200).catch(() => []);
@@ -226,7 +226,7 @@ export const GIULIA_SKILLS = [
   {
     name: "create_giulia_question",
     description: "Voeg een vraag toe aan je 'WANTS TO KNOW'-laag — een ontbrekend stuk context dat je later aan Salvo wilt voorleggen. Gebruik dit als je in een gesprek een gat opmerkt dat niet NU hoeft, of als opvolgvraag na een antwoord.",
-    inputSchema: { type: "object", properties: { title: { type: "string" }, body: { type: "string" }, kind: { type: "string", enum: ["quick_drop", "fill_the_gap", "connect_the_dots", "memory_check", "life_check", "self_discovery"] }, domain: { type: "string", enum: ["life", "self", "projects", "time", "admin", "people", "communication"] }, priority: { type: "string", enum: ["now", "soon", "useful", "curious"] }, options: { type: "array", items: { type: "string" } }, target_type: { type: "string" }, target_ref: { type: "string" } }, required: ["title", "body"] },
+    inputSchema: { type: "object", properties: { title: { type: "string" }, body: { type: "string" }, kind: { type: "string", enum: ["quick_drop", "fill_the_gap", "connect_the_dots", "memory_check", "life_check", "self_discovery"] }, domain: { type: "string", enum: ["life", "projects", "time", "admin", "people", "communication"] }, priority: { type: "string", enum: ["now", "soon", "useful", "curious"] }, options: { type: "array", items: { type: "string" } }, target_type: { type: "string" }, target_ref: { type: "string" } }, required: ["title", "body"] },
     execute: async (args, base44) => {
       const q = await askQuestion(base44, { ...args, source: "GIULIA-GIULIA" });
       return q ? { id: q.id } : { error: "create failed" };
@@ -282,8 +282,8 @@ export const GIULIA_SKILLS = [
   },
   {
     name: "create_event",
-    description: "Maak een agenda-afspraak (CalendarEvent). Gebruik voor álle afspraken — werk, sociaal, huishouden, SELF. Tag domain automatisch: FOCUS=werk/zakelijk, LIFE=sociaal/huishouden, SELF=rust/zelfzorg. Geef start (en liefst end) als ISO datetime. Koppel optioneel een project_id of participants.",
-    inputSchema: { type: "object", properties: { title: { type: "string" }, start: { type: "string", description: "ISO datetime, bv. 2026-08-17T19:00:00" }, end: { type: "string", description: "ISO datetime" }, location: { type: "string" }, participants: { type: "string" }, project_id: { type: "string" }, domain: { type: "string", enum: ["focus", "life", "self"] }, travel_time: { type: "number" }, prep_time: { type: "number" } }, required: ["title", "start"] },
+    description: "Maak een agenda-afspraak (CalendarEvent). Gebruik voor álle afspraken — werk, sociaal, huishouden, zelfzorg. Tag domain automatisch: FOCUS=werk/zakelijk, LIFE=sociaal/huishouden/zelfzorg. Geef start (en liefst end) als ISO datetime. Koppel optioneel een project_id of participants.",
+    inputSchema: { type: "object", properties: { title: { type: "string" }, start: { type: "string", description: "ISO datetime, bv. 2026-08-17T19:00:00" }, end: { type: "string", description: "ISO datetime" }, location: { type: "string" }, participants: { type: "string" }, project_id: { type: "string" }, domain: { type: "string", enum: ["focus", "life"] }, travel_time: { type: "number" }, prep_time: { type: "number" } }, required: ["title", "start"] },
     execute: async (args, base44) => {
       const sr = base44.asServiceRole;
       const e = await sr.entities.CalendarEvent.create({ ...args, status: "confirmed", agent_source: "GIULIA-CORE" }).catch(() => null);
@@ -397,7 +397,7 @@ export const GIULIA_SKILLS = [
       const sr = base44.asServiceRole;
       const next = new Date(); next.setDate(next.getDate() + (args.frequency_days || 1));
       const r = await sr.entities.SelfRoutine.create({ ...args, status: "active", next_due: next.toISOString().slice(0, 10), streak_count: 0, agent_source: "GIULIA-CORE" }).catch(() => null);
-      if (r) await emitEvent(base44, { event_type: "SELF_ROUTINE_CREATED", object_type: "SelfRoutine", object_id: r.id, domain: "self", description: `SELF-routine: ${r.title}` });
+      if (r) await emitEvent(base44, { event_type: "SELF_ROUTINE_CREATED", object_type: "SelfRoutine", object_id: r.id, domain: "life", description: `SELF-routine: ${r.title}` });
       return r ? { id: r.id, title: r.title } : { error: "create failed" };
     }
   },
@@ -410,7 +410,7 @@ export const GIULIA_SKILLS = [
       const r = await sr.entities.SelfRoutine.get(id).catch(() => null);
       if (!r) return { error: "not found" };
       const updated = await sr.entities.SelfRoutine.update(id, { status: "completed", last_done: new Date().toISOString(), streak_count: (r.streak_count || 0) + 1 }).catch(() => null);
-      if (updated) await emitEvent(base44, { event_type: "SELF_ROUTINE_COMPLETED", object_type: "SelfRoutine", object_id: id, domain: "self", description: `Voltooid: ${r.title}` });
+      if (updated) await emitEvent(base44, { event_type: "SELF_ROUTINE_COMPLETED", object_type: "SelfRoutine", object_id: id, domain: "life", description: `Voltooid: ${r.title}` });
       return updated ? { ok: true, streak: (r.streak_count || 0) + 1 } : { error: "update failed" };
     }
   },
@@ -430,7 +430,7 @@ export const GIULIA_SKILLS = [
     execute: async (args, base44) => {
       const sr = base44.asServiceRole;
       const c = await sr.entities.SelfCheckIn.create({ ...args, timestamp: new Date().toISOString(), check_in_type: args.source === "proactive" ? "proactive" : "manual", agent_source: "GIULIA-CORE" }).catch(() => null);
-      if (c) await emitEvent(base44, { event_type: "SELF_CHECK_IN_CREATED", object_type: "SelfCheckIn", object_id: c.id, domain: "self", description: `Check-in: ${args.state}` });
+      if (c) await emitEvent(base44, { event_type: "SELF_CHECK_IN_CREATED", object_type: "SelfCheckIn", object_id: c.id, domain: "life", description: `Check-in: ${args.state}` });
       return c ? { id: c.id } : { error: "create failed" };
     }
   },
@@ -441,7 +441,7 @@ export const GIULIA_SKILLS = [
     execute: async (args, base44) => {
       const sr = base44.asServiceRole;
       const t = await sr.entities.TherapyTrajectory.create({ ...args, status: "active", agent_source: "GIULIA-CORE" }).catch(() => null);
-      if (t) await emitEvent(base44, { event_type: "THERAPY_TRAJECTORY_CREATED", object_type: "TherapyTrajectory", object_id: t.id, domain: "self", description: `Therapy: ${t.title}` });
+      if (t) await emitEvent(base44, { event_type: "THERAPY_TRAJECTORY_CREATED", object_type: "TherapyTrajectory", object_id: t.id, domain: "life", description: `Therapy: ${t.title}` });
       return t ? { id: t.id } : { error: "create failed" };
     }
   },
@@ -461,7 +461,7 @@ export const GIULIA_SKILLS = [
     execute: async (args, base44) => {
       const sr = base44.asServiceRole;
       const e = await sr.entities.JournalEntry.create({ ...args, date: new Date().toISOString(), is_highlight: args.is_highlight || args.type === "highlight", agent_source: "GIULIA-CORE" }).catch(() => null);
-      if (e) await emitEvent(base44, { event_type: "JOURNAL_ENTRY_CREATED", object_type: "JournalEntry", object_id: e.id, domain: "self", description: `Journal: ${e.title}` });
+      if (e) await emitEvent(base44, { event_type: "JOURNAL_ENTRY_CREATED", object_type: "JournalEntry", object_id: e.id, domain: "life", description: `Journal: ${e.title}` });
       return e ? { id: e.id } : { error: "create failed" };
     }
   },
@@ -472,7 +472,7 @@ export const GIULIA_SKILLS = [
     execute: async (args, base44) => {
       const sr = base44.asServiceRole;
       const g = await sr.entities.SelfGoal.create({ ...args, status: "active", progress: 0, agent_source: "GIULIA-CORE" }).catch(() => null);
-      if (g) await emitEvent(base44, { event_type: "SELF_GOAL_CREATED", object_type: "SelfGoal", object_id: g.id, domain: "self", description: `Doel: ${g.title}` });
+      if (g) await emitEvent(base44, { event_type: "SELF_GOAL_CREATED", object_type: "SelfGoal", object_id: g.id, domain: "life", description: `Doel: ${g.title}` });
       return g ? { id: g.id } : { error: "create failed" };
     }
   },
@@ -494,7 +494,7 @@ export const GIULIA_SKILLS = [
       const start = new Date().toISOString();
       const end = new Date(Date.now() + (args.duration_min || 30) * 60000).toISOString();
       const b = await sr.entities.PersonalTimeBlock.create({ ...args, start, end, duration_min: args.duration_min || 30, status: "scheduled", is_protected: args.is_protected || args.type === "protected", agent_source: "GIULIA-CORE" }).catch(() => null);
-      if (b) await emitEvent(base44, { event_type: "PERSONAL_TIME_CREATED", object_type: "PersonalTimeBlock", object_id: b.id, domain: "self", description: `Personal time: ${b.title}` });
+      if (b) await emitEvent(base44, { event_type: "PERSONAL_TIME_CREATED", object_type: "PersonalTimeBlock", object_id: b.id, domain: "life", description: `Personal time: ${b.title}` });
       return b ? { id: b.id } : { error: "create failed" };
     }
   },
@@ -505,7 +505,7 @@ export const GIULIA_SKILLS = [
     execute: async (args, base44) => {
       const sr = base44.asServiceRole;
       const i = await sr.entities.SelfInsight.create({ ...args, status: "active", agent_source: "GIULIA-CORE" }).catch(() => null);
-      if (i) await emitEvent(base44, { event_type: "SELF_INSIGHT_CREATED", object_type: "SelfInsight", object_id: i.id, domain: "self", description: `Inzicht: ${i.title}` });
+      if (i) await emitEvent(base44, { event_type: "SELF_INSIGHT_CREATED", object_type: "SelfInsight", object_id: i.id, domain: "life", description: `Inzicht: ${i.title}` });
       return i ? { id: i.id } : { error: "create failed" };
     }
   },
@@ -550,24 +550,24 @@ export const GIULIA_SKILLS = [
   },
   {
     name: "create_therapy_appointment",
-    description: "Maak een therapie-/begeleidingsafspraak (CalendarEvent, domain='self') en koppel deze aan een traject door next_appointment te zetten.",
+    description: "Maak een therapie-/begeleidingsafspraak (CalendarEvent, domain='life') en koppel deze aan een traject door next_appointment te zetten.",
     inputSchema: { type: "object", properties: { trajectory_id: { type: "string" }, title: { type: "string" }, start: { type: "string", description: "ISO datetime" }, end: { type: "string", description: "ISO datetime" }, location: { type: "string" } }, required: ["trajectory_id", "title", "start"] },
     execute: async (args, base44) => {
       const sr = base44.asServiceRole;
-      const e = await sr.entities.CalendarEvent.create({ title: args.title, start: args.start, end: args.end, location: args.location, domain: "self", status: "confirmed", agent_source: "GIULIA-CORE" }).catch(() => null);
+      const e = await sr.entities.CalendarEvent.create({ title: args.title, start: args.start, end: args.end, location: args.location, domain: "life", status: "confirmed", agent_source: "GIULIA-CORE" }).catch(() => null);
       if (!e) return { error: "event create failed" };
       await sr.entities.TherapyTrajectory.update(args.trajectory_id, { next_appointment: args.start, agent_source: "GIULIA-CORE" }).catch(() => null);
-      await emitEvent(base44, { event_type: "EVENT_CREATED", object_type: "CalendarEvent", object_id: e.id, domain: "self", description: `Therapie-afspraak: ${e.title}` });
+      await emitEvent(base44, { event_type: "EVENT_CREATED", object_type: "CalendarEvent", object_id: e.id, domain: "life", description: `Therapie-afspraak: ${e.title}` });
       return { id: e.id, title: e.title };
     }
   },
   {
     name: "link_event_to_therapy",
-    description: "Koppel een BESTAANDE agenda-afspraak (CalendarEvent) aan een therapie-/begeleidingstraject (TherapyTrajectory). Gebruik dit als Salvo vraagt om een afspraak 'ook bij therapie te zetten'. Zoek eerst het event en het traject op (IDs uit de AGENDA- en THERAPIE-context, of via find_objects). Zet CalendarEvent.therapy_trajectory_id (en domain='self') én voeg het event-ID toe aan TherapyTrajectory.event_ids — bidirectioneel. Raad NOOIT een ID; gebruik altijd de ID uit de context of find_objects.",
+    description: "Koppel een BESTAANDE agenda-afspraak (CalendarEvent) aan een therapie-/begeleidingstraject (TherapyTrajectory). Gebruik dit als Salvo vraagt om een afspraak 'ook bij therapie te zetten'. Zoek eerst het event en het traject op (IDs uit de AGENDA- en THERAPIE-context, of via find_objects). Zet CalendarEvent.therapy_trajectory_id (en domain='life') én voeg het event-ID toe aan TherapyTrajectory.event_ids — bidirectioneel. Raad NOOIT een ID; gebruik altijd de ID uit de context of find_objects.",
     inputSchema: { type: "object", properties: { event_id: { type: "string" }, trajectory_id: { type: "string" } }, required: ["event_id", "trajectory_id"] },
     execute: async ({ event_id, trajectory_id }, base44) => {
       const sr = base44.asServiceRole;
-      const ev = await sr.entities.CalendarEvent.update(event_id, { therapy_trajectory_id: trajectory_id, domain: "self", agent_source: "GIULIA-CORE" }).catch(() => null);
+      const ev = await sr.entities.CalendarEvent.update(event_id, { therapy_trajectory_id: trajectory_id, domain: "life", agent_source: "GIULIA-CORE" }).catch(() => null);
       if (!ev) return { error: "event not found" };
       const t = await sr.entities.TherapyTrajectory.get(trajectory_id).catch(() => null);
       let event_ids = [];
@@ -575,7 +575,7 @@ export const GIULIA_SKILLS = [
         event_ids = [...(t.event_ids || []), event_id].filter((v, i, a) => a.indexOf(v) === i);
         await sr.entities.TherapyTrajectory.update(trajectory_id, { event_ids, agent_source: "GIULIA-CORE" }).catch(() => null);
       }
-      await emitEvent(base44, { event_type: "THERAPY_EVENT_LINKED", object_type: "CalendarEvent", object_id: event_id, domain: "self", description: `Afspraak gekoppeld aan therapie-traject: ${ev.title}` });
+      await emitEvent(base44, { event_type: "THERAPY_EVENT_LINKED", object_type: "CalendarEvent", object_id: event_id, domain: "life", description: `Afspraak gekoppeld aan therapie-traject: ${ev.title}` });
       return { ok: true, event_id, trajectory_id, event_ids };
     }
   },

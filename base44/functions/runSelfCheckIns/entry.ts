@@ -62,7 +62,7 @@ export default async function (req) {
     });
     await emitEvent(base44, {
       event_type: "SELF_CHECKIN_INITIATED", object_type: "SelfCheckIn",
-      object_id: checkIn?.id || null, domain: "self", description: question, source: "runSelfCheckIns",
+      object_id: checkIn?.id || null, domain: "life", description: question, source: "runSelfCheckIns",
     });
 
     return Response.json({ ok: true, check_in_id: checkIn?.id || null, question, tone: res?.tone || "zacht" });

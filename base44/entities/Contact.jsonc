@@ -74,8 +74,7 @@
       "type": "string",
       "enum": [
         "focus",
-        "life",
-        "self"
+        "life"
       ],
       "title": "Relationship Domain"
     }
