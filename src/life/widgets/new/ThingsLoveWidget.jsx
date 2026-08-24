@@ -9,7 +9,7 @@ import { IMAGES } from "@/lib/images";
 import { fmtDaysAgo } from "@/lib/hobbyUtils";
 import HobbyEditPanel from "./HobbyEditPanel";
 
-const PHOTO = IMAGES.lifeW4Love;
+const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/f414f8166_HOBBIES.jpeg";
 const DEEP = "hsl(var(--d-life-deep))";
 const LIGHT = "hsl(var(--d-life-light))";
 const IVORY = "hsl(var(--ivory))";

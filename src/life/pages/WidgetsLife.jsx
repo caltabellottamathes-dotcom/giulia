@@ -40,7 +40,7 @@ export default function WidgetsLife() {
           <RemindersHomeWidget />
         </div>
         <div>
-          <Label>03 · THINGS TO HANDLE! — P·2x3·B·SIDE · admin radar + dagen-tot</Label>
+          <Label>03 · THINGS TO HANDLE! — P·9x16·B·SIDE · admin capacity-ring (InRhythm-stijl)</Label>
           <ThingsHandleWidget />
         </div>
         <div>

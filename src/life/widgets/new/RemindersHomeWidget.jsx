@@ -33,7 +33,7 @@ export default function RemindersHomeWidget() {
   const sub = matters.length === 0 ? "Niets vraagt om aandacht" : matters.length >= 4 ? "Een reset zou helpen" : "Een paar dingen deze week";
 
   return (
-    <div className="relative w-full aspect-[16/9] rounded-[28px] overflow-hidden" onClick={() => openModule("household")} style={{ "--tile-accent": accent, color: IVORY, cursor: "pointer" }}>
+    <div className="relative w-full aspect-[21/9] rounded-[28px] overflow-hidden" onClick={() => openModule("household")} style={{ "--tile-accent": accent, color: IVORY, cursor: "pointer" }}>
       <div className="absolute inset-0 overflow-hidden ring-1 ring-inset ring-white/10 rounded-[28px]" style={{ background: "rgba(120,128,133,0.16)", backdropFilter: "blur(22px) saturate(1.35)", WebkitBackdropFilter: "blur(22px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.14)" }} />
       <span className="pointer-events-none absolute inset-x-0 top-0 h-px z-10" style={{ background: `linear-gradient(90deg, transparent, ${LIGHT} 18%, ${LIGHT} 82%, transparent)` }} />
 
