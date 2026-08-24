@@ -8,7 +8,7 @@ import { base44 } from "@/api/base44Client";
 const DEEP = "#595f34", URG = "#d5e24a", LIGHT = "#d8dab3";
 const PRIO = { high: { c: URG, l: "HIGH" }, medium: { c: DEEP, l: "MED" }, low: { c: LIGHT, l: "LOW" } };
 
-export default function TasksPreview({ onOpen, limit = 50 }) {
+export default function TasksPreview({ onOpen, limit = 50, hideHeader = false }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,7 +29,7 @@ export default function TasksPreview({ onOpen, limit = 50 }) {
 
   return (
     <PreviewShell
-      index="01" section="TASKS" statement={`${open} OPEN`} kicker="VANDAAG" accent={URG}
+      index={hideHeader ? null : "01"} section={hideHeader ? null : "TASKS"} statement={hideHeader ? null : `${open} OPEN`} kicker={hideHeader ? null : "VANDAAG"} accent={URG}
       context={[
         { label: "OPEN", text: `${open} taken wachten op actie.` },
         { label: "DONE", text: `${done} taken voltooid.` },

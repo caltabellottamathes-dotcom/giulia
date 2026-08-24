@@ -91,7 +91,7 @@ export default function PanelDesign() {
               </div>
 
               <div className="px-7 lg:px-9 pb-8">
-                <TasksPreview onOpen={() => navigate(ROUTE)} limit={5} />
+                <TasksPreview onOpen={() => navigate(ROUTE)} limit={5} hideHeader />
               </div>
             </div>
           </div>

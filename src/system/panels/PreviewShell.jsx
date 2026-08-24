@@ -17,11 +17,11 @@ export default function PreviewShell({ index, section, statement, kicker, accent
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-baseline gap-4">
           {index && <span className="text-storm/10 text-4xl font-bold leading-none tabular-nums select-none">{index}</span>}
-          <span className="text-storm/60 text-[11px] uppercase tracking-[0.3em] pt-2">{section}</span>
+          {section && <span className="text-storm/60 text-[11px] uppercase tracking-[0.3em] pt-2">{section}</span>}
         </div>
       </div>
       <div className="mt-1">
-        <h2 className="text-storm text-xl sm:text-2xl font-bold tracking-tight">{statement}</h2>
+        {statement && <h2 className="text-storm text-xl sm:text-2xl font-bold tracking-tight">{statement}</h2>}
         {kicker && <p className="text-storm/60 text-[10px] mt-1 tracking-[0.25em] uppercase">{kicker}</p>}
       </div>
       <GraphicRule accent={accent} className="my-4" />
