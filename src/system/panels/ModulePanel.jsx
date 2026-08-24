@@ -203,8 +203,8 @@ export default function ModulePanel() {
           </div>
 
           {/* Floating glass content card — overlaps the header photo with rounded corners */}
-          <div className="flex-1 -mt-10 rounded-t-[28px] glass-3 overflow-y-auto">
-            <div className="px-7 lg:px-9 pt-7 pb-5">
+          <div className="flex-1 -mt-10 rounded-t-[28px] glass-3 flex flex-col min-h-0 overflow-hidden">
+            <div className="px-7 lg:px-9 pt-7 pb-5 shrink-0">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/55 font-medium mb-1.5">Snelle context</p>
@@ -249,7 +249,7 @@ export default function ModulePanel() {
 
             {/* Content — LEVEL 02 quick-context preview, or full component for
                 interaction surfaces (chat/voice/settings/profile/integrations). */}
-            <div className="px-7 lg:px-9 pb-8">
+            <div className="flex-1 min-h-0 px-7 lg:px-9 pb-8 overflow-y-auto">
               {Preview ? <Preview onOpen={openSpace} /> : <ActiveComponent />}
             </div>
           </div>

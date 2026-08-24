@@ -121,83 +121,85 @@ export default function JeDagPreview({ onOpen }) {
   const go = (path) => { onOpen?.(); navigate(path); };
 
   return (
-    <div className="flex flex-col text-storm">
+    <div className="flex flex-col h-full min-h-0 text-storm">
       {/* ── BODY ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 pb-6">
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 overflow-hidden">
         {/* TODAY'S FLOW */}
-        <div className="flex flex-col">
-          <p className="text-storm/50 text-[10px] tracking-[0.25em] mb-2">TODAY'S FLOW · {loading ? "LADEN" : `${flow.length} MOMENTEN`}</p>
-          {loading && <p className="text-storm/40 text-sm py-3">Tijdlijn laden…</p>}
-          {!loading && flow.length === 0 && (
-            <p className="text-storm/40 text-sm py-3">Geen afspraken of blokken vandaag — vrije ruimte.</p>
-          )}
-          <AnimatePresence initial={false}>
-            {flow.map((it) => {
-              const isOpen = selected?.id === it.id;
-              const past = it.end < now;
-              const isEvent = it.kind === "event";
-              const isDeadline = it.kind === "deadline";
-              const isBlock = it.kind === "block";
-              const dotFilled = isEvent || isBlock;
-              return (
-                <motion.div key={it.id} layout initial={false} className="relative">
-                  <button
-                    onClick={() => setSelected(isOpen ? null : it)}
-                    className={`w-full text-left flex items-start gap-3 py-2.5 transition-opacity ${past ? "opacity-45" : ""}`}
-                  >
-                    <span className="w-12 shrink-0 text-storm/55 text-[12px] tabular-nums pt-0.5">{hm(it.start)}</span>
-                    <span className="relative flex shrink-0 pt-1.5">
-                      <span className={`h-2.5 w-2.5 rounded-full border-2 ${dotFilled ? "" : "bg-transparent"}`}
-                        style={{ borderColor: isDeadline ? URG : DEEP, background: dotFilled ? (isBlock ? MID : DEEP) : "transparent" }} />
-                    </span>
-                    <span className="flex-1 min-w-0 pt-0.5">
-                      <p className="text-storm text-[13px] font-medium leading-tight truncate">{it.title}</p>
-                      <p className="text-storm/50 text-[11px] mt-0.5">
-                        {isDeadline ? "Deadline vandaag" : fmtDur(durMin(it.start, it.end))}
-                        {isEvent && it.location ? ` · ${it.location}` : ""}
-                      </p>
-                    </span>
-                  </button>
+        <div className="flex flex-col min-h-0 overflow-hidden">
+          <p className="text-storm/50 text-[10px] tracking-[0.25em] mb-2 shrink-0">TODAY'S FLOW · {loading ? "LADEN" : `${flow.length} MOMENTEN`}</p>
+          <div className="flex-1 min-h-0 overflow-auto pr-1 -mr-1">
+            {loading && <p className="text-storm/40 text-sm py-3">Tijdlijn laden…</p>}
+            {!loading && flow.length === 0 && (
+              <p className="text-storm/40 text-sm py-3">Geen afspraken of blokken vandaag — vrije ruimte.</p>
+            )}
+            <AnimatePresence initial={false}>
+              {flow.map((it) => {
+                const isOpen = selected?.id === it.id;
+                const past = it.end < now;
+                const isEvent = it.kind === "event";
+                const isDeadline = it.kind === "deadline";
+                const isBlock = it.kind === "block";
+                const dotFilled = isEvent || isBlock;
+                return (
+                  <motion.div key={it.id} layout initial={false} className="relative">
+                    <button
+                      onClick={() => setSelected(isOpen ? null : it)}
+                      className={`w-full text-left flex items-start gap-3 py-2.5 transition-opacity ${past ? "opacity-45" : ""}`}
+                    >
+                      <span className="w-12 shrink-0 text-storm/55 text-[12px] tabular-nums pt-0.5">{hm(it.start)}</span>
+                      <span className="relative flex shrink-0 pt-1.5">
+                        <span className={`h-2.5 w-2.5 rounded-full border-2 ${dotFilled ? "" : "bg-transparent"}`}
+                          style={{ borderColor: isDeadline ? URG : DEEP, background: dotFilled ? (isBlock ? MID : DEEP) : "transparent" }} />
+                      </span>
+                      <span className="flex-1 min-w-0 pt-0.5">
+                        <p className="text-storm text-[13px] font-medium leading-tight truncate">{it.title}</p>
+                        <p className="text-storm/50 text-[11px] mt-0.5">
+                          {isDeadline ? "Deadline vandaag" : fmtDur(durMin(it.start, it.end))}
+                          {isEvent && it.location ? ` · ${it.location}` : ""}
+                        </p>
+                      </span>
+                    </button>
 
-                  <AnimatePresence>
-                    {isOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-                        className="overflow-hidden"
-                      >
-                        <div className="ml-[60px] mr-1 mb-3 rounded-2xl border border-storm/10 bg-marble/5 px-4 py-3.5 flex flex-col gap-2.5">
-                          <div className="flex flex-col gap-1.5 text-[12px] text-storm/75">
-                            <Row icon={Clock} label="Tijd" value={`${hm(it.start)} – ${hm(it.end)}`} />
-                            {isEvent && it.location && <Row icon={MapPin} label="Locatie" value={it.location} />}
-                            {isEvent && it.travel > 0 && <Row icon={Timer} label="Reistijd" value={`${it.travel} min`} />}
-                            {isEvent && it.prep > 0 && <Row icon={Timer} label="Voorbereiding" value={`${it.prep} min`} />}
-                            {isBlock && <Row icon={Clock} label="Type" value={it.protected ? "Beschermd focus" : "Gereserveerd"} />}
-                            {isDeadline && <Row icon={Clock} label="Deadline" value="vandaag" />}
+                    <AnimatePresence>
+                      {isOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                          className="overflow-hidden"
+                        >
+                          <div className="ml-[60px] mr-1 mb-3 rounded-2xl border border-storm/10 bg-marble/5 px-4 py-3.5 flex flex-col gap-2.5">
+                            <div className="flex flex-col gap-1.5 text-[12px] text-storm/75">
+                              <Row icon={Clock} label="Tijd" value={`${hm(it.start)} – ${hm(it.end)}`} />
+                              {isEvent && it.location && <Row icon={MapPin} label="Locatie" value={it.location} />}
+                              {isEvent && it.travel > 0 && <Row icon={Timer} label="Reistijd" value={`${it.travel} min`} />}
+                              {isEvent && it.prep > 0 && <Row icon={Timer} label="Voorbereiding" value={`${it.prep} min`} />}
+                              {isBlock && <Row icon={Clock} label="Type" value={it.protected ? "Beschermd focus" : "Gereserveerd"} />}
+                              {isDeadline && <Row icon={Clock} label="Deadline" value="vandaag" />}
+                            </div>
+                            <div className="rounded-xl px-3 py-2 mt-0.5" style={{ background: `${LIGHT}55` }}>
+                              <p className="text-[10px] uppercase tracking-[0.2em] font-semibold mb-0.5" style={{ color: DEEP }}>Why it matters</p>
+                              <p className="text-storm text-[12px] leading-relaxed">{whyMatters(it)}</p>
+                            </div>
+                            {isDeadline && (
+                              <button onClick={() => completeTask(it.task)} disabled={completing}
+                                className="inline-flex items-center gap-1.5 self-start rounded-full px-3 py-1.5 text-[11px] font-semibold text-ivory transition disabled:opacity-50" style={{ background: DEEP }}>
+                                <Check className="h-3 w-3" /> Voltooi
+                              </button>
+                            )}
                           </div>
-                          <div className="rounded-xl px-3 py-2 mt-0.5" style={{ background: `${LIGHT}55` }}>
-                            <p className="text-[10px] uppercase tracking-[0.2em] font-semibold mb-0.5" style={{ color: DEEP }}>Why it matters</p>
-                            <p className="text-storm text-[12px] leading-relaxed">{whyMatters(it)}</p>
-                          </div>
-                          {isDeadline && (
-                            <button onClick={() => completeTask(it.task)} disabled={completing}
-                              className="inline-flex items-center gap-1.5 self-start rounded-full px-3 py-1.5 text-[11px] font-semibold text-ivory transition disabled:opacity-50" style={{ background: DEEP }}>
-                              <Check className="h-3 w-3" /> Voltooi
-                            </button>
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* WHAT MATTERS NOW */}
-        <div className="flex flex-col gap-3">
-          <p className="text-storm/50 text-[10px] tracking-[0.25em]">WHAT MATTERS NOW</p>
+        <div className="flex flex-col gap-3 min-h-0 overflow-auto pl-1">
+          <p className="text-storm/50 text-[10px] tracking-[0.25em] shrink-0">WHAT MATTERS NOW</p>
           <div className="rounded-2xl border border-storm/10 bg-marble/5 px-4 py-3.5 flex flex-col gap-2">
             {nextUp ? (
               <>
@@ -234,7 +236,7 @@ export default function JeDagPreview({ onOpen }) {
       </div>
 
       {/* ── FIXED FOOTER ── */}
-      <div className="sticky bottom-0 -mx-7 lg:-mx-9 px-7 lg:px-9 pb-6 pt-4 bg-metal/85 backdrop-blur-md border-t border-storm/10 z-10">
+      <div className="shrink-0 pt-5">
         <GraphicRule accent={DEEP} />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-4">
           {ctx.map((c, i) => (
