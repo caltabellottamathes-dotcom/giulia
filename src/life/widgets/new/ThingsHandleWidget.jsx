@@ -1,7 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { CountUp } from "@/system/widgets/primitives";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { useLearningSync } from "@/hooks/useLearningSync";
@@ -11,27 +10,25 @@ const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0
 const IVORY = "hsl(var(--ivory))";
 const PISTACHIO = "#d8dab3";
 const URGENT = "#d5e24a";
-const R = 42, C = 2 * Math.PI * R, ARC = 0.75 * C;
+const TITLE = "Things to Handle!";
 
-/** pressure → {label, color} van Whipped Pistachio naar Urgent */
+/** pressure → alleen MISSED in Urgent; alles ander in Whipped Pistachio */
 function pressure(diff) {
   if (diff == null) return { label: "YOU'RE FINE", color: PISTACHIO };
   if (diff < 0) return { label: "MISSED", color: URGENT };
   const d = Math.floor(diff / 86400000);
-  if (d >= 15) return { label: "YOU'RE FINE", color: "#d8dab3" };
-  if (d >= 7) return { label: "YOU'VE GOT TIME", color: "#d3d99a" };
-  if (d >= 3) return { label: "KEEP AN EYE", color: "#cfd880" };
-  if (d >= 1) return { label: "DEAL WITH IT", color: "#d2dd5c" };
-  return { label: "NOW, PLEASE", color: URGENT };
+  if (d >= 15) return { label: "YOU'RE FINE", color: PISTACHIO };
+  if (d >= 7) return { label: "YOU'VE GOT TIME", color: PISTACHIO };
+  if (d >= 3) return { label: "KEEP AN EYE", color: PISTACHIO };
+  if (d >= 1) return { label: "DEAL WITH IT", color: PISTACHIO };
+  return { label: "NOW, PLEASE", color: PISTACHIO };
 }
 
 /** ThingsHandleWidget — P·9x16·SLIDE · "Things to Handle!"
- *  Foto + gradient. Boven: geanimeerde header. Achter (onderste helft): een
- *  grote, lage aftelklok in Whipped Pistachio met de eerstvolgende zaak +
- *  kost erboven en een pijl om door items te bladeren. Onderste helft =
- *  lichte glaskaart (flush, zelfde glas als andere widgets) met "To handle:"
- *  + status-tekst (pistachio→urgent), links "X op komst" + weather.sub, rechts
- *  een grote asymmetrische ring (270°) met het on-track-%. Tik kaart → omhoog. */
+ *  Foto + gradient. Achter (onderste helft): "Eerst volgende" + item mét wit
+ *  bedrag laag, net boven de grote pistachio-aftelklok. Onderste helft = lichte
+ *  glaskaart (minder blur, flush) met groot grafisch "TO HANDLE:" + wisselende
+ *  status-tekst (enkel MISSED in Urgent) en "X op komst". Tik kaart → omhoog. */
 export default function ThingsHandleWidget() {
   const { openModule } = usePanel();
   const learnTick = useLearningSync();
@@ -41,14 +38,6 @@ export default function ThingsHandleWidget() {
   const coming = useMemo(() => comingUp(obs || []), [obs]);
   const overdue = useMemo(() => overdueList(obs || []), [obs]);
 
-  const total = (obs || []).filter((o) => o.status !== "done").length;
-  const clearPct = total === 0 ? 100 : Math.max(0, Math.round((1 - overdue.length / total) * 100));
-  const [val, setVal] = useState(0);
-  useEffect(() => { const t = setTimeout(() => setVal(clearPct), 300); return () => clearTimeout(t); }, [clearPct]);
-  const off = ARC * (1 - val / 100);
-  const ringColor = overdue.length ? URGENT : PISTACHIO;
-
-  // cycling door komende zaken, elk met eigen aftelklok
   const [idx, setIdx] = useState(0);
   const current = coming.length ? coming[idx % coming.length] : null;
   const [now, setNow] = useState(Date.now());
@@ -69,21 +58,23 @@ export default function ThingsHandleWidget() {
       <motion.img src={PHOTO} alt="Things to Handle" className="absolute inset-0 h-full w-full object-cover" initial={{ scale: 1.14, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }} draggable={false} />
       <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(20,22,26,0.92) 8%, rgba(20,22,26,0.42) 50%, rgba(20,22,26,0.20) 100%)" }} />
 
-      {/* ACHTER: aftelklok (onderste helft) — groot, dicht, laag */}
-      <div className="absolute inset-x-0 bottom-0 h-1/2 z-0 flex flex-col px-5 pb-5" style={{ color: IVORY }} onClick={() => openModule("personaladmin")}>
-        <div className="flex items-center justify-between">
-          <p className="text-[8px] uppercase tracking-[0.22em] opacity-55">Eerst volgende</p>
-          {coming.length > 1 && (
-            <button onClick={(e) => { e.stopPropagation(); setIdx((i) => (i + 1) % coming.length); }} className="flex items-center justify-center h-6 w-6 rounded-full bg-white/10 border border-white/15 hover:bg-white/20 transition-colors" aria-label="volgende">
-              <ArrowRight size={11} style={{ color: IVORY }} />
-            </button>
-          )}
+      {/* ACHTER: eerst volgende + item (laag, net boven aftelklok) + aftelklok */}
+      <div className="absolute inset-x-0 bottom-0 h-1/2 z-0 flex flex-col justify-end px-5 pb-5 gap-3" style={{ color: IVORY }} onClick={() => openModule("personaladmin")}>
+        <div>
+          <div className="flex items-center justify-between">
+            <p className="text-[8px] uppercase tracking-[0.22em] opacity-55">Eerst volgende</p>
+            {coming.length > 1 && (
+              <button onClick={(e) => { e.stopPropagation(); setIdx((i) => (i + 1) % coming.length); }} className="flex items-center justify-center h-6 w-6 rounded-full bg-white/10 border border-white/15 hover:bg-white/20 transition-colors" aria-label="volgende">
+                <ArrowRight size={11} style={{ color: IVORY }} />
+              </button>
+            )}
+          </div>
+          <div className="flex items-baseline gap-2 mt-1.5">
+            <p className="text-[13px] font-display font-semibold leading-tight truncate" style={{ color: PISTACHIO }}>{hasCurrent ? current.title : "Niets op komst"}</p>
+            {hasCurrent && Number(current.amount) > 0 && <span className="text-[11px] tabular-nums font-semibold shrink-0" style={{ color: IVORY }}>€{current.amount}</span>}
+          </div>
         </div>
-        <div className="flex items-baseline gap-2 mt-1.5">
-          <p className="text-[13px] font-display font-semibold leading-tight truncate" style={{ color: PISTACHIO }}>{hasCurrent ? current.title : "Niets op komst"}</p>
-          {hasCurrent && Number(current.amount) > 0 && <span className="text-[11px] tabular-nums font-semibold shrink-0" style={{ color: PISTACHIO }}>€{current.amount}</span>}
-        </div>
-        <div className="mt-auto flex items-end justify-center gap-2">
+        <div className="flex items-end justify-center gap-2">
           {[{ v: pad(dDay), l: "Dagen" }, { v: pad(dHr), l: "Uren" }, { v: pad(dMin), l: "Min" }].map((b, i) => (
             <div key={i} className="flex flex-col items-center">
               <span className="text-[54px] font-display font-bold tabular-nums leading-none" style={{ color: PISTACHIO }}>{hasCurrent ? b.v : "—"}</span>
@@ -93,13 +84,17 @@ export default function ThingsHandleWidget() {
         </div>
       </div>
 
-      {/* HEADER (boven) — geanimeerd */}
+      {/* HEADER — titel met per-letter animatie */}
       <div className="absolute top-0 inset-x-0 px-4 pt-4 z-10 flex items-center justify-between" style={{ color: IVORY }}>
-        <motion.p className="text-[9px] uppercase tracking-[0.28em] font-bold opacity-90" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.5 }}>Things to Handle!</motion.p>
-        {overdue.length > 0 && <span className="text-[8px] uppercase tracking-[0.14em] font-bold px-2 py-0.5 rounded-full" style={{ background: URGENT + "22", color: URGENT, border: `1px solid ${URGENT}55` }}>{overdue.length} te laat</span>}
+        <p className="text-[9px] uppercase tracking-[0.28em] font-bold opacity-90 flex">
+          {TITLE.split("").map((ch, i) => (
+            <motion.span key={i} className="inline-block" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.045, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}>{ch === " " ? "\u00A0" : ch}</motion.span>
+          ))}
+        </p>
+        {overdue.length > 0 && <span className="text-[8px] uppercase tracking-[0.14em] font-bold px-2 py-0.5 rounded-full shrink-0" style={{ background: URGENT + "22", color: URGENT, border: `1px solid ${URGENT}55` }}>{overdue.length} te laat</span>}
       </div>
 
-      {/* GLASKAART (onderste helft, flush, licht glas) — schuift omhoog bij tik */}
+      {/* GLASKAART (onderste helft, flush, minder blur) — schuift omhoog bij tik */}
       <motion.button
         type="button"
         onClick={() => setUp((v) => !v)}
@@ -107,33 +102,19 @@ export default function ThingsHandleWidget() {
         initial={false}
         animate={{ y: up ? "0%" : "100%" }}
         transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-        style={{ background: "rgba(120,128,133,0.18)", backdropFilter: "blur(30px) saturate(1.4)", WebkitBackdropFilter: "blur(30px) saturate(1.4)", border: "1px solid rgba(255,255,255,0.16)", boxShadow: "0 -14px 32px -14px rgba(0,0,0,0.42), 0 14px 32px -14px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.2)" }}
+        style={{ background: "rgba(120,128,133,0.18)", backdropFilter: "blur(16px) saturate(1.3)", WebkitBackdropFilter: "blur(16px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.16)", boxShadow: "0 -14px 32px -14px rgba(0,0,0,0.42), 0 14px 32px -14px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.2)" }}
       >
         <div className="absolute inset-0 p-4 flex flex-col justify-between" style={{ color: IVORY, textShadow: "0 1px 6px rgba(0,0,0,0.45)" }}>
-          {/* boven: To handle: + status */}
           <div>
-            <p className="text-[9px] uppercase tracking-[0.22em] opacity-60">To handle:</p>
-            <motion.p key={status.label} className="text-[17px] font-display font-bold tracking-[-0.01em] mt-1" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} style={{ color: status.color }}>{status.label}</motion.p>
+            <p className="text-[13px] uppercase tracking-[0.36em] font-black opacity-75">TO HANDLE:</p>
+            <motion.p key={status.label} className="text-[30px] font-display font-black tracking-[-0.03em] leading-[0.92] mt-2.5" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} style={{ color: status.color }}>{status.label}</motion.p>
           </div>
-          {/* beneden: links op komst + sub, rechts asymmetrische ring */}
-          <div className="flex items-end justify-between">
-            <div>
-              <p className="text-[22px] font-display font-bold tabular-nums leading-none">{coming.length}</p>
-              <p className="text-[8px] uppercase tracking-[0.18em] opacity-65 mt-1">op komst</p>
-              <p className="text-[8px] uppercase tracking-[0.14em] opacity-50 mt-0.5">{weather.sub}</p>
+          <div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-[22px] font-display font-bold tabular-nums leading-none">{coming.length}</span>
+              <span className="text-[10px] uppercase tracking-[0.18em] opacity-65">op komst</span>
             </div>
-            <div className="flex flex-col items-center">
-              <div className="relative h-[94px] w-[94px]">
-                <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full">
-                  <circle cx="50" cy="50" r={R} fill="none" stroke="rgba(255,255,255,0.20)" strokeWidth="4" strokeDasharray={`${ARC} ${C}`} transform="rotate(-45 50 50)" />
-                  <motion.circle cx="50" cy="50" r={R} fill="none" stroke={ringColor} strokeWidth="4" strokeLinecap="round" strokeDasharray={`${ARC} ${C}`} strokeDashoffset={off} transform="rotate(-45 50 50)" animate={{ strokeDashoffset: off }} transition={{ duration: 1.2, ease: "easeOut" }} />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <CountUp value={val} className="text-[26px] font-display font-bold tabular-nums leading-none" />
-                </div>
-              </div>
-              <span className="text-[8px] uppercase tracking-[0.2em] opacity-65 mt-1">on track</span>
-            </div>
+            <p className="text-[9px] uppercase tracking-[0.16em] opacity-55 mt-1.5">{weather.sub}</p>
           </div>
         </div>
       </motion.button>
