@@ -14,6 +14,7 @@ const IVORY = "hsl(var(--ivory))";
 /* Vandaag = blauwe familie (actief = lichtblauwe cel), morgen = warm-olive. */
 const TODAY_CHIP = "#b1bec6";
 const MORGEN_CHIP = "#d8dab3";
+const TODAY_INK = "#2f4a5a";
 const OLIVE = "#94925d";
 
 const MEAL_ORDER = ["breakfast", "lunch", "snack", "dinner"];
@@ -59,7 +60,7 @@ function activeMealType() {
 function DayTimeline({ meals, mode, dateLabel, dayName }) {
   const isToday = mode === "today";
   const active = isToday ? activeMealType() : null;
-  const accent = OLIVE;
+  const accent = isToday ? TODAY_INK : OLIVE;
   const chipColor = isToday ? TODAY_CHIP : MORGEN_CHIP;
   const now = isToday ? nowX() : null;
   const lead = MEAL_ORDER.map((mt) => meals.find((x) => x.meal_type === mt)).filter(Boolean)[0] || meals[0];
@@ -73,7 +74,7 @@ function DayTimeline({ meals, mode, dateLabel, dayName }) {
           {dayName && <span className="text-[9px] uppercase tracking-[0.14em]" style={{ color: accent, opacity: 0.55 }}>{dayName}</span>}
         </div>
         {isToday ? (
-          <span className="text-[8px] uppercase tracking-[0.16em] font-bold px-2 py-0.5 rounded-full" style={{ background: chipColor, color: OLIVE }}>nu · {MEAL_LABELS[active]}</span>
+          <span className="text-[8px] uppercase tracking-[0.16em] font-bold px-2 py-0.5 rounded-full" style={{ background: chipColor, color: accent }}>nu · {MEAL_LABELS[active]}</span>
         ) : (
           <span className="text-[8px] uppercase tracking-[0.16em] font-semibold" style={{ color: OLIVE, opacity: 0.7 }}>{meals.length} maaltijden</span>
         )}
@@ -86,8 +87,8 @@ function DayTimeline({ meals, mode, dateLabel, dayName }) {
         {/* nu-markering (vandaag) */}
         {now != null && (
           <div className="absolute top-0 z-20" style={{ left: `${now}%` }}>
-            <span className="absolute -translate-x-1/2 top-0 text-[7px] uppercase tracking-[0.18em] font-bold px-1 rounded leading-none py-[1px]" style={{ background: OLIVE, color: "hsl(var(--ivory))" }}>nu</span>
-            <div className="absolute top-4 left-0 -translate-x-1/2 h-7 w-px animate-pulse-soft" style={{ background: OLIVE }} />
+            <span className="absolute -translate-x-1/2 top-0 text-[7px] uppercase tracking-[0.18em] font-bold px-1 rounded leading-none py-[1px]" style={{ background: accent, color: "hsl(var(--ivory))" }}>nu</span>
+            <div className="absolute top-4 left-0 -translate-x-1/2 h-7 w-px animate-pulse-soft" style={{ background: accent }} />
           </div>
         )}
         {/* nodes */}
@@ -117,7 +118,7 @@ function DayTimeline({ meals, mode, dateLabel, dayName }) {
       <div className="mt-1.5 shrink-0">
         {(() => {
           const m = isToday ? meals.find((x) => x.meal_type === active) : lead;
-          const ink = OLIVE;
+          const ink = accent;
           const glass = { background: isToday ? "rgba(177,190,198,0.55)" : "rgba(216,218,179,0.55)" };
           return (
             <div className="relative overflow-hidden rounded-xl px-3 py-2 flex items-center justify-between" style={{ ...glass, color: ink, backdropFilter: "blur(14px) saturate(1.4)", WebkitBackdropFilter: "blur(14px) saturate(1.4)", boxShadow: "0 10px 26px -8px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.28)" }}>

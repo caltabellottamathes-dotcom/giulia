@@ -96,14 +96,8 @@ export default function ThingsLoveWidget() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
           >
-            <div className="cursor-pointer" onClick={() => openModule("hobbies")}>
-              <WidgetHeader type="energy" label="Things I Love." count={active ? `${active} levend` : ""} />
-              <h3 className="text-[20px] leading-[1.05] font-display font-semibold tracking-[-0.02em] mt-1">{active > 0 ? `${active} THINGS ALIVE` : "QUIETLY CREATIVE"}</h3>
-              <p className="text-[10px] uppercase tracking-[0.18em] mt-1 opacity-60">{bars.length} hobby's in je veld</p>
-            </div>
-
-            {/* legenda — 3 categorieën met kleur */}
-            <div className="flex flex-wrap gap-x-2.5 gap-y-1 mt-2.5">
+            {/* legenda — 3 categorieën met kleur (klik → module) */}
+            <div className="flex flex-wrap gap-x-2.5 gap-y-1 mt-2.5 cursor-pointer" onClick={() => openModule("hobbies")}>
               {Object.entries(THEMES).map(([name, color]) => (
                 <div key={name} className="flex items-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
@@ -164,9 +158,9 @@ export default function ThingsLoveWidget() {
           </div>
         ) : (
           <div className="absolute inset-0 p-3.5 flex flex-col" style={{ color: IVORY, textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>
-            <span className="text-[9px] uppercase tracking-[0.18em] font-bold opacity-80">Categorieën</span>
-            <h3 className="text-[20px] leading-[1.05] font-display font-semibold tracking-[-0.02em] mt-1">3 Groepen</h3>
-            <p className="text-[10px] uppercase tracking-[0.18em] mt-1 opacity-60">{bars.length} hobby's · {active} actief</p>
+            <WidgetHeader type="energy" label="Things I Love." count={active ? `${active} levend` : ""} />
+            <h3 className="text-[20px] leading-[1.05] font-display font-semibold tracking-[-0.02em] mt-1">{active > 0 ? `${active} THINGS ALIVE` : "QUIETLY CREATIVE"}</h3>
+            <p className="text-[10px] uppercase tracking-[0.18em] mt-1 opacity-60">{bars.length} hobby's in je veld</p>
             <div className="mt-auto space-y-2">
               {Object.entries(THEMES).map(([name, color]) => {
                 const st = catStats[name] || { count: 0, total: 0 };

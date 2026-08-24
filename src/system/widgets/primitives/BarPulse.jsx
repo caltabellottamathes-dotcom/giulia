@@ -16,8 +16,8 @@ export default function BarPulse({ values = [], items, height = 40, gap = 6, acc
               key={it.key ?? i}
               onClick={it.onClick}
               type="button"
-              className="flex-1 h-full flex flex-col items-center justify-end"
-              style={{ cursor: it.onClick ? "pointer" : "default" }}
+              className="h-full flex flex-col items-center justify-end"
+              style={{ cursor: it.onClick ? "pointer" : "default", flexGrow: Math.max(2, it.value), flexBasis: "0%" }}
             >
               <div
                 className="w-full rounded-full transition-all duration-500"
