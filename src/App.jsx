@@ -67,50 +67,6 @@ import WidgetsFocus from '@/focus/pages/WidgetsFocus';
 import WidgetsLife from '@/life/pages/WidgetsLife';
 import ShellCollection from '@/system/pages/ShellCollection';
 import PanelDesign from '@/system/pages/PanelDesign';
-// GlassAgenda scoped pages
-import GlassLayout from '@/glass/components/GlassLayout';
-import GlassHome from '@/glass/pages/Home';
-import Archief from '@/glass/pages/Archief';
-import Notitieblok from '@/glass/pages/Notitieblok';
-import PrioriteitenMatrix from '@/glass/pages/PrioriteitenMatrix';
-import InspiratieBord from '@/glass/pages/InspiratieBord';
-import DoelenDashboard from '@/glass/pages/DoelenDashboard';
-import DagelijkseBriefing from '@/glass/pages/DagelijkseBriefing';
-import Dagplanning from '@/glass/pages/Dagplanning';
-import FocusModus from '@/glass/pages/FocusModus';
-import Instellingen from '@/glass/pages/Instellingen';
-import TaakDetails from '@/glass/pages/TaakDetails';
-import VergaderNotities from '@/glass/pages/VergaderNotities';
-import Contacten from '@/glass/pages/Contacten';
-import AgendaOverzicht from '@/glass/pages/AgendaOverzicht';
-import Takenoverzicht from '@/glass/pages/Takenoverzicht';
-import Tijdsregistratie from '@/glass/pages/Tijdsregistratie';
-import Weekplanning from '@/glass/pages/Weekplanning';
-import Projecten from '@/glass/pages/Projecten';
-import Statistieken from '@/glass/pages/Statistieken';
-import SelfIndex from '@/glass/pages/self/Index';
-import DailyStatePanel from '@/glass/pages/self/DailyStatePanel';
-import RoutinesPanel from '@/glass/pages/self/RoutinesPanel';
-import WakePanel from '@/glass/pages/self/WakePanel';
-import TherapyPanel from '@/glass/pages/self/TherapyPanel';
-import JournalPanel from '@/glass/pages/self/JournalPanel';
-import DevelopmentPanel from '@/glass/pages/self/DevelopmentPanel';
-import PersonalTimePanel from '@/glass/pages/self/PersonalTimePanel';
-import InsightsPanel from '@/glass/pages/self/InsightsPanel';
-import FoodPanel from '@/glass/pages/self/FoodPanel';
-import ModTaken from '@/glass/pages/modules/Taken';
-import ModEmail from '@/glass/pages/modules/Email';
-import ModNotifications from '@/glass/pages/modules/Notifications';
-import ModApprovals from '@/glass/pages/modules/Approvals';
-import ModDocuments from '@/glass/pages/modules/DocumentsPreview';
-import ModKnowledge from '@/glass/pages/modules/KnowledgePreview';
-import ModPeople from '@/glass/pages/modules/PeoplePreview';
-import ModProjectAdd from '@/glass/pages/modules/ProjectAddPanel';
-import ModTaskArchive from '@/glass/pages/modules/TaskArchivePreview';
-import ModTaskDetail from '@/glass/pages/modules/TaskDetailPreview';
-import ModTimeTracker from '@/glass/pages/modules/TimeTrackerPreview';
-import ModWeekView from '@/glass/pages/modules/WeekView';
-import ModWhatsApp from '@/glass/pages/modules/WhatsAppPreview';
 
 
 const AuthenticatedApp = () => {
@@ -194,51 +150,6 @@ const AuthenticatedApp = () => {
           <Route path="/widgets-life" element={<WidgetsLife />} />
           <Route path="/shell-collection" element={<ShellCollection />} />
           <Route path="/panel-design" element={<PanelDesign />} />
-          {/* GlassAgenda — scoped suite */}
-          <Route element={<GlassLayout />}>
-            <Route path="/glass" element={<GlassHome />} />
-            <Route path="/glass/archief" element={<Archief />} />
-            <Route path="/glass/notitieblok" element={<Notitieblok />} />
-            <Route path="/glass/prioriteiten" element={<PrioriteitenMatrix />} />
-            <Route path="/glass/inspiratie" element={<InspiratieBord />} />
-            <Route path="/glass/doelen" element={<DoelenDashboard />} />
-            <Route path="/glass/briefing" element={<DagelijkseBriefing />} />
-            <Route path="/glass/dagplanning" element={<Dagplanning />} />
-            <Route path="/glass/focus" element={<FocusModus />} />
-            <Route path="/glass/instellingen" element={<Instellingen />} />
-            <Route path="/glass/taak-details" element={<TaakDetails />} />
-            <Route path="/glass/vergader" element={<VergaderNotities />} />
-            <Route path="/glass/contacten" element={<Contacten />} />
-            <Route path="/glass/agenda" element={<AgendaOverzicht />} />
-            <Route path="/glass/taken" element={<Takenoverzicht />} />
-            <Route path="/glass/tijd" element={<Tijdsregistratie />} />
-            <Route path="/glass/week" element={<Weekplanning />} />
-            <Route path="/glass/projecten" element={<Projecten />} />
-            <Route path="/glass/statistieken" element={<Statistieken />} />
-            <Route path="/glass/self" element={<SelfIndex />} />
-            <Route path="/glass/self/daily-state" element={<DailyStatePanel />} />
-            <Route path="/glass/self/routines" element={<RoutinesPanel />} />
-            <Route path="/glass/self/wake" element={<WakePanel />} />
-            <Route path="/glass/self/therapy" element={<TherapyPanel />} />
-            <Route path="/glass/self/journal" element={<JournalPanel />} />
-            <Route path="/glass/self/development" element={<DevelopmentPanel />} />
-            <Route path="/glass/self/personal-time" element={<PersonalTimePanel />} />
-            <Route path="/glass/self/insights" element={<InsightsPanel />} />
-            <Route path="/glass/self/food" element={<FoodPanel />} />
-            <Route path="/glass/modules/taken" element={<ModTaken />} />
-            <Route path="/glass/modules/email" element={<ModEmail />} />
-            <Route path="/glass/modules/notifications" element={<ModNotifications />} />
-            <Route path="/glass/modules/approvals" element={<ModApprovals />} />
-            <Route path="/glass/modules/documents" element={<ModDocuments />} />
-            <Route path="/glass/modules/knowledge" element={<ModKnowledge />} />
-            <Route path="/glass/modules/people" element={<ModPeople />} />
-            <Route path="/glass/modules/project-add" element={<ModProjectAdd />} />
-            <Route path="/glass/modules/task-archive" element={<ModTaskArchive />} />
-            <Route path="/glass/modules/task-detail" element={<ModTaskDetail />} />
-            <Route path="/glass/modules/time-tracker" element={<ModTimeTracker />} />
-            <Route path="/glass/modules/week" element={<ModWeekView />} />
-            <Route path="/glass/modules/whatsapp" element={<ModWhatsApp />} />
-          </Route>
         </Route>
         <Route path="/life-gallery" element={<LifeGallery />} />
         <Route path="/self-gallery" element={<SelfGallery />} />
