@@ -62,7 +62,7 @@ export function useActiveDomain(board) {
   const loc = useLocation();
   const [sessionBoard, setSessionBoard] = useState(board ?? getActiveBoard());
   useEffect(() => {
-    if (board) return;
+    if (board != null) { setSessionBoard(board); return; }
     const h = (e) => setSessionBoard(e.detail);
     window.addEventListener("giulia:board-change", h);
     return () => window.removeEventListener("giulia:board-change", h);
