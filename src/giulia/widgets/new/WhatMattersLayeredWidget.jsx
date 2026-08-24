@@ -93,14 +93,14 @@ export default function WhatMattersLayeredWidget() {
         shape="16:9"
         photo={PHOTO}
         glassPosition="right"
-        glassFraction={0.52}
+        glassFraction={0.667}
         overhang={0}
         domain="giulia"
         radius="large"
         onClick={() => openModule("jedag")}
         overlay="bg-gradient-to-t from-black/45 via-black/22 to-black/12"
         photoChildren={
-          <div className="absolute inset-0 flex flex-col gap-1.5" style={layeredContentPad("right", 0.52)} onClick={(e) => e.stopPropagation()}>
+          <div className="absolute inset-0 flex flex-col gap-1.5" style={layeredContentPad("right", 0.667)} onClick={(e) => e.stopPropagation()}>
             <div className="w-[82%] max-w-[320px]">
               {total > 0 ? (
                 <CheckList items={items} onToggle={cycle} closed={closed} onClose={close} onReopen={reopen} maxH="100%" darker />
