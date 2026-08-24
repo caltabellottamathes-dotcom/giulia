@@ -15,7 +15,7 @@ export default function WidgetsLife() {
   );
 
   return (
-    <div className="relative min-h-screen px-5 lg:px-10 py-8 pb-24 max-w-[1500px] mx-auto">
+    <div className="relative min-h-screen px-5 lg:px-10 py-8 pb-24">
       {/* LIFE dashboard achtergrond — LIFE_DASHBOARD_BG */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
         <img src={IMAGES.lifeDashBg} alt="" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
@@ -30,7 +30,7 @@ export default function WidgetsLife() {
         Zes LIFE-widgets in het Giulia-skelet — ridge-sky, pistache, beton, urgent. Echte LIFE-functies + juiste data.
       </p>
 
-      <MasonryGrid gap={24} spans={[2, 2, 1, 2, 2, 1]}>
+      <MasonryGrid className="max-w-[1280px] xl:max-w-[1500px]" gap={24} spans={[2, 2, 1, 2, 2, 1]} scale={0.9}>
         <div>
           <Label>01 · WHAT SOCIAL LIFE? — P·4:5·GLAS · close-circle orbit (SocialOrbit #16) + foto-strip</Label>
           <SocialLifeWidget />

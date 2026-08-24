@@ -6,7 +6,7 @@ import { useLearningSync } from "@/hooks/useLearningSync";
 import HouseholdStateViz from "@/life/components/HouseholdStateViz";
 import { householdZones, mattersItems, householdHeadline, tileAccent } from "@/lib/householdUtils";
 
-const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/bfc15b81f_ALOT_SOCIAL.jpeg";
+const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/297513b8c_FOOD.jpeg";
 const IVORY = "hsl(var(--ivory))";
 
 /** RemindersHomeWidget — G·21x9 · PhotoShell. Volledige foto, met links een
