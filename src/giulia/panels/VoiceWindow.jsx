@@ -180,7 +180,7 @@ function VoiceWindowInner() {
             />
 
             {/* Audio-reactieve bloom — veel groter, gecentreerd in de glasscard */}
-            <div className="relative flex-1 flex items-center justify-center min-h-0 py-4">
+            <div className="relative flex-1 flex items-center justify-center min-h-0 py-4 -mx-4 w-[calc(100%+2rem)]">
               <SineLayers bandsRef={bandsRef} className="absolute bottom-2 left-0 right-0 w-full opacity-80 pointer-events-none" />
               <button
                 ref={bloomRef}

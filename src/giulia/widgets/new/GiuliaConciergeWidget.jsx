@@ -111,7 +111,7 @@ function ConciergeInner() {
         </div>
 
         {/* gradient bloom — ademt + audio-reactief (speech indicator · 06) */}
-        <div className="relative flex-1 w-full overflow-hidden flex items-center justify-center">
+        <div className="relative flex-1 w-[calc(100%+2rem)] -mx-4 overflow-hidden flex items-center justify-center">
           <SineLayers bandsRef={bandsRef} className="absolute bottom-1 left-0 right-0 w-full opacity-80 pointer-events-none" />
           <button
             ref={bloomRef}
