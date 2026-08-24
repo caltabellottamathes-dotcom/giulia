@@ -6,9 +6,7 @@ import { MODULE_FUNCTIONS } from "@/lib/moduleFunctions";
 import { WIDGETS } from "@/lib/widgetRegistry";
 import { IMAGES } from "@/lib/images";
 import { MODULE_PANEL_META, TAB_HELP } from "@/lib/modulePanelMeta";
-import { base44 } from "@/api/base44Client";
-import { useToast } from "@/components/ui/use-toast";
-import { Plus, LayoutGrid, ArrowUpRight, HelpCircle } from "lucide-react";
+import { ArrowUpRight, HelpCircle } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import AgendaPreview from "@/focus/panels/AgendaPreview";
 import TasksPreview from "@/focus/panels/TasksPreview";
@@ -165,25 +163,23 @@ function GraphicRule({ accent, className = "" }) {
 export default function ModulePanel() {
   const { activeModule, closeModule } = usePanel();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [adding, setAdding] = useState(false);
   const [activeTab, setActiveTab] = useState(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const [footer, setFooter] = useState(null);
 
   const mod = activeModule ? MODULES[activeModule] : null;
-  const widgetDef = activeModule ? WIDGETS[activeModule] : null;
   const meta = activeModule ? MODULE_PANEL_META[activeModule] : null;
   const tabs = meta?.tabs || null;
   const fallbackLinks = activeModule ? MODULE_FUNCTIONS[activeModule] || [] : [];
   const accent = activeModule ? (MODULE_ACCENT[activeModule] || "hsl(var(--sand))") : "hsl(var(--sand))";
 
-  // Reset tab + footer bij nieuwe module
+  // Reset tab bij nieuwe module (footer wordt door de gemonteerde preview
+  // zelf via onFooter gezet — niet hier nullen, want dit effect loopt ná het
+  // child-effect en zou de footer dan weer leegmaken)
   useEffect(() => {
     if (activeModule) {
       setActiveTab(activeModule);
       setHelpOpen(false);
-      setFooter(null);
     }
   }, [activeModule]);
 
@@ -191,24 +187,6 @@ export default function ModulePanel() {
   const Preview = bodyModule ? PREVIEWS[bodyModule] : null;
   const ActiveComponent = mod?.Component;
   const openSpace = () => { if (MODULE_ROUTE[activeModule]) navigate(MODULE_ROUTE[activeModule]); closeModule(); };
-
-  const addToDashboard = async () => {
-    if (!widgetDef) return;
-    setAdding(true);
-    try {
-      const existing = await base44.entities.DashboardWidget.filter({ widget_type: activeModule });
-      if (existing && existing.length) {
-        toast({ title: "Staat al op je dashboard" });
-        return;
-      }
-      await base44.entities.DashboardWidget.create({ widget_type: activeModule, position: 99, visible: true });
-      toast({ title: "Widget toegevoegd", description: `${widgetDef.label} staat nu op je dashboard` });
-    } catch {
-      toast({ title: "Toevoegen mislukt", variant: "destructive" });
-    } finally {
-      setAdding(false);
-    }
-  };
 
   const selectTab = (m) => { setActiveTab(m); setFooter(null); setHelpOpen(false); };
   const runAction = (a) => { if (a.onClick) a.onClick(); else if (a.to) navigate(a.to); };
@@ -239,13 +217,6 @@ export default function ModulePanel() {
                   </h2>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  {widgetDef && (
-                    <button onClick={addToDashboard} disabled={adding} aria-label="Widget toevoegen"
-                      className="inline-flex items-center gap-1.5 rounded-full glass-button px-3 py-2 text-[11px] font-semibold text-ivory transition disabled:opacity-50">
-                      <LayoutGrid className="h-3.5 w-3.5" />
-                      <Plus className="h-3 w-3" />
-                    </button>
-                  )}
                   {MODULE_ROUTE[activeModule] && (
                     <button onClick={() => { navigate(MODULE_ROUTE[activeModule]); closeModule(); }}
                       className="inline-flex items-center gap-1.5 rounded-full bg-charcoal text-ivory px-3.5 py-2 text-[11px] font-bold hover:bg-charcoal/90 transition shadow-sm">
@@ -265,10 +236,10 @@ export default function ModulePanel() {
 
               {/* Links — body-navigatie (tabs wisselen Body) of route-links (fallback) */}
               {tabs ? (
-                <div className="flex flex-wrap gap-1.5 mt-3.5">
+                <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-3">
                   {tabs.map(t => (
                     <button key={t.module} onClick={() => selectTab(t.module)}
-                      className={`px-3.5 py-1.5 rounded-full text-[11px] font-medium tracking-[0.08em] transition-colors ${bodyModule === t.module ? "bg-ivory text-charcoal" : "text-ivory/60 hover:text-ivory border border-ivory/15"}`}>
+                      className={`text-[12px] font-medium tracking-[0.04em] transition-colors ${bodyModule === t.module ? "text-ivory underline underline-offset-[6px] decoration-ivory/60" : "text-ivory/45 hover:text-ivory/80"}`}>
                       {t.label}
                     </button>
                   ))}
@@ -294,7 +265,7 @@ export default function ModulePanel() {
 
             {/* BODY — vaste hoogte tussen header en footer */}
             <div className={`flex-1 min-h-0 px-7 lg:px-9 ${Preview ? "overflow-hidden" : "overflow-y-auto pb-8"}`}>
-              {Preview ? <Preview onOpen={openSpace} onFooter={setFooter} /> : <ActiveComponent />}
+              {Preview ? <Preview key={bodyModule} onOpen={openSpace} onFooter={setFooter} /> : <ActiveComponent />}
             </div>
 
             {/* FOOTER — contextrij + knoppen uit de preview, vast, zonder achtergrond */}
