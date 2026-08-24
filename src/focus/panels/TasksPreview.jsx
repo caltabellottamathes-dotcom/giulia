@@ -8,11 +8,11 @@ import { base44 } from "@/api/base44Client";
 const DEEP = "#595f34", URG = "#d5e24a", LIGHT = "#d8dab3";
 const PRIO = { high: { c: URG, l: "HIGH" }, medium: { c: DEEP, l: "MED" }, low: { c: LIGHT, l: "LOW" } };
 
-export default function TasksPreview({ onOpen }) {
+export default function TasksPreview({ onOpen, limit = 50 }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const load = async () => { try { const data = await base44.entities.Task.filter({}, "-priority", 50); setTasks(data || []); } catch { /* ignore */ } finally { setLoading(false); } };
+  const load = async () => { try { const data = await base44.entities.Task.filter({}, "-priority", limit); setTasks(data || []); } catch { /* ignore */ } finally { setLoading(false); } };
   useEffect(() => { load(); }, []);
 
   const toggle = async (t) => {
