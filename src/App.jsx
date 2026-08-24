@@ -67,6 +67,7 @@ import WidgetsFocus from '@/focus/pages/WidgetsFocus';
 import WidgetsLife from '@/life/pages/WidgetsLife';
 import ShellCollection from '@/system/pages/ShellCollection';
 import PanelDesign from '@/system/pages/PanelDesign';
+import QuestionsPanelPage from '@/system/pages/QuestionsPanelPage';
 // GlassAgenda scoped pages
 import GlassLayout from '@/glass/components/GlassLayout';
 import GlassHome from '@/glass/pages/Home';
@@ -194,6 +195,7 @@ const AuthenticatedApp = () => {
           <Route path="/widgets-life" element={<WidgetsLife />} />
           <Route path="/shell-collection" element={<ShellCollection />} />
           <Route path="/panel-design" element={<PanelDesign />} />
+          <Route path="/questions-panel" element={<QuestionsPanelPage />} />
           {/* GlassAgenda — scoped suite */}
           <Route element={<GlassLayout />}>
             <Route path="/glass" element={<GlassHome />} />
