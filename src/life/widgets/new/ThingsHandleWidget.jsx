@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { WidgetHeader } from "@/system/widgets/primitives";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { useLearningSync } from "@/hooks/useLearningSync";
@@ -11,12 +12,12 @@ const IVORY = "hsl(var(--ivory))";
 const PISTACHIO = "#d8dab3";
 const OLIVE = "#94925d";
 const RIDGE = "#b1bec6";
-const TITLE = "Things to Handle!";
+const NEON = "#d8dab3";
 
 /** pressure → 3 LIFE-tiers (géén Urgent):
- *  Olive #94925d  · >14d YOU'RE FINE! · 7–14d YOU'VE GOT TIME.
- *  Ridge #b1bec6 · 3–7d KEEP AN EYE. · 1–3d DEAL WITH IT!
- *  Pistachio #d8dab3 · <24h NOW, PLEASE! · voorbij MISSED. */
+ *  Olive · >14d YOU'RE FINE! · 7–14d YOU'VE GOT TIME.
+ *  Ridge · 3–7d KEEP AN EYE. · 1–3d DEAL WITH IT!
+ *  Pistachio · <24h NOW, PLEASE! · voorbij MISSED. */
 function pressure(diff) {
   if (diff == null) return { label: "YOU'RE FINE!", color: OLIVE };
   if (diff < 0) return { label: "MISSED.", color: PISTACHIO };
@@ -29,11 +30,11 @@ function pressure(diff) {
 }
 
 /** ThingsHandleWidget — P·9x16·SLIDE · "Things to Handle!"
- *  Foto + gradient. Achter (onderste helft): item-naam + wit bedrag → "Eerst
- *  volgende" → grote strakke aftelklok (Dagen/Uren/Min/Sec, bold, dicht bij
- *  elkaar). Onderste helft = lichte glaskaart (minder blur, flush) met een
- *  extra-extra-large ghost-cijfer links-onder (half afgesneden), "TO HANDLE:"
- *  + wisselende status even groot (3 LIFE-tiers). Tik kaart → omhoog. */
+ *  Titel = WidgetHeader (briefing-klok, zelfde animatie als 02). Achter:
+ *  "Next in the list" + kale pijl → grote neon klok (DD:UU:MM:SS, bold,
+ *  beschrijvingen boven). Glaskaart (minder blur, flush): ghost-cijfer
+ *  links-onder + "HOW / TO HANDLE?" + status (3 LIFE-tiers) + "op komst"
+ *  met ernaast het eerstvolgende item in Whipped Pistachio. Tik kaart → omhoog. */
 export default function ThingsHandleWidget() {
   const { openModule } = usePanel();
   const learnTick = useLearningSync();
@@ -58,44 +59,48 @@ export default function ThingsHandleWidget() {
   const status = pressure(diff);
 
   const [up, setUp] = useState(false);
+  const next = () => setIdx((i) => (i + 1) % Math.max(1, coming.length));
+
+  const units = [
+    { v: pad(dDay), l: "Dagen" },
+    { v: pad(dHr), l: "Uren" },
+    { v: pad(dMin), l: "Min" },
+    { v: pad(dSec), l: "Sec" },
+  ];
 
   return (
     <div className="relative w-full aspect-[9/16] rounded-[28px] overflow-hidden">
       <motion.img src={PHOTO} alt="Things to Handle" className="absolute inset-0 h-full w-full object-cover" initial={{ scale: 1.14, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }} draggable={false} />
       <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(20,22,26,0.92) 8%, rgba(20,22,26,0.42) 50%, rgba(20,22,26,0.20) 100%)" }} />
 
-      {/* ACHTER: item+prijs → Eerst volgende → aftelklok (Dagen/Uren/Min/Sec) */}
-      <div className="absolute inset-x-0 bottom-0 h-1/2 z-0 flex flex-col justify-end px-4 pb-4 gap-2" style={{ color: IVORY }} onClick={() => openModule("personaladmin")}>
-        <div className="flex items-baseline gap-2">
-          <p className="text-[13px] font-display font-semibold leading-tight truncate" style={{ color: PISTACHIO }}>{hasCurrent ? current.title : "Niets op komst"}</p>
-          {hasCurrent && Number(current.amount) > 0 && <span className="text-[11px] tabular-nums font-semibold shrink-0" style={{ color: IVORY }}>€{current.amount}</span>}
-        </div>
+      {/* ACHTER: Next in the list + kale pijl → neon klok */}
+      <div className="absolute inset-x-0 bottom-0 h-1/2 z-0 flex flex-col justify-end px-4 pb-4 gap-3" style={{ color: IVORY }} onClick={() => openModule("personaladmin")}>
         <div className="flex items-center justify-between">
-          <p className="text-[8px] uppercase tracking-[0.22em] opacity-55">Eerst volgende</p>
+          <p className="text-[8px] uppercase tracking-[0.22em] opacity-55">Next in the list</p>
           {coming.length > 1 && (
-            <button onClick={(e) => { e.stopPropagation(); setIdx((i) => (i + 1) % coming.length); }} className="flex items-center justify-center h-6 w-6 rounded-full bg-white/10 border border-white/15 hover:bg-white/20 transition-colors" aria-label="volgende">
-              <ArrowRight size={11} style={{ color: IVORY }} />
+            <button onClick={(e) => { e.stopPropagation(); next(); }} className="p-0.5" aria-label="volgende">
+              <ArrowRight size={13} style={{ color: IVORY, opacity: 0.85 }} />
             </button>
           )}
         </div>
-        <div className="flex items-end justify-center gap-0.5">
-          {[{ v: pad(dDay), l: "Dagen" }, { v: pad(dHr), l: "Uren" }, { v: pad(dMin), l: "Min" }, { v: pad(dSec), l: "Sec" }].map((b, i) => (
-            <div key={i} className="flex flex-col items-center">
-              <span className="text-[42px] font-display font-black tabular-nums leading-none tracking-[-0.05em]" style={{ color: PISTACHIO }}>{hasCurrent ? b.v : "—"}</span>
-              <span className="text-[7px] uppercase tracking-[0.2em] mt-0.5" style={{ color: PISTACHIO, opacity: 0.55 }}>{b.l}</span>
-            </div>
+        <div className="flex items-end justify-center">
+          {units.map((u, i) => (
+            <React.Fragment key={i}>
+              <div className="flex flex-col items-center">
+                <span className="text-[6.5px] uppercase tracking-[0.14em] mb-1" style={{ color: NEON, opacity: 0.6 }}>{u.l}</span>
+                <span className="text-[34px] font-display font-black tabular-nums leading-none tracking-[-0.05em]" style={{ color: NEON, textShadow: `0 0 8px ${NEON}, 0 0 18px ${NEON}99` }}>{hasCurrent ? u.v : "—"}</span>
+              </div>
+              {i < units.length - 1 && (
+                <span className="text-[34px] font-display font-black leading-none" style={{ color: NEON, opacity: 0.7, textShadow: `0 0 8px ${NEON}` }}>:</span>
+              )}
+            </React.Fragment>
           ))}
         </div>
       </div>
 
-      {/* HEADER — titel met continu bewegende golf-animatie */}
-      <div className="absolute top-0 inset-x-0 px-4 pt-4 z-10 flex items-center justify-between" style={{ color: IVORY }}>
-        <p className="text-[9px] uppercase tracking-[0.28em] font-bold opacity-90 flex">
-          {TITLE.split("").map((ch, i) => (
-            <motion.span key={i} className="inline-block" initial={{ opacity: 0 }} animate={{ opacity: 1, y: [0, -3, 0] }} transition={{ opacity: { duration: 0.3, delay: i * 0.04 }, y: { duration: 2, repeat: Infinity, ease: "easeInOut", delay: i * 0.06 } }}>{ch === " " ? "\u00A0" : ch}</motion.span>
-          ))}
-        </p>
-        {overdue.length > 0 && <span className="text-[8px] uppercase tracking-[0.14em] font-bold px-2 py-0.5 rounded-full shrink-0" style={{ background: PISTACHIO + "22", color: PISTACHIO, border: `1px solid ${PISTACHIO}55` }}>{overdue.length} te laat</span>}
+      {/* HEADER — WidgetHeader (briefing-klok), zelfde animatie als 02 */}
+      <div className="absolute top-0 inset-x-0 px-4 pt-4 z-10" style={{ color: IVORY, "--tile-accent": PISTACHIO, textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>
+        <WidgetHeader type="briefing" label="Things to Handle!" count={overdue.length ? `${overdue.length} te laat` : ""} />
       </div>
 
       {/* GLASKAART (onderste helft, flush, minder blur) — schuift omhoog bij tik */}
@@ -113,12 +118,13 @@ export default function ThingsHandleWidget() {
 
         <div className="absolute inset-0 p-4 flex flex-col justify-between" style={{ color: IVORY, textShadow: "0 1px 6px rgba(0,0,0,0.45)" }}>
           <div>
-            <p className="text-[28px] uppercase tracking-[-0.01em] font-black opacity-80 leading-[0.95]">TO HANDLE:</p>
-            <motion.p key={status.label} className="text-[28px] font-display font-black tracking-[-0.03em] leading-[0.92] mt-1" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} style={{ color: status.color }}>{status.label}</motion.p>
+            <p className="text-[26px] font-black leading-[0.9] opacity-85 tracking-[-0.02em]">HOW</p>
+            <p className="text-[26px] font-black leading-[0.9] opacity-85 tracking-[-0.02em]">TO HANDLE?</p>
+            <motion.p key={status.label} className="text-[26px] font-display font-black leading-[0.9] mt-2 tracking-[-0.03em]" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} style={{ color: status.color }}>{status.label}</motion.p>
           </div>
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.2em] opacity-70">op komst</p>
-            <p className="text-[9px] uppercase tracking-[0.16em] opacity-50 mt-1">{weather.sub}</p>
+          <div className="flex items-baseline gap-2">
+            <p className="text-[10px] uppercase tracking-[0.2em] opacity-70 shrink-0">op komst</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] truncate" style={{ color: PISTACHIO }}>{hasCurrent ? `${current.title} · €${current.amount || 0}` : "—"}</p>
           </div>
         </div>
       </motion.button>

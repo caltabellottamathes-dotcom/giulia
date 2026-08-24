@@ -1,84 +1,102 @@
-import React, { useMemo } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { ArrowUp } from "lucide-react";
 import { WidgetHeader } from "@/system/widgets/primitives";
-import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { useLearningSync } from "@/hooks/useLearningSync";
-import { IMAGES } from "@/lib/images";
-import { stateLabel, fmtAgo } from "@/lib/selfUtils";
+import { base44 } from "@/api/base44Client";
+import { stateLabel } from "@/lib/selfUtils";
 
-const PHOTO = IMAGES.lifeW6Doing;
-const DEEP = "hsl(var(--d-life-deep))";
-const LIGHT = "hsl(var(--d-life-light))";
-const URGENT = "hsl(var(--d-life-urgent))";
+const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/a3ade5ba2_BecomingMe.jpeg";
 const IVORY = "hsl(var(--ivory))";
+const PISTACHIO = "#d8dab3";
 
-const MOOD_SCORE = { good: 80, energetic: 95, neutral: 55, low: 30, tired: 35, anxious: 20 };
+/** 06 · HOW I'M DOING. — check-in moment.
+ *  3× per dag een andere prompt (ochtend/middag/avond) met een paar vragen.
+ *  Glaskaart met chat-stijl tekstinvoer; antwoord wordt opgeslagen in
+ *  SelfCheckIn (reflection + context). Nieuwe foto: BecomingMe. */
+const PROMPTS = {
+  morning: { title: "Goedemorgen.", qs: ["Wat is je intentie voor vandaag?", "Waar heb je energie voor?"] },
+  afternoon: { title: "Middag-check.", qs: ["Wat kost nu veel energie?", "Wat ging er goed vanmorgen?"] },
+  evening: { title: "Goedenavond.", qs: ["Waar ben je dankbaar voor vandaag?", "Wat wil je morgen anders doen?"] },
+};
 
-/** HowDoingWidget — P·1x1·B·STRIP · "How I'm Doing."
- *  Photo + concentrische ringen (Energy/Capacity/Mood) gecentreerd, state-label
- *  in het midden. GlassStrip (onder): header + drie mini-stats. Data: SelfCheckIn. */
 export default function HowDoingWidget() {
-  const { openModule } = usePanel();
   const learnTick = useLearningSync();
-  const { data: checkIns } = useEntityList("SelfCheckIn", { sort: "-timestamp", limit: 20, realtime: true, externalTick: learnTick });
+  const { data: checkIns } = useEntityList("SelfCheckIn", { sort: "-timestamp", limit: 5, realtime: true, externalTick: learnTick });
+  const [text, setText] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const latest = (checkIns || [])[0];
-  const energy = latest?.energy ?? 0;
-  const capacity = latest?.capacity ?? 0;
-  const mood = latest ? (MOOD_SCORE[latest.mood] ?? 50) : 0;
   const stateText = latest ? stateLabel(latest.state).toUpperCase() : "CHECK IN";
+  const lastReflection = (checkIns || []).find((c) => c.reflection)?.reflection;
 
-  const RINGS = [
-    { key: "energy", label: "E", r: 46, val: energy, color: DEEP },
-    { key: "capacity", label: "C", r: 34, val: capacity, color: LIGHT },
-    { key: "mood", label: "M", r: 22, val: mood, color: URGENT },
-  ];
+  const h = new Date().getHours();
+  const tod = h >= 5 && h < 12 ? "morning" : h >= 12 && h < 18 ? "afternoon" : "evening";
+  const timeLabel = tod === "morning" ? "ochtend" : tod === "afternoon" ? "middag" : "avond";
+  const prompt = PROMPTS[tod];
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!text.trim() || saving) return;
+    setSaving(true);
+    try {
+      await base44.entities.SelfCheckIn.create({
+        state: "neutral",
+        reflection: text.trim(),
+        context: `${prompt.title} — ${prompt.qs.join(" / ")}`,
+        check_in_type: "manual",
+        source: "manual",
+        timestamp: new Date().toISOString(),
+      });
+      setText("");
+    } catch {
+      /* realtime ververst de lijst */
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
-    <div className="relative w-full aspect-[2/3] rounded-[28px] overflow-hidden" onClick={() => openModule("dailystate")} style={{ cursor: "pointer" }}>
-      <img src={PHOTO} alt="How I'm Doing" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/25 to-black/20" />
+    <div className="relative w-full aspect-[2/3] rounded-[28px] overflow-hidden">
+      <motion.img src={PHOTO} alt="How I'm Doing" className="absolute inset-0 w-full h-full object-cover" initial={{ scale: 1.1, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }} draggable={false} />
+      <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(20,22,26,0.88) 18%, rgba(20,22,26,0.32) 60%, rgba(20,22,26,0.18))" }} />
 
-      <div className="absolute" style={{ left: "50%", top: "34%", transform: "translate(-50%,-50%)", width: "68%" }}>
-        <div className="relative aspect-square w-full">
-          <svg viewBox="0 0 120 120" className="w-full h-full">
-            <g transform="rotate(-90 60 60)">
-              {RINGS.map((ring, idx) => {
-                const circ = 2 * Math.PI * ring.r;
-                const frac = Math.min(1, Math.max(0, ring.val / 100));
-                const offset = circ * (1 - frac);
-                return (
-                  <g key={ring.key}>
-                    <circle cx="60" cy="60" r={ring.r} fill="none" stroke={ring.color} strokeOpacity="0.16" strokeWidth="6" />
-                    <motion.circle cx="60" cy="60" r={ring.r} fill="none" stroke={ring.color} strokeWidth="6" strokeLinecap="round" strokeDasharray={circ} initial={{ strokeDashoffset: circ }} animate={{ strokeDashoffset: offset }} transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: idx * 0.12 }} />
-                  </g>
-                );
-              })}
-            </g>
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ color: IVORY }}>
-            <span className="text-[22px] font-display font-bold leading-none">{stateText}</span>
-            <span className="text-[8px] uppercase tracking-[0.24em] mt-1.5" style={{ color: "rgba(255,255,255,0.6)" }}>{latest ? fmtAgo(latest.timestamp) : "—"}</span>
-          </div>
-        </div>
+      {/* foto boven: tijd-van-dag + state */}
+      <div className="absolute top-0 inset-x-0 p-4 z-10 flex items-start justify-between" style={{ color: IVORY, textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>
+        <p className="text-[8px] uppercase tracking-[0.2em] opacity-65">{timeLabel} check-in</p>
+        <span className="text-[28px] font-display font-bold leading-none">{stateText}</span>
       </div>
 
-      <div className="absolute left-0 right-0 bottom-0 h-[32%] rounded-t-[28px] flex flex-col p-3.5 overflow-hidden"
-        style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(12px) saturate(1.35)", WebkitBackdropFilter: "blur(12px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.18)", boxShadow: "0 -16px 34px -14px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.22)" }}>
-        <span className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${DEEP} 18%, ${DEEP} 82%, transparent)` }} />
-        <WidgetHeader type="pulse" label="How I'm Doing." count={latest ? `${energy}%` : ""} />
-        <div className="flex justify-between gap-1 mt-1.5 flex-1 items-end">
-          {RINGS.map((r) => (
-            <div key={r.key} className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: r.color }} />
-              <div className="flex flex-col leading-none">
-                <span className="text-[7.5px] uppercase tracking-[0.16em] opacity-50">{r.label}</span>
-                <span className="text-[18px] font-display font-bold tabular-nums">{Math.round(r.val)}</span>
-              </div>
-            </div>
+      {/* glaskaart: check-in met vragen + chat-invoer */}
+      <div
+        className="absolute left-0 right-0 bottom-0 h-[60%] rounded-t-[28px] flex flex-col p-4 overflow-hidden"
+        style={{ "--tile-accent": PISTACHIO, background: "rgba(120,128,133,0.18)", backdropFilter: "blur(16px) saturate(1.3)", WebkitBackdropFilter: "blur(16px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.16)", boxShadow: "0 -14px 32px -14px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.2)", color: IVORY }}
+      >
+        <span className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${PISTACHIO} 18%, ${PISTACHIO} 82%, transparent)` }} />
+        <WidgetHeader type="pulse" label="How I'm Doing." count={timeLabel} />
+        <h3 className="text-[19px] font-display font-semibold leading-tight">{prompt.title}</h3>
+        <div className="mt-1.5 space-y-1">
+          {prompt.qs.map((q, i) => (
+            <p key={i} className="text-[11px] leading-snug" style={{ opacity: 0.78 }}>{q}</p>
           ))}
         </div>
+        {lastReflection && (
+          <p className="text-[10px] italic mt-2 line-clamp-2" style={{ opacity: 0.5 }}>"{lastReflection}"</p>
+        )}
+        <div className="flex-1" />
+        <form onSubmit={handleSave} className="flex items-center gap-2 mt-2">
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Schrijf je antwoord…"
+            className="flex-1 min-w-0 rounded-full bg-white/10 border border-white/15 px-3.5 py-2.5 text-[12px] outline-none placeholder:opacity-40"
+            style={{ color: IVORY }}
+          />
+          <button type="submit" disabled={saving || !text.trim()} className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center transition-opacity disabled:opacity-40" style={{ background: PISTACHIO }} aria-label="verzend">
+            <ArrowUp size={16} style={{ color: "#3a3d2a" }} />
+          </button>
+        </form>
       </div>
     </div>
   );

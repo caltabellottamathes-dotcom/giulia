@@ -6,7 +6,7 @@ import { SELF_PHOTO, PLUM, SAGE, PLUM_FAINT } from "@/self/widgets/editorial/sel
 
 /** SocialOrbit — PEOPLE / NETWORK · 1:1. Centraal portret met cirkelende
  *  contact-dots; radius = recentie, dikkere lijn = langer geleden. */
-const CONTACTS = [
+export const CONTACTS = [
   { name: "Jill", days: 23, r: 40, a: 20 },
   { name: "Mama", days: 4, r: 24, a: 140 },
   { name: "Debora", days: 9, r: 32, a: 250 },
