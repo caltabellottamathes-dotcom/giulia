@@ -1,0 +1,81 @@
+{
+  "name": "BriefingSession",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "abandoned"
+      ],
+      "default": "active",
+      "title": "Status"
+    },
+    "cards_presented": {
+      "type": "number",
+      "default": 0,
+      "title": "Cards Presented"
+    },
+    "cards_viewed": {
+      "type": "number",
+      "default": 0,
+      "title": "Cards Viewed"
+    },
+    "cards_swiped_left": {
+      "type": "number",
+      "default": 0,
+      "title": "Cards Swiped Left"
+    },
+    "cards_swiped_right": {
+      "type": "number",
+      "default": 0,
+      "title": "Cards Swiped Right"
+    },
+    "cards_opened": {
+      "type": "number",
+      "default": 0,
+      "title": "Cards Opened"
+    },
+    "actions_taken": {
+      "type": "number",
+      "default": 0,
+      "title": "Actions Taken"
+    },
+    "completed": {
+      "type": "boolean",
+      "default": false,
+      "title": "Completed"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Started At"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Completed At"
+    }
+  },
+  "required": [
+    "date"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

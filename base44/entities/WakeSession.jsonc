@@ -2,9 +2,19 @@
   "name": "WakeSession",
   "type": "object",
   "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Session Date"
+    },
     "wake_time": {
       "type": "string",
-      "title": "Wake Time"
+      "title": "Wake Time (legacy)"
+    },
+    "scheduled_wake_time": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Scheduled Wake Time"
     },
     "actual_wake_time": {
       "type": "string",
@@ -18,6 +28,7 @@
         "orient",
         "getup",
         "routine",
+        "ready",
         "briefing",
         "complete",
         "snoozed"
@@ -25,10 +36,51 @@
       "default": "wake",
       "title": "Phase"
     },
+    "morning_status": {
+      "type": "string",
+      "enum": [
+        "quiet",
+        "appointment",
+        "busy",
+        "running_tight"
+      ],
+      "title": "Morning Status"
+    },
     "snooze_count": {
       "type": "number",
       "default": 0,
       "title": "Snooze Count"
+    },
+    "snooze_duration": {
+      "type": "number",
+      "default": 0,
+      "title": "Snooze Duration (min)"
+    },
+    "wake_duration": {
+      "type": "number",
+      "title": "Wake Duration (min)"
+    },
+    "orient_duration": {
+      "type": "number",
+      "title": "Orient Duration (min)"
+    },
+    "get_up_duration": {
+      "type": "number",
+      "title": "Get Up Duration (min)"
+    },
+    "routine_duration": {
+      "type": "number",
+      "title": "Routine Duration (min)"
+    },
+    "routine_steps_completed": {
+      "type": "number",
+      "default": 0,
+      "title": "Routine Steps Completed"
+    },
+    "routine_steps_skipped": {
+      "type": "number",
+      "default": 0,
+      "title": "Routine Steps Skipped"
     },
     "current_step": {
       "type": "number",
@@ -45,7 +97,7 @@
     "briefing_started": {
       "type": "boolean",
       "default": false,
-      "title": "Briefing Started"
+      "title": "Briefing Started (legacy)"
     },
     "status": {
       "type": "string",
@@ -55,7 +107,23 @@
         "dismissed"
       ],
       "default": "active",
-      "title": "Status"
+      "title": "Status (legacy alias of session_status)"
+    },
+    "session_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "completed",
+        "dismissed",
+        "abandoned"
+      ],
+      "default": "active",
+      "title": "Session Status"
+    },
+    "completion_time": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Completion Time"
     },
     "morning_context": {
       "type": "string",

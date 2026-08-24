@@ -33,6 +33,17 @@
     "duration_minutes": {
       "type": "number",
       "title": "Duration (min)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_progress",
+        "completed",
+        "skipped"
+      ],
+      "default": "pending",
+      "title": "Status"
     }
   },
   "required": [
