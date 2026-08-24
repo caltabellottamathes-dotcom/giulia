@@ -6,6 +6,8 @@ import { WidgetShell, WidgetHeader } from "@/system/widgets/primitives";
 import { usePanel } from "@/lib/PanelContext";
 import { ELEVEN_AGENT_ID } from "@/lib/voiceNavigation";
 import { buildVoiceClientTools } from "@/lib/voiceClientTools";
+import { useAudio } from "@/lib/useAudio";
+import SineLayers from "@/giulia/widgets/new/SineLayers";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/a560179c0_Voice_.jpeg";
 
@@ -32,6 +34,7 @@ function ConciergeInner() {
   const bloomRef = useRef(null);
   const rafRef = useRef(0);
   const levelRef = useRef(0);
+  const bandsRef = useAudio({ getOutputVolume, connected });
 
   // rAF — gradient bloom ademt én reageert op Giulia's audio-output (speech indicator 06, audio-reactief).
   useEffect(() => {
@@ -109,6 +112,7 @@ function ConciergeInner() {
 
         {/* gradient bloom — ademt + audio-reactief (speech indicator · 06) */}
         <div className="relative flex-1 w-full overflow-hidden flex items-center justify-center">
+          <SineLayers bandsRef={bandsRef} className="absolute bottom-1 left-0 right-0 w-full opacity-80 pointer-events-none" />
           <button
             ref={bloomRef}
             onClick={toggle}

@@ -10,6 +10,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { Loader2, X } from "lucide-react";
 import { Image } from "@/components/ui/image";
 import VoiceChatWidget from "@/giulia/widgets/new/VoiceChatWidget";
+import { useAudio } from "@/lib/useAudio";
+import SineLayers from "@/giulia/widgets/new/SineLayers";
 
 const VOICE_PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0439bb842_Giulia_VOICE.jpeg";
 const DEEP = "hsl(var(--d-giulia-deep))";    // olijf
@@ -66,6 +68,7 @@ function VoiceWindowInner() {
 
   const connected = status === "connected";
   const connecting = status === "connecting";
+  const bandsRef = useAudio({ getOutputVolume, connected });
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -178,6 +181,7 @@ function VoiceWindowInner() {
 
             {/* Audio-reactieve bloom — veel groter, gecentreerd in de glasscard */}
             <div className="relative flex-1 flex items-center justify-center min-h-0 py-4">
+              <SineLayers bandsRef={bandsRef} className="absolute bottom-2 left-0 right-0 w-full opacity-80 pointer-events-none" />
               <button
                 ref={bloomRef}
                 onClick={toggle}
