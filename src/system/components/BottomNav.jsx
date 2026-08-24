@@ -14,12 +14,13 @@ const PRIMARY = [
 
 export default function BottomNav() {
   const { pathname } = useLocation();
-  const { domain } = useActiveDomain();
+  const { accent } = useActiveDomain();
   const [collapsed, setCollapsed] = useState(false);
   // Op projectdetail-pagina's neemt het project zelf de bottom bar over.
   if (/^\/projects\/[^/]+/.test(pathname)) return null;
 
-  const lifeTint = domain === "life";
+  const tintBg = `color-mix(in srgb, ${accent} 12%, transparent)`;
+  const tintBorder = accent;
 
   return (
     <nav className="fixed bottom-3 left-3 lg:bottom-5 lg:left-10 z-20 flex items-center gap-2">
@@ -28,7 +29,7 @@ export default function BottomNav() {
         onClick={() => setCollapsed((c) => !c)}
         aria-label={collapsed ? "Navigatie tonen" : "Navigatie verbergen"}
         className="h-11 w-11 rounded-full glass-1 border border-foreground/12 flex items-center justify-center shrink-0 shadow-[0_14px_36px_-14px_rgba(0,0,0,0.28)] text-foreground/60 hover:text-foreground transition-colors"
-        style={lifeTint ? { background: "hsl(var(--ridge) / 0.22)", borderColor: "hsl(var(--ridge) / 0.5)" } : undefined}
+        style={{ background: tintBg, borderColor: tintBorder }}
       >
         {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
       </button>
@@ -39,7 +40,7 @@ export default function BottomNav() {
           "flex items-center gap-0.5 rounded-full glass-1 border border-foreground/12 px-1.5 py-1.5 shadow-[0_14px_36px_-14px_rgba(0,0,0,0.28)] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] origin-left",
           collapsed ? "-translate-x-[calc(100%+0.5rem)] opacity-0 pointer-events-none" : "translate-x-0 opacity-100"
         )}
-        style={lifeTint ? { background: "hsl(var(--ridge) / 0.18)", borderColor: "hsl(var(--ridge) / 0.45)" } : undefined}
+        style={{ background: tintBg, borderColor: tintBorder }}
       >
         {PRIMARY.map((l) => {
           const active = l.end ? pathname === l.to : pathname.startsWith(l.to);
@@ -52,8 +53,9 @@ export default function BottomNav() {
               aria-label={l.label}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 rounded-full px-1.5 sm:px-3.5 py-1.5 transition-colors",
-                active ? "text-olive" : "text-foreground/55 hover:text-foreground"
+                active ? "" : "text-foreground/55 hover:text-foreground"
               )}
+              style={active ? { color: accent } : undefined}
             >
               <Icon className="h-4 sm:h-[17px] w-4 sm:w-[17px]" strokeWidth={active ? 2.3 : 1.7} />
               <span className="hidden sm:block text-[8.5px] uppercase tracking-[0.14em] font-semibold leading-none">{l.label}</span>
