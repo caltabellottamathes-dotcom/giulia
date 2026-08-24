@@ -7,6 +7,9 @@ import { Sparkles, X, ArrowRight, Check } from "lucide-react";
 
 const GIULIA_AVATAR = IMAGES.giuliaPortrait2 || IMAGES.giuliaConcierge;
 
+// Proactieve tekstbubbels uitgeschakeld op verzoek.
+const ENABLED = false;
+
 /**
  * GiuliaBubble — proactieve, contextuele bubbels. Elke keer dat hij
  * opkomt wordt `proactiveBubble` aangeroepen, die de live staat leest
@@ -44,6 +47,7 @@ export default function GiuliaBubble() {
   }, [navigate]);
 
   useEffect(() => {
+    if (!ENABLED) return;
     const initial = setTimeout(() => {
       show();
       const schedule = () => {
