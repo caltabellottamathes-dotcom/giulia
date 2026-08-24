@@ -66,7 +66,7 @@ const MODULE_ACCENT = {
   timetracker: "hsl(var(--olive))",
   updates: "hsl(var(--sand))",
   goodmorning: "hsl(var(--sand))",
-  jedag: "hsl(var(--sand))",
+  jedag: "#595f34",
   socialpulse: "hsl(var(--life-blue))", socialplanner: "hsl(var(--life-blue))",
   household: "hsl(var(--life-blue))", personaladmin: "hsl(var(--life-sand))", hobbies: "hsl(var(--life-blue))",
   food: "hsl(var(--life-sand))",
