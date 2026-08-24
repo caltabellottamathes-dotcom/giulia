@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import FloatingPanel from "@/system/components/glass/FloatingPanel";
 import { usePanel } from "@/lib/PanelContext";
 import { MODULES } from "@/lib/moduleRegistry";
 import { MODULE_FUNCTIONS } from "@/lib/moduleFunctions";
 import { WIDGETS } from "@/lib/widgetRegistry";
 import { IMAGES } from "@/lib/images";
+import { MODULE_PANEL_META, TAB_HELP } from "@/lib/modulePanelMeta";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, LayoutGrid, ArrowUpRight } from "lucide-react";
+import { Plus, LayoutGrid, ArrowUpRight, HelpCircle } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import AgendaPreview from "@/focus/panels/AgendaPreview";
 import TasksPreview from "@/focus/panels/TasksPreview";
@@ -50,11 +51,6 @@ const PREVIEWS = {
   wantstoknow: QuestionsPreview,
 };
 
-/**
- * The ONE sliding glass panel used for every module. The content determines
- * the width (panelWidth per module). The header carries a clear
- * "Add widget to dashboard" action when a widget exists for this module.
- */
 const MODULE_ACCENT = {
   agenda: "hsl(var(--sand))", projects: "hsl(var(--olive))", tasks: "hsl(var(--charcoal))",
   email: "hsl(var(--blue-grey))", whatsapp: "hsl(var(--sand))", knowledge: "hsl(var(--olive))",
@@ -74,9 +70,6 @@ const MODULE_ACCENT = {
   imageviewer: "hsl(var(--blue-grey))", videoplayer: "hsl(var(--sand))", musicplayer: "hsl(var(--olive))", docviewer: "hsl(var(--charcoal))",
 };
 
-// Modules without a widget keep an editorial photo; modules WITH a widget
-// inherit the widget's branding image (WIDGETS[module].image) so the panel
-// header, the widget and the page hero all share one photo.
 const MODULE_IMAGE = {
   chat: IMAGES.portraitBootFace,
   voice: IMAGES.portraitBootFace,
@@ -110,8 +103,6 @@ const MODULE_ROUTE = {
   jedag: "/agenda",
 };
 
-// Topic-related subtitles per module — replaces the bare label so the panel
-// header isn't a duplicate of the title shown on the dashboard.
 const MODULE_TOPIC = {
   agenda: "Vandaag en wat eraan komt",
   tasks: "Wat nu op je ligt",
@@ -152,23 +143,54 @@ const MODULE_TOPIC = {
   imageviewer: "Jouw afbeeldingen", videoplayer: "Je video's", musicplayer: "Je muziek", docviewer: "Jouw documenten",
 };
 
-// Modules whose panel is the interaction surface itself — render full-bleed
-// (no header photo / title) so the panel looks exactly like its widget.
 const FULL_BLEED = { voice: true };
 
+function GraphicRule({ accent, className = "" }) {
+  return (
+    <div className={`relative ${className}`}>
+      <div className="h-px bg-storm/15" />
+      <div className="absolute left-0 top-0 h-px w-16" style={{ background: accent }} />
+    </div>
+  );
+}
+
+/**
+ * Het ENE universele ModulePanel. Structuur:
+ *   1. HeroPhoto
+ *   2. GlassShellPanel
+ *        - HEADER  : "Snelle context" + titel + links (body-nav) + Open Space + Help + Widget
+ *        - BODY    : vaste hoogte, toont de actieve preview (tabs wisselen inhoud)
+ *        - FOOTER  : contextrij + knoppen uit de preview, vast onderaan, zonder achtergrond
+ */
 export default function ModulePanel() {
   const { activeModule, closeModule } = usePanel();
   const navigate = useNavigate();
-  const mod = activeModule ? MODULES[activeModule] : null;
-  const ActiveComponent = mod?.Component;
-  const Preview = activeModule ? PREVIEWS[activeModule] : null;
-  const openSpace = () => {
-    if (MODULE_ROUTE[activeModule]) navigate(MODULE_ROUTE[activeModule]);
-    closeModule();
-  };
-  const widgetDef = activeModule ? WIDGETS[activeModule] : null;
   const { toast } = useToast();
   const [adding, setAdding] = useState(false);
+  const [activeTab, setActiveTab] = useState(null);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [footer, setFooter] = useState(null);
+
+  const mod = activeModule ? MODULES[activeModule] : null;
+  const widgetDef = activeModule ? WIDGETS[activeModule] : null;
+  const meta = activeModule ? MODULE_PANEL_META[activeModule] : null;
+  const tabs = meta?.tabs || null;
+  const fallbackLinks = activeModule ? MODULE_FUNCTIONS[activeModule] || [] : [];
+  const accent = activeModule ? (MODULE_ACCENT[activeModule] || "hsl(var(--sand))") : "hsl(var(--sand))";
+
+  // Reset tab + footer bij nieuwe module
+  useEffect(() => {
+    if (activeModule) {
+      setActiveTab(activeModule);
+      setHelpOpen(false);
+      setFooter(null);
+    }
+  }, [activeModule]);
+
+  const bodyModule = activeTab || activeModule;
+  const Preview = bodyModule ? PREVIEWS[bodyModule] : null;
+  const ActiveComponent = mod?.Component;
+  const openSpace = () => { if (MODULE_ROUTE[activeModule]) navigate(MODULE_ROUTE[activeModule]); closeModule(); };
 
   const addToDashboard = async () => {
     if (!widgetDef) return;
@@ -181,12 +203,15 @@ export default function ModulePanel() {
       }
       await base44.entities.DashboardWidget.create({ widget_type: activeModule, position: 99, visible: true });
       toast({ title: "Widget toegevoegd", description: `${widgetDef.label} staat nu op je dashboard` });
-    } catch (e) {
+    } catch {
       toast({ title: "Toevoegen mislukt", variant: "destructive" });
     } finally {
       setAdding(false);
     }
   };
+
+  const selectTab = (m) => { setActiveTab(m); setFooter(null); setHelpOpen(false); };
+  const runAction = (a) => { if (a.onClick) a.onClick(); else if (a.to) navigate(a.to); };
 
   return (
     <FloatingPanel open={!!mod} onClose={closeModule} position="right" level={3} width={mod?.panelWidth || 720} showOverlay dim={false}>
@@ -195,63 +220,123 @@ export default function ModulePanel() {
           <div className="h-full"><ActiveComponent /></div>
         ) : (
         <div className="flex flex-col h-full">
-          <div className="h-[3px] w-full shrink-0" style={{ background: MODULE_ACCENT[activeModule] || "hsl(var(--sand))" }} />
-          {/* Clean header photo — no overlay */}
+          {/* 1. HeroPhoto */}
+          <div className="h-[3px] w-full shrink-0" style={{ background: accent }} />
           <div className="relative shrink-0 h-44 overflow-hidden">
             <img src={WIDGETS[activeModule]?.image || MODULE_IMAGE[activeModule] || IMAGES.walkingChairs} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
             <div className="absolute inset-0 bg-gradient-to-t from-charcoal/55 via-transparent to-transparent" />
           </div>
 
-          {/* Floating glass content card — overlaps the header photo with rounded corners */}
+          {/* 2. GlassShellPanel */}
           <div className="flex-1 -mt-10 rounded-t-[28px] glass-3 flex flex-col min-h-0 overflow-hidden">
-            <div className="px-7 lg:px-9 pt-7 pb-5 shrink-0">
+            {/* HEADER */}
+            <div className="px-7 lg:px-9 pt-7 pb-4 shrink-0">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/55 font-medium mb-1.5">Snelle context</p>
                   <h2 className="text-[24px] lg:text-[28px] font-display font-semibold tracking-tight leading-none text-ivory">
                     {MODULE_TOPIC[activeModule] || mod.label}
                   </h2>
-                  {(MODULE_FUNCTIONS[activeModule] || []).length > 0 && (
-                    <div className="flex flex-wrap gap-x-3.5 gap-y-1 mt-2.5">
-                      {MODULE_FUNCTIONS[activeModule].map((f) => (
-                        <Link key={f.label} to={f.to} onClick={closeModule} className="text-[11px] text-ivory/55 hover:text-ivory transition-colors underline underline-offset-4 decoration-ivory/20">
-                          {f.label}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
                 </div>
-              <div className="flex items-center gap-2 shrink-0 mt-0.5">
-                {widgetDef && (
-                  <button
-                    onClick={addToDashboard}
-                    disabled={adding}
-                    className="inline-flex items-center gap-1.5 rounded-full glass-button px-3 py-2 text-[11px] font-semibold text-ivory transition disabled:opacity-50"
-                  >
-                    <LayoutGrid className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Widget</span>
-                    <Plus className="h-3 w-3" />
-                  </button>
-                )}
-                {MODULE_ROUTE[activeModule] && (
-                  <button
-                    onClick={() => { navigate(MODULE_ROUTE[activeModule]); closeModule(); }}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-charcoal text-ivory px-3.5 py-2 text-[11px] font-bold hover:bg-charcoal/90 transition shadow-sm"
-                  >
-                    <ArrowUpRight className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Open space</span>
-                  </button>
-                )}
-                <AnimatedPicto icon={mod.icon} accent={MODULE_ACCENT[activeModule]} />
+                <div className="flex items-center gap-2 shrink-0">
+                  {widgetDef && (
+                    <button onClick={addToDashboard} disabled={adding} aria-label="Widget toevoegen"
+                      className="inline-flex items-center gap-1.5 rounded-full glass-button px-3 py-2 text-[11px] font-semibold text-ivory transition disabled:opacity-50">
+                      <LayoutGrid className="h-3.5 w-3.5" />
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  )}
+                  {MODULE_ROUTE[activeModule] && (
+                    <button onClick={() => { navigate(MODULE_ROUTE[activeModule]); closeModule(); }}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-charcoal text-ivory px-3.5 py-2 text-[11px] font-bold hover:bg-charcoal/90 transition shadow-sm">
+                      <ArrowUpRight className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">Open space</span>
+                    </button>
+                  )}
+                  {TAB_HELP[bodyModule] && (
+                    <button onClick={() => setHelpOpen(v => !v)} aria-label="Help"
+                      className={`inline-flex items-center justify-center rounded-full glass-button h-9 w-9 text-ivory transition ${helpOpen ? "ring-2 ring-ivory/30" : ""}`}>
+                      <HelpCircle className="h-4 w-4" />
+                    </button>
+                  )}
+                  <AnimatedPicto icon={mod.icon} accent={accent} />
                 </div>
               </div>
+
+              {/* Links — body-navigatie (tabs wisselen Body) of route-links (fallback) */}
+              {tabs ? (
+                <div className="flex flex-wrap gap-1.5 mt-3.5">
+                  {tabs.map(t => (
+                    <button key={t.module} onClick={() => selectTab(t.module)}
+                      className={`px-3.5 py-1.5 rounded-full text-[11px] font-medium tracking-[0.08em] transition-colors ${bodyModule === t.module ? "bg-ivory text-charcoal" : "text-ivory/60 hover:text-ivory border border-ivory/15"}`}>
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              ) : fallbackLinks.length > 0 && (
+                <div className="flex flex-wrap gap-x-3.5 gap-y-1 mt-2.5">
+                  {fallbackLinks.map(f => (
+                    <Link key={f.label} to={f.to} onClick={closeModule}
+                      className="text-[11px] text-ivory/55 hover:text-ivory transition-colors underline underline-offset-4 decoration-ivory/20">
+                      {f.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Content — LEVEL 02 quick-context preview, or full component for
-                interaction surfaces (chat/voice/settings/profile/integrations). */}
-            <div className="flex-1 min-h-0 px-7 lg:px-9 pb-8 overflow-y-auto">
-              {Preview ? <Preview onOpen={openSpace} /> : <ActiveComponent />}
+            {/* Help-strip (universele info over de Body-inhoud) */}
+            {helpOpen && TAB_HELP[bodyModule] && (
+              <div className="mx-7 lg:mx-9 mb-3 shrink-0 rounded-2xl border border-storm/10 bg-marble/5 px-4 py-3">
+                <p className="text-storm/70 text-xs leading-relaxed">{TAB_HELP[bodyModule]}</p>
+              </div>
+            )}
+
+            {/* BODY — vaste hoogte tussen header en footer */}
+            <div className={`flex-1 min-h-0 px-7 lg:px-9 ${Preview ? "overflow-hidden" : "overflow-y-auto pb-8"}`}>
+              {Preview ? <Preview onOpen={openSpace} onFooter={setFooter} /> : <ActiveComponent />}
             </div>
+
+            {/* FOOTER — contextrij + knoppen uit de preview, vast, zonder achtergrond */}
+            {footer && (footer.context?.length > 0 || footer.actions?.length > 0) && (
+              <div className="shrink-0 px-7 lg:px-9 pt-5 pb-8">
+                {footer.context?.length > 0 && (
+                  <>
+                    <GraphicRule accent={accent} />
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-4">
+                      {footer.context.map((c, i) => (
+                        <div key={i}>
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-storm/30 text-[10px] tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+                            <p className="text-storm/80 text-[10px] uppercase tracking-[0.2em] font-semibold">{c.label}</p>
+                          </div>
+                          <p className="text-storm/70 text-xs mt-1.5 leading-relaxed">{c.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {footer.actions?.length > 0 && (
+                  <>
+                    <GraphicRule accent={accent} className={footer.context?.length > 0 ? "mt-4" : ""} />
+                    <div className="flex flex-wrap gap-2 mt-4">
+                      {footer.actions.map((a, i) => a.primary ? (
+                        <button key={i} onClick={() => runAction(a)}
+                          className="px-4 py-2 rounded-full text-metal text-[10px] font-semibold tracking-[0.15em] uppercase hover:brightness-95 active:scale-95 transition-all"
+                          style={{ background: accent }}>
+                          {a.label}
+                        </button>
+                      ) : (
+                        <button key={i} onClick={() => runAction(a)}
+                          className="px-4 py-2 rounded-full border border-storm/15 bg-transparent text-storm/80 text-[10px] tracking-[0.15em] uppercase hover:bg-marble/10 transition-colors">
+                          {a.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
         )
