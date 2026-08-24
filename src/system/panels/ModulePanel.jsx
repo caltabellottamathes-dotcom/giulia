@@ -183,7 +183,8 @@ export default function ModulePanel() {
   // child-effect en zou de footer dan weer leegmaken)
   useEffect(() => {
     if (activeModule) {
-      setActiveTab(activeModule);
+      const firstTab = MODULE_PANEL_META[activeModule]?.tabs?.[0]?.module;
+      setActiveTab(firstTab || activeModule);
       setHelpOpen(false);
     }
   }, [activeModule]);
