@@ -30,6 +30,9 @@ import PersonalAdminPreview from "@/life/panels/PersonalAdminPreview";
 import HobbiesPreview from "@/life/panels/HobbiesPreview";
 import FoodPreview from "@/life/panels/FoodPreview";
 import QuestionsPreview from "@/giulia/panels/QuestionsPreview";
+import GoodMorningMorningPreview from "@/giulia/panels/GoodMorningMorningPreview";
+import GoodMorningRoutinePreview from "@/giulia/panels/GoodMorningRoutinePreview";
+import GoodMorningSettingsPreview from "@/giulia/panels/GoodMorningSettingsPreview";
 
 /** LEVEL 02 quick-context previews — one per data module. Modules without
  *  a preview (chat, voice, settings, profile, integrations) keep the full
@@ -46,6 +49,9 @@ const PREVIEWS = {
   household: HouseholdPreview, personaladmin: PersonalAdminPreview, hobbies: HobbiesPreview,
   food: FoodPreview,
   wantstoknow: QuestionsPreview,
+  gm_morning: GoodMorningMorningPreview,
+  gm_routine: GoodMorningRoutinePreview,
+  gm_settings: GoodMorningSettingsPreview,
 };
 
 const MODULE_ACCENT = {

@@ -16,10 +16,20 @@ export const MODULE_PANEL_META = {
       { label: "What I've Noticed.", module: "insights" },
     ],
   },
+  goodmorning: {
+    tabs: [
+      { label: "Morning", module: "gm_morning" },
+      { label: "Routine", module: "gm_routine" },
+      { label: "Settings", module: "gm_settings" },
+    ],
+  },
 };
 
 export const TAB_HELP = {
   wantstoknow: "Giulia stelt open vragen om haar context te verrijken. Beantwoord ze direct, of laat Giulia nieuwe gaten zoeken.",
   memory: "Wat Giulia over je onthoudt — herinneringen en opgeslagen context.",
   insights: "Signalen en patronen die Giulia in je data opmerkt.",
+  gm_morning: "Hoe ging je ochtend? Een samenvatting van de laatst voltooide wake-sessie.",
+  gm_routine: "Hoe ziet je ochtendroutine eruit? Stappen, duur en adaptieve modus.",
+  gm_settings: "Hoe moet je wekker werken? Wektijd, stijl, snooze, stem en overgangen.",
 };

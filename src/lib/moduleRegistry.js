@@ -67,7 +67,7 @@ export const MODULES = {
   timetracker: { label: "Where My Time Goes.",  icon: Timer,         Component: TimeTracker,  panelWidth: 720 },
   agents:      { label: "Who's Working?",       icon: Cpu,           Component: Agents,        panelWidth: 860 },
   updates:     { label: "Meanwhile...",          icon: Sparkles,      Component: Updates,       panelWidth: 720 },
-  goodmorning: { label: "Good Morning!",         icon: Sunrise,       Component: GoodMorningPanel, panelWidth: 560 },
+  goodmorning: { label: "Good Morning!",         icon: Sunrise,       Component: GoodMorningPanel, panelWidth: 860 },
   jedag:       { label: "What Matters?",        icon: Sparkles,      Component: JeDagPreview,  panelWidth: 860 },
   social:        { label: "What Social Life?",       icon: Heart,         Component: SocialPage,         panelWidth: 760 },
   household:     { label: "Reminders For Home.",     icon: Home,          Component: HouseholdPage,      panelWidth: 760 },
