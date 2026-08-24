@@ -105,7 +105,7 @@ function DayTimeline({ meals, mode, dateLabel, dayName }) {
               ) : (
                 <span className="block h-2.5 w-2.5 rounded-full border-2" style={{ borderColor: accent, background: "transparent" }} />
               )}
-              <div className="absolute left-1/2 -translate-x-1/2 mt-2 text-center w-[70px]" style={{ marginLeft: "-35px" }}>
+              <div className="absolute left-1/2 -translate-x-1/2 mt-2 text-center w-[70px]">
                 <span className="text-[7.5px] uppercase tracking-[0.12em] font-bold block leading-none" style={{ color: accent, opacity: isActive ? 1 : 0.85 }}>{MEAL_LABELS[mt]}</span>
                 <span className="text-[8px] tabular-nums block mt-0.5" style={{ color: accent, opacity: 0.55 }}>{m?.time || "—"}</span>
               </div>
@@ -175,7 +175,7 @@ export default function DinnerWidget() {
       </div>
 
       {/* morgen — onder in de shell */}
-      <div className="absolute bottom-0 left-0 right-0 h-1/2 z-0 cursor-pointer p-2.5 pt-6" onClick={() => openModule("food")}>
+      <div className="absolute bottom-0 left-0 right-0 h-1/2 z-0 cursor-pointer p-2.5 pt-3" onClick={() => openModule("food")}>
         <DayTimeline meals={tomorrow} mode="morgen" dateLabel="Morgen" dayName={morgenDay} />
       </div>
 
@@ -191,7 +191,7 @@ export default function DinnerWidget() {
       >
         <img src={PHOTO} alt="What's for Dinner" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
         {/* zachte overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/12 to-black/8" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-black/25" />
         <div className="absolute inset-0 p-3.5 flex flex-col" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.45)" }}>
           <WidgetHeader type="briefing" label="What's for Dinner?" count={week ? `wk ${week.week_number}` : ""} />
           <h3 className="text-[20px] leading-[1.05] font-display font-semibold tracking-[-0.02em] mt-1">{headline}</h3>

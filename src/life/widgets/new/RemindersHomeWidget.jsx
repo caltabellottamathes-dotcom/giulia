@@ -7,7 +7,7 @@ import { IMAGES } from "@/lib/images";
 import HouseholdStateViz from "@/life/components/HouseholdStateViz";
 import { householdZones, mattersItems, householdHeadline, tileAccent } from "@/lib/householdUtils";
 
-const PHOTO = IMAGES.lifeW2Home;
+const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/4d4f0a03c_HOUSEHOLD.jpeg";
 const LIGHT = "hsl(var(--d-life-light))";
 const IVORY = "hsl(var(--ivory))";
 
@@ -38,7 +38,7 @@ export default function RemindersHomeWidget() {
       <span className="pointer-events-none absolute inset-x-0 top-0 h-px z-10" style={{ background: `linear-gradient(90deg, transparent, ${LIGHT} 18%, ${LIGHT} 82%, transparent)` }} />
 
       {/* LINKS: glas — zelfde inhoud als HouseholdWidget */}
-      <div className="absolute inset-y-0 left-0 w-[60%] flex flex-col p-4 z-10">
+      <div className="absolute inset-y-0 left-0 w-[54%] flex flex-col p-4 z-10">
         <WidgetHeader type="tasks" label="Reminders For Home." count={matters.length ? `${matters.length} aandacht` : "oké"} />
         <h3 className="text-[22px] leading-[1.05] font-display font-semibold tracking-[-0.02em] mt-1">{headline}</h3>
         <p className="text-[10px] uppercase tracking-[0.18em] mt-1 opacity-50">{sub}</p>
@@ -49,7 +49,7 @@ export default function RemindersHomeWidget() {
       </div>
 
       {/* RECHTS: fotokaart — groot cijfer + "dingen waard" */}
-      <div className="absolute inset-y-0 right-0 w-[40%] rounded-[28px] overflow-hidden z-20" style={{ boxShadow: "-16px 0 36px -20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.16)" }}>
+      <div className="absolute inset-y-0 right-0 w-[46%] rounded-[28px] overflow-hidden z-20" style={{ boxShadow: "-16px 0 36px -20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.16)" }}>
         <img src={PHOTO} alt="Reminders For Home" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/18 to-black/25" />
         <div className="absolute bottom-0 inset-x-0 p-3.5" style={{ color: IVORY, textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>
