@@ -147,7 +147,12 @@ export function buildVoiceClientTools({ navigate, openModule }) {
     },
     delegate_to_giulia: async ({ instruction } = {}) => {
       if (!instruction) return { success: false, reason: "missing_instruction" };
-      const res = await base44.functions.invoke("chatWithGiulia", { message: instruction });
+      // source: "voice" → achtergrondmodus: chatWithGiulia slaat GEEN berichten
+      // op in de in-app chat en koppelt niet aan de chatdraad. De delegatie
+      // draait stil op de achtergrond; alleen het resultaat gaat terug naar de
+      // stem-agent. Zo antwoordt chat-Giulia niet "iets anders" tijdens een
+      // voice-call.
+      const res = await base44.functions.invoke("chatWithGiulia", { message: instruction, source: "voice" });
       const d = res?.data ?? res ?? {};
       return { success: true, response: d.response || "Uitgevoerd.", actions: d.actions || [] };
     },
