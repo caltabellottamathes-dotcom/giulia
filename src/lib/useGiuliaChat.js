@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { base44 } from "@/api/base44Client";
+import { bumpRefresh } from "@/lib/refreshBus";
 
 /**
  * useGiuliaChat — chat-aansluiting op GIULIA-GIULIA's eigen brein
@@ -53,6 +54,10 @@ export function useGiuliaChat() {
       setMessages((prev) => [...prev, norm(m)]);
       setSending(false);
       if (fallbackTimer.current) { clearTimeout(fallbackTimer.current); fallbackTimer.current = null; }
+      // Giulia kan tijdens deze beurt een approval/taak/contact hebben
+      // aangemaakt — geef alle widgets, panelen en pagina's meteen een
+      // refresh-signaal zodat concepten direct overal verschijnen.
+      bumpRefresh();
     });
     return unsubscribe;
   }, []);
@@ -86,6 +91,7 @@ export function useGiuliaChat() {
         if (fallbackTimer.current) { clearTimeout(fallbackTimer.current); fallbackTimer.current = null; }
         setMessages((prev) => [...prev, { id: `g-${Date.now()}`, role: "assistant", content: res.response, tool_calls: res.actions_executed || [], attachments: [] }]);
         setSending(false);
+        bumpRefresh();
       }
     } catch {
       // invoke faalde of timeout — de subscription herstelt het antwoord

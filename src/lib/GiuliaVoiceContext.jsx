@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useCallback, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { bumpRefresh } from "@/lib/refreshBus";
 
 /**
  * GiuliaVoiceContext — the state machine behind the Concierge system.
@@ -28,6 +29,9 @@ export function GiuliaVoiceProvider({ children }) {
       const data = res?.data ?? res ?? {};
       const replyText = data.response || "";
       setReply(replyText);
+      // Direct alles verversen — een spraak-opdracht kan een approval/taak/
+      // contact hebben aangemaakt dat nu meteen op alle plekken moet staan.
+      bumpRefresh();
       if (replyText) {
         setState("speaking");
         try {
