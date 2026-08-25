@@ -37,7 +37,7 @@ export default function BottomNav() {
       {/* Zwevende glazen pill — schuift horizontaal in/uit */}
       <div
         className={cn(
-          "flex items-center gap-0.5 rounded-full glass-1 border border-foreground/12 px-1.5 py-1.5 shadow-[0_14px_36px_-14px_rgba(0,0,0,0.28)] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] origin-left",
+          "flex items-center gap-0.5 rounded-full glass-1 border border-foreground/12 px-1.5 h-11 shadow-[0_14px_36px_-14px_rgba(0,0,0,0.28)] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] origin-left",
           collapsed ? "-translate-x-[calc(100%+0.5rem)] opacity-0 pointer-events-none" : "translate-x-0 opacity-100"
         )}
         style={{ background: tintBg, borderColor: tintBorder }}
@@ -52,7 +52,7 @@ export default function BottomNav() {
               end={l.end}
               aria-label={l.label}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 rounded-full px-1.5 sm:px-3.5 py-1.5 transition-colors",
+                "flex flex-col items-center justify-center gap-1 rounded-full px-1.5 sm:px-3.5 py-1 transition-colors",
                 active ? "" : "text-foreground/55 hover:text-foreground"
               )}
               style={active ? { color: accent } : undefined}
@@ -66,7 +66,7 @@ export default function BottomNav() {
         <button
           onClick={() => window.dispatchEvent(new CustomEvent("giulia:open-launcher"))}
           aria-label="Meer navigatie"
-          className="hidden sm:flex flex-col items-center justify-center gap-1 rounded-full px-3.5 py-1.5 text-foreground/55 hover:text-foreground transition-colors"
+          className="hidden sm:flex flex-col items-center justify-center gap-1 rounded-full px-3.5 py-1 text-foreground/55 hover:text-foreground transition-colors"
         >
           <LayoutGrid className="h-[17px] w-[17px]" strokeWidth={1.7} />
           <span className="text-[8.5px] uppercase tracking-[0.14em] font-semibold leading-none">Meer</span>
