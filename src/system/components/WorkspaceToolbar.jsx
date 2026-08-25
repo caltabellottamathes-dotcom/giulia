@@ -7,7 +7,7 @@ import { useLocation } from "react-router-dom";
 import { Plus, Phone, MessageSquare, BrainCircuit, X, Send, Loader2 } from "lucide-react";
 import QuickLauncher from "@/system/components/glass/QuickLauncher";
 import { useActiveDomain } from "@/lib/useActiveDomain";
-import { DEFAULT_BOARDS, loadCustomBoards, createCustomBoard, getActiveBoard, setActiveBoard } from "@/lib/useDashboardBoard";
+import { DEFAULT_BOARDS, loadCustomBoards, createCustomBoard, renameCustomBoard, deleteCustomBoard, getActiveBoard, setActiveBoard, isDefaultBoard } from "@/lib/useDashboardBoard";
 
 const actionBtn = "h-8 w-8 flex items-center justify-center text-foreground/80 hover:bg-foreground/15 hover:text-foreground transition-colors shrink-0 rounded-lg";
 
@@ -23,6 +23,8 @@ export default function WorkspaceToolbar() {
   const [query, setQuery] = useState("");
   const [board, setBoard] = useState(getActiveBoard());
   const [custom, setCustom] = useState(loadCustomBoards());
+  const [editingBoardId, setEditingBoardId] = useState(null);
+  const [editingLabel, setEditingLabel] = useState("");
   const [note, setNote] = useState("");
   const [savingCtx, setSavingCtx] = useState(false);
   const [expanded, setExpanded] = useState(true);
@@ -50,6 +52,13 @@ export default function WorkspaceToolbar() {
     return () => window.removeEventListener("giulia:open-launcher", h);
   }, []);
 
+  // Houd het actieve board in sync met swipes / andere componenten.
+  useEffect(() => {
+    const h = (e) => { setBoard(e.detail); setCustom(loadCustomBoards()); };
+    window.addEventListener("giulia:board-change", h);
+    return () => window.removeEventListener("giulia:board-change", h);
+  }, []);
+
   const selectBoard = (id) => {
     setActiveBoard(id);
     setBoard(id);
@@ -60,6 +69,19 @@ export default function WorkspaceToolbar() {
     const id = createCustomBoard("Nieuw");
     setCustom(loadCustomBoards());
     selectBoard(id);
+    setEditingBoardId(id);
+    setEditingLabel("Nieuw");
+  };
+  const startEdit = (b) => { setEditingBoardId(b.id); setEditingLabel(b.label); };
+  const commitEdit = () => {
+    const label = (editingLabel || "").trim() || "Dashboard";
+    if (editingBoardId) { renameCustomBoard(editingBoardId, label); setCustom(loadCustomBoards()); }
+    setEditingBoardId(null);
+  };
+  const removeBoard = (id) => {
+    deleteCustomBoard(id);
+    setCustom(loadCustomBoards());
+    if (board === id) selectBoard(DEFAULT_BOARDS[0].id);
   };
 
   const saveContext = async () => {
@@ -119,17 +141,39 @@ export default function WorkspaceToolbar() {
               <div className="flex items-center gap-0.5 overflow-x-auto shrink-0 max-w-[46%] lg:max-w-[54%] pl-2.5 lg:pl-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {all.map((b) => {
                   const on = board === b.id;
+                  const customBoard = !isDefaultBoard(b.id);
+                  if (editingBoardId === b.id) {
+                    return (
+                      <input
+                        key={b.id}
+                        autoFocus
+                        value={editingLabel}
+                        onChange={(e) => setEditingLabel(e.target.value)}
+                        onBlur={commitEdit}
+                        onKeyDown={(e) => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") setEditingBoardId(null); }}
+                        className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] bg-foreground/15 text-foreground rounded outline-none w-[92px]"
+                      />
+                    );
+                  }
                   return (
-                    <button
-                      key={b.id}
-                      onClick={() => selectBoard(b.id)}
-                      className={cn(
-                        "px-2.5 lg:px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap transition-colors",
-                        on ? "text-foreground" : "text-foreground/55 hover:text-foreground/85"
+                    <span key={b.id} className="inline-flex items-center shrink-0">
+                      <button
+                        onClick={() => selectBoard(b.id)}
+                        onDoubleClick={() => customBoard && startEdit(b)}
+                        title={customBoard ? "Dubbelklik om te hernoemen" : b.label}
+                        className={cn(
+                          "px-2.5 lg:px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap transition-colors",
+                          on ? "text-foreground" : "text-foreground/55 hover:text-foreground/85"
+                        )}
+                      >
+                        {b.label}
+                      </button>
+                      {on && customBoard && (
+                        <button onClick={() => removeBoard(b.id)} title="Dashboard sluiten" className="ml-0.5 h-4 w-4 flex items-center justify-center text-foreground/45 hover:text-foreground transition">
+                          <X className="h-3 w-3" />
+                        </button>
                       )}
-                    >
-                      {b.label}
-                    </button>
+                    </span>
                   );
                 })}
                 <button onClick={addBoard} title="Dashboard toevoegen" className="shrink-0 h-7 w-7 flex items-center justify-center text-foreground/40 hover:text-foreground hover:bg-foreground/10 transition"><Plus className="h-3.5 w-3.5" /></button>

@@ -56,6 +56,15 @@ export function createCustomBoard(label) {
   sessionStorage.setItem("giulia_board_" + id, "[]");
   return id;
 }
+export function renameCustomBoard(id, label) {
+  const list = loadCustomBoards().map((b) => (b.id === id ? { ...b, label: label || b.label } : b));
+  saveCustomBoards(list);
+}
+export function deleteCustomBoard(id) {
+  const list = loadCustomBoards().filter((b) => b.id !== id);
+  saveCustomBoards(list);
+  sessionStorage.removeItem("giulia_board_" + id);
+}
 function sessionWidgets(boardId) {
   try { return JSON.parse(sessionStorage.getItem("giulia_board_" + boardId) || "[]"); } catch { return []; }
 }

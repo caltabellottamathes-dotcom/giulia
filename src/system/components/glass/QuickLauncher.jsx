@@ -18,7 +18,6 @@ const GROUP_COLORS = {
   Focus: "rgba(255,255,255,0.85)",
   Life: "rgba(255,255,255,0.85)",
   System: "rgba(255,255,255,0.85)",
-  Gallerieën: "rgba(255,255,255,0.85)",
 };
 
 const GROUPS = [
@@ -69,25 +68,12 @@ const GROUPS = [
       { label: "Activity Log", route: "/activity", module: "activity" },
       { label: "Agents", route: "/agents", module: "agents" },
       { label: "Knowledge Base", route: "/knowledge", module: "knowledge" },
+      { label: "Image Library", route: "/beeldbank" },
       { label: "Browser", module: "browser" },
       { label: "Integrations", route: "/integrations" },
       { label: "Settings", route: "/settings" },
       { label: "Profile", route: "/profile" },
       { label: "Experiments", route: "/experiment" },
-    ],
-  },
-  {
-    label: "Galleries",
-    items: [
-      { label: "All Widgets", route: "/widget-gallery" },
-      { label: "Widgets Set 2", route: "/widget-gallery-2" },
-      { label: "Widgets Set 3", route: "/widget-gallery-3" },
-      { label: "Widgets Set 4", route: "/widget-gallery-4" },
-      { label: "Graph Gallery", route: "/graph-gallery" },
-      { label: "Self Gallery", route: "/self-gallery" },
-      { label: "Life Gallery", route: "/life-gallery" },
-      { label: "Image Library", route: "/beeldbank" },
-      { label: "UI Library", route: "/UI-items" },
     ],
   },
 ];
@@ -160,8 +146,6 @@ export default function QuickLauncher({ open, onClose }) {
   };
 
   const shutdown = () => { onClose(); base44.auth.logout("/login"); };
-
-  let ordinal = 0;
 
   return (
     <>
@@ -238,7 +222,6 @@ export default function QuickLauncher({ open, onClose }) {
                         <motion.div key="items" initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }} className="overflow-hidden">
                           <div className="flex flex-col pb-1">
                             {g.items.map((item) => {
-                              ordinal += 1;
                               const flatIdx = flat.findIndex((f) => f.label === item.label && f.group === g.label);
                               const isActive = flatIdx === active;
                               return (
@@ -246,13 +229,9 @@ export default function QuickLauncher({ open, onClose }) {
                                   key={item.label}
                                   onClick={() => go(item)}
                                   onMouseEnter={() => setActive(flatIdx)}
-                                  style={isActive ? { borderLeft: `2px solid ${GROUP_COLORS[g.label]}`, paddingLeft: "14px" } : {}}
-                                  className={"group flex items-baseline gap-3 w-full px-4 py-2.5 rounded-xl text-left transition-colors " + (isActive ? "bg-ivory/8" : "hover:bg-ivory/5")}
+                                  className={"flex items-center w-full px-4 py-2.5 rounded-xl text-left transition-colors " + (isActive ? "bg-ivory/8 text-ivory" : "text-ivory/75 hover:bg-ivory/5 hover:text-ivory")}
                                 >
-                                  <span className={"text-[10px] font-mono tabular-nums leading-none transition-colors " + (isActive ? "" : "text-ivory/25 group-hover:text-ivory/45")} style={isActive ? { color: GROUP_COLORS[g.label] } : {}}>{String(ordinal).padStart(2, "0")}</span>
-                                  <span className={"text-[15px] font-display font-medium tracking-[-0.012em] truncate transition-colors " + (isActive ? "text-ivory" : "text-ivory/80 group-hover:text-ivory")}>{item.label}</span>
-                                  <span className={"ml-auto pl-2 text-[10px] font-mono transition-opacity " + (isActive ? "text-ivory/50 opacity-100" : "text-ivory/30 opacity-0 group-hover:opacity-100")}>{item.route}</span>
-                                  <span className={"text-[12px] font-mono leading-none transition-colors " + (isActive ? "text-olive" : "text-ivory/20 group-hover:text-ivory/45")}>↗</span>
+                                  <span className="text-[15px] font-display font-medium tracking-[-0.012em] truncate">{item.label}</span>
                                 </button>
                               );
                             })}

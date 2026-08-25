@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { usePanel } from "@/lib/PanelContext";
 import { WIDGETS } from "@/lib/widgetRegistry";
 import { MODULE_FUNCTIONS } from "@/lib/moduleFunctions";
-import { useDashboardBoard, ensureAllBoards, getActiveBoard, setActiveBoard } from "@/lib/useDashboardBoard";
+import { useDashboardBoard, ensureAllBoards, getActiveBoard, setActiveBoard, DEFAULT_BOARDS, loadCustomBoards } from "@/lib/useDashboardBoard";
 import { bumpRefresh } from "@/lib/refreshBus";
 import { IMAGES } from "@/lib/images";
 import { useToast } from "@/components/ui/use-toast";
@@ -58,6 +58,8 @@ export default function Home() {
   reloadRef.current = reload;
   const prevPanel = useRef(false);
   const photoRef = useRef(null);
+  const swipeRef = useRef(null);
+  const lastSwipe = useRef(0);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [userName, setUserName] = useState("");
   const [greeting, setGreeting] = useState({ line1: "", line2: "" });
@@ -72,6 +74,43 @@ export default function Home() {
     window.addEventListener("giulia:board-change", h);
     return () => window.removeEventListener("giulia:board-change", h);
   }, []);
+
+  // Swipe door dashboards — touch (links/rechts) en trackpad (horizontale wheel).
+  const switchBoard = (dir) => {
+    if (panelOpen) return;
+    const now = Date.now();
+    if (now - lastSwipe.current < 350) return;
+    const list = [...DEFAULT_BOARDS, ...loadCustomBoards()];
+    const idx = list.findIndex((b) => b.id === activeBoard);
+    if (idx === -1) return;
+    const next = idx + dir;
+    if (next < 0 || next >= list.length) return;
+    lastSwipe.current = now;
+    const nb = list[next];
+    setActiveBoard(nb.id);
+    setActiveBoardState(nb.id);
+    window.dispatchEvent(new CustomEvent("giulia:board-change", { detail: nb.id }));
+  };
+  useEffect(() => {
+    const el = swipeRef.current;
+    if (!el) return;
+    let startX = 0, startY = 0, act = false;
+    const onDown = (e) => { const t = e.touches?.[0]; if (!t) return; startX = t.clientX; startY = t.clientY; act = true; };
+    const onUp = (e) => {
+      if (!act) return; act = false;
+      const t = e.changedTouches?.[0]; if (!t) return;
+      const dx = t.clientX - startX, dy = t.clientY - startY;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.6) switchBoard(dx < 0 ? 1 : -1);
+    };
+    const onWheel = (e) => {
+      if (Math.abs(e.deltaX) > 40 && Math.abs(e.deltaX) > Math.abs(e.deltaY) * 1.6) switchBoard(e.deltaX > 0 ? 1 : -1);
+    };
+    el.addEventListener("touchstart", onDown, { passive: true });
+    el.addEventListener("touchend", onUp, { passive: true });
+    el.addEventListener("wheel", onWheel, { passive: true });
+    return () => { el.removeEventListener("touchstart", onDown); el.removeEventListener("touchend", onUp); el.removeEventListener("wheel", onWheel); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeBoard, panelOpen]);
 
   // Altijd up-to-date: bij terugkeer naar het tabblad of window-focus,
   // en bij sluiten van een paneel → dashboard opnieuw laden + globale refresh.
@@ -245,7 +284,7 @@ export default function Home() {
       })()}
 
       {/* Content */}
-      <div className={cn("relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[1vh] lg:pt-0", panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100")}>
+      <div ref={swipeRef} className={cn("relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[1vh] lg:pt-0", panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100")}>
         <header className="px-5 lg:px-10 pt-3 lg:pt-4 pb-6 lg:pb-8 flex items-end justify-between gap-4 lg:shrink-0">
           <div>
             <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/70 mb-2 font-semibold">{new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}</p>
