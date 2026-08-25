@@ -275,6 +275,21 @@ export default function ModulePanel() {
               {Preview ? <Preview key={bodyModule} onOpen={openSpace} onFooter={setFooter} /> : <ActiveComponent />}
             </div>
 
+            {/* FOOTER — kleine contextfooter (uit de preview) of minimale merk-regel */}
+            <div className="shrink-0">
+              <div className="mx-7 lg:mx-9 h-px bg-storm/10" />
+              <div className="px-7 lg:px-9 py-3 min-h-[2.75rem] flex items-center gap-3">
+                {footer ? (
+                  <div className="w-full flex items-center gap-3">{footer}</div>
+                ) : (
+                  <div className="flex items-center gap-2 w-full">
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: accent }} />
+                    <span className="text-[10px] uppercase tracking-[0.28em] text-ivory/45 font-medium">Giulia · {MODULES[bodyModule]?.label || mod?.label}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
           </div>
         </div>
         )

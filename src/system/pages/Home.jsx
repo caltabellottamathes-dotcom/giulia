@@ -162,22 +162,22 @@ export default function Home() {
   return (
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-mt-8 lg:mb-0 min-h-[calc(100svh-3.5rem)] lg:min-h-[calc(100svh-9.5rem)] overflow-hidden">
       {/* Fixed action buttons */}
-      <div className="fixed top-0 right-0 z-40 flex items-center h-14 pr-4 lg:pr-10 gap-2">
+      <div className="fixed top-3.5 right-4 lg:top-5 lg:right-8 z-40 flex items-center gap-1 rounded-full glass shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18),0_16px_36px_-12px_rgba(0,0,0,0.28)] px-1.5 py-1.5">
         <button
           onClick={doUpdate}
           title="Alle data, widgets en panelen bijwerken"
-          className="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold transition bg-foreground/[0.06] border border-foreground/10 text-foreground hover:bg-foreground/10 lg:bg-white/10 lg:border-white/20 lg:text-ivory lg:hover:bg-white/20"
+          className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition text-foreground lg:text-ivory hover:bg-foreground/10 lg:hover:bg-white/15"
         >
-          <RefreshCw className={cn("h-4 w-4", refreshing && "animate-spin")} /> <span className="hidden sm:inline">Update</span>
+          <RefreshCw className={cn("h-3.5 w-3.5", refreshing && "animate-spin")} /> <span className="hidden sm:inline">Update</span>
         </button>
-        <Link to="/briefing" className="inline-flex items-center gap-2 rounded-full bg-charcoal text-ivory px-4 py-2.5 text-xs font-semibold hover:bg-charcoal/90 transition">
-          <Sparkles className="h-4 w-4" /> <span className="hidden sm:inline">Briefing</span>
+        <Link to="/briefing" className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition text-foreground lg:text-ivory hover:bg-foreground/10 lg:hover:bg-white/15">
+          <Sparkles className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Briefing</span>
         </Link>
         <button
           onClick={() => setPickerOpen(true)}
-          className="inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold transition bg-foreground/[0.06] border border-foreground/10 text-foreground hover:bg-foreground/10 lg:bg-transparent lg:border-transparent lg:glass-1 lg:text-ivory lg:hover:bg-ivory/10"
+          className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition text-foreground lg:text-ivory hover:bg-foreground/10 lg:hover:bg-white/15"
         >
-          <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Widget</span>
+          <Plus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Widget</span>
         </button>
       </div>
 
