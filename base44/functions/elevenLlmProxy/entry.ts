@@ -158,11 +158,12 @@ export default async function (req) {
     try { payload = raw ? JSON.parse(raw) : null; } catch { payload = null; }
     if (payload && typeof payload === "object" && !Array.isArray(payload)) {
       payload.stream = true;
-      // Forceer het werkende Gemini-model. Elf van de oude modelnamen
-      // (gemini-1.5-flash, gemini-2.5-flash, …) retourneren 404 op deze
-      // sleutels — dat brak elke LLM-turn en liet het gesprek na één
-      // antwoord stilvallen. gemini-flash-latest is de enige die werkt.
-      payload.model = "gemini-flash-latest";
+      // Forceer het werkende Gemini-model. Oude modelnamen
+      // (gemini-1.5-flash, gemini-2.5-flash, gemini-flash-latest, …)
+      // retourneren 404 op deze sleutels — dat brak elke LLM-turn en liet
+      // het gesprek na één antwoord stilvallen. gemini-3.5-flash-lite is
+      // het model dat op alle sleutels werkt.
+      payload.model = "gemini-3.5-flash-lite";
       // Injecteer de live OS-snapshot als eerste system-message zodat de
       // stem-agent elke beurt op de hoogte is van de nieuwste data.
       try {
