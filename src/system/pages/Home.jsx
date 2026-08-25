@@ -49,6 +49,7 @@ export default function Home() {
   const prevPanel = useRef(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [userName, setUserName] = useState("");
+  const [greeting, setGreeting] = useState({ line1: "", line2: "" });
   const [resetKey, setResetKey] = useState(0);
   const [startupDone, setStartupDone] = useState(() => sessionStorage.getItem("giulia_startup_done") === "1");
   const { toast } = useToast();
@@ -87,7 +88,15 @@ export default function Home() {
   }, [panelOpen]);
 
   useEffect(() => {
-    base44.auth.me().then((u) => setUserName(u?.full_name || "")).catch(() => {});
+    base44.auth.me().then((u) => {
+      setUserName(u?.full_name || "");
+      base44.functions.invoke("generateGreeting", {})
+        .then((res) => {
+          const d = res?.data;
+          if (d?.line1 && d?.line2) setGreeting({ line1: d.line1, line2: d.line2 });
+        })
+        .catch(() => {});
+    }).catch(() => {});
     // Dashboards laden direct (ready=true); ensureAllBoards zaait op de
     // achtergrond en herlaadt het board zodra klaar. Zo blijft het dashboard
     // altijd zichtbaar — ook als de seeding traag of gedeeltelijk faalt.
@@ -132,34 +141,14 @@ export default function Home() {
   const rawFirst = userName ? userName.split(" ")[0] : "";
   const displayName = rawFirst === "Salvatore" ? "Salvo" : rawFirst || "Salvo";
 
-  // Variabele begroetingen in Giulia's stem — wisselt per tijdsvak en per dag.
-  const GREETINGS = {
-    morning: [
-      `Goedemorgen, ${displayName}. Klaar voor vandaag?`,
-      `Goeiemorgen ${displayName} — ik heb je dag voorbereid.`,
-      `${displayName}, een nieuwe dag. Ik ben er klaar voor.`,
-      `Goedemorgen ${displayName}. Rustig beginnen, ik regel de rest.`,
-    ],
-    afternoon: [
-      `Goedemiddag, ${displayName}. Hoe gaat het?`,
-      `Hé ${displayName}, je middag staat klaar.`,
-      `${displayName}, even kijken waar we staan.`,
-      `Goeiemiddag ${displayName} — ik houd alles in de gaten.`,
-    ],
-    evening: [
-      `Goedenavond, ${displayName}. Tijd om los te laten.`,
-      `Hé ${displayName}, de avond is van jou.`,
-      `${displayName}, ik pak de laatste dingen op.`,
-      `Goedenavond ${displayName}. Laat me weten wat je nodig hebt.`,
-    ],
-    night: [
-      `${displayName}, het is laat. Ik bewaak je rust.`,
-      `Slaap lekker, ${displayName}. Ik blijf waken.`,
-    ],
+  // Fallback-groet (tot de dynamische groet binnen is, of als die faalt).
+  const FALLBACK = {
+    morning: { line1: `Goedemorgen, ${displayName}`, line2: "Ik heb je dag voorbereid..." },
+    afternoon: { line1: `Goedemiddag, ${displayName}`, line2: "Even kijken waar we staan..." },
+    evening: { line1: `Goedenavond, ${displayName}`, line2: "Tijd om het los te laten..." },
+    night: { line1: `${displayName}, het is laat`, line2: "Ik bewaak je rust..." },
   };
-  const pool = GREETINGS[partOfDay];
-  const dayIdx = Math.floor(Date.now() / (1000 * 60 * 60 * 6)) % pool.length; // wisselt elke 6 uur
-  const greeting = pool[dayIdx];
+  const g = greeting.line1 ? greeting : FALLBACK[partOfDay];
 
   const sorted = [...widgets].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
   const visible = sorted;
@@ -173,7 +162,7 @@ export default function Home() {
   return (
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-mt-8 lg:mb-0 min-h-[calc(100svh-3.5rem)] lg:min-h-[calc(100svh-9.5rem)] overflow-hidden">
       {/* Fixed action buttons */}
-      <div className="fixed top-20 right-6 lg:right-10 z-40 flex items-center gap-2">
+      <div className="fixed top-0 right-0 z-40 flex items-center h-14 pr-4 lg:pr-10 gap-2">
         <button
           onClick={doUpdate}
           title="Alle data, widgets en panelen bijwerken"
@@ -231,11 +220,14 @@ export default function Home() {
       })()}
 
       {/* Content */}
-      <div className={cn("relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[6vh] lg:pt-0", panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100")}>
-        <header className="px-5 lg:px-10 pt-8 lg:pt-8 pb-6 lg:pb-4 flex items-end justify-between gap-4 lg:shrink-0">
+      <div className={cn("relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[3vh] lg:pt-0", panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100")}>
+        <header className="px-5 lg:px-10 pt-3 lg:pt-4 pb-10 lg:pb-14 flex items-end justify-between gap-4 lg:shrink-0">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/70 mb-3 font-semibold">{new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}</p>
-            <h1 className="text-[28px] sm:text-3xl lg:text-4xl font-display font-semibold tracking-[-0.02em] leading-[1.1] text-foreground text-balance">{greeting}.</h1>
+            <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/70 mb-2 font-semibold">{new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}</p>
+            <h1 className="text-[22px] sm:text-2xl lg:text-[28px] font-display font-semibold tracking-[-0.02em] leading-[1.15] text-foreground text-balance">
+              <span className="block">{g.line1}</span>
+              <span className="block text-foreground/70">{g.line2}</span>
+            </h1>
           </div>
         </header>
 
