@@ -103,11 +103,11 @@ export default function WorkspaceToolbar() {
         onMouseLeave={() => scheduleCollapse(8000)}
       >
         <div
-          className="relative flex items-center h-10 rounded-[20px] overflow-hidden w-full"
+          className="relative flex items-center h-11 rounded-[20px] overflow-hidden w-full"
           style={{
-            background: "rgba(16,18,24,0.18)",
-            backdropFilter: "blur(40px) saturate(1.4)",
-            WebkitBackdropFilter: "blur(40px) saturate(1.4)",
+            background: "rgba(16,18,24,0.16)",
+            backdropFilter: "blur(24px) saturate(1.4)",
+            WebkitBackdropFilter: "blur(24px) saturate(1.4)",
             border: "1px solid rgba(255,255,255,0.12)",
             boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.16), 0 20px 50px -22px rgba(0,0,0,0.45), 0 8px 20px -12px rgba(0,0,0,0.3)",
           }}

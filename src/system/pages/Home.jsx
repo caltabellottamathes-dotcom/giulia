@@ -9,6 +9,7 @@ import { IMAGES } from "@/lib/images";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { GlassSurfaceProvider } from "@/lib/GlassSurfaceContext";
+import { useActiveDomain } from "@/lib/useActiveDomain";
 import { Plus, Sparkles, RefreshCw } from "lucide-react";
 import AddWidgetPicker from "@/system/panels/AddWidgetPicker";
 import WidgetCell from "@/system/widgets/WidgetCell";
@@ -45,6 +46,12 @@ export default function Home() {
   const [ready, setReady] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { widgets, loading, addWidget, removeWidget, patchWidget, reload, isCustom } = useDashboardBoard(activeBoard, ready);
+  const { accent: boardAccent } = useActiveDomain(activeBoard);
+  const pillStyle = {
+    borderColor: `color-mix(in srgb, ${boardAccent} 38%, transparent)`,
+    background: `color-mix(in srgb, ${boardAccent} 10%, rgba(120,122,128,0.06))`,
+    boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.18), 0 16px 36px -12px rgba(0,0,0,0.28)",
+  };
   const reloadRef = useRef(null);
   reloadRef.current = reload;
   const prevPanel = useRef(false);
@@ -165,7 +172,7 @@ export default function Home() {
     <GlassSurfaceProvider photoRef={photoRef}>
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-mt-8 lg:mb-0 min-h-[calc(100svh-3.5rem)] lg:min-h-[calc(100svh-9.5rem)] overflow-hidden">
       {/* Fixed action buttons */}
-      <div className="fixed top-3.5 right-4 lg:top-5 lg:right-8 z-40 flex items-center gap-1 rounded-full glass shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18),0_16px_36px_-12px_rgba(0,0,0,0.28)] px-1.5 py-1.5">
+      <div className="fixed top-3.5 right-4 lg:top-5 lg:right-8 z-40 flex items-center gap-1 rounded-full glass px-1.5 py-1.5" style={pillStyle}>
         <button
           onClick={doUpdate}
           title="Alle data, widgets en panelen bijwerken"

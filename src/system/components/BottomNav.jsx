@@ -22,10 +22,10 @@ export default function BottomNav() {
   const tintBorder = `color-mix(in srgb, ${accent} 30%, transparent)`;
   const glassStyle = {
     borderColor: tintBorder,
-    background: "rgba(120,122,128,0.05)",
-    backdropFilter: "blur(6px)",
-    WebkitBackdropFilter: "blur(6px)",
-    boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.14), 0 10px 20px -14px rgba(0,0,0,0.18)"
+    background: "rgba(120,122,128,0.10)",
+    backdropFilter: "blur(16px) saturate(1.4)",
+    WebkitBackdropFilter: "blur(16px) saturate(1.4)",
+    boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.18), 0 14px 30px -16px rgba(0,0,0,0.26)"
   };
 
   return (
@@ -34,16 +34,16 @@ export default function BottomNav() {
       <button
         onClick={() => setCollapsed((c) => !c)}
         aria-label={collapsed ? "Navigatie tonen" : "Navigatie verbergen"}
-        className="h-5 w-5 rounded-full glass flex items-center justify-center shrink-0 text-foreground/60 hover:text-foreground transition-colors"
+        className="h-8 w-8 rounded-full glass flex items-center justify-center shrink-0 text-foreground/60 hover:text-foreground transition-colors"
         style={glassStyle}
       >
-        {collapsed ? <ChevronRight className="h-2.5 w-2.5" /> : <ChevronLeft className="h-2.5 w-2.5" />}
+        {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
       </button>
 
       {/* Zwevende glazen pill — schuift horizontaal in/uit */}
       <div
         className={cn(
-          "flex items-center gap-0.5 rounded-full glass px-1 py-px transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] origin-left",
+          "flex items-center gap-0.5 rounded-full glass px-1.5 py-1 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] origin-left",
           collapsed ? "-translate-x-[calc(100%+0.5rem)] opacity-0 pointer-events-none" : "translate-x-0 opacity-100"
         )}
         style={glassStyle}
@@ -59,12 +59,12 @@ export default function BottomNav() {
               title={l.label}
               aria-label={l.label}
               className={cn(
-                "flex items-center justify-center rounded-full px-1.5 py-px transition-colors",
+                "flex items-center justify-center rounded-full px-2 py-1 transition-colors",
                 active ? "" : "text-foreground/55 hover:text-foreground"
               )}
               style={active ? { color: accent } : undefined}
             >
-              <Icon className="h-3.5 w-3.5" strokeWidth={active ? 2.3 : 1.7} />
+              <Icon className="h-4 w-4" strokeWidth={active ? 2.3 : 1.7} />
             </NavLink>
           );
         })}
@@ -73,9 +73,9 @@ export default function BottomNav() {
           onClick={() => window.dispatchEvent(new CustomEvent("giulia:open-launcher"))}
           title="Meer"
           aria-label="Meer navigatie"
-          className="hidden sm:flex items-center justify-center rounded-full px-1.5 py-px text-foreground/55 hover:text-foreground transition-colors"
+          className="hidden sm:flex items-center justify-center rounded-full px-2 py-1 text-foreground/55 hover:text-foreground transition-colors"
         >
-          <LayoutGrid className="h-3.5 w-3.5" strokeWidth={1.7} />
+          <LayoutGrid className="h-4 w-4" strokeWidth={1.7} />
         </button>
       </div>
     </nav>
