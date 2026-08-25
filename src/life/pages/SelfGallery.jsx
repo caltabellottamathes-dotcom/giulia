@@ -133,7 +133,7 @@ function NumberBadge({ n }) {
 }
 
 /**
- * SelfGallery — standalone pagina met alle SELF widget-reeksen.
+ * SelfGallery — standalone pagina met alle LIFE widget-reeksen.
  * Elke widget krijgt een nummer (rechtsboven) voor snelle selectie.
  * Reeks 1: 8 editorial · Reeks 2: 10 grafisch · Reeks 3: 8 foto-gedreven
  * Reeks 4: 8 foto-in-glas · Reeks 5: 8 ultieme data · Reeks 6: 10 grafisch
@@ -211,7 +211,7 @@ export default function SelfGallery() {
       <div className="min-h-screen bg-background px-5 lg:px-10 py-8 pb-24">
         <div className="mb-6">
           <Link to="/" className="text-[10px] uppercase tracking-[0.24em] font-semibold text-foreground/50 hover:text-foreground transition-colors">← Terug naar OS</Link>
-          <h1 className="text-3xl font-display font-semibold tracking-tight mt-1.5">SELF · Galerij</h1>
+          <h1 className="text-3xl font-display font-semibold tracking-tight mt-1.5">LIFE · Galerij</h1>
           <p className="text-sm text-muted-foreground mt-1">{widgets.length} widgets genummerd 1–{widgets.length} · dertien reeksen. Reeks 13: afvinkbare stappenplannen & briefing met sluiten.</p>
         </div>
 

@@ -153,7 +153,7 @@ export default function DailyStatePanel() {
               </div>
               <input value={form.need} onChange={(e) => setForm((f) => ({ ...f, need: e.target.value }))} placeholder="Belangrijkste behoefte nu" className="w-full rounded-xl bg-white/5 border border-white/15 px-3 py-2 text-sm text-ivory placeholder:text-ivory/40 outline-none" />
               <textarea value={form.reflection} onChange={(e) => setForm((f) => ({ ...f, reflection: e.target.value }))} placeholder="Reflectie (optioneel)" rows={2} className="w-full rounded-xl bg-white/5 border border-white/15 px-3 py-2 text-sm text-ivory placeholder:text-ivory/40 outline-none resize-none" />
-              <button onClick={saveCheckIn} className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-charcoal transition" style={{ background: BLUE }}><Plus className="w-4 h-4" /> Check-in opslaan</button>
+              <button onClick={saveCheckIn} className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-charcoal transition" style={{ background: BLUE }}><Plus className="w-4 w-4" /> Check-in opslaan</button>
             </div>
           </motion.div>
         )}

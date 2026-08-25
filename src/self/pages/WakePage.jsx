@@ -4,7 +4,7 @@ import PageHero from "@/system/components/glass/PageHero";
 import GlassPanel from "@/system/components/glass/GlassPanel";
 import { IMAGES } from "@/lib/images";
 import { Sunrise, ArrowRight } from "lucide-react";
-import WakeMode from "@/self/pages/WakeMode";
+import WakeMode from "@/life/pages/WakeMode";
 
 const SAGE = "hsl(var(--self-accent))";
 

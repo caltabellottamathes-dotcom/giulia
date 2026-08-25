@@ -40,7 +40,7 @@ export default function GoodMorningPanel() {
 
   return (
     <div className="space-y-6">
-      {/* Good Morning tabs — Wake (gemigreerd uit SELF) / Instellingen */}
+      {/* Good Morning tabs — Wake / Instellingen */}
       <div className="flex gap-2">
         {[["wake", "Wake"], ["instellingen", "Instellingen"]].map(([k, l]) => (
           <button key={k} onClick={() => setTab(k)} className={"px-3.5 py-1.5 rounded-full text-xs font-bold transition " + (tab === k ? "bg-d-giulia-deep text-ivory" : "bg-white/8 text-ivory/55 hover:text-ivory")}>{l}</button>
