@@ -57,7 +57,7 @@ export default function WidgetsLife() {
           <HowDoingWidget />
         </div>
         <div>
-          <Label>07 · MUSIC. — P·3:4·SPLIT · pistache-blauwe bloom midden-boven, flush fotokaart + bibliotheek</Label>
+          <Label>07 · MELODIES TO LISTEN. — P·3:4·SPLIT · pistache-blauwe bloom, flush fotokaart (4 ronde hoeken) + bibliotheek</Label>
           <MusicWidget />
         </div>
 

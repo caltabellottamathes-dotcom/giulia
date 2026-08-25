@@ -141,7 +141,7 @@ export default function MusicWidget() {
         <AudioReactiveLife analyserRef={analyserRef} isPlaying={isPlaying} className="absolute inset-0" />
         <div className="absolute top-3 left-4 flex items-center gap-1.5 z-20">
           <span className="h-1.5 w-1.5 rounded-full" style={{ background: LIGHT }} />
-          <span className="text-[9px] uppercase tracking-[0.22em] font-bold opacity-55">Music.</span>
+          <span className="text-[9px] uppercase tracking-[0.16em] font-bold opacity-55">Melodies to listen.</span>
         </div>
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-40 flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
           <button onClick={prev} disabled={!tracks.length} className={SUBTLE} aria-label="Vorige"><SkipBack className="h-4 w-4" /></button>
@@ -154,7 +154,7 @@ export default function MusicWidget() {
 
       {/* FOTOKAART — flush, precies halve shell, schuift boven/beneden */}
       <motion.div
-        className="absolute inset-x-0 h-1/2 z-20 overflow-hidden"
+        className="absolute inset-x-0 h-1/2 z-20 overflow-hidden rounded-[28px]"
         initial={false}
         animate={{ top: slid ? "0%" : "50%" }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}

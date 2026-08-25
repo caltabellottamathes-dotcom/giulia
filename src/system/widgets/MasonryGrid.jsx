@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
  * variation. Heights are measured in JS (ResizeObserver keeps it correct as
  * content loads). Pass a `spans` array (one number per child) to vary widths.
  */
-export default function MasonryGrid({ children, className, gap = 16, spans, scale = 1 }) {
+export default function MasonryGrid({ children, className, gap = 16, spans, scale = 1, columnTiers }) {
   const containerRef = useRef(null);
   const itemRefs = useRef([]);
   const spansRef = useRef(spans);
@@ -32,7 +32,9 @@ export default function MasonryGrid({ children, className, gap = 16, spans, scal
     const update = () => {
       const width = container.offsetWidth;
       if (!width) return;
-      const c = width < 640 ? 1 : width < 1024 ? 2 : width < 1280 ? 4 : 5;
+      const TIERS = columnTiers || [[0, 1], [640, 2], [1024, 4], [1280, 5]];
+      let c = TIERS[0][1];
+      for (const [minW, cols] of TIERS) if (width >= minW) c = cols;
       setCols(c);
       setColW((width - (c - 1) * gap) / c);
     };

@@ -20,7 +20,10 @@ import StartupSequence from "@/system/components/StartupSequence";
 import { Link } from "react-router-dom";
 import { MODULES } from "@/lib/moduleRegistry";
 
-const WIDGET_SPAN = { giulia: 2, goodmorning: 2, concierge: 1, approvals: 2, insights: 1, imalive: 1, giuliaquestions: 1, projects: 2, agenda: 2, tasks: 1, email: 1, whatsapp: 2, people: 1, timetracker: 1, documents: 2, updates: 2, sociallife: 1, remindershome: 2, thinghandle: 1, thingslove: 2, dinner: 2, howdoing: 1, musicwidget: 1, beeldbank: 2, velochat: 1 };
+// Spans op een 15-koloms grid (desktop). Oude 5-koloms waarden ×3, zodat
+// huidige formaten behouden blijven maar je nu stappen van 1 kolom kunt zetten
+// (1 span = 1/15, ... 3 = 20%, 5 = 33%, 6 = 40%, 8 = 53%, 15 = volledig).
+const WIDGET_SPAN = { giulia: 6, goodmorning: 6, concierge: 3, approvals: 6, insights: 3, imalive: 3, giuliaquestions: 3, projects: 6, agenda: 6, tasks: 3, email: 3, whatsapp: 6, people: 3, timetracker: 3, documents: 6, updates: 6, sociallife: 3, remindershome: 6, thinghandle: 3, thingslove: 6, dinner: 6, howdoing: 3, musicwidget: 3, beeldbank: 6, velochat: 3 };
 
 // Some modules open under a different key than their widget — map them so the
 // floating "widget naast het paneel" resolves to the right component.
@@ -303,7 +306,7 @@ export default function Home() {
               ))}
             </div>
           ) : visible.length > 0 ? (
-            <MasonryGrid key={activeBoard + resetKey} className="max-w-[1280px] xl:max-w-[1500px]" gap={24} spans={cells.map((c) => c.span)} scale={0.8}>
+            <MasonryGrid key={activeBoard + resetKey} className="max-w-[1280px] xl:max-w-[1500px]" gap={24} spans={cells.map((c) => c.span)} scale={0.8} columnTiers={[[0, 1], [640, 6], [1024, 12], [1280, 15]]}>
               {cells.map((c) => c.node)}
             </MasonryGrid>
           ) : (
