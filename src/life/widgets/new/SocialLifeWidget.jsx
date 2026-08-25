@@ -24,8 +24,11 @@ export default function SocialLifeWidget() {
   const mi = useMemo(() => meaningfulInteractions({ emails, whatsapps, days: 7 }), [emails, whatsapps]);
 
   const orbit = useMemo(() => {
-    const circle = closeCircle(contacts || []);
-    return circle.slice(0, 8).map((c, i) => {
+    const circle = closeCircle(contacts || [])
+      .slice()
+      .sort((a, b) => daysSince(a.last_contact_date) - daysSince(b.last_contact_date))
+      .slice(0, 8);
+    return circle.map((c, i) => {
       const days = daysSince(c.last_contact_date);
       const tier = orbitTier(days);
       const total = Math.max(circle.length, 1);

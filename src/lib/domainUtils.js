@@ -119,16 +119,19 @@ export function whatsappThreads(whatsapps = [], contacts = [], limit = 6) {
     .slice(0, limit);
 }
 
-// Orbit recency-zones — 7 concentrische ringen, géén 1 ring per dag.
-// Binnenste = net contact, buitenste = sluimerend / nooit.
+// Orbit recency-zones — 9 concentrische ringen.
+// Binnenste = vandaag. Buitenste = 2 maanden geleden. De ring vóór de buitenste
+// is 1 maand; steeds verder naar binnen wordt dichter bij vandaag.
 export const ORBIT_TIERS = [
-  { max: 2, r: 16, color: "#d8dab3" },        // vandaag
-  { max: 7, r: 22, color: "#d8dab3" },        // deze week
-  { max: 14, r: 28, color: "#b1bec6" },       // twee weken
-  { max: 30, r: 34, color: "#94925d" },        // deze maand
-  { max: 60, r: 40, color: "#94925d" },        // vorige maand
-  { max: 90, r: 45, color: "#8a8f7a" },        // afgelopen kwartaal
-  { max: Infinity, r: 48, color: "hsl(var(--smoke))" }, // sluimer / nooit
+  { max: 0,  r: 7,  color: "hsl(var(--d-life-light))" },   // vandaag
+  { max: 1,  r: 10, color: "hsl(var(--d-life-light))" },   // gisteren
+  { max: 3,  r: 13, color: "hsl(var(--d-life-light))" },   // paar dagen
+  { max: 7,  r: 17, color: "hsl(var(--d-life-mid))" },     // deze week
+  { max: 10, r: 20, color: "hsl(var(--d-life-mid))" },
+  { max: 14, r: 23, color: "hsl(var(--d-life-mid))" },     // 2 weken
+  { max: 21, r: 28, color: "hsl(var(--d-life-deep))" },   // 3 weken
+  { max: 30, r: 35, color: "hsl(var(--d-life-deep))" },   // 1 maand (ring vóór buitenste)
+  { max: 60, r: 44, color: "hsl(var(--smoke))" },         // 2 maanden (buitenste)
 ];
 export function orbitTier(days) {
   return ORBIT_TIERS.find((t) => days <= t.max) || ORBIT_TIERS[ORBIT_TIERS.length - 1];
