@@ -40,6 +40,7 @@ import VideoPlayerPanel from "@/system/panels/viewers/VideoPlayerPanel";
 import MusicPlayerPanel from "@/system/panels/viewers/MusicPlayerPanel";
 import DocViewerPanel from "@/system/panels/viewers/DocViewerPanel";
 import VeloChatPanel from "@/system/panels/VeloChatPanel";
+import MediaPlayerPreview from "@/life/panels/MediaPlayerPreview";
 
 /**
  * Single source of truth for every module that opens as a sliding glass
@@ -82,5 +83,6 @@ export const MODULES = {
   videoplayer:   { label: "Video",                  icon: Video,         Component: VideoPlayerPanel,          panelWidth: 1000 },
   musicplayer:   { label: "Muziek",                  icon: Music,         Component: MusicPlayerPanel,          panelWidth: 760 },
   docviewer:     { label: "Document",                icon: FileText,      Component: DocViewerPanel,            panelWidth: 1000 },
+  mediaplayer:   { label: "Media",                    icon: Music,          Component: MediaPlayerPreview,        panelWidth: 760 },
   velochat:      { label: "Velo · System",             icon: Wrench,        Component: VeloChatPanel,             panelWidth: 720 },
 };

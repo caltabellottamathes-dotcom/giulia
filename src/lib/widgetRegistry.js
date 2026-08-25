@@ -29,6 +29,7 @@ import ThingsHandleWidget from "@/life/widgets/new/ThingsHandleWidget";
 import ThingsLoveWidget from "@/life/widgets/new/ThingsLoveWidget";
 import DinnerWidget from "@/life/widgets/new/DinnerWidget";
 import HowDoingWidget from "@/life/widgets/new/HowDoingWidget";
+import MusicWidget from "@/life/widgets/new/MusicWidget";
 import WantsToKnowLayeredWidget from "@/giulia/widgets/new/WantsToKnowLayeredWidget";
 import ImAliveWidget from "@/giulia/widgets/new/ImAliveWidget";
 import ImageViewerWidget from "@/system/widgets/viewers/ImageViewerWidget";
@@ -78,6 +79,7 @@ export const WIDGETS = {
   thingslove:    { type: "thingslove",    label: "Things I Love.",      icon: Palette,        Component: ThingsLoveWidget,    image: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/f414f8166_HOBBIES.jpeg",  span: 2, category: "life", domain: "life" },
   dinner:        { type: "dinner",        label: "What's for Dinner?",  icon: Utensils,       Component: DinnerWidget,         image: IMAGES.lifeW5Dinner,       span: 2, category: "life", domain: "life" },
   howdoing:      { type: "howdoing",      label: "How I'm Doing.",      icon: ActivityIcon,  Component: HowDoingWidget,       image: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/a3ade5ba2_BecomingMe.jpeg", span: 1, category: "life", domain: "life" },
+  musicwidget:   { type: "musicwidget",   label: "Music.",             icon: Music,         Component: MusicWidget,          image: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/f414f8166_HOBBIES.jpeg", span: 2, category: "life", domain: "life" },
 
   // ── SYSTEM ──
   imageviewer:  { type: "imageviewer",  label: "Afbeeldingen.", icon: ImageIcon, Component: ImageViewerWidget, image: IMAGES.notebookChair, span: 1, category: "system", domain: "system" },

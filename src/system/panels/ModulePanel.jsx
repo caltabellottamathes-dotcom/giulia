@@ -72,6 +72,7 @@ const MODULE_ACCENT = {
   food: "hsl(var(--life-sand))",
   wantstoknow: "hsl(var(--olive))",
   imageviewer: "hsl(var(--blue-grey))", videoplayer: "hsl(var(--sand))", musicplayer: "hsl(var(--olive))", docviewer: "hsl(var(--charcoal))",
+  mediaplayer: "hsl(var(--life-blue))",
 };
 
 const MODULE_IMAGE = {
@@ -86,6 +87,7 @@ const MODULE_IMAGE = {
   household: IMAGES.lifeHousehold, personaladmin: IMAGES.lifePersonalAdmin, hobbies: IMAGES.lifeHobbies,
   food: IMAGES.lifeFood,
   wantstoknow: IMAGES.wWantsToKnow,
+  mediaplayer: IMAGES.bootPhone,
 };
 
 const MODULE_ROUTE = {
@@ -104,6 +106,7 @@ const MODULE_ROUTE = {
   food: "/life/food",
   wantstoknow: "/wants-to-know",
   dailystate: "/life/daily-state", development: "/life/development",
+  mediaplayer: "/media",
   jedag: "/agenda",
 };
 
@@ -145,6 +148,7 @@ const MODULE_TOPIC = {
   selfpersonaltime: "Tijd voor jezelf",
   selfinsights: "Patronen over jezelf",
   imageviewer: "Jouw afbeeldingen", videoplayer: "Je video's", musicplayer: "Je muziek", docviewer: "Jouw documenten",
+  mediaplayer: "Al je media bij de hand",
 };
 
 const FULL_BLEED = { voice: true, velochat: true };

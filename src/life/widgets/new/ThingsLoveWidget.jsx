@@ -145,7 +145,7 @@ export default function ThingsLoveWidget() {
           style={{ background: "linear-gradient(to top, rgba(0,0,0,0.40), rgba(0,0,0,0.08) 55%, rgba(0,0,0,0.18))" }}
         />
         {selected ? (
-          <div className="absolute inset-0 p-4 flex flex-col" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>
+          <div className="absolute inset-0 p-4 flex flex-col" style={{ color: IVORY, textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>
             <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full" style={{ background: selected.theme.color }} />
               <span className="text-[9px] uppercase tracking-[0.18em] font-bold">{selected.theme.name}</span>

@@ -6,6 +6,7 @@ import ThingsHandleWidget from "@/life/widgets/new/ThingsHandleWidget";
 import ThingsLoveWidget from "@/life/widgets/new/ThingsLoveWidget";
 import DinnerWidget from "@/life/widgets/new/DinnerWidget";
 import HowDoingWidget from "@/life/widgets/new/HowDoingWidget";
+import MusicWidget from "@/life/widgets/new/MusicWidget";
 import { IMAGES } from "@/lib/images";
 import MasonryGrid from "@/system/widgets/MasonryGrid";
 
@@ -30,7 +31,7 @@ export default function WidgetsLife() {
         Zes LIFE-widgets in het Giulia-skelet — ridge-sky, pistache, beton, urgent. Echte LIFE-functies + juiste data.
       </p>
 
-      <MasonryGrid className="max-w-[1280px] xl:max-w-[1500px]" gap={24} spans={[1, 2, 1, 2, 2, 1]} scale={0.9}>
+      <MasonryGrid className="max-w-[1280px] xl:max-w-[1500px]" gap={24} spans={[1, 2, 1, 2, 2, 1, 2]} scale={0.9}>
         <div>
           <Label>01 · WHAT SOCIAL LIFE? — P·4:5·GLAS · close-circle orbit (SocialOrbit #16) + foto-strip</Label>
           <SocialLifeWidget />
@@ -54,6 +55,10 @@ export default function WidgetsLife() {
         <div>
           <Label>06 · HOW I'M DOING. — P·2:3·B·STRIP · drie ringen (E/C/M)</Label>
           <HowDoingWidget />
+        </div>
+        <div>
+          <Label>07 · MUSIC. — G·3:2·SPLIT · audio-reactieve bloom + sinus, bibliotheek</Label>
+          <MusicWidget />
         </div>
 
       </MasonryGrid>
