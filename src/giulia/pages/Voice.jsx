@@ -25,6 +25,7 @@ function VoiceInner() {
   const inPanel = activeModule === "voice";
 
   const [transcript, setTranscript] = useState([]);
+  const [videoPlaying, setVideoPlaying] = useState(false);
   const processedRef = useRef(new Set());
 
   const clientTools = useMemo(() => buildVoiceClientTools({ navigate, openModule }), [navigate, openModule]);
@@ -73,7 +74,12 @@ function VoiceInner() {
 
   const toggle = async () => {
     if (connected) { try { await endSession(); } catch {} }
-    else { setTranscript([]); processedRef.current.clear(); try { await startSession(); } catch {} }
+    else { setTranscript([]); processedRef.current.clear(); setVideoPlaying(true); }
+  };
+
+  const handleVideoEnd = () => {
+    setVideoPlaying(false);
+    try { startSession(); } catch {}
   };
 
   const statusLabel = connecting ? "VERBINDEN" : connected ? (isSpeaking ? "SPREEKT" : "LUISTERT") : "TIK OM TE BELLEN";
@@ -109,6 +115,16 @@ function VoiceInner() {
           />
         </div>
       </div>
+      {videoPlaying && (
+        <video
+          src="https://media.base44.com/videos/public/6a7608690d4ea2c9edc3d59b/2e63d396b_GiuliaPhone.mp4"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ zIndex: 20 }}
+          autoPlay
+          playsInline
+          onEnded={handleVideoEnd}
+        />
+      )}
     </div>
   );
 
