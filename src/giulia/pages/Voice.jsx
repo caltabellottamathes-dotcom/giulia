@@ -6,9 +6,7 @@ import { cn } from "@/lib/utils";
 import { IMAGES } from "@/lib/images";
 import { ELEVEN_AGENT_ID } from "@/lib/voiceNavigation";
 import { buildVoiceClientTools } from "@/lib/voiceClientTools";
-import { base44 } from "@/api/base44Client";
-import { useToast } from "@/components/ui/use-toast";
-import { Loader2, Volume2 } from "lucide-react";
+import { Volume2 } from "lucide-react";
 import { WidgetHeader } from "@/system/widgets/primitives";
 
 const DEEP = "hsl(var(--d-giulia-deep))";
@@ -23,13 +21,10 @@ const IVORY = "hsl(var(--ivory))";
 function VoiceInner() {
   const { activeModule, openModule } = usePanel();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const endRef = useRef(null);
   const inPanel = activeModule === "voice";
 
   const [transcript, setTranscript] = useState([]);
-  const [giuliaWorking, setGiuliaWorking] = useState(false);
-  const processedRef = useRef(new Set());
 
   const clientTools = useMemo(() => buildVoiceClientTools({ navigate, openModule }), [navigate, openModule]);
 
@@ -41,16 +36,6 @@ function VoiceInner() {
       const role = payload?.role || (payload?.source === "ai" ? "assistant" : payload?.source || "user");
       if (!text) return;
       setTranscript((t) => [...t, { id: `${Date.now()}-${Math.random()}`, role, text }]);
-      if (role === "user" && !processedRef.current.has(text)) {
-        processedRef.current.add(text);
-        setGiuliaWorking(true);
-        base44.functions.invoke("chatWithGiulia", { message: text, source: "chat" })
-          .then(() => setGiuliaWorking(false))
-          .catch((e) => {
-            setGiuliaWorking(false);
-            toast({ title: "Giulia kon het niet uitvoeren", description: String(e?.message || e), variant: "destructive" });
-          });
-      }
     },
   });
   const connected = status === "connected";
@@ -82,7 +67,7 @@ function VoiceInner() {
 
   const toggle = async () => {
     if (connected) { try { await endSession(); } catch {} }
-    else { setTranscript([]); processedRef.current.clear(); try { await startSession(); } catch {} }
+    else { setTranscript([]); try { await startSession(); } catch {} }
   };
 
   const statusLabel = connecting ? "VERBINDEN" : connected ? (isSpeaking ? "SPREEKT" : "LUISTERT") : "TIK OM TE BELLEN";
@@ -138,11 +123,7 @@ function VoiceInner() {
           <div className="flex items-center gap-2 mb-3">
             <Volume2 className="h-4 w-4" style={{ color: "hsl(var(--olive))" }} />
             <h2 className="text-sm font-display font-semibold uppercase tracking-[0.16em]">GESPREK</h2>
-            {giuliaWorking && (
-              <span className="ml-auto flex items-center gap-1.5 text-[11px]" style={{ color: "hsl(var(--olive))" }}>
-                <Loader2 className="h-3 w-3 animate-spin" /> Giulia voert uit…
-              </span>
-            )}
+
           </div>
           {transcript.length === 0 ? (
             <p className="text-sm text-center py-8" style={{ color: "rgba(255,255,255,0.55)" }}>
