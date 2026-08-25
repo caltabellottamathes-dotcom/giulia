@@ -9,7 +9,7 @@ import QuickLauncher from "@/system/components/glass/QuickLauncher";
 import { useActiveDomain } from "@/lib/useActiveDomain";
 import { DEFAULT_BOARDS, loadCustomBoards, createCustomBoard, getActiveBoard, setActiveBoard } from "@/lib/useDashboardBoard";
 
-const actionBtn = "h-8 w-8 flex items-center justify-center text-ivory/80 hover:bg-ivory/15 hover:text-ivory transition-colors shrink-0 rounded-lg";
+const actionBtn = "h-8 w-8 flex items-center justify-center text-foreground/80 hover:bg-foreground/15 hover:text-foreground transition-colors shrink-0 rounded-lg";
 
 /**
  * WorkspaceToolbar — minimalistische volledig-brede werkbalk onderaan.
@@ -105,11 +105,11 @@ export default function WorkspaceToolbar() {
         <div
           className="relative flex items-center h-11 rounded-[14px] overflow-hidden w-full"
           style={{
-            background: "rgba(120,122,128,0.05)",
-            backdropFilter: "blur(8px) saturate(1.2)",
-            WebkitBackdropFilter: "blur(8px) saturate(1.2)",
-            border: "1px solid rgba(255,255,255,0.06)",
-            boxShadow: "0 16px 40px -18px rgba(0,0,0,0.42), 0 6px 18px -10px rgba(0,0,0,0.25)",
+            background: "rgba(120,122,128,0.06)",
+            backdropFilter: "blur(18px) saturate(1.3)",
+            WebkitBackdropFilter: "blur(18px) saturate(1.3)",
+            border: "none",
+            boxShadow: "0 22px 52px -18px rgba(0,0,0,0.5), 0 10px 24px -12px rgba(0,0,0,0.32)",
           }}
         >
           <div className="pointer-events-none absolute inset-0" style={{ background: accent, opacity: 0.16 }} />
@@ -125,14 +125,14 @@ export default function WorkspaceToolbar() {
                       onClick={() => selectBoard(b.id)}
                       className={cn(
                         "px-2.5 lg:px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap transition-colors",
-                        on ? "text-ivory" : "text-ivory/55 hover:text-ivory/85"
+                        on ? "text-foreground" : "text-foreground/55 hover:text-foreground/85"
                       )}
                     >
                       {b.label}
                     </button>
                   );
                 })}
-                <button onClick={addBoard} title="Dashboard toevoegen" className="shrink-0 h-7 w-7 flex items-center justify-center text-ivory/40 hover:text-ivory hover:bg-ivory/10 transition"><Plus className="h-3.5 w-3.5" /></button>
+                <button onClick={addBoard} title="Dashboard toevoegen" className="shrink-0 h-7 w-7 flex items-center justify-center text-foreground/40 hover:text-foreground hover:bg-foreground/10 transition"><Plus className="h-3.5 w-3.5" /></button>
               </div>
 
               {/* spacer */}
@@ -140,14 +140,14 @@ export default function WorkspaceToolbar() {
 
               {/* Giulia input */}
               <form onSubmit={submit} className="hidden sm:flex items-center gap-2.5 w-[30%] lg:w-[22%]">
-                <span className="h-1.5 w-1.5 rounded-full bg-ivory/60 animate-pulse-soft shrink-0" />
-                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Ask Giulia anything…" className="flex-1 min-w-0 bg-transparent text-sm text-ivory placeholder:text-ivory/55 focus:outline-none text-right" />
+                <span className="h-1.5 w-1.5 rounded-full bg-foreground/60 animate-pulse-soft shrink-0" />
+                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Ask Giulia anything…" className="flex-1 min-w-0 bg-transparent text-sm text-foreground placeholder:text-foreground/55 focus:outline-none text-right" />
               </form>
             </>
           ) : (
             <button
               onClick={() => setExpanded(true)}
-              className="ml-3 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap text-ivory shrink-0"
+              className="ml-3 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap text-foreground shrink-0"
             >
               {all.find((b) => b.id === board)?.label || "GIULIA"}
             </button>
@@ -157,7 +157,7 @@ export default function WorkspaceToolbar() {
           <div className={cn("ml-auto flex items-center gap-0.5 shrink-0", expanded ? "px-1.5 lg:px-2" : "pr-2")}>
             {expanded && (
               <>
-                <button onClick={() => { expand(); active ? stop() : start(); }} aria-label="Context toevoegen" className={cn(actionBtn, active && "text-ivory")}><BrainCircuit className="h-4 w-4" /></button>
+                <button onClick={() => { expand(); active ? stop() : start(); }} aria-label="Context toevoegen" className={cn(actionBtn, active && "text-foreground")}><BrainCircuit className="h-4 w-4" /></button>
                 <button onClick={() => { expand(); setLauncherOpen(true); }} aria-label="Snelle acties" className={actionBtn}><Plus className="h-4 w-4" /></button>
                 </>
                 )}
