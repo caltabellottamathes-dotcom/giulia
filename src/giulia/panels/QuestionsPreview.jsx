@@ -37,23 +37,19 @@ export default function QuestionsPreview({ onOpen, onFooter }) {
   const counts = { now: 0, soon: 0, useful: 0, curious: 0 };
   items.forEach(q => { if (counts[q.priority] !== undefined) counts[q.priority]++; });
 
-  // Lever footer (contextrij + knop) aan het ModulePanel als geldige React-node.
+  // Lever footer (contextrij + knoppen) aan het ModulePanel.
   useEffect(() => {
-    onFooter?.(
-      <div className="w-full flex items-center gap-2">
-        <span className="text-[11px] text-ivory/70 truncate flex-1">
-          {items.length} open · {nowCount} dringend
-        </span>
-        <button onClick={search} disabled={busy}
-          className="rounded-full bg-olive text-ivory px-3 py-1.5 text-[11px] font-semibold hover:bg-olive/90 transition disabled:opacity-50 shrink-0">
-          {busy ? "Zoekt…" : "Zoek gaten"}
-        </button>
-        <button onClick={onOpen}
-          className="rounded-full glass-button text-ivory px-3 py-1.5 text-[11px] font-semibold hover:text-ivory transition shrink-0">
-          Open vragen
-        </button>
-      </div>
-    );
+    onFooter?.({
+      context: [
+        { label: "OPEN", text: `${items.length} onbeantwoorde vragen.` },
+        { label: "DRINGEND", text: `${nowCount} vragen met hoge prioriteit.` },
+        { label: "ACTIE", text: "Beantwoord vragen om Giulia's context te verrijken." },
+      ],
+      actions: [
+        { label: busy ? "Zoekt…" : "Zoek Gaten", primary: true, onClick: search },
+        { label: "Open Vragen", to: "/wants-to-know" },
+      ],
+    });
   }, [items, busy, nowCount, onFooter]);
 
   return (
