@@ -6,7 +6,7 @@ import { useMediaLibrary, kindOfUpload } from "@/lib/useMediaLibrary";
 import { useLocalMedia } from "@/lib/useLocalMedia";
 import AudioReactiveLife from "@/life/widgets/new/AudioReactiveLife";
 
-const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/eecda9230_Music.jpeg";
+const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/aa291c631_MElodies.jpeg";
 const DEEP = "hsl(var(--d-life-deep))";
 const LIGHT = "hsl(var(--d-life-light))";
 const IVORY = "hsl(var(--ivory))";
@@ -141,7 +141,7 @@ export default function MusicWidget() {
         <AudioReactiveLife analyserRef={analyserRef} isPlaying={isPlaying} className="absolute inset-0" />
         <div className="absolute top-3 left-4 flex items-center gap-1.5 z-20">
           <span className="h-1.5 w-1.5 rounded-full" style={{ background: LIGHT }} />
-          <span className="text-[9px] uppercase tracking-[0.16em] font-bold opacity-55">Melodies to listen.</span>
+          <span className="text-[9px] uppercase tracking-[0.16em] font-bold opacity-55">Melodies I listen to!</span>
         </div>
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-40 flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
           <button onClick={prev} disabled={!tracks.length} className={SUBTLE} aria-label="Vorige"><SkipBack className="h-4 w-4" /></button>
