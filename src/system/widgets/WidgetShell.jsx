@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useRef, useState, useLayoutEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useWidgetTheme } from "@/lib/WidgetThemeContext";
+import { useGlassSurface } from "@/lib/GlassSurfaceContext";
 
 /**
  * WidgetShell — the designed tile hosting every dashboard widget.
@@ -48,6 +49,9 @@ export default function WidgetShell({
   domain = "",
 }) {
   const ctx = useWidgetTheme();
+  const surface = useGlassSurface();
+  const shellRef = useRef(null);
+  const [tone, setTone] = useState(() => (surface ? "dark" : "light"));
   const opacity = ctx.opacity != null ? ctx.opacity : 1;
   const blur = ctx.blur || 0;
   const resolved = ctx.theme === "solid" ? (ctx.color || "charcoal") : "glass";
@@ -68,6 +72,35 @@ export default function WidgetShell({
   const tileAccent = domainEntry ? domainEntry.accent : tile.accent;
   const tileOnAccent = domainEntry ? domainEntry.on : tile.on;
 
+  // Glas-tegel tekstkleur past zich aan de ondergrond aan (donkere foto → licht,
+  // lichte achtergrond → donker) voor contrast. Enkel voor glas-tegels.
+  useLayoutEffect(() => {
+    if (!isGlassTile || !surface || !shellRef.current) return;
+    const el = shellRef.current;
+    let raf = 0;
+    const compute = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const rect = el.getBoundingClientRect();
+        setTone(surface.getTone(rect.left + rect.width / 2, rect.top + rect.height / 2));
+      });
+    };
+    compute();
+    const ro = new ResizeObserver(compute);
+    ro.observe(el);
+    window.addEventListener("scroll", compute, true);
+    window.addEventListener("resize", compute);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      window.removeEventListener("scroll", compute, true);
+      window.removeEventListener("resize", compute);
+    };
+  }, [isGlassTile, surface]);
+
+  const glassText = tone === "dark" ? "text-ivory" : "text-charcoal";
+  const textClass = isGlassTile ? glassText : tile.text;
+
   const bg =
     resolved === "glass"
       ? {
@@ -84,6 +117,7 @@ export default function WidgetShell({
 
   return (
     <div
+      ref={shellRef}
       onClick={onClick}
       style={{
         "--tile-accent": tileAccent,
@@ -96,7 +130,7 @@ export default function WidgetShell({
       }}
       className={cn(
         "relative overflow-hidden flex flex-col h-full animate-fade-up border border-white/12 ring-1 ring-inset ring-white/10",
-        tile.text,
+        textClass,
         sizeMap[size] || sizeMap["1x1"],
         radiusMap[radius] || radiusMap.medium,
         interactive && "cursor-pointer transition-transform duration-500 hover:-translate-y-1",

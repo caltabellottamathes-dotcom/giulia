@@ -8,6 +8,7 @@ import { bumpRefresh } from "@/lib/refreshBus";
 import { IMAGES } from "@/lib/images";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
+import { GlassSurfaceProvider } from "@/lib/GlassSurfaceContext";
 import { Plus, Sparkles, RefreshCw } from "lucide-react";
 import AddWidgetPicker from "@/system/panels/AddWidgetPicker";
 import WidgetCell from "@/system/widgets/WidgetCell";
@@ -47,6 +48,7 @@ export default function Home() {
   const reloadRef = useRef(null);
   reloadRef.current = reload;
   const prevPanel = useRef(false);
+  const photoRef = useRef(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [userName, setUserName] = useState("");
   const [greeting, setGreeting] = useState({ line1: "", line2: "" });
@@ -160,6 +162,7 @@ export default function Home() {
   const showLoading = loading;
 
   return (
+    <GlassSurfaceProvider photoRef={photoRef}>
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-mt-8 lg:mb-0 min-h-[calc(100svh-3.5rem)] lg:min-h-[calc(100svh-9.5rem)] overflow-hidden">
       {/* Fixed action buttons */}
       <div className="fixed top-3.5 right-4 lg:top-5 lg:right-8 z-40 flex items-center gap-1 rounded-full glass shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18),0_16px_36px_-12px_rgba(0,0,0,0.28)] px-1.5 py-1.5">
@@ -182,7 +185,7 @@ export default function Home() {
       </div>
 
       {/* Photo — transforms when a panel opens */}
-      <div className={cn("hidden lg:block fixed z-0 overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[left,right,top]", panelOpen ? "left-[16%] right-[12%] top-[40vh] bottom-0 rounded-[28px]" : "left-[42%] right-0 top-0 bottom-0 rounded-l-[32px]")}>
+      <div ref={photoRef} className={cn("hidden lg:block fixed z-0 overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[left,right,top]", panelOpen ? "left-[16%] right-[12%] top-[40vh] bottom-0 rounded-[28px]" : "left-[42%] right-0 top-0 bottom-0 rounded-l-[32px]")}>
         <img src={bgImage} alt="" className="h-full w-full object-cover" draggable={false} />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 via-charcoal/10 to-transparent" />
       </div>
@@ -260,5 +263,6 @@ export default function Home() {
       )}
       <AddWidgetPicker open={pickerOpen} onClose={() => setPickerOpen(false)} onAdd={addWidget} addedTypes={widgets.map((w) => w.widget_type)} />
     </div>
+    </GlassSurfaceProvider>
   );
 }
