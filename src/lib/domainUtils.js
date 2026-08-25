@@ -80,11 +80,15 @@ export const LIFE_SAND = "hsl(var(--d-life-light))";
 
 // Close circle — the relationships that actually matter to Salvo. Everything
 // else is noise in the Social Pulse "what matters now" view.
-const CLOSE_CIRCLE_KEYS = ["mama", "debora", "sara", "juan", "pawel", "paul", "oma", "wouter"];
+const CLOSE_CIRCLE_KEYS = ["mama","debora","sara","juan","pawel","paul","oma","wouter","cbn","ramona","lian","veronique","jill"];
+// Token-based match (geen substring) — voorkomt false positives zoals
+// "Omar" op "oma", "Juandri" op "juan", "Kilian" op "lian".
 export function closeCircle(contacts = []) {
+  const toks = (name) => (name || "").toLowerCase().replace(/[.,]/g, "").split(/\s+/);
   return (contacts || []).filter((c) => {
     const n = (c.name || "").toLowerCase();
-    return !n.includes("salvatore") && CLOSE_CIRCLE_KEYS.some((k) => n.includes(k));
+    if (n.includes("salvatore")) return false;
+    return toks(c.name).some((t) => CLOSE_CIRCLE_KEYS.includes(t));
   });
 }
 
