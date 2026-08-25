@@ -172,29 +172,39 @@ export default async function (req) {
         body: sendBody,
       });
       if (gRes.status === 200) {
-        const text = await readText(gRes);
-
-        // ── Navigatie-toolcalls uit de SSE halen → AgentNavigation ──
-        // Workaround voor ElevenLabs bug #603: client-tools gedropt bij
-        // voice-turns. We schrijven de intentie naar de DB; de browser
-        // abonneert en voert uit. Non-blocking — stream gaat altijd terug.
-        try {
-          const toolCalls = extractToolCalls(text);
-          const navRecords = [];
-          for (const tc of toolCalls) {
-            if (!NAV_TOOLS.has(tc.name)) continue;
-            let args = {};
-            try { args = JSON.parse(tc.arguments || "{}"); } catch {}
-            const rec = navRecordFromCall(tc.name, args);
-            if (rec) navRecords.push(rec);
-          }
-          if (navRecords.length) {
-            const base44 = createClientFromRequest(req);
-            await base44.asServiceRole.entities.AgentNavigation.bulkCreate(navRecords);
-          }
-        } catch { /* navigatie-mogging mag de stream nooit breken */ }
-
-        return new Response(text, {
+        // Stream de Gemini-SSE 1:1 en real-time door naar ElevenLabs — niet
+        // bufferen. ElevenLabs verwacht een echte streaming response; als we
+        // de hele body pas aan het eind in één keer teruggeven, breekt de
+        // turn-timing en valt het gesprek na het eerste antwoord af.
+        // Tegelijk vangen we de SSE-toolcalls op (navigatie-workaround bug
+        // #603) in de flush — non-blocking, de stream gaat altijd door.
+        const decoder = new TextDecoder();
+        let sseBuffer = "";
+        const transform = new TransformStream({
+          transform(chunk, controller) {
+            controller.enqueue(chunk);
+            try { sseBuffer += decoder.decode(chunk, { stream: true }); } catch {}
+          },
+          flush() {
+            try {
+              sseBuffer += decoder.decode();
+              const toolCalls = extractToolCalls(sseBuffer);
+              const navRecords = [];
+              for (const tc of toolCalls) {
+                if (!NAV_TOOLS.has(tc.name)) continue;
+                let args = {};
+                try { args = JSON.parse(tc.arguments || "{}"); } catch {}
+                const rec = navRecordFromCall(tc.name, args);
+                if (rec) navRecords.push(rec);
+              }
+              if (navRecords.length) {
+                const base44 = createClientFromRequest(req);
+                base44.asServiceRole.entities.AgentNavigation.bulkCreate(navRecords).catch(() => {});
+              }
+            } catch { /* navigatie-mogging mag de stream nooit breken */ }
+          },
+        });
+        return new Response(gRes.body.pipeThrough(transform), {
           status: 200,
           headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", "Connection": "keep-alive" },
         });

@@ -1,9 +1,11 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useConversation, ConversationProvider } from "@elevenlabs/react";
 import { usePanel } from "@/lib/PanelContext";
 import { cn } from "@/lib/utils";
 import { IMAGES } from "@/lib/images";
 import { ELEVEN_AGENT_ID } from "@/lib/voiceNavigation";
+import { buildVoiceClientTools } from "@/lib/voiceClientTools";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, Volume2 } from "lucide-react";
@@ -19,7 +21,8 @@ const IVORY = "hsl(var(--ivory))";
  * header + live transcript ernaast.
  */
 function VoiceInner() {
-  const { activeModule } = usePanel();
+  const { activeModule, openModule } = usePanel();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const endRef = useRef(null);
   const inPanel = activeModule === "voice";
@@ -28,8 +31,11 @@ function VoiceInner() {
   const [giuliaWorking, setGiuliaWorking] = useState(false);
   const processedRef = useRef(new Set());
 
+  const clientTools = useMemo(() => buildVoiceClientTools({ navigate, openModule }), [navigate, openModule]);
+
   const { startSession, endSession, status, isSpeaking, getOutputVolume } = useConversation({
     agentId: ELEVEN_AGENT_ID,
+    clientTools,
     onMessage: (payload) => {
       const text = String(payload?.message || "").trim();
       const role = payload?.role || (payload?.source === "ai" ? "assistant" : payload?.source || "user");
