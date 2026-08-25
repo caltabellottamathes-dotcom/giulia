@@ -103,7 +103,7 @@ function useClock() {
 
 export default function QuickLauncher({ open, onClose }) {
   const navigate = useNavigate();
-  const { openModule, openChat } = usePanel();
+  const { openModule, openChat, openBrowser } = usePanel();
   const [q, setQ] = useState("");
   const [active, setActive] = useState(0);
   const [openGroups, setOpenGroups] = useState(() => new Set([GROUPS[0].label]));
@@ -153,6 +153,7 @@ export default function QuickLauncher({ open, onClose }) {
 
   const go = (item) => {
     if (item.module === "chat") openChat();
+    else if (item.module === "browser") { openBrowser(); onClose(); return; }
     else if (item.module) openModule(item.module);
     if (item.route) navigate(item.route);
     onClose();

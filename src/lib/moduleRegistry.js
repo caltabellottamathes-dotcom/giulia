@@ -1,9 +1,8 @@
 import {
   Calendar, Briefcase, CheckSquare, Mail, MessageCircle,
   BookOpen, FileText, Users, MessageSquare, Mic, ClipboardCheck,
-  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu, Timer, Sparkles, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle, Repeat, Target, Clock, Image as ImageIcon, Music, Video, Utensils, Wrench, Globe,
+  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu, Timer, Sparkles, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle, Repeat, Target, Clock, Image as ImageIcon, Music, Video, Utensils, Wrench,
 } from "lucide-react";
-import BrowserPanel from "@/system/panels/BrowserPanel";
 
 import Agenda from "@/focus/pages/Agenda";
 import Projects from "@/focus/pages/Projects";
@@ -84,5 +83,4 @@ export const MODULES = {
   musicplayer:   { label: "Muziek",                  icon: Music,         Component: MusicPlayerPanel,          panelWidth: 760 },
   docviewer:     { label: "Document",                icon: FileText,      Component: DocViewerPanel,            panelWidth: 1000 },
   velochat:      { label: "Velo · System",             icon: Wrench,        Component: VeloChatPanel,             panelWidth: 720 },
-  browser:       { label: "Browser",                    icon: Globe,         Component: BrowserPanel,              panelWidth: 1000 },
 };

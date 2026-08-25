@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import ModulePanel from "@/system/panels/ModulePanel";
 import ChatWindow from "@/giulia/panels/ChatWindow";
 import VoiceWindow from "@/giulia/panels/VoiceWindow";
+import BrowserWindow from "@/system/components/BrowserWindow";
 import WorkspaceToolbar from "@/system/components/WorkspaceToolbar";
 import { MediaViewerProvider } from "@/lib/MediaViewerContext";
 import { BeeldbankProvider } from "@/lib/BeeldbankContext";
@@ -77,6 +78,9 @@ function LayoutInner() {
 
       {/* Persistent voice window — stays open across dashboard navigation */}
       <VoiceWindow />
+
+      {/* Fullscreen in-app browser window */}
+      <BrowserWindow />
 
       {/* Permanent glass interaction bar — bottom-right */}
       <WorkspaceToolbar />
