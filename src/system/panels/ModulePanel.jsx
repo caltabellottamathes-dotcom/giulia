@@ -147,7 +147,7 @@ const MODULE_TOPIC = {
   imageviewer: "Jouw afbeeldingen", videoplayer: "Je video's", musicplayer: "Je muziek", docviewer: "Jouw documenten",
 };
 
-const FULL_BLEED = { voice: true };
+const FULL_BLEED = { voice: true, velochat: true };
 
 function GraphicRule({ accent, className = "" }) {
   return (

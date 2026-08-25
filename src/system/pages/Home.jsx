@@ -20,7 +20,7 @@ import StartupSequence from "@/system/components/StartupSequence";
 import { Link } from "react-router-dom";
 import { MODULES } from "@/lib/moduleRegistry";
 
-const WIDGET_SPAN = { giulia: 2, goodmorning: 2, concierge: 1, approvals: 2, insights: 1, imalive: 1, giuliaquestions: 1, projects: 2, agenda: 2, tasks: 1, email: 1, whatsapp: 2, people: 1, timetracker: 1, documents: 2, updates: 2, sociallife: 1, remindershome: 2, thinghandle: 1, thingslove: 2, dinner: 2, howdoing: 1, beeldbank: 2 };
+const WIDGET_SPAN = { giulia: 2, goodmorning: 2, concierge: 1, approvals: 2, insights: 1, imalive: 1, giuliaquestions: 1, projects: 2, agenda: 2, tasks: 1, email: 1, whatsapp: 2, people: 1, timetracker: 1, documents: 2, updates: 2, sociallife: 1, remindershome: 2, thinghandle: 1, thingslove: 2, dinner: 2, howdoing: 1, beeldbank: 2, velochat: 1 };
 
 // Some modules open under a different key than their widget — map them so the
 // floating "widget naast het paneel" resolves to the right component.

@@ -1,7 +1,7 @@
 import {
   Calendar, Briefcase, CheckSquare, Mail, MessageCircle,
   BookOpen, FileText, Users, MessageSquare, Mic, ClipboardCheck,
-  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu, Timer, Sparkles, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle, Repeat, Target, Clock, Image as ImageIcon, Music, Video, Utensils,
+  Activity as ActivityIcon, Brain, Plug, Settings as SettingsIcon, User, Telescope, Cpu, Timer, Sparkles, Sunrise, Bell, Heart, CalendarHeart, Home, ClipboardList, Palette, HelpCircle, Repeat, Target, Clock, Image as ImageIcon, Music, Video, Utensils, Wrench,
 } from "lucide-react";
 
 import Agenda from "@/focus/pages/Agenda";
@@ -39,6 +39,7 @@ import ImageViewerPanel from "@/system/panels/viewers/ImageViewerPanel";
 import VideoPlayerPanel from "@/system/panels/viewers/VideoPlayerPanel";
 import MusicPlayerPanel from "@/system/panels/viewers/MusicPlayerPanel";
 import DocViewerPanel from "@/system/panels/viewers/DocViewerPanel";
+import VeloChatPanel from "@/system/panels/VeloChatPanel";
 
 /**
  * Single source of truth for every module that opens as a sliding glass
@@ -81,4 +82,5 @@ export const MODULES = {
   videoplayer:   { label: "Video",                  icon: Video,         Component: VideoPlayerPanel,          panelWidth: 1000 },
   musicplayer:   { label: "Muziek",                  icon: Music,         Component: MusicPlayerPanel,          panelWidth: 760 },
   docviewer:     { label: "Document",                icon: FileText,      Component: DocViewerPanel,            panelWidth: 1000 },
+  velochat:      { label: "Velo · System",             icon: Wrench,        Component: VeloChatPanel,             panelWidth: 720 },
 };

@@ -1,6 +1,6 @@
 import {
   Sparkles, Calendar, CheckSquare, ClipboardCheck, Mail, MessageCircle,
-  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu, MessageSquare, Timer, Sunrise, Bell, Heart, Home, ClipboardList, Palette, HelpCircle, Repeat, Clock, Image as ImageIcon, Music, Video, Images, Utensils,
+  Briefcase, BookOpen, Users, FileText, Brain, Activity as ActivityIcon, Telescope, Cpu, MessageSquare, Timer, Sunrise, Bell, Heart, Home, ClipboardList, Palette, HelpCircle, Repeat, Clock, Image as ImageIcon, Music, Video, Images, Utensils, Wrench,
 } from "lucide-react";
 import { IMAGES } from "@/lib/images";
 
@@ -36,6 +36,7 @@ import VideoPlayerWidget from "@/system/widgets/viewers/VideoPlayerWidget";
 import MusicPlayerWidget from "@/system/widgets/viewers/MusicPlayerWidget";
 import DocViewerWidget from "@/system/widgets/viewers/DocViewerWidget";
 import BeeldbankWidget from "@/system/widgets/BeeldbankWidget";
+import VeloChatWidget from "@/system/widgets/new/VeloChatWidget";
 
 /**
  * Single source of truth for every dashboard widget.
@@ -87,6 +88,7 @@ export const WIDGETS = {
 
   // ── BEELDBANK & VOICE ──
   beeldbank:    { type: "beeldbank",    label: "Change the Look!", icon: Images, Component: BeeldbankWidget,  image: IMAGES.feetChair,    span: 2, category: "system", domain: "system" },
+  velochat:     { type: "velochat",     label: "Velo · System",     icon: Wrench,  Component: VeloChatWidget,     image: IMAGES.feetChair,    span: 1, category: "system", domain: "system" },
 };
 
 export const WIDGET_LIST = Object.values(WIDGETS);
