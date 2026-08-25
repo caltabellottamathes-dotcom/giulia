@@ -19,8 +19,8 @@ export default function BottomNav() {
   // Op projectdetail-pagina's neemt het project zelf de bottom bar over.
   if (/^\/projects\/[^/]+/.test(pathname)) return null;
 
-  const tintBg = `color-mix(in srgb, ${accent} 7%, transparent)`;
-  const tintBorder = `color-mix(in srgb, ${accent} 30%, transparent)`;
+  const tintBg = `color-mix(in srgb, ${accent} 3%, transparent)`;
+  const tintBorder = `color-mix(in srgb, ${accent} 14%, transparent)`;
 
   return (
     <nav className="fixed bottom-3 left-3 lg:bottom-5 lg:left-10 z-20 flex items-center gap-2">
@@ -28,16 +28,16 @@ export default function BottomNav() {
       <button
         onClick={() => setCollapsed((c) => !c)}
         aria-label={collapsed ? "Navigatie tonen" : "Navigatie verbergen"}
-        className="h-6 w-6 rounded-full glass-1 border border-foreground/10 flex items-center justify-center shrink-0 shadow-[0_14px_36px_-14px_rgba(0,0,0,0.28)] text-foreground/60 hover:text-foreground transition-colors"
+        className="h-4 w-4 rounded-full glass-1 border border-foreground/10 flex items-center justify-center shrink-0 shadow-[0_8px_20px_-12px_rgba(0,0,0,0.18)] text-foreground/60 hover:text-foreground transition-colors"
         style={{ background: tintBg, borderColor: tintBorder }}
       >
-        {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+        {collapsed ? <ChevronRight className="h-2.5 w-2.5" /> : <ChevronLeft className="h-2.5 w-2.5" />}
       </button>
 
       {/* Zwevende glazen pill — schuift horizontaal in/uit */}
       <div
         className={cn(
-          "flex items-center gap-0.5 rounded-full glass-1 border border-foreground/10 px-1.5 h-6 shadow-[0_14px_36px_-14px_rgba(0,0,0,0.28)] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] origin-left",
+          "flex items-center gap-0 rounded-full glass-1 border border-foreground/10 px-1 h-4 shadow-[0_8px_20px_-12px_rgba(0,0,0,0.18)] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] origin-left",
           collapsed ? "-translate-x-[calc(100%+0.5rem)] opacity-0 pointer-events-none" : "translate-x-0 opacity-100"
         )}
         style={{ background: tintBg, borderColor: tintBorder }}
@@ -53,12 +53,12 @@ export default function BottomNav() {
               title={l.label}
               aria-label={l.label}
               className={cn(
-                "flex items-center justify-center rounded-full px-2.5 transition-colors",
+                "flex items-center justify-center rounded-full px-1.5 transition-colors",
                 active ? "" : "text-foreground/55 hover:text-foreground"
               )}
               style={active ? { color: accent } : undefined}
             >
-              <Icon className="h-4 w-4" strokeWidth={active ? 2.3 : 1.7} />
+              <Icon className="h-3 w-3" strokeWidth={active ? 2.3 : 1.7} />
             </NavLink>
           );
         })}
@@ -67,9 +67,9 @@ export default function BottomNav() {
           onClick={() => window.dispatchEvent(new CustomEvent("giulia:open-launcher"))}
           title="Meer"
           aria-label="Meer navigatie"
-          className="hidden sm:flex items-center justify-center rounded-full px-2.5 text-foreground/55 hover:text-foreground transition-colors"
+          className="hidden sm:flex items-center justify-center rounded-full px-1.5 text-foreground/55 hover:text-foreground transition-colors"
         >
-          <LayoutGrid className="h-4 w-4" strokeWidth={1.7} />
+          <LayoutGrid className="h-3 w-3" strokeWidth={1.7} />
         </button>
       </div>
     </nav>
