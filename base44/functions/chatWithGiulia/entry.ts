@@ -3,6 +3,7 @@ import { geminiGenerate, geminiEmbed, cosineSimilarity } from '../../shared/gemi
 import { AGENT_CONTEXT, GIULIA_TONE } from '../../shared/agentContext.ts';
 import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
 import { logActivity } from '../../shared/learningLayer.ts';
+import { linkMentionedContacts } from '../../shared/contactLinker.ts';
 
 /**
  * chatWithGiulia — GIULIA-GIULIA (het brein) stuurt GIULIA-CORE (de blinde
@@ -321,6 +322,14 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
           results: JSON.stringify(e.result),
         })),
       }).catch(() => null);
+    }
+
+    // 6. DETERMINISTIC CONTACT LINKING — ongeacht of het LLM-brein tools
+    //    aanriep: koppel genoemde bestaande contacten aan projecten, zet
+    //    last_contact_date op nu, en schrijf een sociale Activity. Er worden
+    //    geen nieuwe contacten aangemaakt (Salvo beheert die zelf).
+    if (source === "chat") {
+      try { await linkMentionedContacts(sr, message); } catch { /* ignore */ }
     }
 
     return Response.json({
