@@ -9,7 +9,7 @@ import QuickLauncher from "@/system/components/glass/QuickLauncher";
 import { useActiveDomain } from "@/lib/useActiveDomain";
 import { DEFAULT_BOARDS, loadCustomBoards, createCustomBoard, getActiveBoard, setActiveBoard } from "@/lib/useDashboardBoard";
 
-const actionBtn = "h-9 w-9 flex items-center justify-center text-ivory/80 hover:bg-ivory/15 hover:text-ivory transition-colors shrink-0 rounded-lg";
+const actionBtn = "h-8 w-8 flex items-center justify-center text-ivory/80 hover:bg-ivory/15 hover:text-ivory transition-colors shrink-0 rounded-lg";
 
 /**
  * WorkspaceToolbar — minimalistische volledig-brede werkbalk onderaan.
@@ -103,20 +103,20 @@ export default function WorkspaceToolbar() {
         onMouseLeave={() => scheduleCollapse(8000)}
       >
         <div
-          className="relative flex items-center h-11 rounded-[20px] overflow-hidden w-full"
+          className="relative flex items-center h-11 rounded-[14px] overflow-hidden w-full"
           style={{
-            background: "rgba(16,18,24,0.16)",
-            backdropFilter: "blur(24px) saturate(1.4)",
-            WebkitBackdropFilter: "blur(24px) saturate(1.4)",
-            border: "1px solid rgba(255,255,255,0.12)",
-            boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.16), 0 20px 50px -22px rgba(0,0,0,0.45), 0 8px 20px -12px rgba(0,0,0,0.3)",
+            background: "rgba(120,122,128,0.05)",
+            backdropFilter: "blur(8px) saturate(1.2)",
+            WebkitBackdropFilter: "blur(8px) saturate(1.2)",
+            border: "1px solid rgba(255,255,255,0.06)",
+            boxShadow: "0 16px 40px -18px rgba(0,0,0,0.42), 0 6px 18px -10px rgba(0,0,0,0.25)",
           }}
         >
           <div className="pointer-events-none absolute inset-0" style={{ background: accent, opacity: 0.16 }} />
           {expanded ? (
             <>
               {/* Dashboard tabs (left) */}
-              <div className="flex items-center gap-0.5 overflow-x-auto shrink-0 max-w-[46%] lg:max-w-[54%] pl-3 lg:pl-5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex items-center gap-0.5 overflow-x-auto shrink-0 max-w-[46%] lg:max-w-[54%] pl-2.5 lg:pl-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {all.map((b) => {
                   const on = board === b.id;
                   return (
@@ -124,7 +124,7 @@ export default function WorkspaceToolbar() {
                       key={b.id}
                       onClick={() => selectBoard(b.id)}
                       className={cn(
-                        "px-3 lg:px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap transition-colors",
+                        "px-2.5 lg:px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap transition-colors",
                         on ? "text-ivory" : "text-ivory/55 hover:text-ivory/85"
                       )}
                     >
@@ -154,15 +154,15 @@ export default function WorkspaceToolbar() {
           )}
 
           {/* Actions — altijd zichtbaar; bij ingeklapt alleen de belangrijkste (bellen + chat) */}
-          <div className={cn("ml-auto flex items-center gap-0.5 shrink-0", expanded ? "px-2 lg:px-3" : "pr-2")}>
+          <div className={cn("ml-auto flex items-center gap-0.5 shrink-0", expanded ? "px-1.5 lg:px-2" : "pr-2")}>
             {expanded && (
               <>
-                <button onClick={() => { expand(); active ? stop() : start(); }} aria-label="Context toevoegen" className={cn(actionBtn, active && "text-ivory")}><BrainCircuit className="h-5 w-5" /></button>
-                <button onClick={() => { expand(); setLauncherOpen(true); }} aria-label="Snelle acties" className={actionBtn}><Plus className="h-5 w-5" /></button>
-              </>
-            )}
-            <button onClick={() => { expand(); openVoice(); }} aria-label="Bel Giulia" className={actionBtn}><Phone className="h-5 w-5" /></button>
-            <button onClick={() => { expand(); openChat(); }} aria-label="Chat met Giulia" className={actionBtn}><MessageSquare className="h-5 w-5" /></button>
+                <button onClick={() => { expand(); active ? stop() : start(); }} aria-label="Context toevoegen" className={cn(actionBtn, active && "text-ivory")}><BrainCircuit className="h-4 w-4" /></button>
+                <button onClick={() => { expand(); setLauncherOpen(true); }} aria-label="Snelle acties" className={actionBtn}><Plus className="h-4 w-4" /></button>
+                </>
+                )}
+                <button onClick={() => { expand(); openVoice(); }} aria-label="Bel Giulia" className={actionBtn}><Phone className="h-4 w-4" /></button>
+                <button onClick={() => { expand(); openChat(); }} aria-label="Chat met Giulia" className={actionBtn}><MessageSquare className="h-4 w-4" /></button>
           </div>
         </div>
       </div>

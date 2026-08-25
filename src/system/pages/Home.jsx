@@ -48,9 +48,9 @@ export default function Home() {
   const { widgets, loading, addWidget, removeWidget, patchWidget, reload, isCustom } = useDashboardBoard(activeBoard, ready);
   const { accent: boardAccent } = useActiveDomain(activeBoard);
   const pillStyle = {
-    borderColor: `color-mix(in srgb, ${boardAccent} 38%, transparent)`,
-    background: `color-mix(in srgb, ${boardAccent} 10%, rgba(120,122,128,0.06))`,
-    boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.18), 0 16px 36px -12px rgba(0,0,0,0.28)",
+    border: "none",
+    background: `color-mix(in srgb, ${boardAccent} 12%, rgba(120,122,128,0.08))`,
+    boxShadow: "0 16px 38px -12px rgba(0,0,0,0.34), inset 0 1px 0 0 rgba(255,255,255,0.20)",
   };
   const reloadRef = useRef(null);
   reloadRef.current = reload;
