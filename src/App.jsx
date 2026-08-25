@@ -55,6 +55,7 @@ import WantsToKnow from '@/giulia/pages/WantsToKnow';
 import DailyStatePage from '@/life/pages/DailyStatePage';
 import PersonalDevelopmentPage from '@/life/pages/PersonalDevelopmentPage';
 import Beeldbank from '@/system/pages/Beeldbank';
+import MediaPlayer from '@/system/pages/MediaPlayer';
 import WidgetGalleryAll from '@/system/pages/WidgetGalleryAll';
 import WidgetGallery2 from '@/system/pages/WidgetGallery2';
 import WidgetGallery3 from '@/system/pages/WidgetGallery3';
@@ -139,6 +140,7 @@ const AuthenticatedApp = () => {
           <Route path="/life/daily-state" element={<DailyStatePage />} />
           <Route path="/wants-to-know" element={<WantsToKnow />} />
           <Route path="/beeldbank" element={<Beeldbank />} />
+          <Route path="/media" element={<MediaPlayer />} />
           <Route path="/widget-gallery" element={<WidgetGalleryAll />} />
           <Route path="/widget-gallery-2" element={<WidgetGallery2 />} />
           <Route path="/widget-gallery-3" element={<WidgetGallery3 />} />
