@@ -8,7 +8,7 @@ import { usePanel } from "@/lib/PanelContext";
  * minimaliseren naar een kleine widget (iframe blijft gemount, dus de
  * geladen pagina blijft behouden bij wisselen fullscreen ↔ widget).
  */
-const HOME_URL = "https://giulia-os-flow.base44.app";
+const HOME_URL = "https://salvo.stdio-stdio.com";
 
 function normalizeUrl(input) {
   const v = (input || "").trim();
