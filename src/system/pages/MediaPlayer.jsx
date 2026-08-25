@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { useMediaLibrary, kindOfUpload } from "@/lib/useMediaLibrary";
 import { useMediaViewer } from "@/lib/MediaViewerContext";
 import { Image } from "@/components/ui/image";
-import { Upload, Trash2, ArrowLeft, Film, Music, ImageIcon, Play, Loader2 } from "lucide-react";
+import { Upload, Trash2, ArrowLeft, Film, Music, ImageIcon, Play, Loader2, Cloud, HardDrive } from "lucide-react";
+import LocalMedia from "@/system/pages/media/LocalMedia";
 
 const TABS = [
   { key: "all", label: "Alles" },
@@ -12,7 +13,12 @@ const TABS = [
   { key: "music", label: "Audio" },
 ];
 
-function Thumb({ item, onOpen, onRemove }) {
+const SOURCES = [
+  { key: "cloud", label: "Cloud", icon: Cloud },
+  { key: "local", label: "Lokaal", icon: HardDrive },
+];
+
+function CloudThumb({ item, onOpen, onRemove }) {
   const kind = kindOfUpload(item);
   return (
     <button
@@ -32,7 +38,7 @@ function Thumb({ item, onOpen, onRemove }) {
       </span>
       <span className="absolute inset-0 flex items-center justify-center bg-charcoal/0 group-hover:bg-charcoal/20 transition-colors">
         <span className="h-10 w-10 rounded-full bg-ivory/90 text-charcoal flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          {kind === "music" ? <Play className="h-4 w-4 ml-0.5" /> : <Play className="h-4 w-4 ml-0.5" />}
+          <Play className="h-4 w-4 ml-0.5" />
         </span>
       </span>
       <button
@@ -45,7 +51,7 @@ function Thumb({ item, onOpen, onRemove }) {
   );
 }
 
-export default function MediaPlayer() {
+function CloudMedia() {
   const { items, loading, uploading, upload, remove } = useMediaLibrary();
   const { openMedia } = useMediaViewer();
   const fileRef = useRef(null);
@@ -68,17 +74,7 @@ export default function MediaPlayer() {
   const open = (item) => openMedia({ name: item.filename, url: item.file_url, type: kindOfUpload(item) });
 
   return (
-    <div className="max-w-6xl mx-auto pb-20">
-      <div className="mb-6">
-        <Link to="/" className="text-xs text-foreground/60 hover:text-foreground inline-flex items-center gap-1 mb-2">
-          <ArrowLeft className="h-3 w-3" /> Dashboard
-        </Link>
-        <h1 className="text-3xl font-display font-semibold tracking-[-0.02em]">Media</h1>
-        <p className="text-sm text-foreground/60 mt-1 max-w-xl">
-          Upload je eigen foto's, video's en audio. Klik een bestand om het af te spelen in de viewer.
-        </p>
-      </div>
-
+    <div>
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">
         <div className="flex items-center gap-1 bg-foreground/[0.04] border border-foreground/10 rounded-full p-1">
           {TABS.map((t) => (
@@ -101,14 +97,7 @@ export default function MediaPlayer() {
           {uploading > 0 ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
           {uploading > 0 ? `Uploaden (${uploading})…` : "Upload media"}
         </button>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*,video/*,audio/*"
-          multiple
-          className="hidden"
-          onChange={onFiles}
-        />
+        <input ref={fileRef} type="file" accept="image/*,video/*,audio/*" multiple className="hidden" onChange={onFiles} />
       </div>
 
       {loading ? (
@@ -121,16 +110,54 @@ export default function MediaPlayer() {
             <ImageIcon className="h-6 w-6 text-foreground/35" />
           </div>
           <p className="text-sm text-foreground/50 max-w-xs">
-            Nog geen media hier. Upload een foto, video of audio-bestand om te beginnen.
+            Nog geen media in de cloud. Upload een foto, video of audio-bestand — of schakel naar Lokaal voor je schijf.
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {visible.map((item) => (
-            <Thumb key={item.id} item={item} onOpen={open} onRemove={remove} />
+            <CloudThumb key={item.id} item={item} onOpen={open} onRemove={remove} />
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+export default function MediaPlayer() {
+  const [source, setSource] = useState("cloud");
+
+  return (
+    <div className="max-w-6xl mx-auto pb-20">
+      <div className="mb-6">
+        <Link to="/" className="text-xs text-foreground/60 hover:text-foreground inline-flex items-center gap-1 mb-2">
+          <ArrowLeft className="h-3 w-3" /> Dashboard
+        </Link>
+        <h1 className="text-3xl font-display font-semibold tracking-[-0.02em]">Media</h1>
+        <p className="text-sm text-foreground/60 mt-1 max-w-xl">
+          Cloud-media worden opgeslagen en overal gesynchroniseerd. Lokale media speel je direct vanaf je schijf — niets geüpload.
+        </p>
+      </div>
+
+      {/* Bron-schakelaar */}
+      <div className="flex items-center gap-1 bg-foreground/[0.04] border border-foreground/10 rounded-full p-1 mb-6 w-fit">
+        {SOURCES.map((s) => {
+          const Icon = s.icon;
+          return (
+            <button
+              key={s.key}
+              onClick={() => setSource(s.key)}
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition ${
+                source === s.key ? "bg-charcoal text-ivory" : "text-foreground/60 hover:text-foreground"
+              }`}
+            >
+              <Icon className="h-3.5 w-3.5" /> {s.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {source === "cloud" ? <CloudMedia /> : <LocalMedia />}
     </div>
   );
 }
