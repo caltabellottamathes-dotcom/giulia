@@ -145,6 +145,7 @@ export default function Home() {
       base44.functions.invoke("refreshDashboard", {}),
       base44.functions.invoke("syncEmails", {}),
       base44.functions.invoke("syncCalendar", {}),
+      base44.functions.invoke("syncGoogleContacts", {}),
     ]);
     // 2. Ververs het huidige dashboard
     await reload();
@@ -156,7 +157,7 @@ export default function Home() {
     // 5. Globale event voor componenten die niet via useLearningSync luisteren
     window.dispatchEvent(new CustomEvent("giulia:global-refresh"));
     setRefreshing(false);
-    toast({ title: "Alles bijgewerkt", description: "Email, agenda, widgets en panelen vernieuwd." });
+    toast({ title: "Alles bijgewerkt", description: "Email, agenda, contacten, widgets en panelen vernieuwd." });
   };
 
   const hour = new Date().getHours();

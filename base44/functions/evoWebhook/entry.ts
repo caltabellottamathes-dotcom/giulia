@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { secrets } from 'base44:runtime';
+import { loadContacts } from "../../shared/contactResolver.ts";
 
 /**
  * evoWebhook — ontvangt inkomende WhatsApp-berichten van Evolution API v2.
@@ -66,6 +67,7 @@ export default async function (req) {
     const base44 = createClientFromRequest(req);
     const sr = base44.asServiceRole;
     let stored = 0, skipped = 0;
+    const contacts = await loadContacts(sr.entities);
 
     for (const msg of msgList) {
       const remoteJid = msg?.key?.remoteJid || "";
@@ -91,19 +93,12 @@ export default async function (req) {
       if (fromMe) { skipped++; continue; }
       if (!text) { skipped++; continue; }
 
-      // Koppel aan een Contact op genormaliseerd telefoonnummer. Originele
-      // contacten (met +) blijven altijd de hoofd-contact; duplicaten (zonder +)
-      // worden direct samengevoegd: berichten herkoppeld, dupe verwijderd.
+      // Koppel aan een BESTAAND contact op genormaliseerd telefoonnummer — nooit
+      // blind aanmaken (Google Contacts is de master; syncGoogleContacts voert
+      // nieuwe nummers in). Duplicaten worden direct samengevoegd.
       let contactId = "";
       if (phone) {
-        const variants = Array.from(new Set([phone, "+" + phone, "00" + phone]));
-        if (phone.startsWith("31")) variants.push("0" + phone.slice(2));
-        const candidates = [];
-        for (const v of variants) {
-          const res = await sr.entities.Contact.filter({ phone: v }).catch(() => []);
-          (res || []).forEach((c) => { if (!candidates.find((x) => x.id === c.id)) candidates.push(c); });
-        }
-        const matching = candidates.filter((c) => normalizePhone(c.phone) === phone);
+        const matching = contacts.filter((c) => normalizePhone(c.phone || "") === phone);
         if (matching.length > 0) {
           matching.sort((a, b) => new Date(a.created_date) - new Date(b.created_date));
           const main = matching[0];
@@ -112,17 +107,8 @@ export default async function (req) {
             for (const d of matching.slice(1)) {
               await sr.entities.WhatsAppMessage.updateMany({ contact_id: d.id }, { $set: { contact_id: main.id } }).catch(() => {});
               await sr.entities.Contact.delete(d.id).catch(() => {});
-              console.log("[evo-merge] merged", d.id, "→", main.id);
             }
           }
-        } else if (pushName || phone) {
-          const created = await sr.entities.Contact.create({
-            name: pushName || phone,
-            phone: "+" + phone,
-            status: "unconfirmed",
-            agent_source: "evoWebhook",
-          }).catch((e) => { console.log("[evo-contact] create failed:", e.message); return null; });
-          if (created) { contactId = created.id; console.log("[evo-contact] created:", created.id, pushName || phone); }
         }
       }
 

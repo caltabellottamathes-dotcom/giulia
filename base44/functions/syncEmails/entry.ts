@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { secrets } from 'base44:runtime';
 import { dedupEmails } from "../../shared/emailDedup.ts";
+import { loadContacts, matchContact } from "../../shared/contactResolver.ts";
 
 /**
  * syncEmails — haalt de laatste emails op via de IMAP-bridge (NIET Gmail) en
@@ -40,6 +41,7 @@ export default async function (req) {
     const existing = await ent.Email.list("-created_date", 200).catch(() => []);
     const byUid = new Map();
     existing.forEach((e) => { if (e.gmail_message_id) byUid.set(String(e.gmail_message_id), e); });
+    const contacts = await loadContacts(base44.asServiceRole.entities).catch(() => []);
 
     let added = 0;
     let updated = 0;
@@ -56,9 +58,11 @@ export default async function (req) {
         }
         continue;
       }
+      const contact = matchContact(contacts, { email: m.sender_email });
       await ent.Email.create({
         sender: m.sender || '',
         sender_email: m.sender_email || '',
+        contact_id: contact?.id || undefined,
         subject: m.subject || '(geen onderwerp)',
         body: '',
         timestamp: m.timestamp || new Date().toISOString(),
