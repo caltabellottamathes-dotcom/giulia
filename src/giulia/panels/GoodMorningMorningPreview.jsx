@@ -19,12 +19,14 @@ export default function GoodMorningMorningPreview() {
   const load = async () => {
     try {
       const [all, st] = await Promise.all([
-        base44.entities.WakeSession.filter({ session_status: "completed" }, "-date", 8).catch(() => []),
+        base44.entities.WakeSession.list("-created_date", 8).catch(() => []),
         base44.entities.MorningRoutineStep.filter({ enabled: true, phase: "routine" }, "order", 12).catch(() => []),
       ]);
-      setSession(all?.[0] || null);
+      const list = all || [];
+      const latest = list.find((s) => s.session_status === "completed") || list.find((s) => s.actual_wake_time) || null;
+      setSession(latest);
       setSteps(st || []);
-      setHistory((all || []).slice(1).map(totalOf).filter((x) => x > 0));
+      setHistory(list.filter((s) => s !== latest && s.actual_wake_time).map(totalOf).filter((x) => x > 0));
     } catch { setSession(null); }
     finally { setLoading(false); }
   };
@@ -44,9 +46,9 @@ export default function GoodMorningMorningPreview() {
 
   const nodes = [
     { key: "wake", label: "WAKE", time: actualWake, dur: session?.wake_duration },
-    { key: "getup", label: "GET UP", time: getUpT ? new Date(getUpT).toISOString() : null, dur: session?.get_up_duration },
-    { key: "routine", label: "ROUTINE", time: routineT ? new Date(routineT).toISOString() : null, dur: session?.routine_duration },
-    { key: "ready", label: "READY", time: readyT ? new Date(readyT).toISOString() : null, dur: null },
+    { key: "getup", label: "GET UP", time: session?.wake_duration != null ? new Date(getUpT).toISOString() : null, dur: session?.get_up_duration },
+    { key: "routine", label: "ROUTINE", time: session?.get_up_duration != null ? new Date(routineT).toISOString() : null, dur: session?.routine_duration },
+    { key: "ready", label: "READY", time: session?.completion_time || (session?.routine_duration != null ? new Date(readyT).toISOString() : null), dur: null },
   ];
 
   const completed = session?.routine_steps_completed || 0;
