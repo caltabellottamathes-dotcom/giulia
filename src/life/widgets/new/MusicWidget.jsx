@@ -14,11 +14,12 @@ const BLUE = "hsl(205 45% 32%)";
 
 const SUBTLE = "h-9 w-9 rounded-full flex items-center justify-center text-ivory/70 hover:text-ivory hover:bg-white/12 transition-colors disabled:opacity-30";
 
-/** MusicWidget — P·4:5·SPLIT (portrait, groter · span 2). Achtergrond: blauwe
- *  audio-reactieve bloom (lager-midden) + volledige-breedte sinus erdoorheen,
- *  met de subtiele prev/play/next-knoppen bovenop. Zwevende fotokaart met 4
- *  afgeronde hoeken schuift omhoog; eronder verschijnt de bibliotheek. Tik op
- *  de achtergrond (of het knopje in de lijst) opent het ModulePanel. */
+/** MusicWidget — P·3:4 (iets kleiner). Bovenste helft: blauwe, veel grotere
+ *  pistache-gloeiende bloom + volledige-breedte sinus + subtiele knoppen,
+ *  alles in het midden van het bovenste gedeelte. Onderste helft: flush
+ *  fotokaart (precies halve shell) die omhoog/beneden schuift; eronder de
+ *  bibliotheek. Bloom/sine bewegen enkel als de muziek speelt, écht op de
+ *  audio. Tik op de achtergrond of het lijstknopje opent het ModulePanel. */
 export default function MusicWidget() {
   const { openModule } = usePanel();
   const cloud = useMediaLibrary();
@@ -79,7 +80,7 @@ export default function MusicWidget() {
       const ctx = new AC();
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 256;
-      analyser.smoothingTimeConstant = 0.8;
+      analyser.smoothingTimeConstant = 0.74;
       const src = ctx.createMediaElementSource(audioRef.current);
       src.connect(analyser);
       analyser.connect(ctx.destination);
@@ -131,20 +132,18 @@ export default function MusicWidget() {
   const statusLabel = !current ? "—" : isPlaying ? "SPEELT" : loadedId === current.id ? "PAUZE" : "KLAAR";
 
   return (
-    <div className="relative w-full aspect-[4/5] rounded-[28px] overflow-hidden cursor-pointer" style={{ "--tile-accent": DEEP, color: BLUE }} onClick={() => openModule("mediaplayer")}>
+    <div className="relative w-full aspect-[3/4] rounded-[28px] overflow-hidden cursor-pointer" style={{ "--tile-accent": DEEP, color: BLUE }} onClick={() => openModule("mediaplayer")}>
       <div className="absolute inset-0 rounded-[28px] ring-1 ring-inset ring-white/10" style={glassShell} />
       <span className="pointer-events-none absolute inset-x-0 top-0 h-px z-10" style={{ background: `linear-gradient(90deg, transparent, ${DEEP} 18%, ${DEEP} 82%, transparent)` }} />
 
-      {/* ACHTERGROND: Bloom + SineLayers (volledig) */}
-      <div className="absolute inset-0 z-10">
+      {/* BOVENSTE HELFT — bloom + sine + knoppen in het midden hiervan */}
+      <div className="absolute top-0 inset-x-0 h-1/2 z-10">
         <AudioReactiveLife analyserRef={analyserRef} isPlaying={isPlaying} className="absolute inset-0" />
-        <div className="absolute top-5 left-6 flex items-center gap-1.5">
+        <div className="absolute top-3 left-4 flex items-center gap-1.5 z-20">
           <span className="h-1.5 w-1.5 rounded-full" style={{ background: LIGHT }} />
-          <span className="text-[10px] uppercase tracking-[0.24em] font-bold opacity-55">Music.</span>
+          <span className="text-[9px] uppercase tracking-[0.22em] font-bold opacity-55">Music.</span>
         </div>
-
-        {/* subtiele controls — bovenop de bloom & sine (midden) */}
-        <div className="absolute left-1/2 top-[52%] -translate-x-1/2 -translate-y-1/2 z-40 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-40 flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
           <button onClick={prev} disabled={!tracks.length} className={SUBTLE} aria-label="Vorige"><SkipBack className="h-4 w-4" /></button>
           <button onClick={togglePlay} disabled={!current || busy} className={SUBTLE} aria-label={isPlaying ? "Pauze" : "Afspelen"}>
             {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
@@ -153,33 +152,32 @@ export default function MusicWidget() {
         </div>
       </div>
 
-      {/* FOTOKAART — zwevende kaart, 4 afgeronde hoeken, schuift omhoog */}
+      {/* FOTOKAART — flush, precies halve shell, schuift boven/beneden */}
       <motion.div
-        className="absolute inset-x-3 h-[38%] z-20 overflow-hidden rounded-[22px]"
+        className="absolute inset-x-0 h-1/2 z-20 overflow-hidden"
         initial={false}
-        animate={{ top: slid ? "3%" : "59%" }}
+        animate={{ top: slid ? "0%" : "50%" }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        style={{ boxShadow: "0 18px 44px -18px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.22)" }}
         onClick={(e) => { e.stopPropagation(); setSlid((v) => !v); }}
       >
         <img src={PHOTO} alt="Music" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.62), rgba(0,0,0,0.1) 55%, rgba(0,0,0,0.28))" }} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0.06) 58%, rgba(0,0,0,0.22))" }} />
         <div className="absolute inset-0 p-4 flex flex-col" style={{ color: IVORY, textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>
           {slid ? (
             <>
               <div className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full" style={{ background: LIGHT }} />
-                <span className="text-[10px] uppercase tracking-[0.18em] font-bold">{current ? `${current.source === "cloud" ? "CLOUD" : "LOKAAL"} · ${statusLabel}` : "—"}</span>
+                <span className="text-[9px] uppercase tracking-[0.18em] font-bold">{current ? `${current.source === "cloud" ? "CLOUD" : "LOKAAL"} · ${statusLabel}` : "—"}</span>
               </div>
-              <h3 className="text-[22px] leading-[1.12] font-display font-semibold tracking-[-0.02em] mt-1.5 line-clamp-3">{current ? current.name : "Geen track"}</h3>
-              <p className="text-[11px] uppercase tracking-[0.16em] mt-1.5 opacity-75">{tracks.length} bestanden</p>
+              <h3 className="text-[20px] leading-[1.12] font-display font-semibold tracking-[-0.02em] mt-1.5 line-clamp-3">{current ? current.name : "Geen track"}</h3>
+              <p className="text-[10px] uppercase tracking-[0.16em] mt-1.5 opacity-75">{tracks.length} bestanden</p>
               <p className="mt-auto text-[9px] uppercase tracking-[0.2em] opacity-45">tik → terug</p>
             </>
           ) : (
             <>
               <div className="mt-auto">
-                <h3 className="text-[22px] leading-[1.05] font-display font-semibold tracking-[-0.02em]">{tracks.length > 0 ? `${tracks.length} TRACKS` : "QUIETLY TUNED"}</h3>
-                <p className="text-[11px] uppercase tracking-[0.18em] mt-1.5 opacity-70">{cloudMusic.length} cloud · {localMusic.length} lokaal</p>
+                <h3 className="text-[20px] leading-[1.05] font-display font-semibold tracking-[-0.02em]">{tracks.length > 0 ? `${tracks.length} TRACKS` : "QUIETLY TUNED"}</h3>
+                <p className="text-[10px] uppercase tracking-[0.18em] mt-1.5 opacity-70">{cloudMusic.length} cloud · {localMusic.length} lokaal</p>
                 <p className="text-[9px] uppercase tracking-[0.2em] mt-3 opacity-40">tik → bibliotheek</p>
               </div>
             </>
@@ -187,12 +185,12 @@ export default function MusicWidget() {
         </div>
       </motion.div>
 
-      {/* BIBLIOTHEEK — zwevende kaart onder (bij slide) */}
+      {/* BIBLIOTHEEK — flush, onderste helft (bij slide) */}
       <AnimatePresence>
         {slid && (
           <motion.div
             key="list"
-            className="absolute inset-x-3 top-[59%] h-[38%] z-30 overflow-hidden rounded-[22px] flex flex-col"
+            className="absolute inset-x-0 top-1/2 h-1/2 z-30 overflow-hidden flex flex-col"
             style={glassShell}
             initial={{ y: 40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}

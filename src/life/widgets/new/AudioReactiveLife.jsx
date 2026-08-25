@@ -1,21 +1,20 @@
 import React, { useEffect, useRef } from "react";
 
-/* Blauwere sine-palette (licht / mid / diep) + bijpassende bloom. */
-const BLOOM_LIGHT = "#c6d3de";
-const BLOOM_DEEP = "#5d7388";
+/* Blauwe sine + Whipped-Pistachio glow in de bloom. */
+const BLOOM = "radial-gradient(circle at 38% 36%, #e6e8c6, #d8dab3 26%, #aebccc 56%, #5d7388 100%)";
 const LINE_LIGHT = "#c6d3de";
 const LINE_MID = "#8fa3b6";
 const LINE_DEEP = "#5f758a";
 
 const MID_Y = 40;
-const N = 40; // minder punten → minder, grotere golven
-const FREQ = 0.25; // lage frequentie: ~1.5 golven over de volle breedte
+const N = 36; // minder punten → minder, grotere golven
+const FREQ = 0.24; // lage frequentie: ~1.4 golven over de volle breedte
 
-/** AudioReactiveLife — bloom + volledige-breedte sinus, beide gecentreerd
- *  op het midden (lager in het midden). De sinus loopt exact door het
- *  midden van de bloom. Beweegt ENKEL als de muziek speelt, méé met de
- *  audio (WebAudio AnalyserNode). In rust: rechte lijnen + rustende
- *  bloom. Sinus is blauwer, groter, met minder maar grotere golven. */
+/** AudioReactiveLife — bloom + volledige-breedte sinus, beide gecentreerd in
+ *  het midden van de parent (het bovenste gedeelte). De sinus loopt exact
+ *  door het midden van de bloom. Beweegt ENKEL als de muziek speelt, en dan
+ *  écht méé met de audio (WebAudio AnalyserNode). In rust: rechte lijnen +
+ *  rustende bloom. Bloom is veel groter, met Whipped Pistachio erin. */
 export default function AudioReactiveLife({ analyserRef, isPlaying, className }) {
   const blob = useRef(null);
   const lines = useRef([]);
@@ -27,7 +26,7 @@ export default function AudioReactiveLife({ analyserRef, isPlaying, className })
       if (el) el.setAttribute("points", `0,${MID_Y} 200,${MID_Y}`);
     });
     if (blob.current) {
-      blob.current.style.transform = "translate(-50%,-50%) scale(0.72)";
+      blob.current.style.transform = "translate(-50%,-50%) scale(0.74)";
       blob.current.style.opacity = "0.5";
     }
   };
@@ -56,17 +55,17 @@ export default function AudioReactiveLife({ analyserRef, isPlaying, className })
       const midB = data ? bandAvg(20, 20) : 0.2 + 0.12 * Math.abs(Math.sin(t * 1.3 + 1));
       const high = data ? bandAvg(44, 20) : 0.18 + 0.1 * Math.abs(Math.sin(t * 1.7 + 2));
 
-      // bloom — schaalt mee met de lage band
+      // bloom — schaalt flink mee met de lage band
       if (blob.current) {
-        const s = 0.72 + low * 0.6;
+        const s = 0.74 + low * 0.9;
         blob.current.style.transform = `translate(-50%,-50%) scale(${s})`;
         blob.current.style.opacity = String(0.5 + low * 0.4);
-        blob.current.style.borderRadius = `${44 + low * 14}% ${56 - low * 14}% ${50 + low * 10}% ${50 - low * 10}% / ${50 + low * 10}% ${50 - low * 10}% ${56 - low * 14}% ${44 + low * 14}%`;
+        blob.current.style.borderRadius = `${44 + low * 16}% ${56 - low * 16}% ${50 + low * 12}% ${50 - low * 12}% / ${50 + low * 12}% ${50 - low * 12}% ${56 - low * 16}% ${44 + low * 16}%`;
       }
-      // sinus — drie blauwe lijnen, volledige breedte, minder & grotere golven
+      // sinus — blauw, volledige breedte, minder & grotere golven
       const bands = [low, midB, high];
       [0, 1, 2].forEach((j) => {
-        const amp = bands[j] * 34 + 3; // groter
+        const amp = bands[j] * 38 + 3;
         const pts = Array.from({ length: N })
           .map((_, i) => {
             const x = (i / (N - 1)) * 200;
@@ -85,18 +84,14 @@ export default function AudioReactiveLife({ analyserRef, isPlaying, className })
 
   return (
     <div className={className} style={{ pointerEvents: "none" }}>
-      {/* bloom — lager in het midden */}
+      {/* bloom — veel groter, midden van het bovenste gedeelte, pistache+blauw */}
       <div
         ref={blob}
-        className="absolute left-1/2 top-[52%] h-52 w-52"
-        style={{
-          background: `radial-gradient(circle at 40% 40%, ${BLOOM_LIGHT}, ${BLOOM_DEEP} 70%)`,
-          filter: "blur(10px)",
-          transform: "translate(-50%,-50%) scale(0.72)",
-        }}
+        className="absolute left-1/2 top-1/2 h-[90%] aspect-square max-w-[94%]"
+        style={{ background: BLOOM, filter: "blur(14px)", transform: "translate(-50%,-50%) scale(0.74)" }}
       />
-      {/* sinus — volledige breedte, exact door het midden van de bloom (52%) */}
-      <svg viewBox="0 0 200 80" preserveAspectRatio="none" className="absolute inset-x-0 top-[52%] w-full -translate-y-1/2" style={{ height: "26%" }}>
+      {/* sinus — volledige breedte, exact door het midden van de bloom */}
+      <svg viewBox="0 0 200 80" preserveAspectRatio="none" className="absolute inset-x-0 top-1/2 w-full -translate-y-1/2" style={{ height: "32%" }}>
         {[0, 1, 2].map((j) => (
           <polyline key={j} ref={(el) => (lines.current[j] = el)} fill="none" stroke={[LINE_LIGHT, LINE_MID, LINE_DEEP][j]} strokeWidth="2.5" strokeLinecap="round" opacity="0.9" points={`0,${MID_Y} 200,${MID_Y}`} />
         ))}
