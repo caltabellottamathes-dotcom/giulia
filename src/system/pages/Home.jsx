@@ -190,16 +190,16 @@ export default function Home() {
         <button
           onClick={doUpdate}
           title="Alle data, widgets en panelen bijwerken"
-          className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition text-foreground lg:text-ivory hover:bg-foreground/10 lg:hover:bg-white/15"
+          className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition text-foreground/80 hover:bg-foreground/15 hover:text-foreground"
         >
           <RefreshCw className={cn("h-3.5 w-3.5", refreshing && "animate-spin")} /> <span className="hidden sm:inline">Update</span>
         </button>
-        <Link to="/briefing" className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition text-foreground lg:text-ivory hover:bg-foreground/10 lg:hover:bg-white/15">
+        <Link to="/briefing" className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition text-foreground/80 hover:bg-foreground/15 hover:text-foreground">
           <Sparkles className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Briefing</span>
         </Link>
         <button
           onClick={() => setPickerOpen(true)}
-          className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition text-foreground lg:text-ivory hover:bg-foreground/10 lg:hover:bg-white/15"
+          className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition text-foreground/80 hover:bg-foreground/15 hover:text-foreground"
         >
           <Plus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Widget</span>
         </button>
