@@ -5,9 +5,7 @@ import { usePanel } from "@/lib/PanelContext";
 import { cn } from "@/lib/utils";
 import { ELEVEN_AGENT_ID } from "@/lib/voiceNavigation";
 import { buildVoiceClientTools } from "@/lib/voiceClientTools";
-import { base44 } from "@/api/base44Client";
-import { useToast } from "@/components/ui/use-toast";
-import { Loader2, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Image } from "@/components/ui/image";
 import VoiceChatWidget from "@/giulia/widgets/new/VoiceChatWidget";
 import { useAudio } from "@/lib/useAudio";
@@ -30,12 +28,10 @@ const IVORY = "hsl(var(--ivory))";
  */
 function VoiceWindowInner() {
   const { voiceOpen, closeVoice, openModule } = usePanel();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const endRef = useRef(null);
 
   const [transcript, setTranscript] = useState([]);
-  const [giuliaWorking, setGiuliaWorking] = useState(false);
   const processedRef = useRef(new Set());
 
   // Audio-reactieve bloom.
@@ -45,24 +41,19 @@ function VoiceWindowInner() {
 
   const clientTools = useMemo(() => buildVoiceClientTools({ navigate, openModule }), [navigate, openModule]);
 
+  // Tijdens een voice-call wordt het gesprek NIET in de chat opgenomen. De
+  // ElevenLabs-agent voert acties direct uit via de client-tools; chat-Giulia
+  // krijgt niets en schrijft dus niets in de chat. Het live transcript blijft
+  // lokaal op dit oppervlak (geen Message-entities).
   const { startSession, endSession, status, isSpeaking, getOutputVolume } = useConversation({
     agentId: ELEVEN_AGENT_ID,
     clientTools,
     onMessage: (payload) => {
       const text = String(payload?.message || "").trim();
       const role = payload?.role || (payload?.source === "ai" ? "assistant" : payload?.source || "user");
-      if (!text) return;
+      if (!text || processedRef.current.has(text)) return;
+      processedRef.current.add(text);
       setTranscript((t) => [...t, { id: `${Date.now()}-${Math.random()}`, role, text }]);
-      if (role === "user" && !processedRef.current.has(text)) {
-        processedRef.current.add(text);
-        setGiuliaWorking(true);
-        base44.functions.invoke("chatWithGiulia", { message: text, source: "chat" })
-          .then(() => setGiuliaWorking(false))
-          .catch((e) => {
-            setGiuliaWorking(false);
-            toast({ title: "Giulia kon het niet uitvoeren", description: String(e?.message || e), variant: "destructive" });
-          });
-      }
     },
   });
 
@@ -155,11 +146,6 @@ function VoiceWindowInner() {
                 {statusLabel}
               </p>
             </div>
-            {giuliaWorking && (
-              <span className="ml-auto flex items-center gap-1.5 text-[11px] text-olive shrink-0">
-                <Loader2 className="h-3 w-3 animate-spin" /> voert uit…
-              </span>
-            )}
           </div>
 
           {/* GlassCard onder — bloom + transcript */}
