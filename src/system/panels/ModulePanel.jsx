@@ -275,47 +275,6 @@ export default function ModulePanel() {
               {Preview ? <Preview key={bodyModule} onOpen={openSpace} onFooter={setFooter} /> : <ActiveComponent />}
             </div>
 
-            <div className="mx-7 lg:mx-9 h-px bg-storm/10 shrink-0" />
-
-            {/* FOOTER — contextrij + knoppen uit de preview, vast, zonder achtergrond */}
-            {footer && (footer.context?.length > 0 || footer.actions?.length > 0) && (
-              <div className="shrink-0 px-7 lg:px-9 pt-5 pb-8">
-                {footer.context?.length > 0 && (
-                  <>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                      {footer.context.map((c, i) => (
-                        <div key={i}>
-                          <div className="flex items-center gap-2.5">
-                            <span className="text-storm/30 text-[10px] tabular-nums">{String(i + 1).padStart(2, "0")}</span>
-                            <p className="text-storm/80 text-[10px] uppercase tracking-[0.2em] font-semibold">{c.label}</p>
-                          </div>
-                          <p className="text-storm/70 text-xs mt-1.5 leading-relaxed">{c.text}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
-                {footer.actions?.length > 0 && (
-                  <>
-                    {footer.context?.length > 0 && <GraphicRule accent={accent} className="mt-4" />}
-                    <div className="flex flex-wrap gap-2 mt-4">
-                      {footer.actions.map((a, i) => a.primary ? (
-                        <button key={i} onClick={() => runAction(a)}
-                          className="px-4 py-2 rounded-full text-metal text-[10px] font-semibold tracking-[0.15em] uppercase hover:brightness-95 active:scale-95 transition-all"
-                          style={{ background: accent }}>
-                          {a.label}
-                        </button>
-                      ) : (
-                        <button key={i} onClick={() => runAction(a)}
-                          className="px-4 py-2 rounded-full border border-storm/15 bg-transparent text-storm/80 text-[10px] tracking-[0.15em] uppercase hover:bg-marble/10 transition-colors">
-                          {a.label}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
           </div>
         </div>
         )
