@@ -214,7 +214,7 @@ export default function ModulePanel() {
           {/* 2. GlassShellPanel */}
           <div className="flex-1 -mt-10 rounded-t-[28px] glass-3 flex flex-col min-h-0 overflow-hidden">
             {/* HEADER */}
-            <div className="px-7 lg:px-9 pt-7 pb-6 shrink-0">
+            <div className="px-7 lg:px-9 pt-7 pb-4 shrink-0">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/55 font-medium mb-1.5">Snelle context</p>
@@ -271,7 +271,7 @@ export default function ModulePanel() {
             )}
 
             {/* BODY — vaste hoogte tussen header en footer */}
-            <div className={`flex-1 min-h-0 px-7 lg:px-9 pt-5 ${Preview ? "overflow-hidden" : "overflow-y-auto pb-8"}`}>
+            <div className={`flex-1 min-h-0 px-7 lg:px-9 pt-3 ${Preview ? "overflow-hidden" : "overflow-y-auto pb-8"}`}>
               {Preview ? <Preview key={bodyModule} onOpen={openSpace} onFooter={setFooter} /> : <ActiveComponent />}
             </div>
 
