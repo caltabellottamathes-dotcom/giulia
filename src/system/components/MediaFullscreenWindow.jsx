@@ -1,35 +1,27 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { X, Download, Minimize2, EyeOff, FileText } from "lucide-react";
+import { X, Download, Minus, Maximize2, FileText, Play, Pause, SkipBack, SkipForward } from "lucide-react";
 import { usePanel } from "@/lib/PanelContext";
 import { useMediaViewer, isDriveUrl } from "@/lib/MediaViewerContext";
 import MusicStage from "@/system/components/media/MusicStage";
-import MiniPlayer from "@/system/components/media/MiniPlayer";
-import RestorePill from "@/system/components/media/RestorePill";
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const fmt = (s) => {
+  if (!isFinite(s) || s < 0) return "0:00";
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${String(sec).padStart(2, "0")}`;
+};
 
 /**
- * MediaFullscreenWindow — écht fullscreen viewer die zich automatisch aan
- * het formaat van de media aanpast (object-contain). Afspelende media
- * (audio/video) kan worden geminimaliseerd tot een zwevende mini-kaart of
- * volledig verborgen terwijl het geluid doorloopt; een pil herstelt het.
- * Muziek krijgt een OS-stijl interface (MusicStage). Sluitknop linksboven.
+ * MediaFullscreenWindow — een zwevend window (zoals de browser) waarin de
+ * media altijd fullscreen (gevuld) afspeelt. Te minimaliseren naar een kleine
+ * widget; het media-element blijft gemount, dus audio/video loopt door.
+ * Muziek krijgt de OS-stijl MusicStage in de content-area.
  */
-const videoWrap = (v) =>
-  v === "full"
-    ? "fixed inset-0 z-[58] flex items-center justify-center pt-14 pb-4 px-4"
-    : v === "mini"
-    ? "fixed bottom-20 right-6 z-[60] w-72 rounded-2xl overflow-hidden ring-1 ring-white/15 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.6)]"
-    : "fixed bottom-6 right-6 z-[60] h-px w-px overflow-hidden opacity-0 pointer-events-none";
-
-const videoCls = (v) =>
-  v === "full" ? "max-w-full max-h-full object-contain bg-black" : v === "mini" ? "w-full aspect-video bg-black" : "w-full";
-
 export default function MediaFullscreenWindow() {
-  const { mediaFullscreen, closeMediaFullscreen } = usePanel();
+  const { mediaFullscreen, closeMediaFullscreen, mediaMinimized, minimizeMedia, restoreMedia } = usePanel();
   const { media, closeMedia } = useMediaViewer();
-  const [view, setView] = useState("full");
   const [playing, setPlaying] = useState(false);
   const [cur, setCur] = useState(0);
   const [dur, setDur] = useState(0);
@@ -38,32 +30,27 @@ export default function MediaFullscreenWindow() {
   const kind = media?.kind;
   const isPlayable = kind === "music" || kind === "video";
 
-  // Nieuwe media → reset + fullscreen
+  // Nieuwe media → reset transport
   useEffect(() => {
-    if (mediaFullscreen) {
-      setView("full");
-      setCur(0);
-      setDur(0);
-      setPlaying(false);
-    }
+    if (mediaFullscreen) { setCur(0); setDur(0); setPlaying(false); }
   }, [mediaFullscreen, media?.url]);
 
-  // Esc sluit (enkel in fullscreen)
+  // Esc sluit (enkel in window-stand)
   useEffect(() => {
     if (!mediaFullscreen) return;
-    const h = (e) => { if (e.key === "Escape" && view === "full") handleClose(); };
+    const h = (e) => { if (e.key === "Escape" && !mediaMinimized) handleClose(); };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mediaFullscreen, view]);
+  }, [mediaFullscreen, mediaMinimized]);
 
-  // Body-scroll vergrendelen in fullscreen
+  // Body-scroll vergrendelen in window-stand
   useEffect(() => {
-    if (mediaFullscreen && view === "full") {
+    if (mediaFullscreen && !mediaMinimized) {
       document.body.style.overflow = "hidden";
       return () => { document.body.style.overflow = ""; };
     }
-  }, [mediaFullscreen, view]);
+  }, [mediaFullscreen, mediaMinimized]);
 
   const onPlay = () => setPlaying(true);
   const onPause = () => setPlaying(false);
@@ -94,7 +81,7 @@ export default function MediaFullscreenWindow() {
 
   const handleClose = useCallback(() => {
     const el = mediaRef.current;
-    if (el) { el.pause(); }
+    if (el) el.pause();
     closeMediaFullscreen();
     closeMedia();
   }, [closeMediaFullscreen, closeMedia]);
@@ -114,58 +101,81 @@ export default function MediaFullscreenWindow() {
     onEnded,
   };
 
-  return createPortal(
-    <>
-      {/* backdrop */}
-      {view === "full" && (
-        <div className="fixed inset-0 z-[57] bg-charcoal/85 backdrop-blur-sm animate-fade-in" onClick={handleClose} />
-      )}
-
-      {/* persistente media-laag (audio always hidden; video zichtbaar per view) */}
-      {kind === "music" && <audio {...mediaProps} className="hidden" />}
-      {kind === "video" && (
-        <div className={videoWrap(view)}>
-          <video {...mediaProps} controls={view === "full"} className={videoCls(view)} />
+  // ---- Geminimaliseerde widget-stand ----
+  if (mediaMinimized) {
+    return createPortal(
+      <div className="fixed bottom-4 right-4 z-[56] w-[320px] h-[200px] rounded-2xl overflow-hidden glass-4 float-shadow flex flex-col animate-scale-in text-ivory">
+        <div className="shrink-0 h-8 px-2 flex items-center gap-1.5 border-b border-white/10">
+          <span className="h-1.5 w-1.5 rounded-full bg-olive shrink-0" />
+          <span className="text-[10px] font-semibold tracking-wider truncate flex-1 text-ivory/80">{media.name}</span>
+          <button onClick={restoreMedia} className="h-6 w-6 rounded-md glass-1 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors" aria-label="Vergroten"><Maximize2 className="h-3 w-3" /></button>
+          <button onClick={handleClose} className="h-6 w-6 rounded-md glass-1 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors" aria-label="Sluiten"><X className="h-3 w-3" /></button>
         </div>
-      )}
-
-      {/* FULLSCREEN */}
-      {view === "full" && (
-        <div className="fixed inset-0 z-[59] pointer-events-none">
-          {/* titelbalk */}
-          <header className="absolute top-0 left-0 right-0 h-12 flex items-center gap-2 pl-3 pr-2 pointer-events-auto bg-gradient-to-b from-black/45 to-transparent">
-            <button onClick={handleClose} className="h-8 w-8 rounded-full glass-1 flex items-center justify-center text-ivory/80 hover:text-ivory transition-colors" aria-label="Sluiten">
-              <X className="h-4 w-4" />
-            </button>
-            <p className="text-[13px] text-ivory/90 truncate flex-1">{media.name || "Media"}</p>
-            {isPlayable && (
-              <button onClick={() => setView("mini")} className="h-8 w-8 rounded-full glass-1 flex items-center justify-center text-ivory/75 hover:text-ivory transition-colors shrink-0" aria-label="Minimaliseren" title="Minimaliseren">
-                <Minimize2 className="h-4 w-4" />
-              </button>
-            )}
-            {isPlayable && (
-              <button onClick={() => setView("hidden")} className="h-8 w-8 rounded-full glass-1 flex items-center justify-center text-ivory/75 hover:text-ivory transition-colors shrink-0" aria-label="Verbergen" title="Verbergen">
-                <EyeOff className="h-4 w-4" />
-              </button>
-            )}
-            <a href={media.url} target="_blank" rel="noreferrer" className="h-8 w-8 rounded-full glass-1 flex items-center justify-center text-ivory/75 hover:text-ivory transition-colors shrink-0" aria-label="Openen" title="Openen in nieuw tabblad">
-              <Download className="h-4 w-4" />
-            </a>
-          </header>
-
-          {/* content */}
+        <div className="relative flex-1 min-h-0 bg-black">
           {kind === "music" && (
-            <MusicStage media={media} playing={playing} cur={cur} dur={dur} onToggle={togglePlay} onSeek={seek} onSkip={skip} />
+            <>
+              <audio {...mediaProps} className="hidden" />
+              <div className="absolute inset-0 flex items-center gap-3 px-3">
+                <button onClick={togglePlay} className="h-10 w-10 rounded-full bg-ivory text-charcoal flex items-center justify-center shrink-0">
+                  {playing ? <Pause size={16} /> : <Play size={16} className="ml-0.5" />}
+                </button>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-ivory/90 truncate">{media.name}</p>
+                  <input type="range" min={0} max={dur || 0} value={cur} onChange={(e) => seek(Number(e.target.value))} className="w-full accent-olive h-1 mt-1.5 cursor-pointer" />
+                </div>
+                <span className="text-[10px] font-mono text-ivory/45 tabular-nums shrink-0">{fmt(cur)}</span>
+              </div>
+            </>
           )}
-          {kind === "image" && (
-            <div className="absolute inset-0 flex items-center justify-center pt-12 px-4 pb-4">
-              {drive
-                ? <iframe src={media.url} title={media.name} className="w-full h-full" />
-                : <img src={media.url} alt={media.name} className="max-w-full max-h-full object-contain" />}
+          {kind === "video" && <video {...mediaProps} className="w-full h-full object-contain bg-black" />}
+          {kind === "image" && (drive ? <iframe src={media.url} title={media.name} className="w-full h-full" /> : <img src={media.url} alt={media.name} className="w-full h-full object-contain" />)}
+          {kind === "doc" && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center px-3">
+              <FileText className="h-7 w-7 text-ivory/50" />
+              <p className="text-[11px] text-ivory/70 truncate max-w-full">{media.name}</p>
             </div>
           )}
+        </div>
+      </div>,
+      document.body
+    );
+  }
+
+  // ---- Window-stand ----
+  return createPortal(
+    <div className="fixed inset-3 sm:inset-4 lg:inset-6 z-[56] animate-scale-in">
+      <div className="relative w-full h-full rounded-[24px] overflow-hidden flex flex-col glass-4 float-shadow text-ivory">
+        {/* Sluitknop linksboven */}
+        <button onClick={handleClose} className="absolute top-3 left-3 z-20 h-9 w-9 rounded-full glass-1 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors" aria-label="Sluiten">
+          <X className="h-4 w-4" />
+        </button>
+
+        {/* Titelbalk */}
+        <div className="shrink-0 px-3 pt-3 pb-2 pl-16 flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-olive shrink-0" />
+          <p className="text-[14px] text-ivory/90 truncate flex-1">{media.name || "Media"}</p>
+          <a href={media.url} target="_blank" rel="noreferrer" className="h-9 w-9 shrink-0 rounded-lg glass-1 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors" aria-label="Openen in nieuw tabblad" title="Openen in nieuw tabblad">
+            <Download className="h-4 w-4" />
+          </a>
+          <button onClick={minimizeMedia} className="h-9 w-9 shrink-0 rounded-lg glass-1 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors" aria-label="Minimaliseren" title="Minimaliseren naar widget">
+            <Minus className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="px-3 pb-2"><div className="h-px bg-olive/40" /></div>
+
+        {/* Content-area — media vult altijd het window (fullscreen binnen window) */}
+        <div className="relative flex-1 min-h-0 mx-3 mb-3 rounded-2xl overflow-hidden bg-black">
+          {kind === "music" && (
+            <>
+              <audio {...mediaProps} className="hidden" />
+              <MusicStage media={media} playing={playing} cur={cur} dur={dur} onToggle={togglePlay} onSeek={seek} onSkip={skip} />
+            </>
+          )}
+          {kind === "video" && <video {...mediaProps} controls className="w-full h-full object-contain bg-black" />}
+          {kind === "image" && (drive ? <iframe src={media.url} title={media.name} className="w-full h-full" /> : <img src={media.url} alt={media.name} className="w-full h-full object-contain" />)}
           {kind === "doc" && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 pt-12 text-center px-6 pointer-events-auto">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center px-6 pointer-events-auto">
               <div className="h-16 w-16 rounded-2xl bg-ivory/10 flex items-center justify-center">
                 <FileText className="h-8 w-8 text-ivory/55" />
               </div>
@@ -176,29 +186,8 @@ export default function MediaFullscreenWindow() {
             </div>
           )}
         </div>
-      )}
-
-      {/* MINIMALISEREN */}
-      {view === "mini" && isPlayable && (
-        <MiniPlayer
-          media={media}
-          kind={kind}
-          playing={playing}
-          cur={cur}
-          dur={dur}
-          onToggle={togglePlay}
-          onSeek={seek}
-          onExpand={() => setView("full")}
-          onHide={() => setView("hidden")}
-          onClose={handleClose}
-        />
-      )}
-
-      {/* VERBERGEN */}
-      {view === "hidden" && isPlayable && (
-        <RestorePill media={media} kind={kind} playing={playing} onToggle={togglePlay} onRestore={() => setView("mini")} />
-      )}
-    </>,
+      </div>
+    </div>,
     document.body
   );
 }

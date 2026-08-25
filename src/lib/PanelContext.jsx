@@ -14,6 +14,7 @@ export function PanelProvider({ children }) {
   const [browserOpen, setBrowserOpen] = useState(false);
   const [browserMinimized, setBrowserMinimized] = useState(false);
   const [mediaFullscreen, setMediaFullscreen] = useState(false);
+  const [mediaMinimized, setMediaMinimized] = useState(false);
   const [pendingMessage, setPendingMessage] = useState(null);
 
   // "chat" opens the dedicated chat window instead of a module panel.
@@ -43,8 +44,10 @@ export function PanelProvider({ children }) {
   const closeBrowser = () => { setBrowserOpen(false); setBrowserMinimized(false); };
   const minimizeBrowser = () => setBrowserMinimized(true);
   const restoreBrowser = () => setBrowserMinimized(false);
-  const openMediaFullscreen = () => setMediaFullscreen(true);
-  const closeMediaFullscreen = () => setMediaFullscreen(false);
+  const openMediaFullscreen = () => { setMediaFullscreen(true); setMediaMinimized(false); };
+  const closeMediaFullscreen = () => { setMediaFullscreen(false); setMediaMinimized(false); };
+  const minimizeMedia = () => setMediaMinimized(true);
+  const restoreMedia = () => setMediaMinimized(false);
 
   return (
     <PanelContext.Provider
@@ -55,6 +58,7 @@ export function PanelProvider({ children }) {
         browserOpen, openBrowser, closeBrowser,
         browserMinimized, minimizeBrowser, restoreBrowser,
         mediaFullscreen, openMediaFullscreen, closeMediaFullscreen,
+        mediaMinimized, minimizeMedia, restoreMedia,
         pendingMessage, setPendingMessage,
       }}
     >
