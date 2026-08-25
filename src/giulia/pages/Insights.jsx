@@ -5,8 +5,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { Telescope, Sparkles, Check, Archive, Trash2, Eye, Clock, TrendingUp, AlertCircle, Lightbulb, Repeat, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PageHero from "@/system/components/glass/PageHero";
-import SelfInsightsPanel from "@/self/panels/SelfInsightsPanel";
-import JournalPanel from "@/self/panels/JournalPanel";
+import SelfInsightsPanel from "@/life/panels/SelfInsightsPanel";
+import JournalPanel from "@/life/panels/JournalPanel";
+import RoutinesPanel from "@/life/panels/RoutinesPanel";
 
 // Insights is Giulia's observation room — everyday patterns, behaviors, signals.
 // NOT research reports. More like: "hm, dit valt me op."
@@ -35,7 +36,7 @@ const STATUS_COLORS = { new: "text-olive", reviewed: "text-charcoal/60", actione
 export default function Insights() {
   const { data: insights, loading, reload } = useEntityList("Insight", { sort: "-created_date" });
   const [filter, setFilter] = useState("all");
-  const [tab, setTab] = useState(() => { const t = new URLSearchParams(window.location.search).get("tab"); return t === "self" || t === "journal" ? t : "obs"; });
+  const [tab, setTab] = useState(() => { const t = new URLSearchParams(window.location.search).get("tab"); return ["self", "journal", "routines"].includes(t) ? t : "obs"; });
   const [showNew, setShowNew] = useState(false);
   const [draft, setDraft] = useState({ title: "", content: "", category: "Observatie" });
   const { toast } = useToast();
@@ -89,7 +90,7 @@ export default function Insights() {
 
       {/* Insights tabs — Observaties / Self / Journal (Self & Journal gemigreerd uit SELF) */}
       <div className="flex flex-wrap gap-2 mb-2">
-        {[["obs", "Observaties"], ["self", "Self"], ["journal", "Journal"]].map(([k, l]) => (
+        {[["obs", "Observaties"], ["self", "Self"], ["journal", "Journal"], ["routines", "Routines"]].map(([k, l]) => (
           <button key={k} onClick={() => setTab(k)} className={cn("px-3.5 py-1.5 rounded-full text-xs font-bold transition", tab === k ? "bg-charcoal text-ivory" : "bg-foreground/8 text-foreground/60 hover:text-foreground")}>{l}</button>
         ))}
       </div>
@@ -102,6 +103,11 @@ export default function Insights() {
       {tab === "journal" && (
         <div className="rounded-[28px] bg-charcoal p-6 text-ivory">
           <JournalPanel />
+        </div>
+      )}
+      {tab === "routines" && (
+        <div className="rounded-[28px] bg-charcoal p-6 text-ivory">
+          <RoutinesPanel />
         </div>
       )}
 

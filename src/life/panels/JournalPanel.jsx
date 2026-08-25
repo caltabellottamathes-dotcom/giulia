@@ -142,7 +142,7 @@ export default function JournalPanel() {
       <ActionRow actions={[
         { label: "Add Moment", primary: true, onClick: () => { setForm({ title: "", type: "moment", content: "" }); setShowAdd(true); } },
         { label: "Add Note", onClick: () => setShowAdd((v) => !v) },
-        { label: "Open Journal", to: "/self/journal" },
+        { label: "Open Journal", to: "/insights?tab=journal" },
       ]} />
 
       {/* Add form */}

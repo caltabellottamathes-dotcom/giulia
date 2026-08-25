@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { PhotoGlassLayeredWidget, WidgetHeader, CheckList, URGENT } from "@/system/widgets/primitives";
 import { layeredContentPad } from "@/system/widgets/primitives/shellCode";
-import { useAgendaChecklist } from "@/self/widgets/editorial13/CheckableShell";
+import { useAgendaChecklist } from "@/life/components/CheckableShell";
 import { usePanel } from "@/lib/PanelContext";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/02f6f6d0e_Matters.jpeg";

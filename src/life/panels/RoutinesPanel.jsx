@@ -125,7 +125,7 @@ export default function RoutinesPanel() {
         { label: "Complete", primary: true, onClick: () => { const next = today.find((r) => r.status !== "completed"); if (next) complete(next.id); } },
         { label: "Skip", onClick: () => { const next = today.find((r) => r.status !== "completed"); if (next) skip(next.id); } },
         { label: "Add Routine", onClick: () => setShowAdd((v) => !v) },
-        { label: "Open Routines", to: "/self/routines" },
+        { label: "Open Routines", to: "/insights?tab=routines" },
       ]} />
 
       {/* Add form */}

@@ -139,7 +139,6 @@ export default function WakePanel() {
         ...(nextPhase ? [{ label: "Volgende Phase", onClick: () => setPhase(nextPhase) }] : []),
         { label: "Voltooi", onClick: endWake },
         { label: "Start Wake Mode", to: "/wake" },
-        { label: "Open Wake", to: "/self/wake" },
       ]} />
     </div>
   );

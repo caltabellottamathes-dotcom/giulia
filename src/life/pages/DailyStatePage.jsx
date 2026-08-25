@@ -8,6 +8,7 @@ import { IMAGES } from "@/lib/images";
 import { SectionLabel, Empty, Card, Stat, Progress } from "@/system/panels/previewParts";
 import { stateColor, stateLabel, energyColor, capacityColor, moodColor, moodLabel, levelLabel, fmtTime, fmtDate, fmtAgo } from "@/lib/selfUtils";
 import { Activity as ActivityIcon, Plus, Search, Sliders, Battery, Heart, Sparkles, Clock, ArrowUpRight } from "lucide-react";
+import TherapyPanel from "@/life/panels/TherapyPanel";
 
 const SAGE = "hsl(var(--self-accent))";
 const URGENT = "hsl(var(--self-urgent))";
@@ -23,6 +24,7 @@ const TABS = [
   { key: "check_ins", label: "Check-ins" },
   { key: "history", label: "State History" },
   { key: "context", label: "Personal Context" },
+  { key: "therapy", label: "Therapy" },
 ];
 
 export default function DailyStatePage() {
@@ -283,6 +285,12 @@ export default function DailyStatePage() {
                 {latest?.context && <p className="text-sm text-muted-foreground italic mt-2">{latest.context}</p>}
               </div>
             </GlassPanel>
+          )}
+
+          {tab === "therapy" && (
+            <div className="rounded-[28px] bg-charcoal p-6 text-ivory">
+              <TherapyPanel />
+            </div>
           )}
         </>
       )}

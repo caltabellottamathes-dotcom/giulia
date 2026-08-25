@@ -11,7 +11,7 @@ import { householdZones, mattersItems, householdHeadline, isAttention, statusLab
 import { Home, Repeat, ShoppingCart, Wrench, Plus, Sparkles, CheckCircle2, Search } from "lucide-react";
 import { logLifeActivity } from "@/lib/lifeActivity";
 import LifeActivityFeed from "@/life/components/LifeActivityFeed";
-import RoutinesPanel from "@/self/panels/RoutinesPanel";
+import RoutinesPanel from "@/life/panels/RoutinesPanel";
 
 const SAND = "hsl(var(--life-sand))";
 const SAND_DEEP = "hsl(var(--life-sand-deep))";

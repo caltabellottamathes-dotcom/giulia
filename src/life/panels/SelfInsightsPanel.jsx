@@ -138,7 +138,7 @@ export default function SelfInsightsPanel() {
       <ActionRow actions={[
         { label: "Confirm", primary: true, color: SAND, onClick: () => latest && confirm(latest.id) },
         { label: "Dismiss", onClick: () => latest && dismiss(latest.id) },
-        { label: "Open Insights", to: "/self/insights" },
+        { label: "Open Insights", to: "/insights?tab=self" },
       ]} />
     </div>
   );

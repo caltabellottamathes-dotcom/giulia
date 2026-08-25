@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import WakeSettingsForm from "@/life/components/WakeSettingsForm";
 import RoutineEditor from "@/life/components/RoutineEditor";
 import DailyIntention from "@/life/components/DailyIntention";
-import WakePanel from "@/self/panels/WakePanel";
+import WakePanel from "@/life/panels/WakePanel";
 import { Sunrise, Moon, ArrowRight } from "lucide-react";
 
 export default function GoodMorningPanel() {

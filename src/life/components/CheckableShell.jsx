@@ -3,9 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check, RotateCcw } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
-/* ── Reeks 13 — interactieve, afvinkbare widgets (glas-op-foto) ────────── */
-
-/** Lokale checklist met check & sluiten. */
+/** useChecklist — lokale checklist met check & sluiten. */
 export function useChecklist(seed) {
   const [items, setItems] = useState(() => seed.map((s) => ({ ...s, done: false })));
   const [closed, setClosed] = useState(false);
@@ -63,9 +61,7 @@ const MOCK_AGENDA = [
   { id: "mock5", label: "Afronding proposal", sub: "17:00", done: false, duration: 120 },
 ];
 
-/** Checklist gekoppeld aan de agenda van vandaag (CalendarEvent). Geen taken,
- *  geen andere dingen — enkel wat er vandaag op de agenda staat. Afvinken is
- *  lokaal (agenda-afspraken zijn geen "taak" die afgesloten wordt). */
+/** Checklist gekoppeld aan de agenda van vandaag (CalendarEvent). */
 export function useAgendaChecklist() {
   const [items, setItems] = useState([]);
   const [closed, setClosed] = useState(false);

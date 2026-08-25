@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { WidgetShell, WidgetHeader, BrandPhoto, CheckList, URGENT } from "@/system/widgets/primitives";
-import { useAgendaChecklist } from "@/self/widgets/editorial13/CheckableShell";
+import { useAgendaChecklist } from "@/life/components/CheckableShell";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ad59aa090_Whatmatters_GIULIA.jpeg";
 const PISTACHIO = "hsl(var(--giulia-pistachio))"; // 2e accentkleur (GIULIA)

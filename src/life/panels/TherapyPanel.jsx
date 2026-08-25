@@ -24,7 +24,7 @@ function TrajectoryViz({ name, progress, notes }) {
             <div key={i} className="flex flex-col items-center gap-3 z-10">
               <motion.span className={`w-5 h-5 rounded-full border-2 ${current ? "animate-pulse" : ""}`}
                 initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: i * 0.15 }}
-                style={{ background: current ? SAND : done ? BLUE : "transparent", borderColor: current ? SAND : done ? BLUE : "rgba(255,255,255,0.25)" }} />
+                style={{ background: current ? SAND : done ? BLUE : "transparent", borderColor: current ? SAND : done ? BLUE : "rgba(255,255,255,0.24)" }} />
               <span className={`text-[10px] tracking-wide ${current ? "" : done ? "text-ivory/70" : "text-ivory/40"}`} style={current ? { color: SAND } : {}}>{n}</span>
             </div>
           );
@@ -83,7 +83,7 @@ export default function TherapyPanel() {
           <h2 className="text-[32px] leading-[0.95] font-display font-semibold tracking-[-0.03em] mt-1">{active.length} actief</h2>
           <p className="text-sm text-ivory/55 mt-1.5 italic">{nextAppt ? `Volgende: ${fmtDate(nextAppt.start)} ${fmtTime(nextAppt.start)}` : "Geen afspraak gepland"}</p>
         </div>
-        <OpenLink to="/life/development?tab=therapy" label="Open Therapy" />
+        <OpenLink to="/life/daily-state?tab=therapy" label="Open Therapy" />
       </div>
 
       {/* Goals / Notes stats */}
@@ -153,8 +153,8 @@ export default function TherapyPanel() {
       {/* Actions — from glass */}
       <ActionRow actions={[
         { label: "Add Note", onClick: async () => { const t = active[0]; if (!t) return; await base44.entities.TherapyTrajectory.update(t.id, { notes: [...(t.notes || []), "Nieuwe notitie"] }); await load(); } },
-        { label: "Add Appointment", primary: true, to: "/self/therapy" },
-        { label: "Open Therapy", to: "/self/therapy" },
+        { label: "Add Appointment", primary: true, to: "/life/daily-state?tab=therapy" },
+        { label: "Open Therapy", to: "/life/daily-state?tab=therapy" },
       ]} />
 
       {/* Add form */}

@@ -8,7 +8,7 @@ import { IMAGES } from "@/lib/images";
 import { Empty, Card, Stat, Progress } from "@/system/panels/previewParts";
 import { goalStatusColor, goalStatusLabel, goalTypeLabel, fmtDate } from "@/lib/selfUtils";
 import { Target, Plus, Search, Sliders, Award, BookOpen, TrendingUp, ArrowUpRight } from "lucide-react";
-import TherapyPanel from "@/self/panels/TherapyPanel";
+import TherapyPanel from "@/life/panels/TherapyPanel";
 
 const SAGE = "hsl(var(--self-accent))";
 
