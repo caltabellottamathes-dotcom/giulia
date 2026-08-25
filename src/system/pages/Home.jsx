@@ -48,9 +48,11 @@ export default function Home() {
   const { widgets, loading, addWidget, removeWidget, patchWidget, reload, isCustom } = useDashboardBoard(activeBoard, ready);
   const { accent: boardAccent } = useActiveDomain(activeBoard);
   const pillStyle = {
-    border: "none",
-    background: `color-mix(in srgb, ${boardAccent} 12%, rgba(120,122,128,0.08))`,
-    boxShadow: "0 16px 38px -12px rgba(0,0,0,0.34), inset 0 1px 0 0 rgba(255,255,255,0.20)",
+    border: "1px solid rgba(255,255,255,0.14)",
+    background: `color-mix(in srgb, ${boardAccent} 6%, rgba(120,122,128,0.10))`,
+    backdropFilter: "blur(30px) saturate(1.4)",
+    WebkitBackdropFilter: "blur(30px) saturate(1.4)",
+    boxShadow: "0 18px 40px -16px rgba(0,0,0,0.40), inset 0 1px 0 0 rgba(255,255,255,0.18)",
   };
   const reloadRef = useRef(null);
   reloadRef.current = reload;
@@ -184,7 +186,7 @@ export default function Home() {
     <GlassSurfaceProvider photoRef={photoRef}>
     <div className="relative -mx-5 lg:-mx-10 -my-6 lg:-mt-8 lg:mb-0 min-h-[calc(100svh-3.5rem)] lg:min-h-[calc(100svh-9.5rem)] overflow-hidden">
       {/* Fixed action buttons */}
-      <div className="fixed top-3.5 right-4 lg:top-5 lg:right-8 z-40 flex items-center gap-1 rounded-full glass px-1.5 py-1.5" style={pillStyle}>
+      <div className="fixed top-3.5 right-4 lg:top-5 lg:right-8 z-40 flex items-center gap-1 rounded-full px-1.5 py-1.5" style={pillStyle}>
         <button
           onClick={doUpdate}
           title="Alle data, widgets en panelen bijwerken"

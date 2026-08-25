@@ -105,14 +105,14 @@ export default function WorkspaceToolbar() {
         <div
           className="relative flex items-center h-11 rounded-full overflow-hidden w-full"
           style={{
-            background: "rgba(120,122,128,0.06)",
-            backdropFilter: "blur(18px) saturate(1.3)",
-            WebkitBackdropFilter: "blur(18px) saturate(1.3)",
-            border: "none",
-            boxShadow: "0 22px 52px -18px rgba(0,0,0,0.5), 0 10px 24px -12px rgba(0,0,0,0.32)",
+            background: "rgba(120,122,128,0.10)",
+            backdropFilter: "blur(30px) saturate(1.4)",
+            WebkitBackdropFilter: "blur(30px) saturate(1.4)",
+            border: "1px solid rgba(255,255,255,0.14)",
+            boxShadow: "0 18px 40px -16px rgba(0,0,0,0.40), inset 0 1px 0 0 rgba(255,255,255,0.18)",
           }}
         >
-          <div className="pointer-events-none absolute inset-0" style={{ background: accent, opacity: 0.16 }} />
+          <div className="pointer-events-none absolute inset-0" style={{ background: accent, opacity: 0.06 }} />
           {expanded ? (
             <>
               {/* Dashboard tabs (left) */}
