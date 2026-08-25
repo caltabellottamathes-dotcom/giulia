@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Send } from "lucide-react";
 import { PhotoGlassLayeredWidget, WidgetHeader, URGENT } from "@/system/widgets/primitives";
 import { layeredContentPad } from "@/system/widgets/primitives/shellCode";
@@ -26,7 +26,18 @@ export default function WhatsAppChatFocusWidget() {
   const { toast } = useToast();
   const { openModule } = usePanel();
   const { data: msgs, reload: reloadMsgs } = useEntityList("WhatsAppMessage", { sort: "-timestamp", limit: 80, realtime: true });
-  const { data: contacts } = useEntityList("Contact", { sort: "-created_date", limit: 80, realtime: true });
+  const [contactMap, setContactMap] = useState({});
+  useEffect(() => {
+    const ids = [...new Set((msgs || []).map((m) => m.contact_id).filter(Boolean))];
+    if (!ids.length) { setContactMap({}); return; }
+    let live = true;
+    Promise.all(ids.map((id) => base44.entities.Contact.get(id).catch(() => null))).then((cs) => {
+      if (!live) return;
+      const m = {}; cs.forEach((c) => { if (c) m[c.id] = c; });
+      setContactMap(m);
+    });
+    return () => { live = false; };
+  }, [msgs]);
 
   const [selectedId, setSelectedId] = useState(null);
   const [draft, setDraft] = useState("");
@@ -35,9 +46,9 @@ export default function WhatsAppChatFocusWidget() {
 
   const contactName = useMemo(() => {
     const map = {};
-    (contacts || []).forEach((c) => { map[c.id] = c.name || c.phone || "Onbekend"; });
+    Object.values(contactMap).forEach((c) => { map[c.id] = c.name || c.phone || "Onbekend"; });
     return map;
-  }, [contacts]);
+  }, [contactMap]);
 
   const received = useMemo(() => (msgs || []).filter((m) => m.direction === "received"), [msgs]);
   const totalUnread = received.filter((m) => m.status === "unread").length;
@@ -56,7 +67,7 @@ export default function WhatsAppChatFocusWidget() {
       .slice(0, 5);
   }, [received]);
 
-  const selectedContact = (contacts || []).find((c) => c.id === selectedId);
+  const selectedContact = contactMap[selectedId];
   const conversation = useMemo(() => {
     if (!selectedId) return [];
     return (msgs || [])
