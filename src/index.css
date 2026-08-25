@@ -477,6 +477,13 @@
   animation: float-slow 6s ease-in-out infinite;
 }
 
+/* Media player — draaiende vinyl + equalizer-balken */
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+.spin-slow { animation: spin-slow 26s linear infinite; }
+
+@keyframes eq-bar { 0%, 100% { transform: scaleY(0.22); } 50% { transform: scaleY(1); } }
+.eq-bar { transform-origin: bottom; animation: eq-bar 1s ease-in-out infinite; }
+
 /* Ambient Bloom — small floating, drifting #b2bfc7 element, bottom-left */
 .ambient-bloom {
   position: fixed;

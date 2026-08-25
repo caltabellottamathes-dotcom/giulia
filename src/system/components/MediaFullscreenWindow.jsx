@@ -1,196 +1,203 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { X, Download, Maximize2, Music, FileText } from "lucide-react";
+import { X, Download, Minimize2, EyeOff, FileText } from "lucide-react";
 import { usePanel } from "@/lib/PanelContext";
 import { useMediaViewer, isDriveUrl } from "@/lib/MediaViewerContext";
+import MusicStage from "@/system/components/media/MusicStage";
+import MiniPlayer from "@/system/components/media/MiniPlayer";
+import RestorePill from "@/system/components/media/RestorePill";
+
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
 /**
- * MediaFullscreenWindow — fullscreen, vrij vergrootbaar venster voor het
-* afspelen van media (foto / video / audio / document). De inhoudsstage
- * behoudt een gekozen beeldverhouding en kan met de hoekgreep worden
- * vergroot/verkleind. Sluitknop linksboven (GIULIA-voorkeur).
+ * MediaFullscreenWindow — écht fullscreen viewer die zich automatisch aan
+ * het formaat van de media aanpast (object-contain). Afspelende media
+ * (audio/video) kan worden geminimaliseerd tot een zwevende mini-kaart of
+ * volledig verborgen terwijl het geluid doorloopt; een pil herstelt het.
+ * Muziek krijgt een OS-stijl interface (MusicStage). Sluitknop linksboven.
  */
-const RATIOS = [
-  { key: "fit", label: "Fit" },
-  { key: "16:9", label: "16:9" },
-  { key: "4:3", label: "4:3" },
-  { key: "1:1", label: "1:1" },
-  { key: "9:16", label: "9:16" },
-];
-const ratioVal = (k) => (k === "fit" ? null : k.split("/").reduce((a, b) => Number(a) / Number(b)));
-const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const videoWrap = (v) =>
+  v === "full"
+    ? "fixed inset-0 z-[58] flex items-center justify-center pt-14 pb-4 px-4"
+    : v === "mini"
+    ? "fixed bottom-20 right-6 z-[60] w-72 rounded-2xl overflow-hidden ring-1 ring-white/15 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.6)]"
+    : "fixed bottom-6 right-6 z-[60] h-px w-px overflow-hidden opacity-0 pointer-events-none";
+
+const videoCls = (v) =>
+  v === "full" ? "max-w-full max-h-full object-contain bg-black" : v === "mini" ? "w-full aspect-video bg-black" : "w-full";
 
 export default function MediaFullscreenWindow() {
   const { mediaFullscreen, closeMediaFullscreen } = usePanel();
-  const { media } = useMediaViewer();
-  const [ratioKey, setRatioKey] = useState("fit");
-  const [size, setSize] = useState(() => ({
-    w: clamp(window.innerWidth - 160, 320, 1280),
-    h: clamp(window.innerHeight - 220, 240, 820),
-  }));
-  const stageRef = useRef(null);
+  const { media, closeMedia } = useMediaViewer();
+  const [view, setView] = useState("full");
+  const [playing, setPlaying] = useState(false);
+  const [cur, setCur] = useState(0);
+  const [dur, setDur] = useState(0);
+  const mediaRef = useRef(null);
 
-  // Esc sluit
-  useEffect(() => {
-    if (!mediaFullscreen) return;
-    const h = (e) => { if (e.key === "Escape") closeMediaFullscreen(); };
-    window.addEventListener("keydown", h);
-    return () => window.removeEventListener("keydown", h);
-  }, [mediaFullscreen, closeMediaFullscreen]);
+  const kind = media?.kind;
+  const isPlayable = kind === "music" || kind === "video";
 
-  // Body-scroll vergrendelen
+  // Nieuwe media → reset + fullscreen
   useEffect(() => {
     if (mediaFullscreen) {
+      setView("full");
+      setCur(0);
+      setDur(0);
+      setPlaying(false);
+    }
+  }, [mediaFullscreen, media?.url]);
+
+  // Esc sluit (enkel in fullscreen)
+  useEffect(() => {
+    if (!mediaFullscreen) return;
+    const h = (e) => { if (e.key === "Escape" && view === "full") handleClose(); };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mediaFullscreen, view]);
+
+  // Body-scroll vergrendelen in fullscreen
+  useEffect(() => {
+    if (mediaFullscreen && view === "full") {
       document.body.style.overflow = "hidden";
       return () => { document.body.style.overflow = ""; };
     }
-  }, [mediaFullscreen]);
+  }, [mediaFullscreen, view]);
 
-  // Bij nieuw media: reset naar verstandige basisafmeting passend bij soort
-  useEffect(() => {
-    if (!mediaFullscreen) return;
-    const kind = media?.kind;
-    const baseW = clamp(window.innerWidth - 160, 320, 1280);
-    if (kind === "image") setRatioKey("fit");
-    else if (kind === "music") setRatioKey("1:1");
-    else setRatioKey("16:9");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mediaFullscreen, media?.url]);
+  const onPlay = () => setPlaying(true);
+  const onPause = () => setPlaying(false);
+  const onTime = (e) => setCur(e.currentTarget.currentTime || 0);
+  const onMeta = (e) => setDur(e.currentTarget.duration || 0);
+  const onEnded = () => setPlaying(false);
 
-  // Pas hoogte aan wanneer ratio verandert (breedte blijft)
-  useEffect(() => {
-    const r = ratioVal(ratioKey);
-    if (!r) return;
-    setSize((s) => ({ w: s.w, h: clamp(s.w / r, 200, window.innerHeight - 160) }));
-  }, [ratioKey]);
+  const togglePlay = useCallback(() => {
+    const el = mediaRef.current;
+    if (!el) return;
+    if (el.paused) el.play(); else el.pause();
+  }, []);
 
-  // Sleep hoekgreep om te vergroten/verkleinen
-  const onCornerDown = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const startX = e.clientX, startY = e.clientY;
-    const startW = size.w, startH = size.h;
-    const r = ratioVal(ratioKey);
-    const move = (ev) => {
-      const dx = ev.clientX - startX, dy = ev.clientY - startY;
-      const maxW = window.innerWidth - 120, maxH = window.innerHeight - 140;
-      const newW = clamp(startW + dx, 280, maxW);
-      const newH = r ? clamp(newW / r, 180, maxH) : clamp(startH + dy, 180, maxH);
-      setSize({ w: newW, h: newH });
-    };
-    const up = () => {
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", up);
-    };
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", up);
-  }, [size, ratioKey]);
+  const seek = useCallback((t) => {
+    const el = mediaRef.current;
+    if (!el) return;
+    el.currentTime = t;
+    setCur(t);
+  }, []);
+
+  const skip = useCallback((d) => {
+    const el = mediaRef.current;
+    if (!el) return;
+    const t = clamp((el.currentTime || 0) + d, 0, dur || el.duration || 0);
+    el.currentTime = t;
+    setCur(t);
+  }, [dur]);
+
+  const handleClose = useCallback(() => {
+    const el = mediaRef.current;
+    if (el) { el.pause(); }
+    closeMediaFullscreen();
+    closeMedia();
+  }, [closeMediaFullscreen, closeMedia]);
 
   if (!mediaFullscreen || !media) return null;
 
   const drive = isDriveUrl(media.url);
-  const kind = media.kind;
+
+  const mediaProps = {
+    ref: mediaRef,
+    src: media.url,
+    autoPlay: true,
+    onPlay,
+    onPause,
+    onTimeUpdate: onTime,
+    onLoadedMetadata: onMeta,
+    onEnded,
+  };
 
   return createPortal(
     <>
-      <div className="fixed inset-0 z-[57] bg-charcoal/40 animate-fade-in" onClick={closeMediaFullscreen} />
-      <div className="fixed inset-0 z-[58] flex items-center justify-center p-6 pointer-events-none">
-        <div
-          className="pointer-events-auto relative flex flex-col rounded-[20px] overflow-hidden glass-4 float-shadow text-ivory animate-scale-in"
-          style={{ width: size.w, maxWidth: "calc(100vw - 48px)", maxHeight: "calc(100vh - 48px)" }}
-        >
-          {/* Titelbalk */}
-          <div className="shrink-0 flex items-center gap-2 pl-3 pr-2 h-12 border-b border-white/10">
-            <button
-              onClick={closeMediaFullscreen}
-              className="h-8 w-8 rounded-full glass-1 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors"
-              aria-label="Sluiten"
-            >
+      {/* backdrop */}
+      {view === "full" && (
+        <div className="fixed inset-0 z-[57] bg-charcoal/85 backdrop-blur-sm animate-fade-in" onClick={handleClose} />
+      )}
+
+      {/* persistente media-laag (audio always hidden; video zichtbaar per view) */}
+      {kind === "music" && <audio {...mediaProps} className="hidden" />}
+      {kind === "video" && (
+        <div className={videoWrap(view)}>
+          <video {...mediaProps} controls={view === "full"} className={videoCls(view)} />
+        </div>
+      )}
+
+      {/* FULLSCREEN */}
+      {view === "full" && (
+        <div className="fixed inset-0 z-[59] pointer-events-none">
+          {/* titelbalk */}
+          <header className="absolute top-0 left-0 right-0 h-12 flex items-center gap-2 pl-3 pr-2 pointer-events-auto bg-gradient-to-b from-black/45 to-transparent">
+            <button onClick={handleClose} className="h-8 w-8 rounded-full glass-1 flex items-center justify-center text-ivory/80 hover:text-ivory transition-colors" aria-label="Sluiten">
               <X className="h-4 w-4" />
             </button>
-            <p className="text-[13px] text-ivory/85 truncate flex-1">{media.name || "Media"}</p>
-            <a
-              href={media.url}
-              target="_blank"
-              rel="noreferrer"
-              className="h-8 w-8 rounded-full glass-1 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors shrink-0"
-              aria-label="Openen in nieuw tabblad"
-              title="Openen in nieuw tabblad"
-            >
+            <p className="text-[13px] text-ivory/90 truncate flex-1">{media.name || "Media"}</p>
+            {isPlayable && (
+              <button onClick={() => setView("mini")} className="h-8 w-8 rounded-full glass-1 flex items-center justify-center text-ivory/75 hover:text-ivory transition-colors shrink-0" aria-label="Minimaliseren" title="Minimaliseren">
+                <Minimize2 className="h-4 w-4" />
+              </button>
+            )}
+            {isPlayable && (
+              <button onClick={() => setView("hidden")} className="h-8 w-8 rounded-full glass-1 flex items-center justify-center text-ivory/75 hover:text-ivory transition-colors shrink-0" aria-label="Verbergen" title="Verbergen">
+                <EyeOff className="h-4 w-4" />
+              </button>
+            )}
+            <a href={media.url} target="_blank" rel="noreferrer" className="h-8 w-8 rounded-full glass-1 flex items-center justify-center text-ivory/75 hover:text-ivory transition-colors shrink-0" aria-label="Openen" title="Openen in nieuw tabblad">
               <Download className="h-4 w-4" />
             </a>
-          </div>
+          </header>
 
-          {/* Ratio-presets */}
-          <div className="shrink-0 flex items-center gap-1 px-3 py-2 border-b border-white/10 overflow-x-auto no-scrollbar">
-            {RATIOS.map((r) => (
-              <button
-                key={r.key}
-                onClick={() => setRatioKey(r.key)}
-                className={`px-3 py-1 rounded-full text-[11px] font-semibold transition shrink-0 ${
-                  ratioKey === r.key ? "bg-ivory text-charcoal" : "glass-1 text-ivory/70 hover:text-ivory"
-                }`}
-              >
-                {r.label}
-              </button>
-            ))}
-            <span className="ml-auto text-[10px] font-mono text-ivory/40 tabular-nums shrink-0">
-              {Math.round(size.w)}×{Math.round(size.h)}
-            </span>
-          </div>
-
-          {/* Stage */}
-          <div
-            ref={stageRef}
-            className="relative flex-1 min-h-0 bg-black flex items-center justify-center overflow-hidden"
-          >
-            {kind === "image" && (
-              drive
+          {/* content */}
+          {kind === "music" && (
+            <MusicStage media={media} playing={playing} cur={cur} dur={dur} onToggle={togglePlay} onSeek={seek} onSkip={skip} />
+          )}
+          {kind === "image" && (
+            <div className="absolute inset-0 flex items-center justify-center pt-12 px-4 pb-4">
+              {drive
                 ? <iframe src={media.url} title={media.name} className="w-full h-full" />
-                : <img src={media.url} alt={media.name} className="max-w-full max-h-full object-contain" />
-            )}
-            {kind === "video" && (
-              drive
-                ? <iframe src={media.url} title={media.name} className="w-full h-full" allow="autoplay" />
-                : <video src={media.url} controls autoPlay className="max-w-full max-h-full" />
-            )}
-            {kind === "music" && (
-              drive
-                ? <iframe src={media.url} title={media.name} className="w-full h-full" allow="autoplay" />
-                : (
-                  <div className="flex flex-col items-center gap-5 p-6">
-                    <div className="h-28 w-28 rounded-3xl bg-gradient-to-br from-ivory/15 to-ivory/5 border border-white/12 flex items-center justify-center">
-                      <Music className="h-12 w-12 text-ivory/60" />
-                    </div>
-                    <p className="text-sm text-ivory/90 truncate max-w-full">{media.name}</p>
-                    <audio src={media.url} controls autoPlay className="w-full max-w-md" />
-                  </div>
-                )
-            )}
-            {kind === "doc" && (
-              <div className="flex flex-col items-center gap-4 p-8 text-center">
-                <div className="h-16 w-16 rounded-2xl bg-ivory/10 flex items-center justify-center">
-                  <FileText className="h-8 w-8 text-ivory/55" />
-                </div>
-                <p className="text-sm text-ivory/85 max-w-xs">{media.name}</p>
-                <a href={media.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[12px] text-olive hover:underline">
-                  <Download className="h-3.5 w-3.5" /> Openen in nieuw tabblad
-                </a>
-              </div>
-            )}
-
-            {/* Hoekgreep om te vergroten/verkleinen (rechtsonder) */}
-            <div
-              onPointerDown={onCornerDown}
-              className="absolute bottom-1.5 right-1.5 h-6 w-6 cursor-nwse-resize touch-none flex items-end justify-end"
-              aria-label="Vergroten / verkleinen"
-              title="Sleep om te vergroten/verkleinen"
-            >
-              <div className="h-3 w-3 border-r-2 border-b-2 border-ivory/45 rounded-br-md" />
+                : <img src={media.url} alt={media.name} className="max-w-full max-h-full object-contain" />}
             </div>
-          </div>
+          )}
+          {kind === "doc" && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 pt-12 text-center px-6 pointer-events-auto">
+              <div className="h-16 w-16 rounded-2xl bg-ivory/10 flex items-center justify-center">
+                <FileText className="h-8 w-8 text-ivory/55" />
+              </div>
+              <p className="text-sm text-ivory/85 max-w-xs">{media.name}</p>
+              <a href={media.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[12px] text-olive hover:underline">
+                <Download className="h-3.5 w-3.5" /> Openen in nieuw tabblad
+              </a>
+            </div>
+          )}
         </div>
-      </div>
+      )}
+
+      {/* MINIMALISEREN */}
+      {view === "mini" && isPlayable && (
+        <MiniPlayer
+          media={media}
+          kind={kind}
+          playing={playing}
+          cur={cur}
+          dur={dur}
+          onToggle={togglePlay}
+          onSeek={seek}
+          onExpand={() => setView("full")}
+          onHide={() => setView("hidden")}
+          onClose={handleClose}
+        />
+      )}
+
+      {/* VERBERGEN */}
+      {view === "hidden" && isPlayable && (
+        <RestorePill media={media} kind={kind} playing={playing} onToggle={togglePlay} onRestore={() => setView("mini")} />
+      )}
     </>,
     document.body
   );
