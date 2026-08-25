@@ -37,6 +37,15 @@ export const ELEVEN_TOOLS = [
     wait_for_response: false,
   },
   {
+    name: "open_project",
+    description: "Open een specifiek project op de detailpagina (/projects/:id). Gebruik de project_id uit list_projects. Fire-and-forget.",
+    type: "client",
+    params: {
+      project_id: { type: "string", description: "Het id van het project.", required: true },
+    },
+    wait_for_response: false,
+  },
+  {
     name: "highlight_element",
     description: "Markeer tijdelijk een element op de pagina zodat Salvo's aandacht er naartoe gaat.",
     type: "client",
@@ -78,6 +87,28 @@ export const ELEVEN_TOOLS = [
     type: "client",
     params: {
       status: { type: "string", description: "Optioneel filter op status, bijv. 'today' of 'todo'.", required: false },
+    },
+    wait_for_response: true,
+  },
+  {
+    name: "list_projects",
+    description: "Lijst van Salvo's projecten (id, titel, status, voortgang). Gebruik om project-id's te vinden voor open_project / update_project / create_task(project_id).",
+    type: "client",
+    params: {
+      status: { type: "string", description: "Optioneel filter op status, bijv. 'in_progress', 'planning', 'completed'.", required: false },
+    },
+    wait_for_response: true,
+  },
+  {
+    name: "update_project",
+    description: "Update een bestaand project (status, voortgang, volgende mijlpaal, deadline). Voer meteen uit.",
+    type: "client",
+    params: {
+      project_id: { type: "string", description: "Id van het project.", required: true },
+      status: { type: "string", description: "Nieuwe status: idea, planning, in_progress, review, waiting, afwerking, completed, paused, archived.", required: false },
+      progress: { type: "number", description: "Voortgang 0-100.", required: false },
+      next_milestone: { type: "string", description: "Volgende mijlpaal tekst.", required: false },
+      deadline: { type: "string", description: "Deadline als ISO-datum (YYYY-MM-DD).", required: false },
     },
     wait_for_response: true,
   },

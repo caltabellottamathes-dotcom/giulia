@@ -34,6 +34,11 @@ export function buildVoiceClientTools({ navigate, openModule }) {
       openModule(panelId);
       return { success: true, panelId };
     },
+    open_project: async ({ project_id } = {}) => {
+      if (!project_id) return { success: false, reason: "missing_project_id" };
+      navigate(`/projects/${project_id}`);
+      return { success: true, project_id };
+    },
     highlight_element: async ({ elementId, durationMs = 2500 } = {}) => {
       if (!elementId) return { success: false, reason: "missing_elementId" };
       const el = document.getElementById(elementId);
@@ -72,6 +77,24 @@ export function buildVoiceClientTools({ navigate, openModule }) {
         count: tasks.length,
         tasks: tasks.map((t) => ({ id: t.id, title: t.title, status: t.status, priority: t.priority, deadline: t.deadline })),
       };
+    },
+    list_projects: async ({ status } = {}) => {
+      const projects = await base44.entities.Project.filter(status ? { status } : {}, "-updated_date", 30);
+      return {
+        success: true,
+        count: projects.length,
+        projects: projects.map((p) => ({ id: p.id, title: p.title, status: p.status, progress: p.progress })),
+      };
+    },
+    update_project: async ({ project_id, status, progress, next_milestone, deadline } = {}) => {
+      if (!project_id) return { success: false, reason: "missing_project_id" };
+      const patch = { agent_source: "voice" };
+      if (status) patch.status = status;
+      if (typeof progress === "number") patch.progress = progress;
+      if (next_milestone) patch.next_milestone = next_milestone;
+      if (deadline) patch.deadline = deadline;
+      await base44.entities.Project.update(project_id, patch);
+      return { success: true, project_id, ...patch };
     },
     create_event: async ({ title, start, end, domain, location } = {}) => {
       if (!title || !start) return { success: false, reason: "missing_title_or_start" };
