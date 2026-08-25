@@ -87,3 +87,49 @@ export function closeCircle(contacts = []) {
     return !n.includes("salvatore") && CLOSE_CIRCLE_KEYS.some((k) => n.includes(k));
   });
 }
+
+// Meaningful interaction = een UITGAAND WhatsApp-bericht, een VERZONDEN email,
+// of een life-agendagebeurtenis (afspraak) binnen de window. Binnenkomende
+// (ontvangen) emails tellen NIET mee — ontvangen post is geen interactie.
+export function meaningfulInteractions({ emails = [], whatsapps = [], events = [], days = 7 } = {}) {
+  const cut = Date.now() - days * 86400000;
+  const inWindow = (t) => !!t && new Date(t).getTime() >= cut;
+  const sentWa = (whatsapps || []).filter((m) => m.direction === "sent" && inWindow(m.timestamp)).length;
+  const sentEmail = (emails || []).filter((e) => (e.folder === "sent" || e.status === "sent") && inWindow(e.timestamp)).length;
+  const meetings = (events || []).filter((e) => e.domain === "life" && inWindow(e.start)).length;
+  return { sentWa, sentEmail, meetings, total: sentWa + sentEmail + meetings };
+}
+
+// WhatsApp-gesprekken gegroepeerd per contact (nieuwste eerst).
+export function whatsappThreads(whatsapps = [], contacts = [], limit = 6) {
+  const byContact = new Map();
+  (whatsapps || []).forEach((m) => {
+    const key = m.contact_id;
+    if (!key) return;
+    if (!byContact.has(key)) byContact.set(key, []);
+    byContact.get(key).push(m);
+  });
+  const nameOf = (id) => contacts.find((c) => c.id === id)?.name || "Onbekend";
+  return Array.from(byContact.entries())
+    .map(([id, msgs]) => {
+      const sorted = [...msgs].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      return { contact_id: id, name: nameOf(id), count: sorted.length, last: sorted[0], messages: sorted };
+    })
+    .sort((a, b) => new Date(b.last.timestamp) - new Date(a.last.timestamp))
+    .slice(0, limit);
+}
+
+// Orbit recency-zones — 7 concentrische ringen, géén 1 ring per dag.
+// Binnenste = net contact, buitenste = sluimerend / nooit.
+export const ORBIT_TIERS = [
+  { max: 2, r: 16, color: "#d8dab3" },        // vandaag
+  { max: 7, r: 22, color: "#d8dab3" },        // deze week
+  { max: 14, r: 28, color: "#b1bec6" },       // twee weken
+  { max: 30, r: 34, color: "#94925d" },        // deze maand
+  { max: 60, r: 40, color: "#94925d" },        // vorige maand
+  { max: 90, r: 45, color: "#8a8f7a" },        // afgelopen kwartaal
+  { max: Infinity, r: 48, color: "hsl(var(--smoke))" }, // sluimer / nooit
+];
+export function orbitTier(days) {
+  return ORBIT_TIERS.find((t) => days <= t.max) || ORBIT_TIERS[ORBIT_TIERS.length - 1];
+}

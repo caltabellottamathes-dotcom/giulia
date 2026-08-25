@@ -25,6 +25,7 @@ import TimeTrackerPreview from "@/focus/panels/TimeTrackerPreview";
 import JeDagPreview from "@/giulia/panels/JeDagPreview";
 import SocialPulsePreview from "@/life/panels/SocialPulsePreview";
 import SocialPlannerPreview from "@/life/panels/SocialPlannerPreview";
+import PersonalTimePreview from "@/life/panels/PersonalTimePreview";
 import HouseholdPreview from "@/life/panels/HouseholdPreview";
 import PersonalAdminPreview from "@/life/panels/PersonalAdminPreview";
 import HobbiesPreview from "@/life/panels/HobbiesPreview";
@@ -45,7 +46,7 @@ const PREVIEWS = {
   agents: AgentsPreview,
   jedag: JeDagPreview,
   timetracker: TimeTrackerPreview,
-  socialpulse: SocialPulsePreview, socialplanner: SocialPlannerPreview,
+  socialpulse: SocialPulsePreview, socialplanner: SocialPlannerPreview, socialtime: PersonalTimePreview,
   household: HouseholdPreview, personaladmin: PersonalAdminPreview, hobbies: HobbiesPreview,
   food: FoodPreview,
   wantstoknow: QuestionsPreview,
@@ -66,7 +67,7 @@ const MODULE_ACCENT = {
   updates: "hsl(var(--sand))",
   goodmorning: "hsl(var(--sand))",
   jedag: "#595f34",
-  socialpulse: "hsl(var(--life-blue))", socialplanner: "hsl(var(--life-blue))",
+  socialpulse: "hsl(var(--life-blue))", socialplanner: "hsl(var(--life-blue))", socialtime: "hsl(var(--life-sand))",
   household: "hsl(var(--life-blue))", personaladmin: "hsl(var(--life-sand))", hobbies: "hsl(var(--life-blue))",
   food: "hsl(var(--life-sand))",
   wantstoknow: "hsl(var(--olive))",
@@ -81,7 +82,7 @@ const MODULE_IMAGE = {
   integrations: IMAGES.sittingChairs,
   agents: IMAGES.feetChair,
   jedag: IMAGES.wWhatMatters,
-  socialpulse: IMAGES.lifeSocialPulse, socialplanner: IMAGES.lifeSocialPlanner,
+  socialpulse: IMAGES.lifeSocialPulse, socialplanner: IMAGES.lifeSocialPlanner, socialtime: IMAGES.selfPersonalTime,
   household: IMAGES.lifeHousehold, personaladmin: IMAGES.lifePersonalAdmin, hobbies: IMAGES.lifeHobbies,
   food: IMAGES.lifeFood,
   wantstoknow: IMAGES.wWantsToKnow,
@@ -130,7 +131,7 @@ const MODULE_TOPIC = {
   updates: "Achter de schermen",
   goodmorning: "Een rustige ochtend",
   jedag: "Jouw dag in één blik",
-  socialpulse: "Wie aandacht verdient", socialplanner: "Sociale tijd inplannen",
+  socialpulse: "Wie aandacht verdient", socialplanner: "Sociale tijd inplannen", socialtime: "Tijd voor jezelf",
   household: "Het huishouden op orde", personaladmin: "Wat er geregeld moet worden",
   hobbies: "Wat jou energie geeft",
   food: "Wat je eet deze week",
