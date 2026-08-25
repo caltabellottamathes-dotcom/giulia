@@ -157,13 +157,23 @@ export default async function (req) {
     let payload;
     try { payload = raw ? JSON.parse(raw) : null; } catch { payload = null; }
     if (payload && typeof payload === "object" && !Array.isArray(payload)) {
-      payload.stream = true;
-      // Forceer het werkende Gemini-model. Oude modelnamen
-      // (gemini-1.5-flash, gemini-2.5-flash, gemini-flash-latest, …)
-      // retourneren 404 op deze sleutels — dat brak elke LLM-turn en liet
-      // het gesprek na één antwoord stilvallen. gemini-3.5-flash-lite is
-      // het model dat op alle sleutels werkt.
-      payload.model = "gemini-3.5-flash-lite";
+      // Whitelist velden die Gemini's OpenAI-endpoint accepteert. ElevenLabs
+      // stuurt soms `seed`, `user`, `logprobs`, `stream_options`, … die
+      // Gemini met 400 "Unknown name" afwijst — die 400 bubbelt door alle
+      // keys heen en ElevenLaps breekt de beurt af:
+      // "custom_llm_error: Failed to generate response from custom LLM".
+      // Daarom herbouwen we de payload naar enkel de veilige velden.
+      const ALLOW = new Set([
+        "messages", "temperature", "max_tokens", "top_p", "top_k",
+        "frequency_penalty", "presence_penalty", "n", "stop",
+        "tools", "tool_choice", "response_format",
+      ]);
+      const clean = { stream: true, model: "gemini-3.5-flash-lite" };
+      for (const k of ALLOW) if (k in payload && payload[k] != null) clean[k] = payload[k];
+      if (clean.response_format && !["text", "json_object"].includes(clean.response_format.type)) {
+        delete clean.response_format;
+      }
+      payload = clean;
       // Injecteer de live OS-snapshot als eerste system-message zodat de
       // stem-agent elke beurt op de hoogte is van de nieuwste data.
       try {
