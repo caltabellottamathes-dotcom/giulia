@@ -5,14 +5,9 @@
  *   1. System-prompt = volledige GIULIA-kennis (base44/shared/elevenPrompt.ts)
  *      + stem-addendum met volledig navigatie- en actie-toolregister.
  *   2. Client-tools = ELEVEN_TOOLS (navigatie + directe acties + delegate).
- *   3. Custom LLM = via de eigen proxy (elevenLlmProxy) met automatische
- *      key-fallback EN live OS-context-injectie (elke beurt verse data).
- *
- * AUTOMATISCHE PROXY-ACTIVERING:
- *   De proxy-URL wordt afgeleid uit de URL van deze functie zelf, zodat de
- *   stem-agent automatisch via de proxy loopt (live context + key-fallback +
- *   navigatie-extractie). Geef expliciet `proxyUrl` mee om te overschrijven,
- *   of `conversationalOnly: true` voor de oude conversatie-only modus.
+ *   3. Custom LLM = direct op Gemini's OpenAI-endpoint met één key.
+ *      Navigatie en acties lopen via de client-tools (ELEVEN_TOOLS) in de
+ *      browser — geen proxy, geen key-fallback, geen live-injectie.
  */
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
 import { GIULIA_CORE_INSTRUCTIONS } from "../../shared/elevenPrompt.ts";
@@ -81,7 +76,7 @@ const VOICE_ADDENDUM = `
 == STEM-MODUS (ElevenLabs voice agent) ==
 Je bent nu actief als STEM-AGENT via ElevenLabs. Je praat met Salvo, je typt niet. Aanvullende regels:
 - Spreek KORTE zinnen. Eén gedachte per adem. Geen opsommingen tenzij gevraagd.
-- Je krijgt ELKE BEURT een verse LIVE OS-STATE injectie (projecten, taken, agenda, contacten, approvals, ongelezen mail/whatsapp, geheugen). Gebruik die data om Salvo direct en accuraat te informeren — geen "laat me even kijken", gewoon antwoord geven op basis van de live state.
+- Je hebt GEEN live OS-state injectie. Voor actuele data (projecten, taken, agenda, contacten, geheugen): gebruik delegate_to_giulia({ instruction }) om het Giulia-core op de achtergrond te laten opzoeken. Verzin GEEN data die je niet echt hebt opgehaald — zeg liever "dat regel ik" dan iets verzinnen.
 - Voer acties METEEN uit via de client-tools terwijl je praat — vraag GEEN toestemming voor interne acties (taken, notities, geheugen, agenda-afspraken, journal, check-ins, needs, notificaties). Bevestig wat je deed in maximaal één korte zin.
 - NAVIGATIE: gebruik navigate_to_page / open_panel / scroll_to_section / highlight_element proactief om Salvo door ELKE pagina, onderdeelpaneel, widget en detail te brengen. Kondig het kort aan ("Ik open je agenda…") en ga meteen door. Je kent het volledige route-register hieronder.
 - EXTERNE VERZENDING (email/whatsapp/agenda-uitnodiging): NOOIT zelfstandig. Gebruik create_approval om een concept klaar te zetten; Salvo moet goedkeuren. Bevestig dat het klaarstaat.
@@ -174,33 +169,10 @@ export default async function (req) {
       return Response.json({ error: "ELEVEN_GEMINI_API_KEY niet ingesteld." }, { status: 400 });
     }
 
-    // Input: optioneel { proxyUrl } om de proxy-URL te overschrijven;
-    // { conversationalOnly: true } voor de oude conversatie-only modus.
-    let input = {};
-    try { input = await req.json(); } catch { input = {}; }
-    const conversationalOnly = input?.conversationalOnly === true;
-
-    // Auto-afleiden van de proxy-URL uit de eigen functie-URL, zodat de
-    // stem-agent automatisch via de proxy loopt (live context + key-fallback +
-    // navigatie-extractie).
-    // Publieke proxy-URL van de elevenLlmProxy-functie (default Base44-URL van
-    // deze app). De proxy levert live OS-context + automatische key-fallback +
-    // navigatie-extractie. Expliciete input.proxyUrl overschrijft dit.
-    const derivedProxyUrl = "https://giulia-os-flow.base44.app/functions/elevenLlmProxy";
-    const proxyUrl = input?.proxyUrl || derivedProxyUrl;
-    const useProxy = !conversationalOnly && !!proxyUrl;
-
-    // 1) Api-key secret: direct (Gemini key1) of proxy-token (GIULIA_API_KEY).
-    let secretLocator;
-    if (useProxy) {
-      const proxyToken = process.env.GIULIA_API_KEY;
-      if (!proxyToken) {
-        return Response.json({ error: "GIULIA_API_KEY niet ingesteld (nodig als proxy-token)." }, { status: 400 });
-      }
-      secretLocator = await ensureSecret(xiKey, "GEMINI_PROXY_TOKEN", proxyToken);
-    } else {
-      secretLocator = await ensureSecret(xiKey, "GEMINI_API_KEY", geminiKey);
-    }
+    // Directe verbinding op Gemini's OpenAI-endpoint met één key. Geen proxy;
+    // navigatie en acties lopen via de client-tools (ELEVEN_TOOLS) in de browser.
+    // 1) Api-key secret: de enkele Gemini key.
+    const secretLocator = await ensureSecret(xiKey, "GEMINI_API_KEY", geminiKey);
 
     // 2) Huidige agent ophalen (bestaande instellingen bewaren).
     const getRes = await fetch(`https://api.elevenlabs.io/v1/convai/agents/${AGENT_ID}`, {
@@ -215,39 +187,24 @@ export default async function (req) {
     // 3) Config aanpassen: custom LLM + volle system-prompt + tools.
     cfg.agent = cfg.agent || {};
     cfg.agent.prompt = cfg.agent.prompt || {};
-    if (conversationalOnly) {
-      cfg.agent.prompt.prompt = CONVERSATIONAL_PROMPT;
-      cfg.agent.prompt.llm = "custom-llm";
-      cfg.agent.prompt.custom_llm = {
-        url: GEMINI_ENDPOINT,
-        model: GEMINI_MODEL,
-        model_id: GEMINI_MODEL,
-        api_key: secretLocator,
-        api_type: "chat_completions",
-        temperature: 0.5,
-      };
-      cfg.agent.prompt.tool_ids = [];
-      cfg.agent.prompt.tools = [];
-    } else {
-      cfg.agent.prompt.prompt = SYSTEM_PROMPT;
-      cfg.agent.prompt.llm = "custom-llm";
-      cfg.agent.prompt.custom_llm = {
-        url: useProxy ? proxyUrl : GEMINI_ENDPOINT,
-        model: GEMINI_MODEL,
-        model_id: GEMINI_MODEL,
-        api_key: secretLocator,
-        api_type: "chat_completions",
-        temperature: 0.5,
-      };
-      cfg.agent.prompt.tool_ids = [];
-      cfg.agent.prompt.tools = ELEVEN_TOOLS.map((t) => ({
-        name: t.name,
-        description: t.description,
-        type: t.type || "client",
-        parameters: toJsonSchema(t.params),
-        expects_response: !!t.wait_for_response,
-      }));
-    }
+    cfg.agent.prompt.prompt = SYSTEM_PROMPT;
+    cfg.agent.prompt.llm = "custom-llm";
+    cfg.agent.prompt.custom_llm = {
+      url: GEMINI_ENDPOINT,
+      model: GEMINI_MODEL,
+      model_id: GEMINI_MODEL,
+      api_key: secretLocator,
+      api_type: "chat_completions",
+      temperature: 0.5,
+    };
+    cfg.agent.prompt.tool_ids = [];
+    cfg.agent.prompt.tools = ELEVEN_TOOLS.map((t) => ({
+      name: t.name,
+      description: t.description,
+      type: t.type || "client",
+      parameters: toJsonSchema(t.params),
+      expects_response: !!t.wait_for_response,
+    }));
 
     // 4) PATCH terug naar ElevenLabs.
     const patchRes = await fetch(`https://api.elevenlabs.io/v1/convai/agents/${AGENT_ID}`, {
@@ -286,11 +243,10 @@ export default async function (req) {
       agent_id: AGENT_ID,
       llm: "custom-llm",
       model: GEMINI_MODEL,
-      mode: conversationalOnly ? "conversational" : (useProxy ? "proxy+fallback" : "direct"),
-      endpoint: conversationalOnly ? GEMINI_ENDPOINT : (useProxy ? proxyUrl : GEMINI_ENDPOINT),
-      fallback_key_available: !!process.env.ELEVEN_2_GEMINI_API_KEY,
-      tools: conversationalOnly ? [] : ELEVEN_TOOLS.map((t) => t.name),
-      prompt_chars: conversationalOnly ? CONVERSATIONAL_PROMPT.length : SYSTEM_PROMPT.length,
+      mode: "direct",
+      endpoint: GEMINI_ENDPOINT,
+      tools: ELEVEN_TOOLS.map((t) => t.name),
+      prompt_chars: SYSTEM_PROMPT.length,
       nav_pages: Object.keys(NAV_PAGES).length,
       nav_panels: Object.keys(NAV_PANELS).length,
       orphan_tools_removed: deletedOrphans,
