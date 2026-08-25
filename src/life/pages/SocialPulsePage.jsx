@@ -21,33 +21,35 @@ const fmtDay = (d) => new Date(d).toLocaleDateString("nl-NL", { weekday: "short"
 const fmtTime = (d) => new Date(d).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" });
 const initials = (n) => (n || "?").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 
-export default function SocialPulsePage() {
+export default function SocialPulsePage({ data, embedded }) {
   const [tab, setTab] = useState(() => {
     const t = new URLSearchParams(window.location.search).get("tab");
     return t ? t.toUpperCase() : "OVERVIEW";
   });
-  const [contacts, setContacts] = useState([]);
-  const [emails, setEmails] = useState([]);
-  const [whatsapps, setWhatsapps] = useState([]);
-  const [events, setEvents] = useState([]);
-  const [plans, setPlans] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [contacts, setContacts] = useState(data?.contacts || []);
+  const [emails, setEmails] = useState(data?.emails || []);
+  const [whatsapps, setWhatsapps] = useState(data?.whatsapps || []);
+  const [events, setEvents] = useState(data?.events || []);
+  const [plans, setPlans] = useState(data?.plans || []);
+  const [loading, setLoading] = useState(!data);
   const [selected, setSelected] = useState(null);
 
+  const load = async () => {
+    try {
+      const [c, m, w, e, p] = await Promise.all([
+        base44.entities.Contact.filter({}, "name", 200).catch(() => []),
+        base44.entities.Email.list("-timestamp", 200).catch(() => []),
+        base44.entities.WhatsAppMessage.list("-timestamp", 200).catch(() => []),
+        base44.entities.CalendarEvent.list("start").catch(() => []),
+        base44.entities.SocialPlan.list("suggested_date").catch(() => []),
+      ]);
+      setContacts(c || []); setEmails(m || []); setWhatsapps(w || []); setEvents(e || []); setPlans(p || []);
+    } catch { /* ignore */ } finally { setLoading(false); }
+  };
   useEffect(() => {
-    (async () => {
-      try {
-        const [c, m, w, e, p] = await Promise.all([
-          base44.entities.Contact.filter({}, "name", 200).catch(() => []),
-          base44.entities.Email.list("-timestamp", 200).catch(() => []),
-          base44.entities.WhatsAppMessage.list("-timestamp", 200).catch(() => []),
-          base44.entities.CalendarEvent.list("start").catch(() => []),
-          base44.entities.SocialPlan.list("suggested_date").catch(() => []),
-        ]);
-        setContacts(c || []); setEmails(m || []); setWhatsapps(w || []); setEvents(e || []); setPlans(p || []);
-      } catch { /* ignore */ } finally { setLoading(false); }
-    })();
-  }, []);
+    if (data) { setContacts(data.contacts || []); setEmails(data.emails || []); setWhatsapps(data.whatsapps || []); setEvents(data.events || []); setPlans(data.plans || []); setLoading(false); return; }
+    load();
+  }, [data]);
 
   const pulse = useMemo(() => socialPulse(closeCircle(contacts)), [contacts]);
   const overdue = pulse.filter((p) => p.overdue);
@@ -115,8 +117,10 @@ export default function SocialPulsePage() {
 
   return (
     <div className="space-y-6 animate-fade-up pb-12">
-      <PageHero page="life-social-pulse" image={IMAGES.lifeSocialPulse} icon={Heart} eyebrow="LIFE · SOCIAL" title="What Social Life?" subtitle="Your social world, understood in context."
-        actions={<div className="flex items-center gap-2"><button className="glass-button rounded-full h-9 w-9 inline-flex items-center justify-center text-ivory/80"><Search className="h-4 w-4" /></button><button className="glass-button rounded-full h-9 px-3 inline-flex items-center gap-2 text-xs text-ivory/80"><SlidersHorizontal className="h-4 w-4" /> View</button><button className="glass-button rounded-full h-9 w-9 inline-flex items-center justify-center text-ivory/80"><Settings className="h-4 w-4" /></button></div>} />
+      {!embedded && (
+        <PageHero page="life-social-pulse" image={IMAGES.lifeSocialPulse} icon={Heart} eyebrow="LIFE · SOCIAL" title="What Social Life?" subtitle="Your social world, understood in context."
+          actions={<div className="flex items-center gap-2"><button className="glass-button rounded-full h-9 w-9 inline-flex items-center justify-center text-ivory/80"><Search className="h-4 w-4" /></button><button className="glass-button rounded-full h-9 px-3 inline-flex items-center gap-2 text-xs text-ivory/80"><SlidersHorizontal className="h-4 w-4" /> View</button><button className="glass-button rounded-full h-9 w-9 inline-flex items-center justify-center text-ivory/80"><Settings className="h-4 w-4" /></button></div>} />
+      )}
 
       {/* TABS */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 -mt-2 relative z-20">

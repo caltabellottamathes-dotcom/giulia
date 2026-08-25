@@ -30,18 +30,19 @@ const TABS = [
   { key: "OPEN", label: "Open" },
 ];
 
-export default function SocialPlannerPage() {
+export default function SocialPlannerPage({ data, embedded }) {
   const navigate = useNavigate();
-  const [contacts, setContacts] = useState([]);
-  const [events, setEvents] = useState([]);
-  const [plans, setPlans] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [contacts, setContacts] = useState(data?.contacts || []);
+  const [events, setEvents] = useState(data?.events || []);
+  const [plans, setPlans] = useState(data?.plans || []);
+  const [loading, setLoading] = useState(!data);
   const [tab, setTab] = useState(() => { const t = new URLSearchParams(window.location.search).get("tab"); return t ? t.toUpperCase() : "OVERVIEW"; });
   const [planFilter, setPlanFilter] = useState("UPCOMING");
   const [form, setForm] = useState({ contactId: "", activity: "", slot: null });
   const [selected, setSelected] = useState(null);
   const [query, setQuery] = useState("");
 
+  // load() haalt altijd vers op — gebruikt na mutaties (create/confirm/cancel).
   const load = async () => {
     try {
       const [c, e, p] = await Promise.all([
@@ -52,7 +53,10 @@ export default function SocialPlannerPage() {
       setContacts(c || []); setEvents(e || []); setPlans(p || []);
     } catch { /* ignore */ } finally { setLoading(false); }
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    if (data) { setContacts(data.contacts || []); setEvents(data.events || []); setPlans(data.plans || []); setLoading(false); return; }
+    load();
+  }, [data]);
 
   const contactName = (id) => contacts.find((c) => c.id === id)?.name || "—";
   const contactById = (id) => contacts.find((c) => c.id === id);
@@ -133,8 +137,10 @@ export default function SocialPlannerPage() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <PageHero page="life-social-planner" image={IMAGES.lifeSocialPlanner} icon={CalendarHeart} eyebrow="LIFE" title="What Social Life?" subtitle={summary}
-        actions={<GlassButton variant="primary" size="md" onClick={() => document.getElementById("creator")?.scrollIntoView({ behavior: "smooth" })}><Plus className="h-4 w-4" /> Nieuw plan</GlassButton>} />
+      {!embedded && (
+        <PageHero page="life-social-planner" image={IMAGES.lifeSocialPlanner} icon={CalendarHeart} eyebrow="LIFE" title="What Social Life?" subtitle={summary}
+          actions={<GlassButton variant="primary" size="md" onClick={() => document.getElementById("creator")?.scrollIntoView({ behavior: "smooth" })}><Plus className="h-4 w-4" /> Nieuw plan</GlassButton>} />
+      )}
 
       {/* Tabs */}
       <div className="flex items-center gap-1 overflow-x-auto -mx-1 px-1 pb-1">
