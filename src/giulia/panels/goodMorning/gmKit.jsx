@@ -1,7 +1,7 @@
 import React from "react";
 import {
   Droplet, Bath, Shirt, Coffee, Utensils, BookOpen, Dumbbell,
-  Moon, Sun, Circle, Sparkles,
+  Moon, Sun, Circle, Sparkles, ArrowRight,
 } from "lucide-react";
 
 // GIULIA palette
@@ -119,4 +119,16 @@ export function stepIcon(title = "") {
   const t = title.toLowerCase();
   for (const s of STEP_ICONS) if (s.kw.some((k) => t.includes(k))) return s.Icon;
   return Circle;
+}
+
+/** Primary action button — used at the foot of each Good Morning tab body. */
+export function PrimaryAction({ label, onClick, icon: Icon = ArrowRight, tone = DEEP }) {
+  return (
+    <button onClick={onClick}
+      className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 text-[11px] font-semibold tracking-[0.18em] uppercase transition-all hover:brightness-95 active:scale-[0.98]"
+      style={{ background: tone, color: "#fff" }}>
+      {label}
+      <Icon className="h-4 w-4" />
+    </button>
+  );
 }
