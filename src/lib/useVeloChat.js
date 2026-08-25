@@ -1,12 +1,14 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 
 /**
- * Velo · System — bestaande conversation met de Velo SuperAgent.
- * De Base44-agents-SDK kan via createConversation alleen op agent_name
- * (slug) adreseren, niet op ID. Velo's agent is alleen per ID bekend.
- * Daarom gebruiken we de reeds aangemaakte conversation direct via
- * getConversation / addMessage / subscribeToConversation (SDK, app-token).
+ * useVeloChat — SYSTEM-chat met de Velo SuperAgent.
+ *
+ * Velo leeft in een andere Base44-app; de app-scoped agents-SDK kan er niet
+ * bij. Daarom verloopt alles via de backend-functie `veloChat` (account-level
+ * REST API met de VELO_API_KEY). Geen realtime subscribe — de functie pollt
+ * server-side tot de assistant-reply erbij staat en geeft de volledige
+ * messages terug.
  */
 const CONV_ID = "6a6cc0034bc0607c481f1602";
 
@@ -14,47 +16,34 @@ export function useVeloChat() {
   const [messages, setMessages] = useState([]);
   const [sending, setSending] = useState(false);
   const [ready, setReady] = useState(false);
-  const convRef = useRef(null);
-  const initRef = useRef(false);
 
   useEffect(() => {
-    if (initRef.current) return;
-    initRef.current = true;
+    let alive = true;
     (async () => {
       try {
-        const conv = await base44.agents.getConversation(CONV_ID);
-        convRef.current = conv;
-        setMessages(conv.messages || []);
+        const res = await base44.functions.invoke("veloChat", { content: "" });
+        if (alive) setMessages(res?.data?.messages || []);
       } catch {
         /* negeer — widget toont lege staat */
       } finally {
-        setReady(true);
+        if (alive) setReady(true);
       }
     })();
+    return () => { alive = false; };
   }, []);
 
-  useEffect(() => {
-    const unsub = base44.agents.subscribeToConversation(CONV_ID, (data) => {
-      const msgs = data?.messages || [];
-      setMessages(msgs);
-      if (msgs.length && msgs[msgs.length - 1].role === "assistant") setSending(false);
-    });
-    return () => unsub();
-  }, []);
-
-  const send = useCallback(async (content, opts) => {
-    if (!convRef.current || (!content && !(opts?.file_urls?.length))) return;
+  const send = useCallback(async (content) => {
+    const c = String(content || "").trim();
+    if (!c) return;
     setSending(true);
+    setMessages((m) => [...m, { role: "user", content: c }]);
     try {
-      await base44.agents.addMessage(convRef.current, {
-        role: "user",
-        content,
-        file_urls: opts?.file_urls || [],
-      });
-    } catch (e) {
-      setSending(false);
-      throw e;
+      const res = await base44.functions.invoke("veloChat", { content: c });
+      setMessages(res?.data?.messages || []);
+    } catch {
+      /* negeer — sending wordt hieronder gereset */
     }
+    setSending(false);
   }, []);
 
   return { messages, send, sending, ready, conversationId: CONV_ID };
