@@ -99,10 +99,22 @@ export default function Home() {
   useEffect(() => {
     base44.auth.me().then((u) => {
       setUserName(u?.full_name || "");
+      // Groet cachet per uur (Amsterdam): binnen hetzelfde uur geen nieuwe fetch.
+      const GREETING_KEY = "giulia_greeting_cache";
+      const hourKey = new Date().toLocaleString("nl-NL", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", hour12: false, timeZone: "Europe/Amsterdam" }).replace(/[\s/:]/g, "");
+      let cached = null;
+      try { cached = JSON.parse(localStorage.getItem(GREETING_KEY) || "null"); } catch {}
+      if (cached && cached.hour === hourKey && cached.line1 && cached.line2) {
+        setGreeting({ line1: cached.line1, line2: cached.line2 });
+        return;
+      }
       base44.functions.invoke("generateGreeting", {})
         .then((res) => {
           const d = res?.data;
-          if (d?.line1 && d?.line2) setGreeting({ line1: d.line1, line2: d.line2 });
+          if (d?.line1 && d?.line2) {
+            setGreeting({ line1: d.line1, line2: d.line2 });
+            try { localStorage.setItem(GREETING_KEY, JSON.stringify({ hour: hourKey, line1: d.line1, line2: d.line2 })); } catch {}
+          }
         })
         .catch(() => {});
     }).catch(() => {});

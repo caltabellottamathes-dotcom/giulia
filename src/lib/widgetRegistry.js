@@ -72,11 +72,11 @@ export const WIDGETS = {
 
   // ── LIFE (nieuwe LIFE-widget-skelet · 01–06) ── Social / Reminders / Handle / Love / Dinner / HowDoing
   sociallife:    { type: "sociallife",    label: "What Social Life?",    icon: Heart,         Component: SocialLifeWidget,    image: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ae8a21262_Social_.jpeg", span: 1, category: "life", domain: "life" },
-  remindershome: { type: "remindershome", label: "Reminders For Home.", icon: Home,          Component: RemindersHomeWidget, image: IMAGES.lifeHousehold,      span: 2, category: "life", domain: "life" },
-  thinghandle:   { type: "thinghandle",   label: "Things to Handle!",   icon: ClipboardList, Component: ThingsHandleWidget,  image: IMAGES.lifePersonalAdmin,  span: 1, category: "life", domain: "life" },
-  thingslove:    { type: "thingslove",    label: "Things I Love.",      icon: Palette,        Component: ThingsLoveWidget,    image: IMAGES.lifeHobbies,        span: 2, category: "life", domain: "life" },
-  dinner:        { type: "dinner",        label: "What's for Dinner?",  icon: Utensils,       Component: DinnerWidget,         image: IMAGES.lifeFood,           span: 2, category: "life", domain: "life" },
-  howdoing:      { type: "howdoing",      label: "How I'm Doing.",      icon: ActivityIcon,  Component: HowDoingWidget,       image: IMAGES.selfDailyState,     span: 1, category: "life", domain: "life" },
+  remindershome: { type: "remindershome", label: "Reminders For Home.", icon: Home,          Component: RemindersHomeWidget, image: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/297513b8c_FOOD.jpeg",      span: 2, category: "life", domain: "life" },
+  thinghandle:   { type: "thinghandle",   label: "Things to Handle!",   icon: ClipboardList, Component: ThingsHandleWidget,  image: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0a68f996a_ADMIN.jpeg",    span: 1, category: "life", domain: "life" },
+  thingslove:    { type: "thingslove",    label: "Things I Love.",      icon: Palette,        Component: ThingsLoveWidget,    image: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/f414f8166_HOBBIES.jpeg",  span: 2, category: "life", domain: "life" },
+  dinner:        { type: "dinner",        label: "What's for Dinner?",  icon: Utensils,       Component: DinnerWidget,         image: IMAGES.lifeW5Dinner,       span: 2, category: "life", domain: "life" },
+  howdoing:      { type: "howdoing",      label: "How I'm Doing.",      icon: ActivityIcon,  Component: HowDoingWidget,       image: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/a3ade5ba2_BecomingMe.jpeg", span: 1, category: "life", domain: "life" },
 
   // ── SYSTEM ──
   imageviewer:  { type: "imageviewer",  label: "Afbeeldingen.", icon: ImageIcon, Component: ImageViewerWidget, image: IMAGES.notebookChair, span: 1, category: "system", domain: "system" },

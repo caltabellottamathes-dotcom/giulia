@@ -1,8 +1,7 @@
 /**
- * generateGreeting — levert elke keer een verse, contextbewuste 2-regel groet
+ * generateGreeting — levert een persoonlijke, contextbewuste 2-regel groet
  * voor het dashboard, in Giulia's stem. BYOK Gemini (geen integration credits).
- * Verzamelt lichte live-context (agenda hierna, taken vandaag, wachtende
- * approvals, lopende tijd-timer) en vraagt een nieuw, gevarieerd resultaat.
+ * Focus op wat Giulia over Salvo weet en wat nu relevant is — NIET de agenda.
  * Returnt { line1, line2 } — regel 2 eindigt altijd op "...".
  */
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
@@ -29,51 +28,43 @@ export default async function (req) {
     const dayName = now.toLocaleDateString("nl-NL", { weekday: "long", timeZone: "Europe/Amsterdam" });
     const dateLabel = now.toLocaleDateString("nl-NL", { day: "numeric", month: "long", timeZone: "Europe/Amsterdam" });
     const timeLabel = now.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Amsterdam" });
-    const nowIso = now.toISOString();
 
-    // Lichtgewicht live-context, parallel en fouttolerant.
-    const [events, tasks, approvals, running] = await Promise.all([
-      base44.entities.CalendarEvent.filter({ start: { $gte: nowIso } }, "start", 4).catch(() => []),
-      base44.entities.Task.filter({ status: "today" }, "-created_date", 6).catch(() => []),
-      base44.entities.Approval.filter({ status: "pending" }, "-created_date", 6).catch(() => []),
-      base44.entities.TimeEntry.filter({ status: "running" }, "-start_time", 1).catch(() => []),
+    // Persoonlijke context — wat Giulia over Salvo weet, fouttolerant parallel.
+    const [memories, activities, insights, checkins, hobbies, goals] = await Promise.all([
+      base44.entities.Memory.filter({}, "-created_date", 4).catch(() => []),
+      base44.entities.Activity.filter({}, "-timestamp", 4).catch(() => []),
+      base44.entities.Insight.filter({ status: { $ne: "archived" } }, "-created_date", 3).catch(() => []),
+      base44.entities.SelfCheckIn.filter({}, "-created_date", 2).catch(() => []),
+      base44.entities.Hobby.filter({ status: "active" }, "-last_activity_date", 5).catch(() => []),
+      base44.entities.SelfGoal.filter({ status: "active" }, "-created_date", 3).catch(() => []),
     ]);
 
-    const dayLabel = (eStart) => {
-      const today = new Date(now);
-      today.setHours(0, 0, 0, 0);
-      const ev = new Date(eStart);
-      ev.setHours(0, 0, 0, 0);
-      const diff = Math.round((ev.getTime() - today.getTime()) / 86400000);
-      if (diff <= 0) return "vandaag";
-      if (diff === 1) return "morgen";
-      if (diff === 2) return "overmorgen";
-      return new Date(eStart).toLocaleDateString("nl-NL", { weekday: "short", timeZone: "Europe/Amsterdam" });
-    };
-
-    const upcoming = (events || [])
-      .filter((e) => e.start && new Date(e.start).getTime() >= now.getTime())
-      .slice(0, 3)
-      .map((e) => `${dayLabel(e.start)} ${new Date(e.start).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Amsterdam" })} ${e.title}`);
-
-    const todayTasks = (tasks || []).map((t) => t.title).filter(Boolean).slice(0, 4);
-    const pendingApprovals = (approvals || []).length;
-    const runningProject = running?.[0]?.project_title || "";
+    const memLines = (memories || []).map((m) => m.content).filter(Boolean).slice(0, 4);
+    const actLines = (activities || []).map((a) => a.description || a.action).filter(Boolean).slice(0, 3);
+    const insightLines = (insights || []).map((i) => i.title).filter(Boolean).slice(0, 2);
+    const checkinLines = (checkins || []).map((c) => {
+      const bits = [c.state, c.mood, c.reflection].filter(Boolean);
+      return bits.join(" · ");
+    }).filter(Boolean).slice(0, 1);
+    const hobbyLines = (hobbies || []).map((h) => h.title).filter(Boolean).slice(0, 5);
+    const goalLines = (goals || []).map((g) => g.title || g.description).filter(Boolean).slice(0, 3);
 
     const ctx = [
       `Het is ${dayName} ${dateLabel}, ${timeLabel} (Europa/Amsterdam), ${part}.`,
       `Noem hem in de groet "${displayName}".`,
-      upcoming.length ? `Agenda hierna: ${upcoming.join(" · ")}.` : "Geen agenda-afspraken hierna.",
-      todayTasks.length ? `Taken voor vandaag: ${todayTasks.join(" · ")}.` : "Geen taken voor vandaag.",
-      pendingApprovals ? `${pendingApprovals} approval(s) wachten op jouw goedkeuring.` : "",
-      runningProject ? `Tijd-timer loopt op project: ${runningProject}.` : "",
+      memLines.length ? `Wat Giulia recent onthield over hem: ${memLines.join(" · ")}.` : "",
+      actLines.length ? `Wat Giulia recent deed: ${actLines.join(" · ")}.` : "",
+      insightLines.length ? `Signalen die Giulia opvielen: ${insightLines.join(" · ")}.` : "",
+      checkinLines.length ? `Laatste check-in (hoe hij ervoor staat): ${checkinLines.join(" · ")}.` : "",
+      hobbyLines.length ? `Hobby's die hem energie geven: ${hobbyLines.join(" · ")}.` : "",
+      goalLines.length ? `Waar hij persoonlijk aan werkt: ${goalLines.join(" · ")}.` : "",
     ].filter(Boolean).join("\n");
 
-    const prompt = `Schrijf een verse, persoonlijke dashboard-groet voor Salvo. Regels:
-- Precies TWEE regels. Regel 1: een korte begroeting passend bij het moment (ochtend/middag/avond/nacht) en de dag. Regel 2: één scherpe, contextbewuste opmerking over wat er NU speelt op basis van de context hieronder.
-- Stijl: droog, scherp, menselijk, Nederlands. Geen SaaS-enthousiasme, geen uitroeptekens, geen herhaling. Variatie: maak het elke keer anders, geen vast riedeltje — kies een andere invalshoek dan de obvious keuze.
+    const prompt = `Schrijf een persoonlijke dashboard-groet voor Salvo. Regels:
+- Precies TWEE regels. Regel 1: een korte begroeting passend bij het moment (ochtend/middag/avond/nacht) en de dag. Regel 2: één warme, persoonlijke opmerking over wat Giulia over hem weet of wat nu relevant is — gebaseerd op de context hieronder.
+- GA NIET over zijn agenda of taken. Ga over hem als mens: iets dat Giulia onthield, een signaal dat opviel, hoe hij ervoor staat, een hobby die energie geeft, of iets persoonlijks dat nu past bij het moment.
+- Stijl: droog, scherp, menselijk, Nederlands. Geen SaaS-enthousiasme, geen uitroeptekens, geen herhaling. Variatie: kies een andere invalshoek dan de obvious keuze.
 - Regel 2 eindigt altijd op "..." (drie puntjes, nooit een punt of vraagteken).
-- Blijf strikt bij de CONTEXT: gebruik alleen de tijden, dagen en afspraken die erin staan, reken niets zelf om. Als een afspraak niet vandaag is, noem de dag (bv. "morgen", "woensdag").
 - Maximaal ~12 woorden per regel.
 
 CONTEXT:
@@ -95,7 +86,7 @@ Geef JSON met "line1" en "line2".`;
       schema,
       temperature: 0.9,
       keyName: "UPDATE_GEMINI_API_KEY",
-      systemText: "Je bent Giulia, het persoonlijke OS van Salvo. Je spreekt Nederlands, droog en scherp, als een kortlage collega met overzicht.",
+      systemText: "Je bent Giulia, het persoonlijke OS van Salvo. Je spreekt Nederlands, droog en scherp, als een collega met overzicht die hem goed kent.",
     });
 
     const line1 = (result?.line1 || "").trim() || `Goed${part === "ochtend" ? "emorgen" : part === "middag" ? "emiddag" : "enavond"}, ${displayName}`;
