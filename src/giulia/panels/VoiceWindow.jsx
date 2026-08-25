@@ -32,6 +32,7 @@ function VoiceWindowInner() {
   const endRef = useRef(null);
 
   const [transcript, setTranscript] = useState([]);
+  const [videoPlaying, setVideoPlaying] = useState(false);
   const processedRef = useRef(new Set());
 
   // Audio-reactieve bloom.
@@ -102,8 +103,13 @@ function VoiceWindowInner() {
     } else {
       setTranscript([]);
       processedRef.current.clear();
-      try { await startSession(); } catch { /* ignore */ }
+      setVideoPlaying(true);
     }
+  };
+
+  const handleVideoEnd = () => {
+    setVideoPlaying(false);
+    try { startSession(); } catch { /* ignore */ }
   };
 
   if (!voiceOpen) return null;
@@ -205,6 +211,17 @@ function VoiceWindowInner() {
               </div>
             </div>
           </div>
+
+          {videoPlaying && (
+            <video
+              src="https://media.base44.com/videos/public/6a7608690d4ea2c9edc3d59b/2e63d396b_GiuliaPhone.mp4"
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ zIndex: 60 }}
+              autoPlay
+              playsInline
+              onEnded={handleVideoEnd}
+            />
+          )}
         </div>
       </div>
     </>
