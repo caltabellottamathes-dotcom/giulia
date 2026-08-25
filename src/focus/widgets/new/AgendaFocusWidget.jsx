@@ -46,7 +46,7 @@ export default function AgendaFocusWidget() {
   const evDate = next ? new Date(next.start).toLocaleDateString("nl-NL", { weekday: "short", day: "numeric", month: "short" }) : "";
 
   return (
-    <div className="relative w-full h-[260px] rounded-[28px] overflow-hidden cursor-pointer" style={{ "--tile-accent": DEEP, color: DEEP }} onClick={() => openModule("agenda")}>
+    <div className="relative w-full h-[260px] rounded-[28px] overflow-hidden cursor-pointer" style={{ "--tile-accent": DEEP, color: DEEP }} onClick={() => setOpen(true)}>
       <div className="absolute inset-0 overflow-hidden ring-1 ring-inset ring-white/10 rounded-[28px]" style={{ background: "rgba(48,50,55,0.18)", backdropFilter: "blur(22px) saturate(1.35)", WebkitBackdropFilter: "blur(22px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.12)" }} />
 
       {/* rechts — glas content, focus-kleur (plum) */}
@@ -85,7 +85,7 @@ export default function AgendaFocusWidget() {
                 ) : upcoming.slice(0, 3).map((e, i) => {
                   const col = PAL[i % PAL.length];
                   return (
-                    <div key={e.id || i} className="relative">
+                    <div key={e.id || i} className="relative cursor-pointer hover:opacity-80 transition-opacity" onClick={(e2) => { e2.stopPropagation(); openModule("agenda"); }}>
                       <span className="absolute -left-[18px] top-2 h-3 w-3 rounded-full" style={{ background: col }} />
                       <div className="flex items-baseline justify-between gap-2">
                         <span className="text-[18px] font-display font-bold tabular-nums leading-none" style={{ color: DEEP }}>{fmtTime(e.start)}</span>

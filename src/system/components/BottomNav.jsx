@@ -28,7 +28,7 @@ export default function BottomNav() {
       <button
         onClick={() => setCollapsed((c) => !c)}
         aria-label={collapsed ? "Navigatie tonen" : "Navigatie verbergen"}
-        className="h-7 w-7 rounded-full glass-1 border border-foreground/10 flex items-center justify-center shrink-0 shadow-[0_14px_36px_-14px_rgba(0,0,0,0.28)] text-foreground/60 hover:text-foreground transition-colors"
+        className="h-6 w-6 rounded-full glass-1 border border-foreground/10 flex items-center justify-center shrink-0 shadow-[0_14px_36px_-14px_rgba(0,0,0,0.28)] text-foreground/60 hover:text-foreground transition-colors"
         style={{ background: tintBg, borderColor: tintBorder }}
       >
         {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
@@ -37,7 +37,7 @@ export default function BottomNav() {
       {/* Zwevende glazen pill — schuift horizontaal in/uit */}
       <div
         className={cn(
-          "flex items-center gap-0.5 rounded-full glass-1 border border-foreground/10 px-1.5 h-7 shadow-[0_14px_36px_-14px_rgba(0,0,0,0.28)] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] origin-left",
+          "flex items-center gap-0.5 rounded-full glass-1 border border-foreground/10 px-1.5 h-6 shadow-[0_14px_36px_-14px_rgba(0,0,0,0.28)] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] origin-left",
           collapsed ? "-translate-x-[calc(100%+0.5rem)] opacity-0 pointer-events-none" : "translate-x-0 opacity-100"
         )}
         style={{ background: tintBg, borderColor: tintBorder }}
@@ -50,26 +50,26 @@ export default function BottomNav() {
               key={l.to}
               to={l.to}
               end={l.end}
+              title={l.label}
               aria-label={l.label}
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 rounded-full px-1.5 sm:px-2.5 py-px transition-colors",
+                "flex items-center justify-center rounded-full px-2.5 transition-colors",
                 active ? "" : "text-foreground/55 hover:text-foreground"
               )}
               style={active ? { color: accent } : undefined}
             >
-              <Icon className="h-3.5 w-3.5" strokeWidth={active ? 2.3 : 1.7} />
-              <span className="hidden sm:block text-[7.5px] uppercase tracking-[0.12em] font-semibold leading-none">{l.label}</span>
+              <Icon className="h-4 w-4" strokeWidth={active ? 2.3 : 1.7} />
             </NavLink>
           );
         })}
         {/* Meer — opent de QuickLauncher (volledige navigatie) */}
         <button
           onClick={() => window.dispatchEvent(new CustomEvent("giulia:open-launcher"))}
+          title="Meer"
           aria-label="Meer navigatie"
-          className="hidden sm:flex flex-col items-center justify-center gap-0.5 rounded-full px-2.5 py-px text-foreground/55 hover:text-foreground transition-colors"
+          className="hidden sm:flex items-center justify-center rounded-full px-2.5 text-foreground/55 hover:text-foreground transition-colors"
         >
-          <LayoutGrid className="h-3.5 w-3.5" strokeWidth={1.7} />
-          <span className="text-[7.5px] uppercase tracking-[0.12em] font-semibold leading-none">Meer</span>
+          <LayoutGrid className="h-4 w-4" strokeWidth={1.7} />
         </button>
       </div>
     </nav>
