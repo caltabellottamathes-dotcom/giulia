@@ -1,9 +1,8 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Loader2, Music as MusicIcon, Cloud, HardDrive } from "lucide-react";
+import { Play, Pause, Loader2, Music as MusicIcon, Cloud, HardDrive } from "lucide-react";
 import { WidgetHeader } from "@/system/widgets/primitives";
 import { usePanel } from "@/lib/PanelContext";
-import { useMediaViewer } from "@/lib/MediaViewerContext";
 import { useMediaLibrary, kindOfUpload } from "@/lib/useMediaLibrary";
 import { useLocalMedia } from "@/lib/useLocalMedia";
 import AudioReactiveLife from "@/life/widgets/new/AudioReactiveLife";
@@ -14,20 +13,40 @@ const LIGHT = "hsl(var(--d-life-light))";
 const IVORY = "hsl(var(--ivory))";
 const BLUE = "hsl(205 45% 32%)";
 
-/** MusicWidget — G·3:2·SPLIT (kopie van ThingsLove). Links: audio-reactieve
- *  bloom + sinus in LIFE-kleuren met een Play-knop eroverheen. Rechts:
- *  fotokaart. Tik op de fotokaart → schuift links, rechts verschijnt de
- *  lijst met alle beschikbare muziekbestanden (cloud + lokaal). Tik op een
- *  bestand → wordt afgespeeld (fullscreen MediaPlayer-window). Tik op de
- *  widget → ModulePanel met MediaPlayerPreview (quick access, alle files). */
+/** MusicWidget — G·3:2·SPLIT (zelfde formaat als ThingsILove). Een échte,
+ *  standalone music player: inline <audio> afspeelt binnen de widget, los
+ *  van het fullscreen MediaPlayer-venster. Links: audio-reactieve bloom +
+ *  sinus in LIFE-kleuren met een Play/Pause-knop. Rechts: fotokaart. Tik
+ *  op de fotokaart → schuift links, rechts verschijnt de lijst met alle
+ *  beschikbare muziekbestanden (cloud + lokaal). Tik een bestand → speelt
+ *  inline. Tik op de widget-achtergrond → ModulePanel MediaPlayerPreview. */
 export default function MusicWidget() {
   const { openModule } = usePanel();
-  const { openMedia } = useMediaViewer();
   const cloud = useMediaLibrary();
   const local = useLocalMedia();
   const [slid, setSlid] = useState(false);
   const [currentId, setCurrentId] = useState(null);
+  const [loadedId, setLoadedId] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [busy, setBusy] = useState(false);
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    const a = new Audio();
+    audioRef.current = a;
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+    const onEnded = () => setIsPlaying(false);
+    a.addEventListener("play", onPlay);
+    a.addEventListener("pause", onPause);
+    a.addEventListener("ended", onEnded);
+    return () => {
+      a.removeEventListener("play", onPlay);
+      a.removeEventListener("pause", onPause);
+      a.removeEventListener("ended", onEnded);
+      a.pause();
+    };
+  }, []);
 
   const cloudMusic = useMemo(
     () => (cloud.items || []).filter((i) => kindOfUpload(i) === "music")
@@ -42,21 +61,32 @@ export default function MusicWidget() {
   const tracks = useMemo(() => [...cloudMusic, ...localMusic], [cloudMusic, localMusic]);
   const current = tracks.find((t) => t.id === currentId) || tracks[0] || null;
 
-  const resolveTrack = useCallback(async (t) => {
-    if (t.source === "cloud") return { name: t.name, url: t.url, type: "music" };
+  const resolveUrl = useCallback(async (t) => {
+    if (t.source === "cloud") return t.url;
     const m = await local.openFile(t.raw);
-    return { name: m.name, url: m.url, type: "music" };
+    return m.url;
   }, [local]);
 
   const playTrack = useCallback(async (t) => {
     if (!t) return;
-    setCurrentId(t.id);
     setBusy(true);
     try {
-      const m = await resolveTrack(t);
-      openMedia(m);
+      const url = await resolveUrl(t);
+      const a = audioRef.current;
+      if (!a) return;
+      a.src = url;
+      await a.play();
+      setCurrentId(t.id);
+      setLoadedId(t.id);
     } catch { /* negeer */ } finally { setBusy(false); }
-  }, [resolveTrack, openMedia]);
+  }, [resolveUrl]);
+
+  const togglePlay = useCallback(() => {
+    const a = audioRef.current;
+    if (!a || !current) return;
+    if (loadedId !== current.id) { playTrack(current); return; }
+    if (a.paused) a.play().catch(() => {}); else a.pause();
+  }, [current, loadedId, playTrack]);
 
   const glassShell = {
     background: "rgba(120,128,133,0.16)",
@@ -65,12 +95,14 @@ export default function MusicWidget() {
     border: "1px solid rgba(255,255,255,0.14)",
   };
 
+  const statusLabel = !current ? "—" : isPlaying ? "SPEELT" : loadedId === current.id ? "PAUZE" : "KLAAR";
+
   return (
     <div className="relative w-full aspect-[3/2] rounded-[28px] overflow-hidden cursor-pointer" style={{ "--tile-accent": DEEP, color: BLUE }} onClick={() => openModule("mediaplayer")}>
       <div className="absolute inset-0 rounded-[28px] ring-1 ring-inset ring-white/10" style={glassShell} />
       <span className="pointer-events-none absolute inset-x-0 top-0 h-px z-10" style={{ background: `linear-gradient(90deg, transparent, ${DEEP} 18%, ${DEEP} 82%, transparent)` }} />
 
-      {/* LINKS: AudioReactiveLife + Play (default) */}
+      {/* LINKS: AudioReactiveLife + Play/Pause (default) */}
       <AnimatePresence>
         {!slid && (
           <motion.div
@@ -84,14 +116,14 @@ export default function MusicWidget() {
           >
             <WidgetHeader type="social" label="Music." count={tracks.length ? `${tracks.length} tracks` : ""} />
             <div className="relative flex-1 min-h-0 mt-2">
-              <AudioReactiveLife playing={!!current} className="absolute inset-0" />
+              <AudioReactiveLife playing={isPlaying} className="absolute inset-0" />
               <button
-                onClick={() => playTrack(current)}
+                onClick={togglePlay}
                 disabled={!current || busy}
                 className="absolute left-1/2 top-[44%] -translate-x-1/2 -translate-y-1/2 h-14 w-14 rounded-full bg-ivory text-charcoal flex items-center justify-center shadow-[0_12px_30px_-8px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform disabled:opacity-40 z-10"
-                aria-label="Afspelen"
+                aria-label={isPlaying ? "Pauze" : "Afspelen"}
               >
-                {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <Play className="h-5 w-5 ml-0.5" />}
+                {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
               </button>
             </div>
             <p className="text-[8px] uppercase tracking-[0.2em] opacity-40 mt-1.5">tik kaart → bibliotheek</p>
@@ -114,7 +146,7 @@ export default function MusicWidget() {
           <div className="absolute inset-0 p-4 flex flex-col" style={{ color: IVORY, textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>
             <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full" style={{ background: LIGHT }} />
-              <span className="text-[9px] uppercase tracking-[0.18em] font-bold">{current ? (current.source === "cloud" ? "CLOUD · NU" : "LOKAAL · NU") : "—"}</span>
+              <span className="text-[9px] uppercase tracking-[0.18em] font-bold">{current ? `${current.source === "cloud" ? "CLOUD" : "LOKAAL"} · ${statusLabel}` : "—"}</span>
             </div>
             <h3 className="text-[20px] leading-[1.05] font-display font-semibold tracking-[-0.02em] mt-1 line-clamp-3">{current ? current.name : "Geen track"}</h3>
             <p className="text-[10px] uppercase tracking-[0.16em] mt-1 opacity-80">{tracks.length} bestanden beschikbaar</p>
@@ -183,7 +215,7 @@ export default function MusicWidget() {
                       <p className="text-[11px] font-medium truncate" style={{ color: BLUE }}>{t.name}</p>
                       <p className="text-[8px] uppercase tracking-[0.14em] opacity-50" style={{ color: BLUE }}>{t.source === "cloud" ? "cloud" : "lokaal"}</p>
                     </span>
-                    <Play className="h-3 w-3 shrink-0 opacity-60" style={{ color: DEEP }} />
+                    {active && isPlaying ? <Pause className="h-3 w-3 shrink-0 opacity-70" style={{ color: DEEP }} /> : <Play className="h-3 w-3 shrink-0 opacity-60" style={{ color: DEEP }} />}
                   </button>
                 );
               })}

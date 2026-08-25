@@ -119,7 +119,7 @@ export default function WorkspaceToolbar() {
       <div
         className={cn(
           "fixed bottom-4 left-4 lg:bottom-6 lg:left-6 z-30 flex items-center transition-[width,transform] duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
-          expanded ? "w-[calc(100vw-2rem)] lg:w-[calc(100vw-3rem)]" : "w-[224px]"
+          expanded ? "w-[calc(100vw-5.5rem)] lg:w-[calc(100vw-7.5rem)]" : "w-[224px]"
         )}
         onMouseEnter={expand}
         onMouseLeave={() => scheduleCollapse(8000)}
@@ -202,7 +202,6 @@ export default function WorkspaceToolbar() {
             {expanded && (
               <>
                 <button onClick={() => { expand(); active ? stop() : start(); }} aria-label="Context toevoegen" className={cn(actionBtn, active && "text-foreground")}><BrainCircuit className="h-4 w-4" /></button>
-                <button onClick={() => { expand(); setLauncherOpen(true); }} aria-label="Snelle acties" className={actionBtn}><Plus className="h-4 w-4" /></button>
                 </>
                 )}
                 <button onClick={() => { expand(); openVoice(); }} aria-label="Bel Giulia" className={actionBtn}><Phone className="h-4 w-4" /></button>
@@ -237,6 +236,22 @@ export default function WorkspaceToolbar() {
           )}
         </div>
       )}
+
+      {/* QuickLauncher — eigen rondje rechts, altijd toegankelijk (zelfde glas als de toolbar) */}
+      <button
+        onClick={() => setLauncherOpen(true)}
+        aria-label="QuickLauncher"
+        className="fixed bottom-4 lg:bottom-6 right-4 lg:right-6 z-30 h-11 w-11 rounded-full flex items-center justify-center hover:scale-105 transition-transform"
+        style={{
+          background: "rgba(120,122,128,0.10)",
+          backdropFilter: "blur(30px) saturate(1.4)",
+          WebkitBackdropFilter: "blur(30px) saturate(1.4)",
+          border: "1px solid rgba(255,255,255,0.14)",
+          boxShadow: "0 18px 40px -16px rgba(0,0,0,0.40), inset 0 1px 0 0 rgba(255,255,255,0.18)",
+        }}
+      >
+        <Plus className="h-4 w-4 text-foreground/80" />
+      </button>
 
       <QuickLauncher open={launcherOpen} onClose={() => setLauncherOpen(false)} />
     </>

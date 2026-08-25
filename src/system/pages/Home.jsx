@@ -20,11 +20,11 @@ import StartupSequence from "@/system/components/StartupSequence";
 import { Link } from "react-router-dom";
 import { MODULES } from "@/lib/moduleRegistry";
 
-const WIDGET_SPAN = { giulia: 2, goodmorning: 2, concierge: 1, approvals: 2, insights: 1, imalive: 1, giuliaquestions: 1, projects: 2, agenda: 2, tasks: 1, email: 1, whatsapp: 2, people: 1, timetracker: 1, documents: 2, updates: 2, sociallife: 1, remindershome: 2, thinghandle: 1, thingslove: 2, dinner: 2, howdoing: 1, beeldbank: 2, velochat: 1 };
+const WIDGET_SPAN = { giulia: 2, goodmorning: 2, concierge: 1, approvals: 2, insights: 1, imalive: 1, giuliaquestions: 1, projects: 2, agenda: 2, tasks: 1, email: 1, whatsapp: 2, people: 1, timetracker: 1, documents: 2, updates: 2, sociallife: 1, remindershome: 2, thinghandle: 1, thingslove: 2, dinner: 2, howdoing: 1, musicwidget: 2, beeldbank: 2, velochat: 1 };
 
 // Some modules open under a different key than their widget — map them so the
 // floating "widget naast het paneel" resolves to the right component.
-const MODULE_WIDGET_OVERRIDE = { jedag: "giulia", wantstoknow: "giuliaquestions", social: "sociallife", food: "dinner", household: "remindershome", personaladmin: "thinghandle", hobbies: "thingslove", dailystate: "howdoing" };
+const MODULE_WIDGET_OVERRIDE = { jedag: "giulia", wantstoknow: "giuliaquestions", social: "sociallife", food: "dinner", household: "remindershome", personaladmin: "thinghandle", hobbies: "thingslove", dailystate: "howdoing", mediaplayer: "musicwidget" };
 
 const BOARD_BG = {
   life: IMAGES.lifeBgPhoto,
