@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePanel } from "@/lib/PanelContext";
 import { base44 } from "@/api/base44Client";
-import { X, ChevronRight } from "lucide-react";
+import { X, ChevronRight, ChevronDown, User, Settings, Plug, LogOut } from "lucide-react";
+import { IMAGES } from "@/lib/images";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 /**
  * QuickLauncher — editoriale inhoudsopgave als accordeon. Eén zoekregel
@@ -179,6 +181,31 @@ export default function QuickLauncher({ open, onClose }) {
                   <span className="text-[11px] uppercase tracking-[0.32em] font-bold text-ivory/75">GIULIA · OS</span>
                 </div>
                 <div className="flex items-center gap-3">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="flex items-center gap-1 h-8 rounded-full hover:ring-2 hover:ring-ivory/20 transition-all">
+                        <span className="h-7 w-7 rounded-full overflow-hidden shrink-0 ring-1 ring-ivory/15">
+                          <img src={IMAGES.portraitThinking} alt="Profile" className="h-full w-full object-cover" />
+                        </span>
+                        <ChevronDown className="h-3 w-3 text-ivory/55" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-52 bg-charcoal text-ivory border-white/10">
+                      <DropdownMenuItem onClick={() => { navigate("/profile"); onClose(); }} className="gap-2.5 text-[13px] text-ivory focus:bg-ivory/10">
+                        <User className="h-3.5 w-3.5 text-ivory/60" /> Profile
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => { openModule("settings"); onClose(); }} className="gap-2.5 text-[13px] text-ivory focus:bg-ivory/10">
+                        <Settings className="h-3.5 w-3.5 text-ivory/60" /> Settings
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => { openModule("integrations"); onClose(); }} className="gap-2.5 text-[13px] text-ivory focus:bg-ivory/10">
+                        <Plug className="h-3.5 w-3.5 text-ivory/60" /> Integrations
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="bg-ivory/10" />
+                      <DropdownMenuItem onClick={() => base44.auth.logout("/login")} className="gap-2.5 text-[13px] text-red-300 focus:bg-ivory/10">
+                        <LogOut className="h-3.5 w-3.5" /> Log out
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <span className="text-[10px] font-mono text-ivory/45 tabular-nums">{clock} AMS</span>
                   <button onClick={onClose} className="text-ivory/45 hover:text-ivory transition" aria-label="Sluiten"><X className="h-4 w-4" /></button>
                 </div>
