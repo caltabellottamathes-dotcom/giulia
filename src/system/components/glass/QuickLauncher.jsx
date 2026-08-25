@@ -69,6 +69,7 @@ const GROUPS = [
       { label: "Activity Log", route: "/activity", module: "activity" },
       { label: "Agents", route: "/agents", module: "agents" },
       { label: "Knowledge Base", route: "/knowledge", module: "knowledge" },
+      { label: "Browser", module: "browser" },
       { label: "Integrations", route: "/integrations" },
       { label: "Settings", route: "/settings" },
       { label: "Profile", route: "/profile" },
@@ -153,7 +154,7 @@ export default function QuickLauncher({ open, onClose }) {
   const go = (item) => {
     if (item.module === "chat") openChat();
     else if (item.module) openModule(item.module);
-    navigate(item.route);
+    if (item.route) navigate(item.route);
     onClose();
   };
 
