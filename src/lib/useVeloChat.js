@@ -1,17 +1,16 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 
-const AGENT_NAME = "6a6cc0011ab9e3b32cfc1057";
-const CONV_KEY = "velo_conversation_id";
-
 /**
- * useVeloChat — beheert één gesprek met de Velo-system-agent. De
- * conversation-id wordt in sessionStorage bewaard zodat de widget en het
- * module-paneel dezelfde draad delen. Verzendt via base44.agents.addMessage;
- * de live update komt binnen via subscribeToConversation.
+ * Velo · System — bestaande conversation met de Velo SuperAgent.
+ * De Base44-agents-SDK kan via createConversation alleen op agent_name
+ * (slug) adreseren, niet op ID. Velo's agent is alleen per ID bekend.
+ * Daarom gebruiken we de reeds aangemaakte conversation direct via
+ * getConversation / addMessage / subscribeToConversation (SDK, app-token).
  */
+const CONV_ID = "6a6cc0034bc0607c481f1602";
+
 export function useVeloChat() {
-  const [conversationId, setConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [sending, setSending] = useState(false);
   const [ready, setReady] = useState(false);
@@ -23,20 +22,8 @@ export function useVeloChat() {
     initRef.current = true;
     (async () => {
       try {
-        let conv = null;
-        const cid = sessionStorage.getItem(CONV_KEY);
-        if (cid) {
-          try { conv = await base44.agents.getConversation(cid); } catch { conv = null; }
-        }
-        if (!conv) {
-          conv = await base44.agents.createConversation({
-            agent_name: AGENT_NAME,
-            metadata: { name: "Velo · System", description: "Systeem & ontwerp chat met Velo" },
-          });
-        }
+        const conv = await base44.agents.getConversation(CONV_ID);
         convRef.current = conv;
-        sessionStorage.setItem(CONV_KEY, conv.id);
-        setConversationId(conv.id);
         setMessages(conv.messages || []);
       } catch {
         /* negeer — widget toont lege staat */
@@ -47,14 +34,13 @@ export function useVeloChat() {
   }, []);
 
   useEffect(() => {
-    if (!conversationId) return;
-    const unsub = base44.agents.subscribeToConversation(conversationId, (data) => {
+    const unsub = base44.agents.subscribeToConversation(CONV_ID, (data) => {
       const msgs = data?.messages || [];
       setMessages(msgs);
       if (msgs.length && msgs[msgs.length - 1].role === "assistant") setSending(false);
     });
     return () => unsub();
-  }, [conversationId]);
+  }, []);
 
   const send = useCallback(async (content, opts) => {
     if (!convRef.current || (!content && !(opts?.file_urls?.length))) return;
@@ -71,5 +57,5 @@ export function useVeloChat() {
     }
   }, []);
 
-  return { messages, send, sending, ready, conversationId };
+  return { messages, send, sending, ready, conversationId: CONV_ID };
 }
