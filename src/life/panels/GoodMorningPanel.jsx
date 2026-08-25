@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { useNavigate } from "react-router-dom";
-import WakeSettingsForm from "@/self/components/WakeSettingsForm";
-import RoutineEditor from "@/self/components/RoutineEditor";
-import DailyIntention from "@/self/components/DailyIntention";
+import WakeSettingsForm from "@/life/components/WakeSettingsForm";
+import RoutineEditor from "@/life/components/RoutineEditor";
+import DailyIntention from "@/life/components/DailyIntention";
 import WakePanel from "@/self/panels/WakePanel";
 import { Sunrise, Moon, ArrowRight } from "lucide-react";
 

@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { speak } from "@/self/components/wakeVoice";
+import { speak } from "@/life/components/wakeVoice";
 
 export default function WakePhaseRoutine({ steps, stepIndex, onComplete, onSkip }) {
   const step = steps[stepIndex];

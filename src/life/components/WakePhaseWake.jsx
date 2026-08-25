@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
-import { speak, stopSpeaking } from "@/self/components/wakeVoice";
+import { speak, stopSpeaking } from "@/life/components/wakeVoice";
 
 export default function WakePhaseWake({ onAdvance, onSnooze }) {
   useEffect(() => {

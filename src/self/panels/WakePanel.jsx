@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { SectionLabel } from "@/system/panels/previewParts";
 import CountUp from "@/system/widgets/CountUp";
 import { BLUE, SAND, TRACK } from "@/glass/components/self/palette";
-import { AnimatedRing, ContextGrid, ActionRow, OpenLink, PulseDot } from "@/self/components/SelfViz";
+import { AnimatedRing, ContextGrid, ActionRow, OpenLink, PulseDot } from "@/life/components/SelfViz";
 import { Sunrise, ArrowRight, Check, Sparkles } from "lucide-react";
 
 const PHASES = ["wake", "orient", "routine", "getup"];

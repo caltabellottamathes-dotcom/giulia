@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
-import { speak } from "@/self/components/wakeVoice";
+import { speak } from "@/life/components/wakeVoice";
 
 export default function WakePhaseOrient({ wakeTime, context, onAdvance, onSnooze }) {
   const time = wakeTime || "07:30";

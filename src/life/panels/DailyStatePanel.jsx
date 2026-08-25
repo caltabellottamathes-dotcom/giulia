@@ -6,7 +6,7 @@ import { SectionLabel } from "@/system/panels/previewParts";
 import CountUp from "@/system/widgets/CountUp";
 import { stateLabel, moodLabel, fmtAgo } from "@/lib/selfUtils";
 import { BLUE, SAND, TRACK, moodScore } from "@/glass/components/self/palette";
-import { AnimatedRing, ConcentricRings, LiveAreaChart, ContextGrid, ActionRow, OpenLink, PulseDot } from "@/self/components/SelfViz";
+import { AnimatedRing, ConcentricRings, LiveAreaChart, ContextGrid, ActionRow, OpenLink, PulseDot } from "@/life/components/SelfViz";
 import { Plus, Sparkles } from "lucide-react";
 
 export default function DailyStatePanel() {

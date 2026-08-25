@@ -1,12 +1,12 @@
 import React, { useEffect, useCallback, useState } from "react";
-import { useWakeEngine } from "@/self/components/useWakeEngine";
-import WakeAtmosphere from "@/self/components/WakeAtmosphere";
-import WakePhaseWake from "@/self/components/WakePhaseWake";
-import WakePhaseOrient from "@/self/components/WakePhaseOrient";
-import WakePhaseGetUp from "@/self/components/WakePhaseGetUp";
-import WakePhaseRoutine from "@/self/components/WakePhaseRoutine";
-import WakePhaseBriefing from "@/self/components/WakePhaseBriefing";
-import { speak, createRecognizer } from "@/self/components/wakeVoice";
+import { useWakeEngine } from "@/life/components/useWakeEngine";
+import WakeAtmosphere from "@/life/components/WakeAtmosphere";
+import WakePhaseWake from "@/life/components/WakePhaseWake";
+import WakePhaseOrient from "@/life/components/WakePhaseOrient";
+import WakePhaseGetUp from "@/life/components/WakePhaseGetUp";
+import WakePhaseRoutine from "@/life/components/WakePhaseRoutine";
+import WakePhaseBriefing from "@/life/components/WakePhaseBriefing";
+import { speak, createRecognizer } from "@/life/components/wakeVoice";
 import { X } from "lucide-react";
 
 export default function WakeMode() {

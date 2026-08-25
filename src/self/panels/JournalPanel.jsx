@@ -7,7 +7,7 @@ import { SectionLabel, Empty } from "@/system/panels/previewParts";
 import CountUp from "@/system/widgets/CountUp";
 import { journalTypeLabel, fmtTime, fmtDate } from "@/lib/selfUtils";
 import { BLUE, SAND } from "@/glass/components/self/palette";
-import { ContextGrid, ActionRow, OpenLink } from "@/self/components/SelfViz";
+import { ContextGrid, ActionRow, OpenLink } from "@/life/components/SelfViz";
 import { Plus, Star, Sparkles } from "lucide-react";
 
 const WEIGHT = { entry: "sm", moment: "md", reflection: "sm", highlight: "lg", thread: "xs" };

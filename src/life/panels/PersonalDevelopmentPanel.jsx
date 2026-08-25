@@ -6,7 +6,7 @@ import { SectionLabel, Empty } from "@/system/panels/previewParts";
 import CountUp from "@/system/widgets/CountUp";
 import { goalStatusLabel, goalTypeLabel } from "@/lib/selfUtils";
 import { BLUE, SAND } from "@/glass/components/self/palette";
-import { ContextGrid, ActionRow, OpenLink, PulseDot } from "@/self/components/SelfViz";
+import { ContextGrid, ActionRow, OpenLink, PulseDot } from "@/life/components/SelfViz";
 import { Plus, TrendingUp, Target, Award } from "lucide-react";
 
 const POS = ["top", "right", "bottom", "left"];

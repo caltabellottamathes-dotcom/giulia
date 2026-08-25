@@ -7,7 +7,7 @@ import { SectionLabel, Empty } from "@/system/panels/previewParts";
 import CountUp from "@/system/widgets/CountUp";
 import { insightTypeLabel, fmtDate } from "@/lib/selfUtils";
 import { BLUE, SAND, TRACK } from "@/glass/components/self/palette";
-import { ContextGrid, ActionRow, OpenLink, PulseDot } from "@/self/components/SelfViz";
+import { ContextGrid, ActionRow, OpenLink, PulseDot } from "@/life/components/SelfViz";
 import { X, Check, Eye, BarChart3 } from "lucide-react";
 
 export default function SelfInsightsPanel() {

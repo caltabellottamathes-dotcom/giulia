@@ -6,7 +6,7 @@ import { SectionLabel } from "@/system/panels/previewParts";
 import CountUp from "@/system/widgets/CountUp";
 import { todayRoutines, completedToday, fmtTime, fmtDuration } from "@/lib/selfUtils";
 import { BLUE, SAND, TRACK, timeForPref, toMin } from "@/glass/components/self/palette";
-import { AnimatedRing, ContextGrid, ActionRow, OpenLink, PulseDot } from "@/self/components/SelfViz";
+import { AnimatedRing, ContextGrid, ActionRow, OpenLink, PulseDot } from "@/life/components/SelfViz";
 import { Check, SkipForward, Plus, Flame } from "lucide-react";
 
 const START = 6, END = 24;

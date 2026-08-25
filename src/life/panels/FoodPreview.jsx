@@ -10,7 +10,7 @@ import MealCard from "@/life/food/MealCard";
 import RecipeView from "@/life/components/RecipeView";
 import { SAND, SAND_DEEP } from "@/life/food/lifeColors";
 import { Loader2, Sparkles } from "lucide-react";
-import { ContextGrid, ActionRow } from "@/self/components/SelfViz";
+import { ContextGrid, ActionRow } from "@/life/components/SelfViz";
 
 /** FoodPreview — grafisch glas-paneel in LIFE-stijl. Reusachtig tellend
  *  cijfer, geanimeerde budget-donut + dagkosten-grafiek (Recharts), en de

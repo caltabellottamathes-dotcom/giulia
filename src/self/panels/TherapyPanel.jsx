@@ -6,7 +6,7 @@ import { SectionLabel, Empty } from "@/system/panels/previewParts";
 import CountUp from "@/system/widgets/CountUp";
 import { therapyStatusLabel, fmtDate, fmtTime } from "@/lib/selfUtils";
 import { BLUE, SAND } from "@/glass/components/self/palette";
-import { ContextGrid, ActionRow, OpenLink } from "@/self/components/SelfViz";
+import { ContextGrid, ActionRow, OpenLink } from "@/life/components/SelfViz";
 import { Plus, Calendar, ArrowLeft } from "lucide-react";
 
 function TrajectoryViz({ name, progress, notes }) {
