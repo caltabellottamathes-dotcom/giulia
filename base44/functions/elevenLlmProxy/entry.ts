@@ -192,11 +192,34 @@ export default async function (req) {
         // Tegelijk vangen we de SSE-toolcalls op (navigatie-workaround bug
         // #603) in de flush — non-blocking, de stream gaat altijd door.
         const decoder = new TextDecoder();
+        const encoder = new TextEncoder();
         let sseBuffer = "";
+        let sawFinishReason = false;
+        // Gemini's OpenAI-endpoint sluit een stream af met een
+        // `extra_content.google.thought_signature`-delta + `[DONE]`, ZONDER
+        // een expliciete `finish_reason: "stop"` chunk. ElevenLabs' custom-LLM
+        // parser mist daardoor het "einde van de beurt"-signaal en breekt de
+        // sessie af ("slaat meteen af"). We onderscheppen de `[DONE]`-regel en
+        // injecteren vlak daarvóór een correcte finish_reason-chunk, zodat de
+        // stream strikt OpenAI-compatibel is. Passthrough voor alle andere
+        // chunks blijft op de ruwe bytes (1:1 streaming, geen buffering).
+        const DONE_MARK = "data: [DONE]";
+        const FINISH_CHUNK = 'data: {"choices":[{"delta":{},"finish_reason":"stop","index":0}]}\n\n';
         const transform = new TransformStream({
           transform(chunk, controller) {
-            controller.enqueue(chunk);
-            try { sseBuffer += decoder.decode(chunk, { stream: true }); } catch {}
+            let text;
+            try { text = decoder.decode(chunk, { stream: true }); } catch { controller.enqueue(chunk); return; }
+            sseBuffer += text;
+            if (!sawFinishReason && text.includes('"finish_reason"')) sawFinishReason = true;
+            const doneIdx = text.indexOf(DONE_MARK);
+            if (doneIdx === -1) {
+              controller.enqueue(chunk);
+              return;
+            }
+            const before = text.slice(0, doneIdx);
+            if (before) controller.enqueue(encoder.encode(before));
+            if (!sawFinishReason) { controller.enqueue(encoder.encode(FINISH_CHUNK)); sawFinishReason = true; }
+            controller.enqueue(encoder.encode(text.slice(doneIdx)));
           },
           flush() {
             try {
