@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 
-const AGENT_NAME = "velo";
+const AGENT_NAME = "6a6cc0011ab9e3b32cfc1057";
 const CONV_KEY = "velo_conversation_id";
 
 /**
