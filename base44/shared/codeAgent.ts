@@ -9,6 +9,7 @@
  * and calls runGiuliaAgent().
  */
 import { geminiGenerate } from "./gemini.ts";
+import { resolveContact } from "./disambiguate.ts";
 
 export function todayStr() {
   return new Date().toLocaleDateString("sv-SE");
@@ -50,6 +51,27 @@ export async function createApproval(base44, type, title, content, context, assi
   try {
     const m = meta || {};
     const sr = base44.asServiceRole;
+
+    // Als een whatsapp/email-approval een naam als target heeft (geen telefoon,
+    // e-mail of jid), koppel die naam dan deterministisch aan een bestaand
+    // contact. Eén unieke voornaam (bv. "Lian" → Lian Aalders) volstaat — zo
+    // weet sendWhatsApp welk nummer/e-mail te gebruiken en faalt verzenden niet
+    // op een kale naam. Inkomende Evolution-nummers missen de "+" in de
+    // landcode; normalizePhone (stript niet-cijfers) maakt beide vormen gelijk.
+    if ((type === "whatsapp" || type === "email") && !m.thread_id) {
+      const rawName = String(m.target || "").trim();
+      const looksLikeName = rawName && !/^\+?\d/.test(rawName) && !rawName.includes("@") && !rawName.includes("<");
+      if (looksLikeName) {
+        try {
+          const res = await resolveContact(sr, rawName, {});
+          if (res?.contact && !res.ambiguous) {
+            m.thread_id = res.contact.id;
+            m.target = res.contact.name;
+            if (type === "email" && res.contact.email) m.target = res.contact.email;
+          }
+        } catch { /* ignore — houd originele target */ }
+      }
+    }
 
     // Dedup — voorkom tientallen approvals over exact hetzelfde onderwerp
     // (bv. dezelfde mail die elke cyclus opnieuw wordt aangeboden). Match op
@@ -276,9 +298,9 @@ export async function runGiuliaAgent(base44, agentName, task, tools, stopAfter =
       execute: ({ title, message }) => base44.functions.invoke("sendPushNotifications", { title: title || "Giulia", message }).catch(() => null),
     },
     create_approval: {
-      description: "Maak een Approval voor een externe actie (email/whatsapp/calendar) die Salvo moet goedkeuren. NOOIT zelf verzenden.",
-      inputSchema: { type: "object", properties: { type: { type: "string" }, title: { type: "string" }, content: { type: "string" } }, required: ["type", "title", "content"] },
-      execute: ({ type, title, content }) => createApproval(base44, type, title, content),
+      description: "Maak een Approval voor een externe actie (email/whatsapp/calendar) die Salvo moet goedkeuren. Geef bij whatsapp/email ALTIJD 'to' mee — de naam van de contactpersoon (bv. 'Lian' of 'Lian Aalders'), een telefoonnummer of een e-mail. NOOIT zelf verzenden.",
+      inputSchema: { type: "object", properties: { type: { type: "string" }, title: { type: "string" }, content: { type: "string" }, to: { type: "string", description: "Ontvanger: naam van het contact, telefoonnummer of e-mail" } }, required: ["type", "title", "content"] },
+      execute: ({ type, title, content, to }) => createApproval(base44, type, title, content, undefined, undefined, { target: to || undefined }),
     },
     call_agent: {
       description: "Signaleer een andere Giulia-agent om aan te vallen: 'manageTasks','managePeople','syncCalendar','manageIdeas','manageProjects','dailyPlanning','weeklyPlanning','runProactivity'.",
