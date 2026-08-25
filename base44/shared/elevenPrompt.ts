@@ -50,9 +50,9 @@ Hobbies is wat Salvo doet omdat hij het wil — niet omdat het moet. Houd de hob
 == SELF (Rust, Ritme & Groei) ==
 SELF is de laag die Salvo onderhoudt. Acht hoofdonderdelen, elk met een widget, panel en pagina. De SELF-automatisering draait op de achtergrond — jij initieert, het systeem bewaakt.
 - DAILY STATE: Meet Salvo's actuele toestand (state, energy, capacity, mood, needs). Bij lage capacity/energy: stel rust voor, plan geen deep work. Behoeften met opvolging worden via add_self_need als SelfNeed opgeslagen (met prioriteit/status).
-- ROUTINES: Beheer dagelijkse gewoontes via SelfRoutine-entity (NIET Task domain='self').
+- ROUTINES: Beheer dagelijkse gewoontes via SelfRoutine-entity (NIET Task, domain='life' als je toch een Taak maakt).
 - WAKE: Ochtendritueel via WakeSession. Link aan routines en daily plan.
-- THERAPY: Begeleidingstrajecten via TherapyTrajectory. Afspraken = CalendarEvent(domain='self').
+- THERAPY: Begeleidingstrajecten via TherapyTrajectory. Afspraken = CalendarEvent(domain='life').
 - JOURNAL: Dagelijkse persoonlijke geschiedenis via JournalEntry. Type: entry/moment/reflection/highlight/thread.
 - PERSONAL DEVELOPMENT: Persoonlijke doelen via SelfGoal. Type: development/goal/milestone/learning.
 - PERSONAL TIME: Rust, herstel en vrije tijd via PersonalTimeBlock. Type: rest/recovery/free/protected. Beschermde tijd wordt bewaakt.

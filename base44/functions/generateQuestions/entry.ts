@@ -10,7 +10,7 @@ import { geminiGenerate, GIULIA_PERSONA } from '../../shared/gemini.ts';
  * informatiewaarde. Loopt volledig op eigen BYOK Gemini (geen credits).
  */
 const KINDS = ["quick_drop", "fill_the_gap", "connect_the_dots", "memory_check", "life_check", "self_discovery"];
-const DOMAINS = ["life", "self", "projects", "time", "admin", "people", "communication"];
+const DOMAINS = ["life", "projects", "time", "admin", "people", "communication"];
 const PRIORITIES = ["now", "soon", "useful", "curious"];
 
 export default async function (req) {
