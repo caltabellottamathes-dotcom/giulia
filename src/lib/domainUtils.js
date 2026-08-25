@@ -80,15 +80,21 @@ export const LIFE_SAND = "hsl(var(--d-life-light))";
 
 // Close circle — the relationships that actually matter to Salvo. Everything
 // else is noise in the Social Pulse "what matters now" view.
-const CLOSE_CIRCLE_KEYS = ["mama","debora","sara","juan","pawel","paul","oma","wouter","cbn","ramona","lian","veronique","jill"];
-// Token-based match (geen substring) — voorkomt false positives zoals
-// "Omar" op "oma", "Juandri" op "juan", "Kilian" op "lian".
+// Close circle — specifieke personen (volledige naam), geen bare voornaam-tokens,
+// zodat verschillende mensen met dezelfde voornaam (Wouter ×4, Veronique ×2) niet
+// alleemaal op de orbit verschijnen. Ambiguïteit hoort via een GiuliaQuestion
+// opgelost te worden, niet door gokken.
+const CLOSE_CIRCLE_NAMES = [
+  "mama", "juan miguel biste", "cbn", "oma tienen thuis", "ramona vinken",
+  "lian aalders", "veronique mondriaan", "jill fuss", "debora caltabellotta",
+  "sara caltabellotta", "wouter witters", "pawel", "paul",
+];
+const _ccNorm = (n) => (n || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[.,]/g, "").replace(/\s+/g, " ").trim();
 export function closeCircle(contacts = []) {
-  const toks = (name) => (name || "").toLowerCase().replace(/[.,]/g, "").split(/\s+/);
+  const set = new Set(CLOSE_CIRCLE_NAMES);
   return (contacts || []).filter((c) => {
-    const n = (c.name || "").toLowerCase();
-    if (n.includes("salvatore")) return false;
-    return toks(c.name).some((t) => CLOSE_CIRCLE_KEYS.includes(t));
+    if ((c.name || "").toLowerCase().includes("salvatore")) return false;
+    return set.has(_ccNorm(c.name));
   });
 }
 

@@ -28,23 +28,9 @@ function norm(s: string): string {
 /** Laad alle contacten één keer (voor efficiënte matching in loops). */
 export async function loadContacts(entNs: any): Promise<any[]> {
   try {
-    // Pagineer álle contacten — anders ontstaan dubbels doordat de sync
-    // contacten buiten de eerste pagina niet vindt en opnieuw aanmaakt.
-    const all: any[] = [];
-    const seen = new Set<string>();
-    let skip = 0;
-    while (skip < 10000) {
-      const batch: any[] = await entNs.Contact.list("-created_date", 500, skip).catch(() => []);
-      if (!batch || !batch.length) break;
-      let added = 0;
-      for (const c of batch) {
-        if (c?.id && !seen.has(c.id)) { seen.add(c.id); all.push(c); added++; }
-      }
-      // skip niet ondersteund (zelfde batch) of einde bereikt → stop.
-      if (added === 0 || batch.length < 500) break;
-      skip += 500;
-    }
-    return all;
+    // Laad álle contacten in één call met hoge limit — anders mist de sync
+    // contacten buiten de eerste pagina en maakt dubbels aan.
+    return await entNs.Contact.list("-created_date", 2000);
   } catch {
     return [];
   }
