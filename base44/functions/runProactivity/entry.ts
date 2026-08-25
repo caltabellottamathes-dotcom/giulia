@@ -105,28 +105,12 @@ export default async function (req) {
       return now.getTime() - new Date(th.last_message_date).getTime() > threeDaysMs;
     });
 
+    // Geen automatische follow-up-concepten meer — alleen op expliciet verzoek
+    // (chat/voice/knoppen). Dead-end threads worden nog wel gesignaleerd via een
+    // Insight, zodat Salvo zelf kan beslissen of hij een follow-up stuurt.
     let followUpsProposed = 0;
     for (const th of deadEndThreads.slice(0, 5)) {
-      const threadType = (th.type || "").toLowerCase();
-      const approvalType = ["email", "whatsapp", "calendar", "task", "file"].includes(threadType)
-        ? threadType
-        : "other";
-      const approvalCategory = ["email", "whatsapp", "calendar", "tasks", "projects", "documents"].includes(threadType)
-        ? threadType === "tasks" ? "tasks" : threadType
-        : "other";
-
-      await sr.entities.Approval.create({
-        title: `Follow-up: ${th.title || "openstaande thread"}`,
-        action_type: "send_followup",
-        description: `Deze thread wacht al >3 dagen op een reactie. Giulia stelt voor een herinnering/follow-up te sturen.`,
-        status: "pending",
-        category: approvalCategory,
-        type: approvalType,
-        thread_id: th.id,
-        agent_source: "runProactivity",
-        assignee: "salvo",
-      }).catch(() => null);
-      followUpsProposed++;
+      await createInsight(base44, { domain: "focus", title: `Thread wacht: ${th.title || "openstaande thread"}`, type: "pattern", category: "Risk", description: `Deze thread wacht al >3 dagen op een reactie. Vraag Giulia via chat of voice als je een follow-up wilt.`, confidence: 0.7, source: "runProactivity" }).catch(() => null);
     }
 
     // ── Step 3.1: Project Radar (stall detection) ─────────────────────
@@ -183,29 +167,8 @@ async function runProjectRadar(sr, now) {
     await createInsight(base44, { domain: "focus", title: `Project inactive: ${p.title}`, type: "pattern", category: "Risk", description: `Je hebt ${STAGNANT_DAYS} dagen niets aan dit project gedaan. Wacht je op iemand? Of is er simpelweg geen volgende actie gedefinieerd?`, confidence: 0.7, source: "runProactivity · Project Radar", project_id: p.id });
     await emitEvent(base44, { event_type: "PROJECT_FLAGGED_INACTIVE", object_type: "Project", object_id: p.id, domain: "focus", description: `Project inactive: ${p.title}`, source: "runProactivity" });
     flagged++;
-    const draft = await geminiDecide({
-      model: "gemini-3.5-flash-lite",
-      prompt: `Project "${p.title}" is al ${STAGNANT_DAYS} dagen inactief. Schrijf een korte, professionele Nederlandse follow-up e-mail (max 120 woorden) aan de betrokken contactpersoon om te vragen wat de volgende stap is. Geef alleen de e-mailbody terug in JSON {body: string}.`,
-      schema: { type: "object", properties: { body: { type: "string" } }, required: ["body"] },
-      systemText: GIULIA_PERSONA,
-      temperature: 0.5,
-      keyName: "BACKDESK_GEMINI_API_KEY",
-    });
-    if (draft && draft.body) {
-      await sr.entities.Approval.create({
-        title: `Follow-up: ${p.title}`,
-        action_type: "send_followup",
-        description: `Project Radar: ${STAGNANT_DAYS} dagen geen activiteit. Giulia stelt een follow-up voor.`,
-        content: draft.body,
-        status: "pending",
-        category: "email",
-        type: "email",
-        project_id: p.id,
-        agent_source: "runProactivity · Project Radar",
-        assignee: "salvo",
-      }).catch(() => null);
-      drafts++;
-    }
+    // Geen automatische follow-up e-mailconcepten meer — alleen op expliciet
+    // verzoek. Het project wordt nog wel als "attention" gemarkeerd + Insight.
   }
   return { flagged, drafts };
 }

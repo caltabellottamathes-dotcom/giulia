@@ -12,11 +12,14 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 // Email loopt uitsluitend via de IMAP-bridge (fetchPrivateEmails) — geen Gmail-API sync meer.
 const SYNC = ["syncEmails", "syncCalendar", "syncDrive"];
 
+// Geen automatische email/WhatsApp-concepten meer in de cyclus — alleen op
+// expliciet verzoek (chat/voice/knoppen in Email & WhatsApp). interpretInput,
+// manageCommunication en autoDraftWhatsApp zijn hieruit verwijderd.
 const AGENTS = [
-  "interpretInput", "manageCommunication", "manageTasks", "manageProjects",
+  "manageTasks", "manageProjects",
   "managePeople", "manageIdeas", "manageFiles", "dailyPlanning", "weeklyPlanning",
   "weekReview", "morningBriefing", "eveningFollowUp", "runProactivity",
-  "checkProactivity", "chatGatekeeper", "autoDraftWhatsApp",
+  "checkProactivity", "chatGatekeeper",
 ];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

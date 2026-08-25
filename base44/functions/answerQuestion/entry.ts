@@ -12,7 +12,7 @@ import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
 const MAX_STEPS = 6;
 const ALLOWED = [
   "create_memory", "update_project", "update_task", "update_contact",
-  "update_hobby", "log_hobby_moment", "create_approval", "create_notification",
+  "update_hobby", "log_hobby_moment", "create_notification",
   "report_to_salvo", "create_giulia_question", "close_giulia_question",
 ];
 
@@ -40,7 +40,7 @@ export default async function (req) {
     }));
     const tools = [{ functionDeclarations }];
 
-    const systemInstruction = `${GIULIA_PERSONA}\n\nJe bent Giulia. Salvo heeft een vraag beantwoord uit je "WANTS TO KNOW"-laag. Verwerk het antwoord: begrijp het, sla op wat je moet onthouden (create_memory), werk entiteiten bij indien relevant (update_project/task/contact/hobby), stel een actie voor (create_approval) als er iets moet gebeuren, of maak een opvolgvraag (create_giulia_question). Maximaal 2 tool-calls. Geef daarna een korte, menselijke reactie in het Nederlands (1-2 zinnen) die samenvat wat je ervan leerde.`;
+    const systemInstruction = `${GIULIA_PERSONA}\n\nJe bent Giulia. Salvo heeft een vraag beantwoord uit je "WANTS TO KNOW"-laag. Verwerk het antwoord: begrijp het, sla op wat je moet onthouden (create_memory), werk entiteiten bij indien relevant (update_project/task/contact/hobby), of maak een opvolgvraag (create_giulia_question). Maximaal 2 tool-calls. Geef daarna een korte, menselijke reactie in het Nederlands (1-2 zinnen) die samenvat wat je ervan leerde. Maak GEEN approvals of externe acties — Wants-to-Know is puur leren, geen uitvoeren.`;
 
     const contents = [
       {

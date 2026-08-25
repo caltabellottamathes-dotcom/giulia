@@ -102,7 +102,7 @@ export default async function (req) {
       trigger = "prep_inbox";
       baseContext = `Ongelezen mails: ${unread}. Geen te late taken — rustig moment.`;
       templated = pick(TEMPLATES.prep_inbox());
-      actionFn = "triageEmails"; actionLabel = "Inbox voorbereid";
+      // geen automatische inbox-triage meer — alleen op expliciet verzoek
     } else if (approvals.length) {
       trigger = "approvals";
       baseContext = `Openstaande goedkeuringen (${approvals.length}): ${approvals.slice(0, 3).map((a) => a.title).join(", ")}.`;
@@ -121,7 +121,7 @@ export default async function (req) {
       trigger = "quiet";
       baseContext = `Rustig moment — geen te late taken, geen afspraken nu, ${unread} ongelezen mails.`;
       templated = pick(TEMPLATES.quiet());
-      actionFn = "triageEmails"; actionLabel = "Inbox voorbereid";
+      // geen automatische inbox-triage meer — alleen op expliciet verzoek
     }
 
     // throttle per trigger — voorkom herhaling binnen 20 min
