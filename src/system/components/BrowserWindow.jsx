@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { ArrowLeft, ArrowRight, RotateCw, ExternalLink, Globe, Lock, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, RotateCw, ExternalLink, Globe, Lock, X, Minus, Maximize2 } from "lucide-react";
 import { usePanel } from "@/lib/PanelContext";
 
 /**
- * BrowserWindow — volledig fullscreen, horizontaal in-app browserwindow.
- * Geen paneel: een eigen floating overlay (naast chat/voice) die de hele
- * viewport inneemt met een adresbalk boven en een iframe eronder.
+ * BrowserWindow — fullscreen horizontaal in-app browserwindow, te
+ * minimaliseren naar een kleine widget (iframe blijft gemount, dus de
+ * geladen pagina blijft behouden bij wisselen fullscreen ↔ widget).
  */
 const HOME_URL = "https://giulia-os-flow.base44.app";
 
@@ -20,8 +20,12 @@ function normalizeUrl(input) {
   return v;
 }
 
+function hostOf(url) {
+  try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url; }
+}
+
 export default function BrowserWindow() {
-  const { browserOpen, closeBrowser } = usePanel();
+  const { browserOpen, closeBrowser, browserMinimized, minimizeBrowser, restoreBrowser } = usePanel();
   const [history, setHistory] = useState([HOME_URL]);
   const [index, setIndex] = useState(0);
   const [address, setAddress] = useState(HOME_URL);
@@ -30,7 +34,6 @@ export default function BrowserWindow() {
 
   const current = history[index];
 
-  // reset state telkens als het window (her)opent
   useEffect(() => {
     if (browserOpen) {
       setHistory([HOME_URL]);
@@ -41,17 +44,17 @@ export default function BrowserWindow() {
   }, [browserOpen]);
 
   useEffect(() => {
-    const h = (e) => { if (e.key === "Escape" && browserOpen) closeBrowser(); };
+    const h = (e) => { if (e.key === "Escape" && browserOpen && !browserMinimized) closeBrowser(); };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-  }, [browserOpen, closeBrowser]);
+  }, [browserOpen, browserMinimized, closeBrowser]);
 
   useEffect(() => {
-    if (browserOpen) {
+    if (browserOpen && !browserMinimized) {
       document.body.style.overflow = "hidden";
       return () => { document.body.style.overflow = ""; };
     }
-  }, [browserOpen]);
+  }, [browserOpen, browserMinimized]);
 
   const navigate = useCallback((raw) => {
     const url = normalizeUrl(raw);
@@ -81,6 +84,43 @@ export default function BrowserWindow() {
 
   if (!browserOpen) return null;
 
+  // ---- Geminimaliseerde widget-stand ----
+  if (browserMinimized) {
+    return createPortal(
+      <div className="fixed bottom-4 right-4 z-[56] w-[300px] h-[220px] rounded-2xl overflow-hidden glass-4 float-shadow flex flex-col animate-scale-in text-ivory">
+        {/* widget-chrome — compacte balk */}
+        <div className="shrink-0 h-8 px-2 flex items-center gap-1.5 border-b border-white/10">
+          <span className="h-1.5 w-1.5 rounded-full bg-olive shrink-0" />
+          <span className="text-[10px] font-semibold tracking-wider truncate flex-1 text-ivory/80">{hostOf(current)}</span>
+          <button onClick={reload} className="h-6 w-6 rounded-md glass-1 flex items-center justify-center text-ivory/60 hover:text-ivory transition-colors" aria-label="Herladen">
+            <RotateCw className="h-3 w-3" />
+          </button>
+          <button onClick={restoreBrowser} className="h-6 w-6 rounded-md glass-1 flex items-center justify-center text-ivory/60 hover:text-ivory transition-colors" aria-label="Vergroten">
+            <Maximize2 className="h-3 w-3" />
+          </button>
+          <button onClick={closeBrowser} className="h-6 w-6 rounded-md glass-1 flex items-center justify-center text-ivory/60 hover:text-ivory transition-colors" aria-label="Sluiten">
+            <X className="h-3 w-3" />
+          </button>
+        </div>
+        {/* iframe-host — persistent, zelfde slot als fullscreen */}
+        <div className="relative flex-1 min-h-0 bg-charcoal/40">
+          <iframe
+            ref={iframeRef}
+            src={current}
+            title="In-app browser"
+            className="w-full h-full border-0 bg-white"
+            sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation"
+            referrerPolicy="no-referrer-when-downgrade"
+            onLoad={() => setLoading(false)}
+            onError={() => setLoading(false)}
+          />
+        </div>
+      </div>,
+      document.body
+    );
+  }
+
+  // ---- Fullscreen-stand ----
   return createPortal(
     <>
       <div className="fixed inset-0 z-[55] bg-charcoal/30 animate-fade-in" onClick={closeBrowser} />
@@ -95,7 +135,7 @@ export default function BrowserWindow() {
             <X className="h-4 w-4" />
           </button>
 
-          {/* Adresbalk — volledige breedte, horizontaal */}
+          {/* Adresbalk */}
           <div className="shrink-0 px-3 pt-3 pb-2 pl-16 flex items-center gap-2">
             <button onClick={back} disabled={index === 0} className="h-9 w-9 shrink-0 rounded-lg glass-1 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors disabled:opacity-30" aria-label="Terug">
               <ArrowLeft className="h-4 w-4" />
@@ -133,11 +173,19 @@ export default function BrowserWindow() {
             >
               <ExternalLink className="h-4 w-4" />
             </a>
+            <button
+              onClick={minimizeBrowser}
+              className="h-9 w-9 shrink-0 rounded-lg glass-1 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors"
+              aria-label="Minimaliseren"
+              title="Minimaliseren naar widget"
+            >
+              <Minus className="h-4 w-4" />
+            </button>
           </div>
 
           <div className="px-3 pb-2"><div className="h-px bg-olive/40" /></div>
 
-          {/* Browser viewport — vult de rest */}
+          {/* iframe-host — zelfde slot-volgorde als de widget-stand houdt 'm gemount */}
           <div className="relative flex-1 min-h-0 mx-3 mb-3 rounded-2xl overflow-hidden bg-charcoal/40">
             <iframe
               ref={iframeRef}

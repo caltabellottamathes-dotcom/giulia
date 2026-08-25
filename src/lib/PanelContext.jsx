@@ -12,6 +12,7 @@ export function PanelProvider({ children }) {
   const [chatOpen, setChatOpen] = useState(false);
   const [voiceOpen, setVoiceOpen] = useState(false);
   const [browserOpen, setBrowserOpen] = useState(false);
+  const [browserMinimized, setBrowserMinimized] = useState(false);
   const [pendingMessage, setPendingMessage] = useState(null);
 
   // "chat" opens the dedicated chat window instead of a module panel.
@@ -27,6 +28,7 @@ export function PanelProvider({ children }) {
     }
     if (key === "browser") {
       setBrowserOpen(true);
+      setBrowserMinimized(false);
       return;
     }
     setActiveModule(key);
@@ -36,8 +38,10 @@ export function PanelProvider({ children }) {
   const closeChat = () => setChatOpen(false);
   const openVoice = () => setVoiceOpen(true);
   const closeVoice = () => setVoiceOpen(false);
-  const openBrowser = () => setBrowserOpen(true);
-  const closeBrowser = () => setBrowserOpen(false);
+  const openBrowser = () => { setBrowserOpen(true); setBrowserMinimized(false); };
+  const closeBrowser = () => { setBrowserOpen(false); setBrowserMinimized(false); };
+  const minimizeBrowser = () => setBrowserMinimized(true);
+  const restoreBrowser = () => setBrowserMinimized(false);
 
   return (
     <PanelContext.Provider
@@ -46,6 +50,7 @@ export function PanelProvider({ children }) {
         chatOpen, openChat, closeChat,
         voiceOpen, openVoice, closeVoice,
         browserOpen, openBrowser, closeBrowser,
+        browserMinimized, minimizeBrowser, restoreBrowser,
         pendingMessage, setPendingMessage,
       }}
     >
