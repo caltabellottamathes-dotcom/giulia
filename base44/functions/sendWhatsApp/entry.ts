@@ -26,9 +26,12 @@ export default async function (req) {
     const contactId = body.contact_id || "";
     if (!message) return Response.json({ error: "message required" }, { status: 400 });
 
-    if (!to && contactId) {
+    // Als 'to' geen geldig nummer/jid is (bv. een contactnaam uit een approval),
+    // haal het echte nummer/jid op via het gekoppelde contact.
+    const looksValid = !!to && (to.includes("@") || normalizePhone(to));
+    if (!looksValid && contactId) {
       const c = await sr.entities.Contact.get(contactId).catch(() => null);
-      to = c?.phone || "";
+      to = c?.phone || to;
     }
     if (!to) return Response.json({ error: "no recipient phone" }, { status: 400 });
 
