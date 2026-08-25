@@ -215,8 +215,8 @@ export default function ChatWindow() {
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); doSend(); } }}
-                placeholder="Vraag Giulia anything…  (Enter = nieuwe regel · ⌘/Ctrl+Enter = verstuur)"
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); doSend(); } }}
+                placeholder="Vraag Giulia anything…  (Enter = verstuur · Shift+Enter = nieuwe regel)"
                 rows={1}
                 className="flex-1 chat-bubble px-5 py-3.5 text-sm text-ivory placeholder:text-ivory/40 focus:outline-none resize-none max-h-40"
                 style={{ minHeight: "48px" }}
