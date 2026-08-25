@@ -67,8 +67,29 @@ export async function createApproval(base44, type, title, content, context, assi
       : { type, title: title || type };
     const existing = await sr.entities.Approval.filter(dupBase).catch(() => []);
     if (existing && existing.length) {
-      const handled = existing.find((a) => a.status !== "rejected" && a.status !== "discarded");
-      if (handled) return handled;
+      // Al uitgevoerd/goedgekeurd/afgehandeld → niet opnieuw aanbieden.
+      const done = existing.find((a) => ["approved", "executed", "already_done"].includes(a.status));
+      if (done) return done;
+      // pending/edited → vervang het concept IN-PLACE. Eén approval, altijd de
+      // laatste versie. Voorkomt stapels approvals/meldingen over hetzelfde
+      // onderwerp wanneer Salvo om een aangepaste draft vraagt.
+      const open = existing.find((a) => a.status === "pending" || a.status === "edited");
+      if (open) {
+        const updated = await sr.entities.Approval.update(open.id, {
+          title: title || open.title,
+          description: title || open.description,
+          content: content || "",
+          context: context || open.context,
+          ...(m.proposed_action ? { proposed_action: typeof m.proposed_action === "string" ? m.proposed_action : JSON.stringify(m.proposed_action) } : {}),
+          status: "pending",
+          ...(m.target ? { target: String(m.target) } : {}),
+          ...(m.project_id ? { project_id: m.project_id } : {}),
+        }).catch(() => null);
+        // Verwijder andere open duplicaten voor dezelfde thread/target.
+        const dups = existing.filter((a) => a.id !== open.id && (a.status === "pending" || a.status === "edited"));
+        if (dups.length) await sr.entities.Approval.deleteMany({ id: { $in: dups.map((a) => a.id) } }).catch(() => null);
+        return updated || open;
+      }
     }
 
     return await sr.entities.Approval.create({

@@ -43,6 +43,29 @@ async function markSourceEmailsHandled(sr, ap) {
   }
 }
 
+// Ruim alle gerelateerde concepten op zodra een approval echt is uitgevoerd:
+// verwijder andere pending approvals voor dezelfde thread/target (één zaak,
+// één approval) én eventuele Giulia-concept-emails (folder giulia_drafts) voor
+// dezelfde thread. Zo blijft alleen het verzonden resultaat over — geen stapel
+// oude versies, meldingen of approvals over hetzelfde onderwerp.
+async function cleanupRelatedDrafts(sr, ap) {
+  if (!ap) return;
+  const key = ap.thread_id
+    ? { thread_id: ap.thread_id }
+    : ap.target
+    ? { target: String(ap.target) }
+    : null;
+  if (key) {
+    const dups = await sr.entities.Approval.filter({ ...key, status: "pending" }).catch(() => []);
+    const dupIds = (dups || []).filter((a) => a.id !== ap.id).map((a) => a.id);
+    if (dupIds.length) await sr.entities.Approval.deleteMany({ id: { $in: dupIds } }).catch(() => null);
+  }
+  if (ap.thread_id) {
+    const drafts = await sr.entities.Email.filter({ thread_id: ap.thread_id, folder: "giulia_drafts" }).catch(() => []);
+    if (drafts && drafts.length) await sr.entities.Email.deleteMany({ id: { $in: drafts.map((d) => d.id) } }).catch(() => null);
+  }
+}
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -104,16 +127,20 @@ export default async function (req) {
       try {
         const sentRes = await base44.functions.invoke("sendPrivateEmail", { to, subject, message: messageBody });
         const sent = sentRes && sentRes.data;
-        if (sent && sent.sent) {
+        // Tolerant: de bridge retourneert niet altijd een `.sent`-veld — een
+        // verzonden bericht herkennen we aan ok/success/messageId/id.
+        const sentOk = !!sent && (sent.sent || sent.ok || sent.success || sent.messageId || sent.id || sent.message_id);
+        if (sentOk) {
           await sr.entities.Approval.update(approval_id, { status: "executed" }).catch(() => {});
           await markSourceEmailsHandled(sr, ap);
+          await cleanupRelatedDrafts(sr, ap);
           if (ap.thread_id) await sr.entities.Thread.update(ap.thread_id, { status: "resolved", needs_info: false }).catch(() => {});
           // Domein 11: last_contact_date bijwerken na deze interactie.
           if (meta.contact_id) await sr.entities.Contact.update(meta.contact_id, { last_contact_date: new Date().toISOString() }).catch(() => {});
           return Response.json({ ok: true, executed: "email", detail: `Verstuurd aan ${to} (via bridge)` });
         }
         await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
-        return Response.json({ ok: false, executed: "email", error: "send failed", detail: (sent && sent.error) || "Verzenden via bridge mislukt." });
+        return Response.json({ ok: false, executed: "email", error: "send failed", detail: (sent && (sent.error || sent.detail)) || "Verzenden via bridge mislukt." });
       } catch (e) {
         await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
         return Response.json({ ok: false, executed: "email", error: String(e.message || e) });
@@ -231,15 +258,17 @@ export default async function (req) {
       try {
         const sentRes = await base44.functions.invoke("sendWhatsApp", { to, contact_id: contactId, message: messageBody });
         const sent = sentRes && sentRes.data;
-        if (sent && sent.ok) {
+        const sentOk = !!sent && (sent.ok || sent.sent || sent.success || sent.messageId || sent.message_id);
+        if (sentOk) {
           await sr.entities.Approval.update(approval_id, { status: "executed" }).catch(() => {});
+          await cleanupRelatedDrafts(sr, ap);
           if (ap.thread_id) await sr.entities.Thread.update(ap.thread_id, { status: "resolved", needs_info: false }).catch(() => {});
           // Domein 11: last_contact_date bijwerken na deze interactie.
           if (contactId) await sr.entities.Contact.update(contactId, { last_contact_date: new Date().toISOString() }).catch(() => {});
           return Response.json({ ok: true, executed: "whatsapp", detail: "Verzonden" });
         }
         await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
-        return Response.json({ ok: false, executed: "whatsapp", error: "send failed", detail: (sent && sent.error) || "Verzenden via WhatsApp mislukt." });
+        return Response.json({ ok: false, executed: "whatsapp", error: "send failed", detail: (sent && (sent.error || sent.detail)) || "Verzenden via WhatsApp mislukt." });
       } catch (e) {
         await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
         return Response.json({ ok: false, executed: "whatsapp", error: String(e.message || e) });
