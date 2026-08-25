@@ -138,12 +138,19 @@ export default async function (req) {
       return Response.json({ error: "unauthorized" }, { status: 401 });
     }
 
-    const key1 = process.env.ELEVEN_GEMINI_API_KEY;
-    const key2 = process.env.ELEVEN_2_GEMINI_API_KEY;
-    if (!key1) {
-      return Response.json({ error: "ELEVEN_GEMINI_API_KEY niet ingesteld" }, { status: 500 });
+    // Brede key-pool — de ElevenLabs-sleutels verlopen regelmatig. We proberen
+    // ze in volgorde; bij 401/403/429/5xx valt de proxy door naar de volgende.
+    // Eén werkende sleutel volstaat om het gesprek in stand te houden.
+    const keys = [
+      process.env.ELEVEN_GEMINI_API_KEY,
+      process.env.ELEVEN_2_GEMINI_API_KEY,
+      process.env.RESERVE_GEMINI_API_KEY,
+      process.env.GEMINI_API_KEY,
+      process.env.GIULIA_GIULIA_GEMINI_API_KEY,
+    ].filter((k) => !!k);
+    if (!keys.length) {
+      return Response.json({ error: "geen Gemini API-sleutels geconfigureerd" }, { status: 500 });
     }
-    const keys = key2 ? [key1, key2] : [key1];
 
     // ── Body inlezen, stream forceren (ElevenLabs verwacht SSE) ──
     const raw = await readText(req);
@@ -151,6 +158,11 @@ export default async function (req) {
     try { payload = raw ? JSON.parse(raw) : null; } catch { payload = null; }
     if (payload && typeof payload === "object" && !Array.isArray(payload)) {
       payload.stream = true;
+      // Forceer het werkende Gemini-model. Elf van de oude modelnamen
+      // (gemini-1.5-flash, gemini-2.5-flash, …) retourneren 404 op deze
+      // sleutels — dat brak elke LLM-turn en liet het gesprek na één
+      // antwoord stilvallen. gemini-flash-latest is de enige die werkt.
+      payload.model = "gemini-flash-latest";
       // Injecteer de live OS-snapshot als eerste system-message zodat de
       // stem-agent elke beurt op de hoogte is van de nieuwste data.
       try {
