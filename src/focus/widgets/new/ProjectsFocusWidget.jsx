@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, ArrowLeft } from "lucide-react";
 import { WidgetHeader } from "@/system/widgets/primitives";
 import { usePanel } from "@/lib/PanelContext";
+import { useNavigate } from "react-router-dom";
 import { useEntityList } from "@/hooks/useEntity";
 import { IMAGES } from "@/lib/images";
 import { buildBreakdown, weightedProgress } from "@/lib/projectEngine";
@@ -22,6 +23,7 @@ const progressColor = (pct) => (pct < 30 ? DEEP : pct < 70 ? OLIVE : LIGHT);
  *  subonderdelen (zoals de individuele projectpagina). Geen ghost-getal. */
 export default function ProjectsFocusWidget() {
   const { openModule } = usePanel();
+  const navigate = useNavigate();
   const { data: projects, loading } = useEntityList("Project", { sort: "-created_date", limit: 80, realtime: true });
   const { data: tasks } = useEntityList("Task", { sort: "-created_date", limit: 500, realtime: true });
   const [selectedId, setSelectedId] = useState(null);
@@ -37,7 +39,7 @@ export default function ProjectsFocusWidget() {
   const selProgress = selected ? weightedProgress(selTasks) : 0;
 
   return (
-    <div className="relative w-full h-[340px] rounded-[28px] overflow-hidden" style={{ "--tile-accent": DEEP, color: IVORY }}>
+    <div className="relative w-full h-[340px] rounded-[28px] overflow-hidden cursor-pointer" style={{ "--tile-accent": DEEP, color: IVORY }} onClick={() => openModule("projects")}>
       {/* glass shell basislaag */}
       <div className="absolute inset-0 overflow-hidden ring-1 ring-inset ring-white/10 rounded-[28px]" style={{ background: "rgba(48,50,55,0.18)", backdropFilter: "blur(22px) saturate(1.35)", WebkitBackdropFilter: "blur(22px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.12)" }} />
       <span className="pointer-events-none absolute inset-x-0 top-0 h-px z-10" style={{ background: `linear-gradient(90deg, transparent, ${OLIVE} 18%, ${OLIVE} 82%, transparent)` }} />
@@ -76,13 +78,13 @@ export default function ProjectsFocusWidget() {
         {/* status panel achter */}
         <AnimatePresence>
           {selected && (
-            <motion.div key="status" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }} className="absolute inset-0 flex flex-col p-3 overflow-hidden"
+            <motion.div key="status" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }} className="absolute inset-0 flex flex-col p-3 overflow-hidden" onClick={(e) => e.stopPropagation()}
               style={{ background: "rgba(48,23,40,0.92)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", border: "1px solid rgba(216,218,179,0.28)" }}>
               <div className="flex items-center justify-between mb-2">
                 <button onClick={() => setSelectedId(null)} className="flex items-center gap-1 text-[9px] uppercase tracking-[0.18em] font-bold" style={{ color: LIGHT }}><ArrowLeft className="h-3 w-3" /> dicht</button>
                 <span className="text-[12px] font-mono tabular-nums" style={{ color: LIGHT }}>{selProgress}%</span>
               </div>
-              <p className="text-[13px] font-display font-bold leading-tight truncate mb-0.5" style={{ color: IVORY }}>{selected.title}</p>
+              <button onClick={(e) => { e.stopPropagation(); navigate(`/projects/${selected.id}`); }} className="block w-full text-left text-[13px] font-display font-bold leading-tight truncate mb-0.5" style={{ color: IVORY }}>{selected.title}</button>
               <p className="text-[8px] uppercase tracking-[0.18em] mb-2" style={{ color: OLIVE }}>voortgang per onderdeel</p>
               <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar space-y-2.5">
                 {breakdown.length === 0 ? (
@@ -131,7 +133,7 @@ export default function ProjectsFocusWidget() {
             <p className="text-[9px] uppercase tracking-[0.18em] font-bold" style={{ color: IVORY, opacity: 0.8 }}>gem. klaar</p>
             <p className="text-[9px] uppercase tracking-[0.14em] mt-0.5" style={{ color: "rgba(255,255,255,0.65)" }}>{total} actieve projecten</p>
           </div>
-          <button onClick={() => openModule("projects")} className="absolute inset-0 cursor-pointer" aria-label="Open projecten" />
+
         </motion.div>
       </div>
     </div>

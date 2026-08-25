@@ -33,7 +33,7 @@ export default function SocialLifeWidget() {
       const tier = orbitTier(days);
       const total = Math.max(circle.length, 1);
       const a = (i / total) * 360 - 90;
-      return { name: c.name, days, r: tier.r, color: tier.color };
+      return { name: c.name, days, r: tier.r, color: tier.color, a };
     });
   }, [contacts]);
 

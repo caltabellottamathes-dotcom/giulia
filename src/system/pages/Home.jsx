@@ -181,7 +181,7 @@ export default function Home() {
     if (!def) return null;
     return { node: <WidgetCell key={w.id} def={def} widget={w} onRemove={() => removeWidget(w.id)} onThemeChange={patchWidget} sessionMode={isCustom} />, span: WIDGET_SPAN[w.widget_type] || 1 };
   }).filter(Boolean);
-  const showLoading = loading;
+  const showLoading = loading && widgets.length === 0;
 
   return (
     <GlassSurfaceProvider photoRef={photoRef}>
@@ -238,7 +238,7 @@ export default function Home() {
         if (!def) return null;
         const W = def.Component;
         return (
-          <div className="hidden lg:block fixed left-10 bottom-[5.5rem] z-20 w-[560px] animate-fade-up">
+          <div className="hidden lg:block fixed left-10 bottom-[5.5rem] z-20 w-[340px] animate-fade-up">
             <W />
           </div>
         );

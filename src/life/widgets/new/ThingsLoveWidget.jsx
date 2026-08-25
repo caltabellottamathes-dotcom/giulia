@@ -13,6 +13,7 @@ const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/f
 const DEEP = "hsl(var(--d-life-deep))";
 const LIGHT = "hsl(var(--d-life-light))";
 const IVORY = "hsl(var(--ivory))";
+const BLUE = "hsl(205 45% 32%)";
 
 /* 3 categorieën in 3 kleuren — Muziek / Kunst / Sport */
 const THEMES = { Muziek: "#d0d9dd", Kunst: "#d8dab3", Sport: "#dbdbd6" };
@@ -81,7 +82,7 @@ export default function ThingsLoveWidget() {
   };
 
   return (
-    <div className="relative w-full aspect-[3/2] rounded-[28px] overflow-hidden" style={{ "--tile-accent": DEEP, color: IVORY }}>
+    <div className="relative w-full aspect-[3/2] rounded-[28px] overflow-hidden cursor-pointer" style={{ "--tile-accent": DEEP, color: BLUE }} onClick={() => openModule("hobbies")}>
       <div className="absolute inset-0 rounded-[28px] ring-1 ring-inset ring-white/10" style={glassShell} />
       <span className="pointer-events-none absolute inset-x-0 top-0 h-px z-10" style={{ background: `linear-gradient(90deg, transparent, ${DEEP} 18%, ${DEEP} 82%, transparent)` }} />
 
@@ -95,6 +96,7 @@ export default function ThingsLoveWidget() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
+            onClick={(e) => e.stopPropagation()}
           >
             {/* legenda — 3 categorieën met kleur (klik → module) */}
             <div className="flex flex-wrap gap-x-2.5 gap-y-1 mt-2.5 cursor-pointer" onClick={() => openModule("hobbies")}>
@@ -135,7 +137,7 @@ export default function ThingsLoveWidget() {
         animate={{ left: selected ? "0%" : "50%" }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         style={{ width: "50%", boxShadow: "-12px 0 30px -14px rgba(0,0,0,0.42), 12px 0 30px -14px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.18)" }}
-        onClick={selected ? () => setSelectedId(null) : undefined}
+        onClick={selected ? (e) => { e.stopPropagation(); setSelectedId(null); } : undefined}
       >
         <img src={selected ? selected.raw.image || PHOTO : PHOTO} alt="Things I Love" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
         <div
@@ -190,6 +192,7 @@ export default function ThingsLoveWidget() {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 40, opacity: 0 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            onClick={(e) => e.stopPropagation()}
           >
             <HobbyEditPanel hobby={selected.raw} theme={selected.theme} level={selected.level} onUpdate={handleUpdate} onClose={() => setSelectedId(null)} />
           </motion.div>

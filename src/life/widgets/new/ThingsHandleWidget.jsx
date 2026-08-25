@@ -67,12 +67,12 @@ export default function ThingsHandleWidget() {
   ];
 
   return (
-    <div className="relative w-full aspect-[9/16] rounded-[28px] overflow-hidden">
+    <div className="relative w-full aspect-[9/16] rounded-[28px] overflow-hidden cursor-pointer" onClick={() => openModule("personaladmin")}>
       <motion.img src={PHOTO} alt="Things to Handle" className="absolute inset-0 h-full w-full object-cover" initial={{ scale: 1.14, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }} draggable={false} />
       <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(20,22,26,0.92) 8%, rgba(20,22,26,0.42) 50%, rgba(20,22,26,0.20) 100%)" }} />
 
       {/* ACHTER: Next/Terug + neon klok (vult breedte) */}
-      <div className="absolute inset-x-0 bottom-0 h-1/2 z-0 flex flex-col justify-end px-3 pb-4 gap-3" style={{ color: IVORY }} onClick={() => openModule("personaladmin")}>
+      <div className="absolute inset-x-0 bottom-0 h-1/2 z-0 flex flex-col justify-end px-3 pb-4 gap-3" style={{ color: IVORY }}>
         <div className="flex items-center justify-between">
           {atStart ? (
             <p className="text-[8px] uppercase tracking-[0.22em] opacity-55">Next in the list</p>
@@ -110,7 +110,7 @@ export default function ThingsHandleWidget() {
       {/* GLASKAART (flush, minder blur) — schuift omhoog bij tik */}
       <motion.button
         type="button"
-        onClick={() => setUp((v) => !v)}
+        onClick={(e) => { e.stopPropagation(); setUp((v) => !v); }}
         className="absolute left-0 right-0 top-0 h-1/2 rounded-[24px] overflow-hidden text-left block z-20"
         initial={false}
         animate={{ y: up ? "0%" : "100%" }}

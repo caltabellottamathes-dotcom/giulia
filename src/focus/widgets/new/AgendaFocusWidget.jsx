@@ -46,7 +46,7 @@ export default function AgendaFocusWidget() {
   const evDate = next ? new Date(next.start).toLocaleDateString("nl-NL", { weekday: "short", day: "numeric", month: "short" }) : "";
 
   return (
-    <div className="relative w-full h-[260px] rounded-[28px] overflow-hidden cursor-pointer" style={{ "--tile-accent": DEEP, color: DEEP }} onClick={() => setOpen(true)}>
+    <div className="relative w-full h-[260px] rounded-[28px] overflow-hidden cursor-pointer" style={{ "--tile-accent": DEEP, color: DEEP }} onClick={() => openModule("agenda")}>
       <div className="absolute inset-0 overflow-hidden ring-1 ring-inset ring-white/10 rounded-[28px]" style={{ background: "rgba(48,50,55,0.18)", backdropFilter: "blur(22px) saturate(1.35)", WebkitBackdropFilter: "blur(22px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.12)" }} />
 
       {/* rechts — glas content, focus-kleur (plum) */}
@@ -54,7 +54,7 @@ export default function AgendaFocusWidget() {
         <WidgetHeader type="agenda" label="What's Happening?" count={todayCount ? String(todayCount) : ""} />
         <div className="flex-1 min-h-0" />
         {next ? (
-          <div className="flex flex-col items-end">
+          <div className="flex flex-col items-end cursor-pointer" onClick={(e) => { e.stopPropagation(); setOpen(true); }}>
             <p className="text-[10px] uppercase tracking-[0.2em] font-bold" style={{ color: OLIVE }}>{evDate}</p>
             <p className="text-[16px] font-display font-semibold leading-tight truncate text-right max-w-full mt-0.5" style={{ color: OLIVE }}>{next.title}</p>
             <p className="text-[52px] font-display font-bold leading-none tracking-[-0.03em] tabular-nums mt-2" style={{ color: DEEP }}>{evTime}</p>
