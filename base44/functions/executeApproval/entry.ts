@@ -120,8 +120,8 @@ export default async function (req) {
       const subject = meta.subject || ap.title || "(geen onderwerp)";
       const messageBody = ap.content || meta.body || "";
       if (!to) {
-        await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
-        return Response.json({ ok: false, executed: "email", error: "geen ontvanger", detail: "Approval gemarkeerd goedgekeurd, maar geen ontvanger bekend — verstuur handmatig." });
+        await sr.entities.Approval.update(approval_id, { status: "pending" }).catch(() => {});
+        return Response.json({ ok: false, executed: "email", error: "geen ontvanger", detail: "Geen ontvanger bekend — pas de ontvanger aan en probeer opnieuw." });
       }
       // Email loopt uitsluitend via de IMAP/SMTP-bridge — géén Gmail meer.
       try {
@@ -139,10 +139,10 @@ export default async function (req) {
           if (meta.contact_id) await sr.entities.Contact.update(meta.contact_id, { last_contact_date: new Date().toISOString() }).catch(() => {});
           return Response.json({ ok: true, executed: "email", detail: `Verstuurd aan ${to} (via bridge)` });
         }
-        await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
-        return Response.json({ ok: false, executed: "email", error: "send failed", detail: (sent && (sent.error || sent.detail)) || "Verzenden via bridge mislukt." });
+        await sr.entities.Approval.update(approval_id, { status: "pending" }).catch(() => {});
+        return Response.json({ ok: false, executed: "email", error: "send failed", detail: (sent && (sent.error || sent.detail)) || "Verzenden via bridge mislukt — pas aan of probeer opnieuw." });
       } catch (e) {
-        await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
+        await sr.entities.Approval.update(approval_id, { status: "pending" }).catch(() => {});
         return Response.json({ ok: false, executed: "email", error: String(e.message || e) });
       }
     }
@@ -252,8 +252,8 @@ export default async function (req) {
       const messageBody = ap.content || meta.body || "";
       const contactId = ap.thread_id || meta.contact_id || "";
       if (!messageBody) {
-        await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
-        return Response.json({ ok: false, executed: "whatsapp", error: "geen bericht", detail: "Approval goedgekeurd, maar geen berichtinhoud." });
+        await sr.entities.Approval.update(approval_id, { status: "pending" }).catch(() => {});
+        return Response.json({ ok: false, executed: "whatsapp", error: "geen bericht", detail: "Geen berichtinhoud — pas aan en probeer opnieuw." });
       }
       try {
         const sentRes = await base44.functions.invoke("sendWhatsApp", { to, contact_id: contactId, message: messageBody });
@@ -267,10 +267,10 @@ export default async function (req) {
           if (contactId) await sr.entities.Contact.update(contactId, { last_contact_date: new Date().toISOString() }).catch(() => {});
           return Response.json({ ok: true, executed: "whatsapp", detail: "Verzonden" });
         }
-        await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
-        return Response.json({ ok: false, executed: "whatsapp", error: "send failed", detail: (sent && (sent.error || sent.detail)) || "Verzenden via WhatsApp mislukt." });
+        await sr.entities.Approval.update(approval_id, { status: "pending" }).catch(() => {});
+        return Response.json({ ok: false, executed: "whatsapp", error: "send failed", detail: (sent && (sent.error || sent.detail)) || "Verzenden via WhatsApp mislukt — pas aan of probeer opnieuw." });
       } catch (e) {
-        await sr.entities.Approval.update(approval_id, { status: "approved" }).catch(() => {});
+        await sr.entities.Approval.update(approval_id, { status: "pending" }).catch(() => {});
         return Response.json({ ok: false, executed: "whatsapp", error: String(e.message || e) });
       }
     }

@@ -67,8 +67,8 @@ export default function Approvals() {
       } else {
         haptic("warning");
         toast({
-          title: "Gedeeltelijk",
-          description: r?.detail || r?.error || "Actie kon niet volledig worden uitgevoerd.",
+          title: "Niet verzonden",
+          description: r?.detail || r?.error || "Verzenden mislukt — pas aan of probeer opnieuw.",
           variant: "destructive",
         });
       }
