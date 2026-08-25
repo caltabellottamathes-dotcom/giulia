@@ -4,6 +4,7 @@ import ModulePanel from "@/system/panels/ModulePanel";
 import ChatWindow from "@/giulia/panels/ChatWindow";
 import VoiceWindow from "@/giulia/panels/VoiceWindow";
 import BrowserWindow from "@/system/components/BrowserWindow";
+import MediaFullscreenWindow from "@/system/components/MediaFullscreenWindow";
 import WorkspaceToolbar from "@/system/components/WorkspaceToolbar";
 import { MediaViewerProvider } from "@/lib/MediaViewerContext";
 import { BeeldbankProvider } from "@/lib/BeeldbankContext";
@@ -81,6 +82,9 @@ function LayoutInner() {
 
       {/* Fullscreen in-app browser window */}
       <BrowserWindow />
+
+      {/* Fullscreen media viewer — adjustable size & ratio */}
+      <MediaFullscreenWindow />
 
       {/* Permanent glass interaction bar — bottom-right */}
       <WorkspaceToolbar />

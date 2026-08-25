@@ -33,15 +33,15 @@ export function isDriveUrl(url) {
 const MODULE_FOR_KIND = { image: "imageviewer", video: "videoplayer", music: "musicplayer", doc: "docviewer" };
 
 export function MediaViewerProvider({ children }) {
-  const { openModule } = usePanel();
+  const { openMediaFullscreen } = usePanel();
   const [media, setMedia] = useState(null);
 
   const openMedia = useCallback((file) => {
     if (!file) return;
     const kind = kindOfFile(file);
     setMedia({ name: file.name, url: file.url, type: file.type, kind });
-    openModule(MODULE_FOR_KIND[kind]);
-  }, [openModule]);
+    openMediaFullscreen();
+  }, [openMediaFullscreen]);
 
   const closeMedia = useCallback(() => setMedia(null), []);
 
