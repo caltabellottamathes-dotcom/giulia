@@ -24,10 +24,11 @@ export default async function (req) {
     const displayName = first === "Salvatore" ? "Salvo" : first || "Salvo";
 
     const now = new Date();
-    const part = partOfDay(now.getHours());
-    const dayName = now.toLocaleDateString("nl-NL", { weekday: "long" });
-    const dateLabel = now.toLocaleDateString("nl-NL", { day: "numeric", month: "long" });
-    const timeLabel = now.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" });
+    const amstHour = parseInt(now.toLocaleTimeString("nl-NL", { hour: "2-digit", hour12: false, timeZone: "Europe/Amsterdam" }), 10) || 0;
+    const part = partOfDay(amstHour);
+    const dayName = now.toLocaleDateString("nl-NL", { weekday: "long", timeZone: "Europe/Amsterdam" });
+    const dateLabel = now.toLocaleDateString("nl-NL", { day: "numeric", month: "long", timeZone: "Europe/Amsterdam" });
+    const timeLabel = now.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Amsterdam" });
     const nowIso = now.toISOString();
 
     // Lichtgewicht live-context, parallel en fouttolerant.
@@ -38,10 +39,22 @@ export default async function (req) {
       base44.entities.TimeEntry.filter({ status: "running" }, "-start_time", 1).catch(() => []),
     ]);
 
+    const dayLabel = (eStart) => {
+      const today = new Date(now);
+      today.setHours(0, 0, 0, 0);
+      const ev = new Date(eStart);
+      ev.setHours(0, 0, 0, 0);
+      const diff = Math.round((ev.getTime() - today.getTime()) / 86400000);
+      if (diff <= 0) return "vandaag";
+      if (diff === 1) return "morgen";
+      if (diff === 2) return "overmorgen";
+      return new Date(eStart).toLocaleDateString("nl-NL", { weekday: "short", timeZone: "Europe/Amsterdam" });
+    };
+
     const upcoming = (events || [])
       .filter((e) => e.start && new Date(e.start).getTime() >= now.getTime())
       .slice(0, 3)
-      .map((e) => `${new Date(e.start).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })} ${e.title}`);
+      .map((e) => `${dayLabel(e.start)} ${new Date(e.start).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Amsterdam" })} ${e.title}`);
 
     const todayTasks = (tasks || []).map((t) => t.title).filter(Boolean).slice(0, 4);
     const pendingApprovals = (approvals || []).length;
@@ -60,6 +73,7 @@ export default async function (req) {
 - Precies TWEE regels. Regel 1: een korte begroeting passend bij het moment (ochtend/middag/avond/nacht) en de dag. Regel 2: één scherpe, contextbewuste opmerking over wat er NU speelt op basis van de context hieronder.
 - Stijl: droog, scherp, menselijk, Nederlands. Geen SaaS-enthousiasme, geen uitroeptekens, geen herhaling. Variatie: maak het elke keer anders, geen vast riedeltje — kies een andere invalshoek dan de obvious keuze.
 - Regel 2 eindigt altijd op "..." (drie puntjes, nooit een punt of vraagteken).
+- Blijf strikt bij de CONTEXT: gebruik alleen de tijden, dagen en afspraken die erin staan, reken niets zelf om. Als een afspraak niet vandaag is, noem de dag (bv. "morgen", "woensdag").
 - Maximaal ~12 woorden per regel.
 
 CONTEXT:

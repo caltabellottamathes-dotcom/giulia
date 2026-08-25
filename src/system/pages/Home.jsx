@@ -223,8 +223,8 @@ export default function Home() {
       })()}
 
       {/* Content */}
-      <div className={cn("relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[3vh] lg:pt-0", panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100")}>
-        <header className="px-5 lg:px-10 pt-3 lg:pt-4 pb-10 lg:pb-14 flex items-end justify-between gap-4 lg:shrink-0">
+      <div className={cn("relative z-10 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform pt-[1vh] lg:pt-0", panelOpen ? "translate-x-[100vw] opacity-0" : "translate-x-0 opacity-100")}>
+        <header className="px-5 lg:px-10 pt-3 lg:pt-4 pb-6 lg:pb-8 flex items-end justify-between gap-4 lg:shrink-0">
           <div>
             <p className="text-[11px] uppercase tracking-[0.28em] text-foreground/70 mb-2 font-semibold">{new Date().toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" })}</p>
             <h1 className="text-[22px] sm:text-2xl lg:text-[28px] font-display font-semibold tracking-[-0.02em] leading-[1.15] text-foreground text-balance">

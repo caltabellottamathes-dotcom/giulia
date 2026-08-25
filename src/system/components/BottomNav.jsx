@@ -28,7 +28,7 @@ export default function BottomNav() {
       <button
         onClick={() => setCollapsed((c) => !c)}
         aria-label={collapsed ? "Navigatie tonen" : "Navigatie verbergen"}
-        className="h-11 w-11 rounded-full glass-1 border border-foreground/12 flex items-center justify-center shrink-0 shadow-[0_14px_36px_-14px_rgba(0,0,0,0.28)] text-foreground/60 hover:text-foreground transition-colors"
+        className="h-9 w-9 rounded-full glass-1 border border-foreground/12 flex items-center justify-center shrink-0 shadow-[0_14px_36px_-14px_rgba(0,0,0,0.28)] text-foreground/60 hover:text-foreground transition-colors"
         style={{ background: tintBg, borderColor: tintBorder }}
       >
         {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
@@ -37,7 +37,7 @@ export default function BottomNav() {
       {/* Zwevende glazen pill — schuift horizontaal in/uit */}
       <div
         className={cn(
-          "flex items-center gap-0.5 rounded-full glass-1 border border-foreground/12 px-1.5 h-11 shadow-[0_14px_36px_-14px_rgba(0,0,0,0.28)] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] origin-left",
+          "flex items-center gap-0.5 rounded-full glass-1 border border-foreground/12 px-1.5 h-9 shadow-[0_14px_36px_-14px_rgba(0,0,0,0.28)] transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] origin-left",
           collapsed ? "-translate-x-[calc(100%+0.5rem)] opacity-0 pointer-events-none" : "translate-x-0 opacity-100"
         )}
         style={{ background: tintBg, borderColor: tintBorder }}
