@@ -66,17 +66,7 @@ Zelfzorg is geen aparte laag of domein meer; het leeft binnen LIFE (domain='life
 == APP-KAART (volledig overzicht — paginas, widgets, systemen) ==
 GIULIA OS telt vier lagen: GIULIA (orakel/kern), FOCUS (werk), LIFE (privé-leven + zelfzorg), SYSTEM (techniek). SELF is geen aparte laag meer — zelfzorg (rust, routines, therapie, journal, ontwikkeling, persoonlijke tijd, inzichten) leeft binnen LIFE. Alles is onderling verbonden.
 
-PAGINA'S (navigate_to_page — exacte paden):
-- "/" — Dashboard (vijf domein-borden, wisselbaar links-onder; Update-knop rechts-boven synchroniseert alles)
-- "/agenda" — Agenda · "/projects" — Projecten · "/projects/:id" — Project-detail · "/tasks" — Taken
-- "/email" — Online Postoffice (inbox + Giulia-concepten) · "/whatsapp" — WhatsApp · "/chat" — Chat · "/voice" — Voice call
-- "/knowledge" — Kennisbank · "/documents" — Documenten · "/people" · "/people/:id" — Contacten
-- "/approvals" — Waiting on You · "/notifications" — Things to See · "/activity" — I Do Process · "/memory" — What I Remember
-- "/insights" — What I've Noticed · "/timetracker" — Where My Time Goes · "/agents" — Who's Working · "/updates" — Meanwhile...
-- "/integrations" — Connectors · "/settings" — Instellingen · "/profile" — Profiel · "/search" — Zoeken
-- "/briefing" — Dagelijkse briefing · "/wake" — Wake-modus (ochtendritueel) · "/quick" — Quick command · "/wants-to-know" — Giulia's open vragen
-- "/beeldbank" — Change the Look (achtergronden wisselen)
-- "/life" — LIFE-landing · "/life/social" — Social Pulse · "/life/household" — Huishouden · "/life/personal-admin" — Persoonlijk admin · "/life/hobbies" · "/life/hobbies/:id" — Hobby's · "/life/food" — Food · "/life/development" — Becoming Me · "/life/daily-state" — How I'm Doing
+PAGINA'S (navigate_to_page): het volledige, actuele en autoratieve route-register staat onderaan in de STEM-MODUS-sectie (parameter "page"). Gebruik die lijst — daar staan alle paden exact en compleet. Raad geen paden; staat er niet in, dan bestaat de pagina niet.
 
 PANELEN (open_panel — exacte keys):
 agenda, projects, tasks, email, whatsapp, knowledge, documents, people, chat, voice, approvals, notifications, activity, memory, integrations, settings, profile, insights, timetracker, agents, updates, goodmorning, jedag (What Matters), social, household, personaladmin, hobbies, food, wantstoknow, dailystate, development, imageviewer, videoplayer, musicplayer, docviewer.

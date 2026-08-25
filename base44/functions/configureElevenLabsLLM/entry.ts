@@ -22,10 +22,13 @@ const AGENT_ID = "agent_5501kza2zx7hehxbh0ydey1mq5gv";
 const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 const GEMINI_MODEL = "gemini-3.5-flash-lite";
 
-// Volledige navigatie-dekking — elke pagina, paneel, widget en viewer in de
-// hele app (GIULIA, FOCUS, LIFE, SELF, SYSTEM + GlassAgenda-suite + galleries).
+// Volledige navigatie-dekking — exact de routes die in src/App.jsx
+// geregistreerd staan (GIULIA, FOCUS, LIFE, SYSTEM + galleries/viewers).
+// SELF is geen apart domein meer; zelfzorg leeft binnen LIFE.
+// Dynamische detail-routes (/:id) staan als patroon — vul een echt id in.
 const NAV_PAGES = {
-  "/": "Dashboard — vijf domein-borden (GIULIA/FOCUS/LIFE/SELF/SYSTEM)",
+  // GIULIA-kern
+  "/": "Dashboard — vier domein-borden (GIULIA/FOCUS/LIFE/SYSTEM), wisselbaar links-onder",
   "/briefing": "Dagelijkse briefing", "/wake": "Wake-modus — ochtendritueel",
   "/quick": "Quick command", "/wants-to-know": "Wants to Know — Giulia's open vragen",
   "/beeldbank": "Change the Look — achtergronden wisselen", "/search": "Zoeken",
@@ -34,42 +37,28 @@ const NAV_PAGES = {
   "/activity": "I Do Process — activiteitentijdlijn", "/memory": "What I Remember — geheugen",
   "/insights": "What I've Noticed — inzichten", "/agents": "Who's Working — agenten",
   "/updates": "Meanwhile... — updates",
+  // FOCUS
   "/agenda": "Agenda — kalender en afspraken", "/projects": "Projecten — alle projecten",
-  "/tasks": "Taken — takenlijst", "/email": "Online Postoffice — email inbox + Giulia-concepten",
-  "/whatsapp": "WhatsApp — berichten", "/knowledge": "Kennisbank", "/documents": "Documenten — bestanden",
-  "/people": "Mensen — contacten", "/timetracker": "Where My Time Goes — tijd-timer",
+  "/projects/:id": "Project-detail (vul een project-id in)", "/tasks": "Taken — takenlijst",
+  "/email": "Online Postoffice — email inbox + Giulia-concepten", "/whatsapp": "WhatsApp — berichten",
+  "/knowledge": "Kennisbank", "/documents": "Documenten — bestanden",
+  "/people": "Mensen — contacten", "/people/:id": "Contact-detail (vul een contact-id in)",
+  "/timetracker": "Where My Time Goes — tijd-timer",
+  // LIFE (inclusief zelfzorg)
   "/life": "LIFE — landingspagina", "/life/social": "Social Pulse — sociaal leven",
   "/life/household": "Huishouden", "/life/personal-admin": "Persoonlijk admin",
-  "/life/hobbies": "Hobby's", "/life/food": "Food — weekmenu en boodschappen",
+  "/life/hobbies": "Hobby's", "/life/hobbies/:id": "Hobby-detail (vul een hobby-id in)",
+  "/life/food": "Food — weekmenu en boodschappen",
   "/life/development": "Becoming Me — persoonlijke ontwikkeling", "/life/daily-state": "How I'm Doing — daily state",
+  // SYSTEM + galleries
   "/integrations": "Connectors — integraties", "/settings": "Instellingen", "/profile": "Profiel",
   "/widget-gallery": "Widget galerij", "/widget-gallery-2": "Widget galerij 2",
   "/widget-gallery-3": "Widget galerij 3", "/widget-gallery-4": "Widget galerij 4",
   "/graph-gallery": "Grafiek galerij", "/graph-gallery-2": "Grafiek galerij 2",
   "/UI-items": "UI items", "/widgets-giulia": "GIULIA widgets", "/widgets-focus": "FOCUS widgets",
-  "/shell-collection": "Shell collectie",
-  "/glass": "GlassAgenda — home", "/glass/archief": "GlassAgenda — archief",
-  "/glass/notitieblok": "GlassAgenda — notitieblok", "/glass/prioriteiten": "GlassAgenda — prioriteitenmatrix",
-  "/glass/inspiratie": "GlassAgenda — inspiratiebord", "/glass/doelen": "GlassAgenda — doelendashboard",
-  "/glass/briefing": "GlassAgenda — dagelijkse briefing", "/glass/dagplanning": "GlassAgenda — dagplanning",
-  "/glass/focus": "GlassAgenda — focusmodus", "/glass/instellingen": "GlassAgenda — instellingen",
-  "/glass/taak-details": "GlassAgenda — taakdetails", "/glass/vergader": "GlassAgenda — vergadernotities",
-  "/glass/contacten": "GlassAgenda — contacten", "/glass/agenda": "GlassAgenda — agendaoverzicht",
-  "/glass/taken": "GlassAgenda — takenoverzicht", "/glass/tijd": "GlassAgenda — tijdsregistratie",
-  "/glass/week": "GlassAgenda — weekplanning", "/glass/projecten": "GlassAgenda — projecten",
-  "/glass/statistieken": "GlassAgenda — statistieken",
-  "/glass/self": "GlassAgenda — SELF overzicht", "/glass/self/daily-state": "GlassAgenda — daily state",
-  "/glass/self/routines": "GlassAgenda — routines", "/glass/self/wake": "GlassAgenda — wake",
-  "/glass/self/therapy": "GlassAgenda — therapie", "/glass/self/journal": "GlassAgenda — journal",
-  "/glass/self/development": "GlassAgenda — ontwikkeling", "/glass/self/personal-time": "GlassAgenda — persoonlijke tijd",
-  "/glass/self/insights": "GlassAgenda — inzichten", "/glass/self/food": "GlassAgenda — food",
-  "/glass/modules/taken": "GlassAgenda — taken module", "/glass/modules/email": "GlassAgenda — email module",
-  "/glass/modules/notifications": "GlassAgenda — notificaties module", "/glass/modules/approvals": "GlassAgenda — approvals module",
-  "/glass/modules/documents": "GlassAgenda — documents module", "/glass/modules/knowledge": "GlassAgenda — knowledge module",
-  "/glass/modules/people": "GlassAgenda — people module", "/glass/modules/project-add": "GlassAgenda — project toevoegen",
-  "/glass/modules/task-archive": "GlassAgenda — taakarchief", "/glass/modules/task-detail": "GlassAgenda — taakdetail",
-  "/glass/modules/time-tracker": "GlassAgenda — time tracker", "/glass/modules/week": "GlassAgenda — weekweergave",
-  "/glass/modules/whatsapp": "GlassAgenda — whatsapp module",
+  "/widgets-life": "LIFE widgets", "/shell-collection": "Shell collectie",
+  "/panel-design": "Paneel-design", "/questions-panel": "Questions-paneel",
+  "/life-gallery": "LIFE galerij", "/self-gallery": "Zelfzorg-galerij (legacy)",
 };
 
 const NAV_PANELS = {
