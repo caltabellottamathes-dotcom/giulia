@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { usePanel } from "@/lib/PanelContext";
+import { PanelContext } from "@/lib/PanelContext";
 
 /**
  * MediaViewerContext — houdt het momenteel aangeklikte bestand bij en opent
@@ -33,15 +33,15 @@ export function isDriveUrl(url) {
 const MODULE_FOR_KIND = { image: "imageviewer", video: "videoplayer", music: "musicplayer", doc: "docviewer" };
 
 export function MediaViewerProvider({ children }) {
-  const { openMediaFullscreen } = usePanel();
+  const panel = useContext(PanelContext);
   const [media, setMedia] = useState(null);
 
   const openMedia = useCallback((file) => {
     if (!file) return;
     const kind = kindOfFile(file);
     setMedia({ name: file.name, url: file.url, type: file.type, kind });
-    openMediaFullscreen();
-  }, [openMediaFullscreen]);
+    panel?.openMediaFullscreen?.();
+  }, [panel]);
 
   const closeMedia = useCallback(() => setMedia(null), []);
 

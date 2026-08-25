@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState } from "react";
  * for modules. Chat and Voice are separate, dedicated floating windows that
  * can coexist with a module panel and persist across dashboard navigation.
  */
-const PanelContext = createContext(null);
+export const PanelContext = createContext(null);
 
 export function PanelProvider({ children }) {
   const [activeModule, setActiveModule] = useState(null);
