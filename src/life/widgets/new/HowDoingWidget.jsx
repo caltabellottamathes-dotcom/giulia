@@ -42,10 +42,35 @@ export default function HowDoingWidget() {
 
   const todayDone = useMemo(() => WINDOW_ORDER.map((k) => isCompletedForWindow(checkIns, k)), [checkIns]);
   const latest = checkIns?.[0];
-  const energy = latest?.energy ?? 0;
-  const capacity = latest?.capacity ?? 0;
-  const mood = moodScore(latest?.mood);
-  const stateText = latest ? (latest.mood ? latest.mood.split(" ")[0].toUpperCase() : "IN") : "CHECK IN";
+
+  // Huidige mentale toestand, berekend uit alle check-ins van de actieve
+  // 09:00–09:00 cyclus (aggregaat i.p.v. enkel de laatste meting).
+  const cycleCheckIns = useMemo(() => {
+    const now = new Date();
+    const start = new Date(now);
+    start.setHours(9, 0, 0, 0);
+    if (now < start) start.setDate(start.getDate() - 1);
+    return (checkIns || []).filter((c) => c.timestamp && new Date(c.timestamp) >= start);
+  }, [checkIns]);
+  const agg = useMemo(() => {
+    const ci = cycleCheckIns;
+    if (!ci.length) return null;
+    const avg = (arr) => (arr.length ? arr.reduce((s, v) => s + v, 0) / arr.length : 0);
+    const e = avg(ci.map((c) => c.energy).filter((v) => v != null));
+    const cap = avg(ci.map((c) => c.capacity).filter((v) => v != null));
+    const mo = avg(ci.map((c) => moodScore(c.mood)).filter((v) => v != null));
+    let state = "NEUTRAL";
+    if (e >= 70 && cap >= 65) state = "CHARGED";
+    else if (cap <= 30) state = "OVERWHELMED";
+    else if (e <= 30) state = "LOW";
+    else if (e >= 55 && cap >= 50) state = "CALM";
+    return { energy: e, capacity: cap, mood: mo, state, count: ci.length };
+  }, [cycleCheckIns]);
+
+  const energy = due ? (latest?.energy ?? 0) : (agg?.energy ?? 0);
+  const capacity = due ? (latest?.capacity ?? 0) : (agg?.capacity ?? 0);
+  const mood = due ? moodScore(latest?.mood) : (agg?.mood ?? 0);
+  const stateText = due ? "CHECK IN" : (agg?.state ?? "—");
   const W = WINDOWS[win];
 
   return (

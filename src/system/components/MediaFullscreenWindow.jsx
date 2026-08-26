@@ -31,10 +31,14 @@ export default function MediaFullscreenWindow() {
   const [ratio, setRatio] = useState(3 / 4);
   const [boxH, setBoxH] = useState(0);
   const [vw, setVw] = useState(typeof window !== "undefined" ? window.innerWidth : 1280);
+  const [vh, setVh] = useState(typeof window !== "undefined" ? window.innerHeight : 800);
   const [currentTrackId, setCurrentTrackId] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [pos, setPos] = useState(null); // null = standaard rechtsonder; {x,y} na slepen
   const mediaRef = useRef(null);
   const shellRef = useRef(null);
+  const minWrapRef = useRef(null);
+  const dragRef = useRef(null);
   const ctxRef = useRef(null);
   const analyserRef = useRef(null);
   const graphReadyRef = useRef(false);
@@ -132,7 +136,7 @@ export default function MediaFullscreenWindow() {
   }, [mediaFullscreen, mediaMinimized]);
 
   useEffect(() => {
-    const onR = () => setVw(window.innerWidth);
+    const onR = () => { setVw(window.innerWidth); setVh(window.innerHeight); };
     window.addEventListener("resize", onR);
     return () => window.removeEventListener("resize", onR);
   }, []);
@@ -196,6 +200,23 @@ export default function MediaFullscreenWindow() {
   if (ratio >= 1) { minW = Math.min(MAX_MIN_W, MAX_MIN_H * ratio); minH = minW / ratio; }
   else { minH = Math.min(MAX_MIN_H, MAX_MIN_W / ratio); minW = minH * ratio; }
 
+  // ── Vrij verplaatsbare geminimaliseerde widget (slepen via de bovenrand) ──
+  const onHandleDown = (e) => {
+    const el = minWrapRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    dragRef.current = { sx: e.clientX, sy: e.clientY, ox: rect.left, oy: rect.top };
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
+  };
+  const onHandleMove = (e) => {
+    const d = dragRef.current;
+    if (!d) return;
+    const nx = d.ox + (e.clientX - d.sx);
+    const ny = d.oy + (e.clientY - d.sy);
+    setPos({ x: Math.max(8, Math.min(nx, vw - minW - 8)), y: Math.max(8, Math.min(ny, vh - minH - 8)) });
+  };
+  const onHandleUp = () => { dragRef.current = null; };
+
   // ── Shell-inhoud (window én minimized delen dit) ──
   const renderShell = (compact) => {
     const btn = compact ? "h-8 w-8" : "h-9 w-9";
@@ -203,12 +224,12 @@ export default function MediaFullscreenWindow() {
     const radius = compact ? "rounded-[20px]" : "rounded-[28px]";
     const glassBtn = "bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors";
     return (
-      <div className={cn("relative w-full h-full overflow-hidden bg-charcoal float-shadow", radius)}>
+      <div className={cn("relative w-full h-full overflow-hidden float-shadow", radius, kind === "music" ? "" : "bg-charcoal")}>
         {/* Sluitknop linksboven */}
-        <button onClick={handleClose} className={cn("absolute top-4 left-4 z-40 rounded-full", btn, glassBtn)} aria-label="Sluiten"><X className={ico} /></button>
+        <button onClick={handleClose} className={cn("absolute top-4 left-4 z-50 rounded-full", btn, glassBtn)} aria-label="Sluiten"><X className={ico} /></button>
 
         {/* Acties rechtsboven */}
-        <div className="absolute top-4 right-4 z-40 flex items-center gap-1.5">
+        <div className="absolute top-4 right-4 z-50 flex items-center gap-1.5">
           <a href={media.url} target="_blank" rel="noreferrer" className={cn("rounded-full", btn, glassBtn)} aria-label="Openen in nieuw tabblad" title="Openen in nieuw tabblad"><Download className={ico} /></a>
           {compact ? (
             <button onClick={restoreMedia} className={cn("rounded-full", btn, glassBtn)} aria-label="Vergroten" title="Vergroten"><Maximize2 className={ico} /></button>
@@ -216,6 +237,18 @@ export default function MediaFullscreenWindow() {
             <button onClick={minimizeMedia} className={cn("rounded-full", btn, glassBtn)} aria-label="Minimaliseren" title="Minimaliseren naar widget"><Minus className={ico} /></button>
           )}
         </div>
+
+        {/* Sleepgreep langs de bovenrand (enkel geminimaliseerd) */}
+        {compact && (
+          <div
+            onPointerDown={onHandleDown}
+            onPointerMove={onHandleMove}
+            onPointerUp={onHandleUp}
+            onPointerCancel={onHandleUp}
+            className="absolute top-0 inset-x-0 h-10 z-[35] cursor-grab active:cursor-grabbing touch-none"
+            aria-label="Verplaatsen"
+          />
+        )}
 
         {/* Titel-overlay — VoiceWindow-stijl (enkel niet-muziek) */}
         {kind !== "music" && (
@@ -288,7 +321,11 @@ export default function MediaFullscreenWindow() {
       )}
 
       {mediaMinimized ? (
-        <div className="fixed bottom-4 right-4 z-[56] animate-scale-in" style={{ width: minW, height: minH }}>
+        <div
+          ref={minWrapRef}
+          className="fixed z-[56] animate-scale-in touch-none"
+          style={pos ? { left: pos.x, top: pos.y, width: minW, height: minH } : { right: 16, bottom: 16, width: minW, height: minH }}
+        >
           {renderShell(true)}
         </div>
       ) : (
