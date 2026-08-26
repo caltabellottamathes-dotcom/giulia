@@ -1,0 +1,44 @@
+{
+  "name": "Social Intensity Analysis",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "social_intensity_analysis",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "analyze": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "socialIntensityAnalysis"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Intensity analysis",
+            "description": "Trend vs baseline"
+          }
+        }
+      }
+    ]
+  },
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 6 * * 2",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "\u00a719 / \u00a76.2 \u2014 wekelijkse vergelijking van sociale intensiteit met persoonlijke baseline."
+}

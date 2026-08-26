@@ -1,0 +1,37 @@
+{
+  "name": "Social Capacity Check",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "social_capacity_check",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "check": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "socialCapacityCheck"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Capacity check",
+            "description": "Na een check-in"
+          }
+        }
+      }
+    ]
+  },
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "SelfCheckIn"
+    }
+  },
+  "description": "\u00a719 / \u00a78.3 \u2014 combineert capaciteit (How I'm Doing) + beschikbare tijd + commitments, na elke check-in en 2x per dag."
+}

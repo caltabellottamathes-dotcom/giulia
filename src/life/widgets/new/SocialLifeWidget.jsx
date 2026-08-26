@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { useLearningSync } from "@/hooks/useLearningSync";
-import { closeCircle, daysSince, meaningfulInteractions, orbitTier, ORBIT_TIERS } from "@/lib/domainUtils";
+import { closeCircle, daysSince, meaningfulInteractions, orbitTier, ORBIT_TIERS, pulseState, PULSE_LABEL } from "@/lib/domainUtils";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ae8a21262_Social_.jpeg";
 const CENTER = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/3da3623a2_SOCIALCIRCLEPROFILE.jpg";
@@ -22,6 +22,7 @@ export default function SocialLifeWidget() {
   const { data: whatsapps } = useEntityList("WhatsAppMessage", { sort: "-timestamp", realtime: true, externalTick: learnTick });
 
   const mi = useMemo(() => meaningfulInteractions({ emails, whatsapps, days: 7 }), [emails, whatsapps]);
+  const pulse = useMemo(() => pulseState({ meaningfulCount: mi.total, activePlans: 0, openInvitations: 0 }), [mi.total]);
 
   const orbit = useMemo(() => {
     const circle = closeCircle(contacts || [])
@@ -48,6 +49,7 @@ export default function SocialLifeWidget() {
           ))}
         </span>
         <span className="text-[10px] uppercase tracking-[0.22em] font-bold">What Social Life?</span>
+        <span className="ml-auto text-[9px] uppercase tracking-[0.2em] font-bold opacity-75">{PULSE_LABEL[pulse]}</span>
       </div>
 
       <div

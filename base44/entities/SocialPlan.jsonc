@@ -16,6 +16,7 @@
     "status": {
       "type": "string",
       "enum": [
+        "proposed",
         "planned",
         "confirmed",
         "done",
@@ -40,6 +41,32 @@
     "agent_source": {
       "type": "string",
       "title": "Agent Source"
+    },
+    "personal_time_block_id": {
+      "type": "string",
+      "title": "Personal Time Block ID",
+      "description": "Gekoppeld PersonalTimeBlock waaruit dit plan de ruimte innam."
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "whatsapp",
+        "email",
+        "opportunity",
+        "intention"
+      ],
+      "default": "manual",
+      "title": "Source"
+    },
+    "confirmed_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Confirmed At"
+    },
+    "source_opportunity_id": {
+      "type": "string",
+      "title": "Source Opportunity ID"
     }
   },
   "required": [

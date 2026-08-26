@@ -1,0 +1,44 @@
+{
+  "name": "Social Activity Ingestion - Email",
+  "description": "\u00a719.1 \u2014 normaliseert een nieuwe Email tot een Social Activity en triggert relationship-update (alleen als een contact herkend is).",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "Email",
+      "events": [
+        "create"
+      ]
+    },
+    "condition": "${ .trigger.data.contact_id != null }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "social_activity_ingestion_email",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "ingest": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "socialActivityIngestion",
+            "args": {
+              "source": "${ if .trigger.data.folder == \"sent\" then \"email_sent\" else \"email_received\" end }",
+              "contact_id": "${ .trigger.data.contact_id }",
+              "message_id": "${ .trigger.entity_id }",
+              "text": "${ .trigger.data.body }",
+              "timestamp": "${ .trigger.data.timestamp }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Ingest Email activity",
+            "description": "Activity + relationship update"
+          }
+        }
+      }
+    ]
+  }
+}

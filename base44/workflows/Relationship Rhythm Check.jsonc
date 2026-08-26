@@ -1,0 +1,44 @@
+{
+  "name": "Relationship Rhythm Check",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "relationship_rhythm_check",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "check": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "relationshipRhythmCheck"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Rhythm check",
+            "description": "Baseline vs huidig interval"
+          }
+        }
+      }
+    ]
+  },
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 5 * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "\u00a719.2 \u2014 vergelijkt dagelijks het huidige contactinterval met de persoonlijke baseline per contact."
+}

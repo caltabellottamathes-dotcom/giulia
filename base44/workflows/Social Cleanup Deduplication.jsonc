@@ -1,0 +1,44 @@
+{
+  "name": "Social Cleanup Deduplication",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "social_cleanup_dedup",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "cleanup": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "socialCleanupDedup"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Cleanup & dedupe",
+            "description": "Voorkomt dubbele records"
+          }
+        }
+      }
+    ]
+  },
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 4 * * 0",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "\u00a719 \u2014 wekelijkse deduplicatie van open SocialOpportunity/SocialIntention-records."
+}

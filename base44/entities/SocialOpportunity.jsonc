@@ -1,0 +1,77 @@
+{
+  "name": "SocialOpportunity",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "reasoning": {
+      "type": "string",
+      "title": "Reasoning"
+    },
+    "contact_id": {
+      "type": "string",
+      "title": "Contact ID"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "reconnect",
+        "plan_time",
+        "respond_invitation",
+        "protect_time",
+        "other"
+      ],
+      "default": "reconnect",
+      "title": "Kind"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "accepted",
+        "dismissed",
+        "expired"
+      ],
+      "default": "open",
+      "title": "Status"
+    },
+    "suggested_window_start": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Suggested Window Start"
+    },
+    "suggested_window_end": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Suggested Window End"
+    },
+    "confidence": {
+      "type": "number",
+      "default": 0.5,
+      "title": "Confidence"
+    },
+    "source_pattern": {
+      "type": "string",
+      "title": "Source Pattern"
+    },
+    "resulting_social_plan_id": {
+      "type": "string",
+      "title": "Resulting Social Plan ID"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

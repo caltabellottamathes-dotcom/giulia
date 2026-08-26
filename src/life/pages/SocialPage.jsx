@@ -1,17 +1,22 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IMAGES } from "@/lib/images";
-import { Heart, CalendarHeart, Clock } from "lucide-react";
+import { Heart, CalendarHeart, Clock, LayoutGrid, Users } from "lucide-react";
+import SocialOverviewPreview from "@/life/panels/SocialOverviewPreview";
+import RelationshipsPreview from "@/life/panels/RelationshipsPreview";
 import SocialPulsePreview from "@/life/panels/SocialPulsePreview";
 import SocialPlannerPreview from "@/life/panels/SocialPlannerPreview";
 import PersonalTimePreview from "@/life/panels/PersonalTimePreview";
 
 /**
  * Social — de "space" achter What Social Life? Eén donkere glas-omgeving met
- * 3 tabs (Pulse / Planner / Persoonlijke Tijd) die dezelfde Previews tonen
- * als het ModulePanel. Geen aparte pages meer — de Preview IS de inhoud.
+ * 5 tabs (§14.1: Overview / Relationships / Pulse / Planner / Personal Time)
+ * die dezelfde Previews tonen als het ModulePanel. Geen aparte pages meer —
+ * de Preview IS de inhoud.
  */
 const TABS = [
+  { key: "overview", label: "Overview", icon: LayoutGrid, Preview: SocialOverviewPreview },
+  { key: "relationships", label: "Relationships", icon: Users, Preview: RelationshipsPreview },
   { key: "socialpulse", label: "Pulse", icon: Heart, Preview: SocialPulsePreview },
   { key: "socialplanner", label: "Planner", icon: CalendarHeart, Preview: SocialPlannerPreview },
   { key: "socialtime", label: "Persoonlijke Tijd", icon: Clock, Preview: PersonalTimePreview },
@@ -19,7 +24,7 @@ const TABS = [
 
 export default function SocialPage() {
   const navigate = useNavigate();
-  const [view, setView] = useState(() => new URLSearchParams(window.location.search).get("view") || "socialpulse");
+  const [view, setView] = useState(() => new URLSearchParams(window.location.search).get("view") || "overview");
   const setView2 = (v) => { setView(v); navigate(`/life/social?view=${v}`, { replace: true }); };
   const active = TABS.find((t) => t.key === view) || TABS[0];
   const Preview = active.Preview;

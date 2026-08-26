@@ -1,0 +1,44 @@
+{
+  "name": "Social Attention Guard",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "social_attention_guard",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "guard": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "socialAttentionGuard"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Attention guard",
+            "description": "Wat moet Salvo nu zien?"
+          }
+        }
+      }
+    ]
+  },
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 11,17 * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "\u00a719.6 \u2014 2x per dag: is er nu iets sociaal dat daadwerkelijk aandacht verdient?"
+}

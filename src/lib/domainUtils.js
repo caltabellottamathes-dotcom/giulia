@@ -146,3 +146,32 @@ export const ORBIT_TIERS = [
 export function orbitTier(days) {
   return ORBIT_TIERS.find((t) => days <= t.max) || ORBIT_TIERS[ORBIT_TIERS.length - 1];
 }
+
+// Social Pulse state (live, client-side mirror of base44/shared/socialEngine.ts
+// computeSocialPulseState — §6.3). Beschrijvend t.o.v. persoonlijke baseline,
+// geen kwaliteitsmaatstaf. Gebruikt door de unified "What Social Life?" widget/panel.
+export function pulseState({ meaningfulCount = 0, activePlans = 0, openInvitations = 0, availableMin = 9999, baselineWeekly = null }) {
+  if (baselineWeekly == null && meaningfulCount === 0 && activePlans === 0) return "UNKNOWN";
+  if (activePlans >= 5 && availableMin < 240) return "OVERLOADED";
+  if (activePlans >= 4) return "A_LOT_HAPPENING";
+  if (openInvitations >= 1 && meaningfulCount <= 2) return "OPEN";
+  if (baselineWeekly != null) {
+    if (meaningfulCount >= baselineWeekly * 1.4) return "A_LOT_HAPPENING";
+    if (meaningfulCount <= baselineWeekly * 0.5) return "QUIETER_THAN_USUAL";
+  }
+  if (meaningfulCount >= 5) return "CONNECTED";
+  if (meaningfulCount >= 2 && activePlans >= 1) return "BALANCED";
+  if (meaningfulCount >= 1) return "ACTIVE";
+  return "QUIETER_THAN_USUAL";
+}
+
+export const PULSE_LABEL = {
+  CONNECTED: "CONNECTED", ACTIVE: "ACTIVE", QUIETER_THAN_USUAL: "QUIETER THAN USUAL",
+  A_LOT_HAPPENING: "A LOT HAPPENING", OPEN: "OPEN", BALANCED: "BALANCED",
+  OVERLOADED: "OVERLOADED", UNKNOWN: "UNKNOWN",
+};
+
+export const RELATIONSHIP_LABEL = {
+  ACTIVE: "Active", CLOSE: "Close", QUIET: "Quiet", QUIETER_THAN_USUAL: "Quieter than usual",
+  EMERGING: "Emerging", RECONNECTING: "Reconnecting", CHANGING: "Changing", UNKNOWN: "Unknown",
+};

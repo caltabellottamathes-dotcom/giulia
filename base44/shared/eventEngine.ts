@@ -50,8 +50,11 @@ export async function propagate(base44, event) {
     const plans = await sr.entities.SocialPlan.filter({ calendar_event_id: object_id }).catch(() => []);
     let n = 0;
     for (const sp of plans) {
-      if (sp.status === "planned" || sp.status === "confirmed") {
+      if (sp.status === "planned" || sp.status === "confirmed" || sp.status === "proposed") {
         await sr.entities.SocialPlan.update(sp.id, { status: "cancelled" }).catch(() => null);
+        if (sp.personal_time_block_id) {
+          await sr.entities.PersonalTimeBlock.update(sp.personal_time_block_id, { linked_social_plan_id: null, conflict_flag: false }).catch(() => null);
+        }
         n++;
       }
     }
@@ -95,6 +98,16 @@ export async function propagate(base44, event) {
         await sr.entities.TherapyTrajectory.update(ev.therapy_trajectory_id, patch).catch(() => null);
         return { linked_trajectory: ev.therapy_trajectory_id, event_ids };
       }
+    }
+    return null;
+  }
+
+  // SOCIAL_PLAN_CANCELLED → gekoppeld PersonalTimeBlock vrijgeven (§9.2/§13.12)
+  if (event_type === "SOCIAL_PLAN_CANCELLED" && object_type === "SocialPlan") {
+    const sp = await sr.entities.SocialPlan.get(object_id).catch(() => null);
+    if (sp && sp.personal_time_block_id) {
+      await sr.entities.PersonalTimeBlock.update(sp.personal_time_block_id, { linked_social_plan_id: null, conflict_flag: false }).catch(() => null);
+      return { released_block: sp.personal_time_block_id };
     }
     return null;
   }

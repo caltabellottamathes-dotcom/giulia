@@ -1,0 +1,44 @@
+{
+  "name": "Social Activity Ingestion - WhatsApp",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "social_activity_ingestion_whatsapp",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "ingest": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "socialActivityIngestion",
+            "args": {
+              "source": "${ \"whatsapp_\" + .trigger.data.direction }",
+              "contact_id": "${ .trigger.data.contact_id }",
+              "message_id": "${ .trigger.entity_id }",
+              "text": "${ .trigger.data.message }",
+              "timestamp": "${ .trigger.data.timestamp }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Ingest WhatsApp activity",
+            "description": "Activity + relationship update"
+          }
+        }
+      }
+    ]
+  },
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "WhatsAppMessage"
+    }
+  },
+  "description": "\u00a719.1 \u2014 normaliseert een nieuw WhatsApp-bericht tot een Social Activity en triggert relationship-update."
+}

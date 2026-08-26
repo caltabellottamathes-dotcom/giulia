@@ -1,0 +1,40 @@
+{
+  "name": "Calendar Cancellation Propagation",
+  "description": "\u00a719 \u2014 wanneer een CalendarEvent geannuleerd wordt, cancelt dit de gekoppelde SocialPlan en geeft PersonalTime vrij.",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "CalendarEvent",
+      "events": [
+        "update"
+      ]
+    },
+    "condition": "${ .trigger.data.status == \"cancelled\" and .trigger.old_data.status != \"cancelled\" }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "calendar_cancellation_propagation",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "propagate": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "calendarCancellationPropagation",
+            "args": {
+              "event_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Cancel propagation",
+            "description": "SocialPlan + PersonalTime bijwerken"
+          }
+        }
+      }
+    ]
+  }
+}

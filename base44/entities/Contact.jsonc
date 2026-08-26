@@ -77,6 +77,72 @@
         "life"
       ],
       "title": "Relationship Domain"
+    },
+    "last_meaningful_contact_date": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Last Meaningful Contact Date",
+      "description": "Laatste betekenisvolle interactie (voor Relationship Rhythm Check) \u2014 apart van ruwe last_contact_date."
+    },
+    "contact_rhythm_days": {
+      "type": "number",
+      "title": "Contact Rhythm (days)",
+      "description": "Persoonlijke baseline-interval tussen betekenisvolle contacten, afgeleid uit historie."
+    },
+    "relationship_state": {
+      "type": "string",
+      "enum": [
+        "ACTIVE",
+        "CLOSE",
+        "QUIET",
+        "QUIETER_THAN_USUAL",
+        "EMERGING",
+        "RECONNECTING",
+        "CHANGING",
+        "UNKNOWN"
+      ],
+      "default": "UNKNOWN",
+      "title": "Relationship State",
+      "description": "Beschrijvend, niet diagnostisch \u2014 berekend door socialEngine."
+    },
+    "relationship_health": {
+      "type": "object",
+      "title": "Relationship Health",
+      "description": "Samengestelde signalen (g\u00e9\u00e9n score): connection/recency/rhythm/reciprocity/quality/context/intention/change.",
+      "properties": {
+        "connection": {
+          "type": "string"
+        },
+        "recency": {
+          "type": "string"
+        },
+        "rhythm": {
+          "type": "string"
+        },
+        "reciprocity": {
+          "type": "string"
+        },
+        "quality": {
+          "type": "string"
+        },
+        "context": {
+          "type": "string"
+        },
+        "intention": {
+          "type": "string"
+        },
+        "change": {
+          "type": "string"
+        },
+        "computed_at": {
+          "type": "string"
+        }
+      }
+    },
+    "relationship_pattern_note": {
+      "type": "string",
+      "title": "Relationship Pattern Note",
+      "description": "Laatst gedetecteerde Pattern/Pattern Shift/Deviation, kort en leesbaar."
     }
   },
   "required": [

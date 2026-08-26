@@ -55,6 +55,17 @@
     "agent_source": {
       "type": "string",
       "title": "Agent Source"
+    },
+    "linked_social_plan_id": {
+      "type": "string",
+      "title": "Linked Social Plan ID",
+      "description": "Gezet wanneer sociale planning dit blok gebruikte \u2014 voorkomt dat protected time stilzwijgend wordt overschreven."
+    },
+    "conflict_flag": {
+      "type": "boolean",
+      "default": false,
+      "title": "Conflict Flag",
+      "description": "True wanneer een sociale planning tegen protected/recovery tijd botst \u2014 GIULIA signaleert, lost niet automatisch op."
     }
   },
   "required": [

@@ -1,0 +1,41 @@
+{
+  "name": "Invitation Detection - WhatsApp",
+  "description": "\u00a719.6 \u2014 herkent uitnodigingen in binnenkomende WhatsApp-berichten.",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "WhatsAppMessage",
+      "events": [
+        "create"
+      ]
+    },
+    "condition": "${ .trigger.data.direction == \"received\" }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "invitation_detection_whatsapp",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "detect": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "invitationDetection",
+            "args": {
+              "contact_id": "${ .trigger.data.contact_id }",
+              "text": "${ .trigger.data.message }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Detect invitation",
+            "description": "Uitnodiging \u2260 bevestigde afspraak"
+          }
+        }
+      }
+    ]
+  }
+}

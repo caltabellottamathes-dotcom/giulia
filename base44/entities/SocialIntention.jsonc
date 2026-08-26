@@ -1,0 +1,78 @@
+{
+  "name": "SocialIntention",
+  "type": "object",
+  "properties": {
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "contact_id": {
+      "type": "string",
+      "title": "Contact ID"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "see_someone",
+        "call",
+        "invite",
+        "reconnect",
+        "respond_invitation",
+        "spend_time",
+        "spontaneous",
+        "protect_time",
+        "alone_time",
+        "other"
+      ],
+      "default": "see_someone",
+      "title": "Kind"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "acted",
+        "dismissed"
+      ],
+      "default": "open",
+      "title": "Status"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "now",
+        "soon",
+        "someday"
+      ],
+      "default": "soon",
+      "title": "Priority"
+    },
+    "created_via": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "giulia",
+        "invitation_detection"
+      ],
+      "default": "manual",
+      "title": "Created Via"
+    },
+    "social_plan_id": {
+      "type": "string",
+      "title": "Resulting Social Plan ID"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
+    }
+  },
+  "required": [
+    "description"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

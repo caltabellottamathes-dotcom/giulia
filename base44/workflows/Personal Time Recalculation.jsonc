@@ -1,0 +1,38 @@
+{
+  "name": "Personal Time Recalculation",
+  "description": "\u00a719 \u2014 herberekent beschikbare/beschermde ruimte bij elke relevante Calendar-wijziging.",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "CalendarEvent",
+      "events": [
+        "create",
+        "update"
+      ]
+    },
+    "condition": "${ .trigger.data.domain == \"life\" }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "personal_time_recalculation",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "recalc": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "personalTimeRecalculation"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Recalculate",
+            "description": "Beschikbare ruimte + conflicten"
+          }
+        }
+      }
+    ]
+  }
+}

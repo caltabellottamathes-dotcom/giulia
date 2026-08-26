@@ -1,0 +1,44 @@
+{
+  "name": "Social Pattern Analysis",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "social_pattern_analysis",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "analyze": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "socialPatternAnalysis"
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Long-term pattern",
+            "description": "Social-niveau, niet per contact"
+          }
+        }
+      }
+    ]
+  },
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 7 1 * *",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "\u00a719 \u2014 maandelijkse langetermijn-analyse van social-level patronen (bv. weekend-concentratie)."
+}

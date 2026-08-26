@@ -1,0 +1,40 @@
+{
+  "name": "Social Memory Candidate",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "social_memory_candidate",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "evaluate": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "socialMemoryCandidate",
+            "args": {
+              "moment_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Memory candidate",
+            "description": "Alleen high-significance"
+          }
+        }
+      }
+    ]
+  },
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "SocialMoment"
+    }
+  },
+  "description": "\u00a79.7 / \u00a719 \u2014 wanneer een significant SocialMoment wordt vastgelegd, beoordeelt dit of het een Memory-record wordt."
+}

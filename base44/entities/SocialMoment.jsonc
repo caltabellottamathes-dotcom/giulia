@@ -1,0 +1,75 @@
+{
+  "name": "SocialMoment",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "contact_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Contact IDs"
+    },
+    "moment_type": {
+      "type": "string",
+      "enum": [
+        "conversation",
+        "dinner",
+        "visit",
+        "event",
+        "call",
+        "other"
+      ],
+      "default": "conversation",
+      "title": "Moment Type"
+    },
+    "significance": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium",
+      "title": "Significance"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Occurred At"
+    },
+    "source_activity_id": {
+      "type": "string",
+      "title": "Source Activity ID"
+    },
+    "social_plan_id": {
+      "type": "string",
+      "title": "Social Plan ID"
+    },
+    "memory_candidate": {
+      "type": "boolean",
+      "default": false,
+      "title": "Memory Candidate"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}
