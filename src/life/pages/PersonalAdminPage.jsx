@@ -132,7 +132,8 @@ export default function PersonalAdminPage() {
     setEditorials((prev) => ({ ...prev, [tabKey]: { data: prev[tabKey]?.data || null, loading: true } }));
     try {
       const res = await base44.functions.invoke("generateAdminRecap", { prompt: buildPrompt(tabKey, data), schema: EDITORIAL_SCHEMA });
-      const d = (res && res.ok && res.data && res.data.title) ? { ...res.data, items: Array.isArray(res.data.items) ? res.data.items : [] } : null;
+      const body = res?.data; // SDK wikkelt de functie-body in .data → { ok, data: <editorial> }
+      const d = (body && body.ok && body.data && body.data.title) ? { ...body.data, items: Array.isArray(body.data.items) ? body.data.items : [] } : null;
       if (d) {
         localStorage.setItem(key, JSON.stringify({ _content: d, _ts: Date.now(), _sig: fullSig }));
         setEditorials((prev) => ({ ...prev, [tabKey]: { data: d, loading: false } }));
