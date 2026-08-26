@@ -28,10 +28,10 @@ export const iconName = (t) => t.toUpperCase();
 
 // Schaduw richting de open kant (afhankelijk van plaatsing van de card).
 export const SHELL_SHADOW = {
-  left: "16px 0 34px -14px rgba(0,0,0,0.50)",
-  right: "-16px 0 34px -14px rgba(0,0,0,0.50)",
-  top: "0 16px 34px -14px rgba(0,0,0,0.50)",
-  bottom: "0 -16px 34px -14px rgba(0,0,0,0.50)",
+  left: "16px 0 34px -10px rgba(0,0,0,0.50)",
+  right: "-16px 0 34px -10px rgba(0,0,0,0.50)",
+  top: "0 16px 34px -10px rgba(0,0,0,0.50)",
+  bottom: "0 -16px 34px -10px rgba(0,0,0,0.50)",
 };
 
 export function buildShellCode({ opt, shape, pos, strip }) {

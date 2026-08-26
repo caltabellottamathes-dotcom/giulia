@@ -101,7 +101,7 @@ export default function MediaPlayerPreview() {
             {tab === "cloud" ? "Nog geen bestanden in de cloud." : "Kies een lokale map om bestanden direct af te spelen — zonder upload."}
           </p>
         )}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 content-start">
+        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2.5 content-start">
           {list.map((f) => {
             const Icon = KIND_ICON[f.kind] || FileText;
             const active = busy === f.id;

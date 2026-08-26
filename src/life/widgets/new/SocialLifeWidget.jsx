@@ -52,7 +52,7 @@ export default function SocialLifeWidget() {
 
       <div
         className="absolute left-0 right-0 bottom-0 h-[66%] rounded-t-[28px] flex items-center justify-center overflow-hidden"
-        style={{ "--tile-accent": ORBIT_TIERS[0].color, background: "rgba(120,128,133,0.16)", backdropFilter: "blur(22px) saturate(1.35)", WebkitBackdropFilter: "blur(22px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.14)", boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.18), 0 12px 36px -16px rgba(0,0,0,0.18)" }}
+        style={{ "--tile-accent": ORBIT_TIERS[0].color, background: "rgba(120,128,133,0.16)", backdropFilter: "blur(22px) saturate(1.35)", WebkitBackdropFilter: "blur(22px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.14)", boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.18), 0 -16px 34px -10px rgba(0,0,0,0.50)" }}
       >
         <span className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg, transparent, ${ORBIT_TIERS[0].color} 18%, ${ORBIT_TIERS[0].color} 82%, transparent)` }} />
         <span className="absolute pointer-events-none select-none" style={{ left: "-10px", bottom: "-40px", fontSize: "150px", lineHeight: "0.78", fontWeight: 800, color: IVORY, opacity: 0.13, fontFamily: "var(--font-display)", letterSpacing: "-0.04em" }}>{mi.total}</span>

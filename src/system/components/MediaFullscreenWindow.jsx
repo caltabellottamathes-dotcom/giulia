@@ -34,10 +34,12 @@ export default function MediaFullscreenWindow() {
   const [currentTrackId, setCurrentTrackId] = useState(null);
   const [busy, setBusy] = useState(false);
   const [pos, setPos] = useState(null); // null = standaard rechtsonder; {x,y} na slepen
+  const [minSize, setMinSize] = useState(null); // {w,h} na verschalen
   const mediaRef = useRef(null);
   const shellRef = useRef(null);
   const minWrapRef = useRef(null);
   const dragRef = useRef(null);
+  const resizeRef = useRef(null);
   const ctxRef = useRef(null);
   const analyserRef = useRef(null);
 
@@ -100,6 +102,8 @@ export default function MediaFullscreenWindow() {
       setPlaying(false);
       setRatio(DEFAULT_RATIO[kind] ?? 3 / 4);
       setCurrentTrackId(null);
+      setMinSize(null);
+      setPos(null);
     }
   }, [mediaFullscreen, media?.url, kind]);
 
@@ -221,6 +225,24 @@ export default function MediaFullscreenWindow() {
   };
   const onHandleUp = () => { dragRef.current = null; };
 
+  // ── Verschalingshandvat (geminimaliseerde widget) ──
+  const onResizeDown = (e) => {
+    const el = minWrapRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    if (!pos) setPos({ x: rect.left, y: rect.top });
+    resizeRef.current = { sx: e.clientX, sy: e.clientY, w: rect.width, h: rect.height };
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
+  };
+  const onResizeMove = (e) => {
+    const d = resizeRef.current;
+    if (!d) return;
+    const nw = Math.max(180, Math.min(d.w + (e.clientX - d.sx), vw - 16));
+    const nh = Math.max(140, Math.min(d.h + (e.clientY - d.sy), vh - 16));
+    setMinSize({ w: nw, h: nh });
+  };
+  const onResizeUp = () => { resizeRef.current = null; };
+
   // ── Shell-inhoud (window én minimized delen dit) ──
   const renderShell = (compact) => {
     const btn = compact ? "h-8 w-8" : "h-9 w-9";
@@ -254,14 +276,11 @@ export default function MediaFullscreenWindow() {
           />
         )}
 
-        {/* Titel-overlay — breed, zacht verloop (geen harde rand) */}
-        {kind !== "music" && (
-          <div className={cn("absolute top-0 inset-x-0 z-30 pointer-events-none flex items-center gap-3 bg-gradient-to-b from-black/55 via-black/20 to-transparent", compact ? "px-3 pt-3 pb-12 ml-10" : "px-5 pt-5 pb-16 ml-12")}>
-            <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", playing && kind === "video" ? "bg-olive animate-pulse-soft" : "bg-ivory/40")} />
-            <div className="min-w-0">
-              <p className={cn("font-display font-semibold tracking-[0.22em] uppercase text-ivory leading-none", compact ? "text-[10px]" : "text-[13px]")}>MEDIA · {kind === "video" ? "VIDEO" : kind === "image" ? "FOTO" : kind === "doc" ? "DOCUMENT" : "BESTAND"}</p>
-              <p className={cn("text-ivory/70 tracking-wide truncate", compact ? "text-[9px] mt-1" : "text-[11px] mt-1.5")}>{media.name || "Media"}</p>
-            </div>
+        {/* Titel in de header — geen overlay */}
+        {kind !== "music" && !compact && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none text-center" style={{ color: "hsl(var(--ivory))", textShadow: "0 1px 8px rgba(0,0,0,0.65)" }}>
+            <p className="font-display font-semibold tracking-[0.22em] uppercase text-[10px] leading-none opacity-70">{kind === "video" ? "VIDEO" : kind === "image" ? "FOTO" : kind === "doc" ? "DOCUMENT" : "BESTAND"}</p>
+            <p className="text-[12px] tracking-wide truncate max-w-[46vw] mt-1">{media.name || "Media"}</p>
           </div>
         )}
 
@@ -328,9 +347,23 @@ export default function MediaFullscreenWindow() {
         <div
           ref={minWrapRef}
           className="fixed z-[56] animate-scale-in touch-none"
-          style={pos ? { left: pos.x, top: pos.y, width: minW, height: minH } : { right: 16, bottom: 16, width: minW, height: minH }}
+          style={pos ? { left: pos.x, top: pos.y, width: minSize?.w || minW, height: minSize?.h || minH } : { right: 16, bottom: 16, width: minSize?.w || minW, height: minSize?.h || minH }}
         >
           {renderShell(true)}
+          {/* Verschalingshandvat — rechteronderhoek */}
+          <div
+            onPointerDown={onResizeDown}
+            onPointerMove={onResizeMove}
+            onPointerUp={onResizeUp}
+            onPointerCancel={onResizeUp}
+            className="absolute bottom-1 right-1 z-50 h-5 w-5 cursor-se-resize touch-none flex items-end justify-center"
+            aria-label="Grootte aanpassen"
+          >
+            <svg width="13" height="13" viewBox="0 0 13 13" className="opacity-60 hover:opacity-100 transition-opacity" style={{ color: "hsl(var(--ivory))" }}>
+              <line x1="3" y1="10" x2="10" y2="3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              <line x1="6.5" y1="10" x2="10" y2="6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+            </svg>
+          </div>
         </div>
       ) : (
         <div ref={shellRef} className="fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 z-[56] animate-slide-right" style={{ width: windowW }}>

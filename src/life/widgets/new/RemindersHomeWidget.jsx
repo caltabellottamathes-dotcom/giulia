@@ -37,7 +37,7 @@ export default function RemindersHomeWidget() {
 
       {/* GlassCard links — breed, flush met de shellranden, met huishoudinhoud */}
       <div className="absolute inset-y-0 left-0 w-[56%] rounded-r-[24px] flex flex-col p-4 overflow-hidden"
-        style={{ background: "rgba(120,128,133,0.18)", backdropFilter: "blur(28px) saturate(1.4)", WebkitBackdropFilter: "blur(28px) saturate(1.4)", border: "1px solid rgba(255,255,255,0.16)", boxShadow: "12px 0 36px -18px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.22)" }}>
+        style={{ background: "rgba(120,128,133,0.18)", backdropFilter: "blur(28px) saturate(1.4)", WebkitBackdropFilter: "blur(28px) saturate(1.4)", border: "1px solid rgba(255,255,255,0.16)", boxShadow: "16px 0 34px -10px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.22)" }}>
         <WidgetHeader type="tasks" label="Reminders For Home." count={matters.length ? `${matters.length} aandacht` : "oké"} />
         <h3 className="text-[22px] leading-[1.05] font-display font-semibold tracking-[-0.02em] mt-1">{headline}</h3>
         <p className="text-[10px] uppercase tracking-[0.18em] mt-1 opacity-60">{sub}</p>

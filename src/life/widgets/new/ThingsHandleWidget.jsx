@@ -113,9 +113,9 @@ export default function ThingsHandleWidget() {
         onClick={(e) => { e.stopPropagation(); setUp((v) => !v); }}
         className="absolute left-0 right-0 top-0 h-1/2 rounded-[24px] overflow-hidden text-left block z-20"
         initial={false}
-        animate={{ y: up ? "0%" : "100%" }}
+        animate={{ y: up ? "0%" : "100%", boxShadow: up ? "0 14px 34px -10px rgba(0,0,0,0.50)" : "0 -14px 34px -10px rgba(0,0,0,0.50)" }}
         transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-        style={{ background: "rgba(120,128,133,0.18)", backdropFilter: "blur(16px) saturate(1.3)", WebkitBackdropFilter: "blur(16px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.16)", boxShadow: "0 -14px 32px -14px rgba(0,0,0,0.42), 0 14px 32px -14px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.2)" }}
+        style={{ background: "rgba(120,128,133,0.18)", backdropFilter: "blur(16px) saturate(1.3)", WebkitBackdropFilter: "blur(16px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.16)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2)" }}
       >
         {/* WIT ghost-cijfer links-onder, half afgesneden */}
         <span className="absolute pointer-events-none select-none" style={{ left: "-12px", bottom: "-48px", fontSize: "190px", lineHeight: "0.78", fontWeight: 800, color: IVORY, opacity: 0.16, fontFamily: "var(--font-display)", letterSpacing: "-0.04em" }}>{coming.length}</span>
