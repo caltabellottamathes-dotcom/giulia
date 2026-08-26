@@ -79,7 +79,7 @@ function todayKey() {
   return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 }
 
-let _boardsEnsured = false;
+let _boardsEnsurePromise = null;
 /**
  * ensureAllBoards — eenmalig per opstart:
  *  • Nieuwe dag → volledige reset van alle boards (behalve NOW): alle
@@ -89,9 +89,9 @@ let _boardsEnsured = false;
  *  • Alle boards → duplicaten worden verwijderd (houd eerste exemplaar).
  *  • NOW → altijd de volledige widget-set garanderen (urgency-gebaseerd).
  */
-export async function ensureAllBoards() {
-  if (_boardsEnsured) return;
-  _boardsEnsured = true;
+export function ensureAllBoards() {
+  if (_boardsEnsurePromise) return _boardsEnsurePromise;
+  _boardsEnsurePromise = (async () => {
   try {
     const today = todayKey();
     const lastReset = localStorage.getItem("giulia_last_reset_date");
@@ -130,7 +130,9 @@ export async function ensureAllBoards() {
         ).catch(() => {});
       }
     }
-  } catch {}
+  } catch (e) { _boardsEnsurePromise = null; throw e; }
+  })();
+  return _boardsEnsurePromise;
 }
 
 export function useDashboardBoard(boardId, ready = true) {
@@ -145,7 +147,9 @@ export function useDashboardBoard(boardId, ready = true) {
         setWidgets(sessionRecords(boardId));
       } else {
         const recs = await base44.entities.DashboardWidget.filter({ board_id: boardId }, "position").catch(() => []);
-        setWidgets((recs || []).filter((r) => r.visible !== false));
+        const seen = new Set();
+        const dedup = (recs || []).filter((r) => r.visible !== false && (seen.has(r.widget_type) ? false : (seen.add(r.widget_type), true)));
+        setWidgets(dedup);
       }
     } catch {
       setWidgets([]);

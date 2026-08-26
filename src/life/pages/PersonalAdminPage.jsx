@@ -10,6 +10,7 @@ import { adminWeather, radarEvents, comingUp, weatherZones, repeaters, friction,
 import { Shield, Wallet, FileText, RefreshCw, ListChecks, CircleDot, Plus, Search, CheckCircle2, AlertTriangle } from "lucide-react";
 import { logLifeActivity } from "@/lib/lifeActivity";
 import LifeActivityFeed from "@/life/components/LifeActivityFeed";
+import AdminItemEditor from "@/life/components/AdminItemEditor";
 
 const TABS = [
   { key: "OVERVIEW", label: "Overview", icon: CircleDot },
@@ -25,6 +26,7 @@ export default function PersonalAdminPage() {
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState(() => (new URLSearchParams(window.location.search).get("tab") || "overview").toUpperCase());
+  const [editor, setEditor] = useState({ open: false, item: null });
 
   const load = async () => { try { const [o, d] = await Promise.all([base44.entities.AdminObligation.list().catch(() => []), base44.entities.Document.list().catch(() => [])]); setObs(o || []); setDocs(d || []); } catch { /* ignore */ } finally { setLoading(false); } };
   useEffect(() => { load(); }, []);
@@ -41,11 +43,15 @@ export default function PersonalAdminPage() {
   const activeDocs = useMemo(() => (docs || []).filter((d) => d.status !== "archived"), [docs]);
 
   const done = async (o) => { try { await base44.entities.AdminObligation.update(o.id, { status: "done" }); await logLifeActivity("Admin", "completed", `${o.title} afgerekend`); await load(); } catch { /* ignore */ } };
+  const del = async (o) => { try { await base44.entities.AdminObligation.delete(o.id); await logLifeActivity("Admin", "deleted", `${o.title} verwijderd`); await load(); } catch { /* ignore */ } };
+  const openNew = () => setEditor({ open: true, item: null });
+  const openEdit = (o) => setEditor({ open: true, item: o });
+  const closeEditor = () => setEditor({ open: false, item: null });
 
   return (
     <div className="space-y-6 animate-fade-up">
       <PageHero page="life-personaladmin" image={IMAGES.lifePersonalAdmin} icon={Shield} eyebrow="LIFE → ADMIN" title="Things to Handle!" subtitle={w.counts.overdue === 0 ? "Your administrative life, currently behaving itself." : `${w.counts.overdue} te laat · ${w.counts.coming} op komst · ${w.counts.needsYou} vereist jou`}
-        actions={<GlassButton variant="primary" size="md" onClick={() => alert("Toevoegen")}><Plus className="h-4 w-4" /> Toevoegen</GlassButton>} />
+        actions={<GlassButton variant="primary" size="md" onClick={openNew}><Plus className="h-4 w-4" /> Toevoegen</GlassButton>} />
 
       <div className="flex items-center gap-1 overflow-x-auto -mx-1 px-1 pb-1">
         {TABS.map((t) => (
@@ -239,7 +245,7 @@ export default function PersonalAdminPage() {
 
           <div className="grid sm:grid-cols-2 gap-4">
             {renewals.slice(0, 4).map((o) => (
-              <AdminObligationCard key={o.id} item={o} action="Open" onAction={done} />
+              <AdminObligationCard key={o.id} item={o} action="Open" onAction={done} onEdit={openEdit} onDelete={del} />
             ))}
           </div>
         </div>
@@ -265,7 +271,7 @@ export default function PersonalAdminPage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {renewals.map((o) => (
               <div key={o.id}>
-                <AdminObligationCard item={o} action="Open" onAction={done}
+                <AdminObligationCard item={o} action="Open" onAction={done} onEdit={openEdit} onDelete={del}
                   extra={<div className="mt-3 flex items-center justify-between text-[9px] uppercase tracking-wide font-semibold text-muted-foreground">
                     <span>Laatst</span><span style={{ color: "hsl(var(--life-blue-deep))" }}>Nu</span><span>Volgende</span>
                   </div>} />
@@ -304,7 +310,7 @@ export default function PersonalAdminPage() {
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {comingUp(obs).map((o) => <AdminObligationCard key={o.id} item={o} action="Open" onAction={done} />)}
+            {comingUp(obs).map((o) => <AdminObligationCard key={o.id} item={o} action="Open" onAction={done} onEdit={openEdit} onDelete={del} />)}
           </div>
         </div>
       )}
@@ -341,6 +347,7 @@ export default function PersonalAdminPage() {
         </div>
       )}
 
+      <AdminItemEditor open={editor.open} item={editor.item} onClose={closeEditor} onSaved={load} onDeleted={load} />
       <LifeActivityFeed />
     </div>
   );
