@@ -16,7 +16,7 @@ export const STATUS_COLOR = {
   safe: "hsl(var(--life-dew))",
   on_track: "hsl(var(--life-pistachio))",
   watch: "hsl(var(--life-ridge))",
-  short: "hsl(var(--life-olive))",
+  short: "hsl(var(--smoke))",
   critical: "hsl(var(--life-urgent))",
 };
 export const STATUS_TEXT = {

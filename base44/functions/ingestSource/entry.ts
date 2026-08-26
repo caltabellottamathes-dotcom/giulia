@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { loadCandidates, dateOnly } from '../../shared/ingestExec.ts';
+import { geminiDecide } from '../../shared/gemini.ts';
 
 /**
  * ingestSource — Universal Project Intelligence & Ingestion pipeline (PROPOSE-ONLY).
@@ -195,11 +196,10 @@ export default async function (req) {
         model: "gemini_3_flash"
       }).catch(() => null);
     } else if (text) {
-      understanding = await base44.integrations.Core.InvokeLLM({
-        prompt: SYSTEM_TEXT + "\n\nBron:\n\"\"\"" + String(text).slice(0, 14000) + "\"\"\"",
-        response_json_schema: UNDERSTANDING_SCHEMA,
-        model: "gemini_3_flash"
-      }).catch(() => null);
+      understanding = await Promise.race([
+        geminiDecide({ prompt: SYSTEM_TEXT + "\n\nBron:\n\"\"\"" + String(text).slice(0, 14000) + "\"\"\"", schema: UNDERSTANDING_SCHEMA, keyName: "Ingestion_Gemini_API_Key", temperature: 0.4 }),
+        new Promise((_, rej) => setTimeout(() => rej(new Error("understanding timeout")), 60000)),
+      ]).catch(() => null);
     }
     if (!understanding || !Array.isArray(understanding.items)) {
       throw new Error("understanding failed — no items extracted");
@@ -233,17 +233,22 @@ export default async function (req) {
     await hist("matching");
     const candidates = await loadCandidates(sr);
     const items = understanding.items;
-    const matching = await base44.integrations.Core.InvokeLLM({
-      prompt: "You resolve the Project Understanding against existing GIULIA OS records. First, decide detected_project_id: match understanding.detected_project.title against existing projects (exact/alias/fuzzy/semantic). Prefer enriching an existing project over creating a new one. If no match, leave empty.\n\n" +
-        "Then for EACH item return a decision:\n" +
-        "- EXISTING: clearly the same record (name/alias/email/exact date+title). Set existing_id.\n" +
-        "- POSSIBLE_MATCH: likely same, not certain.\n" +
-        "- CONFLICT: refers to an existing record BUT the source contradicts its data (different deadline/status/price/decision). Set existing_id + explain.\n" +
-        "- NEW: no existing record matches.\n" +
-        "- UNKNOWN: cannot determine.\n" +
-        "Only use EXISTING/POSSIBLE_MATCH/CONFLICT when genuinely confident.\n\n" + buildMatchingPrompt(understanding, items, candidates),
-      response_json_schema: MATCHING_SCHEMA
-    }).catch(() => null);
+    const matching = await Promise.race([
+      geminiDecide({
+        prompt: "You resolve the Project Understanding against existing GIULIA OS records. First, decide detected_project_id: match understanding.detected_project.title against existing projects (exact/alias/fuzzy/semantic). Prefer enriching an existing project over creating a new one. If no match, leave empty.\n\n" +
+          "Then for EACH item return a decision:\n" +
+          "- EXISTING: clearly the same record (name/alias/email/exact date+title). Set existing_id.\n" +
+          "- POSSIBLE_MATCH: likely same, not certain.\n" +
+          "- CONFLICT: refers to an existing record BUT the source contradicts its data (different deadline/status/price/decision). Set existing_id + explain.\n" +
+          "- NEW: no existing record matches.\n" +
+          "- UNKNOWN: cannot determine.\n" +
+          "Only use EXISTING/POSSIBLE_MATCH/CONFLICT when genuinely confident.\n\n" + buildMatchingPrompt(understanding, items, candidates),
+        schema: MATCHING_SCHEMA,
+        keyName: "Ingestion_Gemini_API_Key",
+        temperature: 0.3,
+      }),
+      new Promise((_, rej) => setTimeout(() => rej(new Error("matching timeout")), 60000)),
+    ]).catch(() => null);
     const detectedProjectId = (matching && matching.detected_project_id) || "";
     const detectedProjectReason = (matching && matching.detected_project_reason) || (understanding.detected_project && understanding.detected_project.reason) || "";
     const results = (matching && matching.results) || items.map((_, i) => ({ index: i, decision: "NEW" }));

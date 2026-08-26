@@ -36,16 +36,22 @@ export default function WorkspaceToolbar() {
   // kalme, sensitievere hover — hij wacht 450ms voor hij opent (blijft dus
   // even dicht bij een snelle muisbeweging) en blijft na verlaten ±6s open.
   const expand = () => {
+    if (isPersonalAdmin) return;
     clearTimeout(collapseTimer.current);
     clearTimeout(enterTimer.current);
     enterTimer.current = setTimeout(() => setExpanded(true), 1000);
   };
   const scheduleCollapse = (ms = 6000) => {
+    if (isPersonalAdmin) return;
     clearTimeout(collapseTimer.current);
     clearTimeout(enterTimer.current);
     collapseTimer.current = setTimeout(() => setExpanded(false), ms);
   };
-  useEffect(() => { setExpanded(true); scheduleCollapse(6000); return () => { clearTimeout(collapseTimer.current); clearTimeout(enterTimer.current); }; }, []);
+  useEffect(() => {
+    if (isPersonalAdmin) { setExpanded(false); return; }
+    setExpanded(true); scheduleCollapse(6000);
+    return () => { clearTimeout(collapseTimer.current); clearTimeout(enterTimer.current); };
+  }, [isPersonalAdmin]);
 
   useEffect(() => { if (captured) setNote(""); }, [captured]);
   useEffect(() => {
@@ -121,10 +127,10 @@ export default function WorkspaceToolbar() {
       <div
         className={cn(
           "fixed bottom-4 left-4 lg:bottom-6 lg:left-6 z-30 flex items-center transition-[width,transform] duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
-          (isPersonalAdmin || expanded) ? "w-[calc(100vw-5.5rem)] lg:w-[calc(100vw-7.5rem)]" : "w-[224px]"
+          expanded ? "w-[calc(100vw-5.5rem)] lg:w-[calc(100vw-7.5rem)]" : "w-[224px]"
         )}
-        onMouseEnter={isPersonalAdmin ? undefined : expand}
-        onMouseLeave={isPersonalAdmin ? undefined : () => scheduleCollapse(8000)}
+        onMouseEnter={expand}
+        onMouseLeave={() => scheduleCollapse(8000)}
       >
         <div
           className="relative flex items-center h-11 rounded-full overflow-hidden w-full"
@@ -137,12 +143,7 @@ export default function WorkspaceToolbar() {
           }}
         >
           <div className="pointer-events-none absolute inset-0" style={{ background: accent, opacity: 0.06 }} />
-          {isPersonalAdmin ? (
-            <form onSubmit={submit} className="flex items-center gap-2.5 flex-1 min-w-0 pl-3">
-              <span className="h-1.5 w-1.5 rounded-full bg-life-olive animate-pulse-soft shrink-0" />
-              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Ask Giulia anything…" className="flex-1 min-w-0 bg-transparent text-sm text-foreground placeholder:text-foreground/55 focus:outline-none" />
-            </form>
-          ) : expanded ? (
+          {expanded ? (
             <>
               {/* Dashboard tabs (left) */}
               <div className="flex items-center gap-0.5 overflow-x-auto shrink-0 max-w-[46%] lg:max-w-[54%] pl-2.5 lg:pl-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -197,7 +198,7 @@ export default function WorkspaceToolbar() {
             </>
           ) : (
             <button
-              onClick={() => setExpanded(true)}
+              onClick={() => { if (!isPersonalAdmin) setExpanded(true); }}
               className="ml-3 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap text-foreground shrink-0"
             >
               {all.find((b) => b.id === board)?.label || "GIULIA"}
@@ -205,8 +206,8 @@ export default function WorkspaceToolbar() {
           )}
 
           {/* Actions — altijd zichtbaar; bij ingeklapt alleen de belangrijkste (bellen + chat) */}
-          <div className={cn("ml-auto flex items-center gap-0.5 shrink-0", (expanded || isPersonalAdmin) ? "px-1.5 lg:px-2" : "pr-2")}>
-            {(expanded || isPersonalAdmin) && (
+          <div className={cn("ml-auto flex items-center gap-0.5 shrink-0", expanded ? "px-1.5 lg:px-2" : "pr-2")}>
+            {expanded && (
               <>
                 <button onClick={() => { expand(); active ? stop() : start(); }} aria-label="Context toevoegen" className={cn(actionBtn, active && "text-foreground")}><BrainCircuit className="h-4 w-4" /></button>
                 </>

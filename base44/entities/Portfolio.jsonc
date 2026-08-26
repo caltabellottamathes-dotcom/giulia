@@ -8,6 +8,11 @@
       "type": "string",
       "title": "Naam"
     },
+    "color": {
+      "type": "string",
+      "title": "Kleur",
+      "description": "LIFE-palet kleur (hex) voor deze portefeuille \u2014 handmatig aanpasbaar."
+    },
     "description": {
       "type": "string",
       "title": "Beschrijving"
