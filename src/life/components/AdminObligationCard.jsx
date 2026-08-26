@@ -13,7 +13,7 @@ export default function AdminObligationCard({ item, action = "OPEN", onAction, o
   const s = statusOf(item);
   const c = focus ? (s === "urgent" ? "hsl(var(--d-focus-urgent))" : "hsl(var(--d-focus-deep))") : accentFor(s);
   return (
-    <div className="rounded-2xl p-4" style={{ background: dark ? "rgba(120,122,128,0.12)" : "hsl(var(--card))", boxShadow: dark ? "none" : "0 14px 34px -26px rgba(0,0,0,0.28)" }}>
+    <div className="rounded-2xl p-4" style={{ background: focus ? "rgba(255,255,255,0.55)" : (dark ? "rgba(120,122,128,0.12)" : "hsl(var(--card))"), backdropFilter: focus ? "blur(12px)" : undefined, WebkitBackdropFilter: focus ? "blur(12px)" : undefined, border: focus ? "1px solid rgba(255,255,255,0.55)" : undefined, boxShadow: focus ? "0 18px 44px -20px rgba(0,0,0,0.34)" : (dark ? "none" : "0 14px 34px -26px rgba(0,0,0,0.28)") }}>
       <div className="flex items-center justify-between gap-2">
         <h4 className={`text-base font-display font-semibold truncate ${dark ? "text-ivory" : "text-foreground"}`}>{item.title}</h4>
         <div className="flex items-center gap-1.5 shrink-0">

@@ -1,11 +1,35 @@
 import React from "react";
 import { CheckCircle2, AlertTriangle, FileText, RefreshCw } from "lucide-react";
 import AdminObligationCard from "@/life/components/AdminObligationCard";
+import FoodWidget from "@/life/widgets/FoodWidget";
 import { accentFor, daysUntil, fmtDate } from "@/lib/adminUtils";
 
+const FDEEP = "hsl(var(--d-focus-deep))";
+const FLIGHT = "hsl(var(--d-focus-light))";
+const FURGENT = "hsl(var(--d-focus-urgent))";
+
 const Card = ({ children, className = "" }) => (
-  <div className={`rounded-2xl bg-white shadow-[0_10px_30px_-14px_rgba(0,0,0,0.22)] p-4 ${className}`}>{children}</div>
+  <div className={`rounded-2xl bg-white/55 backdrop-blur-md border border-white/60 shadow-[0_18px_44px_-18px_rgba(0,0,0,0.35)] p-4 ${className}`}>{children}</div>
 );
+
+function MoneyTreemap({ items, height = "h-32" }) {
+  if (!items.length) return <p className="text-sm text-muted-foreground italic">Niets op komst.</p>;
+  return (
+    <div className={`flex gap-1 ${height} rounded-xl overflow-hidden shadow-[0_14px_30px_-16px_rgba(0,0,0,0.3)]`}>
+      {items.map((p, i) => {
+        const bg = [FDEEP, FLIGHT, FURGENT][i % 3];
+        const dark = bg === FDEEP;
+        return (
+          <div key={p.id} style={{ flexGrow: Math.max(Number(p.amount) || 1, 1), flexBasis: 0, background: bg }} className={`flex flex-col justify-end p-2.5 min-w-0 ${dark ? "text-ivory" : "text-foreground"}`}>
+            <p className="text-lg font-display font-semibold tabular-nums leading-none">€{p.amount}</p>
+            <p className="text-[9px] uppercase tracking-wide font-semibold truncate mt-1 opacity-80">{p.title}</p>
+            <p className="text-[9px] opacity-60">{fmtDate(p.due_date)}</p>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 const Stat = ({ label, value, color, note }) => (
   <div>
@@ -22,6 +46,7 @@ export default function AdminStacks({ tab, data, onDone, onEdit, onDelete }) {
   if (tab === "OVERVIEW") {
     return (
       <>
+        <FoodWidget />
         <Card>
           <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Admin weather</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -43,18 +68,7 @@ export default function AdminStacks({ tab, data, onDone, onEdit, onDelete }) {
 
         <Card>
           <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Geld in beweging · €{Math.round(w.counts.money)}</p>
-          <div className="flex items-center gap-2 overflow-x-auto pb-1">
-            {moneyPayments.length === 0 && <p className="text-sm text-muted-foreground italic">Niets op komst.</p>}
-            {moneyPayments.map((p, i) => (
-              <React.Fragment key={p.id}>
-                {i > 0 && <span className="text-muted-foreground/40 shrink-0">→</span>}
-                <div className="shrink-0 rounded-xl px-3 py-2 bg-foreground/[0.04]">
-                  <p className="text-lg font-display font-semibold tabular-nums" style={{ color: "hsl(var(--d-focus-deep))" }}>€{p.amount}</p>
-                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">{p.title} · {fmtDate(p.due_date)}</p>
-                </div>
-              </React.Fragment>
-            ))}
-          </div>
+          <MoneyTreemap items={moneyPayments} />
         </Card>
 
         <Card>
@@ -85,17 +99,8 @@ export default function AdminStacks({ tab, data, onDone, onEdit, onDelete }) {
         <Card>
           <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-1">Geld op komst (30 dagen)</p>
           <p className="text-4xl font-display font-semibold tabular-nums tracking-[-0.03em]" style={{ color: "hsl(var(--d-focus-deep))" }}>€{Math.round(w.counts.money)}</p>
-          <div className="flex items-center gap-2 overflow-x-auto mt-4 pb-1">
-            {moneyPayments.map((p, i) => (
-              <React.Fragment key={p.id}>
-                {i > 0 && <span className="text-muted-foreground/40 shrink-0">→</span>}
-                <div className="shrink-0 rounded-xl px-3.5 py-2.5 bg-foreground/[0.04]">
-                  <p className="text-xl font-display font-semibold tabular-nums" style={{ color: "hsl(var(--d-focus-deep))" }}>€{p.amount}</p>
-                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">{p.title} · {fmtDate(p.due_date)}</p>
-                </div>
-              </React.Fragment>
-            ))}
-            {moneyPayments.length === 0 && <p className="text-sm text-muted-foreground italic">Rustige periode.</p>}
+          <div className="mt-4">
+            <MoneyTreemap items={moneyPayments} height="h-36" />
           </div>
         </Card>
         <Card>

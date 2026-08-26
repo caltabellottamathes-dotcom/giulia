@@ -14,22 +14,19 @@ const EASE = [0.16, 1, 0.3, 1];
 export default function SpaceShell({ bgImage, heroImage, eyebrow, title, tabs, activeTab, onTab, navInfo, recap, children, onAdd, addLabel = "Toevoegen" }) {
   const navigate = useNavigate();
   return (
-    <div className="fixed inset-x-0 top-14 bottom-0 overflow-hidden bg-warm-white z-[1]">
-      {/* Achtergrond — wit */}
-      <div className="absolute inset-0 bg-warm-white" />
-
-      {/* Titel — buiten het paneel, boven de fotokaart (links) */}
-      <motion.div initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE, delay: 0.15 }} className="hidden lg:block absolute left-[2.5%] top-[3%] z-[20]">
-        <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground font-semibold mb-1">{eyebrow}</p>
-        <h1 className="text-[34px] font-display font-semibold tracking-[-0.02em] text-foreground leading-[1.05]">{title}</h1>
+    <div className="fixed inset-x-0 top-14 bottom-0 overflow-hidden z-[1]">
+      {/* Titel + Toevoegen — op het dashboard (links), buiten het paneel */}
+      <motion.div initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE, delay: 0.15 }} className="hidden lg:flex absolute left-[2.5%] top-[3%] z-[20] flex-col gap-5">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground font-semibold mb-1">{eyebrow}</p>
+          <h1 className="text-[34px] font-display font-semibold tracking-[-0.02em] text-foreground leading-[1.05]">{title}</h1>
+        </div>
+        {onAdd && (
+          <button onClick={onAdd} className="inline-flex items-center gap-1.5 self-start rounded-full bg-plum text-ivory px-5 py-2.5 text-xs font-semibold hover:bg-plum/90 transition shadow-[0_14px_34px_-14px_rgba(0,0,0,0.5)]">
+            <Plus className="w-3.5 h-3.5" /> {addLabel}
+          </button>
+        )}
       </motion.div>
-
-      {/* Toevoegen — boven het paneel (rechts), plum */}
-      {onAdd && (
-        <motion.button initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE, delay: 0.2 }} onClick={onAdd} className="hidden lg:inline-flex absolute right-[3%] top-[3%] z-[20] items-center gap-1.5 rounded-full bg-plum text-ivory px-5 py-2.5 text-xs font-semibold hover:bg-plum/90 transition shadow-[0_12px_30px_-12px_rgba(0,0,0,0.45)]">
-          <Plus className="w-3.5 h-3.5" /> {addLabel}
-        </motion.button>
-      )}
 
       {/* Hero photo — schuift vanaf links in,zelfde hoogte als paneel (desktop) */}
       <motion.div
@@ -43,7 +40,7 @@ export default function SpaceShell({ bgImage, heroImage, eyebrow, title, tabs, a
       {/* Glass panel — rolt vanaf de rechterrand naar binnen, stopt op 2/3 (rechts), geen rechterhoeken */}
       <motion.div
         initial={{ x: "118%" }} animate={{ x: 0 }} transition={{ duration: 0.7, ease: EASE }}
-        className="absolute right-0 top-0 bottom-0 w-full lg:w-[76%] glass-2 rounded-l-[32px] rounded-r-none shadow-[0_40px_90px_-30px_rgba(0,0,0,0.4)] flex z-[15]"
+        className="absolute right-0 top-0 bottom-[2.5%] w-full lg:w-[76%] glass-2 rounded-l-[32px] rounded-r-none shadow-[0_50px_110px_-30px_rgba(0,0,0,0.5)] flex z-[15]"
       >
         {/* Linker glas-strook — tabs + nav-info */}
         <div className="hidden lg:flex flex-col items-center gap-1 py-8 w-[88px] shrink-0">
@@ -64,7 +61,7 @@ export default function SpaceShell({ bgImage, heroImage, eyebrow, title, tabs, a
         {/* Witte zwevende kaart — laat linker glas-strook zichtbaar */}
         <motion.div
           initial={{ opacity: 0, y: 28, scale: 0.985 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.6, ease: EASE, delay: 0.32 }}
-          className="relative flex-1 rounded-l-[20px] rounded-r-none bg-warm-white flex flex-col overflow-hidden shadow-[-10px_0_30px_-20px_rgba(0,0,0,0.18)]"
+          className="relative flex-1 ml-[2.5%] rounded-l-[20px] rounded-r-none bg-warm-white flex flex-col overflow-hidden shadow-[-18px_0_44px_-24px_rgba(0,0,0,0.3)]"
         >
           {/* Mobile tabs + add (desktop titel/toevoegen zitten buiten het paneel) */}
           <div className="lg:hidden flex items-center gap-2 px-5 pt-4 pb-3 overflow-x-auto no-scrollbar">

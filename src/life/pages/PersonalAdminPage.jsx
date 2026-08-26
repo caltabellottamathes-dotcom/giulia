@@ -35,12 +35,14 @@ function buildSnapshot(tab, d) {
 
 function buildPrompt(tab, d) {
   const label = TABS.find((t) => t.key === tab)?.label || tab;
-  return `Je bent GIULIA, de persoonlijke AI-assistent van Salvo. Schrijf een korte redactionele samenvatting in gewone, warme menselijke taal over de actuele staat van de "${label}"-tab van zijn persoonlijke administratie.
+  const overview = tab === "OVERVIEW";
+  return `Je bent GIULIA, de persoonlijke AI-assistent van Salvo. Schrijf een redactioneel overzicht in gewone, warme menselijke taal over de actuele staat van zijn persoonlijke administratie${overview ? " (overview — dek alle tabs)" : ` (${label}-tab)`}.
 
 Regels:
-- headline: 1 korte, prikkende zin (max ~8 woorden) die de huidige staat vangt. Geen label-woord ervoor (dus niet "Recap: ...").
-- body: 3-5 zinnen, begrijpelijk en rustig. Gebruik concrete bedragen, data en aantallen uit de data. Geen opsommingstekens, geen markdown. Spreek Salvo aan met "je".
-- Nederlands.
+- headline: 1 korte, prikkende zin (max ~8 woorden) die de huidige staat vangt. Geen label-woord ervoor.
+- summary: 2-3 zinnen, de kern van de staat, met concrete cijfers/data. Spreek Salvo aan met "je".
+- highlights: 4-6 korte puntjes, elk met een "kicker" (één woord in hoofdletters, bijv. GELD, DOCUMENTEN, VERLENGINGEN, VERPLICHTINGEN, OPEN, VOLGENDE, VAST) en een "text" van 1-2 zinnen met concrete cijfers/data uit de data.${overview ? " Dit is het overview — dek alle tabs: geld, documenten, verlengingen, verplichtingen en openstaand." : ` Focus op de ${label}-tab.`}
+- Nederlands. Geen markdown.
 
 Data:
 ${buildSnapshot(tab, d)}`;
@@ -116,16 +118,28 @@ export default function PersonalAdminPage() {
 
 /** Deterministische fallback-recap voor als de AI-call faalt. */
 function buildFallback(tab, d) {
-  const label = TABS.find((t) => t.key === tab)?.label || tab;
   let headline = "Je administratie is rustig.";
-  let body = `Er staan ${d.w.counts.coming} zaken op komst`;
-  if (d.w.counts.overdue > 0) { headline = `${d.w.counts.overdue} zaken lopen al te laat.`; body = `Er zijn ${d.w.counts.overdue} te late zaken en €${Math.round(d.w.counts.money)} aan administratie in de wachtrij. Pak eerst wat te laat is op.`; }
-  else if (d.next) { headline = `Volgende: ${d.next.title}.`; body = `${d.next.title} staat klaar${d.next.amount ? ` voor €${d.next.amount}` : ""} op ${fmtDate(d.next.due_date)} — over ${daysUntil(d.next.due_date)} dagen. Verder is het ${d.w.counts.coming <= 2 ? "beheersbaar" : "wat drukker"} met ${d.w.counts.coming} zaken op komst.`; }
-  else { body = `Alles is bij — niets op komst, niets te laat. ${d.activeDocs.length} documenten in de stapel.`; }
+  let summary = `Er staan ${d.w.counts.coming} zaken op komst en er is €${Math.round(d.w.counts.money)} aan administratie in de wachtrij.`;
+  if (d.w.counts.overdue > 0) { headline = `${d.w.counts.overdue} zaken lopen al te laat.`; summary = `Er zijn ${d.w.counts.overdue} te late zaken en €${Math.round(d.w.counts.money)} in de wachtrij. Pak eerst wat te laat is op.`; }
+  else if (d.next) { headline = `Volgende: ${d.next.title}.`; summary = `${d.next.title} staat klaar${d.next.amount ? ` voor €${d.next.amount}` : ""} op ${fmtDate(d.next.due_date)}, over ${daysUntil(d.next.due_date)} dagen. Verder ${d.w.counts.coming} zaken op komst.`; }
+  const highlights = [];
+  if (d.next) highlights.push({ kicker: "VOLGENDE", text: `${d.next.title}${d.next.amount ? ` · €${d.next.amount}` : ""} · ${fmtDate(d.next.due_date)} (${daysUntil(d.next.due_date)} dagen).` });
+  highlights.push({ kicker: "GELD", text: `€${Math.round(d.w.counts.money)} op komst; ${d.rep.monthly.length} maandelijks en ${d.rep.yearly.length} jaarlijks terugkerend.` });
+  highlights.push({ kicker: "VERPLICHTINGEN", text: `${d.obs.filter((o) => o.status !== "done").length} actief, ${d.w.counts.needsYou} vereisen jou, ${d.w.counts.coming} op komst.` });
+  highlights.push({ kicker: "DOCUMENTEN", text: `${d.activeDocs.length} documenten in de stapel, ${d.activeDocs.filter((x) => x.status === "recent").length} in beweging.` });
+  highlights.push({ kicker: "OPEN", text: `${d.loops.length} open loops${d.stuck ? `; "${d.stuck.title}" zit vast` : ""}.` });
   return (
-    <div>
-      <h2 className="font-display text-[26px] lg:text-[28px] font-semibold tracking-[-0.02em] text-foreground leading-[1.08] mb-4 text-balance">{headline}</h2>
-      <p className="text-[15px] leading-[1.65] text-foreground/75 text-balance">{body}</p>
-    </div>
+    <>
+      <h2 className="font-display text-[40px] leading-[0.95] tracking-[-0.03em] text-foreground">{headline}</h2>
+      <p className="font-body text-[15px] leading-[1.65] text-foreground/75 text-balance italic">{summary}</p>
+      <div className="flex flex-col gap-4 mt-auto">
+        {highlights.map((h, i) => (
+          <div key={i} className="border-t border-foreground/12 pt-3">
+            <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-olive mb-1">{h.kicker}</p>
+            <p className="font-display text-[15px] leading-[1.5] text-foreground/85">{h.text}</p>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }

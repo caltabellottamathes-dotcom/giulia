@@ -116,6 +116,12 @@
   body {
     @apply bg-background text-foreground font-body antialiased;
     font-feature-settings: "ss01", "cv01";
+    background-image:
+      linear-gradient(to right, hsl(var(--foreground) / 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--foreground) / 0.04) 1px, transparent 1px),
+      linear-gradient(to right, hsl(var(--foreground) / 0.075) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--foreground) / 0.075) 1px, transparent 1px);
+    background-size: 24px 24px, 24px 24px, 96px 96px, 96px 96px;
   }
 
   ::selection {
