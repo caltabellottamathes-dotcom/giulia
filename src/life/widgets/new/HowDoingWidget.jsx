@@ -28,7 +28,8 @@ export default function HowDoingWidget() {
   const win = currentWindowKey();
   const next = nextWindowInfo();
   const completed = isCompletedForWindow(checkIns, win) || (justDone && win != null);
-  const due = !completed;
+  const FORCE_DUE = true; // tijdelijk aan — zet het check-in-moment zichtbaar
+  const due = !completed || FORCE_DUE;
 
   // signaal naar Home → widget krijgt breder span wanneer due
   useEffect(() => {
