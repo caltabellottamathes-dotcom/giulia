@@ -22,7 +22,7 @@ export default function SpaceShell({ bgImage, heroImage, eyebrow, title, tabs, a
           <h1 className="text-[34px] font-display font-semibold tracking-[-0.02em] leading-[1.05] text-[hsl(var(--ridge))]">{title}</h1>
         </div>
         {onAdd &&
-        <button onClick={onAdd} className="inline-flex items-center gap-1.5 self-start rounded-full bg-plum text-ivory px-5 py-2.5 text-xs font-semibold hover:bg-plum/90 transition shadow-[0_14px_34px_-14px_rgba(0,0,0,0.5)]">
+        <button onClick={onAdd} className="inline-flex items-center gap-1.5 self-start rounded-full px-5 py-2.5 text-xs font-semibold hover:bg-plum/90 transition shadow-[0_14px_34px_-14px_rgba(0,0,0,0.5)] bg-[hsl(var(--life-pistachio))] text-[hsl(var(--background))]">
             <Plus className="w-3.5 h-3.5" /> {addLabel}
           </button>
         }
