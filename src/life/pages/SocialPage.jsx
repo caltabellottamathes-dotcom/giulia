@@ -54,7 +54,8 @@ export default function SocialPage() {
   }, []);
 
   const mi = useMemo(() => meaningfulInteractions({ emails: data.emails, whatsapps: data.whatsapps, events: data.events, days: 7 }), [data.emails, data.whatsapps, data.events]);
-  const circle = useMemo(() => closeCircle(data.contacts), [data.contacts]);
+  const planContactIds = useMemo(() => data.plans.flatMap((p) => p.contact_ids || []), [data.plans]);
+  const circle = useMemo(() => closeCircle(data.contacts, { whatsapps: data.whatsapps, planContactIds }), [data.contacts, data.whatsapps, planContactIds]);
   const pulse = useMemo(() => socialPulse(circle), [circle]);
   const attention = pulse.filter((p) => p.overdue);
   const activePlans = data.plans.filter((p) => ["proposed", "planned", "confirmed"].includes(p.status));
@@ -76,7 +77,7 @@ export default function SocialPage() {
         </div>
 
         {section === "Overview" && <OverviewSection data={data} mi={mi} circle={circle} attention={attention} activePlans={activePlans} state={state} onNavigate={setSection} />}
-        {section === "Relationships" && <RelationshipsSection contacts={data.contacts} />}
+        {section === "Relationships" && <RelationshipsSection contacts={data.contacts} whatsapps={data.whatsapps} planContactIds={planContactIds} />}
         {section === "Pulse" && <PulseSection data={data} mi={mi} attention={attention} />}
         {section === "Planner" && <PlannerSection data={data} contacts={data.contacts} reload={load} />}
         {section === "Personal Time" && <PersonalTimeSection blocks={data.blocks} reload={load} />}

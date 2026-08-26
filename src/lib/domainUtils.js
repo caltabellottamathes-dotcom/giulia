@@ -78,24 +78,96 @@ export function domainBalance({ tasks = [], events = [], projects = [] } = {}) {
 export const LIFE_BLUE = "hsl(var(--d-life-deep))";
 export const LIFE_SAND = "hsl(var(--d-life-light))";
 
-// Close circle — the relationships that actually matter to Salvo. Everything
-// else is noise in the Social Pulse "what matters now" view.
-// Close circle — specifieke personen (volledige naam), geen bare voornaam-tokens,
-// zodat verschillende mensen met dezelfde voornaam (Wouter ×4, Veronique ×2) niet
-// alleemaal op de orbit verschijnen. Ambiguïteit hoort via een GiuliaQuestion
-// opgelost te worden, niet door gokken.
-const CLOSE_CIRCLE_NAMES = [
-  "mama", "juan miguel biste", "cbn", "oma tienen thuis", "ramona vinken",
-  "lian aalders", "veronique mondriaan", "jill fuss", "debora caltabellotta",
-  "sara caltabellotta", "wouter witters", "pawel", "paul",
-];
-const _ccNorm = (n) => (n || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[.,]/g, "").replace(/\s+/g, " ").trim();
-export function closeCircle(contacts = []) {
-  const set = new Set(CLOSE_CIRCLE_NAMES);
+// Close circle — data-driven, no hardcoded name list. A contact counts as
+// "important" when the system has actual evidence of a real 1:1 relationship:
+// a WhatsApp conversation, a SocialPlan they're part of, or an explicit
+// life-domain tag with a recorded contact date. WhatsApp *group* threads
+// (phone ends in @g.us) represent multiple people, not one relationship, so
+// they never populate the individual close circle.
+const isGroupContact = (c) => (c?.phone || "").includes("@g.us");
+
+export function closeCircle(contacts = [], { whatsapps = [], planContactIds = [] } = {}) {
+  const withActivity = new Set((whatsapps || []).filter((m) => m.contact_id).map((m) => m.contact_id));
+  const planIds = new Set(planContactIds || []);
   return (contacts || []).filter((c) => {
+    if (!c.name || isGroupContact(c)) return false;
     if ((c.name || "").toLowerCase().includes("salvatore")) return false;
-    return set.has(_ccNorm(c.name));
+    if (planIds.has(c.id)) return true;
+    if (withActivity.has(c.id)) return true;
+    if (c.relationship_domain === "life" && c.last_contact_date) return true;
+    return false;
   });
+}
+
+// Per-contact real signals derived from actual WhatsApp history — no scores,
+// no fabricated health. connection = volume, recency = how fresh, rhythm =
+// how many distinct days active in the last month, reciprocity = how
+// balanced sent vs received is. Each is 0-5 dots.
+export function contactSignals(contact, whatsapps = []) {
+  const msgs = (whatsapps || []).filter((m) => m.contact_id === contact.id);
+  const sent = msgs.filter((m) => m.direction === "sent").length;
+  const received = msgs.filter((m) => m.direction === "received").length;
+  const total = sent + received;
+  const lastTs = msgs.reduce((max, m) => (!max || new Date(m.timestamp) > new Date(max) ? m.timestamp : max), null) || contact.last_contact_date;
+  const since = daysSince(lastTs);
+  const recency = since === Infinity ? 0 : Math.max(0, 5 - Math.floor(since / 6));
+  const connection = Math.min(5, Math.round(total / 3));
+  const reciprocity = total ? Math.round((Math.min(sent, received) / Math.max(sent, received, 1)) * 5) : 0;
+  const days30 = new Set(msgs.filter((m) => daysSince(m.timestamp) <= 30).map((m) => new Date(m.timestamp).toDateString()));
+  const rhythm = Math.min(5, days30.size);
+  return { connection, recency, rhythm, reciprocity, since, total, sent, received };
+}
+
+// Simple recent-vs-prior trend for a contact's message volume — real delta,
+// not an interpretation. "up" | "down" | "steady".
+export function contactRecentTrend(contactId, whatsapps = [], windowDays = 14) {
+  const now = Date.now();
+  const cut1 = now - windowDays * 86400000;
+  const cut2 = now - 2 * windowDays * 86400000;
+  let recent = 0, prior = 0;
+  (whatsapps || []).forEach((m) => {
+    if (m.contact_id !== contactId) return;
+    const t = new Date(m.timestamp).getTime();
+    if (t >= cut1) recent++; else if (t >= cut2) prior++;
+  });
+  if (recent === prior) return "steady";
+  return recent > prior ? "up" : "down";
+}
+
+const DOW_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+// Real Mon–Sun activity bars for the current week — sent/received WhatsApp,
+// sent email and life-domain calendar events, bucketed by day.
+export function weeklyActivityBars({ whatsapps = [], emails = [], events = [] } = {}) {
+  const now = new Date();
+  const dow = now.getDay() === 0 ? 6 : now.getDay() - 1;
+  const start = new Date(now); start.setDate(now.getDate() - dow); start.setHours(0, 0, 0, 0);
+  const buckets = Array.from({ length: 7 }, (_, i) => { const d = new Date(start); d.setDate(start.getDate() + i); return { date: d, count: 0 }; });
+  const bump = (ts) => {
+    if (!ts) return;
+    const d = new Date(ts);
+    const idx = Math.floor((d - start) / 86400000);
+    if (idx >= 0 && idx < 7) buckets[idx].count++;
+  };
+  (whatsapps || []).forEach((m) => bump(m.timestamp));
+  (emails || []).filter((e) => e.folder === "sent" || e.status === "sent").forEach((e) => bump(e.timestamp));
+  (events || []).filter((e) => e.domain === "life").forEach((e) => bump(e.start));
+  return buckets.map((b) => ({ label: DOW_LABELS[b.date.getDay() === 0 ? 6 : b.date.getDay() - 1], count: b.count, isToday: b.date.toDateString() === now.toDateString() }));
+}
+
+// This week's meaningful count vs the personal baseline (average of the
+// prior weeks) — compared against Salvo's own history, not a universal norm.
+export function personalBaseline({ whatsapps = [], emails = [], events = [], weeks = 6 } = {}) {
+  const timestamps = [
+    ...(whatsapps || []).filter((m) => m.direction === "sent").map((m) => m.timestamp),
+    ...(emails || []).filter((e) => e.folder === "sent" || e.status === "sent").map((e) => e.timestamp),
+    ...(events || []).filter((e) => e.domain === "life").map((e) => e.start),
+  ];
+  const series = intensitySeries(timestamps, weeks);
+  const current = series[series.length - 1] || 0;
+  const prior = series.slice(0, -1);
+  const baseline = prior.length ? prior.reduce((a, b) => a + b, 0) / prior.length : 0;
+  return { current, baseline: Math.round(baseline * 10) / 10 };
 }
 
 // Meaningful interaction = een UITGAAND WhatsApp-bericht, een VERZONDEN email,
