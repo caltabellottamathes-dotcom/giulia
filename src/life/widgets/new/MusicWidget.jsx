@@ -12,7 +12,7 @@ const LIGHT = "hsl(var(--d-life-light))";
 const IVORY = "hsl(var(--ivory))";
 const BLUE = "hsl(205 45% 32%)";
 
-const SUBTLE = "h-9 w-9 rounded-full flex items-center justify-center text-ivory/95 bg-[#2c3a47]/70 border border-white/10 backdrop-blur-md hover:bg-[#2c3a47] transition-colors disabled:opacity-30";
+const SUBTLE = "h-9 w-9 flex items-center justify-center transition-transform hover:scale-110 disabled:opacity-30";
 
 /** MusicWidget — P·3:4 (iets kleiner). Bovenste helft: blauwe, veel grotere
  *  pistache-gloeiende bloom + volledige-breedte sinus + subtiele knoppen,
@@ -156,7 +156,7 @@ export default function MusicWidget() {
       <motion.div
         className="absolute inset-x-0 h-1/2 z-20 overflow-hidden rounded-[28px]"
         initial={false}
-        animate={{ top: slid ? "0%" : "50%" }}
+        animate={{ top: slid ? "0%" : "50%", boxShadow: slid ? "0 14px 34px -10px rgba(0,0,0,0.50)" : "0 -14px 34px -10px rgba(0,0,0,0.50)" }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         onClick={(e) => { e.stopPropagation(); setSlid((v) => !v); }}
       >

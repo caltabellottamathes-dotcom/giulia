@@ -9,7 +9,7 @@ const LIGHT = "hsl(var(--d-life-light))";
 const IVORY = "hsl(var(--ivory))";
 const BLUE = "hsl(205 45% 32%)";
 
-const SUBTLE = "h-11 w-11 rounded-full flex items-center justify-center text-ivory/95 bg-[#2c3a47]/70 border border-white/10 backdrop-blur-md hover:bg-[#2c3a47] transition-colors disabled:opacity-30";
+const SUBTLE = "h-11 w-11 flex items-center justify-center transition-transform hover:scale-110 disabled:opacity-30";
 const glassShell = {
   background: "rgba(120,128,133,0.16)",
   backdropFilter: "blur(22px) saturate(1.35)",
@@ -50,7 +50,7 @@ export default function MusicViewerStage({ analyserRef, tracks = [], currentTrac
       <motion.div
         className="absolute inset-x-0 h-1/2 z-20 overflow-hidden rounded-[28px] cursor-pointer"
         initial={false}
-        animate={{ top: slid ? "0%" : "50%" }}
+        animate={{ top: slid ? "0%" : "50%", boxShadow: slid ? "0 14px 34px -10px rgba(0,0,0,0.50)" : "0 -14px 34px -10px rgba(0,0,0,0.50)" }}
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         onClick={() => setSlid((v) => !v)}
       >
@@ -85,7 +85,7 @@ export default function MusicViewerStage({ analyserRef, tracks = [], currentTrac
           <motion.div
             key="list"
             className="absolute inset-x-0 top-1/2 h-1/2 z-30 overflow-hidden flex flex-col"
-            style={glassShell}
+            style={{ ...glassShell, color: IVORY }}
             initial={{ y: 40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 40, opacity: 0 }}
@@ -107,10 +107,10 @@ export default function MusicViewerStage({ analyserRef, tracks = [], currentTrac
                       {t.source === "cloud" ? <Cloud className="h-4 w-4" /> : <HardDrive className="h-4 w-4" />}
                     </span>
                     <span className="flex-1 min-w-0">
-                      <p className="text-[12px] font-medium truncate" style={{ color: BLUE }}>{t.name}</p>
-                      <p className="text-[9px] uppercase tracking-[0.14em] opacity-50" style={{ color: BLUE }}>{t.source === "cloud" ? "cloud" : "lokaal"}</p>
+                      <p className="text-[12px] font-medium truncate">{t.name}</p>
+                      <p className="text-[9px] uppercase tracking-[0.14em] opacity-50">{t.source === "cloud" ? "cloud" : "lokaal"}</p>
                     </span>
-                    {active && playing ? <Pause className="h-3.5 w-3.5 shrink-0 opacity-70" style={{ color: DEEP }} /> : <Play className="h-3.5 w-3.5 shrink-0 opacity-60" style={{ color: DEEP }} />}
+                    {active && playing ? <Pause className="h-3.5 w-3.5 shrink-0 opacity-70" /> : <Play className="h-3.5 w-3.5 shrink-0 opacity-60" />}
                   </button>
                 );
               })}

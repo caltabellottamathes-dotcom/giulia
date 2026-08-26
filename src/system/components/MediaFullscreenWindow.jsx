@@ -254,6 +254,17 @@ export default function MediaFullscreenWindow() {
           />
         )}
 
+        {/* Titel-overlay — breed, zacht verloop (geen harde rand) */}
+        {kind !== "music" && (
+          <div className={cn("absolute top-0 inset-x-0 z-30 pointer-events-none flex items-center gap-3 bg-gradient-to-b from-black/55 via-black/20 to-transparent", compact ? "px-3 pt-3 pb-12 ml-10" : "px-5 pt-5 pb-16 ml-12")}>
+            <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", playing && kind === "video" ? "bg-olive animate-pulse-soft" : "bg-ivory/40")} />
+            <div className="min-w-0">
+              <p className={cn("font-display font-semibold tracking-[0.22em] uppercase text-ivory leading-none", compact ? "text-[10px]" : "text-[13px]")}>MEDIA · {kind === "video" ? "VIDEO" : kind === "image" ? "FOTO" : kind === "doc" ? "DOCUMENT" : "BESTAND"}</p>
+              <p className={cn("text-ivory/70 tracking-wide truncate", compact ? "text-[9px] mt-1" : "text-[11px] mt-1.5")}>{media.name || "Media"}</p>
+            </div>
+          </div>
+        )}
+
         {/* Media — flush in de shell */}
         {kind === "music" && (
           <MusicViewerStage
