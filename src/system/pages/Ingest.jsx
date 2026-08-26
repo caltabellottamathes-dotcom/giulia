@@ -6,6 +6,7 @@ import { Inbox, Sparkles, History } from "lucide-react";
 import IngestDropzone from "@/system/components/ingest/IngestDropzone";
 import PipelineStatus from "@/system/components/ingest/PipelineStatus";
 import IngestResult from "@/system/components/ingest/IngestResult";
+import IngestReview from "@/system/components/ingest/IngestReview";
 import IngestHistory from "@/system/components/ingest/IngestHistory";
 
 const PROCESSING = ["received", "reading", "understanding", "extracting", "matching", "connecting", "updating", "distributing"];
@@ -40,7 +41,14 @@ export default function Ingest() {
   };
 
   const isProcessing = source && PROCESSING.includes(source.status);
+  const isReview = source && source.status === "pending_approval";
   const isDone = source && ["complete", "partial", "failed"].includes(source.status);
+
+  const approve = async (records) => {
+    if (!source) return;
+    await base44.functions.invoke("approveIngestion", { source_id: source.id, records }).catch(() => null);
+    await refresh();
+  };
 
   return (
     <div className="min-h-screen pb-24">
@@ -72,6 +80,8 @@ export default function Ingest() {
                   <p className="text-center text-sm text-muted-foreground mb-6">GIULIA verwerkt <span className="text-foreground/90 font-medium">{source.original_filename || "je invoer"}</span></p>
                   <PipelineStatus status={source.status} history={source.processing_history} />
                 </GlassPanel>
+              ) : isReview ? (
+                <IngestReview source={source} onApproved={refresh} onReprocess={reprocess} />
               ) : isDone ? (
                 <IngestResult source={source} onNew={reset} onReprocess={reprocess} />
               ) : null}

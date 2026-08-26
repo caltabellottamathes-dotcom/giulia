@@ -1,19 +1,16 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
+import { loadCandidates } from '../../shared/ingestExec.ts';
 
 /**
- * ingestSource — Universal Information Ingestion pipeline.
+ * ingestSource — Universal Information Ingestion pipeline (PROPOSE-ONLY).
  *
- * Reads an IngestionSource record, processes the complete source (PDF text,
- * pasted text, or image via vision), understands it into a structured
- * "understanding payload" of normalized entities, resolves each against
- * existing OS data, executes a non-destructive merge/create plan, links
- * entities, distributes via Activity + existing downstream triggers, and
- * finalizes the source with a full provenance audit. Idempotent on reprocess.
+ * Reads an IngestionSource, understands the source into a structured set of
+ * proposed entities, resolves each against existing OS data, and stores them
+ * as `proposed_records` with status `pending_approval`. NOTHING is created or
+ * updated here — the user reviews and approves via `approveIngestion`.
  *
  * Aanroep: { source_id }
  */
-
-const HIGH = ["certain", "highly_likely", "probable"];
 
 const UNDERSTANDING_SCHEMA = {
   type: "object",
@@ -59,6 +56,7 @@ const UNDERSTANDING_SCHEMA = {
           f_description: { type: "string" },
           explicit: { type: "boolean" },
           confidence: { type: "string", enum: ["certain", "highly_likely", "probable", "uncertain", "unresolved"] },
+          reasoning: { type: "string" },
           source_span: { type: "string" },
           inferred_notes: { type: "string" }
         }
@@ -87,10 +85,16 @@ const RESOLUTION_SCHEMA = {
 };
 
 const SYSTEM_TEXT =
-  "You are the GIULIA OS ingestion engine. Read the ENTIRE source and extract ALL meaningful, normalized entities. " +
-  "Tag each with an entity_class and confidence. Distinguish explicit (directly stated) from inferred (reasonably derivable) — never silently make inference into fact (mark explicit=false and note it). " +
-  "Only extract real, actionable or meaningful information; skip noise. Financial items: set fields.financial_kind ('income'|'expense'), amount, currency, recurring, frequency, category, payment_date/start_date/end_date. " +
-  "Tasks: only when a real action/commitment/deadline exists. Dates: ISO8601 where possible. Always return valid JSON per the schema.";
+  "You are GIULIA's ingestion engine. You read a source ONCE and decide what (if anything) in it is real, durable information that belongs in a personal OS.\n\n" +
+  "METHOD — follow strictly:\n" +
+  "1. CLASSIFY: Decide what kind of source this is (note, offer, report, email, receipt, contract, message, screenshot…). Write overall_subject (≤8 words) and purpose (one sentence: what this is and why it exists).\n" +
+  "2. FILTER: Only extract entities that are REAL and MEANINGFUL — a concrete thing the user would actually want stored: a project, a task/commitment with a real action, a person with at least a name, an event/deadline with a date, a financial figure with an amount, a decision, a durable note/knowledge, an idea. Skip passing mentions, greetings, filler and obvious noise. When unsure whether something is meaningful, do not extract it.\n" +
+  "3. FIELDS: Fill ONLY fields directly supported by the text. Leave a field empty rather than guessing. Dates → ISO 8601 (YYYY-MM-DD). Money → number + currency. For financial items set f_financial_kind ('income' or 'expense').\n" +
+  "4. EXPLICIT vs INFERRED: explicit=true ONLY when the fact is stated verbatim. Anything you derive (a deadline implied by 'next week', a project inferred from context, a guessed role) → explicit=false and explain in inferred_notes.\n" +
+  "5. CONFIDENCE — be honest and conservative: certain = stated unambiguously; highly_likely = strongly implied with little doubt; probable = likely but assumes context; uncertain = a reasonable guess; unresolved = cannot determine. When in doubt, drop a level.\n" +
+  "6. REASONING: For EVERY entity write one clear sentence in 'reasoning' explaining WHY this is a real OS entity and how you derived it. The human who will approve reads this — make it specific and logical, not generic.\n" +
+  "7. GAPS: List things clearly missing to make entities useful (a deadline without a date, a task without an owner, an amount without a currency) under gaps, each with a short description.\n\n" +
+  "Return ONLY valid JSON matching the schema. Quality over quantity. Do not invent entities.";
 
 export default async function (req) {
   const base44 = createClientFromRequest(req);
@@ -159,69 +163,59 @@ export default async function (req) {
     const candidates = await loadCandidates(sr);
     const entities = understanding.entities;
     const resolution = await base44.integrations.Core.InvokeLLM({
-      prompt: "You resolve extracted entities against existing GIULIA OS records by name/alias/date/email/semantic match. Return JSON {results:[{index, decision, existing_id, reason}]}. Prefer EXISTING over NEW to avoid duplicates; use CONFLICT when the source contradicts existing data.\n\n" + buildResolutionPrompt(entities, candidates),
+      prompt: "You resolve each extracted entity against existing GIULIA OS records. For every index return a decision:\n" +
+        "- EXISTING: this is clearly the same record (match on name/alias/email/exact date+title). Prefer this to avoid duplicates.\n" +
+        "- POSSIBLE_MATCH: likely the same but not certain.\n" +
+        "- CONFLICT: refers to an existing record but the source contradicts its data.\n" +
+        "- NEW: no existing record matches.\n" +
+        "- UNKNOWN: cannot determine.\n" +
+        "Only use EXISTING/POSSIBLE_MATCH/CONFLICT when you are genuinely confident. Set existing_id to the candidate id. Explain in 'reason'.\n\n" + buildResolutionPrompt(entities, candidates),
       response_json_schema: RESOLUTION_SCHEMA
     }).catch(() => null);
     const results = (resolution && resolution.results) || entities.map((_, i) => ({ index: i, decision: "NEW" }));
 
-    // Idempotent reprocess: prefer previously generated records for this source
-    const priorGenerated = (src.generated_records || []).map((g) => `${g.entity}::${g.id}`);
-
-    // ── CONNECTING + UPDATING ─────────────────────────────────────────
-    await hist("connecting");
-    const ctx = { projectIds: {}, contactIds: {} };
-    const generated = [], updated = [], relationships = [], conflicts = [], unresolved = [];
-
-    for (let i = 0; i < entities.length; i++) {
-      const e = entities[i] || {};
+    // ── PROPOSE (no creation) ─────────────────────────────────────────
+    const proposed = entities.map((e, i) => {
       const r = results.find((x) => x.index === i) || { decision: "NEW" };
-      const highConf = HIGH.includes(e.confidence);
-      if (!highConf && r.decision === "UNKNOWN") { unresolved.push({ index: i, class: e.entity_class, title: e.title, reason: r.reason || "low confidence" }); continue; }
-      try {
-        const out = await executeEntity(sr, e, r, src, candidates, ctx, priorGenerated);
-        if (out.generated) generated.push(...out.generated);
-        if (out.updated) updated.push(...out.updated);
-        if (out.relationships) relationships.push(...out.relationships);
-        if (out.conflict) conflicts.push(out.conflict);
-      } catch (err) {
-        unresolved.push({ index: i, class: e.entity_class, title: e.title, reason: String((err && err.message) || err) });
-      }
-    }
-
-    // ── GAPS → GiuliaQuestion ─────────────────────────────────────────
-    const gaps = [];
-    for (const g of (understanding.gaps || [])) {
-      if (g && g.description) {
-        await sr.entities.GiuliaQuestion.create({
-          title: `Ingestion gap: ${g.kind || "missing"}`,
-          body: g.description, kind: "fill_the_gap", domain: "projects", priority: "soon",
-          status: "open", target_ref: g.target_ref || "", context: `Source: ${src.original_filename || src.id}`,
-          agent_source: "ingestSource"
-        }).catch(() => null);
-        gaps.push(g);
-      }
-    }
-
-    // ── DISTRIBUTING ───────────────────────────────────────────────────
-    await hist("distributing");
-    for (const g of generated) await logActivity(sr, g, src, false);
-    for (const u of updated) await logActivity(sr, u, src, true);
-    if (generated.length || updated.length) {
-      base44.functions.invoke("refreshDashboard", {}).catch(() => null);
-      const touchedCal = generated.some((g) => g.entity === "CalendarEvent") || updated.some((u) => u.entity === "CalendarEvent");
-      if (touchedCal) base44.functions.invoke("calendarPropagation", {}).catch(() => null);
-    }
-
-    // ── COMPLETE ──────────────────────────────────────────────────────
-    const conf = aggregateConfidence(entities, generated, updated, unresolved);
-    await patchSrc({
-      status: unresolved.length && !generated.length && !updated.length ? "partial" : "complete",
-      confidence: conf,
-      generated_records: generated, updated_records: updated, relationships_created: relationships,
-      conflicts, unresolved, gaps, version: (src.version || 1) + 1
+      const fields = {
+        name: e.f_name, project_name: e.f_project_name, deadline: e.f_deadline, date: e.f_date, start: e.f_start, end: e.f_end,
+        amount: e.f_amount, currency: e.f_currency, recurring: e.f_recurring, frequency: e.f_frequency, category: e.f_category,
+        financial_kind: e.f_financial_kind, payment_date: e.f_payment_date, start_date: e.f_start_date, end_date: e.f_end_date, account_source: e.f_account_source,
+        email: e.f_email, phone: e.f_phone, company: e.f_company, role: e.f_role, relationship_type: e.f_relationship_type,
+        priority: e.f_priority, status: e.f_status, location: e.f_location, notes: e.f_notes, content: e.f_content, decision: e.f_decision, url: e.f_url, description: e.f_description
+      };
+      const cleanFields = {};
+      for (const [k, v] of Object.entries(fields)) if (v !== undefined && v !== null && v !== "") cleanFields[k] = v;
+      return {
+        index: i,
+        entity_class: e.entity_class,
+        title: e.title || "",
+        description: e.description || "",
+        fields: cleanFields,
+        confidence: e.confidence || "uncertain",
+        explicit: e.explicit === true,
+        source_span: e.source_span || "",
+        inferred_notes: e.inferred_notes || "",
+        reasoning: e.reasoning || "",
+        decision: r.decision || "NEW",
+        existing_id: r.existing_id || "",
+        existing_title: existingTitle(candidates, e.entity_class, r.existing_id),
+        reason: r.reason || ""
+      };
     });
 
-    return Response.json({ ok: true, source_id: sourceId, generated: generated.length, updated: updated.length, conflicts: conflicts.length, unresolved: unresolved.length, gaps: gaps.length });
+    const gaps = (understanding.gaps || []).filter((g) => g && g.description);
+    const conf = aggregateConfidence(entities);
+
+    await patchSrc({
+      status: "pending_approval",
+      confidence: conf,
+      proposed_records: proposed,
+      gaps,
+      processing_history: [...(src.processing_history || []), { stage: "pending_approval", at: new Date().toISOString(), ok: true, note: `${proposed.length} proposed · awaiting approval` }]
+    });
+
+    return Response.json({ ok: true, source_id: sourceId, proposed: proposed.length, gaps: gaps.length });
   } catch (error) {
     const body = await req.json().catch(() => ({}));
     if (body.source_id) await sr.entities.IngestionSource.update(body.source_id, { status: "failed", error: String(error.message) }).catch(() => null);
@@ -231,206 +225,27 @@ export default async function (req) {
 
 // ── helpers ──────────────────────────────────────────────────────────────
 
-async function loadCandidates(sr) {
-  const [projects, tasks, contacts, events, documents, knowledge, memory, ideas, decisions] = await Promise.all([
-    sr.entities.Project.list("-created_date", 50).catch(() => []),
-    sr.entities.Task.list("-created_date", 50).catch(() => []),
-    sr.entities.Contact.list("-created_date", 50).catch(() => []),
-    sr.entities.CalendarEvent.list("-start", 50).catch(() => []),
-    sr.entities.Document.list("-created_date", 50).catch(() => []),
-    sr.entities.Knowledge.list("-created_date", 50).catch(() => []),
-    sr.entities.Memory.list("-created_date", 50).catch(() => []),
-    sr.entities.Idea.list("-created_date", 50).catch(() => []),
-    sr.entities.Decision.list("-created_date", 50).catch(() => []),
-  ]);
-  return { projects: projects || [], tasks: tasks || [], contacts: contacts || [], events: events || [], documents: documents || [], knowledge: knowledge || [], memory: memory || [], ideas: ideas || [], decisions: decisions || [] };
-}
-
 function buildResolutionPrompt(entities, c) {
   const ent = entities.map((e, i) => `[${i}] ${e.entity_class} | title="${e.title || ""}" | name=${e.f_name || ""} | project=${e.f_project_name || ""} | deadline=${e.f_deadline || ""} | amount=${e.f_amount || ""} | email=${e.f_email || ""}`).join("\n");
   const cand = (arr, key, cls) => `${cls}: ` + (arr || []).map((x) => `${x.id}::${x[key] || x.title || x.name || ""}`).join(" | ");
-  return `Entities to resolve:\n${ent}\n\nExisting candidates:\n${cand(c.projects, "title", "Project")}\n${cand(c.tasks, "title", "Task")}\n${cand(c.contacts, "name", "Contact")}\n${cand(c.events, "title", "Event")}\n${cand(c.documents, "name", "Document")}\n${cand(c.knowledge, "title", "Knowledge")}\n${cand(c.ideas, "title", "Idea")}\n${cand(c.decisions, "title", "Decision")}\n\nReturn results for every index.`;
+  return `Entities to resolve:\n${ent}\n\nExisting candidates:\n${cand(c.projects, "title", "Project")}\n${cand(c.tasks, "title", "Task")}\n${cand(c.contacts, "name", "Contact")}\n${cand(c.events, "title", "Event")}\n${cand(c.documents, "name", "Document")}\n${cand(c.knowledge, "title", "Knowledge")}\n${cand(c.ideas, "title", "Idea")}\n${cand(c.decisions, "title", "Decision")}\n\nReturn a result for every index.`;
 }
 
-function dateOnly(s) { if (!s) return undefined; const d = new Date(s); if (isNaN(d.getTime())) return s; return d.toISOString().slice(0, 10); }
-function dateTime(s) { if (!s) return undefined; const d = new Date(s); if (isNaN(d.getTime())) return s; return d.toISOString(); }
-
-function mergePatch(existing, data) {
-  const patch = {};
-  for (const [k, v] of Object.entries(data)) {
-    if (v === undefined || v === null || v === "") continue;
-    if (existing[k] !== v) patch[k] = v;
-  }
-  return patch;
+function existingTitle(candidates, cls, id) {
+  if (!id) return "";
+  const map = { Project: "projects", Task: "tasks", Person: "contacts", Contact: "contacts", Event: "events", Deadline: "events", Commitment: "events", Document: "documents", Knowledge: "knowledge", Note: "knowledge", Memory: "memory", Idea: "ideas", Decision: "decisions", FinancialItem: "" };
+  const arr = candidates[map[cls]] || [];
+  const r = arr.find((x) => x.id === id);
+  return r ? (r.title || r.name || "") : "";
 }
 
-function resolveProjectId(ctx, candidates, name) {
-  if (!name) return undefined;
-  const n = String(name).toLowerCase();
-  if (ctx.projectIds[n]) return ctx.projectIds[n];
-  const m = candidates.projects.find((p) => (p.title || "").toLowerCase().includes(n) || n.includes((p.title || "").toLowerCase()));
-  return m ? m.id : undefined;
-}
-function resolveContactId(ctx, candidates, f) {
-  const em = (f.email || "").toLowerCase();
-  const nm = (f.name || "").toLowerCase();
-  if (em && ctx.contactIds[em]) return ctx.contactIds[em];
-  const m = candidates.contacts.find((c) => (em && (c.email || "").toLowerCase() === em) || (nm && (c.name || "").toLowerCase() === nm));
-  return m ? m.id : undefined;
-}
-
-async function executeEntity(sr, e, r, src, candidates, ctx, priorGenerated) {
-  const out = { generated: [], updated: [], relationships: [], conflict: null };
-  const f = {
-    name: e.f_name, project_name: e.f_project_name, deadline: e.f_deadline, date: e.f_date, start: e.f_start, end: e.f_end,
-    amount: e.f_amount, currency: e.f_currency, recurring: e.f_recurring, frequency: e.f_frequency, category: e.f_category,
-    financial_kind: e.f_financial_kind, payment_date: e.f_payment_date, start_date: e.f_start_date, end_date: e.f_end_date, account_source: e.f_account_source,
-    email: e.f_email, phone: e.f_phone, company: e.f_company, role: e.f_role, relationship_type: e.f_relationship_type,
-    priority: e.f_priority, status: e.f_status, location: e.f_location, notes: e.f_notes, content: e.f_content, decision: e.f_decision, url: e.f_url, description: e.f_description
-  };
-  const cls = e.entity_class;
-  const isUpdate = r.existing_id && (r.decision === "EXISTING" || r.decision === "POSSIBLE_MATCH" || r.decision === "CONFLICT");
-
-  if (cls === "Project") {
-    const data = { title: f.name || e.title, description: f.description || f.notes || e.description || "", domain: f.domain || "focus" };
-    if (f.deadline) data.deadline = dateOnly(f.deadline);
-    if (f.status) data.status = f.status;
-    if (f.priority) data.health = f.priority === "high" ? "attention" : "good";
-    const ex = r.existing_id ? candidates.projects.find((p) => p.id === r.existing_id) : null;
-    if (ex) {
-      const p = mergePatch(ex, data); if (Object.keys(p).length) await sr.entities.Project.update(ex.id, p);
-      ctx.projectIds[(data.title || ex.title || "").toLowerCase()] = ex.id;
-      out.updated.push({ entity: "Project", id: ex.id, title: ex.title });
-      if (r.decision === "CONFLICT") out.conflict = { entity: "Project", id: ex.id, title: ex.title, reason: r.reason };
-    } else {
-      const proj = await sr.entities.Project.create(data);
-      ctx.projectIds[(data.title || "").toLowerCase()] = proj.id;
-      out.generated.push({ entity: "Project", id: proj.id, title: data.title });
-    }
-  } else if (cls === "Task") {
-    const projectId = resolveProjectId(ctx, candidates, f.project_name);
-    const contactId = resolveContactId(ctx, candidates, f);
-    const data = { title: e.title, description: f.description || f.notes || e.description || "", domain: f.domain || "focus", priority: f.priority || "medium", status: f.status || "todo" };
-    if (f.deadline) data.deadline = dateOnly(f.deadline);
-    if (projectId) data.project_id = projectId;
-    if (contactId) data.contact_id = contactId;
-    const ex = r.existing_id ? candidates.tasks.find((t) => t.id === r.existing_id) : null;
-    if (ex) {
-      const p = mergePatch(ex, data); if (Object.keys(p).length) await sr.entities.Task.update(ex.id, p);
-      out.updated.push({ entity: "Task", id: ex.id, title: ex.title });
-      if (projectId) out.relationships.push({ from: `Task:${ex.id}`, to: `Project:${projectId}`, kind: "belongs_to" });
-    } else {
-      const t = await sr.entities.Task.create(data);
-      out.generated.push({ entity: "Task", id: t.id, title: data.title });
-      if (projectId) out.relationships.push({ from: `Task:${t.id}`, to: `Project:${projectId}`, kind: "belongs_to" });
-    }
-  } else if (cls === "Person" || cls === "Contact") {
-    const data = { name: f.name || e.title };
-    if (f.email) data.email = f.email;
-    if (f.phone) data.phone = f.phone;
-    if (f.company) data.company = f.company;
-    if (f.role) data.role = f.role;
-    if (f.relationship_type) data.relationship_type = f.relationship_type;
-    data.status = "confirmed";
-    data.last_contact_date = new Date().toISOString();
-    const ex = r.existing_id ? candidates.contacts.find((c) => c.id === r.existing_id) : null;
-    if (ex) {
-      const p = mergePatch(ex, data); if (Object.keys(p).length) await sr.entities.Contact.update(ex.id, p);
-      if (data.email) ctx.contactIds[data.email.toLowerCase()] = ex.id;
-      out.updated.push({ entity: "Contact", id: ex.id, title: ex.name });
-    } else {
-      const c = await sr.entities.Contact.create(data);
-      if (data.email) ctx.contactIds[data.email.toLowerCase()] = c.id;
-      out.generated.push({ entity: "Contact", id: c.id, title: data.name });
-    }
-  } else if (cls === "Event" || cls === "Deadline" || cls === "Commitment") {
-    const projectId = resolveProjectId(ctx, candidates, f.project_name);
-    const start = dateTime(f.start || f.date || f.deadline);
-    const end = dateTime(f.end) || (start ? new Date(new Date(start).getTime() + 3600000).toISOString() : undefined);
-    const data = { title: e.title, description: f.description || e.description || "", domain: f.domain || "life", status: "tentative" };
-    if (start) data.start = start;
-    if (end) data.end = end;
-    if (f.location) data.location = f.location;
-    if (projectId) data.project_id = projectId;
-    const ex = r.existing_id ? candidates.events.find((ev) => ev.id === r.existing_id) : null;
-    if (ex) {
-      const p = mergePatch(ex, data); if (Object.keys(p).length) await sr.entities.CalendarEvent.update(ex.id, p);
-      out.updated.push({ entity: "CalendarEvent", id: ex.id, title: ex.title });
-    } else {
-      const ev = await sr.entities.CalendarEvent.create(data);
-      out.generated.push({ entity: "CalendarEvent", id: ev.id, title: data.title });
-    }
-  } else if (cls === "Document") {
-    const projectId = resolveProjectId(ctx, candidates, f.project_name);
-    const data = { name: e.title || src.original_filename || "document", url: f.url || src.file_url || "", type: src.source_type === "pdf" ? "pdf" : "other", document_type: "reference", content: f.description || f.notes || e.description || "" };
-    if (projectId) data.project_id = projectId;
-    const doc = await sr.entities.Document.create(data);
-    out.generated.push({ entity: "Document", id: doc.id, title: data.name });
-    if (projectId) out.relationships.push({ from: `Document:${doc.id}`, to: `Project:${projectId}`, kind: "belongs_to" });
-  } else if (cls === "Knowledge" || cls === "Note") {
-    const projectId = resolveProjectId(ctx, candidates, f.project_name);
-    const data = { title: e.title || understanding_subject(src), content: f.content || f.description || f.notes || e.description || "", category: "Notes", source: `Ingestion: ${src.original_filename || src.id}` };
-    if (projectId) data.project_id = projectId;
-    const k = await sr.entities.Knowledge.create(data);
-    out.generated.push({ entity: "Knowledge", id: k.id, title: data.title });
-  } else if (cls === "Memory") {
-    const data = { content: f.content || f.description || e.description || e.title || "", category: "Important information", confidence: e.confidence === "certain" ? 0.95 : e.confidence === "highly_likely" ? 0.8 : 0.6, source: `Ingestion: ${src.original_filename || src.id}` };
-    await sr.entities.Memory.create(data);
-    out.generated.push({ entity: "Memory", id: null, title: "memory" });
-  } else if (cls === "Idea") {
-    const projectId = resolveProjectId(ctx, candidates, f.project_name);
-    const data = { title: e.title, content: f.content || f.description || f.notes || e.description || "", status: "new", agent_source: "ingestSource" };
-    if (projectId) data.project_id = projectId;
-    const idea = await sr.entities.Idea.create(data);
-    out.generated.push({ entity: "Idea", id: idea.id, title: data.title });
-  } else if (cls === "Decision") {
-    const projectId = resolveProjectId(ctx, candidates, f.project_name);
-    const data = { title: e.title, description: f.decision || f.description || e.description || "", date: dateOnly(f.date) || dateOnly(new Date().toISOString()) };
-    if (projectId) data.project_id = projectId;
-    const d = await sr.entities.Decision.create(data);
-    out.generated.push({ entity: "Decision", id: d.id, title: data.title });
-  } else if (cls === "FinancialItem") {
-    const isExpense = (f.financial_kind || "expense") === "expense";
-    const projectId = resolveProjectId(ctx, candidates, f.project_name);
-    const contactId = resolveContactId(ctx, candidates, f);
-    if (isExpense) {
-      const data = { amount: Number(f.amount) || 0, currency: f.currency || "EUR", category: f.category || "", description: f.description || e.title || "", payment_date: dateOnly(f.payment_date || f.date), start_date: dateOnly(f.start_date), end_date: dateOnly(f.end_date), frequency: f.frequency || "", account_source: f.account_source || "", source_id: src.id };
-      if (projectId) data.project_id = projectId;
-      if (contactId) data.contact_id = contactId;
-      const rec = await sr.entities.RecurringExpense.create(data);
-      out.generated.push({ entity: "RecurringExpense", id: rec.id, title: `${data.amount} ${data.currency}` });
-    } else {
-      const data = { amount: Number(f.amount) || 0, currency: f.currency || "EUR", category: f.category || "", description: f.description || e.title || "", date: dateOnly(f.date), recurring: f.recurring === true, frequency: f.frequency || "", account_source: f.account_source || "", source_id: src.id };
-      if (projectId) data.project_id = projectId;
-      if (contactId) data.contact_id = contactId;
-      const rec = await sr.entities.Income.create(data);
-      out.generated.push({ entity: "Income", id: rec.id, title: `${data.amount} ${data.currency}` });
-    }
-  } else {
-    out.conflict = null;
-  }
-  return out;
-}
-
-function understanding_subject(src) { return src.overall_subject || src.original_filename || "ingested note"; }
-
-async function logActivity(sr, rec, src, isUpdate) {
-  const domain = ["Project", "Task", "CalendarEvent", "Document", "Contact"].includes(rec.entity) ? "focus" : ["Income", "RecurringExpense"].includes(rec.entity) ? "life" : "giulia";
-  await sr.entities.Activity.create({
-    action: isUpdate ? "ingest_update" : "ingest_create",
-    description: `${isUpdate ? "Updated" : "Created"} ${rec.entity}${rec.title ? ` "${rec.title}"` : ""} from ${src.original_filename || "ingestion"}`,
-    source: "ingestSource", timestamp: new Date().toISOString(),
-    event_type: isUpdate ? "update" : "create", object_type: rec.entity, object_id: rec.id || "", domain
-  }).catch(() => null);
-}
-
-function aggregateConfidence(entities, generated, updated, unresolved) {
-  const total = entities.length || 1;
-  const acted = generated.length + updated.length;
-  const pct = acted / total;
-  if (pct >= 0.8) return "certain";
-  if (pct >= 0.5) return "highly_likely";
-  if (pct >= 0.25) return "probable";
-  if (acted > 0) return "uncertain";
+function aggregateConfidence(entities) {
+  if (!entities.length) return "unresolved";
+  const c = { certain: 5, highly_likely: 4, probable: 3, uncertain: 2, unresolved: 1 };
+  const avg = entities.reduce((s, e) => s + (c[e.confidence] || 2), 0) / entities.length;
+  if (avg >= 4.5) return "certain";
+  if (avg >= 3.5) return "highly_likely";
+  if (avg >= 2.5) return "probable";
+  if (avg >= 1.5) return "uncertain";
   return "unresolved";
 }

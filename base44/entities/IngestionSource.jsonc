@@ -41,6 +41,7 @@
         "connecting",
         "updating",
         "distributing",
+        "pending_approval",
         "complete",
         "partial",
         "failed"
@@ -83,6 +84,59 @@
         }
       },
       "title": "Detected Entities"
+    },
+    "proposed_records": {
+      "type": "array",
+      "title": "Proposed Records",
+      "description": "GIULIA's voorgestelde entiteiten \u2014 pas aan of sla over v\u00f3\u00f3r goedkeuring. Niets wordt aangemaakt tot de gebruiker goedkeurt.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "number"
+          },
+          "entity_class": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "fields": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "confidence": {
+            "type": "string"
+          },
+          "explicit": {
+            "type": "boolean"
+          },
+          "source_span": {
+            "type": "string"
+          },
+          "inferred_notes": {
+            "type": "string"
+          },
+          "reasoning": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string"
+          },
+          "existing_id": {
+            "type": "string"
+          },
+          "existing_title": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
     },
     "generated_records": {
       "type": "array",
