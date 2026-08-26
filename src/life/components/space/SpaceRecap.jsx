@@ -1,5 +1,6 @@
-import React from "react";
-import { RefreshCw, ArrowDown, ArrowRight } from "lucide-react";
+import React, { useState } from "react";
+import { RefreshCw, ArrowDown, ArrowRight, Pencil } from "lucide-react";
+import SpaceRecapEditor from "./SpaceRecapEditor";
 
 export const STALE_MS = 8 * 60 * 60 * 1000; // 8 uur
 
@@ -36,12 +37,9 @@ export const EDITORIAL_SCHEMA = {
 
 const pad = (n) => String(n).padStart(2, "0");
 
-/** EditorialLayout — Giulia's vaste analyse (niet handmatig aanpasbaar).
- *  Volgt het referentie-ontwerp: zwarte kop, domein-accent small-caps labels,
- *  dunne zwarte pijl rechts, divider + footer-bar, genummerde
- *  "What needs your attention"-lijst met separators, afsluitende samenvatting.
- *  `accent` = de leesbare domein-accentkleur (LIFE = Olive, FOCUS = Plum, …). */
-export function EditorialLayout({ data, onRefresh, onNavigate, accent = "hsl(var(--life-olive))", loading }) {
+/** EditorialLayout — referentie-ontwerp (zwarte kop, domein-accent labels,
+ *  dunne pijl, genummerde aandachtslijst). Volledig bewerkbaar via onEdit. */
+export function EditorialLayout({ data, onRefresh, onNavigate, onEdit, accent = "hsl(var(--life-olive))", loading }) {
   const items = Array.isArray(data?.items) ? data.items : [];
   const rawTitle = (data?.title || "").toUpperCase();
   const title = rawTitle.endsWith(".") ? rawTitle : `${rawTitle}.`;
@@ -50,11 +48,18 @@ export function EditorialLayout({ data, onRefresh, onNavigate, accent = "hsl(var
       <section className="mt-5">
         <div className="flex items-start justify-between gap-3">
           <p className="text-[10px] uppercase tracking-[0.28em] font-semibold" style={{ color: accent }}>{data.eyebrow}</p>
-          {onRefresh && (
-            <button onClick={onRefresh} title="GIULIA opnieuw genereren" className="p-1 rounded-full hover:bg-foreground/5 transition" style={{ color: accent }}>
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-            </button>
-          )}
+          <div className="flex items-center gap-1">
+            {onEdit && (
+              <button onClick={onEdit} title="Bewerk deze analyse" className="p-1 rounded-full hover:bg-foreground/5 transition" style={{ color: accent }}>
+                <Pencil className="w-3 h-3" />
+              </button>
+            )}
+            {onRefresh && (
+              <button onClick={onRefresh} title="GIULIA opnieuw genereren" className="p-1 rounded-full hover:bg-foreground/5 transition" style={{ color: accent }}>
+                <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+              </button>
+            )}
+          </div>
         </div>
         <div className="flex items-start justify-between gap-4 mt-3">
           <h2 className="font-display text-[30px] sm:text-[38px] leading-[0.98] tracking-[-0.03em] text-foreground font-semibold uppercase">{title}</h2>
@@ -108,10 +113,12 @@ export function EditorialLayout({ data, onRefresh, onNavigate, accent = "hsl(var
   );
 }
 
-/** SpaceRecap — presentational. De parent (PersonalAdminPage) pre-warmt alle
- *  tab-editorials, zodat een tab direct Giulia's analyse toont zonder op een
- *  genereer-knop te hoeven drukken. */
-export default function SpaceRecap({ data, loading, onRefresh, onNavigate, accent }) {
+/** SpaceRecap — presentational + bewerkbaar. De parent pre-warmt alle tabs;
+ *  hier wordt het getoond. onEdit opent de handmatige editor; onSave schrijft
+ *  de bewerking weg (en prevaleert boven toekomstige pre-warm). */
+export default function SpaceRecap({ data, loading, onRefresh, onNavigate, accent, onSave, onRegenerate }) {
+  const [editing, setEditing] = useState(false);
+  const save = (d) => { onSave?.(d); setEditing(false); };
   if (loading && !data) {
     return (
       <div className="space-y-3">
@@ -128,5 +135,10 @@ export default function SpaceRecap({ data, loading, onRefresh, onNavigate, accen
     );
   }
   if (!data) return null;
-  return <EditorialLayout data={data} onRefresh={onRefresh} onNavigate={onNavigate} accent={accent} loading={loading} />;
+  return (
+    <>
+      <EditorialLayout data={data} onRefresh={onRefresh} onNavigate={onNavigate} onEdit={onSave ? () => setEditing(true) : undefined} accent={accent} loading={loading} />
+      <SpaceRecapEditor open={editing} data={data} onClose={() => setEditing(false)} onSave={save} onRegenerate={onRegenerate} />
+    </>
+  );
 }

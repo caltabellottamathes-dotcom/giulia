@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Loader2, Send, ArrowRight } from "lucide-react";
 import { fmtEuro, calcPortfolio, upcomingExpenses } from "@/lib/financeUtils";
+import ReservationTreemap from "@/life/components/finance/ReservationTreemap";
 
 const Card = ({ children, className = "" }) => (
   <div className={`rounded-2xl bg-white/55 backdrop-blur-md border border-white/60 shadow-[0_18px_44px_-18px_rgba(0,0,0,0.35)] p-4 ${className}`}>{children}</div>
@@ -82,15 +83,10 @@ export default function HealthyMoneyTab({ data }) {
         <p className="text-[12px] text-muted-foreground mt-3 leading-[1.55]">{adviceText(indicators, canSpend)}</p>
       </Card>
 
-      {/* 2 · GELD HEBBEN VS KUNNEN BESTEDEN */}
+      {/* 2 · GELD HEBBEN VS BESTEDEN — live treemap balk (% van inkomen) */}
       <Card>
-        <p className={labelCls + " mb-3"}>Geld hebben vs. geld kunnen besteden</p>
-        <div className="grid sm:grid-cols-3 gap-3">
-          <Box t="Geld hebben" v={fmtEuro(canSpend.have)} sub="staat op je rekeningen" c="hsl(var(--smoke))" />
-          <Box t="Bestemd + verplicht" v={fmtEuro(canSpend.reserved + canSpend.upcoming)} sub="potjes + komende betalingen" c="hsl(var(--life-olive))" />
-          <Box t="Kunnen besteden" v={fmtEuro(canSpend.free)} sub="echt vrij beschikbaar" c="hsl(var(--life-pistachio))" />
-        </div>
-        <p className="text-[12px] text-muted-foreground mt-3 leading-[1.55]">Having money is not the same as having money available to spend. Geld met een bestemming is nog niet vrij — het wacht op een vaste last of doel.</p>
+        <p className={labelCls + " mb-3"}>Geld hebben vs. besteden — hoe je inkomen is verdeeld</p>
+        <ReservationTreemap portfolios={portfolios} income={dist.income} />
       </Card>
 
       {/* 3/8 · CAN I AFFORD THIS? + MONEY CONVERSATION */}
@@ -112,18 +108,6 @@ function Ind({ label, v, c }) {
     <div>
       <p className="text-[8px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">{label}</p>
       <p className="text-xl font-display font-semibold tabular-nums leading-none mt-1" style={{ color: c || "hsl(var(--foreground))" }}>{v}</p>
-    </div>
-  );
-}
-function Box({ t, v, sub, c }) {
-  return (
-    <div className="rounded-xl p-3 bg-white/55 border border-foreground/12">
-      <div className="flex items-center gap-1.5">
-        <span className="h-2 w-2 rounded-full" style={{ background: c }} />
-        <p className="text-[9px] uppercase tracking-[0.2em] font-semibold" style={{ color: c }}>{t}</p>
-      </div>
-      <p className="text-2xl font-display font-semibold tabular-nums mt-1 text-foreground">{v}</p>
-      <p className="text-[10px] text-muted-foreground mt-1">{sub}</p>
     </div>
   );
 }

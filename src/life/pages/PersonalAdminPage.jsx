@@ -154,6 +154,23 @@ export default function PersonalAdminPage() {
     }
   };
 
+  // Handmatige bewerking van de editorial — prevaleert boven toekomstige pre-warm
+  // (opgeslagen met de huidige signature, dus pre-warm ziet een verse cache).
+  const saveEditorial = (tabKey, d) => {
+    const sig = `${tabKey}:${Math.round(tm)}:${Math.round(tr)}:${portfolios.length}:${expenses.filter((e) => e.status !== "done").length}:${incomes.length}`;
+    localStorage.setItem(`personalAdmin:${tabKey}`, JSON.stringify({ _content: d, _ts: Date.now(), _sig: sig }));
+    setEditorials((prev) => ({ ...prev, [tabKey]: { data: d, loading: false } }));
+  };
+
+  // Voor de editor: genereer een nieuwe Giulia-versie en geef 'm terug (zonder state).
+  const regenerateForEditor = async (tabKey) => {
+    try {
+      const res = await base44.functions.invoke("generateAdminRecap", { prompt: buildPrompt(tabKey, data), schema: EDITORIAL_SCHEMA });
+      if (res && res.ok && res.data && res.data.title) return res.data;
+    } catch { /* ignore */ }
+    return buildFallback(tabKey, data);
+  };
+
   const activePortfolio = detail.open ? (portfolios.find((p) => p.id === detail.portfolioId) || null) : null;
 
   const onAdd = () => {
@@ -187,7 +204,7 @@ export default function PersonalAdminPage() {
             <p className="text-[9px] uppercase tracking-[0.24em] font-semibold text-life-olive">Giulia AI</p>
           </div>
         )}
-        recap={<SpaceRecap data={editorials[tab]?.data} loading={editorials[tab]?.loading} onRefresh={() => refreshEditorial(tab)} onNavigate={setTab} accent="hsl(var(--life-olive))" />}
+        recap={<SpaceRecap data={editorials[tab]?.data} loading={editorials[tab]?.loading} onRefresh={() => refreshEditorial(tab)} onNavigate={setTab} accent="hsl(var(--life-olive))" onSave={(d) => saveEditorial(tab, d)} onRegenerate={() => regenerateForEditor(tab)} />}
       >
         {loading ? (
           <div className="space-y-3">
