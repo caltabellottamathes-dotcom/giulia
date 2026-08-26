@@ -6,11 +6,11 @@ const STAGES = [
   { key: "received", label: "Receiving" },
   { key: "reading", label: "Reading" },
   { key: "understanding", label: "Understanding" },
-  { key: "extracting", label: "Extracting" },
+  { key: "structuring", label: "Structuring" },
   { key: "matching", label: "Matching" },
-  { key: "connecting", label: "Connecting" },
-  { key: "updating", label: "Updating" },
-  { key: "distributing", label: "Distributing" },
+  { key: "reconciling", label: "Reconciling" },
+  { key: "validating", label: "Validating" },
+  { key: "pending_approval", label: "Ready for approval" },
   { key: "complete", label: "Complete" },
 ];
 

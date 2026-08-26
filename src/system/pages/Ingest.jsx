@@ -9,7 +9,7 @@ import IngestResult from "@/system/components/ingest/IngestResult";
 import IngestReview from "@/system/components/ingest/IngestReview";
 import IngestHistory from "@/system/components/ingest/IngestHistory";
 
-const PROCESSING = ["received", "reading", "understanding", "extracting", "matching", "connecting", "updating", "distributing"];
+const PROCESSING = ["received", "reading", "understanding", "structuring", "matching", "reconciling", "validating", "extracting", "connecting", "updating", "distributing"];
 
 export default function Ingest() {
   const [tab, setTab] = useState("new"); // new | history

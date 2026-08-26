@@ -36,6 +36,16 @@
     "agent_source": {
       "type": "string",
       "title": "Agent Source"
+    },
+    "theme_id": {
+      "type": "string",
+      "title": "Theme ID",
+      "description": "Gekoppeld ProjectTheme-onderdeel (naast project_id)."
+    },
+    "source_id": {
+      "type": "string",
+      "title": "Ingestion Source ID",
+      "description": "Provenance: uit welke IngestionSource is deze notitie ontstaan."
     }
   },
   "required": [

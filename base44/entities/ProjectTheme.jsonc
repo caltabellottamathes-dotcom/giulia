@@ -1,0 +1,81 @@
+{
+  "name": "ProjectTheme",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "purpose": {
+      "type": "string",
+      "title": "Purpose"
+    },
+    "context": {
+      "type": "string",
+      "title": "Context"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "in_progress",
+        "blocked",
+        "done",
+        "paused"
+      ],
+      "default": "open",
+      "title": "Status"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium",
+      "title": "Priority"
+    },
+    "progress": {
+      "type": "number",
+      "default": 0,
+      "title": "Progress"
+    },
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    },
+    "parent_theme_id": {
+      "type": "string",
+      "title": "Parent Theme ID",
+      "description": "Hi\u00ebrarchie: theme \u2192 subtheme via parent_theme_id."
+    },
+    "order": {
+      "type": "number",
+      "default": 0,
+      "title": "Order"
+    },
+    "agent_source": {
+      "type": "string",
+      "title": "Agent Source"
+    },
+    "source_id": {
+      "type": "string",
+      "title": "Ingestion Source ID",
+      "description": "Provenance: uit welke IngestionSource is deze theme ontstaan."
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

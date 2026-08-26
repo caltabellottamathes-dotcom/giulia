@@ -63,6 +63,16 @@
     "owner": {
       "type": "string",
       "title": "Owner"
+    },
+    "theme_id": {
+      "type": "string",
+      "title": "Theme ID",
+      "description": "Gekoppeld ProjectTheme-onderdeel (naast project_id)."
+    },
+    "source_id": {
+      "type": "string",
+      "title": "Ingestion Source ID",
+      "description": "Provenance: uit welke IngestionSource is dit document gekoppeld."
     }
   },
   "required": [
