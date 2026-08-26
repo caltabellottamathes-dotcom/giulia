@@ -47,7 +47,7 @@ export function EditorialLayout({ data, onRefresh, onEdit, loading }) {
       {/* TOP BLOCK */}
       <section className="mt-6">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-[10px] uppercase tracking-[0.28em] font-semibold text-[hsl(var(--blue-grey))]">{data.eyebrow}</p>
+          <p className="text-[10px] uppercase tracking-[0.28em] font-semibold text-[hsl(var(--steel))]">{data.eyebrow}</p>
           <div className="flex items-center gap-1">
             {onRefresh &&
             <button onClick={onRefresh} title="GIULIA opnieuw genereren" className="p-1 rounded-full hover:bg-foreground/5 text-life-olive transition">
