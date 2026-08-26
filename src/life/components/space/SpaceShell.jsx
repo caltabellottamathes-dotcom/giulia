@@ -89,7 +89,7 @@ export default function SpaceShell({ bgImage, heroImage, eyebrow, title, tabs, a
             <div className="lg:w-[46%] xl:w-[44%] shrink-0 overflow-y-auto px-5 lg:px-7 pt-4 pb-6">
               {recap}
             </div>
-            <div className="flex-1 overflow-y-auto px-5 lg:px-7 py-6 space-y-4 lg:-ml-8 relative z-20">
+            <div className="flex-1 overflow-visible px-5 lg:px-7 py-6 space-y-4 lg:-ml-8 relative z-20">
               {children}
             </div>
           </div>

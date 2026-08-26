@@ -56,6 +56,7 @@ module.exports = {
   			charcoal: 'hsl(var(--charcoal))',
   			smoke: 'hsl(var(--smoke))',
   			ridge: 'hsl(var(--ridge))',
+  			ridgeDeep: 'hsl(var(--ridge-deep))',
   			storm: 'hsl(var(--storm))',
   			powder: 'hsl(var(--powder))',
   			steel: 'hsl(var(--steel))',

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 import { CircleDot, Wallet, ListChecks, Banknote, LineChart, FileText, HeartPulse } from "lucide-react";
@@ -62,12 +62,18 @@ Output JSON met deze velden (editorial frame-labels in het Engels zoals de voorb
 - attentionTitle: zwarte uppercase titel aandachtsblok, bijv. "WHAT NEEDS YOUR ATTENTION".
 - attentionBadge: blauw uppercase badge, formaat "0N ITEMS NEED ACTION" met het echte aantal urgente items.
 - items: 0-3 dingen die nu aandacht vragen — het aantal hangt af van wat er op dit moment echt nodig is (geen vaste 3). Elk item: title (kort), sub (1 zin uitleg met concrete bedragen) en link (één van: OVERVIEW, PORTEFEUILLES, LASTEN, INKOMEN, FORECAST, HEALTHY_MONEY) — de tab waar Salvo heen moet om het op te lossen. Gebruik echte komende betalingen of korte potjes uit de data. Als er niets urgents is, geef een lege array.
-- diepgang: schrijf een DIEPE, tab-specifieke analyse — niet generisch. OVERVIEW = globale samenvatting van het hele financieel beeld; elke andere tab = een diepere analyse van precies dat onderwerp (portefeuilles, lasten, inkomen, forecast, healthy money of documenten).
 - restTitle: blauw uppercase afsluitende kop, bijv. "THE REST CAN WAIT."
 - restBody: één geruststellende zin over de rest.
 
-${overview ? "Dek in body en items het hele financieel beeld." : `Focus op de ${label}-tab.`}
-Geen markdown.
+ELKE TAB MOET een unieke, specifieke tekst hebben — niet generisch, niet dezelfde als een andere tab. Schrijf vanuit de hoek van DEZE tab (${label}):
+- OVERVIEW → globale samenvatting: totale staat, geld hebben vs bestemd, wat deze maand beweegt.
+- PORTEFEUILLES → per-pot analyse: welke potjes lopen goed, welke achter, buffer- en doel-verhoudingen.
+- LASTEN → komende en openstaande betalingen: wat moet wanneer betaald, wat loopt te laat.
+- INKOMEN → inkomstenstromen: wat komt wanneer binnen, dekking vs reserveringen.
+- FORECAST → vooruitblik: verwachte saldi-ontwikkeling en knelpunten in komende maanden.
+- HEALTHY_MONEY → financieel geweten: geld hebben vs kunnen besteden, risico's, vrije ruimte.
+- DOCUMENTEN → financiële documenten: wat ontbreekt, wat loopt, beheer.
+Gebruik concrete data uit de snapshot die bij deze tab hoort. Geen markdown.
 
 Data:
 ${buildSnapshot(tab, d)}`;
@@ -112,16 +118,18 @@ export default function PersonalAdminPage() {
     upcoming: upcomingExpenses(expenses, 30),
   }), [portfolios, expenses, incomes, transactions, docs, dist, tm, tr]);
 
-  // Pre-warm editorials voor ALLE tabs zodra de data geladen is, zodat een tab
-  // direct Giulia's analyse toont — geen genereer-knop nodig. Per tab gecached in
-  // localStorage met data-signature + 8u geldigheid; alleen gewijzigde/oude tabs
-  // worden opnieuw opgehaald.
+  // Pre-warm editorials voor ALLE tabs — EÉN keer per mount (ref-guard), zodat
+  // een tab direct Giulia's analyse toont. Per tab gecached in localStorage
+  // (data-signature + 8u geldigheid). Niet opnieuw bij elke datawijziging
+  // (voorkomt credit-verlies); alleen handmatig via refresh.
+  const warmedRef = useRef(false);
   useEffect(() => {
-    if (loading) return;
+    if (loading || warmedRef.current) return;
+    warmedRef.current = true;
     let cancelled = false;
     const sig = `${Math.round(tm)}:${Math.round(tr)}:${portfolios.length}:${expenses.filter((e) => e.status !== "done").length}:${incomes.length}`;
     TABS.forEach(async (t) => {
-      const key = `personalAdmin:${t.key}`;
+      const key = `personalAdminV2:${t.key}`;
       const fullSig = `${t.key}:${sig}`;
       let cached = null;
       try { const raw = localStorage.getItem(key); if (raw) { const p = JSON.parse(raw); if (p && p._content && p._sig === fullSig && Date.now() - p._ts < STALE_MS) cached = p._content; } } catch { /* ignore */ }
@@ -139,7 +147,7 @@ export default function PersonalAdminPage() {
       }
     });
     return () => { cancelled = true; };
-  }, [loading, tm, tr, portfolios, expenses, incomes]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const refreshEditorial = async (tabKey) => {
     setEditorials((prev) => ({ ...prev, [tabKey]: { data: prev[tabKey]?.data || null, loading: true } }));
@@ -147,28 +155,11 @@ export default function PersonalAdminPage() {
       const res = await base44.functions.invoke("generateAdminRecap", { prompt: buildPrompt(tabKey, data), schema: EDITORIAL_SCHEMA });
       const d = (res && res.ok && res.data && res.data.title && Array.isArray(res.data.items)) ? res.data : buildFallback(tabKey, data);
       const sig = `${tabKey}:${Math.round(tm)}:${Math.round(tr)}:${portfolios.length}:${expenses.filter((e) => e.status !== "done").length}:${incomes.length}`;
-      localStorage.setItem(`personalAdmin:${tabKey}`, JSON.stringify({ _content: d, _ts: Date.now(), _sig: sig }));
+      localStorage.setItem(`personalAdminV2:${tabKey}`, JSON.stringify({ _content: d, _ts: Date.now(), _sig: sig }));
       setEditorials((prev) => ({ ...prev, [tabKey]: { data: d, loading: false } }));
     } catch {
       setEditorials((prev) => ({ ...prev, [tabKey]: { data: prev[tabKey]?.data || buildFallback(tabKey, data), loading: false } }));
     }
-  };
-
-  // Handmatige bewerking van de editorial — prevaleert boven toekomstige pre-warm
-  // (opgeslagen met de huidige signature, dus pre-warm ziet een verse cache).
-  const saveEditorial = (tabKey, d) => {
-    const sig = `${tabKey}:${Math.round(tm)}:${Math.round(tr)}:${portfolios.length}:${expenses.filter((e) => e.status !== "done").length}:${incomes.length}`;
-    localStorage.setItem(`personalAdmin:${tabKey}`, JSON.stringify({ _content: d, _ts: Date.now(), _sig: sig }));
-    setEditorials((prev) => ({ ...prev, [tabKey]: { data: d, loading: false } }));
-  };
-
-  // Voor de editor: genereer een nieuwe Giulia-versie en geef 'm terug (zonder state).
-  const regenerateForEditor = async (tabKey) => {
-    try {
-      const res = await base44.functions.invoke("generateAdminRecap", { prompt: buildPrompt(tabKey, data), schema: EDITORIAL_SCHEMA });
-      if (res && res.ok && res.data && res.data.title) return res.data;
-    } catch { /* ignore */ }
-    return buildFallback(tabKey, data);
   };
 
   const activePortfolio = detail.open ? (portfolios.find((p) => p.id === detail.portfolioId) || null) : null;
@@ -200,11 +191,11 @@ export default function PersonalAdminPage() {
         onAdd={onAdd}
         cardHeader={(
           <div className="flex items-center justify-between px-5 lg:px-7 pt-4 pb-3 border-b border-foreground/12">
-            <p className="text-[9px] uppercase tracking-[0.3em] font-bold text-life-olive">Editorial Summary</p>
-            <p className="text-[9px] uppercase tracking-[0.24em] font-semibold text-life-olive">Giulia AI</p>
+            <p className="text-[9px] uppercase tracking-[0.3em] font-bold" style={{ color: "hsl(var(--ridge-deep))" }}>Editorial Summary</p>
+            <p className="text-[9px] uppercase tracking-[0.24em] font-semibold" style={{ color: "hsl(var(--ridge-deep))" }}>Giulia AI</p>
           </div>
         )}
-        recap={<SpaceRecap data={editorials[tab]?.data} loading={editorials[tab]?.loading} onRefresh={() => refreshEditorial(tab)} onNavigate={setTab} accent="hsl(var(--life-olive))" onSave={(d) => saveEditorial(tab, d)} onRegenerate={() => regenerateForEditor(tab)} />}
+        recap={<SpaceRecap data={editorials[tab]?.data} loading={editorials[tab]?.loading} onRefresh={() => refreshEditorial(tab)} onNavigate={setTab} accent="hsl(var(--ridge-deep))" />}
       >
         {loading ? (
           <div className="space-y-3">
