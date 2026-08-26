@@ -19,13 +19,13 @@ const SCHEMA = {
       items: {
         type: "object",
         properties: { title: { type: "string" }, sub: { type: "string" } },
-        required: ["title", "sub"]
-      }
+        required: ["title", "sub"],
+      },
     },
     restTitle: { type: "string" },
-    restBody: { type: "string" }
+    restBody: { type: "string" },
   },
-  required: ["eyebrow", "title", "subtitle", "body", "items", "restTitle", "restBody"]
+  required: ["eyebrow", "title", "subtitle", "body", "items", "restTitle", "restBody"],
 };
 
 const pad = (n) => String(n).padStart(2, "0");
@@ -47,24 +47,24 @@ export function EditorialLayout({ data, onRefresh, onEdit, loading }) {
       {/* TOP BLOCK */}
       <section className="mt-6">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-[10px] uppercase tracking-[0.28em] font-semibold text-[hsl(var(--steel))]">{data.eyebrow}</p>
+          <p className="text-[10px] uppercase tracking-[0.28em] font-semibold text-life-olive">{data.eyebrow}</p>
           <div className="flex items-center gap-1">
-            {onRefresh &&
-            <button onClick={onRefresh} title="GIULIA opnieuw genereren" className="p-1 rounded-full hover:bg-foreground/5 text-life-olive transition">
+            {onRefresh && (
+              <button onClick={onRefresh} title="GIULIA opnieuw genereren" className="p-1 rounded-full hover:bg-foreground/5 text-life-olive transition">
                 <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
               </button>
-            }
-            {onEdit &&
-            <button onClick={onEdit} title="Handmatig aanpassen" className="p-1 rounded-full hover:bg-foreground/5 text-life-olive transition">
+            )}
+            {onEdit && (
+              <button onClick={onEdit} title="Handmatig aanpassen" className="p-1 rounded-full hover:bg-foreground/5 text-life-olive transition">
                 <Pencil className="w-3 h-3" />
               </button>
-            }
+            )}
           </div>
         </div>
-        <h2 className="leading-[0.98] tracking-[-0.03em] text-editorial-blue font-medium text-[32px] my-4 px-1 sm:text-[32px0 [font-family:'Bodoni_Moda',_serif]">{title}</h2>
-        <p className="text-[11px] uppercase tracking-[0.22em] font-semibold mt-3 text-[hsl(var(--ridge))]">{data.subtitle}</p>
+        <h2 className="font-display text-[32px] sm:text-[38px] leading-[0.98] tracking-[-0.03em] text-foreground font-medium mt-3">{title}</h2>
+        <p className="text-[11px] uppercase tracking-[0.22em] font-semibold text-life-olive mt-3">{data.subtitle}</p>
         <div className="flex items-start gap-3 mt-5">
-          <p className="font-body text-[14px] leading-[1.7] text-balance flex-1 normal-case">{data.body}</p>
+          <p className="font-body text-[14px] leading-[1.7] text-life-olive text-balance flex-1">{data.body}</p>
           <ChevronDown className="w-4 h-4 text-life-olive shrink-0 mt-1" />
         </div>
       </section>
@@ -79,33 +79,33 @@ export function EditorialLayout({ data, onRefresh, onEdit, loading }) {
       <div className="flex-1 min-h-5" />
 
       {/* ATTENTION BLOCK */}
-      {items.length > 0 &&
-      <section>
+      {items.length > 0 && (
+        <section>
           <div className="flex items-center justify-between gap-3">
             <h3 className="text-[14px] uppercase tracking-[0.14em] font-bold text-life-olive">{data.attentionTitle || "WHAT NEEDS YOUR ATTENTION"}</h3>
             <span className="text-[9px] uppercase tracking-[0.2em] font-semibold text-life-olive shrink-0">{data.attentionBadge || `${pad(items.length)} ITEMS`}</span>
           </div>
           <div className="mt-3 border-t border-foreground/15">
-            {items.map((it, i) =>
-          <div key={i} className={`flex items-start gap-4 py-4 ${i > 0 ? "border-t border-foreground/12" : ""}`}>
+            {items.map((it, i) => (
+              <div key={i} className={`flex items-start gap-4 py-4 ${i > 0 ? "border-t border-foreground/12" : ""}`}>
                 <span className="font-display text-[22px] leading-none font-light text-life-olive tabular-nums shrink-0 w-7">{pad(i + 1)}</span>
                 <div className="min-w-0">
                   <p className="text-[13px] font-bold text-life-olive leading-tight">{it.title}</p>
                   <p className="text-[12px] text-life-olive/75 leading-[1.55] mt-1.5">{it.sub}</p>
                 </div>
               </div>
-          )}
+            ))}
           </div>
         </section>
-      }
+      )}
 
       {/* CLOSING */}
       <section className={items.length > 0 ? "pt-6" : "pt-3"}>
-        <p className="text-[11px] uppercase tracking-[0.2em] font-semibold text-editorial-blue">{data.restTitle}</p>
+        <p className="text-[11px] uppercase tracking-[0.2em] font-semibold text-life-olive">{data.restTitle}</p>
         <p className="font-body text-[13px] leading-[1.6] text-life-olive/80 mt-2">{data.restBody}</p>
       </section>
-    </div>);
-
+    </div>
+  );
 }
 
 /** SpaceRecap — per-tab editorial recap. Handmatig bewerkbaar (opgeslagen in
@@ -124,34 +124,29 @@ export default function SpaceRecap({ storageKey, prompt, fallback, onRefresh }) 
     if (saved) {
       try {
         const p = JSON.parse(saved);
-        if (p && p.title) {setData(p);setLoading(false);return;}
-      } catch {/* ignore */}
+        if (p && p.title) { setData(p); setLoading(false); return; }
+      } catch { /* ignore */ }
     }
     setLoading(true);
-    base44.integrations.Core.InvokeLLM({ prompt: promptRef.current, response_json_schema: SCHEMA }).
-    then((r) => {if (cancelled) return;if (r && r.title && Array.isArray(r.items)) {setData(r);localStorage.setItem(storageKey, JSON.stringify(r));} else if (fallback) {setData(fallback);}}).
-    catch(() => {if (!cancelled && fallback) setData(fallback);}).
-    finally(() => {if (!cancelled) setLoading(false);});
-    return () => {cancelled = true;};
+    base44.integrations.Core.InvokeLLM({ prompt: promptRef.current, response_json_schema: SCHEMA })
+      .then((r) => { if (cancelled) return; if (r && r.title && Array.isArray(r.items)) { setData(r); localStorage.setItem(storageKey, JSON.stringify(r)); } else if (fallback) { setData(fallback); } })
+      .catch(() => { if (!cancelled && fallback) setData(fallback); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [storageKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const generate = async () => {
     try {
-      const res = await base44.functions.invoke("generateSpaceRecap", { prompt: promptRef.current, schema: SCHEMA, temperature: 0.5 });
-      const r = res?.result ?? res?.data?.result ?? null;
+      const r = await base44.integrations.Core.InvokeLLM({ prompt: promptRef.current, response_json_schema: SCHEMA });
       if (r && r.title && Array.isArray(r.items)) return r;
-    } catch {/* ignore */}
-    try {
-      const r2 = await base44.integrations.Core.InvokeLLM({ prompt: promptRef.current, response_json_schema: SCHEMA });
-      if (r2 && r2.title && Array.isArray(r2.items)) return r2;
-    } catch {/* ignore */}
+    } catch { /* ignore */ }
     return null;
   };
 
   const regenerate = async () => {
     setLoading(true);
     const r = await generate();
-    if (r) {setData(r);localStorage.setItem(storageKey, JSON.stringify(r));}
+    if (r) { setData(r); localStorage.setItem(storageKey, JSON.stringify(r)); }
     setLoading(false);
     onRefresh?.();
   };
@@ -163,12 +158,12 @@ export default function SpaceRecap({ storageKey, prompt, fallback, onRefresh }) 
     return r;
   };
 
-  const save = (d) => {setData(d);localStorage.setItem(storageKey, JSON.stringify(d));setEditing(false);onRefresh?.();};
+  const save = (d) => { setData(d); localStorage.setItem(storageKey, JSON.stringify(d)); setEditing(false); onRefresh?.(); };
 
   return (
     <>
-      {loading && !data ?
-      <div className="space-y-3">
+      {loading && !data ? (
+        <div className="space-y-3">
           <div className="h-3 w-1/2 rounded shimmer" />
           <div className="h-10 w-3/4 rounded-lg shimmer" />
           <div className="h-3 w-2/3 rounded shimmer" />
@@ -179,11 +174,11 @@ export default function SpaceRecap({ storageKey, prompt, fallback, onRefresh }) 
             <div className="h-16 rounded shimmer" />
             <div className="h-16 rounded shimmer" />
           </div>
-        </div> :
-      data ?
-      <EditorialLayout data={data} onRefresh={regenerate} onEdit={() => setEditing(true)} loading={loading} /> :
-      null}
+        </div>
+      ) : data ? (
+        <EditorialLayout data={data} onRefresh={regenerate} onEdit={() => setEditing(true)} loading={loading} />
+      ) : null}
       <SpaceRecapEditor open={editing} data={data || fallback || { items: [] }} onClose={() => setEditing(false)} onSave={save} onRegenerate={editorRegen} />
-    </>);
-
+    </>
+  );
 }
