@@ -1,97 +1,57 @@
 import React, { useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import GlassPanel from "@/system/components/glass/GlassPanel";
-import RelationshipGraph3D from "../RelationshipGraph3D";
-import { closeCircle, contactSignals } from "@/lib/domainUtils";
+import NetworkGraph from "../v2/NetworkGraph";
+import { closeCircle } from "@/lib/domainUtils";
+import { EmptyState } from "../v2/primitives";
 
-const SIGNALS = [
-  { key: "connection", label: "Connection" },
-  { key: "recency", label: "Recency" },
-  { key: "rhythm", label: "Rhythm" },
-  { key: "reciprocity", label: "Reciprocity" },
-];
-
-function Dots({ value = 0 }) {
-  return (
-    <span className="inline-flex gap-0.5">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <span key={i} className={`h-1.5 w-1.5 rounded-full ${i < value ? "bg-olive" : "bg-muted"}`} />
-      ))}
-    </span>
-  );
-}
-
-/** RelationshipsSection — §2 network map + clusters. Hover shows real
- *  signals; click opens the PersonDetailDrawer (§9). Dragging only moves the
- *  visual position — the graph never re-interprets relational meaning. */
+/** RelationshipsSection v2 — §2 interactieve force-directed netwerkgrafiek
+ *  met cluster-filters. Hover → signal popover; click → detail drawer. */
 export default function RelationshipsSection({ contacts = [], whatsapps = [], planContactIds = [], onOpenPerson }) {
   const [hovered, setHovered] = useState(null);
-  const [pos, setPos] = useState({ x: 0, y: 0 });
   const [cluster, setCluster] = useState("all");
-  const circle = closeCircle(contacts, { whatsapps, planContactIds });
+  const circle = useMemo(() => closeCircle(contacts, { whatsapps, planContactIds }), [contacts, whatsapps, planContactIds]);
 
   const clusters = useMemo(() => {
     const types = new Set(circle.map((c) => (c.relationship_type || "other").toLowerCase()));
     return ["all", ...Array.from(types)];
   }, [circle]);
   const filtered = cluster === "all" ? circle : circle.filter((c) => (c.relationship_type || "other").toLowerCase() === cluster);
-
   const changing = contacts.filter((c) => c.relationship_pattern_note).slice(0, 4);
-  const handleHover = (c, p) => { setHovered(c); if (p) setPos(p); };
-  const signals = hovered ? contactSignals(hovered, whatsapps) : null;
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-1.5">
+    <motion.div initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.08 } } }} className="space-y-4">
+      <motion.div variants={fadeUp} className="flex flex-wrap gap-1.5">
         {clusters.map((c) => (
-          <button key={c} onClick={() => setCluster(c)} className={`text-[11px] capitalize rounded-full px-3 py-1 border transition-colors ${cluster === c ? "bg-olive text-white border-olive" : "border-border text-muted-foreground"}`}>{c}</button>
+          <motion.button key={c} whileTap={{ scale: 0.95 }} onClick={() => setCluster(c)} className={`text-[11px] capitalize rounded-full px-3.5 py-1.5 transition-colors ${cluster === c ? "bg-olive text-white" : "glass-1 text-muted-foreground"}`}>{c}</motion.button>
         ))}
-      </div>
+      </motion.div>
 
-      <GlassPanel level={2} className="relative h-[480px] overflow-hidden p-0">
-        <div className="absolute top-4 left-5 z-10 pointer-events-none">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Relationship Map</p>
-          <p className="text-xs text-foreground/60 mt-0.5">{filtered.length} shown · drag to rotate · click to open</p>
-        </div>
-
-        {filtered.length ? (
-          <RelationshipGraph3D contacts={filtered} onHover={handleHover} onSelect={(c) => onOpenPerson?.(c)} />
-        ) : (
-          <div className="h-full flex flex-col items-center justify-center gap-1 text-center px-6">
-            <p className="text-sm font-medium text-foreground/70">YOUR NETWORK</p>
-            <div className="h-px w-10 bg-border my-1" />
-            <p className="text-sm text-muted-foreground italic">Start adding people, or let Giulia discover relationships from WhatsApp and email context.</p>
+      <motion.div variants={fadeUp}>
+        <GlassPanel level={2} className="relative overflow-hidden p-0" >
+          <div className="absolute top-4 left-5 z-10 pointer-events-none">
+            <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">Relationship Map</p>
+            <p className="text-xs text-foreground/60 mt-0.5">{filtered.length} people · click to open · drag rotates</p>
           </div>
-        )}
-
-        {hovered && signals && (
-          <div className="fixed z-50 w-60 rounded-2xl p-4 pointer-events-none glass-3 shadow-xl" style={{ left: pos.x + 16, top: pos.y - 10 }}>
-            <p className="font-display font-semibold text-sm text-foreground">{hovered.name}</p>
-            <p className="text-[10px] uppercase tracking-widest text-olive mt-0.5">
-              {signals.since === Infinity ? "No contact recorded" : `Last contact ${signals.since}d ago`}
-            </p>
-            <div className="mt-3 space-y-1.5">
-              {SIGNALS.map(({ key, label }) => (
-                <div key={key} className="flex items-center justify-between text-[11px]">
-                  <span className="text-muted-foreground">{label}</span>
-                  <Dots value={signals[key]} />
-                </div>
-              ))}
-              <div className="flex items-center justify-between text-[11px] pt-1 border-t border-border/30 mt-2">
-                <span className="text-muted-foreground">Messages</span>
-                <span className="text-foreground/85">{signals.sent} sent · {signals.received} received</span>
-              </div>
+          {filtered.length ? (
+            <div className="flex items-center justify-center" style={{ height: 460 }}>
+              <NetworkGraph contacts={filtered} whatsapps={whatsapps} onHover={setHovered} onSelect={onOpenPerson} width={600} height={460} />
             </div>
-          </div>
-        )}
-      </GlassPanel>
+          ) : (
+            <div className="h-[460px] flex items-center justify-center"><EmptyState title="YOUR NETWORK" subtitle="Start adding people, or let Giulia discover relationships from context." /></div>
+          )}
+        </GlassPanel>
+      </motion.div>
 
       {changing.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <motion.div variants={fadeUp} className="flex flex-wrap gap-2">
           {changing.map((c) => (
-            <span key={c.id} className="text-[11px] rounded-full px-3 py-1.5 bg-muted text-foreground/70 border border-border/50">{c.name}: {c.relationship_pattern_note}</span>
+            <motion.span key={c.id} whileHover={{ scale: 1.04 }} onClick={() => onOpenPerson?.(c)} className="text-[11px] rounded-full px-3.5 py-1.5 glass-1 text-foreground/70 cursor-pointer">{c.name}: {c.relationship_pattern_note}</motion.span>
           ))}
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }
+
+const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.5 } } };

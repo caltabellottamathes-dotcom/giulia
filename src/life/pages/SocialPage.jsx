@@ -83,7 +83,7 @@ export default function SocialPage() {
         {section === "Overview" && <OverviewSection data={data} mi={mi} circle={circle} attention={attention} activePlans={activePlans} state={state} onNavigate={setSection} onOpenPerson={setDrawerContact} reload={load} />}
         {section === "Relationships" && <RelationshipsSection contacts={data.contacts} whatsapps={data.whatsapps} planContactIds={planContactIds} onOpenPerson={setDrawerContact} />}
         {section === "Pulse" && <PulseSection data={data} mi={mi} attention={attention} state={state} />}
-        {section === "Planner" && <PlannerSection data={data} contacts={data.contacts} reload={load} />}
+        {section === "Planner" && <PlannerSection data={data} contacts={data.contacts} checkIn={data.checkIn} reload={load} />}
         {section === "Personal Time" && <PersonalTimeSection blocks={data.blocks} checkIn={data.checkIn} reload={load} />}
       </div>
 
