@@ -23,7 +23,7 @@ import { MODULES } from "@/lib/moduleRegistry";
 // Spans op een 15-koloms grid (desktop). Oude 5-koloms waarden ×3, zodat
 // huidige formaten behouden blijven maar je nu stappen van 1 kolom kunt zetten
 // (1 span = 1/15, ... 3 = 20%, 5 = 33%, 6 = 40%, 8 = 53%, 15 = volledig).
-const WIDGET_SPAN = { giulia: 6, goodmorning: 6, concierge: 3, approvals: 6, insights: 3, imalive: 3, giuliaquestions: 3, projects: 6, agenda: 6, tasks: 3, email: 3, whatsapp: 6, people: 3, timetracker: 3, documents: 6, updates: 6, sociallife: 4, remindershome: 12, thinghandle: 3, thingslove: 8, dinner: 7, howdoing: 4, musicwidget: 5, beeldbank: 6, velochat: 3 };
+const WIDGET_SPAN = { giulia: 6, goodmorning: 6, concierge: 3, approvals: 6, insights: 3, imalive: 3, giuliaquestions: 3, projects: 6, agenda: 6, tasks: 3, email: 3, whatsapp: 6, people: 3, timetracker: 3, documents: 6, updates: 6, sociallife: 5, remindershome: 10, thinghandle: 3, thingslove: 7, dinner: 8, howdoing: 4, musicwidget: 3, beeldbank: 6, velochat: 3 };
 
 // Some modules open under a different key than their widget — map them so the
 // floating "widget naast het paneel" resolves to the right component.
@@ -68,7 +68,17 @@ export default function Home() {
   const [greeting, setGreeting] = useState({ line1: "", line2: "" });
   const [resetKey, setResetKey] = useState(0);
   const [startupDone, setStartupDone] = useState(() => sessionStorage.getItem("giulia_startup_done") === "1");
+  const [fitH, setFitH] = useState(0);
   const { toast } = useToast();
+
+  // Desktop: masonry past in één beeld (geen scroll) — fitHeight laat
+  // MasonryGrid zich afschalen tot de viewport-hoogte.
+  useEffect(() => {
+    const calc = () => setFitH(window.innerHeight - 180);
+    calc();
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, []);
 
   const bgImage = BOARD_BG[activeBoard] || IMAGES.feetChair;
 
@@ -306,7 +316,7 @@ export default function Home() {
               ))}
             </div>
           ) : visible.length > 0 ? (
-            <MasonryGrid key={activeBoard + resetKey} className="max-w-[1280px] xl:max-w-[1500px]" gap={24} spans={cells.map((c) => c.span)} scale={0.8} columnTiers={[[0, 1], [640, 6], [1024, 12], [1280, 15]]}>
+            <MasonryGrid key={activeBoard + resetKey} className="max-w-[1280px] xl:max-w-[1500px]" gap={24} spans={cells.map((c) => c.span)} scale={0.8} columnTiers={[[0, 1], [640, 6], [1024, 12], [1280, 15]]} fitHeight={fitH}>
               {cells.map((c) => c.node)}
             </MasonryGrid>
           ) : (
