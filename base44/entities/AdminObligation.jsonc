@@ -1,10 +1,12 @@
 {
   "name": "AdminObligation",
   "type": "object",
+  "title": "AdminObligation",
+  "description": "Financi\u00eble verplichting / expense. Uitgebreid met portefeuille-koppeling, betalingsfrequentie, expected/min/max/actual bedragen en betrouwbaarheid. Dient als Expense binnen het portefeuille-systeem.",
   "properties": {
     "title": {
       "type": "string",
-      "title": "Title"
+      "title": "Titel"
     },
     "type": {
       "type": "string",
@@ -21,11 +23,11 @@
     "due_date": {
       "type": "string",
       "format": "date",
-      "title": "Due Date"
+      "title": "Verval-/betaaldatum (legacy)"
     },
     "amount": {
       "type": "number",
-      "title": "Amount"
+      "title": "Bedrag (legacy, gebruik expected_amount)"
     },
     "recurrence": {
       "type": "string",
@@ -36,7 +38,74 @@
         "annual"
       ],
       "default": "none",
-      "title": "Recurrence"
+      "title": "Recurrence (legacy, gebruik frequency)"
+    },
+    "portfolio_id": {
+      "type": "string",
+      "title": "Portefeuille ID",
+      "description": "Gekoppelde reserveringspot."
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "weekly",
+        "biweekly",
+        "monthly",
+        "bimonthly",
+        "quarterly",
+        "semiannual",
+        "annual",
+        "once",
+        "variable"
+      ],
+      "default": "monthly",
+      "title": "Betalingsfrequentie"
+    },
+    "expected_amount": {
+      "type": "number",
+      "title": "Verwacht bedrag"
+    },
+    "min_amount": {
+      "type": "number",
+      "title": "Minimum bedrag"
+    },
+    "max_amount": {
+      "type": "number",
+      "title": "Maximum bedrag"
+    },
+    "actual_amount": {
+      "type": "number",
+      "title": "Daadwerkelijk betaald bedrag"
+    },
+    "next_payment_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Volgende betaaldatum"
+    },
+    "last_payment_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Laatste betaaldatum"
+    },
+    "auto_payment": {
+      "type": "boolean",
+      "default": false,
+      "title": "Automatische betaling"
+    },
+    "buffer": {
+      "type": "number",
+      "default": 0,
+      "title": "Buffer"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "known",
+        "estimated",
+        "unknown"
+      ],
+      "default": "known",
+      "title": "Betrouwbaarheid bedrag"
     },
     "document_id": {
       "type": "string",
@@ -62,17 +131,16 @@
     },
     "notes": {
       "type": "string",
-      "title": "Notes"
+      "title": "Notities"
     },
     "contact_id": {
       "type": "string",
       "title": "Contact ID",
-      "description": "Gekoppelde begunstigde (Contact) bij naammatch via Ingestion."
+      "description": "Gekoppelde begunstigde."
     },
     "source_id": {
       "type": "string",
-      "title": "Ingestion Source ID",
-      "description": "Provenance: uit welke IngestionSource is deze verplichting ontstaan."
+      "title": "Ingestion Source ID"
     }
   },
   "required": [

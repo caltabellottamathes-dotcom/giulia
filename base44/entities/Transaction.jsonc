@@ -1,0 +1,89 @@
+{
+  "name": "Transaction",
+  "type": "object",
+  "title": "Transaction",
+  "description": "Financi\u00eble transactie gekoppeld aan een portefeuille/expense/inkomen/spaardoel. Een transfer verandert TOTAL MONEY niet, een expense wel.",
+  "properties": {
+    "portfolio_id": {
+      "type": "string",
+      "title": "Portefeuille ID"
+    },
+    "expense_id": {
+      "type": "string",
+      "title": "Expense ID"
+    },
+    "income_id": {
+      "type": "string",
+      "title": "Income ID"
+    },
+    "savings_goal_id": {
+      "type": "string",
+      "title": "Spaardoel ID"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Datum"
+    },
+    "amount": {
+      "type": "number",
+      "title": "Bedrag"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "income",
+        "reservation",
+        "expense",
+        "transfer",
+        "adjustment"
+      ],
+      "default": "expense",
+      "title": "Type"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "completed",
+        "failed"
+      ],
+      "default": "completed",
+      "title": "Status"
+    },
+    "note": {
+      "type": "string",
+      "title": "Notitie"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "known",
+        "estimated",
+        "unknown"
+      ],
+      "default": "known",
+      "title": "Betrouwbaarheid"
+    },
+    "source_id": {
+      "type": "string",
+      "title": "Ingestion Source ID"
+    }
+  },
+  "required": [
+    "amount",
+    "type"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

@@ -1,37 +1,71 @@
 {
   "name": "Income",
   "type": "object",
+  "title": "Income",
+  "description": "Inkomstenbron binnen het financi\u00eble systeem. Uitgebreid met verwachte datum, ontvangen bedrag en status.",
   "properties": {
     "amount": {
       "type": "number",
-      "title": "Amount"
+      "title": "Bedrag"
     },
     "currency": {
       "type": "string",
       "default": "EUR",
-      "title": "Currency"
+      "title": "Valuta"
     },
     "category": {
       "type": "string",
-      "title": "Category"
+      "title": "Categorie"
     },
     "description": {
       "type": "string",
-      "title": "Description"
+      "title": "Beschrijving / bron"
     },
     "date": {
       "type": "string",
       "format": "date",
-      "title": "Date"
+      "title": "Datum"
     },
     "recurring": {
       "type": "boolean",
       "default": false,
-      "title": "Recurring"
+      "title": "Terugkerend"
     },
     "frequency": {
       "type": "string",
-      "title": "Frequency"
+      "enum": [
+        "weekly",
+        "biweekly",
+        "monthly",
+        "bimonthly",
+        "quarterly",
+        "semiannual",
+        "annual",
+        "once",
+        "variable"
+      ],
+      "default": "monthly",
+      "title": "Frequentie"
+    },
+    "expected_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Verwachte datum"
+    },
+    "received_amount": {
+      "type": "number",
+      "title": "Daadwerkelijk ontvangen bedrag"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "expected",
+        "received",
+        "missed",
+        "partial"
+      ],
+      "default": "expected",
+      "title": "Status"
     },
     "account_source": {
       "type": "string",

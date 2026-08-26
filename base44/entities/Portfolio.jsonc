@@ -1,0 +1,163 @@
+{
+  "name": "Portfolio",
+  "type": "object",
+  "title": "Portfolio",
+  "description": "Doelgebonden reserveringspot binnen het financi\u00eble portefeuille-systeem. Geld in een portefeuille heeft een bestemming (vaste last / onvoorzien / sparen) en is niet vrij besteedbaar saldo.",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Naam"
+    },
+    "description": {
+      "type": "string",
+      "title": "Beschrijving"
+    },
+    "category": {
+      "type": "string",
+      "title": "Categorie",
+      "description": "bv. Wonen, Verzekering, Abonnement, Sparen"
+    },
+    "goal": {
+      "type": "string",
+      "title": "Doel"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "vaste_last",
+        "onvoorzien",
+        "sparen"
+      ],
+      "default": "vaste_last",
+      "title": "Soort portefeuille"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "title": "Actief"
+    },
+    "archived": {
+      "type": "boolean",
+      "default": false,
+      "title": "Gearchiveerd"
+    },
+    "current_balance": {
+      "type": "number",
+      "default": 0,
+      "title": "Huidig saldo"
+    },
+    "target_balance": {
+      "type": "number",
+      "default": 0,
+      "title": "Gewenst saldo / doel"
+    },
+    "desired_buffer": {
+      "type": "number",
+      "default": 0,
+      "title": "Gewenste buffer"
+    },
+    "monthly_reservation_actual": {
+      "type": "number",
+      "default": 0,
+      "title": "Werkelijke maandelijkse reservering"
+    },
+    "monthly_reservation_recommended": {
+      "type": "number",
+      "default": 0,
+      "title": "Aanbevolen maandelijkse reservering"
+    },
+    "payment_frequency": {
+      "type": "string",
+      "enum": [
+        "weekly",
+        "biweekly",
+        "monthly",
+        "bimonthly",
+        "quarterly",
+        "semiannual",
+        "annual",
+        "once",
+        "variable"
+      ],
+      "default": "monthly",
+      "title": "Betalingsfrequentie"
+    },
+    "next_expected_payment": {
+      "type": "number",
+      "default": 0,
+      "title": "Volgende verwachte betaling"
+    },
+    "next_payment_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Volgende betalingsdatum"
+    },
+    "required_reservation": {
+      "type": "number",
+      "default": 0,
+      "title": "Benodigde reservering"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "safe",
+        "on_track",
+        "watch",
+        "short",
+        "critical"
+      ],
+      "default": "on_track",
+      "title": "Health-status"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium",
+      "title": "Prioriteit"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Notities"
+    },
+    "savings_target_amount": {
+      "type": "number",
+      "title": "Spaardoel bedrag",
+      "description": "Voor kind=sparen"
+    },
+    "savings_target_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Gewenste einddatum spaardoel"
+    },
+    "unexpected_used": {
+      "type": "number",
+      "default": 0,
+      "title": "Onverwacht gebruikt",
+      "description": "Voor kind=onvoorzien: reeds uitgegeven uit de buffer"
+    },
+    "order": {
+      "type": "number",
+      "default": 0,
+      "title": "Volgorde"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}
