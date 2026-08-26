@@ -19,6 +19,8 @@ const actionBtn = "h-8 w-8 flex items-center justify-center text-foreground/80 h
 export default function WorkspaceToolbar() {
   const { openModule, openChat, openVoice, setPendingMessage } = usePanel();
   const { active, start, stop, captured, clear } = useContextCapture();
+  const location = useLocation();
+  const isPersonalAdmin = location.pathname === "/life/personal-admin";
   const [launcherOpen, setLauncherOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [board, setBoard] = useState(getActiveBoard());
@@ -119,10 +121,10 @@ export default function WorkspaceToolbar() {
       <div
         className={cn(
           "fixed bottom-4 left-4 lg:bottom-6 lg:left-6 z-30 flex items-center transition-[width,transform] duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
-          expanded ? "w-[calc(100vw-5.5rem)] lg:w-[calc(100vw-7.5rem)]" : "w-[224px]"
+          (isPersonalAdmin || expanded) ? "w-[calc(100vw-5.5rem)] lg:w-[calc(100vw-7.5rem)]" : "w-[224px]"
         )}
-        onMouseEnter={expand}
-        onMouseLeave={() => scheduleCollapse(8000)}
+        onMouseEnter={isPersonalAdmin ? undefined : expand}
+        onMouseLeave={isPersonalAdmin ? undefined : () => scheduleCollapse(8000)}
       >
         <div
           className="relative flex items-center h-11 rounded-full overflow-hidden w-full"
@@ -135,7 +137,12 @@ export default function WorkspaceToolbar() {
           }}
         >
           <div className="pointer-events-none absolute inset-0" style={{ background: accent, opacity: 0.06 }} />
-          {expanded ? (
+          {isPersonalAdmin ? (
+            <form onSubmit={submit} className="flex items-center gap-2.5 flex-1 min-w-0 pl-3">
+              <span className="h-1.5 w-1.5 rounded-full bg-life-olive animate-pulse-soft shrink-0" />
+              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Ask Giulia anything…" className="flex-1 min-w-0 bg-transparent text-sm text-foreground placeholder:text-foreground/55 focus:outline-none" />
+            </form>
+          ) : expanded ? (
             <>
               {/* Dashboard tabs (left) */}
               <div className="flex items-center gap-0.5 overflow-x-auto shrink-0 max-w-[46%] lg:max-w-[54%] pl-2.5 lg:pl-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -198,8 +205,8 @@ export default function WorkspaceToolbar() {
           )}
 
           {/* Actions — altijd zichtbaar; bij ingeklapt alleen de belangrijkste (bellen + chat) */}
-          <div className={cn("ml-auto flex items-center gap-0.5 shrink-0", expanded ? "px-1.5 lg:px-2" : "pr-2")}>
-            {expanded && (
+          <div className={cn("ml-auto flex items-center gap-0.5 shrink-0", (expanded || isPersonalAdmin) ? "px-1.5 lg:px-2" : "pr-2")}>
+            {(expanded || isPersonalAdmin) && (
               <>
                 <button onClick={() => { expand(); active ? stop() : start(); }} aria-label="Context toevoegen" className={cn(actionBtn, active && "text-foreground")}><BrainCircuit className="h-4 w-4" /></button>
                 </>

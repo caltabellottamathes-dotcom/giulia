@@ -38,8 +38,14 @@ export function EditorialLayout({ data, onRefresh, onEdit, loading }) {
   const title = rawTitle.endsWith(".") ? rawTitle : `${rawTitle}.`;
   return (
     <div className="flex flex-col min-h-full">
+      {/* editorial section header — duwt de tekst iets naar beneden */}
+      <div className="flex items-center justify-between pb-3 border-b border-foreground/12">
+        <p className="text-[9px] uppercase tracking-[0.3em] font-bold text-life-olive">Editorial Summary</p>
+        <p className="text-[9px] uppercase tracking-[0.24em] font-semibold text-life-olive">Giulia AI</p>
+      </div>
+
       {/* TOP BLOCK */}
-      <section>
+      <section className="mt-6">
         <div className="flex items-center justify-between gap-3">
           <p className="text-[10px] uppercase tracking-[0.28em] font-semibold text-life-olive">{data.eyebrow}</p>
           <div className="flex items-center gap-1">
@@ -55,37 +61,37 @@ export function EditorialLayout({ data, onRefresh, onEdit, loading }) {
             )}
           </div>
         </div>
-        <h2 className="font-display text-[32px] sm:text-[38px] leading-[0.98] tracking-[-0.03em] text-foreground font-medium mt-2">{title}</h2>
+        <h2 className="font-display text-[32px] sm:text-[38px] leading-[0.98] tracking-[-0.03em] text-foreground font-medium mt-3">{title}</h2>
         <p className="text-[11px] uppercase tracking-[0.22em] font-semibold text-life-olive mt-3">{data.subtitle}</p>
-        <div className="flex items-start gap-3 mt-4">
-          <p className="font-body text-[14px] leading-[1.6] text-foreground/80 text-balance flex-1">{data.body}</p>
+        <div className="flex items-start gap-3 mt-5">
+          <p className="font-body text-[14px] leading-[1.7] text-life-olive text-balance flex-1">{data.body}</p>
           <ChevronDown className="w-4 h-4 text-life-olive shrink-0 mt-1" />
         </div>
       </section>
 
       {/* footer rule */}
-      <div className="mt-5 pt-3 border-t border-foreground/15 flex items-center justify-between">
+      <div className="mt-6 pt-3 border-t border-foreground/15 flex items-center justify-between">
         <p className="text-[9px] uppercase tracking-[0.24em] font-semibold text-life-olive">{data.footerLeft || "HERE'S HOW WE READ A FRAME"}</p>
         <p className="text-[9px] uppercase tracking-[0.24em] font-semibold text-life-olive">{data.footerRight || "(SCROLL)"}</p>
       </div>
 
       {/* spacer — duwt het aandachtsblok naar beneden zodat het de hoogte vult */}
-      <div className="flex-1 min-h-4" />
+      <div className="flex-1 min-h-5" />
 
       {/* ATTENTION BLOCK */}
       {items.length > 0 && (
         <section>
           <div className="flex items-center justify-between gap-3">
-            <h3 className="text-[14px] uppercase tracking-[0.14em] font-bold text-foreground">{data.attentionTitle || "WHAT NEEDS YOUR ATTENTION"}</h3>
+            <h3 className="text-[14px] uppercase tracking-[0.14em] font-bold text-life-olive">{data.attentionTitle || "WHAT NEEDS YOUR ATTENTION"}</h3>
             <span className="text-[9px] uppercase tracking-[0.2em] font-semibold text-life-olive shrink-0">{data.attentionBadge || `${pad(items.length)} ITEMS`}</span>
           </div>
           <div className="mt-3 border-t border-foreground/15">
             {items.map((it, i) => (
-              <div key={i} className={`flex items-start gap-4 py-3.5 ${i > 0 ? "border-t border-foreground/12" : ""}`}>
+              <div key={i} className={`flex items-start gap-4 py-4 ${i > 0 ? "border-t border-foreground/12" : ""}`}>
                 <span className="font-display text-[22px] leading-none font-light text-life-olive tabular-nums shrink-0 w-7">{pad(i + 1)}</span>
                 <div className="min-w-0">
-                  <p className="text-[13px] font-bold text-foreground leading-tight">{it.title}</p>
-                  <p className="text-[12px] text-foreground/65 leading-[1.5] mt-1">{it.sub}</p>
+                  <p className="text-[13px] font-bold text-life-olive leading-tight">{it.title}</p>
+                  <p className="text-[12px] text-life-olive/75 leading-[1.55] mt-1.5">{it.sub}</p>
                 </div>
               </div>
             ))}
@@ -94,9 +100,9 @@ export function EditorialLayout({ data, onRefresh, onEdit, loading }) {
       )}
 
       {/* CLOSING */}
-      <section className={items.length > 0 ? "pt-5" : "pt-2"}>
+      <section className={items.length > 0 ? "pt-6" : "pt-3"}>
         <p className="text-[11px] uppercase tracking-[0.2em] font-semibold text-life-olive">{data.restTitle}</p>
-        <p className="font-body text-[13px] leading-[1.55] text-foreground/70 mt-1.5">{data.restBody}</p>
+        <p className="font-body text-[13px] leading-[1.6] text-life-olive/80 mt-2">{data.restBody}</p>
       </section>
     </div>
   );
