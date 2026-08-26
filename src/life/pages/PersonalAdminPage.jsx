@@ -89,7 +89,8 @@ export default function PersonalAdminPage() {
   return (
     <>
       <SpaceShell
-        heroImage={IMAGES.lifePersonalAdmin}
+        bgImage={IMAGES.lifePersonalAdmin}
+        heroImage={IMAGES.hourglassJacket}
         eyebrow="LIFE → ADMIN"
         title="Things to Handle"
         tabs={TABS}

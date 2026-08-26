@@ -203,7 +203,7 @@ export default function ModulePanel() {
   const runAction = (a) => { if (a.onClick) a.onClick(); else if (a.to) navigate(a.to); };
 
   return (
-    <FloatingPanel open={!!mod} onClose={closeModule} position="right" level={3} width={mod?.panelWidth || 720} showOverlay dim={false} flush>
+    <FloatingPanel open={!!mod} onClose={closeModule} position="right" level={3} width={mod?.panelWidth || 720} showOverlay dim={false}>
       {mod && (
         FULL_BLEED[activeModule] ? (
           <div className="h-full"><ActiveComponent /></div>

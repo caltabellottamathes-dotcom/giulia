@@ -50,7 +50,6 @@ export default function FloatingPanel({
   showOverlay = true,
   closeOnOverlay = true,
   dim = true,
-  flush = false,
 }) {
   useEffect(() => {
     if (open) {
@@ -74,9 +73,7 @@ export default function FloatingPanel({
   const isCenter = position === "center";
   const posClass =
     position === "right"
-      ? flush
-        ? `fixed right-0 top-0 bottom-0 w-full ${widthClass[width] || widthClass[720]} z-50`
-        : `fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 w-[calc(100%-2rem)] ${widthClass[width] || widthClass[720]} z-50`
+      ? `fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 w-[calc(100%-2rem)] ${widthClass[width] || widthClass[720]} z-50`
       : positions[position];
 
   return createPortal(
@@ -95,8 +92,7 @@ export default function FloatingPanel({
         <div
           className={cn(
             glassLevels[level] || "glass-3",
-            "float-shadow overflow-y-auto overflow-x-hidden relative flex flex-col",
-            flush && position === "right" ? "rounded-l-[28px] rounded-r-none" : "rounded-[28px]",
+            "float-shadow rounded-[28px] overflow-y-auto overflow-x-hidden relative flex flex-col",
             isCenter ? "w-full max-w-lg max-h-[85vh]" : "h-full"
           )}
         >
