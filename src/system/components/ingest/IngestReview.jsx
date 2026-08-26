@@ -5,7 +5,7 @@ import GlassPanel from "@/system/components/glass/GlassPanel";
 import GlassButton from "@/system/components/glass/GlassButton";
 import ProposedRecordCard from "./ProposedRecordCard";
 import IngestStructure from "./IngestStructure";
-import { Sparkles, Loader2, RefreshCw, HelpCircle, Check, Layers, ListChecks, FolderInput } from "lucide-react";
+import { Sparkles, Loader2, RefreshCw, HelpCircle, Check, Layers, ListChecks, FolderInput, Shield } from "lucide-react";
 
 export default function IngestReview({ source, onApproved, onReprocess }) {
   const [view, setView] = useState("changes"); // changes | structure
@@ -18,6 +18,7 @@ export default function IngestReview({ source, onApproved, onReprocess }) {
   const [busy, setBusy] = useState(false);
   const [projects, setProjects] = useState([]);
   const [targetProjectId, setTargetProjectId] = useState(source.detected_project_id || "");
+  const isLifeAdmin = source.project_understanding?.context_domain === "life";
   const gaps = source.gaps || [];
 
   useEffect(() => {
@@ -34,7 +35,7 @@ export default function IngestReview({ source, onApproved, onReprocess }) {
         index: r.index, entity_class: r.entity_class, title: r.title, description: r.description,
         fields: r.fields, action: r.action, existing_id: r.existing_id, theme_title: r.theme_title
       }));
-      await base44.functions.invoke("approveIngestion", { source_id: source.id, records: payload, target_project_id: targetProjectId || null }).catch(() => null);
+      await base44.functions.invoke("approveIngestion", { source_id: source.id, records: payload, target_project_id: isLifeAdmin ? null : (targetProjectId || null) }).catch(() => null);
       await onApproved?.();
     } finally {
       setBusy(false);
@@ -59,7 +60,21 @@ export default function IngestReview({ source, onApproved, onReprocess }) {
         <p className="text-xs text-muted-foreground">Niets wordt toegevoegd tot je goedkeurt. Pas titels en velden aan, of kies Skip voor wat niet klopt.</p>
       </GlassPanel>
 
-      {/* Target project — prominent, editable. Giulia stelt voor, jij bevestigt of corrigeert. */}
+      {/* Routing — project for focus sources, LIFE → PersonalAdmin for personal-admin sources */}
+      {isLifeAdmin ? (
+        <GlassPanel level={2} className="p-5 border-olive/30">
+          <div className="flex items-center gap-3">
+            <span className="h-10 w-10 rounded-2xl bg-olive/15 ring-1 ring-olive/30 flex items-center justify-center shrink-0">
+              <Shield className="w-5 h-5 text-olive" />
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-0.5">Bestemming — Giulia stelt voor</p>
+              <div className="rounded-xl glass-1 px-3 py-2.5 text-sm font-display font-semibold">LIFE → PersonalAdmin</div>
+            </div>
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-2.5 pl-[3.25rem]">Vaste lasten worden als AdminObligation opgeslagen en verschijnen op je PersonalAdmin-pagina.</p>
+        </GlassPanel>
+      ) : (
       <GlassPanel level={2} className="p-5 border-olive/30">
         <div className="flex items-center gap-3">
           <span className="h-10 w-10 rounded-2xl bg-olive/15 ring-1 ring-olive/30 flex items-center justify-center shrink-0">
@@ -83,6 +98,7 @@ export default function IngestReview({ source, onApproved, onReprocess }) {
           <p className="text-[11px] text-muted-foreground mt-2.5 pl-[3.25rem]">Alle goedgekeurde records worden gekoppeld aan dit project.</p>
         )}
       </GlassPanel>
+      )}
 
       {/* View toggle: Structure | Changes */}
       <div className="flex gap-2">

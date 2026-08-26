@@ -63,6 +63,16 @@
     "notes": {
       "type": "string",
       "title": "Notes"
+    },
+    "contact_id": {
+      "type": "string",
+      "title": "Contact ID",
+      "description": "Gekoppelde begunstigde (Contact) bij naammatch via Ingestion."
+    },
+    "source_id": {
+      "type": "string",
+      "title": "Ingestion Source ID",
+      "description": "Provenance: uit welke IngestionSource is deze verplichting ontstaan."
     }
   },
   "required": [

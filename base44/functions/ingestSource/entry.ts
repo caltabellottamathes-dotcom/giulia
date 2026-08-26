@@ -14,8 +14,8 @@ import { loadCandidates, dateOnly } from '../../shared/ingestExec.ts';
  * Aanroep: { source_id }
  */
 
-const ENTITY_CLASSES = ["Project", "ProjectTheme", "Task", "Milestone", "Decision", "Person", "Contact", "Event", "Deadline", "Commitment", "Document", "Knowledge", "Note", "Memory", "Idea", "Insight"];
-const CLASSIFICATIONS = ["project_info", "theme_info", "requirement", "objective", "task", "milestone", "decision", "deadline", "person", "document", "knowledge", "note", "insight", "open_question", "dependency"];
+const ENTITY_CLASSES = ["Project", "ProjectTheme", "Task", "Milestone", "Decision", "Person", "Contact", "Event", "Deadline", "Commitment", "Document", "Knowledge", "Note", "Memory", "Idea", "Insight", "AdminObligation"];
+const CLASSIFICATIONS = ["project_info", "theme_info", "requirement", "objective", "task", "milestone", "decision", "deadline", "person", "document", "knowledge", "note", "insight", "open_question", "dependency", "admin_obligation"];
 
 const UNDERSTANDING_SCHEMA = {
   type: "object",
@@ -78,6 +78,11 @@ const UNDERSTANDING_SCHEMA = {
           f_context: { type: "string" },
           f_parent_title: { type: "string" },
           f_order: { type: "number" },
+          f_beneficiary: { type: "string" },
+          f_account_number: { type: "string" },
+          f_reference: { type: "string" },
+          f_recurrence: { type: "string", enum: ["none", "monthly", "quarterly", "annual"] },
+          f_obligation_type: { type: "string", enum: ["payment", "insurance", "contract", "renewal", "subscription"] },
           explicit: { type: "boolean" },
           confidence: { type: "string", enum: ["certain", "highly_likely", "probable", "uncertain", "unresolved"] },
           reasoning: { type: "string" },
@@ -127,6 +132,13 @@ const SYSTEM_TEXT =
   "8. CONFIDENCE — conservative: certain=unambiguous; highly_likely=strongly implied; probable=likely w/ context; uncertain=reasonable guess; unresolved=cannot determine. When in doubt, drop a level.\n" +
   "9. REASONING: For EVERY item write one clear sentence explaining WHY it's a real OS entity and how derived. The approver reads this.\n" +
   "10. GAPS: Only MEANINGFUL missing info (a deadline without a date that matters, an amount without currency, an ownerless critical task) — not every tiny gap.\n\n" +
+  "PERSONAL-ADMIN / FINANCIAL SOURCES — bank statements, budget plans, expense overviews, recurring payment tables:\n" +
+  "When the source is a personal financial/administrative overview (table of beneficiaries, payment dates, amounts, categories like huur/premie/abonnement/reservering), set context_domain=\"life\" and do NOT detect or force a project (leave detected_project empty). For EACH row, extract an item with entity_class=\"AdminObligation\", classification=\"admin_obligation\", title=Categorie, and fields:\n" +
+  "  f_obligation_type: map from category — premie/verzekering→\"insurance\", abonnement/lidmaatschap/contributie→\"subscription\", huur/kostgeld→\"payment\", sparen/reservering→\"contract\", default \"payment\".\n" +
+  "  f_amount: the Bedrag (number), f_currency: \"EUR\".\n" +
+  "  f_payment_date: the Betaaldatum (ISO). f_recurrence: \"monthly\" when Periode indicates a monthly recurrence (e.g. \"maand (dag 8)\"), else \"none\".\n" +
+  "  f_beneficiary: Begunstigde, f_account_number: Rekeningnummer, f_reference: Referentie.\n" +
+  "  notes/description: Referentie text. Do NOT create themes for these sources. explicit=true for each row (they are literal).\n\n" +
   "Return ONLY valid JSON. Do not invent entities. Do not explode tasks. Derive structure from the source, never impose a hardcoded theme list.";
 
 export default async function (req) {
@@ -345,7 +357,9 @@ function stripUndefinedFields(e) {
     financial_kind: e.f_financial_kind, payment_date: e.f_payment_date, start_date: e.f_start_date, end_date: e.f_end_date, account_source: e.f_account_source,
     email: e.f_email, phone: e.f_phone, company: e.f_company, role: e.f_role, relationship_type: e.f_relationship_type,
     priority: e.f_priority, status: e.f_status, location: e.f_location, notes: e.f_notes, content: e.f_content, decision: e.f_decision, url: e.f_url, description: e.f_description,
-    purpose: e.f_purpose, context: e.f_context, parent_title: e.f_parent_title, order: e.f_order
+    purpose: e.f_purpose, context: e.f_context, parent_title: e.f_parent_title, order: e.f_order,
+    beneficiary: e.f_beneficiary, account_number: e.f_account_number, reference: e.f_reference,
+    recurrence: e.f_recurrence, obligation_type: e.f_obligation_type
   };
   const clean = {};
   for (const [k, v] of Object.entries(raw)) if (v !== undefined && v !== null && v !== "") clean[k] = v;
@@ -363,6 +377,7 @@ function normalizeClass(cls, classification) {
   if (classification === "note" || classification === "requirement" || classification === "objective" || classification === "dependency") return "Note";
   if (classification === "task") return "Task";
   if (classification === "theme_info") return "ProjectTheme";
+  if (classification === "admin_obligation") return "AdminObligation";
   return cls || "Note";
 }
 
@@ -379,14 +394,14 @@ function planAction(decision) {
 function buildMatchingPrompt(understanding, items, c) {
   const dp = understanding.detected_project ? `detected_project: title="${understanding.detected_project.title}" reason="${understanding.detected_project.reason}"` : "detected_project: (none)";
   const themesStr = (understanding.themes || []).map((t) => `theme: ${t.title}${t.parent_title ? ` (subtheme of ${t.parent_title})` : ""}`).join("\n");
-  const it = items.map((e, i) => `[${i}] ${e.entity_class} | cls=${e.classification || ""} | theme=${e.theme_title || ""} | title="${e.title || ""}" | name=${e.f_name || ""} | project=${e.f_project_name || ""} | deadline=${e.f_deadline || ""} | date=${e.f_date || ""} | amount=${e.f_amount || ""} | email=${e.f_email || ""}`).join("\n");
+  const it = items.map((e, i) => `[${i}] ${e.entity_class} | cls=${e.classification || ""} | theme=${e.theme_title || ""} | title="${e.title || ""}" | name=${e.f_name || ""} | project=${e.f_project_name || ""} | deadline=${e.f_deadline || ""} | date=${e.f_date || ""} | amount=${e.f_amount || ""} | email=${e.f_email || ""} | oblige_type=${e.f_obligation_type || ""} | beneficiary=${e.f_beneficiary || ""} | payment_date=${e.f_payment_date || ""} | recurrence=${e.f_recurrence || ""}`).join("\n");
   const cand = (arr, key, cls) => `${cls}: ` + (arr || []).map((x) => `${x.id}::${x[key] || x.title || x.name || ""}`).join(" | ");
-  return `${dp}\n\nThemes found:\n${themesStr || "(none)"}\n\nItems to resolve:\n${it}\n\nExisting candidates:\n${cand(c.projects, "title", "Project")}\n${cand(c.themes, "title", "ProjectTheme")}\n${cand(c.tasks, "title", "Task")}\n${cand(c.milestones, "name", "Milestone")}\n${cand(c.decisions, "title", "Decision")}\n${cand(c.contacts, "name", "Contact")}\n${cand(c.events, "title", "Event")}\n${cand(c.documents, "name", "Document")}\n${cand(c.knowledge, "title", "Knowledge")}\n\nReturn detected_project_id + a result for every index.`;
+  return `${dp}\n\nThemes found:\n${themesStr || "(none)"}\n\nItems to resolve:\n${it}\n\nExisting candidates:\n${cand(c.projects, "title", "Project")}\n${cand(c.themes, "title", "ProjectTheme")}\n${cand(c.tasks, "title", "Task")}\n${cand(c.milestones, "name", "Milestone")}\n${cand(c.decisions, "title", "Decision")}\n${cand(c.contacts, "name", "Contact")}\n${cand(c.events, "title", "Event")}\n${cand(c.documents, "name", "Document")}\n${cand(c.knowledge, "title", "Knowledge")}\n${cand(c.adminObligations, "title", "AdminObligation")}\n\nFor AdminObligation rows, match against existing AdminObligation by title (Categorie) AND amount — same title+amount+monthly = EXISTING.\n\nReturn detected_project_id + a result for every index.`;
 }
 
 function existingTitle(candidates, cls, id) {
   if (!id) return "";
-  const map = { Project: "projects", ProjectTheme: "themes", Task: "tasks", Person: "contacts", Contact: "contacts", Event: "events", Deadline: "events", Commitment: "events", Document: "documents", Knowledge: "knowledge", Note: "knowledge", Memory: "memory", Idea: "ideas", Decision: "decisions", Milestone: "milestones", FinancialItem: "" };
+  const map = { Project: "projects", ProjectTheme: "themes", Task: "tasks", Person: "contacts", Contact: "contacts", Event: "events", Deadline: "events", Commitment: "events", Document: "documents", Knowledge: "knowledge", Note: "knowledge", Memory: "memory", Idea: "ideas", Decision: "decisions", Milestone: "milestones", FinancialItem: "", AdminObligation: "adminObligations" };
   const arr = candidates[map[cls]] || [];
   const r = arr.find((x) => x.id === id);
   return r ? (r.title || r.name || "") : "";
@@ -394,7 +409,7 @@ function existingTitle(candidates, cls, id) {
 
 function findExisting(candidates, cls, id) {
   if (!id) return null;
-  const map = { Project: "projects", ProjectTheme: "themes", Task: "tasks", Contact: "contacts", Event: "events", Document: "documents", Knowledge: "knowledge", Decision: "decisions", Milestone: "milestones" };
+  const map = { Project: "projects", ProjectTheme: "themes", Task: "tasks", Contact: "contacts", Event: "events", Document: "documents", Knowledge: "knowledge", Decision: "decisions", Milestone: "milestones", AdminObligation: "adminObligations" };
   const arr = candidates[map[cls]] || [];
   return arr.find((x) => x.id === id) || null;
 }
@@ -427,7 +442,7 @@ function validateItem(p, candidates, themeTitles, detectedProjectId) {
 
 function findDuplicate(candidates, cls, title) {
   if (!title) return null;
-  const map = { Project: "projects", ProjectTheme: "themes", Task: "tasks", Contact: "contacts", Event: "events", Document: "documents", Knowledge: "knowledge", Decision: "decisions", Milestone: "milestones" };
+  const map = { Project: "projects", ProjectTheme: "themes", Task: "tasks", Contact: "contacts", Event: "events", Document: "documents", Knowledge: "knowledge", Decision: "decisions", Milestone: "milestones", AdminObligation: "adminObligations" };
   const arr = candidates[map[cls]] || [];
   const t = String(title).toLowerCase();
   return arr.find((x) => (x.title || x.name || "").toLowerCase() === t) || null;

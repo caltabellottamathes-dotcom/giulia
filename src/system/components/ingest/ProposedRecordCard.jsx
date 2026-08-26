@@ -8,7 +8,9 @@ const FIELD_LABELS = {
   financial_kind: "Soort", payment_date: "Betaaldatum", start_date: "Startdatum", end_date: "Einddatum",
   account_source: "Rekening", email: "Email", phone: "Telefoon", company: "Bedrijf", role: "Rol",
   relationship_type: "Relatie", priority: "Prioriteit", status: "Status", location: "Locatie",
-  notes: "Notities", content: "Inhoud", decision: "Beslissing", url: "URL", description: "Omschrijving"
+  notes: "Notities", content: "Inhoud", decision: "Beslissing", url: "URL", description: "Omschrijving",
+  beneficiary: "Begunstigde", account_number: "Rekeningnr", reference: "Referentie",
+  recurrence: "Frequentie", obligation_type: "Type last"
 };
 
 const CONF_DOT = { certain: "bg-olive", highly_likely: "bg-olive/70", probable: "bg-sand-deep", uncertain: "bg-urgent/60", unresolved: "bg-muted-foreground/40" };

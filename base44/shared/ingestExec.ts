@@ -3,7 +3,7 @@
 // approveIngestion uses these helpers to actually create/update/link records.
 
 export async function loadCandidates(sr) {
-  const [projects, tasks, contacts, events, documents, knowledge, memory, ideas, decisions, milestones, themes] = await Promise.all([
+  const [projects, tasks, contacts, events, documents, knowledge, memory, ideas, decisions, milestones, themes, adminObligations] = await Promise.all([
     sr.entities.Project.list("-created_date", 100).catch(() => []),
     sr.entities.Task.list("-created_date", 200).catch(() => []),
     sr.entities.Contact.list("-created_date", 200).catch(() => []),
@@ -15,11 +15,12 @@ export async function loadCandidates(sr) {
     sr.entities.Decision.list("-created_date", 100).catch(() => []),
     sr.entities.Milestone.list("-created_date", 100).catch(() => []),
     sr.entities.ProjectTheme.list("-created_date", 200).catch(() => []),
+    sr.entities.AdminObligation.list("-created_date", 200).catch(() => []),
   ]);
   return {
     projects: projects || [], tasks: tasks || [], contacts: contacts || [], events: events || [],
     documents: documents || [], knowledge: knowledge || [], memory: memory || [], ideas: ideas || [],
-    decisions: decisions || [], milestones: milestones || [], themes: themes || []
+    decisions: decisions || [], milestones: milestones || [], themes: themes || [], adminObligations: adminObligations || []
   };
 }
 
@@ -247,12 +248,44 @@ export async function executeEntity(sr, rec, src, candidates, ctx) {
       const r = await sr.entities.Income.create(data);
       out.generated.push({ entity: "Income", id: r.id, title: `${data.amount} ${data.currency}` });
     }
+  } else if (cls === "AdminObligation") {
+    const type = ["payment", "insurance", "contract", "renewal", "subscription"].includes(f.obligation_type) ? f.obligation_type : "payment";
+    const beneficiary = f.beneficiary || "";
+    const accountNumber = f.account_number || "";
+    const reference = f.reference || "";
+    const notesParts = [
+      beneficiary && `Begunstigde: ${beneficiary}`,
+      accountNumber && `Rekening: ${accountNumber}`,
+      reference && `Ref: ${reference}`,
+      f.notes || f.description || ""
+    ].filter(Boolean);
+    const data: any = {
+      title: rec.title || f.category || "Vaste last",
+      type,
+      amount: Number(f.amount) || 0,
+      due_date: dateOnly(f.payment_date || f.date),
+      recurrence: f.recurrence || "monthly",
+      status: "open",
+      notes: notesParts.join(" · "),
+      source_id: sourceId
+    };
+    const contactId = beneficiary ? resolveContactId(ctx, candidates, { name: beneficiary, email: "" }) : undefined;
+    if (contactId) data.contact_id = contactId;
+    const ex = rec.existingId ? (candidates.adminObligations || []).find((o) => o.id === rec.existingId) : null;
+    if (ex) {
+      const p = mergePatch(ex, data); if (Object.keys(p).length) await sr.entities.AdminObligation.update(ex.id, p);
+      out.updated.push({ entity: "AdminObligation", id: ex.id, title: ex.title });
+    } else {
+      const o = await sr.entities.AdminObligation.create(data);
+      out.generated.push({ entity: "AdminObligation", id: o.id, title: data.title });
+      if (contactId) out.relationships.push({ from: `AdminObligation:${o.id}`, to: `Contact:${contactId}`, kind: "paid_to" });
+    }
   }
   return out;
 }
 
 export async function logActivity(sr, rec, src, isUpdate) {
-  const domain = ["Project", "Task", "CalendarEvent", "Document", "Contact", "ProjectTheme", "Milestone", "Decision"].includes(rec.entity) ? "focus" : ["Income", "RecurringExpense"].includes(rec.entity) ? "life" : "giulia";
+  const domain = ["Project", "Task", "CalendarEvent", "Document", "Contact", "ProjectTheme", "Milestone", "Decision"].includes(rec.entity) ? "focus" : ["Income", "RecurringExpense", "AdminObligation"].includes(rec.entity) ? "life" : "giulia";
   await sr.entities.Activity.create({
     action: isUpdate ? "ingest_update" : "ingest_create",
     description: `${isUpdate ? "Updated" : "Created"} ${rec.entity}${rec.title ? ` "${rec.title}"` : ""} from ${src.original_filename || "ingestion"}`,

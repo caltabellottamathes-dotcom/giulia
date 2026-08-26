@@ -149,12 +149,13 @@ function eventTypeFor(entity, isUpdate) {
     Contact: isUpdate ? "CONTACT_UPDATED" : "CONTACT_CREATED",
     CalendarEvent: isUpdate ? "EVENT_UPDATED" : "EVENT_CREATED",
     Knowledge: isUpdate ? "KNOWLEDGE_UPDATED" : "KNOWLEDGE_CREATED",
+    AdminObligation: isUpdate ? "OBLIGATION_UPDATED" : "OBLIGATION_CREATED",
   };
   return map[entity] || (isUpdate ? "INGEST_UPDATED" : "INGEST_CREATED");
 }
 
 function domainFor(entity) {
   if (["Project", "Task", "CalendarEvent", "Document", "Contact", "ProjectTheme", "Milestone", "Decision", "Knowledge"].includes(entity)) return "focus";
-  if (["Income", "RecurringExpense"].includes(entity)) return "life";
+  if (["Income", "RecurringExpense", "AdminObligation"].includes(entity)) return "life";
   return "giulia";
 }
