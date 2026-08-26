@@ -12,7 +12,7 @@ const LIGHT = "hsl(var(--d-life-light))";
 const IVORY = "hsl(var(--ivory))";
 const BLUE = "hsl(205 45% 32%)";
 
-const SUBTLE = "h-9 w-9 rounded-full flex items-center justify-center text-ivory/70 hover:text-ivory hover:bg-white/12 transition-colors disabled:opacity-30";
+const SUBTLE = "h-9 w-9 rounded-full flex items-center justify-center text-ivory/95 bg-[#2c3a47]/70 border border-white/10 backdrop-blur-md hover:bg-[#2c3a47] transition-colors disabled:opacity-30";
 
 /** MusicWidget — P·3:4 (iets kleiner). Bovenste helft: blauwe, veel grotere
  *  pistache-gloeiende bloom + volledige-breedte sinus + subtiele knoppen,

@@ -14,7 +14,15 @@ export default function MediaPlayerPreview() {
   const cloud = useMediaLibrary();
   const local = useLocalMedia();
   const [tab, setTab] = useState("cloud");
+  const [typeFilter, setTypeFilter] = useState("all");
   const [busy, setBusy] = useState(null);
+  const TYPE_FILTERS = [
+    { key: "all", label: "Alles" },
+    { key: "image", label: "Foto" },
+    { key: "video", label: "Video" },
+    { key: "music", label: "Audio" },
+    { key: "doc", label: "Document" },
+  ];
 
   const cloudFiles = useMemo(
     () => (cloud.items || []).map((i) => ({ id: "c:" + i.id, name: i.filename || "bestand", kind: kindOfUpload(i), source: "cloud", url: i.file_url, raw: i })),
@@ -33,7 +41,7 @@ export default function MediaPlayerPreview() {
     } catch { /* negeer */ } finally { setBusy(null); }
   };
 
-  const list = tab === "cloud" ? cloudFiles : localFiles;
+  const list = (tab === "cloud" ? cloudFiles : localFiles).filter((f) => typeFilter === "all" || f.kind === typeFilter);
 
   return (
     <div className="flex flex-col h-full text-storm">
@@ -76,6 +84,13 @@ export default function MediaPlayerPreview() {
         </div>
       )}
 
+      {/* Type-filter */}
+      <div className="flex items-center gap-1 mb-3 flex-wrap">
+        {TYPE_FILTERS.map((tf) => (
+          <button key={tf.key} onClick={() => setTypeFilter(tf.key)} className={`px-3 py-1 rounded-full text-[11px] font-semibold transition ${typeFilter === tf.key ? "bg-charcoal text-ivory" : "bg-marble/10 text-storm/60 hover:text-storm"}`}>{tf.label}</button>
+        ))}
+      </div>
+
       {/* Bibliotheek — visueel raster met voorvertoning */}
       <div className="flex-1 min-h-0 overflow-y-auto pr-1">
         {tab === "cloud" && cloud.loading && (
@@ -92,27 +107,28 @@ export default function MediaPlayerPreview() {
             const active = busy === f.id;
             const hasThumb = f.source === "cloud" && (f.kind === "image" || f.kind === "video");
             return (
-              <button key={f.id} onClick={() => open(f)} className="group flex flex-col items-start text-left">
-                <div className="relative w-full aspect-square rounded-xl overflow-hidden border border-marble/15 bg-marble/5">
-                  {/* voorvertoning */}
-                  {f.kind === "image" && f.source === "cloud" && <img src={f.url} alt={f.name} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />}
-                  {f.kind === "video" && f.source === "cloud" && <video src={f.url + "#t=0.5"} preload="metadata" muted playsInline className="absolute inset-0 w-full h-full object-cover" />}
-                  {f.kind === "music" && <div className="absolute inset-0" style={{ background: "linear-gradient(150deg, #d8dab3, #5d7388)" }} />}
-                  {(!hasThumb && f.kind !== "music") && (
-                    <div className="absolute inset-0 flex items-center justify-center" style={{ background: f.kind === "doc" ? "rgba(0,0,0,0.05)" : "linear-gradient(150deg, #c6d3de, #8fa3b6)" }}>
-                      <Icon className="h-6 w-6 text-white/80" />
-                    </div>
-                  )}
-                  {/* play-overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                    <span className="h-9 w-9 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-                      {active ? <Loader2 className="h-4 w-4 animate-spin text-charcoal" /> : <Play className="h-4 w-4 text-charcoal translate-x-0.5" />}
-                    </span>
+              <button key={f.id} onClick={() => open(f)} className="group relative aspect-square rounded-xl overflow-hidden border border-marble/15 bg-marble/5 text-left">
+                {/* voorvertoning */}
+                {f.kind === "image" && f.source === "cloud" && <img src={f.url} alt={f.name} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />}
+                {f.kind === "video" && f.source === "cloud" && <video src={f.url + "#t=0.5"} preload="metadata" muted playsInline className="absolute inset-0 w-full h-full object-cover" />}
+                {f.kind === "music" && <div className="absolute inset-0" style={{ background: "linear-gradient(150deg, #d8dab3, #5d7388)" }} />}
+                {(!hasThumb && f.kind !== "music") && (
+                  <div className="absolute inset-0 flex items-center justify-center" style={{ background: f.kind === "doc" ? "rgba(0,0,0,0.05)" : "linear-gradient(150deg, #c6d3de, #8fa3b6)" }}>
+                    <Icon className="h-6 w-6 text-white/80" />
                   </div>
+                )}
+                {/* kleuroverlay + naam in de tegel */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
+                <div className="absolute bottom-0 inset-x-0 p-2">
+                  <p className="text-[11px] font-medium text-white truncate" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.4)" }}>{f.name}</p>
+                  <p className="text-[9px] uppercase tracking-[0.14em] text-white/75">{f.kind === "music" ? "audio" : f.kind}</p>
                 </div>
-                {/* tekst erbuiten */}
-                <p className="mt-1.5 text-[11px] font-medium text-storm truncate w-full">{f.name}</p>
-                <p className="text-[9px] uppercase tracking-[0.14em] text-storm/45">{f.kind === "music" ? "audio" : f.kind}</p>
+                {/* play-overlay */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                  <span className="h-9 w-9 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                    {active ? <Loader2 className="h-4 w-4 animate-spin text-charcoal" /> : <Play className="h-4 w-4 text-charcoal translate-x-0.5" />}
+                  </span>
+                </div>
               </button>
             );
           })}

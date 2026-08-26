@@ -8,7 +8,6 @@ import { useLocalMedia } from "@/lib/useLocalMedia";
 import { cn } from "@/lib/utils";
 import MusicViewerStage from "@/system/components/media/MusicViewerStage";
 
-const KIND_LABEL = { image: "FOTO", video: "VIDEO", music: "AUDIO", doc: "DOCUMENT" };
 const DEFAULT_RATIO = { image: 4 / 3, video: 16 / 9, music: 3 / 4, doc: 4 / 3 };
 
 /**
@@ -43,7 +42,6 @@ export default function MediaFullscreenWindow() {
   const analyserRef = useRef(null);
 
   const kind = media?.kind;
-  const isPlayable = kind === "music" || kind === "video";
 
   // ── Muziekbibliotheek (cloud + lokaal) ──
   const cloud = useMediaLibrary();
@@ -228,9 +226,9 @@ export default function MediaFullscreenWindow() {
     const btn = compact ? "h-8 w-8" : "h-9 w-9";
     const ico = compact ? "h-3.5 w-3.5" : "h-4 w-4";
     const radius = compact ? "rounded-[20px]" : "rounded-[28px]";
-    const glassBtn = "bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors";
+    const glassBtn = "bg-black/25 border border-white/15 backdrop-blur-md flex items-center justify-center text-ivory/90 hover:text-white hover:bg-black/40 transition-colors";
     return (
-      <div className={cn("relative w-full h-full overflow-hidden float-shadow", radius, kind === "music" ? "" : "bg-charcoal")}>
+      <div className={cn("relative w-full h-full overflow-hidden glass-3", radius)}>
         {/* Sluitknop linksboven */}
         <button onClick={handleClose} className={cn("absolute top-4 left-4 z-50 rounded-full", btn, glassBtn)} aria-label="Sluiten"><X className={ico} /></button>
 
@@ -254,17 +252,6 @@ export default function MediaFullscreenWindow() {
             className="absolute top-0 inset-x-0 h-10 z-[35] cursor-grab active:cursor-grabbing touch-none"
             aria-label="Verplaatsen"
           />
-        )}
-
-        {/* Titel-overlay — VoiceWindow-stijl (enkel niet-muziek) */}
-        {kind !== "music" && (
-          <div className={cn("absolute top-0 inset-x-0 bg-gradient-to-b from-black/50 to-transparent flex items-center gap-3 z-30 pointer-events-none", compact ? "px-3 pt-3 pb-6 ml-10" : "px-5 pt-5 pb-10 ml-12")}>
-            <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", playing && isPlayable ? "bg-olive animate-pulse-soft" : "bg-ivory/30")} />
-            <div className="min-w-0">
-              <p className={cn("font-display font-semibold tracking-[0.22em] uppercase text-ivory leading-none", compact ? "text-[10px]" : "text-[13px]")}>MEDIA · {KIND_LABEL[kind] || "BESTAND"}</p>
-              <p className={cn("text-ivory/60 tracking-wide truncate", compact ? "text-[9px] mt-1" : "text-[11px] mt-1.5")}>{media.name || "Media"}</p>
-            </div>
-          </div>
         )}
 
         {/* Media — flush in de shell */}
@@ -291,7 +278,7 @@ export default function MediaFullscreenWindow() {
             onPause={onPause}
             onEnded={onEnded}
             onLoadedMetadata={(e) => setRatio(e.currentTarget.videoWidth / e.currentTarget.videoHeight)}
-            className="absolute inset-0 w-full h-full object-contain bg-black"
+            className="absolute inset-0 w-full h-full object-contain"
           />
         )}
         {kind === "image" && (
