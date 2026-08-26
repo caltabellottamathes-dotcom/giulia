@@ -21,7 +21,7 @@ export default function PortfolioCard({ portfolio, expenses, onClick }) {
       <div className="grid grid-cols-2 gap-3 mt-4">
         <div>
           <p className="text-[9px] uppercase tracking-[0.16em] text-muted-foreground font-semibold">Current</p>
-          <p className="text-2xl font-display font-semibold tabular-nums leading-none mt-0.5" style={{ color: "hsl(var(--d-focus-deep))" }}>{fmtEuro(balance)}</p>
+          <p className="text-2xl font-display font-semibold tabular-nums leading-none mt-0.5" style={{ color: "hsl(var(--life-olive))" }}>{fmtEuro(balance)}</p>
         </div>
         <div>
           <p className="text-[9px] uppercase tracking-[0.16em] text-muted-foreground font-semibold">Reserved / mnd</p>

@@ -16,11 +16,7 @@ export default function SpaceShell({ bgImage, heroImage, eyebrow, title, tabs, a
   return (
     <div className="fixed inset-x-0 top-14 bottom-0 overflow-hidden z-[1]">
       {/* Titel + Toevoegen — op het dashboard (links), buiten het paneel */}
-      <motion.div initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE, delay: 0.15 }} className="hidden lg:flex absolute left-[2.5%] top-[3%] z-[20] flex-col gap-5">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.28em] text-muted-foreground font-semibold mb-1">{eyebrow}</p>
-          <h1 className="text-[34px] font-display font-semibold tracking-[-0.02em] text-foreground leading-[1.05]">{title}</h1>
-        </div>
+      <motion.div initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE, delay: 0.15 }} className="hidden lg:flex absolute left-[2.5%] top-[3%] z-[20]">
         {onAdd && (
           <button onClick={onAdd} className="inline-flex items-center gap-1.5 self-start rounded-full bg-plum text-ivory px-5 py-2.5 text-xs font-semibold hover:bg-plum/90 transition shadow-[0_14px_34px_-14px_rgba(0,0,0,0.5)]">
             <Plus className="w-3.5 h-3.5" /> {addLabel}
@@ -34,7 +30,11 @@ export default function SpaceShell({ bgImage, heroImage, eyebrow, title, tabs, a
         className="hidden lg:block absolute left-0 top-[18%] bottom-0 w-[34%] overflow-hidden rounded-l-none rounded-r-[24px] z-[5]"
       >
         <img src={heroImage} alt="" className="h-full w-full object-cover" draggable={false} />
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/45 via-transparent to-charcoal/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/65 via-charcoal/15 to-charcoal/10" />
+        <div className="absolute inset-0 flex flex-col justify-end p-6">
+          <p className="text-[10px] uppercase tracking-[0.28em] font-semibold text-life-pistachio mb-1.5" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.6)" }}>{eyebrow}</p>
+          <h1 className="text-[32px] font-display font-semibold tracking-[-0.02em] text-ivory leading-[1.05]" style={{ textShadow: "0 2px 14px rgba(0,0,0,0.6)" }}>{title}</h1>
+        </div>
       </motion.div>
 
       {/* Glass panel — rolt vanaf de rechterrand naar binnen, stopt op 2/3 (rechts), geen rechterhoeken */}
@@ -81,7 +81,7 @@ export default function SpaceShell({ bgImage, heroImage, eyebrow, title, tabs, a
 
           {/* Body — links recap, rechts widget-stapel */}
           <div className="flex-1 flex flex-col lg:flex-row min-h-0">
-            <div className="lg:w-[42%] xl:w-[40%] shrink-0 overflow-y-auto px-5 lg:px-7 py-6">
+            <div className="lg:w-[42%] xl:w-[40%] shrink-0 overflow-y-auto px-5 lg:px-7 pt-3 lg:pt-4 pb-6">
               {recap}
             </div>
             <div className="flex-1 overflow-y-auto px-5 lg:px-7 py-6 space-y-4">

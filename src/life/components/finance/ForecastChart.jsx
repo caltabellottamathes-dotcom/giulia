@@ -3,12 +3,11 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianG
 import { calcForecast, fmtEuro } from "@/lib/financeUtils";
 
 const PALETTE = [
-  "hsl(var(--d-focus-deep))",
-  "hsl(var(--d-focus-light))",
-  "hsl(var(--olive))",
-  "hsl(var(--sand))",
-  "hsl(var(--d-focus-urgent))",
-  "hsl(var(--blue-grey))",
+  "hsl(var(--life-olive))",
+  "hsl(var(--life-ridge))",
+  "hsl(var(--life-pistachio))",
+  "hsl(var(--life-dew))",
+  "hsl(var(--life-urgent))",
 ];
 
 /** ForecastChart — stacked area van portefeuille-saldi over 12 maanden. */

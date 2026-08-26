@@ -53,14 +53,14 @@ Kernfilosofie: Salvo geeft zijn inkomen vooraf een bestemming. Onderscheid altij
 
 Output JSON met deze velden (editorial frame-labels in het Engels zoals de voorbeelden, de inhoud in het Nederlands):
 - eyebrow: kleine uppercase blauwe label, formaat "PERSONAL ADMIN / <STAAT>", bijv. "PERSONAL ADMIN / CURRENT STATE".
-- title: grote zwarte kop, max ~7 woorden, prikkend. Geen label-woord ervoor.
+- title: grote zwarte kop in FULL CAPS met een punt erachter, max ~7 woorden, prikkend. Geen label-woord ervoor.
 - subtitle: blauwe uppercase ondertitel, één korte zin.
 - body: 1-2 zinnen met concrete cijfers (TOTAL MONEY, RESERVED, AVAILABLE${overview ? "" : `, of ${label}-specifieke data`}).
 - footerLeft: blauw editorial label, bijv. "HERE'S HOW WE READ A FRAME".
 - footerRight: blauw editorial label, bijv. "(SCROLL)".
 - attentionTitle: zwarte uppercase titel aandachtsblok, bijv. "WHAT NEEDS YOUR ATTENTION".
 - attentionBadge: blauw uppercase badge, formaat "0N ITEMS NEED ACTION" met het echte aantal urgente items.
-- items: 1-3 dingen die nu aandacht vragen. Elk item: title (kort, "Onderwerp • wanneer", bijv. "Payment • Due tomorrow") en sub (1 zin uitleg met concrete bedragen). Gebruik echte komende betalingen of korte potjes uit de data. Als er niets urgent is, geef 1-2 items die aandacht verdienen.
+- items: 0-3 dingen die nu aandacht vragen — het aantal hangt af van wat er op dit moment echt nodig is (geen vaste 3). Elk item: title (kort, "Onderwerp • wanneer", bijv. "Payment • Due tomorrow") en sub (1 zin uitleg met concrete bedragen). Gebruik echte komende betalingen of korte potjes uit de data. Als er niets urgents is, geef een lege array.
 - restTitle: blauw uppercase afsluitende kop, bijv. "THE REST CAN WAIT."
 - restBody: één geruststellende zin over de rest.
 
@@ -133,13 +133,13 @@ export default function PersonalAdminPage() {
         bgImage={IMAGES.lifePersonalAdmin}
         heroImage="https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0a68f996a_ADMIN.jpeg"
         eyebrow="LIFE → FINANCE"
-        title="Portefeuilles"
+        title={TABS.find((t) => t.key === tab)?.label || "Portefeuilles"}
         tabs={TABS}
         activeTab={tab}
         onTab={setTab}
         navInfo="LIFE · FINANCE"
         onAdd={onAdd}
-        recap={<SpaceRecap prompt={recapPrompt} fallback={fallback} refreshKey={recapRefresh} onRefresh={() => setRecapRefresh((r) => r + 1)} />}
+        recap={<SpaceRecap storageKey={`personalAdmin:${tab}`} prompt={recapPrompt} fallback={fallback} onRefresh={() => setRecapRefresh((r) => r + 1)} />}
       >
         {loading ? (
           <div className="space-y-3">
@@ -186,10 +186,10 @@ function buildFallback(tab, d) {
     sub: `Een betaling van €${Math.round(e.amount)} nadert${e.daysUntil < 0 ? " en loopt al — afrekenen vereist." : " — bevestig of reserveer op tijd."}`,
   }));
   const risky = d.portfolios.map((p) => ({ p, c: calcPortfolio(p, d.expenses) })).filter((x) => ["short", "critical"].includes(x.c.status));
-  if (items.length < 3 && risky.length) {
+  if (items.length === 0 && risky.length) {
     items.push({ title: `${risky[0].p.name} • Short`, sub: `De pot ${risky[0].p.name} staat ${risky[0].c.status} — de reservering loopt achter.` });
   }
-  const headline = d.dist.reserved > d.dist.income ? "RESERVATIONS EXCEED INCOME" : avail < d.dist.income * 0.1 ? "ALMOST EVERYTHING IS SPOKEN FOR" : "HERE'S WHERE THINGS STAND";
+  const headline = d.dist.reserved > d.dist.income ? "RESERVATIONS EXCEED INCOME." : avail < d.dist.income * 0.1 ? "ALMOST EVERYTHING IS SPOKEN FOR." : "HERE'S WHERE THINGS STAND.";
   return {
     eyebrow: "PERSONAL ADMIN / CURRENT STATE",
     title: headline,

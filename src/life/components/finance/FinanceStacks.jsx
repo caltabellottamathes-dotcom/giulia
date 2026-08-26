@@ -35,9 +35,9 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
         <Card>
           <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Geld hebben vs. besteden</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Stat label="TOTAL MONEY" value={fmtEuro(totalMoney)} color="hsl(var(--d-focus-deep))" note="Totaal aanwezig" />
-            <Stat label="RESERVED" value={fmtEuro(totalReserved)} color="hsl(var(--olive))" note="Heeft een bestemming" />
-            <Stat label="AVAILABLE" value={fmtEuro(Math.max(0, dist.available))} color="hsl(var(--d-focus-light))" note="Vrij besteedbaar" />
+            <Stat label="TOTAL MONEY" value={fmtEuro(totalMoney)} color="hsl(var(--life-olive))" note="Totaal aanwezig" />
+            <Stat label="RESERVED" value={fmtEuro(totalReserved)} color="hsl(var(--life-olive))" note="Heeft een bestemming" />
+            <Stat label="AVAILABLE" value={fmtEuro(Math.max(0, dist.available))} color="hsl(var(--life-ridge))" note="Vrij besteedbaar" />
             <Stat label="INKOMEN / mnd" value={fmtEuro(dist.income)} note={`Reserveringen ${fmtEuro(dist.reserved)}`} />
           </div>
           <div className="mt-4">
@@ -63,7 +63,7 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
           {upcoming.length === 0 ? <p className="text-sm text-muted-foreground italic">Rustig — niets binnen 30 dagen.</p> : (
             <div className="flex gap-1 h-28 rounded-xl overflow-hidden shadow-[0_14px_30px_-16px_rgba(0,0,0,0.3)]">
               {upcoming.slice(0, 10).map((e, i) => {
-                const bg = ["hsl(var(--d-focus-deep))", "hsl(var(--d-focus-light))", "hsl(var(--d-focus-urgent))"][i % 3];
+                const bg = ["hsl(var(--life-olive))", "hsl(var(--life-ridge))", "hsl(var(--life-pistachio))"][i % 3];
                 const dark = i % 3 === 0;
                 return (
                   <div key={e.id} style={{ flexGrow: Math.max(Number(e.amount) || 1, 1), flexBasis: 0, background: bg }} className={`flex flex-col justify-end p-2.5 min-w-0 ${dark ? "text-ivory" : "text-foreground"}`}>
@@ -142,7 +142,7 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
             ))}
             <div className="flex items-center justify-between text-sm pt-1.5 border-t border-foreground/10">
               <span className="font-semibold">Available</span>
-              <span className="font-display font-semibold tabular-nums" style={{ color: "hsl(var(--d-focus-light))" }}>{fmtEuro(Math.max(0, dist.available))}</span>
+              <span className="font-display font-semibold tabular-nums" style={{ color: "hsl(var(--life-ridge))" }}>{fmtEuro(Math.max(0, dist.available))}</span>
             </div>
           </div>
         </Card>

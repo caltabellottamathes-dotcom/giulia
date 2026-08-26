@@ -13,14 +13,14 @@ export const FREQ_LABELS = {
 
 export const STATUS_LABEL = { safe: "SAFE", on_track: "ON TRACK", watch: "WATCH", short: "SHORT", critical: "CRITICAL" };
 export const STATUS_COLOR = {
-  safe: "hsl(var(--d-focus-deep))",
-  on_track: "hsl(var(--d-focus-light))",
-  watch: "hsl(var(--olive))",
-  short: "hsl(var(--sand))",
-  critical: "hsl(var(--d-focus-urgent))",
+  safe: "hsl(var(--life-dew))",
+  on_track: "hsl(var(--life-pistachio))",
+  watch: "hsl(var(--life-ridge))",
+  short: "hsl(var(--life-olive))",
+  critical: "hsl(var(--life-urgent))",
 };
 export const STATUS_TEXT = {
-  safe: "text-ivory", on_track: "text-foreground", watch: "text-foreground", short: "text-foreground", critical: "text-charcoal",
+  safe: "text-foreground", on_track: "text-foreground", watch: "text-foreground", short: "text-ivory", critical: "text-charcoal",
 };
 
 const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
