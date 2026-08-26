@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import Avatar from "@/system/components/glass/Avatar";
 import RhythmBar from "./RhythmBar";
+import RelationshipTimeline from "./RelationshipTimeline";
 import { contactSignals, contactRecentTrend, desiredFreq } from "@/lib/domainUtils";
 import { X, ArrowUp, ArrowDown } from "lucide-react";
 
@@ -61,6 +62,16 @@ export default function PersonDetailDrawer({ contact, whatsapps = [], onClose, o
           <div>
             <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Rhythm</p>
             <RhythmBar freqDays={desiredFreq(contact)} sinceDays={signals.since} />
+          </div>
+
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Timeline · 6 months</p>
+            <RelationshipTimeline contactId={contact.id} whatsapps={whatsapps} />
+          </div>
+
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Pattern</p>
+            <p className="text-[12px] text-foreground/70 italic">{contact.relationship_pattern_note || "No pattern detected yet."}</p>
           </div>
         </div>
       </div>
