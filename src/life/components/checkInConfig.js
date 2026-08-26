@@ -120,16 +120,14 @@ export function currentWindowKey(date = new Date()) {
   const h = date.getHours();
   if (h >= 9 && h < 14) return "orient";
   if (h >= 14 && h < 18) return "check";
-  if (h >= 18) return "reflect";
-  return null; // nacht (0–8)
+  return "reflect"; // 18:00–09:00 — avond-check-in blijft open tot de ochtend
 }
 
 export function nextWindowInfo(date = new Date()) {
   const h = date.getHours();
-  if (h < 9) return { key: "orient", ...WINDOWS.orient };
-  if (h < 14) return { key: "check", ...WINDOWS.check };
-  if (h < 18) return { key: "reflect", ...WINDOWS.reflect };
-  return { key: "orient", ...WINDOWS.orient, tomorrow: true };
+  if (h >= 9 && h < 14) return { key: "check", ...WINDOWS.check };
+  if (h >= 14 && h < 18) return { key: "reflect", ...WINDOWS.reflect };
+  return { key: "orient", ...WINDOWS.orient, tomorrow: h >= 18 };
 }
 
 export function isCompletedForWindow(checkIns, windowKey, date = new Date()) {

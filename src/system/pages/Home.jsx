@@ -69,6 +69,7 @@ export default function Home() {
   const [resetKey, setResetKey] = useState(0);
   const [startupDone, setStartupDone] = useState(() => sessionStorage.getItem("giulia_startup_done") === "1");
   const [fitH, setFitH] = useState(0);
+  const [howdoingDue, setHowdoingDue] = useState(false);
   const { toast } = useToast();
 
   // Desktop: masonry past in één beeld (geen scroll) — fitHeight laat
@@ -86,6 +87,13 @@ export default function Home() {
     const h = (e) => setActiveBoardState(e.detail);
     window.addEventListener("giulia:board-change", h);
     return () => window.removeEventListener("giulia:board-change", h);
+  }, []);
+
+  // How-doing-widget wordt fysiek breder wanneer hij due is (check-in open)
+  useEffect(() => {
+    const h = (e) => setHowdoingDue(!!e.detail);
+    window.addEventListener("giulia:howdoing-due", h);
+    return () => window.removeEventListener("giulia:howdoing-due", h);
   }, []);
 
   // Swipe door dashboards — touch (links/rechts) en trackpad (horizontale wheel).
@@ -231,7 +239,8 @@ export default function Home() {
   const cells = visible.map((w) => {
     const def = WIDGETS[w.widget_type];
     if (!def) return null;
-    return { node: <WidgetCell key={w.id} def={def} widget={w} onRemove={() => removeWidget(w.id)} onThemeChange={patchWidget} sessionMode={isCustom} />, span: WIDGET_SPAN[w.widget_type] || 1 };
+    const span = (w.widget_type === "howdoing" && howdoingDue) ? 6 : (WIDGET_SPAN[w.widget_type] || 1);
+    return { node: <WidgetCell key={w.id} def={def} widget={w} onRemove={() => removeWidget(w.id)} onThemeChange={patchWidget} sessionMode={isCustom} />, span };
   }).filter(Boolean);
   const showLoading = loading && widgets.length === 0;
 
