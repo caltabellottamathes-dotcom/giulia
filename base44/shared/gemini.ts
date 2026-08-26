@@ -65,6 +65,8 @@ const KEY_POOLS = {
   update: ["UPDATE_GEMINI_API_KEY", "RESERVE_GEMINI_API_KEY"],
   memory: ["GIULIA_GIULIA_MEMORY_GEMINI_API_KEY", "GIULIA_GIULIA_GEMINI_API_KEY", "RESERVE_GEMINI_API_KEY"],
   default: ["Gemini_Flash_API_Key", "GIULIA_API_KEY", "RESERVE_GEMINI_API_KEY"],
+  ingestion: ["Ingestion_Gemini_API_Key", "RESERVE_GEMINI_API_KEY", "GIULIA_API_KEY"],
+  admin: ["Calculator_Gemini_API_Key", "RESERVE_GEMINI_API_KEY", "GIULIA_API_KEY"],
 };
 const KEY_ROLE = {
   GIULIA_GIULIA_CHAT_GEMINI_API_KEY: "chat",
@@ -72,6 +74,8 @@ const KEY_ROLE = {
   BACKDESK_GEMINI_API_KEY: "backdesk",
   UPDATE_GEMINI_API_KEY: "update",
   GIULIA_GIULIA_MEMORY_GEMINI_API_KEY: "memory",
+  Ingestion_Gemini_API_Key: "ingestion",
+  Calculator_Gemini_API_Key: "admin",
 };
 function poolFor(keyName) {
   const role = KEY_ROLE[keyName];
@@ -80,19 +84,26 @@ function poolFor(keyName) {
 const DEFAULT_KEY_NAME = "RESERVE_GEMINI_API_KEY";
 
 async function rawCallOne(model, body, keyName) {
-  const key = secrets.get(keyName);
+  const key = secrets.get(keyName) || (typeof process !== "undefined" ? process.env?.[keyName] : undefined);
   if (!key) throw Object.assign(new Error(`${keyName} niet ingesteld`), { status: 0 });
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    throw Object.assign(new Error(`Gemini ${model} HTTP ${res.status}: ${detail.slice(0, 300)}`), { status: res.status });
+  const ctrl = (typeof AbortController !== "undefined") ? new AbortController() : null;
+  const timer = ctrl ? setTimeout(() => ctrl.abort(), 90000) : null;
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      ...(ctrl ? { signal: ctrl.signal } : {}),
+    });
+    if (!res.ok) {
+      const detail = await res.text().catch(() => "");
+      throw Object.assign(new Error(`Gemini ${model} HTTP ${res.status}: ${detail.slice(0, 300)}`), { status: res.status });
+    }
+    return res.json();
+  } finally {
+    if (timer) clearTimeout(timer);
   }
-  return res.json();
 }
 
 async function rawCall(model, body, keyName) {

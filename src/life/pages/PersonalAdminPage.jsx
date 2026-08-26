@@ -139,7 +139,7 @@ export default function PersonalAdminPage() {
         onTab={setTab}
         navInfo="LIFE · FINANCE"
         onAdd={onAdd}
-        recap={<SpaceRecap storageKey={`personalAdmin:${tab}`} prompt={recapPrompt} fallback={fallback} onRefresh={() => setRecapRefresh((r) => r + 1)} />}
+        recap={<SpaceRecap storageKey={`personalAdmin:v2:${tab}`} prompt={recapPrompt} fallback={fallback} onRefresh={() => setRecapRefresh((r) => r + 1)} />}
       >
         {loading ? (
           <div className="space-y-3">

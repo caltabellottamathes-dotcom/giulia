@@ -47,7 +47,7 @@ export function EditorialLayout({ data, onRefresh, onEdit, loading }) {
       {/* TOP BLOCK */}
       <section className="mt-6">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-[10px] uppercase tracking-[0.28em] font-semibold text-life-olive">{data.eyebrow}</p>
+          <p className="text-[10px] uppercase tracking-[0.28em] font-semibold text-editorial-blue">{data.eyebrow}</p>
           <div className="flex items-center gap-1">
             {onRefresh && (
               <button onClick={onRefresh} title="GIULIA opnieuw genereren" className="p-1 rounded-full hover:bg-foreground/5 text-life-olive transition">
@@ -61,7 +61,7 @@ export function EditorialLayout({ data, onRefresh, onEdit, loading }) {
             )}
           </div>
         </div>
-        <h2 className="font-display text-[32px] sm:text-[38px] leading-[0.98] tracking-[-0.03em] text-foreground font-medium mt-3">{title}</h2>
+        <h2 className="font-display text-[32px] sm:text-[38px] leading-[0.98] tracking-[-0.03em] text-editorial-blue font-medium mt-3">{title}</h2>
         <p className="text-[11px] uppercase tracking-[0.22em] font-semibold text-life-olive mt-3">{data.subtitle}</p>
         <div className="flex items-start gap-3 mt-5">
           <p className="font-body text-[14px] leading-[1.7] text-life-olive text-balance flex-1">{data.body}</p>
@@ -101,7 +101,7 @@ export function EditorialLayout({ data, onRefresh, onEdit, loading }) {
 
       {/* CLOSING */}
       <section className={items.length > 0 ? "pt-6" : "pt-3"}>
-        <p className="text-[11px] uppercase tracking-[0.2em] font-semibold text-life-olive">{data.restTitle}</p>
+        <p className="text-[11px] uppercase tracking-[0.2em] font-semibold text-editorial-blue">{data.restTitle}</p>
         <p className="font-body text-[13px] leading-[1.6] text-life-olive/80 mt-2">{data.restBody}</p>
       </section>
     </div>
@@ -137,8 +137,13 @@ export default function SpaceRecap({ storageKey, prompt, fallback, onRefresh }) 
 
   const generate = async () => {
     try {
-      const r = await base44.integrations.Core.InvokeLLM({ prompt: promptRef.current, response_json_schema: SCHEMA });
+      const res = await base44.functions.invoke("generateSpaceRecap", { prompt: promptRef.current, schema: SCHEMA, temperature: 0.5 });
+      const r = res?.result ?? res?.data?.result ?? null;
       if (r && r.title && Array.isArray(r.items)) return r;
+    } catch { /* ignore */ }
+    try {
+      const r2 = await base44.integrations.Core.InvokeLLM({ prompt: promptRef.current, response_json_schema: SCHEMA });
+      if (r2 && r2.title && Array.isArray(r2.items)) return r2;
     } catch { /* ignore */ }
     return null;
   };

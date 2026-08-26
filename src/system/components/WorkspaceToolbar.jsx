@@ -121,7 +121,7 @@ export default function WorkspaceToolbar() {
       <div
         className={cn(
           "fixed bottom-4 left-4 lg:bottom-6 lg:left-6 z-30 flex items-center transition-[width,transform] duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
-          (isPersonalAdmin || expanded) ? "w-[calc(100vw-5.5rem)] lg:w-[calc(100vw-7.5rem)]" : "w-[224px]"
+          isPersonalAdmin ? "w-[min(440px,calc(100vw-2.5rem))]" : (expanded ? "w-[calc(100vw-5.5rem)] lg:w-[calc(100vw-7.5rem)]" : "w-[224px]")
         )}
         onMouseEnter={isPersonalAdmin ? undefined : expand}
         onMouseLeave={isPersonalAdmin ? undefined : () => scheduleCollapse(8000)}
