@@ -62,7 +62,7 @@ export function EditorialLayout({ data, onRefresh, onEdit, loading }) {
           </div>
         </div>
         <h2 className="font-display text-[32px] sm:text-[38px] leading-[0.98] tracking-[-0.03em] text-editorial-blue font-medium mt-3">{title}</h2>
-        <p className="text-[11px] uppercase tracking-[0.22em] font-semibold text-life-olive mt-3">{data.subtitle}</p>
+        <p className="text-[11px] uppercase tracking-[0.22em] font-semibold mt-3 text-[hsl(var(--ridge))]">{data.subtitle}</p>
         <div className="flex items-start gap-3 mt-5">
           <p className="font-body text-[14px] leading-[1.7] text-life-olive text-balance flex-1">{data.body}</p>
           <ChevronDown className="w-4 h-4 text-life-olive shrink-0 mt-1" />
