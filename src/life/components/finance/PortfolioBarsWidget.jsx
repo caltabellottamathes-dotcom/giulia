@@ -65,7 +65,7 @@ export default function PortfolioBarsWidget({ portfolios, expenses, onOpenPortfo
       </AnimatePresence>
 
       {/* FOTOKAART — schuift links ↔ rechts; toont alle 6 portefeuilles */}
-      <motion.div className="absolute inset-y-0 z-20 overflow-hidden rounded-[24px]" initial={false} animate={{ left: selected ? "0%" : "50%" }} transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }} style={{ width: "50%", boxShadow: "-10px 0 24px -12px rgba(0,0,0,0.5), 10px 0 24px -12px rgba(0,0,0,0.5)" }} onClick={selected ? (e) => { e.stopPropagation(); setSelectedId(null); } : undefined}>
+      <motion.div className="absolute inset-y-0 z-20 overflow-hidden rounded-[24px]" initial={false} animate={{ left: selected ? "0%" : "50%" }} transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}           style={{ width: "50%", boxShadow: "-10px 0 24px -12px rgba(0,0,0,0.5), 10px 0 24px -12px rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.22)" }} onClick={selected ? (e) => { e.stopPropagation(); setSelectedId(null); } : undefined}>
         <img src={PHOTO} alt="" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.68), rgba(0,0,0,0.12) 55%, rgba(0,0,0,0.3))" }} />
         {selected ? (

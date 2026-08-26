@@ -57,8 +57,8 @@ Output JSON met deze velden (editorial frame-labels in het Engels zoals de voorb
 - title: grote zwarte kop in FULL CAPS met een punt erachter, max ~7 woorden, prikkend. Geen label-woord ervoor.
 - subtitle: blauwe uppercase ondertitel, één korte zin.
 - body: 1-2 zinnen met concrete cijfers (TOTAL MONEY, RESERVED, AVAILABLE${overview ? "" : `, of ${label}-specifieke data`}).
-- footerLeft: blauw editorial label, bijv. "HERE'S HOW WE READ A FRAME".
-- footerRight: blauw editorial label, bijv. "(SCROLL)".
+- footerLeft: origineel blauw editorial label — verzin een frisse, tab-specifieke label. GEEN "HERE'S HOW WE READ A FRAME" of enige standaard/mock-tekst.
+- footerRight: origineel blauw editorial label — verzin zelf. GEEN "(SCROLL)".
 - attentionTitle: zwarte uppercase titel aandachtsblok, bijv. "WHAT NEEDS YOUR ATTENTION".
 - attentionBadge: blauw uppercase badge, formaat "0N ITEMS NEED ACTION" met het echte aantal urgente items.
 - items: 0-3 dingen die nu aandacht vragen — het aantal hangt af van wat er op dit moment echt nodig is (geen vaste 3). Elk item: title (kort), sub (1 zin uitleg met concrete bedragen) en link (één van: OVERVIEW, PORTEFEUILLES, LASTEN, INKOMEN, FORECAST, HEALTHY_MONEY) — de tab waar Salvo heen moet om het op te lossen. Gebruik echte komende betalingen of korte potjes uit de data. Als er niets urgents is, geef een lege array.
@@ -74,6 +74,7 @@ ELKE TAB MOET een unieke, specifieke tekst hebben — niet generisch, niet dezel
 - HEALTHY_MONEY → financieel geweten: geld hebben vs kunnen besteden, risico's, vrije ruimte.
 - DOCUMENTEN → financiële documenten: wat ontbreekt, wat loopt, beheer.
 Gebruik concrete data uit de snapshot die bij deze tab hoort. Geen markdown.
+Elke generatie MOET een andere, originele tekst opleveren — herhaal nooit eerdere of vaste formuleringen. Verzin steeds nieuwe zinnen, hoeken en woorden; wees specifiek en concreet voor deze tab.
 
 Data:
 ${buildSnapshot(tab, d)}`;
@@ -129,7 +130,7 @@ export default function PersonalAdminPage() {
     let cancelled = false;
     const sig = `${Math.round(tm)}:${Math.round(tr)}:${portfolios.length}:${expenses.filter((e) => e.status !== "done").length}:${incomes.length}`;
     TABS.forEach(async (t) => {
-      const key = `personalAdminV2:${t.key}`;
+      const key = `personalAdminV3:${t.key}`;
       const fullSig = `${t.key}:${sig}`;
       let cached = null;
       try { const raw = localStorage.getItem(key); if (raw) { const p = JSON.parse(raw); if (p && p._content && p._sig === fullSig && Date.now() - p._ts < STALE_MS) cached = p._content; } } catch { /* ignore */ }
@@ -138,7 +139,7 @@ export default function PersonalAdminPage() {
       try {
         const res = await base44.functions.invoke("generateAdminRecap", { prompt: buildPrompt(t.key, data), schema: EDITORIAL_SCHEMA });
         if (cancelled) return;
-        const d = (res && res.ok && res.data && res.data.title && Array.isArray(res.data.items)) ? res.data : buildFallback(t.key, data);
+        const d = (res && res.ok && res.data && res.data.title) ? { ...res.data, items: Array.isArray(res.data.items) ? res.data.items : [] } : buildFallback(t.key, data);
         localStorage.setItem(key, JSON.stringify({ _content: d, _ts: Date.now(), _sig: fullSig }));
         setEditorials((prev) => ({ ...prev, [t.key]: { data: d, loading: false } }));
       } catch {
@@ -153,9 +154,9 @@ export default function PersonalAdminPage() {
     setEditorials((prev) => ({ ...prev, [tabKey]: { data: prev[tabKey]?.data || null, loading: true } }));
     try {
       const res = await base44.functions.invoke("generateAdminRecap", { prompt: buildPrompt(tabKey, data), schema: EDITORIAL_SCHEMA });
-      const d = (res && res.ok && res.data && res.data.title && Array.isArray(res.data.items)) ? res.data : buildFallback(tabKey, data);
+      const d = (res && res.ok && res.data && res.data.title) ? { ...res.data, items: Array.isArray(res.data.items) ? res.data.items : [] } : buildFallback(tabKey, data);
       const sig = `${tabKey}:${Math.round(tm)}:${Math.round(tr)}:${portfolios.length}:${expenses.filter((e) => e.status !== "done").length}:${incomes.length}`;
-      localStorage.setItem(`personalAdminV2:${tabKey}`, JSON.stringify({ _content: d, _ts: Date.now(), _sig: sig }));
+      localStorage.setItem(`personalAdminV3:${tabKey}`, JSON.stringify({ _content: d, _ts: Date.now(), _sig: sig }));
       setEditorials((prev) => ({ ...prev, [tabKey]: { data: d, loading: false } }));
     } catch {
       setEditorials((prev) => ({ ...prev, [tabKey]: { data: prev[tabKey]?.data || buildFallback(tabKey, data), loading: false } }));
@@ -252,8 +253,8 @@ function buildFallback(tab, d) {
     title: headline,
     subtitle: "A CLEAR VIEW OF WHAT'S IN MOTION.",
     body: `Je hebt €${Math.round(d.totalMoney)} aanwezig waarvan €${Math.round(d.totalReserved)} een bestemming heeft; €${Math.round(avail)} blijft vrij. Per maand komt €${Math.round(d.dist.income)} binnen tegen €${Math.round(d.dist.reserved)} aan reserveringen.`,
-    footerLeft: "HERE'S HOW WE READ A FRAME",
-    footerRight: "(SCROLL)",
+    footerLeft: "GIULIA · FINANCE EDITORIAL",
+    footerRight: "AUTO · GIULIA",
     attentionTitle: "WHAT NEEDS YOUR ATTENTION",
     attentionBadge: `${String(items.length || 0).padStart(2, "0")} ITEMS NEED ACTION`,
     items: items.length ? items : [{ title: "Portfolio • On track", sub: "Geen direct urgente betalingen — de potjes lopen mee." }],

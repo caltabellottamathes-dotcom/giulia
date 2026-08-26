@@ -31,11 +31,12 @@ export const EDITORIAL_SCHEMA = {
     restTitle: { type: "string" },
     restBody: { type: "string" },
   },
-  required: ["eyebrow", "title", "subtitle", "body", "items", "restTitle", "restBody"],
+  required: ["eyebrow", "title", "subtitle", "body", "footerLeft", "footerRight", "items", "restTitle", "restBody"],
 };
 
 const pad = (n) => String(n).padStart(2, "0");
-const RIDGE = "hsl(var(--life-ridge))"; // Ridge Sky — zachte accent (cijfers)
+const RIDGE = "hsl(var(--life-ridge))"; // Ridge Sky — zachte accent
+const PISTACHIO = "hsl(var(--life-pistachio))"; // Whipped Pistachio — cijfers/elementen
 
 /** EditorialLayout — Giulia's gegenereerde analyse (niet bewerkbaar).
  *  Accenten: Ridge Sky (zacht, voor de grote cijfers) + Ridge Deep (donkerder
@@ -49,7 +50,10 @@ export function EditorialLayout({ data, onRefresh, onNavigate, accent = "hsl(var
     <div className="flex flex-col min-h-full">
       <section className="mt-5">
         <div className="flex items-start justify-between gap-3">
-          <p className="text-[10px] uppercase tracking-[0.28em] font-semibold" style={{ color: accent }}>{data.eyebrow}</p>
+          <div className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: PISTACHIO }} />
+            <p className="text-[10px] uppercase tracking-[0.28em] font-semibold" style={{ color: accent }}>{data.eyebrow}</p>
+          </div>
           {onRefresh && (
             <button onClick={onRefresh} title="GIULIA opnieuw genereren" className="p-1 rounded-full hover:bg-foreground/5 transition" style={{ color: accent }}>
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
@@ -58,15 +62,15 @@ export function EditorialLayout({ data, onRefresh, onNavigate, accent = "hsl(var
         </div>
         <div className="flex items-start justify-between gap-4 mt-3">
           <h2 className="font-display text-[30px] sm:text-[38px] leading-[0.98] tracking-[-0.03em] text-foreground font-semibold uppercase">{title}</h2>
-          <ArrowDown className="w-5 h-5 text-foreground shrink-0 mt-2" strokeWidth={1.25} />
+          <ArrowDown className="w-5 h-5 shrink-0 mt-2" strokeWidth={1.25} style={{ color: PISTACHIO }} />
         </div>
         <p className="text-[11px] uppercase tracking-[0.22em] font-semibold mt-3" style={{ color: accent }}>{data.subtitle}</p>
         <p className="font-body text-[14px] leading-[1.7] text-smoke text-balance mt-5">{data.body}</p>
       </section>
 
       <div className="mt-6 pt-3 border-t border-foreground/15 flex items-center justify-between">
-        <p className="text-[9px] uppercase tracking-[0.24em] font-semibold" style={{ color: accent }}>{data.footerLeft || "HERE'S HOW WE READ A FRAME"}</p>
-        <p className="text-[9px] uppercase tracking-[0.24em] font-semibold" style={{ color: accent }}>{data.footerRight || "(SCROLL)"}</p>
+        <p className="text-[9px] uppercase tracking-[0.24em] font-semibold" style={{ color: accent }}>{data.footerLeft || "GIULIA · EDITORIAL ANALYSE"}</p>
+        <p className="text-[9px] uppercase tracking-[0.24em] font-semibold" style={{ color: accent }}>{data.footerRight || "AUTO · GIULIA"}</p>
       </div>
 
       <div className="flex-1 min-h-5" />
@@ -87,7 +91,7 @@ export function EditorialLayout({ data, onRefresh, onNavigate, accent = "hsl(var
                   {...(nav ? { onClick: () => onNavigate(it.link) } : {})}
                   className={`flex items-start gap-4 py-4 w-full text-left ${i > 0 ? "border-t border-foreground/12" : ""} ${nav ? "hover:bg-foreground/[0.03] transition group cursor-pointer" : ""}`}
                 >
-                  <span className="font-display text-[26px] leading-none font-bold tabular-nums shrink-0 w-9" style={{ color: RIDGE }}>{pad(i + 1)}</span>
+                  <span className="font-display text-[26px] leading-none font-bold tabular-nums shrink-0 w-9" style={{ color: PISTACHIO }}>{pad(i + 1)}</span>
                   <div className="min-w-0 flex-1">
                     <p className="text-[13px] font-bold text-foreground leading-tight">{it.title}</p>
                     <p className="text-[12px] text-muted-foreground leading-[1.55] mt-1.5">{it.sub}</p>

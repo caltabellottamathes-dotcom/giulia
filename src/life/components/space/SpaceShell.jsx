@@ -68,7 +68,7 @@ export default function SpaceShell({ bgImage, heroImage, eyebrow, title, tabs, a
           <AnimatePresence initial={false}>
             <motion.div
               key={activeTab}
-              initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
+              initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
               transition={{ duration: 0.45, ease: EASE }}
               className="absolute inset-0 rounded-l-[20px] rounded-r-none bg-warm-white flex flex-col overflow-hidden shadow-[-28px_24px_64px_-22px_rgba(0,0,0,0.42)] z-10"
             >
