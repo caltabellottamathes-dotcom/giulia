@@ -122,7 +122,7 @@ export default async function (req) {
       updated_records: updated,
       relationships_created: relationships,
       conflicts, unresolved, gaps,
-      project_health: health && health.health ? { ...health.health, computed_at: new Date().toISOString() } : (src.project_health || null),
+      project_health: health ? { ...health, computed_at: new Date().toISOString() } : (src.project_health || null),
       version: (src.version || 1) + 1
     }).catch(() => null);
 
