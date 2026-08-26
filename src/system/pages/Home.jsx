@@ -20,10 +20,9 @@ import StartupSequence from "@/system/components/StartupSequence";
 import { Link } from "react-router-dom";
 import { MODULES } from "@/lib/moduleRegistry";
 
-// Spans op een 15-koloms grid (desktop). Oude 5-koloms waarden ×3, zodat
-// huidige formaten behouden blijven maar je nu stappen van 1 kolom kunt zetten
-// (1 span = 1/15, ... 3 = 20%, 5 = 33%, 6 = 40%, 8 = 53%, 15 = volledig).
-const WIDGET_SPAN = { giulia: 6, goodmorning: 6, concierge: 3, approvals: 6, insights: 3, imalive: 3, giuliaquestions: 3, projects: 6, agenda: 6, tasks: 3, email: 3, whatsapp: 6, people: 3, timetracker: 3, documents: 6, updates: 6, sociallife: 3, remindershome: 6, thinghandle: 3, thingslove: 6, dinner: 6, howdoing: 3, musicwidget: 3, beeldbank: 6, velochat: 3 };
+// Spans op een 25-koloms grid (desktop). Fijnere granulariteit: 1 span = 1/25,
+// 5 = 20%, 8 = 32%, 10 = 40%, 13 = 52%, 25 = volledig.
+const WIDGET_SPAN = { giulia: 10, goodmorning: 10, concierge: 5, approvals: 10, insights: 5, imalive: 5, giuliaquestions: 5, projects: 10, agenda: 10, tasks: 5, email: 5, whatsapp: 10, people: 5, timetracker: 5, documents: 10, updates: 10, sociallife: 5, remindershome: 10, thinghandle: 5, thingslove: 10, dinner: 10, howdoing: 5, musicwidget: 5, beeldbank: 10, velochat: 5 };
 
 // Some modules open under a different key than their widget — map them so the
 // floating "widget naast het paneel" resolves to the right component.
@@ -242,7 +241,7 @@ export default function Home() {
   const cells = visible.map((w) => {
     const def = WIDGETS[w.widget_type];
     if (!def) return null;
-    const span = (w.widget_type === "howdoing" && howdoingDue) ? 6 : (WIDGET_SPAN[w.widget_type] || 1);
+    const span = (w.widget_type === "howdoing" && howdoingDue) ? 10 : (WIDGET_SPAN[w.widget_type] || 1);
     return { node: <WidgetCell key={w.id} def={def} widget={w} onRemove={() => removeWidget(w.id)} onThemeChange={patchWidget} sessionMode={isCustom} />, span };
   }).filter(Boolean);
   const showLoading = loading && widgets.length === 0;
@@ -332,7 +331,7 @@ export default function Home() {
               ))}
             </div>
           ) : visible.length > 0 ? (
-            <MasonryGrid key={activeBoard + resetKey} className="max-w-[1280px] xl:max-w-[1500px]" gap={24} spans={cells.map((c) => c.span)} scale={0.8} columnTiers={[[0, 1], [640, 6], [1024, 12], [1280, 15]]} fitHeight={howdoingDue ? undefined : fitH}>
+            <MasonryGrid key={activeBoard + resetKey} className="max-w-[1280px] xl:max-w-[1500px]" gap={24} spans={cells.map((c) => c.span)} scale={0.8} columnTiers={[[0, 1], [640, 6], [1024, 12], [1280, 25]]} fitHeight={howdoingDue ? undefined : fitH}>
               {cells.map((c) => c.node)}
             </MasonryGrid>
           ) : (

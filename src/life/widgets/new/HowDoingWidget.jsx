@@ -32,8 +32,7 @@ export default function HowDoingWidget() {
   const win = currentWindowKey();
   const next = nextWindowInfo();
   const completed = isCompletedForWindow(checkIns, win) || (justDone && win != null);
-  const FORCE_DUE = true; // tijdelijk aan — zet het check-in-moment zichtbaar
-  const due = !completed || FORCE_DUE;
+  const due = !completed;
 
   useEffect(() => {
     window.dispatchEvent(new CustomEvent("giulia:howdoing-due", { detail: due }));
