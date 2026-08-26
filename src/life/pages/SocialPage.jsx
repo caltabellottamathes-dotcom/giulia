@@ -3,8 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 import StatusBadge from "@/system/components/glass/StatusBadge";
 import SocialNav from "@/life/components/social/SocialNav";
-import OverviewSection from "@/life/components/social/sections/OverviewSection";
-import PersonDetailDrawer from "@/life/components/social/PersonDetailDrawer";
+import SocialOverviewPreview from "@/life/panels/SocialOverviewPreview";
 import ThingsHandleFullWidget from "@/life/components/social/ThingsHandleFullWidget";
 import { closeCircle, socialPulse, meaningfulInteractions, pulseState, PULSE_LABEL } from "@/lib/domainUtils";
 
@@ -22,7 +21,6 @@ export default function SocialPage() {
   const [tab, setTab] = useState("Overview");
   const [data, setData] = useState(EMPTY);
   const [loading, setLoading] = useState(true);
-  const [drawer, setDrawer] = useState(null);
 
   const load = async () => {
     try {
@@ -103,18 +101,18 @@ export default function SocialPage() {
                 </div>
               </div>
 
-              {/* Rechts — lichte glaskaart met schaduw, originele /life/social overview-inhoud, inhoud scrollt */}
+              {/* Rechts — donkere glaskaart met schaduw, originele /life/social SocialOverviewPreview-panel */}
               <div
                 className="flex-1 min-w-0 h-full overflow-y-auto rounded-2xl p-4"
                 style={{
-                  background: "rgba(255,255,255,0.45)",
-                  backdropFilter: "blur(22px) saturate(1.4)",
-                  WebkitBackdropFilter: "blur(22px) saturate(1.4)",
-                  border: "1px solid rgba(255,255,255,0.6)",
-                  boxShadow: "0 24px 48px -20px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.5)",
+                  background: "rgba(40,42,46,0.45)",
+                  backdropFilter: "blur(40px) saturate(1.5)",
+                  WebkitBackdropFilter: "blur(40px) saturate(1.5)",
+                  border: "1px solid rgba(255,255,255,0.16)",
+                  boxShadow: "0 24px 48px -20px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.22)",
                 }}
               >
-                <OverviewSection data={data} mi={mi} circle={circle} attention={attention} activePlans={activePlans} state={state} onNavigate={setTab} onOpenPerson={setDrawer} reload={load} />
+                <SocialOverviewPreview onOpen={() => setTab("Planner")} />
               </div>
             </>
           ) : (
@@ -123,7 +121,6 @@ export default function SocialPage() {
         </div>
       </div>
 
-      {drawer && <PersonDetailDrawer contact={drawer} whatsapps={data.whatsapps} onClose={() => setDrawer(null)} onUpdated={load} />}
     </div>
   );
 }
