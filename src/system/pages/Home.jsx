@@ -23,7 +23,7 @@ import { MODULES } from "@/lib/moduleRegistry";
 // Spans op een 15-koloms grid (desktop). Oude 5-koloms waarden ×3, zodat
 // huidige formaten behouden blijven maar je nu stappen van 1 kolom kunt zetten
 // (1 span = 1/15, ... 3 = 20%, 5 = 33%, 6 = 40%, 8 = 53%, 15 = volledig).
-const WIDGET_SPAN = { giulia: 6, goodmorning: 6, concierge: 3, approvals: 6, insights: 3, imalive: 3, giuliaquestions: 3, projects: 6, agenda: 6, tasks: 3, email: 3, whatsapp: 6, people: 3, timetracker: 3, documents: 6, updates: 6, sociallife: 5, remindershome: 10, thinghandle: 3, thingslove: 7, dinner: 8, howdoing: 4, musicwidget: 3, beeldbank: 6, velochat: 3 };
+const WIDGET_SPAN = { giulia: 6, goodmorning: 6, concierge: 3, approvals: 6, insights: 3, imalive: 3, giuliaquestions: 3, projects: 6, agenda: 6, tasks: 3, email: 3, whatsapp: 6, people: 3, timetracker: 3, documents: 6, updates: 6, sociallife: 3, remindershome: 6, thinghandle: 3, thingslove: 6, dinner: 6, howdoing: 3, musicwidget: 3, beeldbank: 6, velochat: 3 };
 
 // Some modules open under a different key than their widget — map them so the
 // floating "widget naast het paneel" resolves to the right component.
