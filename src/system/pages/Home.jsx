@@ -14,6 +14,7 @@ import { Plus, Sparkles, RefreshCw } from "lucide-react";
 import AddWidgetPicker from "@/system/panels/AddWidgetPicker";
 import WidgetCell from "@/system/widgets/WidgetCell";
 import MasonryGrid from "@/system/widgets/MasonryGrid";
+import HowDoingCheckInOverlay from "@/life/widgets/new/HowDoingCheckInOverlay";
 
 import StartupSequence from "@/system/components/StartupSequence";
 
@@ -68,7 +69,7 @@ export default function Home() {
   const [resetKey, setResetKey] = useState(0);
   const [startupDone, setStartupDone] = useState(() => sessionStorage.getItem("giulia_startup_done") === "1");
   const [fitH, setFitH] = useState(0);
-  const [howdoingDue, setHowdoingDue] = useState(false);
+  const [howDoingOpen, setHowDoingOpen] = useState(false);
   const { toast } = useToast();
 
   // Desktop: masonry past in één beeld (geen scroll) — fitHeight laat
@@ -88,11 +89,11 @@ export default function Home() {
     return () => window.removeEventListener("giulia:board-change", h);
   }, []);
 
-  // How-doing-widget wordt fysiek breder wanneer hij due is (check-in open)
+  // How-doing check-in opent in een grote pop-up (i.p.v. groeien in het grid).
   useEffect(() => {
-    const h = (e) => setHowdoingDue(!!e.detail);
-    window.addEventListener("giulia:howdoing-due", h);
-    return () => window.removeEventListener("giulia:howdoing-due", h);
+    const h = () => setHowDoingOpen(true);
+    window.addEventListener("giulia:open-howdoing-checkin", h);
+    return () => window.removeEventListener("giulia:open-howdoing-checkin", h);
   }, []);
 
   // Swipe door dashboards — touch (links/rechts) en trackpad (horizontale wheel).
@@ -235,15 +236,11 @@ export default function Home() {
   };
   const g = greeting.line1 ? greeting : FALLBACK[partOfDay];
 
-  const sorted = [...widgets].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
-  // Bij een due check-in gaat de How-doing-widget als eerste linksboven staan
-  const visible = howdoingDue
-    ? [...sorted].sort((a, b) => (a.widget_type === "howdoing" ? -1 : b.widget_type === "howdoing" ? 1 : 0))
-    : sorted;
+  const visible = [...widgets].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
   const cells = visible.map((w) => {
     const def = WIDGETS[w.widget_type];
     if (!def) return null;
-    const span = (w.widget_type === "howdoing" && howdoingDue) ? 10 : (WIDGET_SPAN[w.widget_type] || 1);
+    const span = WIDGET_SPAN[w.widget_type] || 1;
     return { node: <WidgetCell key={w.id} def={def} widget={w} onRemove={() => removeWidget(w.id)} onThemeChange={patchWidget} sessionMode={isCustom} />, span };
   }).filter(Boolean);
   const showLoading = loading && widgets.length === 0;
@@ -333,7 +330,7 @@ export default function Home() {
               ))}
             </div>
           ) : visible.length > 0 ? (
-            <MasonryGrid key={activeBoard + resetKey} className="max-w-[1280px] xl:max-w-[1500px] min-h-[52vh]" gap={24} spans={cells.map((c) => c.span)} scale={0.8} columnTiers={[[0, 1], [640, 6], [1024, 12], [1280, 25]]} fitHeight={howdoingDue ? undefined : fitH}>
+            <MasonryGrid key={activeBoard + resetKey} className="max-w-[1280px] xl:max-w-[1500px] min-h-[52vh]" gap={24} spans={cells.map((c) => c.span)} scale={0.8} columnTiers={[[0, 1], [640, 6], [1024, 12], [1280, 25]]} fitHeight={fitH}>
               {cells.map((c) => c.node)}
             </MasonryGrid>
           ) : (
@@ -352,6 +349,7 @@ export default function Home() {
           setStartupDone(true);
         }} />
       )}
+      <HowDoingCheckInOverlay open={howDoingOpen} onClose={() => setHowDoingOpen(false)} />
       <AddWidgetPicker open={pickerOpen} onClose={() => setPickerOpen(false)} onAdd={addWidget} addedTypes={widgets.map((w) => w.widget_type)} />
     </div>
     </GlassSurfaceProvider>

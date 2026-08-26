@@ -1,11 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PhotoGlassWidget, WidgetHeader } from "@/system/widgets/primitives";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { useLearningSync } from "@/hooks/useLearningSync";
-import { base44 } from "@/api/base44Client";
-import CheckInFlow from "@/life/components/CheckInFlow";
 import { WINDOWS, WINDOW_ORDER, currentWindowKey, nextWindowInfo, isCompletedForWindow } from "@/life/components/checkInConfig";
 import { ConcentricRings } from "@/life/components/SelfViz";
 import { BLUE, SAND, moodScore } from "@/glass/components/self/palette";
@@ -15,27 +13,31 @@ const IVORY = "hsl(var(--ivory))";
 const PISTACHIO = "#d8dab3"; // Whipped Pistachio
 const INK = "#2a2d22";
 
-/** HowImDoing-widget — P·2:3·B (PhotoShell + GlassCard, portret, kaart onder).
- *  Canonieke opbouw via PhotoGlassWidget: foto full-bleed, glasscard flush
- *  tegen de shellrand met 4 afgeronde hoeken. De widget BLIJFT altijd
- *  portret 2:3; bij een due check-in groeit hij alleen van 3 → 6 span
- *  (breder én hoger, andere widgets worden niet meegeschaald).
- *  Op de glasscard staat een startscherm; zolang de check-in niet gestart
- *  is knippert een Whipped Pistachio-gloed rondom de widget. */
+const openCheckIn = () => window.dispatchEvent(new CustomEvent("giulia:open-howdoing-checkin"));
+
+/** HowImDoing-widget — P·2:3·B (PhotoShell + GlassCard, portret).
+ *  Blijft altijd in zijn normale portret-stand op het dashboard. Als er
+ *  een check-in openstaat knippert een Whipped Pistachio-gloed en toont
+ *  een "Begin check-in"-knop — die opent de grote pop-up (zie
+ *  HowDoingCheckInOverlay), NIET een inline flow. Na invullen toont de
+ *  widget weer zijn normale ringen-stand. */
 export default function HowDoingWidget() {
   const { openModule } = usePanel();
   const learnTick = useLearningSync();
   const { data: checkIns } = useEntityList("SelfCheckIn", { sort: "-timestamp", limit: 30, realtime: true, externalTick: learnTick });
-  const [justDone, setJustDone] = useState(false);
-  const [started, setStarted] = useState(false);
 
   const win = currentWindowKey();
   const next = nextWindowInfo();
-  const completed = isCompletedForWindow(checkIns, win) || (justDone && win != null);
+  const completed = isCompletedForWindow(checkIns, win);
   const due = !completed;
 
+  // Auto-open de grote check-in pop-up zolang er een check-in openstaat.
+  // setTimeout voorkomt de effect-volgorde-race (child-effect voor parent-
+  // listener): zo staat Home's listener altijd eerst.
   useEffect(() => {
-    window.dispatchEvent(new CustomEvent("giulia:howdoing-due", { detail: due }));
+    if (!due) return;
+    const t = setTimeout(openCheckIn, 0);
+    return () => clearTimeout(t);
   }, [due]);
 
   const todayDone = useMemo(() => WINDOW_ORDER.map((k) => isCompletedForWindow(checkIns, k)), [checkIns]);
@@ -45,12 +47,6 @@ export default function HowDoingWidget() {
   const mood = moodScore(latest?.mood);
   const stateText = latest ? (latest.mood ? latest.mood.split(" ")[0].toUpperCase() : "IN") : "CHECK IN";
   const W = WINDOWS[win];
-
-  const save = async (entity) => {
-    await base44.entities.SelfCheckIn.create(entity);
-    setStarted(false);
-    setJustDone(true);
-  };
 
   return (
     <div className="relative w-full">
@@ -68,46 +64,36 @@ export default function HowDoingWidget() {
           </div>
         }
         glassChildren={
-          <AnimatePresence mode="wait" className="h-full">
-            {due && !started ? (
-              <motion.div key="start" className="flex flex-col h-full items-center justify-center text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ color: IVORY }}>
-                <span className="text-[10px] uppercase tracking-[0.22em] opacity-60">{W.time}</span>
-                <h3 className="text-[26px] font-display font-black tracking-[-0.02em] mt-1" style={{ color: PISTACHIO }}>{W.label}</h3>
-                <p className="text-[12px] opacity-85 mt-1.5 max-w-[82%] leading-snug">{W.subtitle}</p>
-                <p className="text-[9px] uppercase tracking-[0.16em] opacity-50 mt-2.5">5 vragen · ~2 min</p>
-                <button onClick={() => setStarted(true)} className="mt-3 rounded-full px-5 py-2 text-[12px] font-bold transition hover:brightness-95" style={{ background: PISTACHIO, color: INK }}>Begin check-in</button>
-              </motion.div>
-            ) : due && started ? (
-              <motion.div key="flow" className="h-full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <CheckInFlow window={win} onSave={save} onDone={() => { setStarted(false); setJustDone(true); }} theme="dark" accent={PISTACHIO} />
-              </motion.div>
+          <div className="flex flex-col h-full items-center justify-center" style={{ color: IVORY }}>
+            <ConcentricRings size={84} arcs={[{ pct: energy, c: BLUE }, { pct: capacity, c: SAND }, { pct: mood, c: "rgba(216,218,179,0.7)" }]}>
+              <span className="text-ivory text-[10px] font-bold block leading-none">{due ? "CHECK IN" : stateText}</span>
+            </ConcentricRings>
+
+            {due ? (
+              <button onClick={openCheckIn} className="mt-3 rounded-full px-5 py-2 text-[12px] font-bold transition hover:brightness-95" style={{ background: PISTACHIO, color: INK }}>Begin check-in</button>
             ) : (
-              <motion.div key="idle" className="flex flex-col h-full items-center justify-center" style={{ color: IVORY }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <ConcentricRings size={84} arcs={[{ pct: energy, c: BLUE }, { pct: capacity, c: SAND }, { pct: mood, c: "rgba(216,218,179,0.7)" }]}>
-                  <span className="text-ivory text-[10px] font-bold block leading-none">{stateText}</span>
-                </ConcentricRings>
-                <div className="flex items-center gap-1.5 mt-3 flex-wrap justify-center">
-                  {WINDOW_ORDER.map((k, i) => {
-                    const done = todayDone[i];
-                    const isNow = win === k;
-                    return (
-                      <span key={k} className="flex items-center justify-center h-5 px-1.5 rounded-full text-[8px] font-bold"
-                        style={{ background: done ? PISTACHIO : isNow ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.08)", color: done ? INK : IVORY, opacity: done || isNow ? 1 : 0.45, boxShadow: isNow && !done ? `0 0 8px ${PISTACHIO}` : "none" }}>
-                        {WINDOWS[k].time}
-                      </span>
-                    );
-                  })}
-                </div>
-                <p className="text-[8px] uppercase tracking-[0.14em] opacity-55 mt-2 text-center">Volgende: {next.label.toLowerCase()} {next.time}{next.tomorrow ? " morgen" : ""}</p>
-              </motion.div>
+              <div className="flex items-center gap-1.5 mt-3 flex-wrap justify-center">
+                {WINDOW_ORDER.map((k, i) => {
+                  const done = todayDone[i];
+                  const isNow = win === k;
+                  return (
+                    <span key={k} className="flex items-center justify-center h-5 px-1.5 rounded-full text-[8px] font-bold"
+                      style={{ background: done ? PISTACHIO : isNow ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.08)", color: done ? INK : IVORY, opacity: done || isNow ? 1 : 0.45, boxShadow: isNow && !done ? `0 0 8px ${PISTACHIO}` : "none" }}>
+                      {WINDOWS[k].time}
+                    </span>
+                  );
+                })}
+              </div>
             )}
-          </AnimatePresence>
+
+            <p className="text-[8px] uppercase tracking-[0.14em] opacity-55 mt-2 text-center">Volgende: {next.label.toLowerCase()} {next.time}{next.tomorrow ? " morgen" : ""}</p>
+          </div>
         }
       />
 
-      {/* knipperende Whipped Pistachio-gloed zolang de check-in niet gestart is */}
+      {/* knipperende Whipped Pistachio-gloed zolang de check-in openstaat */}
       <AnimatePresence>
-        {due && !started && (
+        {due && (
           <motion.span key="glow" className="absolute inset-0 rounded-[28px] pointer-events-none z-30"
             initial={{ opacity: 0 }} animate={{ opacity: [0.35, 1, 0.35] }} exit={{ opacity: 0 }}
             transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
