@@ -119,49 +119,47 @@ export default function PersonalAdminPage() {
     upcoming: upcomingExpenses(expenses, 30),
   }), [portfolios, expenses, incomes, transactions, docs, dist, tm, tr]);
 
-  // Pre-warm editorials voor ALLE tabs — EÉN keer per mount (ref-guard), zodat
-  // een tab direct Giulia's analyse toont. Per tab gecached in localStorage
-  // (data-signature + 8u geldigheid). Niet opnieuw bij elke datawijziging
-  // (voorkomt credit-verlies); alleen handmatig via refresh.
+  // Editorials: pre-warm alle tabs + safety-net voor de actieve tab. Altijd via
+  // refreshEditorial (cache + in-flight guard) zodat Giulia's tekst
+  // gegarandeerd verschijnt en er geen dubbele calls zijn. 8u caching per tab.
   const warmedRef = useRef(false);
-  useEffect(() => {
-    if (loading || warmedRef.current) return;
-    warmedRef.current = true;
-    let cancelled = false;
-    const sig = `${Math.round(tm)}:${Math.round(tr)}:${portfolios.length}:${expenses.filter((e) => e.status !== "done").length}:${incomes.length}`;
-    TABS.forEach(async (t) => {
-      const key = `personalAdminV3:${t.key}`;
-      const fullSig = `${t.key}:${sig}`;
-      let cached = null;
-      try { const raw = localStorage.getItem(key); if (raw) { const p = JSON.parse(raw); if (p && p._content && p._sig === fullSig && Date.now() - p._ts < STALE_MS) cached = p._content; } } catch { /* ignore */ }
-      if (cached) { setEditorials((prev) => ({ ...prev, [t.key]: { data: cached, loading: false } })); return; }
-      setEditorials((prev) => ({ ...prev, [t.key]: { data: prev[t.key]?.data || null, loading: true } }));
-      try {
-        const res = await base44.functions.invoke("generateAdminRecap", { prompt: buildPrompt(t.key, data), schema: EDITORIAL_SCHEMA });
-        if (cancelled) return;
-        const d = (res && res.ok && res.data && res.data.title) ? { ...res.data, items: Array.isArray(res.data.items) ? res.data.items : [] } : buildFallback(t.key, data);
-        localStorage.setItem(key, JSON.stringify({ _content: d, _ts: Date.now(), _sig: fullSig }));
-        setEditorials((prev) => ({ ...prev, [t.key]: { data: d, loading: false } }));
-      } catch {
-        if (cancelled) return;
-        setEditorials((prev) => ({ ...prev, [t.key]: { data: prev[t.key]?.data || buildFallback(t.key, data), loading: false } }));
-      }
-    });
-    return () => { cancelled = true; };
-  }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const refreshEditorial = async (tabKey) => {
+  const inflightRef = useRef(new Set());
+  const sigFor = (k) => `${k}:${Math.round(tm)}:${Math.round(tr)}:${portfolios.length}:${expenses.filter((e) => e.status !== "done").length}:${incomes.length}`;
+  const refreshEditorial = async (tabKey, { skipCache = false } = {}) => {
+    if (inflightRef.current.has(tabKey)) return;
+    const key = `personalAdminV3:${tabKey}`;
+    const fullSig = sigFor(tabKey);
+    if (!skipCache) {
+      try { const raw = localStorage.getItem(key); if (raw) { const p = JSON.parse(raw); if (p && p._content && p._sig === fullSig && Date.now() - p._ts < STALE_MS) { setEditorials((prev) => ({ ...prev, [tabKey]: { data: p._content, loading: false } })); return; } } } catch { /* ignore */ }
+    }
+    inflightRef.current.add(tabKey);
     setEditorials((prev) => ({ ...prev, [tabKey]: { data: prev[tabKey]?.data || null, loading: true } }));
     try {
       const res = await base44.functions.invoke("generateAdminRecap", { prompt: buildPrompt(tabKey, data), schema: EDITORIAL_SCHEMA });
       const d = (res && res.ok && res.data && res.data.title) ? { ...res.data, items: Array.isArray(res.data.items) ? res.data.items : [] } : buildFallback(tabKey, data);
-      const sig = `${tabKey}:${Math.round(tm)}:${Math.round(tr)}:${portfolios.length}:${expenses.filter((e) => e.status !== "done").length}:${incomes.length}`;
-      localStorage.setItem(`personalAdminV3:${tabKey}`, JSON.stringify({ _content: d, _ts: Date.now(), _sig: sig }));
+      localStorage.setItem(key, JSON.stringify({ _content: d, _ts: Date.now(), _sig: fullSig }));
       setEditorials((prev) => ({ ...prev, [tabKey]: { data: d, loading: false } }));
     } catch {
       setEditorials((prev) => ({ ...prev, [tabKey]: { data: prev[tabKey]?.data || buildFallback(tabKey, data), loading: false } }));
+    } finally {
+      inflightRef.current.delete(tabKey);
     }
   };
+
+  // Pre-warm alle tabs één keer per mount (cache slaat verse over).
+  useEffect(() => {
+    if (loading || warmedRef.current) return;
+    warmedRef.current = true;
+    TABS.forEach((t) => { refreshEditorial(t.key); });
+  }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Safety-net: de actieve tab krijgt gegarandeerd Giulia-tekst — ook als de
+  // pre-warm deze nog niet had kunnen vullen.
+  useEffect(() => {
+    if (loading) return;
+    const cur = editorials[tab];
+    if (!cur || (!cur.data && !cur.loading)) refreshEditorial(tab);
+  }, [tab, loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const activePortfolio = detail.open ? (portfolios.find((p) => p.id === detail.portfolioId) || null) : null;
 
@@ -196,7 +194,7 @@ export default function PersonalAdminPage() {
             <p className="text-[9px] uppercase tracking-[0.24em] font-semibold" style={{ color: "hsl(var(--ridge-deep))" }}>GIULIA-GIULIA</p>
           </div>
         )}
-        recap={<SpaceRecap data={editorials[tab]?.data} loading={editorials[tab]?.loading} onRefresh={() => refreshEditorial(tab)} onNavigate={setTab} accent="hsl(var(--ridge-deep))" />}
+        recap={<SpaceRecap data={editorials[tab]?.data} loading={editorials[tab]?.loading} onRefresh={() => refreshEditorial(tab, { skipCache: true })} onNavigate={setTab} accent="hsl(var(--ridge-deep))" />}
       >
         {loading ? (
           <div className="space-y-3">

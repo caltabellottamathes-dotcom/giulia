@@ -35,7 +35,7 @@ export default function PortfolioBarsWidget({ portfolios, expenses, onOpenPortfo
   const shellStyle = { background: "rgba(70,74,80,0.30)", backdropFilter: "blur(40px) saturate(1.4)", WebkitBackdropFilter: "blur(40px) saturate(1.4)", border: "1px solid rgba(255,255,255,0.18)", boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.22)" };
 
   return (
-    <div className="relative w-full h-[240px] rounded-[28px] overflow-hidden cursor-pointer" style={{ boxShadow: "-22px 26px 56px -20px rgba(0,0,0,0.5)" }} onClick={() => openModule("personaladmin")}>
+    <div className="relative w-full h-[320px] rounded-[28px] overflow-hidden cursor-pointer" style={{ boxShadow: "-22px 26px 56px -20px rgba(0,0,0,0.5)" }} onClick={() => openModule("personaladmin")}>
       <div className="absolute inset-0 rounded-[28px]" style={shellStyle} />
 
       {/* LINKS: 6 portfolio bars */}
@@ -54,7 +54,7 @@ export default function PortfolioBarsWidget({ portfolios, expenses, onOpenPortfo
                     {/* glasmorphism: nog-te-gaan tot doel, óf buffer — altijd aanwezig */}
                     <div className="absolute left-0 right-0 rounded-full" style={{ bottom: `${r.solidPct}%`, height: `${r.glassPct}%`, background: "rgba(255,255,255,0.20)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.4)" }} />
                     {/* vulling = saldo (portfolio-kleur) */}
-                    <div className="relative w-full rounded-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:brightness-110" style={{ height: `${r.cur > 0 ? Math.max(r.solidPct, 1.5) : 0}%`, background: r.p.color || RIDGE, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3)" }} />
+                    <div className="relative w-full rounded-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:brightness-110" style={{ height: `${r.cur > 0 ? Math.max(r.solidPct, 1.5) : 0}%`, background: r.p.color || RIDGE, boxShadow: "0 10px 22px -8px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.3)" }} />
                   </div>
                   <span className="text-[7px] uppercase tracking-[0.04em] opacity-50 truncate w-full text-center">{(r.p.name.split(" ")[0] || "").slice(0, 6)}</span>
                 </button>
