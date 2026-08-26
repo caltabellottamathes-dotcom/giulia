@@ -1,122 +1,126 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import SocialHeader from "@/life/components/social/SocialHeader";
+import { IMAGES } from "@/lib/images";
+import StatusBadge from "@/system/components/glass/StatusBadge";
 import SocialNav from "@/life/components/social/SocialNav";
-import SocialOverviewPreview from "@/life/panels/SocialOverviewPreview";
-import RelationshipsPreview from "@/life/panels/RelationshipsPreview";
-import SocialPulsePreview from "@/life/panels/SocialPulsePreview";
-import SocialPlannerPreview from "@/life/panels/SocialPlannerPreview";
-import PersonalTimePreview from "@/life/panels/PersonalTimePreview";
-import { closeCircle, socialPulse, meaningfulInteractions, pulseState } from "@/lib/domainUtils";
+import OverviewTab from "@/life/components/social2/OverviewTab";
+import PersonDrawer from "@/life/components/social2/PersonDrawer";
+import ThingsHandleFullWidget from "@/life/components/social/ThingsHandleFullWidget";
+import { closeCircle, socialPulse, meaningfulInteractions, pulseState, PULSE_LABEL } from "@/lib/domainUtils";
 
-const EMPTY = { contacts: [], emails: [], whatsapps: [], events: [], plans: [], blocks: [], intentions: [] };
+const EMPTY = { contacts: [], whatsapps: [], emails: [], events: [], plans: [], opportunities: [], intentions: [], moments: [], blocks: [], checkIn: null };
 
-const VIEWS = [
-  { key: "Overview", view: "overview", Comp: SocialOverviewPreview },
-  { key: "Relationships", view: "relationships", Comp: RelationshipsPreview },
-  { key: "Pulse", view: "pulse", Comp: SocialPulsePreview },
-  { key: "Planner", view: "planner", Comp: SocialPlannerPreview },
-  { key: "Personal Time", view: "personaltime", Comp: PersonalTimePreview },
-];
-
-const normalizeView = (v) => {
-  const s = (v || "").toLowerCase().replace(/[\s-]/g, "");
-  if (s === "socialpulse" || s === "pulse") return "pulse";
-  if (s === "socialplanner" || s === "planner") return "planner";
-  if (s === "socialtime" || s === "personaltime" || s === "personaltime") return "personaltime";
-  if (s === "relationships") return "relationships";
-  return "overview";
-};
-
-/**
- * SocialPage — "What Social Life?" §14.1. Renders the canonical OS Social
- * previews (L02) per tab inside a dark glass surface, so the page speaks the
- * exact same language as every other panel in the OS. Tab state lives in the
- * `?view=` URL param, which the previews' own action buttons already target.
- */
+/* SocialPage — één statische, niet-scrollende pagina. Korte hero die de
+   bovenrand raakt, tabs direct eronder, één vaste body-block daaronder.
+   Links: Things to Handle (volledige hoogte, uitgelijnd met de hero).
+   Rechts: lichte glaskaart met schaduw die de resterende ruimte vult —
+   inhoud scrollt van binnen, de pagina zelf niet. */
 export default function SocialPage() {
-  const [params, setParams] = useSearchParams();
-  const navigate = useNavigate();
-  const view = normalizeView(params.get("view"));
-  const activeKey = (VIEWS.find((v) => v.view === view) || VIEWS[0]).key;
-  const ActiveComp = (VIEWS.find((v) => v.view === view) || VIEWS[0]).Comp;
-
+  const [tab, setTab] = useState("Overview");
   const [data, setData] = useState(EMPTY);
   const [loading, setLoading] = useState(true);
+  const [drawer, setDrawer] = useState(null);
 
   const load = async () => {
     try {
-      const [contacts, emails, whatsapps, events, plans, blocks, intentions] = await Promise.all([
-        base44.entities.Contact.filter({}, "name", 200).catch(() => []),
-        base44.entities.Email.list("-timestamp", 100).catch(() => []),
-        base44.entities.WhatsAppMessage.list("-timestamp", 150).catch(() => []),
+      const [contacts, whatsapps, emails, events, plans, opportunities, intentions, moments, blocks, checkIns] = await Promise.all([
+        base44.entities.Contact.filter({}, "name", 300).catch(() => []),
+        base44.entities.WhatsAppMessage.list("-timestamp", 200).catch(() => []),
+        base44.entities.Email.list("-timestamp", 150).catch(() => []),
         base44.entities.CalendarEvent.list("start", 200).catch(() => []),
-        base44.entities.SocialPlan.list("-created_date", 80).catch(() => []),
-        base44.entities.PersonalTimeBlock.list("-start", 50).catch(() => []),
+        base44.entities.SocialPlan.list("-created_date", 100).catch(() => []),
+        base44.entities.SocialOpportunity.filter({ status: "open" }).catch(() => []),
         base44.entities.SocialIntention.filter({ status: "open" }).catch(() => []),
+        base44.entities.SocialMoment.list("-occurred_at", 60).catch(() => []),
+        base44.entities.PersonalTimeBlock.list("-start", 80).catch(() => []),
+        base44.entities.SelfCheckIn.list("-timestamp", 1).catch(() => []),
       ]);
-      setData({ contacts: contacts || [], emails: emails || [], whatsapps: whatsapps || [], events: events || [], plans: plans || [], blocks: blocks || [], intentions: intentions || [] });
+      setData({ contacts: contacts || [], whatsapps: whatsapps || [], emails: emails || [], events: events || [], plans: plans || [], opportunities: opportunities || [], intentions: intentions || [], moments: moments || [], blocks: blocks || [], checkIn: (checkIns || [])[0] || null });
     } catch { /* ignore */ } finally { setLoading(false); }
   };
   useEffect(() => { load(); }, []);
 
   useEffect(() => {
     const unsubs = [];
-    ["Contact", "SocialPlan", "SocialOpportunity", "SocialIntention", "PersonalTimeBlock", "WhatsAppMessage", "Email", "CalendarEvent"].forEach((e) => {
+    ["Contact", "WhatsAppMessage", "Email", "CalendarEvent", "SocialPlan", "SocialOpportunity", "SocialIntention", "SocialMoment", "PersonalTimeBlock", "SelfCheckIn"].forEach((e) => {
       try { unsubs.push(base44.entities[e].subscribe(load)); } catch { /* ignore */ }
     });
     return () => unsubs.forEach((u) => { try { u && u(); } catch { /* ignore */ } });
   }, []);
 
-  const mi = useMemo(() => meaningfulInteractions({ emails: data.emails, whatsapps: data.whatsapps, events: data.events, days: 7 }), [data.emails, data.whatsapps, data.events]);
-  const activePlans = data.plans.filter((p) => ["proposed", "planned", "confirmed"].includes(p.status));
+  const circle = useMemo(() => closeCircle(data.contacts, { whatsapps: data.whatsapps, planContactIds: (data.plans || []).flatMap((p) => p.contact_ids || []) }), [data]);
+  const mi = useMemo(() => meaningfulInteractions({ emails: data.emails, whatsapps: data.whatsapps, events: data.events, days: 7 }), [data]);
+  const attention = useMemo(() => socialPulse(circle).filter((p) => p.overdue), [circle]);
+  const activePlans = (data.plans || []).filter((p) => ["proposed", "planned", "confirmed"].includes(p.status));
   const availableMin = useMemo(() => {
     const today = new Date().toDateString();
-    const used = data.blocks.filter((b) => b.start && new Date(b.start).toDateString() === today && b.status !== "cancelled").reduce((s, b) => s + (b.duration_min || 0), 0);
+    const used = (data.blocks || []).filter((b) => b.start && new Date(b.start).toDateString() === today && b.status !== "cancelled").reduce((s, b) => s + (b.duration_min || 0), 0);
     return Math.max(0, (24 - 6) * 60 - used);
   }, [data.blocks]);
-  const pulse = useMemo(() => socialPulse(closeCircle(data.contacts)), [data.contacts]);
-  const attention = pulse.filter((p) => p.overdue);
-  const state = pulseState({ meaningfulCount: mi.total, activePlans: activePlans.length, openInvitations: data.intentions.length, availableMin });
-
-  const setView = (key) => setParams({ view: (VIEWS.find((v) => v.key === key) || VIEWS[0]).view }, { replace: true });
+  const state = useMemo(() => pulseState({ meaningfulCount: mi.total, activePlans: activePlans.length, openInvitations: (data.intentions || []).length, availableMin }), [mi, activePlans, data.intentions, availableMin]);
 
   return (
-    <div className="-mt-6 lg:-mt-8">
-      <SocialHeader mi={mi} state={state} urgentCount={attention.length} />
-      <div className="relative z-10 rounded-t-[28px] mt-[calc(50vh-4.5rem)] lg:mt-[calc(52vh-4.5rem)] px-4 lg:px-6 pt-4 pb-28 space-y-5 min-h-[60vh]">
-        <div className="hidden lg:block">
-          <SocialNav active={activeKey} onChange={setView} variant="top" />
+    <div className="h-[calc(100vh-152px)] -mt-6 lg:-mt-8 overflow-hidden flex flex-col">
+      {/* Hero — kort, raakt de bovenrand */}
+      <div className="shrink-0 overflow-hidden float-shadow relative h-[20vh] lg:h-[22vh] lg:mx-10 lg:rounded-[24px]">
+        <img src={IMAGES.lifeSocialPulse} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/55 via-charcoal/10 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6 max-w-4xl">
+          <div className="flex flex-wrap items-center gap-2 mb-1.5">
+            <StatusBadge variant={attention.length ? "urgent" : "active"} className="bg-white/20 border-white/30 text-white">{PULSE_LABEL[state] || "Unknown"}</StatusBadge>
+            <span className="hidden lg:inline text-[11px] uppercase tracking-wider text-white/40">·</span>
+            <span className="hidden lg:inline text-[11px] uppercase tracking-wider text-white/80">Social</span>
+          </div>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold text-white tracking-tight drop-shadow-sm">What Social Life?</h1>
+          <div className="flex items-center gap-x-4 mt-2 text-xs text-white/80">
+            <span className="inline-flex items-center gap-2"><span className="uppercase tracking-wider text-white/50">Meaningful · 7d</span><span className="text-white font-semibold">{mi.total}</span></span>
+            {attention.length > 0 && (
+              <span className="inline-flex items-center gap-2"><span className="uppercase tracking-wider text-white/50">Needs attention</span><span className="text-white font-semibold">{attention.length}</span></span>
+            )}
+          </div>
         </div>
+      </div>
 
-        {/* Dark glass surface — the previews use near-white (text-storm) ink,
-            so they need a dark panel to read, exactly like the OS module panel. */}
-        <div
-          className="rounded-[28px] p-6 lg:p-8 min-h-[64vh] flex"
-          style={{
-            background: "rgba(30,32,35,0.78)",
-            backdropFilter: "blur(44px) saturate(1.4)",
-            WebkitBackdropFilter: "blur(44px) saturate(1.4)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.10), 0 24px 60px -28px rgba(0,0,0,0.55)",
-          }}
-        >
+      {/* Tabs — vast, direct onder de foto */}
+      <div className="shrink-0 px-4 lg:px-10 pt-3">
+        <SocialNav active={tab} onChange={setTab} variant="top" />
+      </div>
+
+      {/* Body block — vult de ruimte tussen tabs en de onderste toolbar */}
+      <div className="flex-1 min-h-0 px-4 lg:px-10 pt-4 pb-4">
+        <div className="h-full flex gap-4">
           {loading ? (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="w-8 h-8 border-2 border-white/20 border-t-white/70 rounded-full animate-spin" />
-            </div>
+            <div className="flex-1 flex items-center justify-center"><div className="w-8 h-8 border-2 border-foreground/15 border-t-olive rounded-full animate-spin" /></div>
+          ) : tab === "Overview" ? (
+            <>
+              {/* Links — Things to Handle, volledige hoogte, uitgelijnd met de hero */}
+              <div className="h-full flex shrink-0">
+                <div className="h-full" style={{ aspectRatio: "9 / 16" }}>
+                  <ThingsHandleFullWidget />
+                </div>
+              </div>
+
+              {/* Rechts — lichte glaskaart met schaduw, inhoud scrollt van binnen */}
+              <div
+                className="flex-1 min-w-0 h-full overflow-y-auto rounded-2xl p-4"
+                style={{
+                  background: "rgba(255,255,255,0.45)",
+                  backdropFilter: "blur(22px) saturate(1.4)",
+                  WebkitBackdropFilter: "blur(22px) saturate(1.4)",
+                  border: "1px solid rgba(255,255,255,0.6)",
+                  boxShadow: "0 24px 48px -20px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.5)",
+                }}
+              >
+                <OverviewTab data={data} state={state} mi={mi} openPerson={setDrawer} reload={load} />
+              </div>
+            </>
           ) : (
-            <div className="flex-1 min-h-0">
-              <ActiveComp onOpen={() => navigate("/people")} />
-            </div>
+            <div className="flex-1 h-full flex items-center justify-center text-sm text-muted-foreground">Dit tabblad is leeg</div>
           )}
         </div>
       </div>
 
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-30 glass-2 border-t border-border/40">
-        <SocialNav active={activeKey} onChange={setView} variant="bottom" />
-      </div>
+      {drawer && <PersonDrawer contact={drawer} whatsapps={data.whatsapps} moments={data.moments} plans={data.plans} onClose={() => setDrawer(null)} onSaved={load} />}
     </div>
   );
 }
