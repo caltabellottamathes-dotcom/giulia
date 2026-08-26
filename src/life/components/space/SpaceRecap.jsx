@@ -61,7 +61,7 @@ export function EditorialLayout({ data, onRefresh, onEdit, loading }) {
             }
           </div>
         </div>
-        <h2 className="leading-[0.98] tracking-[-0.03em] text-editorial-blue font-medium [font-family:'JetBrains_Mono',_monospace] text-[32px] my-4 px-1 sm:text-[32px0">{title}</h2>
+        <h2 className="leading-[0.98] tracking-[-0.03em] text-editorial-blue font-medium text-[32px] my-4 px-1 sm:text-[32px0 [font-family:'Bodoni_Moda',_serif]">{title}</h2>
         <p className="text-[11px] uppercase tracking-[0.22em] font-semibold mt-3 text-[hsl(var(--ridge))]">{data.subtitle}</p>
         <div className="flex items-start gap-3 mt-5">
           <p className="font-body text-[14px] leading-[1.7] text-balance flex-1 normal-case">{data.body}</p>
