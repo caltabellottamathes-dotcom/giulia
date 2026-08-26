@@ -332,7 +332,7 @@ export default function Home() {
               ))}
             </div>
           ) : visible.length > 0 ? (
-            <MasonryGrid key={activeBoard + resetKey} className="max-w-[1280px] xl:max-w-[1500px]" gap={24} spans={cells.map((c) => c.span)} scale={0.8} columnTiers={[[0, 1], [640, 6], [1024, 12], [1280, 15]]} fitHeight={fitH}>
+            <MasonryGrid key={activeBoard + resetKey} className="max-w-[1280px] xl:max-w-[1500px]" gap={24} spans={cells.map((c) => c.span)} scale={0.8} columnTiers={[[0, 1], [640, 6], [1024, 12], [1280, 15]]} fitHeight={howdoingDue ? undefined : fitH}>
               {cells.map((c) => c.node)}
             </MasonryGrid>
           ) : (
