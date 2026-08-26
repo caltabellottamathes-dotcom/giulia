@@ -47,15 +47,25 @@ function buildSnapshot(tab, d) {
 function buildPrompt(tab, d) {
   const label = TABS.find((t) => t.key === tab)?.label || tab;
   const overview = tab === "OVERVIEW";
-  return `Je bent GIULIA, de persoonlijke AI-assistent van Salvo. Schrijf een redactioneel overzicht over de actuele staat van zijn persoonlijke financiën${overview ? " (overview — dek alle tabs)" : ` (${label}-tab)`}.
+  return `Je bent GIULIA, de persoonlijke AI-assistent van Salvo. Schrijf een redactioneel overzicht over de actuele staat van zijn persoonlijke financiën${overview ? " (overview)" : ` (${label}-tab)`} in een strak, editorial layout-model (zwart op wit, blauwe accenten, dunne lijnen).
 
-De kernfilosofie: Salvo geeft zijn inkomen vooraf een bestemming. Onderscheid altijd "geld hebben" (saldo) van "geld bestemd" (reservering). Spreek Salvo aan met "je".
+Kernfilosofie: Salvo geeft zijn inkomen vooraf een bestemming. Onderscheid altijd "geld hebben" (saldo) van "geld bestemd" (reservering). Spreek Salvo aan met "je".
 
-Regels:
-- headline: 1 korte, prikkende zin (max ~8 woorden) over de financiële staat. Geen label-woord ervoor.
-- summary: 2-3 zinnen. Noem TOTAL MONEY, RESERVED en AVAILABLE, en of de reserveringen door het inkomen worden gedekt.
-- highlights: 4-6 puntjes, elk met een "kicker" (één woord in hoofdletters, bijv. GELD, PORTEFEUILLES, LASTEN, INKOMEN, VOLGENDE, BUFFER) en een "text" van 1-2 zinnen met concrete bedragen uit de data.${overview ? " Dek alle tabs: geld, portefeuilles, lasten, inkomen en komende betalingen." : ` Focus op de ${label}-tab.`}
-- Nederlands. Geen markdown.
+Output JSON met deze velden (editorial frame-labels in het Engels zoals de voorbeelden, de inhoud in het Nederlands):
+- eyebrow: kleine uppercase blauwe label, formaat "PERSONAL ADMIN / <STAAT>", bijv. "PERSONAL ADMIN / CURRENT STATE".
+- title: grote zwarte kop, max ~7 woorden, prikkend. Geen label-woord ervoor.
+- subtitle: blauwe uppercase ondertitel, één korte zin.
+- body: 1-2 zinnen met concrete cijfers (TOTAL MONEY, RESERVED, AVAILABLE${overview ? "" : `, of ${label}-specifieke data`}).
+- footerLeft: blauw editorial label, bijv. "HERE'S HOW WE READ A FRAME".
+- footerRight: blauw editorial label, bijv. "(SCROLL)".
+- attentionTitle: zwarte uppercase titel aandachtsblok, bijv. "WHAT NEEDS YOUR ATTENTION".
+- attentionBadge: blauw uppercase badge, formaat "0N ITEMS NEED ACTION" met het echte aantal urgente items.
+- items: 1-3 dingen die nu aandacht vragen. Elk item: title (kort, "Onderwerp • wanneer", bijv. "Payment • Due tomorrow") en sub (1 zin uitleg met concrete bedragen). Gebruik echte komende betalingen of korte potjes uit de data. Als er niets urgent is, geef 1-2 items die aandacht verdienen.
+- restTitle: blauw uppercase afsluitende kop, bijv. "THE REST CAN WAIT."
+- restBody: één geruststellende zin over de rest.
+
+${overview ? "Dek in body en items het hele financieel beeld." : `Focus op de ${label}-tab.`}
+Geen markdown.
 
 Data:
 ${buildSnapshot(tab, d)}`;
@@ -167,35 +177,30 @@ export default function PersonalAdminPage() {
   );
 }
 
-/** Deterministische fallback-recap voor het financiële overzicht. */
+/** Deterministische fallback-recap (object) voor het editorial overzicht. */
 function buildFallback(tab, d) {
   const avail = Math.max(0, d.dist.available);
-  let headline = "Je geld heeft een bestemming.";
-  let summary = `Van €${Math.round(d.dist.income)} inkomen is €${Math.round(d.dist.reserved)} gereserveerd; €${Math.round(avail)} blijft vrij beschikbaar.`;
-  if (d.dist.reserved > d.dist.income) { headline = "Reserveringen overschrijden je inkomen."; summary = `Je reserveert €${Math.round(d.dist.reserved)} tegen €${Math.round(d.dist.income)} inkomen — er blijft niets vrij. Verhoog inkomen of verlaag reserveringen.`; }
-  else if (avail < d.dist.income * 0.1) { headline = "Bijna alles is al bestemd."; summary = `Van €${Math.round(d.dist.income)} blijft slechts €${Math.round(avail)} vrij. De reserveringen dekken het grootste deel van je inkomen.`; }
-
-  const highlights = [];
-  highlights.push({ kicker: "GELD", text: `Totaal €${Math.round(d.totalMoney)} aanwezig — €${Math.round(d.totalReserved)} heeft een bestemming, €${Math.round(avail)} is vrij.` });
-  const risky = d.portfolios.map((p) => ({ p, c: calcPortfolio(p, d.expenses) })).filter((x) => ["short", "critical", "watch"].includes(x.c.status));
-  if (risky.length) highlights.push({ kicker: "PORTEFEUILLES", text: `${risky.length} pot(en) vragen aandacht: ${risky.slice(0, 3).map((x) => `${x.p.name} (${x.c.status})`).join(", ")}.` });
-  else highlights.push({ kicker: "PORTEFEUILLES", text: `${d.portfolios.length} portefeuilles, alle op koers of veilig.` });
   const up = upcomingExpenses(d.expenses, 14);
-  if (up.length) highlights.push({ kicker: "VOLGENDE", text: `${up.length} betaling(en) binnen 2 weken, waarvan ${up[0].title} €${Math.round(up[0].amount)} over ${up[0].daysUntil}d.` });
-  highlights.push({ kicker: "LASTEN", text: `${d.expenses.filter((e) => e.status !== "done").length} open lasten, ${d.expenses.length} totaal.` });
-  highlights.push({ kicker: "INKOMEN", text: `${d.incomes.length} bron(nen), €${Math.round(d.dist.income)}/mnd verwacht.` });
-  return (
-    <>
-      <h2 className="font-display text-[40px] leading-[0.95] tracking-[-0.03em] text-foreground">{headline}</h2>
-      <p className="font-body text-[15px] leading-[1.65] text-foreground/75 text-balance italic">{summary}</p>
-      <div className="flex flex-col gap-4 mt-auto">
-        {highlights.map((h, i) => (
-          <div key={i} className="border-t border-foreground/12 pt-3">
-            <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-olive mb-1">{h.kicker}</p>
-            <p className="font-display text-[15px] leading-[1.5] text-foreground/85">{h.text}</p>
-          </div>
-        ))}
-      </div>
-    </>
-  );
+  const items = up.slice(0, 3).map((e) => ({
+    title: `${e.title} • ${e.daysUntil < 0 ? "Overdue" : e.daysUntil === 0 ? "Due today" : `Due in ${e.daysUntil}d`}`,
+    sub: `Een betaling van €${Math.round(e.amount)} nadert${e.daysUntil < 0 ? " en loopt al — afrekenen vereist." : " — bevestig of reserveer op tijd."}`,
+  }));
+  const risky = d.portfolios.map((p) => ({ p, c: calcPortfolio(p, d.expenses) })).filter((x) => ["short", "critical"].includes(x.c.status));
+  if (items.length < 3 && risky.length) {
+    items.push({ title: `${risky[0].p.name} • Short`, sub: `De pot ${risky[0].p.name} staat ${risky[0].c.status} — de reservering loopt achter.` });
+  }
+  const headline = d.dist.reserved > d.dist.income ? "RESERVATIONS EXCEED INCOME" : avail < d.dist.income * 0.1 ? "ALMOST EVERYTHING IS SPOKEN FOR" : "HERE'S WHERE THINGS STAND";
+  return {
+    eyebrow: "PERSONAL ADMIN / CURRENT STATE",
+    title: headline,
+    subtitle: "A CLEAR VIEW OF WHAT'S IN MOTION.",
+    body: `Je hebt €${Math.round(d.totalMoney)} aanwezig waarvan €${Math.round(d.totalReserved)} een bestemming heeft; €${Math.round(avail)} blijft vrij. Per maand komt €${Math.round(d.dist.income)} binnen tegen €${Math.round(d.dist.reserved)} aan reserveringen.`,
+    footerLeft: "HERE'S HOW WE READ A FRAME",
+    footerRight: "(SCROLL)",
+    attentionTitle: "WHAT NEEDS YOUR ATTENTION",
+    attentionBadge: `${String(items.length || 0).padStart(2, "0")} ITEMS NEED ACTION`,
+    items: items.length ? items : [{ title: "Portfolio • On track", sub: "Geen direct urgente betalingen — de potjes lopen mee." }],
+    restTitle: "THE REST CAN WAIT.",
+    restBody: "De overige lasten en potjes lopen op koers en hoeven nu geen actie.",
+  };
 }

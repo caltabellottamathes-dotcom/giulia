@@ -60,6 +60,7 @@ module.exports = {
   			powder: 'hsl(var(--powder))',
   			steel: 'hsl(var(--steel))',
   			linen: 'hsl(var(--linen))',
+  			editorialBlue: 'hsl(var(--editorial-blue))',
   			urgent: 'hsl(var(--urgent))',
   			'giulia-coral': 'hsl(var(--giulia-coral))',
   			'giulia-dust': 'hsl(var(--giulia-dust))',

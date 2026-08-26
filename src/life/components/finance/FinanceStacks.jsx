@@ -4,6 +4,7 @@ import AdminObligationCard from "@/life/components/AdminObligationCard";
 import PortfolioCard from "@/life/components/finance/PortfolioCard";
 import HealthBadge from "@/life/components/finance/HealthBadge";
 import DistributionBar from "@/life/components/finance/DistributionBar";
+import ThingsHandleHorizontal from "@/life/components/finance/ThingsHandleHorizontal";
 import ForecastChart from "@/life/components/finance/ForecastChart";
 import { fmtEuro, FREQ_LABELS, calcPortfolio, upcomingExpenses } from "@/lib/financeUtils";
 
@@ -30,6 +31,7 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     const upcoming = upcomingExpenses(expenses, 30);
     return (
       <>
+        <ThingsHandleHorizontal />
         <Card>
           <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Geld hebben vs. besteden</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
