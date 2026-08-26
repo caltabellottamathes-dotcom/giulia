@@ -27,6 +27,31 @@ export default async function (req) {
       await base44.functions.invoke("calendarPropagation", { plan_id: plan.id }).catch(() => null);
     }
 
+    // §7.3/§20 — Trust-model: een voorgesteld plan mag nooit zomaar een bericht
+    // versturen. Het maakt hier alleen een Approval met een concept-bericht;
+    // pas na goedkeuring (executeApproval) gaat het echt via sendWhatsApp uit.
+    if (plan.status === "proposed") {
+      const existingApprovals = await sr.entities.Approval.filter({ thread_id: plan.id, status: "pending" }).catch(() => []);
+      if (!existingApprovals.length) {
+        const contact = (plan.contact_ids || [])[0] ? await sr.entities.Contact.get(plan.contact_ids[0]).catch(() => null) : null;
+        const name = contact?.name || "je";
+        const when = plan.suggested_date ? new Date(plan.suggested_date).toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" }) : "binnenkort";
+        const draft = `Hey ${name}! Zin om ${when} iets af te spreken voor "${plan.activity}"?`;
+        await sr.entities.Approval.create({
+          title: `Stel voor: ${plan.activity}`,
+          action_type: "social_plan_propose",
+          type: "whatsapp",
+          category: "communication",
+          target: contact?.id || "",
+          thread_id: plan.id,
+          description: `Voorstel voor ${name} \u2014 "${plan.activity}"`,
+          content: draft,
+          proposed_action: JSON.stringify({ to: contact?.phone || "", contact_id: contact?.id || "", body: draft }),
+          agent_source: "socialPlanManagement",
+        }).catch(() => null);
+      }
+    }
+
     if (plan.source_opportunity_id) {
       await sr.entities.SocialOpportunity.update(plan.source_opportunity_id, { status: "accepted", resulting_social_plan_id: plan.id }).catch(() => null);
     }

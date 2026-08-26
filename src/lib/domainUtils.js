@@ -175,3 +175,16 @@ export const RELATIONSHIP_LABEL = {
   ACTIVE: "Active", CLOSE: "Close", QUIET: "Quiet", QUIETER_THAN_USUAL: "Quieter than usual",
   EMERGING: "Emerging", RECONNECTING: "Reconnecting", CHANGING: "Changing", UNKNOWN: "Unknown",
 };
+
+// Client-side mirror of socialEngine.ts computeIntensitySeries (§6.2) — sociale
+// activiteit als tijdreeks (weken terug), voor de Pulse-tab intensity chart.
+export function intensitySeries(timestamps = [], weeks = 8) {
+  const arr = Array.from({ length: weeks }, () => 0);
+  const now = Date.now();
+  for (const t of timestamps) {
+    if (!t) continue;
+    const w = Math.floor((now - new Date(t).getTime()) / (7 * 86400000));
+    if (w >= 0 && w < weeks) arr[weeks - 1 - w]++;
+  }
+  return arr;
+}

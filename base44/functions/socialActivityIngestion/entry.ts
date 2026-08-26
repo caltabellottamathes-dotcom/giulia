@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { emitEvent } from '../../shared/eventEngine.ts';
+import { computeMomentSignificance } from '../../shared/socialEngine.ts';
 
 /**
  * socialActivityIngestion — §4.1–4.3 / §19.1. Normaliseert een binnenkomend
@@ -26,15 +27,19 @@ export default async function (req) {
     });
 
     if ((text || "").length > 280) {
-      await sr.entities.SocialMoment.create({
+      const significance = computeMomentSignificance((text || "").length, contact);
+      const moment = await sr.entities.SocialMoment.create({
         title: `Conversation with ${contact.name}`,
         contact_ids: [contact.id],
         moment_type: "conversation",
-        significance: "medium",
+        significance,
         occurred_at: timestamp || new Date().toISOString(),
         source_activity_id: message_id || null,
         agent_source: "socialActivityIngestion",
       }).catch(() => null);
+      // §9.7/§19 — laat de memory-promotie-beslissing direct evalueren; alleen
+      // high-significance moments worden daar echt een Memory-record.
+      if (moment) await base44.functions.invoke("socialMemoryCandidate", { moment_id: moment.id }).catch(() => null);
     }
 
     await base44.functions.invoke("relationshipUpdate", { contact_id: contact.id }).catch(() => null);

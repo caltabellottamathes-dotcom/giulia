@@ -85,6 +85,17 @@ export function computeIntensitySeries(timestamps = [], weeks = 8) {
   return arr;
 }
 
+/** §3.4/§9.7 — Moment significance: hoe lang/betrokken het gesprek was + hoe
+ *  belangrijk het contact is. Bepaalt of een SocialMoment auto-promoveert
+ *  richting Memory via socialMemoryCandidate — niet elke interactie wordt
+ *  een moment, en niet elk moment wordt een memory. */
+export function computeMomentSignificance(textLength = 0, contact) {
+  const important = contact?.relationship_type === "close" || contact?.relationship_domain === "life";
+  if (textLength >= 600 || (important && textLength >= 350)) return "high";
+  if (textLength >= 280) return "medium";
+  return "low";
+}
+
 /** §7.1/§19.5 — Social Opportunity Detection: relatie + tijd + capaciteit + geen conflict → mogelijkheid, geen taak. */
 export function detectOpportunity({ contact, daysSinceMeaningful, availableSlot, capacityOk, hasConflict }) {
   if (!contact || daysSinceMeaningful == null || !availableSlot || hasConflict || !capacityOk) return null;
