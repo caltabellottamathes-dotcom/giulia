@@ -205,5 +205,9 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
 
   }
 
+  if (tab === "HEALTHY_MONEY") {
+    return <HealthyMoneyTab data={data} onNavigate={onNavigate} />;
+  }
+
   return null;
 }

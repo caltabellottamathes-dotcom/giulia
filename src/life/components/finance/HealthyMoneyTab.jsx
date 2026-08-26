@@ -117,9 +117,12 @@ function Ind({ label, v, c }) {
 }
 function Box({ t, v, sub, c }) {
   return (
-    <div className="rounded-xl p-3" style={{ background: `${c} / 0.14`, border: `1px solid ${c} / 0.22` }}>
-      <p className="text-[9px] uppercase tracking-[0.2em] font-semibold" style={{ color: c }}>{t}</p>
-      <p className="text-2xl font-display font-semibold tabular-nums mt-1" style={{ color: "hsl(var(--foreground))" }}>{v}</p>
+    <div className="rounded-xl p-3 bg-white/55 border border-foreground/12">
+      <div className="flex items-center gap-1.5">
+        <span className="h-2 w-2 rounded-full" style={{ background: c }} />
+        <p className="text-[9px] uppercase tracking-[0.2em] font-semibold" style={{ color: c }}>{t}</p>
+      </div>
+      <p className="text-2xl font-display font-semibold tabular-nums mt-1 text-foreground">{v}</p>
       <p className="text-[10px] text-muted-foreground mt-1">{sub}</p>
     </div>
   );
@@ -128,10 +131,10 @@ function Box({ t, v, sub, c }) {
 function ResultCard({ r }) {
   const vs = VERDICT_STYLE[r.verdict] || VERDICT_STYLE.NEEDS_MORE_INFORMATION;
   return (
-    <div className="mt-4 rounded-xl border border-foreground/12 p-4" style={{ background: `${vs.c} / 0.10` }}>
+    <div className="mt-4 rounded-xl border border-foreground/12 p-4 bg-white/55">
       <div className="flex items-center justify-between">
         <p className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground font-semibold">Resultaat</p>
-        <span className="text-[11px] uppercase tracking-[0.18em] font-bold" style={{ color: vs.c }}>{r.verdictLabel || vs.l}</span>
+        <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] font-bold" style={{ color: vs.c }}><span className="h-2 w-2 rounded-full" style={{ background: vs.c }} />{r.verdictLabel || vs.l}</span>
       </div>
       {Array.isArray(r.reasoning) && r.reasoning.length > 0 && (
         <ul className="mt-2 space-y-1">
