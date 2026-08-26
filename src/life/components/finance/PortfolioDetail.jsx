@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { X, Plus, Pencil, CheckCircle2, TrendingUp } from "lucide-react";
+import { X, Plus, Pencil, CheckCircle2, TrendingUp, ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { logLifeActivity } from "@/lib/lifeActivity";
 import HealthBadge from "./HealthBadge";
 import { calcPortfolio, calcForecast, fmtEuro, FREQ_LABELS, monthsUntil } from "@/lib/financeUtils";
 
 /** PortfolioDetail — slide-in detail voor één portefeuille. */
-export default function PortfolioDetail({ portfolio, expenses, transactions, onEditPortfolio, onAddExpense, onEditExpense, onDone, onClose }) {
+export default function PortfolioDetail({ portfolio, expenses, transactions, onEditPortfolio, onAddExpense, onEditExpense, onDone, onChange, onClose }) {
+  const [txAmount, setTxAmount] = useState("");
   if (!portfolio) return null;
   const calc = calcPortfolio(portfolio, expenses);
   const linked = (expenses || []).filter((e) => e.portfolio_id === portfolio.id);
@@ -17,6 +20,18 @@ export default function PortfolioDetail({ portfolio, expenses, transactions, onE
   const points = series[0]?.points || [];
   const savingsShort = portfolio.kind === "sparen" && portfolio.savings_target_amount ? Math.max(0, portfolio.savings_target_amount - balance) : null;
   const savingsDate = portfolio.savings_target_date ? monthsUntil(portfolio.savings_target_date) : null;
+
+  const logTx = async (type) => {
+    const amt = Number(txAmount);
+    if (!amt) return;
+    const abs = Math.abs(amt);
+    const delta = type === "expense" ? -abs : abs;
+    await base44.entities.Transaction.create({ portfolio_id: portfolio.id, date: new Date().toISOString().slice(0, 10), amount: abs, type, status: "completed", note: type === "reservation" ? "Reservering" : "Betaling" });
+    await base44.entities.Portfolio.update(portfolio.id, { current_balance: (Number(portfolio.current_balance) || 0) + delta });
+    await logLifeActivity("Finance", type, `${type === "reservation" ? "Reservering" : "Betaling"} ${fmtEuro(abs)} bij ${portfolio.name}`);
+    setTxAmount("");
+    onChange?.();
+  };
 
   return (
     <div className="fixed inset-0 z-50">
@@ -119,6 +134,17 @@ export default function PortfolioDetail({ portfolio, expenses, transactions, onE
               </div>
             </div>
           )}
+
+          {/* Transaction logger */}
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-semibold mb-2">Transactie toevoegen</p>
+            <div className="flex gap-2">
+              <input type="number" step="0.01" value={txAmount} onChange={(e) => setTxAmount(e.target.value)} placeholder="0,00" className="flex-1 min-w-0 rounded-xl glass-1 px-3 py-2 text-sm outline-none" />
+              <button onClick={() => logTx("reservation")} disabled={!txAmount} className="inline-flex items-center gap-1 rounded-xl bg-foreground/10 px-3 py-2 text-xs font-semibold disabled:opacity-40"><ArrowDownLeft className="w-3.5 h-3.5" />Reservering</button>
+              <button onClick={() => logTx("expense")} disabled={!txAmount} className="inline-flex items-center gap-1 rounded-xl px-3 py-2 text-xs font-semibold text-ivory disabled:opacity-40" style={{ background: "hsl(var(--d-focus-deep))" }}><ArrowUpRight className="w-3.5 h-3.5" />Betaling</button>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">Reservering verhoogt het saldo, betaling verlaagt het.</p>
+          </div>
 
           {portfolio.notes && <p className="text-sm text-muted-foreground italic border-t border-foreground/10 pt-3">{portfolio.notes}</p>}
         </div>

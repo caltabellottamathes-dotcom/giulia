@@ -160,6 +160,7 @@ export default function PersonalAdminPage() {
         onAddExpense={() => setExpenseEditor({ open: true, item: null, defaultPortfolioId: activePortfolio?.id })}
         onEditExpense={(e) => setExpenseEditor({ open: true, item: e, defaultPortfolioId: e.portfolio_id })}
         onDone={doneExpense}
+        onChange={afterFinanceChange}
         onClose={() => setDetail({ open: false, portfolioId: null })}
       />
     </>

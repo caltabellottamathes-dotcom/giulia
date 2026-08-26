@@ -119,7 +119,7 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
               item={{ ...e, amount: e.expected_amount ?? e.amount, due_date: e.next_payment_date ?? e.due_date }}
               action="Open" focus
               onAction={onDoneExpense} onEdit={onEditExpense} onDelete={onDeleteExpense}
-              extra={potName(e.portfolio_id)}
+              extra={potName(e.portfolio_id) ? <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold mt-1 inline-block">{potName(e.portfolio_id)}</span> : null}
             />
           ))}
         </div>
