@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
-import AdminVideoHero from "@/life/components/AdminVideoHero";
+import PageHero from "@/system/components/glass/PageHero";
 import GlassPanel from "@/system/components/glass/GlassPanel";
 import GlassButton from "@/system/components/glass/GlassButton";
 import AdminTimeline from "@/life/components/AdminTimeline";
@@ -11,8 +11,6 @@ import { Shield, Wallet, FileText, RefreshCw, ListChecks, CircleDot, Plus, Searc
 import { logLifeActivity } from "@/lib/lifeActivity";
 import LifeActivityFeed from "@/life/components/LifeActivityFeed";
 import AdminItemEditor from "@/life/components/AdminItemEditor";
-
-const ADMIN_VIDEO = "https://media.base44.com/videos/public/6a7608690d4ea2c9edc3d59b/a0fb07097_FocusVid.mp4";
 
 const TABS = [
   { key: "OVERVIEW", label: "Overview", icon: CircleDot },
@@ -52,7 +50,7 @@ export default function PersonalAdminPage() {
 
   return (
     <div className="space-y-6 animate-fade-up">
-      <AdminVideoHero videoSrc={ADMIN_VIDEO} icon={Shield} eyebrow="LIFE → ADMIN" title="Things to Handle!" subtitle={w.counts.overdue === 0 ? "Your administrative life, currently behaving itself." : `${w.counts.overdue} te laat · ${w.counts.coming} op komst · ${w.counts.needsYou} vereist jou`}
+      <PageHero page="life-personaladmin" image={IMAGES.lifePersonalAdmin} icon={Shield} eyebrow="LIFE → ADMIN" title="Things to Handle!" subtitle={w.counts.overdue === 0 ? "Your administrative life, currently behaving itself." : `${w.counts.overdue} te laat · ${w.counts.coming} op komst · ${w.counts.needsYou} vereist jou`}
         actions={<GlassButton variant="primary" size="md" onClick={openNew}><Plus className="h-4 w-4" /> Toevoegen</GlassButton>} />
 
       <div className="flex items-center gap-1 overflow-x-auto -mx-1 px-1 pb-1">

@@ -36,6 +36,15 @@ const BOARD_BG = {
   system: IMAGES.feetChair,
 };
 
+const FOCUS_VIDEO = "https://media.base44.com/videos/public/6a7608690d4ea2c9edc3d59b/a0fb07097_FocusVid.mp4";
+
+function BoardBg({ board, image }) {
+  if (board === "focus") {
+    return <video src={FOCUS_VIDEO} autoPlay loop muted playsInline preload="auto" className="h-full w-full object-cover" />;
+  }
+  return <img src={image} alt="" className="h-full w-full object-cover" draggable={false} />;
+}
+
 /**
  * Home — in-place multi-dashboard. Vijf domein-dashboards (GIULIA / FOCUS /
  * LIFE / SELF / SYSTEM) + tijdelijke eigen dashboards, wisselbaar via de
@@ -270,15 +279,15 @@ export default function Home() {
 
       {/* Photo — transforms when a panel opens */}
       <div ref={photoRef} className={cn("hidden lg:block fixed z-0 overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[left,right,top]", panelOpen ? "left-[16%] right-[12%] top-[40vh] bottom-0 rounded-[28px]" : "left-[42%] right-0 top-0 bottom-0 rounded-l-[32px]")}>
-        <img src={bgImage} alt="" className="h-full w-full object-cover" draggable={false} />
+        <BoardBg board={activeBoard} image={bgImage} />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 via-charcoal/10 to-transparent" />
       </div>
       <div className={cn("lg:hidden fixed top-[26vh] left-3 right-3 h-[40vh] overflow-hidden z-0 rounded-[28px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-[0_24px_60px_-24px_rgba(0,0,0,0.35)]", panelOpen ? "opacity-0 translate-y-6 pointer-events-none" : "opacity-100")}>
-        <img src={bgImage} alt="" className="h-full w-full object-cover" draggable={false} />
+        <BoardBg board={activeBoard} image={bgImage} />
         <div className="absolute inset-0 bg-gradient-to-b from-charcoal/5 via-transparent to-charcoal/35" />
       </div>
       <div className={cn("lg:hidden fixed left-0 bottom-0 z-0 w-full h-[40vh] overflow-hidden rounded-t-[28px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]", panelOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6 pointer-events-none")}>
-        <img src={bgImage} alt="" className="h-full w-full object-cover" draggable={false} />
+        <BoardBg board={activeBoard} image={bgImage} />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/35 to-transparent" />
       </div>
 
