@@ -2,7 +2,6 @@ import React, { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Loader2, Send, ArrowRight } from "lucide-react";
 import { fmtEuro, calcPortfolio, upcomingExpenses } from "@/lib/financeUtils";
-import HebbenBestedenBar from "@/life/components/finance/HebbenBestedenBar";
 
 const Card = ({ children, className = "" }) => (
   <div className={`rounded-2xl bg-white/55 backdrop-blur-md border border-white/60 shadow-[0_18px_44px_-18px_rgba(0,0,0,0.35)] p-4 ${className}`}>{children}</div>
@@ -86,7 +85,11 @@ export default function HealthyMoneyTab({ data }) {
       {/* 2 · GELD HEBBEN VS KUNNEN BESTEDEN */}
       <Card>
         <p className={labelCls + " mb-3"}>Geld hebben vs. geld kunnen besteden</p>
-        <HebbenBestedenBar total={canSpend.have} reserved={canSpend.reserved + canSpend.upcoming} available={canSpend.free} />
+        <div className="grid sm:grid-cols-3 gap-3">
+          <Box t="Geld hebben" v={fmtEuro(canSpend.have)} sub="staat op je rekeningen" c="hsl(var(--smoke))" />
+          <Box t="Bestemd + verplicht" v={fmtEuro(canSpend.reserved + canSpend.upcoming)} sub="potjes + komende betalingen" c="hsl(var(--life-olive))" />
+          <Box t="Kunnen besteden" v={fmtEuro(canSpend.free)} sub="echt vrij beschikbaar" c="hsl(var(--life-pistachio))" />
+        </div>
         <p className="text-[12px] text-muted-foreground mt-3 leading-[1.55]">Having money is not the same as having money available to spend. Geld met een bestemming is nog niet vrij — het wacht op een vaste last of doel.</p>
       </Card>
 
