@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import GlassPanel from "@/system/components/glass/GlassPanel";
 import GlassButton from "@/system/components/glass/GlassButton";
 import TimeField from "../TimeField";
-import SpaceCapacityCard from "../SpaceCapacityCard";
+import QuadrantMatrix from "../QuadrantMatrix";
 import { fmtDuration, timeBlockLabel } from "@/lib/selfUtils";
 import { capacityFromCheckIn } from "@/lib/domainUtils";
 import { Plus, Shield } from "lucide-react";
@@ -91,7 +91,10 @@ export default function PersonalTimeSection({ blocks = [], checkIn, reload }) {
         </GlassPanel>
       )}
 
-      <SpaceCapacityCard spacePct={spacePct} capacity={capacity} />
+      <GlassPanel level={2} className="p-5">
+        <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-4">Space × Capacity</p>
+        <QuadrantMatrix spacePct={spacePct} capacity={capacity} />
+      </GlassPanel>
     </div>
   );
 }

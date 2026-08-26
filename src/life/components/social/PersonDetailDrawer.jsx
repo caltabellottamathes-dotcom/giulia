@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import Avatar from "@/system/components/glass/Avatar";
-import RhythmBar from "./RhythmBar";
+import RhythmWave from "./RhythmWave";
 import RelationshipTimeline from "./RelationshipTimeline";
 import { contactSignals, contactRecentTrend, desiredFreq } from "@/lib/domainUtils";
 import { X, ArrowUp, ArrowDown } from "lucide-react";
@@ -61,7 +61,7 @@ export default function PersonDetailDrawer({ contact, whatsapps = [], onClose, o
 
           <div>
             <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Rhythm</p>
-            <RhythmBar freqDays={desiredFreq(contact)} sinceDays={signals.since} />
+            <RhythmWave freqDays={desiredFreq(contact)} sinceDays={signals.since} />
           </div>
 
           <div>

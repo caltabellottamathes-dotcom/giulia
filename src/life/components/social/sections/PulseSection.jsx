@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { AreaChart, Area, XAxis, ResponsiveContainer, Tooltip } from "recharts";
 import GlassPanel from "@/system/components/glass/GlassPanel";
 import PulseStateVisual from "../PulseStateVisual";
-import SocialHeatmap from "../SocialHeatmap";
+import RhythmGrid from "../RhythmGrid";
 import { intensitySeries, socialHeatmap, socialChangeCompare } from "@/lib/domainUtils";
 import { MessageCircle, Mail, CalendarHeart, ArrowUp, ArrowDown } from "lucide-react";
 
@@ -71,8 +71,8 @@ export default function PulseSection({ data, mi, attention = [], state }) {
 
         <div className="flex flex-col gap-4">
           <GlassPanel level={2} className="p-5">
-            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3">Social Heatmap · 3 weeks</p>
-            <SocialHeatmap grid={grid} />
+            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3">Rhythm Grid · 3 weeks</p>
+            <RhythmGrid grid={grid} />
           </GlassPanel>
 
           <GlassPanel level={2} className="p-5">

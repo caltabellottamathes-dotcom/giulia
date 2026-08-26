@@ -3,7 +3,7 @@ import GlassPanel from "@/system/components/glass/GlassPanel";
 import PhotoCard from "@/focus/components/projects/PhotoCard";
 import StatusBadge from "@/system/components/glass/StatusBadge";
 import Avatar from "@/system/components/glass/Avatar";
-import SocialRing from "../SocialRing";
+import SocialGauge from "../SocialGauge";
 import TimeField from "../TimeField";
 import QuickAddBar from "../QuickAddBar";
 import { IMAGES } from "@/lib/images";
@@ -36,8 +36,8 @@ export default function OverviewSection({ data, mi, circle, attention, activePla
     <div className="space-y-4">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         <GlassPanel level={2} className="lg:col-span-4 p-6 flex flex-col items-center justify-center">
-          <SocialRing pct={Math.min(100, mi.total * 10)} size={140} label={mi.total} sub="Meaningful · 7d" />
-          <StatusBadge variant={attention.length ? "urgent" : "active"} className="mt-4">{PULSE_LABEL[state] || "Unknown"}</StatusBadge>
+          <SocialGauge pct={Math.min(100, mi.total * 10)} size={160} stroke={12} label={mi.total} sub="Meaningful" sub2="last 7 days" />
+          <StatusBadge variant={attention.length ? "urgent" : "active"} className="mt-5">{PULSE_LABEL[state] || "Unknown"}</StatusBadge>
         </GlassPanel>
 
         <GlassPanel level={2} className="lg:col-span-8 p-6 flex flex-col">
