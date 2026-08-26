@@ -235,7 +235,10 @@ export default function Home() {
   const g = greeting.line1 ? greeting : FALLBACK[partOfDay];
 
   const sorted = [...widgets].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
-  const visible = sorted;
+  // Bij een due check-in gaat de How-doing-widget als eerste linksboven staan
+  const visible = howdoingDue
+    ? [...sorted].sort((a, b) => (a.widget_type === "howdoing" ? -1 : b.widget_type === "howdoing" ? 1 : 0))
+    : sorted;
   const cells = visible.map((w) => {
     const def = WIDGETS[w.widget_type];
     if (!def) return null;
