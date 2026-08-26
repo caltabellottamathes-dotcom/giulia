@@ -76,8 +76,8 @@ export default function MediaPlayerPreview() {
         </div>
       )}
 
-      {/* Lijst */}
-      <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-1.5">
+      {/* Bibliotheek — visueel raster met voorvertoning */}
+      <div className="flex-1 min-h-0 overflow-y-auto pr-1">
         {tab === "cloud" && cloud.loading && (
           <div className="flex justify-center py-10"><Loader2 className="h-5 w-5 animate-spin text-storm/40" /></div>
         )}
@@ -86,20 +86,38 @@ export default function MediaPlayerPreview() {
             {tab === "cloud" ? "Nog geen bestanden in de cloud." : "Kies een lokale map om bestanden direct af te spelen — zonder upload."}
           </p>
         )}
-        {list.map((f) => {
-          const Icon = KIND_ICON[f.kind] || FileText;
-          const active = busy === f.id;
-          return (
-            <button key={f.id} onClick={() => open(f)} className="w-full flex items-center gap-3 rounded-xl border border-marble/15 bg-marble/5 hover:bg-marble/10 px-3 py-2.5 transition text-left">
-              <span className="h-9 w-9 rounded-lg bg-charcoal/8 flex items-center justify-center shrink-0 text-storm/70"><Icon className="h-4 w-4" /></span>
-              <span className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-storm truncate">{f.name}</p>
-                <p className="text-[10px] uppercase tracking-[0.14em] text-storm/45">{f.kind === "music" ? "audio" : f.kind}</p>
-              </span>
-              {active ? <Loader2 className="h-4 w-4 animate-spin text-storm/50" /> : <Play className="h-4 w-4 text-storm/50 shrink-0" />}
-            </button>
-          );
-        })}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 content-start">
+          {list.map((f) => {
+            const Icon = KIND_ICON[f.kind] || FileText;
+            const active = busy === f.id;
+            const hasThumb = f.source === "cloud" && (f.kind === "image" || f.kind === "video");
+            return (
+              <button key={f.id} onClick={() => open(f)} className="group relative aspect-square rounded-2xl overflow-hidden border border-marble/15 bg-marble/5 text-left">
+                {/* voorvertoning */}
+                {f.kind === "image" && f.source === "cloud" && <img src={f.url} alt={f.name} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />}
+                {f.kind === "video" && f.source === "cloud" && <video src={f.url + "#t=0.5"} preload="metadata" muted playsInline className="absolute inset-0 w-full h-full object-cover" />}
+                {f.kind === "music" && <div className="absolute inset-0" style={{ background: "linear-gradient(150deg, #d8dab3, #5d7388)" }} />}
+                {(!hasThumb && f.kind !== "music") && (
+                  <div className="absolute inset-0 flex items-center justify-center" style={{ background: f.kind === "doc" ? "rgba(0,0,0,0.05)" : "linear-gradient(150deg, #c6d3de, #8fa3b6)" }}>
+                    <Icon className="h-7 w-7 text-white/80" />
+                  </div>
+                )}
+                {/* kleuroverlay + naam */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
+                <div className="absolute bottom-0 inset-x-0 p-2">
+                  <p className="text-[11px] font-medium text-white truncate" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.4)" }}>{f.name}</p>
+                  <p className="text-[9px] uppercase tracking-[0.14em] text-white/75">{f.kind === "music" ? "audio" : f.kind}</p>
+                </div>
+                {/* play-overlay */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                  <span className="h-10 w-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                    {active ? <Loader2 className="h-4 w-4 animate-spin text-charcoal" /> : <Play className="h-4 w-4 text-charcoal translate-x-0.5" />}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

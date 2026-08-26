@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, SkipBack, SkipForward, Loader2, Music as MusicIcon, Cloud, HardDrive } from "lucide-react";
 import AudioReactiveLife from "@/life/widgets/new/AudioReactiveLife";
@@ -26,28 +26,48 @@ const glassShell = {
  *  track kiezen in de lijst). */
 export default function MusicViewerStage({ analyserRef, tracks = [], currentTrack, playing, busy, onToggle, onPrev, onNext, onSelect }) {
   const [slid, setSlid] = useState(false);
+  const ctrlRef = useRef(null);
   const statusLabel = !currentTrack ? "—" : playing ? "SPEELT" : "KLAAR";
   const cloudCount = tracks.filter((t) => t.source === "cloud").length;
   const localCount = tracks.filter((t) => t.source === "local").length;
+
+  // Transport-knoppen bewegen méé met de audio (lage band) — net als de
+  // bloom en de SineLayers in AudioReactiveLife.
+  useEffect(() => {
+    if (!playing) { if (ctrlRef.current) ctrlRef.current.style.transform = ""; return; }
+    let raf;
+    let freq = new Uint8Array(0);
+    const loop = () => {
+      const an = analyserRef?.current;
+      if (an) {
+        if (freq.length !== an.frequencyBinCount) freq = new Uint8Array(an.frequencyBinCount);
+        an.getByteFrequencyData(freq);
+        let s = 0; for (let k = 1; k < 21; k++) s += freq[k] || 0;
+        const low = s / 20 / 255;
+        if (ctrlRef.current) ctrlRef.current.style.transform = `scale(${1 + low * 0.14})`;
+      }
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [playing, analyserRef]);
 
   return (
     <div className="absolute inset-0 overflow-hidden" style={{ "--tile-accent": DEEP, color: BLUE }}>
       <div className="absolute inset-0 ring-1 ring-inset ring-white/10" style={glassShell} />
       <span className="pointer-events-none absolute inset-x-0 top-0 h-px z-10" style={{ background: `linear-gradient(90deg, transparent, ${DEEP} 18%, ${DEEP} 82%, transparent)` }} />
 
-      {/* BOVENSTE HELFT — bloom + sine + knoppen in het midden hiervan */}
+      {/* BOVENSTE HELFT — bloom + sine + audio-reactieve knoppen */}
       <div className="absolute top-0 inset-x-0 h-1/2 z-10">
         <AudioReactiveLife analyserRef={analyserRef} isPlaying={playing} className="absolute inset-0" />
-        <div className="absolute top-3 left-4 flex items-center gap-1.5 z-20">
-          <span className="h-1.5 w-1.5 rounded-full" style={{ background: LIGHT }} />
-          <span className="text-[9px] uppercase tracking-[0.16em] font-bold opacity-55">Melodies I listen to!</span>
-        </div>
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-40 flex items-center gap-1.5">
-          <button onClick={onPrev} disabled={!tracks.length} className={SUBTLE} aria-label="Vorige"><SkipBack className="h-4 w-4" /></button>
-          <button onClick={onToggle} disabled={!currentTrack || busy} className={SUBTLE} aria-label={playing ? "Pauze" : "Afspelen"}>
-            {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-          </button>
-          <button onClick={onNext} disabled={!tracks.length} className={SUBTLE} aria-label="Volgende"><SkipForward className="h-4 w-4" /></button>
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-40">
+          <div ref={ctrlRef} className="flex items-center gap-1.5" style={{ transformOrigin: "center", willChange: "transform" }}>
+            <button onClick={onPrev} disabled={!tracks.length} className={SUBTLE} aria-label="Vorige"><SkipBack className="h-4 w-4" /></button>
+            <button onClick={onToggle} disabled={!currentTrack || busy} className={SUBTLE} aria-label={playing ? "Pauze" : "Afspelen"}>
+              {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+            </button>
+            <button onClick={onNext} disabled={!tracks.length} className={SUBTLE} aria-label="Volgende"><SkipForward className="h-4 w-4" /></button>
+          </div>
         </div>
       </div>
 
@@ -100,22 +120,26 @@ export default function MusicViewerStage({ analyserRef, tracks = [], currentTrac
               <MusicIcon className="h-4 w-4" style={{ color: DEEP }} />
               <span className="text-[10px] uppercase tracking-[0.18em] font-bold opacity-70">Bibliotheek · {tracks.length}</span>
             </div>
-            <div className="flex-1 min-h-0 overflow-y-auto px-2.5 pb-2.5 space-y-1.5 no-scrollbar">
+            <div className="flex-1 min-h-0 overflow-y-auto p-2.5 grid grid-cols-2 gap-2 content-start no-scrollbar">
               {tracks.length === 0 && (
-                <p className="text-[11px] opacity-50 px-2 py-8 text-center leading-relaxed">Geen muziekbestanden.</p>
+                <p className="col-span-2 text-[11px] opacity-50 px-2 py-8 text-center leading-relaxed">Geen muziekbestanden.</p>
               )}
               {tracks.map((t) => {
                 const active = currentTrack?.id === t.id;
                 return (
-                  <button key={t.id} onClick={() => onSelect(t)} className={`w-full flex items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left transition ${active ? "bg-charcoal/10" : "hover:bg-charcoal/5"}`}>
-                    <span className="h-8 w-8 rounded-lg shrink-0 flex items-center justify-center" style={{ background: t.source === "cloud" ? DEEP : LIGHT, color: IVORY }}>
-                      {t.source === "cloud" ? <Cloud className="h-4 w-4" /> : <HardDrive className="h-4 w-4" />}
-                    </span>
-                    <span className="flex-1 min-w-0">
-                      <p className="text-[12px] font-medium truncate" style={{ color: BLUE }}>{t.name}</p>
-                      <p className="text-[9px] uppercase tracking-[0.14em] opacity-50" style={{ color: BLUE }}>{t.source === "cloud" ? "cloud" : "lokaal"}</p>
-                    </span>
-                    {active && playing ? <Pause className="h-3.5 w-3.5 shrink-0 opacity-70" style={{ color: DEEP }} /> : <Play className="h-3.5 w-3.5 shrink-0 opacity-60" style={{ color: DEEP }} />}
+                  <button key={t.id} onClick={() => onSelect(t)} className="group relative aspect-square rounded-2xl overflow-hidden">
+                    <div className="absolute inset-0" style={{ background: t.source === "cloud" ? "linear-gradient(150deg, #d8dab3, #5d7388)" : "linear-gradient(150deg, #c6d3de, #8fa3b6)" }} />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      {t.source === "cloud" ? <Cloud className="h-6 w-6 text-white/80" /> : <HardDrive className="h-6 w-6 text-white/80" />}
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
+                    {active && <span className="absolute top-2 left-2 h-2 w-2 rounded-full bg-white animate-pulse" />}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                      {active && playing ? <Pause className="h-6 w-6 text-white" /> : <Play className="h-6 w-6 text-white translate-x-0.5" />}
+                    </div>
+                    <div className="absolute bottom-0 inset-x-0 p-2">
+                      <p className="text-[10px] font-medium text-white truncate" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.4)" }}>{t.name}</p>
+                    </div>
                   </button>
                 );
               })}

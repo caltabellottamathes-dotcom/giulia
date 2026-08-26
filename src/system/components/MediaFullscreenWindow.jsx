@@ -250,16 +250,14 @@ export default function MediaFullscreenWindow() {
           />
         )}
 
-        {/* Titel-overlay — VoiceWindow-stijl (enkel niet-muziek) */}
-        {kind !== "music" && (
-          <div className={cn("absolute top-0 inset-x-0 bg-gradient-to-b from-black/50 to-transparent flex items-center gap-3 z-30 pointer-events-none", compact ? "px-3 pt-3 pb-6 ml-10" : "px-5 pt-5 pb-10 ml-12")}>
-            <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", playing && isPlayable ? "bg-olive animate-pulse-soft" : "bg-ivory/30")} />
-            <div className="min-w-0">
-              <p className={cn("font-display font-semibold tracking-[0.22em] uppercase text-ivory leading-none", compact ? "text-[10px]" : "text-[13px]")}>MEDIA · {KIND_LABEL[kind] || "BESTAND"}</p>
-              <p className={cn("text-ivory/60 tracking-wide truncate", compact ? "text-[9px] mt-1" : "text-[11px] mt-1.5")}>{media.name || "Media"}</p>
-            </div>
+        {/* Titel-overlay — VoiceWindow-stijl, met de titel van het nummer bij audio */}
+        <div className={cn("absolute top-0 inset-x-0 bg-gradient-to-b from-black/50 to-transparent flex items-center gap-3 z-30 pointer-events-none", compact ? "px-3 pt-3 pb-6 ml-10" : "px-5 pt-5 pb-10 ml-12")}>
+          <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", playing && isPlayable ? "bg-olive animate-pulse-soft" : "bg-ivory/30")} />
+          <div className="min-w-0">
+            <p className={cn("font-display font-semibold tracking-[0.22em] uppercase text-ivory leading-none", compact ? "text-[10px]" : "text-[13px]")}>MEDIA · {KIND_LABEL[kind] || "BESTAND"}</p>
+            <p className={cn("text-ivory/60 tracking-wide truncate", compact ? "text-[9px] mt-1" : "text-[11px] mt-1.5")}>{kind === "music" ? (currentTrack?.name || media.name || "Media") : (media.name || "Media")}</p>
           </div>
-        )}
+        </div>
 
         {/* Media — flush in de shell */}
         {kind === "music" && (
