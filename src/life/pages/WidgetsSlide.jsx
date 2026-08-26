@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import RemindersHomeWidget from "@/life/widgets/new/RemindersHomeWidget";
 import ThingsHandleWidget from "@/life/widgets/new/ThingsHandleWidget";
@@ -9,34 +9,21 @@ import ProjectsFocusWidget from "@/focus/widgets/new/ProjectsFocusWidget";
 import AgendaFocusWidget from "@/focus/widgets/new/AgendaFocusWidget";
 import WhatsAppChatFocusWidget from "@/focus/widgets/new/WhatsAppChatFocusWidget";
 import { IMAGES } from "@/lib/images";
-import ScaledWidgetTile from "@/system/widgets/ScaledWidgetTile";
+import MasonryGrid from "@/system/widgets/MasonryGrid";
 
-/** WidgetsSlide — iedere widget gekopieerd in de 7 standaard maten:
- *  16:9, 5:4, 3:2, 1:1, 2:3, 4:5, 9:16. 8 widgets × 7 maten = 56 tiles.
- *  Elke widget wordt als geheel geschaald (object-fit: contain) in een eigen
- *  shell met die aspect-ratio, zodat de volledige widget zichtbaar blijft. */
-const RATIOS = [
-  { label: "16:9", value: "16 / 9" },
-  { label: "5:4", value: "5 / 4" },
-  { label: "3:2", value: "3 / 2" },
-  { label: "1:1", value: "1 / 1" },
-  { label: "2:3", value: "2 / 3" },
-  { label: "4:5", value: "4 / 5" },
-  { label: "9:16", value: "9 / 16" },
-];
-
-const WIDGETS = [
-  { name: "Reminders", Comp: RemindersHomeWidget },
-  { name: "Things to Handle", Comp: ThingsHandleWidget },
-  { name: "Things I Love", Comp: ThingsLoveWidget },
-  { name: "Dinner", Comp: DinnerWidget },
-  { name: "Music", Comp: MusicWidget },
-  { name: "Projects", Comp: ProjectsFocusWidget },
-  { name: "Agenda", Comp: AgendaFocusWidget },
-  { name: "WhatsApp", Comp: WhatsAppChatFocusWidget },
-];
-
+/** WidgetsSlide — kopie van /widgets-life (zonder 01 SOCIAL LIFE + 06 HOW I'M
+ *  DOING), met 03 WHAT I'M BUILDING, 07 WHAT'S HAPPENING en 02 WHO'S TEXTING uit
+ *  /widgets-focus. Widgets renderen op exact dezelfde maat als het dashboard:
+ *  25-koloms grid, scale 0.8, fitHeight, WIDGET_SPAN-verhoudingen. */
 export default function WidgetsSlide() {
+  const [fitH, setFitH] = useState(0);
+  useEffect(() => {
+    const calc = () => setFitH(window.innerHeight - 180);
+    calc();
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, []);
+
   return (
     <div className="relative min-h-screen px-5 lg:px-10 py-8 pb-24">
       <div className="fixed inset-0 -z-10 overflow-hidden">
@@ -47,28 +34,28 @@ export default function WidgetsSlide() {
       <Link to="/" className="text-[10px] uppercase tracking-[0.24em] font-semibold text-charcoal/60 hover:text-charcoal transition-colors">
         ← Terug naar OS
       </Link>
-      <h1 className="text-3xl font-display font-semibold tracking-tight mt-1.5 text-charcoal">Widget-slide · 56 widgets</h1>
-      <p className="text-sm text-charcoal/55 mt-1 mb-10">
-        Iedere widget geschaald in 7 standaard maten — 16:9, 5:4, 3:2, 1:1, 2:3, 4:5, 9:16.
+      <h1 className="text-3xl font-display font-semibold tracking-tight mt-1.5 text-charcoal">Widget-slide</h1>
+      <p className="text-sm text-charcoal/55 mt-1 mb-8">
+        LIFE-widget-skelet met Focus-toevoegingen — ridge-sky, pistase, beton, urgent.
       </p>
 
-      <div className="space-y-12">
-        {WIDGETS.map(({ name, Comp }) => (
-          <section key={name}>
-            <div className="flex items-baseline gap-3 mb-4">
-              <h2 className="text-xl font-display font-semibold tracking-tight text-charcoal">{name}</h2>
-              <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-charcoal/40">7 maten</span>
-            </div>
-            <div className="flex flex-wrap gap-4">
-              {RATIOS.map((r) => (
-                <ScaledWidgetTile key={r.label} ratio={r.value} label={`${name} · ${r.label}`}>
-                  <Comp />
-                </ScaledWidgetTile>
-              ))}
-            </div>
-          </section>
-        ))}
-      </div>
+      <MasonryGrid
+        className="max-w-[1280px] xl:max-w-[1500px] min-h-[52vh]"
+        gap={24}
+        spans={[10, 5, 10, 10, 5, 10, 10, 10]}
+        scale={0.8}
+        columnTiers={[[0, 1], [640, 6], [1024, 12], [1280, 25]]}
+        fitHeight={fitH}
+      >
+        <RemindersHomeWidget />
+        <ThingsHandleWidget />
+        <ThingsLoveWidget />
+        <DinnerWidget />
+        <MusicWidget />
+        <ProjectsFocusWidget />
+        <AgendaFocusWidget />
+        <WhatsAppChatFocusWidget />
+      </MasonryGrid>
     </div>
   );
 }
