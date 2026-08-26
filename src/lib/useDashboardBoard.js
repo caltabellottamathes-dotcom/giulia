@@ -97,46 +97,37 @@ export async function ensureAllBoards() {
     const lastReset = localStorage.getItem("giulia_last_reset_date");
     const isNewDay = lastReset !== today;
 
-    if (isNewDay) {
-      localStorage.setItem("giulia_last_reset_date", today);
-      // Volledige reset voor alle boards
-      for (const b of DEFAULT_BOARDS) {
-        await base44.entities.DashboardWidget.deleteMany({ board_id: b.id }).catch(() => {});
-        const types = domainWidgetTypes(b.domain);
-        await base44.entities.DashboardWidget.bulkCreate(
-          types.map((t, i) => ({ widget_type: t, position: i, visible: true, board_id: b.id }))
-        ).catch(() => {});
-      }
-    }
+    if (isNewDay) localStorage.setItem("giulia_last_reset_date", today);
 
-    // Voor elk board: deduplicate + aanvullen (NOW altijd, anderen alleen als leeg)
     for (const b of DEFAULT_BOARDS) {
       const recs = await base44.entities.DashboardWidget.filter({ board_id: b.id }, "position").catch(() => []);
       const types = domainWidgetTypes(b.domain);
 
-      // Verwijder duplicaten (houd eerste exemplaar van elk type)
+      // 1. Deduplicate (houd eerste exemplaar per widget_type) — ruimt
+      //    legacy-duplicaten op. Kan niet meer terugkomen: de new-day
+      //    reset hieronder creëert alleen nog ontbrekende types (idempotent),
+      //    dus de deleteMany+bulkCreate-race die stapeling veroorzaakte is weg.
       const seen = new Set();
       const toDelete = [];
       for (const r of (recs || [])) {
-        if (seen.has(r.widget_type)) {
-          toDelete.push(r.id);
-        } else {
-          seen.add(r.widget_type);
-        }
+        if (seen.has(r.widget_type)) toDelete.push(r.id);
+        else seen.add(r.widget_type);
       }
       if (toDelete.length) {
         await base44.entities.DashboardWidget.deleteMany({ id: { $in: toDelete } }).catch(() => {});
       }
 
-      // Aanvullen alleen als het board volledig leeg is
-      const isEmpty = (recs || []).length === 0;
-      if (isEmpty) {
-        const missing = types.filter((t) => !seen.has(t));
-        if (missing.length) {
-          await base44.entities.DashboardWidget.bulkCreate(
-            missing.map((t, i) => ({ widget_type: t, position: (recs || []).length + i, visible: true, board_id: b.id }))
-          ).catch(() => {});
-        }
+      // 2. Aanvullen — idempotent, nooit duplicaten:
+      //    • Nieuwe dag → alle domein-widgets die ontbreken weer toevoegen
+      //      (alleen create als het type er nog NIET is).
+      //    • Dezelfde dag → alleen vullen als het board volledig leeg is.
+      const missing = isNewDay
+        ? types.filter((t) => !seen.has(t))
+        : ((recs || []).length === 0 ? types : []);
+      if (missing.length) {
+        await base44.entities.DashboardWidget.bulkCreate(
+          missing.map((t, i) => ({ widget_type: t, position: (recs || []).length + i, visible: true, board_id: b.id }))
+        ).catch(() => {});
       }
     }
   } catch {}
