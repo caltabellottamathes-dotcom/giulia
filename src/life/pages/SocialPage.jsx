@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 import StatusBadge from "@/system/components/glass/StatusBadge";
 import SocialNav from "@/life/components/social/SocialNav";
-import SocialOverviewPreview from "@/life/panels/SocialOverviewPreview";
+import SocialOverviewDark from "@/life/components/social/sections/SocialOverviewDark";
 import ThingsHandleFullWidget from "@/life/components/social/ThingsHandleFullWidget";
 import { closeCircle, socialPulse, meaningfulInteractions, pulseState, PULSE_LABEL } from "@/lib/domainUtils";
 
@@ -61,7 +61,7 @@ export default function SocialPage() {
   const state = useMemo(() => pulseState({ meaningfulCount: mi.total, activePlans: activePlans.length, openInvitations: (data.intentions || []).length, availableMin }), [mi, activePlans, data.intentions, availableMin]);
 
   return (
-    <div className="relative h-[calc(100vh-152px)] -mt-6 lg:-mt-8 -mx-1 lg:-mx-4 overflow-hidden flex flex-col pt-[124px] lg:pt-[144px]">
+    <div className="relative h-[calc(100vh-132px)] -mt-6 lg:-mt-8 -mx-1 lg:-mx-4 flex flex-col pt-[124px] lg:pt-[144px]">
       {/* Hero — fixed, raakt de bovenrand (y=0, onder de transparante header), links uitgelijnd met de toolbar */}
       <div className="fixed top-0 left-4 lg:left-6 right-4 lg:right-6 h-[180px] lg:h-[200px] z-0 overflow-hidden float-shadow rounded-[24px]">
         <img src={IMAGES.lifeSocialPulse} alt="" className="absolute inset-0 h-full w-full object-cover" />
@@ -88,7 +88,7 @@ export default function SocialPage() {
       </div>
 
       {/* Body block — vult de ruimte tussen tabs en de onderste toolbar */}
-      <div className="flex-1 min-h-0 pt-4 pb-4 relative z-10">
+      <div className="flex-1 min-h-0 pt-3 pb-6 relative z-10">
         <div className="h-full flex gap-4">
           {loading ? (
             <div className="flex-1 flex items-center justify-center"><div className="w-8 h-8 border-2 border-foreground/15 border-t-olive rounded-full animate-spin" /></div>
@@ -96,7 +96,7 @@ export default function SocialPage() {
             <>
               {/* Links — Things to Handle, volledige hoogte, uitgelijnd met de hero en toolbar */}
               <div className="h-full flex shrink-0">
-                <div className="h-full" style={{ aspectRatio: "9 / 16" }}>
+                <div className="h-full rounded-[24px] overflow-hidden" style={{ aspectRatio: "9 / 16", boxShadow: "0 24px 56px -16px rgba(0,0,0,0.32), 0 8px 24px -8px rgba(0,0,0,0.18)" }}>
                   <ThingsHandleFullWidget />
                 </div>
               </div>
@@ -109,10 +109,10 @@ export default function SocialPage() {
                   backdropFilter: "blur(40px) saturate(1.5)",
                   WebkitBackdropFilter: "blur(40px) saturate(1.5)",
                   border: "1px solid rgba(255,255,255,0.16)",
-                  boxShadow: "0 24px 48px -20px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.22)",
+                  boxShadow: "0 24px 56px -16px rgba(0,0,0,0.34), 0 8px 24px -8px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.22)",
                 }}
               >
-                <SocialOverviewPreview onOpen={() => setTab("Planner")} />
+                <SocialOverviewDark data={data} mi={mi} circle={circle} attention={attention} activePlans={activePlans} state={state} onNavigate={setTab} />
               </div>
             </>
           ) : (
