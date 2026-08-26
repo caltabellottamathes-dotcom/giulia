@@ -8,7 +8,7 @@ import {
   upcomingExpenses,
 } from "@/lib/financeUtils";
 import SpaceShell from "@/life/components/space/SpaceShell";
-import SpaceRecap from "@/life/components/space/SpaceRecap";
+import SpaceRecap, { EDITORIAL_SCHEMA, STALE_MS } from "@/life/components/space/SpaceRecap";
 import FinanceStacks from "@/life/components/finance/FinanceStacks";
 import PortfolioEditor from "@/life/components/finance/PortfolioEditor";
 import ExpenseEditor from "@/life/components/finance/ExpenseEditor";
@@ -85,7 +85,7 @@ export default function PersonalAdminPage() {
   const [expenseEditor, setExpenseEditor] = useState({ open: false, item: null, defaultPortfolioId: null });
   const [incomeEditor, setIncomeEditor] = useState({ open: false, item: null });
   const [detail, setDetail] = useState({ open: false, portfolioId: null });
-  const [recapRefresh, setRecapRefresh] = useState(0);
+  const [editorials, setEditorials] = useState({});
 
   const load = async () => {
     try {
@@ -105,11 +105,53 @@ export default function PersonalAdminPage() {
   const tm = useMemo(() => totalMoney(portfolios, incomes, expenses), [portfolios, incomes, expenses]);
   const tr = useMemo(() => totalReserved(portfolios), [portfolios]);
   const dataSignature = useMemo(() => `${tab}:${Math.round(tm)}:${Math.round(tr)}:${portfolios.length}:${expenses.filter((e) => e.status !== "done").length}:${incomes.length}`, [tab, tm, tr, portfolios, expenses, incomes]);
-  const data = {
+  const data = useMemo(() => ({
     portfolios: portfolios.filter((p) => !p.archived),
     expenses, incomes, transactions, docs,
     dist, totalMoney: tm, totalReserved: tr,
     upcoming: upcomingExpenses(expenses, 30),
+  }), [portfolios, expenses, incomes, transactions, docs, dist, tm, tr]);
+
+  // Pre-warm editorials voor ALLE tabs zodra de data geladen is, zodat een tab
+  // direct Giulia's analyse toont — geen genereer-knop nodig. Per tab gecached in
+  // localStorage met data-signature + 8u geldigheid; alleen gewijzigde/oude tabs
+  // worden opnieuw opgehaald.
+  useEffect(() => {
+    if (loading) return;
+    let cancelled = false;
+    const sig = `${Math.round(tm)}:${Math.round(tr)}:${portfolios.length}:${expenses.filter((e) => e.status !== "done").length}:${incomes.length}`;
+    TABS.forEach(async (t) => {
+      const key = `personalAdmin:${t.key}`;
+      const fullSig = `${t.key}:${sig}`;
+      let cached = null;
+      try { const raw = localStorage.getItem(key); if (raw) { const p = JSON.parse(raw); if (p && p._content && p._sig === fullSig && Date.now() - p._ts < STALE_MS) cached = p._content; } } catch { /* ignore */ }
+      if (cached) { setEditorials((prev) => ({ ...prev, [t.key]: { data: cached, loading: false } })); return; }
+      setEditorials((prev) => ({ ...prev, [t.key]: { data: prev[t.key]?.data || null, loading: true } }));
+      try {
+        const res = await base44.functions.invoke("generateAdminRecap", { prompt: buildPrompt(t.key, data), schema: EDITORIAL_SCHEMA });
+        if (cancelled) return;
+        const d = (res && res.ok && res.data && res.data.title && Array.isArray(res.data.items)) ? res.data : buildFallback(t.key, data);
+        localStorage.setItem(key, JSON.stringify({ _content: d, _ts: Date.now(), _sig: fullSig }));
+        setEditorials((prev) => ({ ...prev, [t.key]: { data: d, loading: false } }));
+      } catch {
+        if (cancelled) return;
+        setEditorials((prev) => ({ ...prev, [t.key]: { data: prev[t.key]?.data || buildFallback(t.key, data), loading: false } }));
+      }
+    });
+    return () => { cancelled = true; };
+  }, [loading, tm, tr, portfolios, expenses, incomes]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const refreshEditorial = async (tabKey) => {
+    setEditorials((prev) => ({ ...prev, [tabKey]: { data: prev[tabKey]?.data || null, loading: true } }));
+    try {
+      const res = await base44.functions.invoke("generateAdminRecap", { prompt: buildPrompt(tabKey, data), schema: EDITORIAL_SCHEMA });
+      const d = (res && res.ok && res.data && res.data.title && Array.isArray(res.data.items)) ? res.data : buildFallback(tabKey, data);
+      const sig = `${tabKey}:${Math.round(tm)}:${Math.round(tr)}:${portfolios.length}:${expenses.filter((e) => e.status !== "done").length}:${incomes.length}`;
+      localStorage.setItem(`personalAdmin:${tabKey}`, JSON.stringify({ _content: d, _ts: Date.now(), _sig: sig }));
+      setEditorials((prev) => ({ ...prev, [tabKey]: { data: d, loading: false } }));
+    } catch {
+      setEditorials((prev) => ({ ...prev, [tabKey]: { data: prev[tabKey]?.data || buildFallback(tabKey, data), loading: false } }));
+    }
   };
 
   const activePortfolio = detail.open ? (portfolios.find((p) => p.id === detail.portfolioId) || null) : null;
@@ -121,14 +163,11 @@ export default function PersonalAdminPage() {
     return setPortfolioEditor({ open: true, item: null });
   };
 
-  const afterFinanceChange = async () => { await load(); recalcServer(); setRecapRefresh((r) => r + 1); };
+  const afterFinanceChange = async () => { await load(); recalcServer(); };
 
   const doneExpense = async (e) => { try { await base44.entities.AdminObligation.update(e.id, { status: "done", last_payment_date: new Date().toISOString().slice(0, 10) }); await logLifeActivity("Finance", "completed", `${e.title} afgerekend`); await afterFinanceChange(); } catch { /* ignore */ } };
   const deleteExpense = async (e) => { try { await base44.entities.AdminObligation.delete(e.id); await logLifeActivity("Finance", "deleted", `${e.title} verwijderd`); await afterFinanceChange(); } catch { /* ignore */ } };
   const deleteIncome = async (i) => { try { await base44.entities.Income.delete(i.id); await logLifeActivity("Finance", "deleted", `Inkomen verwijderd`); await afterFinanceChange(); } catch { /* ignore */ } };
-
-  const recapPrompt = useMemo(() => buildPrompt(tab, data), [tab, portfolios, expenses, incomes]); // eslint-disable-line react-hooks/exhaustive-deps
-  const fallback = useMemo(() => buildFallback(tab, data), [tab, portfolios, expenses, incomes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
@@ -144,11 +183,11 @@ export default function PersonalAdminPage() {
         onAdd={onAdd}
         cardHeader={(
           <div className="flex items-center justify-between px-5 lg:px-7 pt-4 pb-3 border-b border-foreground/12">
-            <p className="text-[9px] uppercase tracking-[0.3em] font-bold text-life-ridge">Editorial Summary</p>
-            <p className="text-[9px] uppercase tracking-[0.24em] font-semibold text-life-pistachio">Giulia AI</p>
+            <p className="text-[9px] uppercase tracking-[0.3em] font-bold text-life-olive">Editorial Summary</p>
+            <p className="text-[9px] uppercase tracking-[0.24em] font-semibold text-life-olive">Giulia AI</p>
           </div>
         )}
-        recap={<SpaceRecap storageKey={`personalAdmin:${tab}`} dataSignature={dataSignature} prompt={recapPrompt} fallback={fallback} onRefresh={() => setRecapRefresh((r) => r + 1)} onNavigate={setTab} />}
+        recap={<SpaceRecap data={editorials[tab]?.data} loading={editorials[tab]?.loading} onRefresh={() => refreshEditorial(tab)} onNavigate={setTab} accent="hsl(var(--life-olive))" />}
       >
         {loading ? (
           <div className="space-y-3">

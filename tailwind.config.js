@@ -67,6 +67,7 @@ module.exports = {
   			lifeUrgent: 'hsl(var(--life-urgent))',
   			urgent: 'hsl(var(--urgent))',
   			'giulia-coral': 'hsl(var(--giulia-coral))',
+  			'earth-olive': 'hsl(var(--earth-olive))',
   			'giulia-dust': 'hsl(var(--giulia-dust))',
   			'giulia-pistachio': 'hsl(var(--giulia-pistachio))',
   			'giulia-urgent': 'hsl(var(--giulia-urgent))',
