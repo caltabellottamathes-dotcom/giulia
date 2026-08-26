@@ -1,8 +1,7 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useMemo, useState } from "react";
 import GlassPanel from "@/system/components/glass/GlassPanel";
 import RelationshipGraph3D from "../RelationshipGraph3D";
-import { closeCircle, contactSignals, daysSince } from "@/lib/domainUtils";
+import { closeCircle, contactSignals } from "@/lib/domainUtils";
 
 const SIGNALS = [
   { key: "connection", label: "Connection" },
@@ -21,30 +20,41 @@ function Dots({ value = 0 }) {
   );
 }
 
-/** RelationshipsSection — §5.2 3D Relationship Map, built from actual
- *  close-circle contacts. Hover shows real signals computed from WhatsApp
- *  history (connection/recency/rhythm/reciprocity) — never a fabricated
- *  health score. */
-export default function RelationshipsSection({ contacts = [], whatsapps = [], planContactIds = [] }) {
-  const navigate = useNavigate();
+/** RelationshipsSection — §2 network map + clusters. Hover shows real
+ *  signals; click opens the PersonDetailDrawer (§9). Dragging only moves the
+ *  visual position — the graph never re-interprets relational meaning. */
+export default function RelationshipsSection({ contacts = [], whatsapps = [], planContactIds = [], onOpenPerson }) {
   const [hovered, setHovered] = useState(null);
   const [pos, setPos] = useState({ x: 0, y: 0 });
+  const [cluster, setCluster] = useState("all");
   const circle = closeCircle(contacts, { whatsapps, planContactIds });
-  const changing = contacts.filter((c) => c.relationship_pattern_note).slice(0, 4);
 
+  const clusters = useMemo(() => {
+    const types = new Set(circle.map((c) => (c.relationship_type || "other").toLowerCase()));
+    return ["all", ...Array.from(types)];
+  }, [circle]);
+  const filtered = cluster === "all" ? circle : circle.filter((c) => (c.relationship_type || "other").toLowerCase() === cluster);
+
+  const changing = contacts.filter((c) => c.relationship_pattern_note).slice(0, 4);
   const handleHover = (c, p) => { setHovered(c); if (p) setPos(p); };
   const signals = hovered ? contactSignals(hovered, whatsapps) : null;
 
   return (
     <div className="space-y-4">
+      <div className="flex flex-wrap gap-1.5">
+        {clusters.map((c) => (
+          <button key={c} onClick={() => setCluster(c)} className={`text-[11px] capitalize rounded-full px-3 py-1 border transition-colors ${cluster === c ? "bg-olive text-white border-olive" : "border-border text-muted-foreground"}`}>{c}</button>
+        ))}
+      </div>
+
       <GlassPanel level={2} className="relative h-[480px] overflow-hidden p-0">
         <div className="absolute top-4 left-5 z-10 pointer-events-none">
           <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Relationship Map</p>
-          <p className="text-xs text-foreground/60 mt-0.5">{circle.length} close circle · drag to rotate</p>
+          <p className="text-xs text-foreground/60 mt-0.5">{filtered.length} shown · drag to rotate · click to open</p>
         </div>
 
-        {circle.length ? (
-          <RelationshipGraph3D contacts={circle} onHover={handleHover} onSelect={(c) => navigate(`/people/${c.id}`)} />
+        {filtered.length ? (
+          <RelationshipGraph3D contacts={filtered} onHover={handleHover} onSelect={(c) => onOpenPerson?.(c)} />
         ) : (
           <div className="h-full flex flex-col items-center justify-center gap-1 text-center px-6">
             <p className="text-sm font-medium text-foreground/70">YOUR NETWORK</p>

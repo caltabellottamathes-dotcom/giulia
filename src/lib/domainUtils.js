@@ -170,6 +170,60 @@ export function personalBaseline({ whatsapps = [], emails = [], events = [], wee
   return { current, baseline: Math.round(baseline * 10) / 10 };
 }
 
+// Real 3-week × 7-day activity grid — recurring patterns become visible.
+export function socialHeatmap({ whatsapps = [], emails = [], events = [], weeks = 3 } = {}) {
+  const days = weeks * 7;
+  const now = new Date();
+  const start = new Date(now); start.setDate(now.getDate() - (days - 1)); start.setHours(0, 0, 0, 0);
+  const grid = Array.from({ length: weeks }, () => Array(7).fill(0));
+  const bump = (ts) => {
+    if (!ts) return;
+    const diff = Math.floor((new Date(ts) - start) / 86400000);
+    if (diff < 0 || diff >= days) return;
+    grid[Math.floor(diff / 7)][diff % 7]++;
+  };
+  (whatsapps || []).forEach((m) => bump(m.timestamp));
+  (emails || []).filter((e) => e.folder === "sent" || e.status === "sent").forEach((e) => bump(e.timestamp));
+  (events || []).filter((e) => e.domain === "life").forEach((e) => bump(e.start));
+  return grid;
+}
+
+// This week vs last week — a real delta, kept personal (no universal norm).
+export function socialChangeCompare({ whatsapps = [], emails = [], events = [] } = {}) {
+  const now = Date.now();
+  const cut1 = now - 7 * 86400000, cut2 = now - 14 * 86400000;
+  const items = [
+    ...(whatsapps || []).map((m) => m.timestamp),
+    ...(emails || []).filter((e) => e.folder === "sent" || e.status === "sent").map((e) => e.timestamp),
+    ...(events || []).filter((e) => e.domain === "life").map((e) => e.start),
+  ];
+  let thisWeek = 0, lastWeek = 0;
+  items.forEach((t) => { if (!t) return; const ts = new Date(t).getTime(); if (ts >= cut1) thisWeek++; else if (ts >= cut2) lastWeek++; });
+  const deltaPct = lastWeek ? Math.round(((thisWeek - lastWeek) / lastWeek) * 100) : (thisWeek ? 100 : 0);
+  return { thisWeek, lastWeek, deltaPct };
+}
+
+// Capacity context from the most recent SelfCheckIn — shown as context, never
+// as a judgment on whether someone "should" socialize.
+export function capacityFromCheckIn(checkIn) {
+  if (!checkIn) return { level: "UNKNOWN", pct: 50 };
+  const map = {
+    charged: { level: "HIGH", pct: 85 }, calm: { level: "HIGH", pct: 70 },
+    neutral: { level: "MED", pct: 50 }, low: { level: "LOW", pct: 25 }, overwhelmed: { level: "LOW", pct: 10 },
+  };
+  return map[checkIn.state] || { level: "MED", pct: 50 };
+}
+
+// Space × Capacity — four descriptive quadrants, never a prescription.
+export function spaceCapacityQuadrant(spacePct, capacityLevel) {
+  const highSpace = spacePct >= 50;
+  const highCap = capacityLevel === "HIGH";
+  if (highSpace && highCap) return { label: "SOCIAL OPPORTUNITY", desc: "Room and energy — a good moment to reach out." };
+  if (highSpace && !highCap) return { label: "FREE / RECOVERY PREFERRED", desc: "Room is there, but energy is low — rest may serve better." };
+  if (!highSpace && highCap) return { label: "SOCIAL LOAD HIGH", desc: "Energy is good, but the schedule is dense." };
+  return { label: "PROTECT SPACE", desc: "Low room and low energy — protect what's left." };
+}
+
 // Meaningful interaction = een UITGAAND WhatsApp-bericht, een VERZONDEN email,
 // of een life-agendagebeurtenis (afspraak) binnen de window. Binnenkomende
 // (ontvangen) emails tellen NIET mee — ontvangen post is geen interactie.

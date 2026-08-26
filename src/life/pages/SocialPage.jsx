@@ -7,9 +7,10 @@ import RelationshipsSection from "@/life/components/social/sections/Relationship
 import PulseSection from "@/life/components/social/sections/PulseSection";
 import PlannerSection from "@/life/components/social/sections/PlannerSection";
 import PersonalTimeSection from "@/life/components/social/sections/PersonalTimeSection";
+import PersonDetailDrawer from "@/life/components/social/PersonDetailDrawer";
 import { closeCircle, socialPulse, meaningfulInteractions, pulseState } from "@/lib/domainUtils";
 
-const EMPTY = { contacts: [], emails: [], whatsapps: [], events: [], plans: [], blocks: [], opportunities: [], intentions: [], insights: [], moments: [] };
+const EMPTY = { contacts: [], emails: [], whatsapps: [], events: [], plans: [], blocks: [], opportunities: [], intentions: [], insights: [], moments: [], checkIn: null };
 
 /**
  * SocialPage — "What Social Life?" §14.1, rebuilt on the exact ProjectDetail
@@ -20,10 +21,11 @@ export default function SocialPage() {
   const [section, setSection] = useState("Overview");
   const [data, setData] = useState(EMPTY);
   const [loading, setLoading] = useState(true);
+  const [drawerContact, setDrawerContact] = useState(null);
 
   const load = async () => {
     try {
-      const [contacts, emails, whatsapps, events, plans, blocks, opportunities, intentions, insights, moments] = await Promise.all([
+      const [contacts, emails, whatsapps, events, plans, blocks, opportunities, intentions, insights, moments, checkIns] = await Promise.all([
         base44.entities.Contact.filter({}, "name", 200).catch(() => []),
         base44.entities.Email.list("-timestamp", 100).catch(() => []),
         base44.entities.WhatsAppMessage.list("-timestamp", 150).catch(() => []),
@@ -34,12 +36,14 @@ export default function SocialPage() {
         base44.entities.SocialIntention.filter({ status: "open" }).catch(() => []),
         base44.entities.Insight.list("-created_date", 60).catch(() => []),
         base44.entities.SocialMoment.list("-occurred_at", 40).catch(() => []),
+        base44.entities.SelfCheckIn.list("-timestamp", 1).catch(() => []),
       ]);
       setData({
         contacts: contacts || [], emails: emails || [], whatsapps: whatsapps || [], events: events || [],
         plans: plans || [], blocks: blocks || [], opportunities: opportunities || [], intentions: intentions || [],
         insights: (insights || []).filter((i) => (i.source || "").toLowerCase().startsWith("social")),
         moments: moments || [],
+        checkIn: (checkIns || [])[0] || null,
       });
     } finally { setLoading(false); }
   };
@@ -76,16 +80,18 @@ export default function SocialPage() {
           <SocialNav active={section} onChange={setSection} variant="top" />
         </div>
 
-        {section === "Overview" && <OverviewSection data={data} mi={mi} circle={circle} attention={attention} activePlans={activePlans} state={state} onNavigate={setSection} />}
-        {section === "Relationships" && <RelationshipsSection contacts={data.contacts} whatsapps={data.whatsapps} planContactIds={planContactIds} />}
-        {section === "Pulse" && <PulseSection data={data} mi={mi} attention={attention} />}
+        {section === "Overview" && <OverviewSection data={data} mi={mi} circle={circle} attention={attention} activePlans={activePlans} state={state} onNavigate={setSection} onOpenPerson={setDrawerContact} reload={load} />}
+        {section === "Relationships" && <RelationshipsSection contacts={data.contacts} whatsapps={data.whatsapps} planContactIds={planContactIds} onOpenPerson={setDrawerContact} />}
+        {section === "Pulse" && <PulseSection data={data} mi={mi} attention={attention} state={state} />}
         {section === "Planner" && <PlannerSection data={data} contacts={data.contacts} reload={load} />}
-        {section === "Personal Time" && <PersonalTimeSection blocks={data.blocks} reload={load} />}
+        {section === "Personal Time" && <PersonalTimeSection blocks={data.blocks} checkIn={data.checkIn} reload={load} />}
       </div>
 
       <div className="lg:hidden fixed bottom-0 inset-x-0 z-30 glass-2 border-t border-border/40">
         <SocialNav active={section} onChange={setSection} variant="bottom" />
       </div>
+
+      <PersonDetailDrawer contact={drawerContact} whatsapps={data.whatsapps} onClose={() => setDrawerContact(null)} onUpdated={load} />
     </div>
   );
 }
