@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { CheckCircle2, Pencil, Trash2, Plus, FileText } from "lucide-react";
 import AdminObligationCard from "@/life/components/AdminObligationCard";
-import FoodWidget from "@/life/widgets/FoodWidget";
 import PortfolioCard from "@/life/components/finance/PortfolioCard";
 import HealthBadge from "@/life/components/finance/HealthBadge";
 import DistributionBar from "@/life/components/finance/DistributionBar";
@@ -31,7 +30,6 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     const upcoming = upcomingExpenses(expenses, 30);
     return (
       <>
-        <FoodWidget />
         <Card>
           <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Geld hebben vs. besteden</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

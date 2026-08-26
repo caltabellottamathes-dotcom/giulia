@@ -16,12 +16,40 @@ export async function loadCandidates(sr) {
     sr.entities.Milestone.list("-created_date", 100).catch(() => []),
     sr.entities.ProjectTheme.list("-created_date", 200).catch(() => []),
     sr.entities.AdminObligation.list("-created_date", 200).catch(() => []),
+    sr.entities.Portfolio.list("-created_date", 200).catch(() => []),
+    sr.entities.Transaction.list("-created_date", 200).catch(() => []),
   ]);
   return {
     projects: projects || [], tasks: tasks || [], contacts: contacts || [], events: events || [],
     documents: documents || [], knowledge: knowledge || [], memory: memory || [], ideas: ideas || [],
-    decisions: decisions || [], milestones: milestones || [], themes: themes || [], adminObligations: adminObligations || []
+    decisions: decisions || [], milestones: milestones || [], themes: themes || [], adminObligations: adminObligations || [],
+    portfolios: portfolios || [], transactions: transactions || []
   };
+}
+
+export function resolvePortfolioId(ctx, candidates, categoryOrTitle) {
+  if (!categoryOrTitle) return undefined;
+  const n = String(categoryOrTitle).toLowerCase();
+  if (ctx.portfolioKeys && ctx.portfolioKeys[n]) return ctx.portfolioKeys[n];
+  // exact name match first, then category overlap, then substring
+  const pools = candidates.portfolios || [];
+  let m = pools.find((p) => (p.name || "").toLowerCase() === n);
+  if (!m) m = pools.find((p) => (p.category || "").toLowerCase() === n);
+  if (!m) m = pools.find((p) => {
+    const name = (p.name || "").toLowerCase();
+    const cat = (p.category || "").toLowerCase();
+    return name.includes(n) || n.includes(name) || cat.includes(n) || n.includes(cat);
+  });
+  return m ? m.id : undefined;
+}
+
+export function recurrenceToFrequency(rec) {
+  switch (rec) {
+    case "monthly": return "monthly";
+    case "quarterly": return "quarterly";
+    case "annual": return "annual";
+    default: return "once";
+  }
 }
 
 export function dateOnly(s) { if (!s) return undefined; const d = new Date(s); if (isNaN(d.getTime())) return s; return d.toISOString().slice(0, 10); }
@@ -248,6 +276,30 @@ export async function executeEntity(sr, rec, src, candidates, ctx) {
       const r = await sr.entities.Income.create(data);
       out.generated.push({ entity: "Income", id: r.id, title: `${data.amount} ${data.currency}` });
     }
+  } else if (cls === "Portfolio") {
+    const kind = ["vaste_last", "onvoorzien", "sparen"].includes(f.kind) ? f.kind : "vaste_last";
+    const data: any = {
+      name: f.name || rec.title || f.category || "Portefeuille",
+      description: f.description || f.notes || rec.description || "",
+      category: f.category || "",
+      goal: f.goal || f.purpose || "",
+      kind,
+      payment_frequency: f.frequency || "monthly",
+      current_balance: Number(f.current_balance) || 0,
+      target_balance: Number(f.target_balance) || 0,
+      desired_buffer: Number(f.desired_buffer) || 0,
+      priority: f.priority || "medium",
+      active: true,
+      source_id: sourceId
+    };
+    const ex = rec.existingId ? (candidates.portfolios || []).find((p) => p.id === rec.existingId) : null;
+    if (ex) {
+      const p = mergePatch(ex, data); if (Object.keys(p).length) await sr.entities.Portfolio.update(ex.id, p);
+      out.updated.push({ entity: "Portfolio", id: ex.id, title: ex.name });
+    } else {
+      const p = await sr.entities.Portfolio.create(data);
+      out.generated.push({ entity: "Portfolio", id: p.id, title: data.name });
+    }
   } else if (cls === "AdminObligation") {
     const type = ["payment", "insurance", "contract", "renewal", "subscription"].includes(f.obligation_type) ? f.obligation_type : "payment";
     const beneficiary = f.beneficiary || "";
@@ -259,16 +311,23 @@ export async function executeEntity(sr, rec, src, candidates, ctx) {
       reference && `Ref: ${reference}`,
       f.notes || f.description || ""
     ].filter(Boolean);
+    const amt = Number(f.amount) || Number(f.expected_amount) || 0;
+    const portfolioId = rec.portfolioId || resolvePortfolioId(ctx, candidates, f.category || rec.title);
     const data: any = {
       title: rec.title || f.category || "Vaste last",
       type,
-      amount: Number(f.amount) || 0,
+      amount: amt,
+      expected_amount: amt,
+      frequency: f.frequency || recurrenceToFrequency(f.recurrence),
+      next_payment_date: dateOnly(f.payment_date || f.date),
       due_date: dateOnly(f.payment_date || f.date),
       recurrence: f.recurrence || "monthly",
+      confidence: f.confidence || "known",
       status: "open",
       notes: notesParts.join(" · "),
       source_id: sourceId
     };
+    if (portfolioId) data.portfolio_id = portfolioId;
     const contactId = beneficiary ? resolveContactId(ctx, candidates, { name: beneficiary, email: "" }) : undefined;
     if (contactId) data.contact_id = contactId;
     const ex = rec.existingId ? (candidates.adminObligations || []).find((o) => o.id === rec.existingId) : null;
@@ -279,13 +338,14 @@ export async function executeEntity(sr, rec, src, candidates, ctx) {
       const o = await sr.entities.AdminObligation.create(data);
       out.generated.push({ entity: "AdminObligation", id: o.id, title: data.title });
       if (contactId) out.relationships.push({ from: `AdminObligation:${o.id}`, to: `Contact:${contactId}`, kind: "paid_to" });
+      if (portfolioId) out.relationships.push({ from: `AdminObligation:${o.id}`, to: `Portfolio:${portfolioId}`, kind: "reserved_in" });
     }
   }
   return out;
 }
 
 export async function logActivity(sr, rec, src, isUpdate) {
-  const domain = ["Project", "Task", "CalendarEvent", "Document", "Contact", "ProjectTheme", "Milestone", "Decision"].includes(rec.entity) ? "focus" : ["Income", "RecurringExpense", "AdminObligation"].includes(rec.entity) ? "life" : "giulia";
+  const domain = ["Project", "Task", "CalendarEvent", "Document", "Contact", "ProjectTheme", "Milestone", "Decision"].includes(rec.entity) ? "focus" : ["Income", "RecurringExpense", "AdminObligation", "Portfolio", "Transaction"].includes(rec.entity) ? "life" : "giulia";
   await sr.entities.Activity.create({
     action: isUpdate ? "ingest_update" : "ingest_create",
     description: `${isUpdate ? "Updated" : "Created"} ${rec.entity}${rec.title ? ` "${rec.title}"` : ""} from ${src.original_filename || "ingestion"}`,

@@ -1,0 +1,59 @@
+{
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 8 * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "finance_recalculation",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "calc_reservations": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "calcReservations",
+            "args": {}
+          },
+          "then": "run_proactivity",
+          "x-base44": {
+            "title": "Reserveringen herrekenen",
+            "description": "Aanbevolen reservering + status per pot"
+          }
+        }
+      },
+      {
+        "run_proactivity": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "runFinanceProactivity",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Proactivity guard",
+            "description": "Signalen voor short/critical pots"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Herrekent dagelijks alle portefeuille-reserveringen en draait de finance proactivity guard (health-status, short/critical signalen).",
+  "name": "Finance Recalculation"
+}

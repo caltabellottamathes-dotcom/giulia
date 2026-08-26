@@ -5,7 +5,7 @@ import { CircleDot, Wallet, ListChecks, Banknote, LineChart, FileText } from "lu
 import { logLifeActivity } from "@/lib/lifeActivity";
 import {
   calcPortfolio, monthlyDistribution, totalMoney, totalReserved,
-  upcomingExpenses, fmtEuro, monthsUntil,
+  upcomingExpenses,
 } from "@/lib/financeUtils";
 import SpaceShell from "@/life/components/space/SpaceShell";
 import SpaceRecap from "@/life/components/space/SpaceRecap";

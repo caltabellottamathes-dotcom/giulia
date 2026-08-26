@@ -14,8 +14,8 @@ import { loadCandidates, dateOnly } from '../../shared/ingestExec.ts';
  * Aanroep: { source_id }
  */
 
-const ENTITY_CLASSES = ["Project", "ProjectTheme", "Task", "Milestone", "Decision", "Person", "Contact", "Event", "Deadline", "Commitment", "Document", "Knowledge", "Note", "Memory", "Idea", "Insight", "AdminObligation"];
-const CLASSIFICATIONS = ["project_info", "theme_info", "requirement", "objective", "task", "milestone", "decision", "deadline", "person", "document", "knowledge", "note", "insight", "open_question", "dependency", "admin_obligation"];
+const ENTITY_CLASSES = ["Project", "ProjectTheme", "Task", "Milestone", "Decision", "Person", "Contact", "Event", "Deadline", "Commitment", "Document", "Knowledge", "Note", "Memory", "Idea", "Insight", "AdminObligation", "Portfolio", "Income"];
+const CLASSIFICATIONS = ["project_info", "theme_info", "requirement", "objective", "task", "milestone", "decision", "deadline", "person", "document", "knowledge", "note", "insight", "open_question", "dependency", "admin_obligation", "portfolio", "income"];
 
 const UNDERSTANDING_SCHEMA = {
   type: "object",
@@ -83,6 +83,11 @@ const UNDERSTANDING_SCHEMA = {
           f_reference: { type: "string" },
           f_recurrence: { type: "string", enum: ["none", "monthly", "quarterly", "annual"] },
           f_obligation_type: { type: "string", enum: ["payment", "insurance", "contract", "renewal", "subscription"] },
+          f_kind: { type: "string", enum: ["vaste_last", "onvoorzien", "sparen"] },
+          f_goal: { type: "string" },
+          f_current_balance: { type: "number" },
+          f_target_balance: { type: "number" },
+          f_desired_buffer: { type: "number" },
           explicit: { type: "boolean" },
           confidence: { type: "string", enum: ["certain", "highly_likely", "probable", "uncertain", "unresolved"] },
           reasoning: { type: "string" },
@@ -139,6 +144,8 @@ const SYSTEM_TEXT =
   "  f_payment_date: the Betaaldatum (ISO). f_recurrence: \"monthly\" when Periode indicates a monthly recurrence (e.g. \"maand (dag 8)\"), else \"none\".\n" +
   "  f_beneficiary: Begunstigde, f_account_number: Rekeningnummer, f_reference: Referentie.\n" +
   "  notes/description: Referentie text. Do NOT create themes for these sources. explicit=true for each row (they are literal).\n\n" +
+  "BUDGET-PLAN SOURCES (reserveringspotten / portefeuilles):\n" +
+  "When the source defines named budget pots / reserveringspotten (a pot with a target saldo, a category, a kind), extract a Portfolio item per pot: entity_class=\"Portfolio\", classification=\"portfolio\", title=pot name, f_category, f_kind (vaste_last/onvoorzien/sparen), f_target_balance (gewenst saldo), f_current_balance (huidig saldo if stated), f_desired_buffer, f_frequency. explicit=true for each pot. Do NOT also create an AdminObligation for a pot — a pot is not a payment.\n\n" +
   "Return ONLY valid JSON. Do not invent entities. Do not explode tasks. Derive structure from the source, never impose a hardcoded theme list.";
 
 export default async function (req) {
