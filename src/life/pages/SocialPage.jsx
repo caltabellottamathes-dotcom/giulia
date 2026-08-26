@@ -3,18 +3,21 @@ import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 import StatusBadge from "@/system/components/glass/StatusBadge";
 import SocialNav from "@/life/components/social/SocialNav";
-import OverviewTab from "@/life/components/social2/OverviewTab";
-import PersonDrawer from "@/life/components/social2/PersonDrawer";
+import OverviewSection from "@/life/components/social/sections/OverviewSection";
+import PersonDetailDrawer from "@/life/components/social/PersonDetailDrawer";
 import ThingsHandleFullWidget from "@/life/components/social/ThingsHandleFullWidget";
 import { closeCircle, socialPulse, meaningfulInteractions, pulseState, PULSE_LABEL } from "@/lib/domainUtils";
 
 const EMPTY = { contacts: [], whatsapps: [], emails: [], events: [], plans: [], opportunities: [], intentions: [], moments: [], blocks: [], checkIn: null };
 
-/* SocialPage — één statische, niet-scrollende pagina. Korte hero die de
-   bovenrand raakt, tabs direct eronder, één vaste body-block daaronder.
-   Links: Things to Handle (volledige hoogte, uitgelijnd met de hero).
-   Rechts: lichte glaskaart met schaduw die de resterende ruimte vult —
-   inhoud scrollt van binnen, de pagina zelf niet. */
+/* SocialPage — één statische, niet-scrollende pagina.
+   Hero: fixed top-0, raakt de bovenrand van het scherm (onder de transparante
+   OS-header), links uitgelijnd met de toolbar (left-4 / lg:left-6).
+   Tabs: vast, direct onder de hero.
+   Body-block: links de Things to Handle-widget op volledige hoogte (uitgelijnd
+   met de hero en de toolbar), rechts een lichte glaskaart met schaduw die de
+   originele /life/social overview-inhoud (OverviewSection) bevat — alleen die
+   inhoud scrollt, de pagina zelf niet. */
 export default function SocialPage() {
   const [tab, setTab] = useState("Overview");
   const [data, setData] = useState(EMPTY);
@@ -60,9 +63,9 @@ export default function SocialPage() {
   const state = useMemo(() => pulseState({ meaningfulCount: mi.total, activePlans: activePlans.length, openInvitations: (data.intentions || []).length, availableMin }), [mi, activePlans, data.intentions, availableMin]);
 
   return (
-    <div className="h-[calc(100vh-152px)] -mt-6 lg:-mt-8 overflow-hidden flex flex-col">
-      {/* Hero — kort, raakt de bovenrand */}
-      <div className="shrink-0 overflow-hidden float-shadow relative h-[20vh] lg:h-[22vh] lg:mx-10 lg:rounded-[24px]">
+    <div className="relative h-[calc(100vh-152px)] -mt-6 lg:-mt-8 -mx-1 lg:-mx-4 overflow-hidden flex flex-col pt-[124px] lg:pt-[144px]">
+      {/* Hero — fixed, raakt de bovenrand (y=0, onder de transparante header), links uitgelijnd met de toolbar */}
+      <div className="fixed top-0 left-4 lg:left-6 right-4 lg:right-6 h-[180px] lg:h-[200px] z-0 overflow-hidden float-shadow rounded-[24px]">
         <img src={IMAGES.lifeSocialPulse} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/55 via-charcoal/10 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6 max-w-4xl">
@@ -81,26 +84,26 @@ export default function SocialPage() {
         </div>
       </div>
 
-      {/* Tabs — vast, direct onder de foto */}
-      <div className="shrink-0 px-4 lg:px-10 pt-3">
+      {/* Tabs — vast, direct onder de hero, links uitgelijnd met de toolbar */}
+      <div className="shrink-0 pt-3 relative z-10">
         <SocialNav active={tab} onChange={setTab} variant="top" />
       </div>
 
       {/* Body block — vult de ruimte tussen tabs en de onderste toolbar */}
-      <div className="flex-1 min-h-0 px-4 lg:px-10 pt-4 pb-4">
+      <div className="flex-1 min-h-0 pt-4 pb-4 relative z-10">
         <div className="h-full flex gap-4">
           {loading ? (
             <div className="flex-1 flex items-center justify-center"><div className="w-8 h-8 border-2 border-foreground/15 border-t-olive rounded-full animate-spin" /></div>
           ) : tab === "Overview" ? (
             <>
-              {/* Links — Things to Handle, volledige hoogte, uitgelijnd met de hero */}
+              {/* Links — Things to Handle, volledige hoogte, uitgelijnd met de hero en toolbar */}
               <div className="h-full flex shrink-0">
                 <div className="h-full" style={{ aspectRatio: "9 / 16" }}>
                   <ThingsHandleFullWidget />
                 </div>
               </div>
 
-              {/* Rechts — lichte glaskaart met schaduw, inhoud scrollt van binnen */}
+              {/* Rechts — lichte glaskaart met schaduw, originele /life/social overview-inhoud, inhoud scrollt */}
               <div
                 className="flex-1 min-w-0 h-full overflow-y-auto rounded-2xl p-4"
                 style={{
@@ -111,7 +114,7 @@ export default function SocialPage() {
                   boxShadow: "0 24px 48px -20px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.5)",
                 }}
               >
-                <OverviewTab data={data} state={state} mi={mi} openPerson={setDrawer} reload={load} />
+                <OverviewSection data={data} mi={mi} circle={circle} attention={attention} activePlans={activePlans} state={state} onNavigate={setTab} onOpenPerson={setDrawer} reload={load} />
               </div>
             </>
           ) : (
@@ -120,7 +123,7 @@ export default function SocialPage() {
         </div>
       </div>
 
-      {drawer && <PersonDrawer contact={drawer} whatsapps={data.whatsapps} moments={data.moments} plans={data.plans} onClose={() => setDrawer(null)} onSaved={load} />}
+      {drawer && <PersonDetailDrawer contact={drawer} whatsapps={data.whatsapps} onClose={() => setDrawer(null)} onUpdated={load} />}
     </div>
   );
 }
