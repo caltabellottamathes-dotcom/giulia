@@ -191,8 +191,8 @@ export default function PersonalAdminPage() {
         onAdd={onAdd}
         cardHeader={(
           <div className="flex items-center justify-between px-5 lg:px-7 pt-4 pb-3 border-b border-foreground/12">
-            <p className="text-[9px] uppercase tracking-[0.3em] font-bold" style={{ color: "hsl(var(--ridge-deep))" }}>Editorial Summary</p>
-            <p className="text-[9px] uppercase tracking-[0.24em] font-semibold" style={{ color: "hsl(var(--ridge-deep))" }}>Giulia AI</p>
+            <p className="text-[9px] uppercase tracking-[0.3em] font-bold" style={{ color: "hsl(var(--ridge-deep))" }}>Editorial Admin Summary</p>
+            <p className="text-[9px] uppercase tracking-[0.24em] font-semibold" style={{ color: "hsl(var(--ridge-deep))" }}>GIULIA-GIULIA</p>
           </div>
         )}
         recap={<SpaceRecap data={editorials[tab]?.data} loading={editorials[tab]?.loading} onRefresh={() => refreshEditorial(tab)} onNavigate={setTab} accent="hsl(var(--ridge-deep))" />}

@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus } from "lucide-react";
 
@@ -43,7 +43,7 @@ export default function SpaceShell({ bgImage, heroImage, eyebrow, title, tabs, a
         className="absolute right-0 top-0 bottom-[2.5%] w-full lg:w-[76%] glass-2 rounded-l-[32px] rounded-r-none shadow-[0_64px_150px_-34px_rgba(0,0,0,0.55), -20px_0_70px_-34px_rgba(0,0,0,0.32)] flex z-[15]"
       >
         {/* Linker glas-strook — tabs + nav-info */}
-        <div className="hidden lg:flex flex-col items-center gap-1 py-8 w-[88px] shrink-0">
+        <div className="hidden lg:flex flex-col items-center gap-1 py-8 w-[88px] shrink-0 relative z-30">
           <button onClick={() => navigate("/")} title="Terug naar dashboard" className="mb-6 inline-flex items-center justify-center w-10 h-10 rounded-full glass-1 hover:bg-foreground/8 transition text-foreground/70">
             <ArrowLeft className="w-4 h-4" />
           </button>
@@ -58,41 +58,52 @@ export default function SpaceShell({ bgImage, heroImage, eyebrow, title, tabs, a
           <div className="text-[8px] uppercase tracking-[0.22em] text-foreground/40 [writing-mode:vertical-rl] rotate-180">{navInfo}</div>
         </div>
 
-        {/* Witte zwevende kaart — laat linker glas-strook zichtbaar */}
+        {/* Witte kaart — EÉN element (editorial + header + widgets) dat als
+            geheel wegschuift bij tab-wissel; de nieuwe tab-kaart schuift in.
+            De slot doet de eenmalige intree; AnimatePresence swapped de kaarten. */}
         <motion.div
           initial={{ opacity: 0, y: 28, scale: 0.985 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.6, ease: EASE, delay: 0.32 }}
-          className="relative flex-1 ml-[2.5%] rounded-l-[20px] rounded-r-none bg-warm-white flex flex-col overflow-hidden shadow-[-28px_24px_64px_-22px_rgba(0,0,0,0.42)]"
+          className="relative flex-1 ml-[2.5%] min-w-0"
         >
-          {/* Mobile tabs + add (desktop titel/toevoegen zitten buiten het paneel) */}
-          <div className="lg:hidden flex items-center gap-2 px-5 pt-4 pb-3 overflow-x-auto no-scrollbar">
-            <div className="flex gap-1 overflow-x-auto no-scrollbar flex-1">
-              {tabs.map((t) => (
-                <button key={t.key} onClick={() => onTab(t.key)} className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${activeTab === t.key ? "bg-plum text-ivory" : "bg-foreground/5 text-muted-foreground"}`}>
-                  <t.icon className="w-3.5 h-3.5" />{t.label}
-                </button>
-              ))}
-            </div>
-            {onAdd && (
-              <button onClick={onAdd} className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-plum text-ivory px-3.5 py-1.5 text-xs font-semibold">
-                <Plus className="w-3.5 h-3.5" />{addLabel}
-              </button>
-            )}
-          </div>
+          <AnimatePresence initial={false}>
+            <motion.div
+              key={activeTab}
+              initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }}
+              transition={{ duration: 0.45, ease: EASE }}
+              className="absolute inset-0 rounded-l-[20px] rounded-r-none bg-warm-white flex flex-col overflow-hidden shadow-[-28px_24px_64px_-22px_rgba(0,0,0,0.42)] z-10"
+            >
+              {/* Mobile tabs + add (desktop titel/toevoegen zitten buiten het paneel) */}
+              <div className="lg:hidden flex items-center gap-2 px-5 pt-4 pb-3 overflow-x-auto no-scrollbar">
+                <div className="flex gap-1 overflow-x-auto no-scrollbar flex-1">
+                  {tabs.map((t) => (
+                    <button key={t.key} onClick={() => onTab(t.key)} className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${activeTab === t.key ? "bg-plum text-ivory" : "bg-foreground/5 text-muted-foreground"}`}>
+                      <t.icon className="w-3.5 h-3.5" />{t.label}
+                    </button>
+                  ))}
+                </div>
+                {onAdd && (
+                  <button onClick={onAdd} className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-plum text-ivory px-3.5 py-1.5 text-xs font-semibold">
+                    <Plus className="w-3.5 h-3.5" />{addLabel}
+                  </button>
+                )}
+              </div>
 
-          {/* Full-width editorial header — Editorial Summary / Giulia AI */}
-          {cardHeader && (
-            <div className="w-full shrink-0">{cardHeader}</div>
-          )}
+              {/* Full-width editorial header */}
+              {cardHeader && (
+                <div className="w-full shrink-0">{cardHeader}</div>
+              )}
 
-          {/* Body — links editorial (breder), rechts widget-stapel die er iets boven zweeft */}
-          <div className="flex-1 flex flex-col lg:flex-row min-h-0">
-            <div className="lg:w-[46%] xl:w-[44%] shrink-0 overflow-y-auto px-5 lg:px-7 pt-4 pb-6">
-              {recap}
-            </div>
-            <div className="flex-1 overflow-visible px-5 lg:px-7 py-6 space-y-4 lg:-ml-8 relative z-20">
-              {children}
-            </div>
-          </div>
+              {/* Body — links editorial (breder), rechts widget-stapel die er iets boven zweeft */}
+              <div className="flex-1 flex flex-col lg:flex-row min-h-0">
+                <div className="lg:w-[46%] xl:w-[44%] shrink-0 overflow-y-auto px-5 lg:px-7 pt-4 pb-6">
+                  {recap}
+                </div>
+                <div className="flex-1 overflow-visible px-5 lg:px-7 py-6 space-y-4 lg:-ml-8 relative z-20">
+                  {children}
+                </div>
+              </div>
+            </motion.div>
+          </AnimatePresence>
         </motion.div>
       </motion.div>
     </div>
