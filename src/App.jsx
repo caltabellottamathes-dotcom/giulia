@@ -70,6 +70,7 @@ import WidgetsLife from '@/life/pages/WidgetsLife';
 import ShellCollection from '@/system/pages/ShellCollection';
 import PanelDesign from '@/system/pages/PanelDesign';
 import QuestionsPanelPage from '@/system/pages/QuestionsPanelPage';
+import Ingest from '@/system/pages/Ingest';
 
 
 const AuthenticatedApp = () => {
@@ -156,6 +157,7 @@ const AuthenticatedApp = () => {
           <Route path="/shell-collection" element={<ShellCollection />} />
           <Route path="/panel-design" element={<PanelDesign />} />
           <Route path="/questions-panel" element={<QuestionsPanelPage />} />
+          <Route path="/ingest" element={<Ingest />} />
         </Route>
         <Route path="/life-gallery" element={<LifeGallery />} />
         <Route path="/quick" element={<QuickCommand />} />

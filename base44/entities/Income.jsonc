@@ -1,0 +1,68 @@
+{
+  "name": "Income",
+  "type": "object",
+  "properties": {
+    "amount": {
+      "type": "number",
+      "title": "Amount"
+    },
+    "currency": {
+      "type": "string",
+      "default": "EUR",
+      "title": "Currency"
+    },
+    "category": {
+      "type": "string",
+      "title": "Category"
+    },
+    "description": {
+      "type": "string",
+      "title": "Description"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+    },
+    "recurring": {
+      "type": "boolean",
+      "default": false,
+      "title": "Recurring"
+    },
+    "frequency": {
+      "type": "string",
+      "title": "Frequency"
+    },
+    "account_source": {
+      "type": "string",
+      "title": "Account Source"
+    },
+    "project_id": {
+      "type": "string",
+      "title": "Project ID"
+    },
+    "contact_id": {
+      "type": "string",
+      "title": "Contact ID"
+    },
+    "source_id": {
+      "type": "string",
+      "title": "Ingestion Source ID"
+    }
+  },
+  "required": [
+    "amount"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

@@ -1,0 +1,247 @@
+{
+  "name": "IngestionSource",
+  "type": "object",
+  "properties": {
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "pdf",
+        "text",
+        "image",
+        "structured"
+      ],
+      "default": "text",
+      "title": "Source Type"
+    },
+    "original_filename": {
+      "type": "string",
+      "title": "Original Filename"
+    },
+    "file_url": {
+      "type": "string",
+      "format": "uri",
+      "title": "File URL"
+    },
+    "pasted_text": {
+      "type": "string",
+      "title": "Pasted Text"
+    },
+    "extracted_text": {
+      "type": "string",
+      "title": "Extracted Text"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "received",
+        "reading",
+        "understanding",
+        "extracting",
+        "matching",
+        "connecting",
+        "updating",
+        "distributing",
+        "complete",
+        "partial",
+        "failed"
+      ],
+      "default": "received",
+      "title": "Status"
+    },
+    "confidence": {
+      "type": "string",
+      "title": "Confidence"
+    },
+    "overall_subject": {
+      "type": "string",
+      "title": "Overall Subject"
+    },
+    "purpose": {
+      "type": "string",
+      "title": "Purpose"
+    },
+    "detected_entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "number"
+          },
+          "class": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "string"
+          },
+          "explicit": {
+            "type": "boolean"
+          }
+        }
+      },
+      "title": "Detected Entities"
+    },
+    "generated_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "entity": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "Generated Records"
+    },
+    "updated_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "entity": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "Updated Records"
+    },
+    "relationships_created": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "Relationships Created"
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "entity": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "Conflicts"
+    },
+    "unresolved": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "number"
+          },
+          "class": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "Unresolved"
+    },
+    "gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "target_ref": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "Gaps"
+    },
+    "processing_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "stage": {
+            "type": "string"
+          },
+          "at": {
+            "type": "string"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "Processing History"
+    },
+    "version": {
+      "type": "number",
+      "default": 1,
+      "title": "Version"
+    },
+    "error": {
+      "type": "string",
+      "title": "Error"
+    }
+  },
+  "required": [
+    "source_type"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

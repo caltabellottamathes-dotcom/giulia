@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import {
   Plus, Home, Calendar, CalendarDays, Briefcase, CheckSquare, Mail, MessageCircle,
   BookOpen, FileText, Users, MessageSquare, Mic, ClipboardCheck,
-  Activity, Brain, Plug, Settings, User,
+  Activity, Brain, Plug, Settings, User, Inbox,
 } from "lucide-react";
 
 const navSections = [
@@ -45,6 +45,7 @@ const navSections = [
     items: [
       { key: "integrations", icon: Plug, label: "Integrations" },
       { key: "settings", icon: Settings, label: "Settings" },
+      { key: "ingest", to: "/ingest", icon: Inbox, label: "Ingest" },
       { key: "profile", icon: User, label: "Profile" },
     ],
   },
