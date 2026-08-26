@@ -134,8 +134,9 @@ export default function QuickLauncher({ open, onClose }) {
   if (!open) return null;
 
   const toggle = (label) => setOpenGroups((s) => {
-    if (s.has(label)) return new Set();
-    return new Set([label]);
+    const n = new Set(s);
+    if (n.has(label)) n.delete(label); else n.add(label);
+    return n;
   });
 
   const go = (item) => {
@@ -150,7 +151,7 @@ export default function QuickLauncher({ open, onClose }) {
 
   return (
     <>
-      <div className="fixed inset-0 z-[38] bg-charcoal/15 animate-fade-in" onClick={onClose} />
+      <div className="fixed inset-0 z-[38] bg-charcoal/15 backdrop-blur-[1px] animate-fade-in" onClick={onClose} />
       <AnimatePresence>
         <motion.div
           initial={{ opacity: 0 }}
