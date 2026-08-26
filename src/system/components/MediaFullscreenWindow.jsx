@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { X, Download, Minus, Maximize2, FileText, Play, Pause, SkipBack, SkipForward } from "lucide-react";
+import { X, Download, Minus, Maximize2, FileText, Play, Pause } from "lucide-react";
 import { usePanel } from "@/lib/PanelContext";
 import { useMediaViewer, isDriveUrl } from "@/lib/MediaViewerContext";
-import MusicStage from "@/system/components/media/MusicStage";
+import { cn } from "@/lib/utils";
+import MusicViewerStage from "@/system/components/media/MusicViewerStage";
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const fmt = (s) => {
@@ -13,11 +14,16 @@ const fmt = (s) => {
   return `${m}:${String(sec).padStart(2, "0")}`;
 };
 
+const KIND_LABEL = { image: "FOTO", video: "VIDEO", music: "AUDIO", doc: "DOCUMENT" };
+const DEFAULT_RATIO = { image: 4 / 3, video: 16 / 9, music: 3 / 4, doc: 4 / 3 };
+
 /**
- * MediaFullscreenWindow — een zwevend window (zoals de browser) waarin de
- * media altijd fullscreen (gevuld) afspeelt. Te minimaliseren naar een kleine
- * widget; het media-element blijft gemount, dus audio/video loopt door.
- * Muziek krijgt de OS-stijl MusicStage in de content-area.
+ * MediaFullscreenWindow — een VoiceWindow-stijl shell (rechts, volledige
+ * hoogte, schuift in) waarin de media helemaal flush (geen rand) vult.
+ * De shell-breedte past zich aan de aspect-ratio van de media aan.
+ * Muziek krijgt de LIFE MusicWidget-look (bloom + sine + fotokaart).
+ * Te minimaliseren naar een kleine widget; het media-element blijft
+ * gemount, dus audio/video loopt door.
  */
 export default function MediaFullscreenWindow() {
   const { mediaFullscreen, closeMediaFullscreen, mediaMinimized, minimizeMedia, restoreMedia } = usePanel();
@@ -25,15 +31,22 @@ export default function MediaFullscreenWindow() {
   const [playing, setPlaying] = useState(false);
   const [cur, setCur] = useState(0);
   const [dur, setDur] = useState(0);
+  const [ratio, setRatio] = useState(3 / 4);
+  const [boxH, setBoxH] = useState(0);
+  const [vw, setVw] = useState(typeof window !== "undefined" ? window.innerWidth : 1280);
   const mediaRef = useRef(null);
+  const shellRef = useRef(null);
 
   const kind = media?.kind;
   const isPlayable = kind === "music" || kind === "video";
 
-  // Nieuwe media → reset transport
+  // Nieuwe media → reset transport + ratio
   useEffect(() => {
-    if (mediaFullscreen) { setCur(0); setDur(0); setPlaying(false); }
-  }, [mediaFullscreen, media?.url]);
+    if (mediaFullscreen) {
+      setCur(0); setDur(0); setPlaying(false);
+      setRatio(DEFAULT_RATIO[kind] ?? 3 / 4);
+    }
+  }, [mediaFullscreen, media?.url, kind]);
 
   // Esc sluit (enkel in window-stand)
   useEffect(() => {
@@ -51,6 +64,22 @@ export default function MediaFullscreenWindow() {
       return () => { document.body.style.overflow = ""; };
     }
   }, [mediaFullscreen, mediaMinimized]);
+
+  // Shell-hoogte meten (voor breedte-berekening) + viewport-breedte
+  useEffect(() => {
+    const el = shellRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setBoxH(el.clientHeight));
+    ro.observe(el);
+    setBoxH(el.clientHeight);
+    return () => ro.disconnect();
+  }, [mediaFullscreen, mediaMinimized]);
+
+  useEffect(() => {
+    const onR = () => setVw(window.innerWidth);
+    window.addEventListener("resize", onR);
+    return () => window.removeEventListener("resize", onR);
+  }, []);
 
   const onPlay = () => setPlaying(true);
   const onPause = () => setPlaying(false);
@@ -141,51 +170,72 @@ export default function MediaFullscreenWindow() {
     );
   }
 
-  // ---- Window-stand ----
+  // ---- Window-stand — VoiceWindow-stijl shell, flush, adaptief formaat ----
+  const maxW = Math.min(vw - 32, 1400);
+  const minW = 320;
+  const natural = ratio && boxH ? ratio * boxH : 720;
+  const panelWidth = Math.max(minW, Math.min(natural, maxW));
+
   return createPortal(
-    <div className="fixed inset-3 sm:inset-4 lg:inset-6 z-[56] animate-scale-in">
-      <div className="relative w-full h-full rounded-[24px] overflow-hidden flex flex-col glass-4 float-shadow text-ivory">
-        {/* Sluitknop linksboven */}
-        <button onClick={handleClose} className="absolute top-3 left-3 z-20 h-9 w-9 rounded-full glass-1 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors" aria-label="Sluiten">
+    <div ref={shellRef} className="fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 z-[56] animate-slide-right" style={{ width: panelWidth }}>
+      <div className="relative w-full h-full rounded-[28px] overflow-hidden bg-charcoal">
+        {/* Sluitknop linksboven — VoiceWindow-stijl */}
+        <button onClick={handleClose} className="absolute top-4 left-4 z-40 h-9 w-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors" aria-label="Sluiten">
           <X className="h-4 w-4" />
         </button>
 
-        {/* Titelbalk */}
-        <div className="shrink-0 px-3 pt-3 pb-2 pl-16 flex items-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full bg-olive shrink-0" />
-          <p className="text-[14px] text-ivory/90 truncate flex-1">{media.name || "Media"}</p>
-          <a href={media.url} target="_blank" rel="noreferrer" className="h-9 w-9 shrink-0 rounded-lg glass-1 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors" aria-label="Openen in nieuw tabblad" title="Openen in nieuw tabblad">
+        {/* Titel-overlay — VoiceWindow-stijl */}
+        <div className="absolute top-0 inset-x-0 px-5 pt-5 pb-10 bg-gradient-to-b from-black/50 to-transparent flex items-center gap-3 ml-12 z-30 pointer-events-none">
+          <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", playing && isPlayable ? "bg-olive animate-pulse-soft" : "bg-ivory/30")} />
+          <div className="min-w-0">
+            <p className="font-display font-semibold tracking-[0.22em] text-[13px] uppercase text-ivory leading-none">
+              MEDIA · {KIND_LABEL[kind] || "BESTAND"}
+            </p>
+            <p className="text-[11px] text-ivory/60 mt-1.5 tracking-wide truncate">{media.name || "Media"}</p>
+          </div>
+        </div>
+
+        {/* Acties rechtsboven */}
+        <div className="absolute top-4 right-4 z-40 flex items-center gap-1.5">
+          <a href={media.url} target="_blank" rel="noreferrer" className="h-9 w-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors" aria-label="Openen in nieuw tabblad" title="Openen in nieuw tabblad">
             <Download className="h-4 w-4" />
           </a>
-          <button onClick={minimizeMedia} className="h-9 w-9 shrink-0 rounded-lg glass-1 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors" aria-label="Minimaliseren" title="Minimaliseren naar widget">
+          <button onClick={minimizeMedia} className="h-9 w-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors" aria-label="Minimaliseren" title="Minimaliseren naar widget">
             <Minus className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="px-3 pb-2"><div className="h-px bg-olive/40" /></div>
-
-        {/* Content-area — media vult altijd het window (fullscreen binnen window) */}
-        <div className="relative flex-1 min-h-0 mx-3 mb-3 rounded-2xl overflow-hidden bg-black">
-          {kind === "music" && (
-            <>
-              <audio {...mediaProps} className="hidden" />
-              <MusicStage media={media} playing={playing} cur={cur} dur={dur} onToggle={togglePlay} onSeek={seek} onSkip={skip} />
-            </>
-          )}
-          {kind === "video" && <video {...mediaProps} controls className="w-full h-full object-contain bg-black" />}
-          {kind === "image" && (drive ? <iframe src={media.url} title={media.name} className="w-full h-full" /> : <img src={media.url} alt={media.name} className="w-full h-full object-contain" />)}
-          {kind === "doc" && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center px-6 pointer-events-auto">
-              <div className="h-16 w-16 rounded-2xl bg-ivory/10 flex items-center justify-center">
-                <FileText className="h-8 w-8 text-ivory/55" />
-              </div>
-              <p className="text-sm text-ivory/85 max-w-xs">{media.name}</p>
-              <a href={media.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[12px] text-olive hover:underline">
-                <Download className="h-3.5 w-3.5" /> Openen in nieuw tabblad
-              </a>
+        {/* Media — flush in de shell, geen rand */}
+        {kind === "music" && (
+          <>
+            <audio {...mediaProps} className="hidden" />
+            <MusicViewerStage media={media} audioRef={mediaRef} playing={playing} onToggle={togglePlay} onSkip={skip} />
+          </>
+        )}
+        {kind === "video" && (
+          <video
+            {...mediaProps}
+            controls
+            className="absolute inset-0 w-full h-full object-contain bg-black"
+            onLoadedMetadata={(e) => { onMeta(e); setRatio(e.currentTarget.videoWidth / e.currentTarget.videoHeight); }}
+          />
+        )}
+        {kind === "image" && (
+          drive
+            ? <iframe src={media.url} title={media.name} className="absolute inset-0 w-full h-full" />
+            : <img src={media.url} alt={media.name} className="absolute inset-0 w-full h-full object-contain" onLoad={(e) => setRatio(e.currentTarget.naturalWidth / e.currentTarget.naturalHeight)} />
+        )}
+        {kind === "doc" && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center px-6 pointer-events-auto">
+            <div className="h-16 w-16 rounded-2xl bg-ivory/10 flex items-center justify-center">
+              <FileText className="h-8 w-8 text-ivory/55" />
             </div>
-          )}
-        </div>
+            <p className="text-sm text-ivory/85 max-w-xs">{media.name}</p>
+            <a href={media.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[12px] text-olive hover:underline">
+              <Download className="h-3.5 w-3.5" /> Openen in nieuw tabblad
+            </a>
+          </div>
+        )}
       </div>
     </div>,
     document.body
