@@ -1,127 +1,151 @@
-import React, { useMemo, useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { ArrowRight, ArrowLeft } from "lucide-react";
-import { WidgetHeader } from "@/system/widgets/primitives";
+import React, { useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { WidgetHeader, BarPulse } from "@/system/widgets/primitives";
 import { usePanel } from "@/lib/PanelContext";
 import { useEntityList } from "@/hooks/useEntity";
 import { useLearningSync } from "@/hooks/useLearningSync";
+import { base44 } from "@/api/base44Client";
+import { logLifeActivity } from "@/lib/lifeActivity";
 import { adminWeather, comingUp, overdueList } from "@/lib/adminUtils";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0a68f996a_ADMIN.jpeg";
+const DEEP = "hsl(var(--life-olive))";
 const IVORY = "hsl(var(--ivory))";
-const PISTACHIO = "#d8dab3";
-const OLIVE = "#94925d";
-const RIDGE = "#b1bec6";
-const NEON = "#d8dab3";
+const SMOKE = "hsl(var(--smoke))";
 
-/** pressure → LIFE-tier label + kleur. */
-function pressure(diff) {
-  if (diff == null) return { label: "YOU'RE FINE!", color: OLIVE };
-  if (diff < 0) return { label: "MISSED.", color: PISTACHIO };
-  const d = Math.floor(diff / 86400000);
-  if (d >= 15) return { label: "YOU'RE FINE!", color: OLIVE };
-  if (d >= 7) return { label: "YOU'VE GOT TIME.", color: OLIVE };
-  if (d >= 3) return { label: "KEEP AN EYE.", color: RIDGE };
-  if (d >= 1) return { label: "DEAL WITH IT!", color: RIDGE };
-  return { label: "NOW, PLEASE!", color: PISTACHIO };
-}
-
-/** ThingsHandleHorizontal — G·16:9 · "Things to Handle!"
- *  De foto is de shell (volle achtergrond); de glazen kaart schuift links ↔
- *  rechts bij een tik. Schaduw zwevend naar links. */
+/** ThingsHandleHorizontal — G·3:2·SPLIT, exact als ThingsILove (hobbies):
+ *  links een BarPulse (komende lasten, gekleurd per portefeuille-kleur), rechts
+ *  een fotokaart die links ↔ rechts schuift. Tik een bar → fotokaart schuift
+ *  naar links + rechts verschijnt het actie-paneel (markeer betaald). */
 export default function ThingsHandleHorizontal() {
   const { openModule } = usePanel();
   const learnTick = useLearningSync();
   const { data: obs } = useEntityList("AdminObligation", { realtime: true, externalTick: learnTick });
+  const { data: portfolios } = useEntityList("Portfolio", { realtime: true, externalTick: learnTick });
+  const [selectedId, setSelectedId] = useState(null);
 
   const weather = useMemo(() => adminWeather(obs || []), [obs]);
   const coming = useMemo(() => comingUp(obs || []), [obs]);
   const overdue = useMemo(() => overdueList(obs || []), [obs]);
+  const potColor = (id) => (portfolios || []).find((p) => p.id === id)?.color || SMOKE;
 
-  const [idx, setIdx] = useState(0);
-  const current = coming.length ? coming[idx % coming.length] : null;
-  const atStart = idx === 0;
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
-  const diff = current?.due_date ? new Date(current.due_date).getTime() - now : null;
-  const hasCurrent = !!current;
-  const safe = Math.max(0, diff || 0);
-  const dDay = Math.floor(safe / 86400000);
-  const dHr = Math.floor((safe % 86400000) / 3600000);
-  const dMin = Math.floor((safe % 3600000) / 60000);
-  const dSec = Math.floor((safe % 60000) / 1000);
-  const pad = (n) => String(n).padStart(2, "0");
-  const status = pressure(diff);
-  const units = [
-    { v: pad(dDay), l: "Dagen" },
-    { v: pad(dHr), l: "Uren" },
-    { v: pad(dMin), l: "Min" },
-    { v: pad(dSec), l: "Sec" },
-  ];
+  const bars = useMemo(
+    () => coming.slice(0, 6).map((e) => ({ id: e.id, title: e.title, value: Number(e.amount) || 1, color: potColor(e.portfolio_id), raw: e })),
+    [coming, portfolios] // eslint-disable-line react-hooks/exhaustive-deps
+  );
+  const selected = bars.find((b) => b.id === selectedId) || null;
+  const active = coming.length;
 
-  const [right, setRight] = useState(false);
+  const markDone = async (e) => {
+    try {
+      await base44.entities.AdminObligation.update(e.id, { status: "done", last_payment_date: new Date().toISOString().slice(0, 10) });
+      await logLifeActivity("Finance", "completed", `${e.title} afgerekend`);
+      setSelectedId(null);
+    } catch { /* ignore */ }
+  };
+
+  const glassShell = { background: "rgba(120,128,133,0.16)", backdropFilter: "blur(22px) saturate(1.35)", WebkitBackdropFilter: "blur(22px) saturate(1.35)", border: "1px solid rgba(255,255,255,0.14)" };
 
   return (
-    <div
-      className="relative w-full aspect-[16/9] rounded-[28px] overflow-hidden cursor-pointer"
-      onClick={() => openModule("personaladmin")}
-      style={{ boxShadow: "-26px 30px 64px -22px rgba(0,0,0,0.45)" }}
-    >
-      {/* foto — de shell (volle achtergrond) */}
-      <img src={PHOTO} alt="Things to Handle" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
-      <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(20,22,26,0.82) 6%, rgba(20,22,26,0.35) 55%, rgba(20,22,26,0.25) 100%)" }} />
-      <span className="absolute pointer-events-none select-none right-6" style={{ bottom: "-32px", fontSize: "150px", lineHeight: "0.78", fontWeight: 800, color: IVORY, opacity: 0.12, fontFamily: "var(--font-display)", letterSpacing: "-0.04em" }}>{coming.length}</span>
+    <div className="relative w-full aspect-[3/2] rounded-[28px] overflow-hidden cursor-pointer" style={{ "--tile-accent": DEEP, color: IVORY, boxShadow: "-26px 30px 64px -22px rgba(0,0,0,0.45)" }} onClick={() => openModule("personaladmin")}>
+      <div className="absolute inset-0 rounded-[28px] ring-1 ring-inset ring-white/10" style={glassShell} />
+      <span className="pointer-events-none absolute inset-x-0 top-0 h-px z-10" style={{ background: `linear-gradient(90deg, transparent, ${DEEP} 18%, ${DEEP} 82%, transparent)` }} />
 
-      {/* glazen kaart — schuift links ↔ rechts bij tik */}
-      <motion.div
-        onClick={(e) => { e.stopPropagation(); setRight((v) => !v); }}
-        className="absolute left-0 top-0 h-full w-1/2 z-10 rounded-[28px] overflow-hidden"
-        initial={false}
-        animate={{ x: right ? "100%" : "0%" }}
-        transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-        style={{ background: "rgba(120,128,133,0.32)", backdropFilter: "blur(28px) saturate(1.4)", WebkitBackdropFilter: "blur(28px) saturate(1.4)", border: "1px solid rgba(255,255,255,0.18)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22), 0 18px 40px -18px rgba(0,0,0,0.45)" }}
-      >
-        <div className="absolute inset-0 p-4 flex flex-col" style={{ color: IVORY, textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>
-          <div className="flex items-center justify-between gap-2">
-            <WidgetHeader type="briefing" label="Things to Handle!" count={overdue.length ? `${overdue.length} te laat` : ""} />
-            <div className="flex items-center gap-1.5 shrink-0">
-              {coming.length > 1 && (
-                <>
-                  {!atStart && (
-                    <button onClick={(e) => { e.stopPropagation(); setIdx(0); }} className="p-0.5" aria-label="terug naar start"><ArrowLeft size={13} style={{ color: IVORY, opacity: 0.85 }} /></button>
-                  )}
-                  <button onClick={(e) => { e.stopPropagation(); setIdx((i) => (i + 1) % coming.length); }} className="p-0.5" aria-label="volgende"><ArrowRight size={13} style={{ color: IVORY, opacity: 0.85 }} /></button>
-                </>
+      {/* LINKS: BarPulse (komende lasten) */}
+      <AnimatePresence>
+        {!selected && (
+          <motion.div key="bars" className="absolute inset-y-0 left-0 w-1/2 flex flex-col p-4 z-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }} onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mt-2.5">
+              <h3 className="text-[10px] uppercase tracking-[0.24em] font-semibold text-ivory/80">Things to Handle!</h3>
+              <span className="text-[10px] uppercase tracking-[0.18em] font-semibold" style={{ color: "hsl(var(--life-pistachio))" }}>{active} op komst</span>
+            </div>
+            <div className="flex-1 flex items-end mt-3 min-h-0">
+              {bars.length ? (
+                <BarPulse
+                  items={bars.map((b) => ({ key: b.id, value: b.value, label: b.title.split(" ")[0], color: b.color, selected: selectedId === b.id, onClick: () => setSelectedId(b.id) }))}
+                  height="100%"
+                  gap={6}
+                  className="w-full"
+                />
+              ) : (
+                <p className="text-sm italic text-ivory/45">Rustig — niets op komst.</p>
               )}
             </div>
-          </div>
+            <p className="text-[8px] uppercase tracking-[0.2em] opacity-40 mt-1.5">{weather.sub}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-          <motion.p key={status.label} className="text-[20px] sm:text-[24px] font-display font-black leading-[1] mt-3 tracking-[-0.03em]" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} style={{ color: status.color }}>{status.label}</motion.p>
-
-          <div className="flex items-end justify-between mt-4">
-            {units.map((u, i) => (
-              <React.Fragment key={i}>
-                <div className="flex flex-col items-center">
-                  <span className="text-[6.5px] uppercase tracking-[0.14em] mb-1" style={{ color: NEON, opacity: 0.6 }}>{u.l}</span>
-                  <span className="text-[20px] sm:text-[24px] font-display font-black tabular-nums leading-none tracking-[-0.05em]" style={{ color: NEON, textShadow: `0 0 8px ${NEON}, 0 0 18px ${NEON}99` }}>{hasCurrent ? u.v : "—"}</span>
-                </div>
-                {i < units.length - 1 && (
-                  <span className="text-[20px] sm:text-[24px] font-display font-black leading-none" style={{ color: NEON, opacity: 0.7, textShadow: `0 0 8px ${NEON}` }}>:</span>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-
-          <div className="mt-auto">
-            <div className="flex items-baseline gap-2">
-              <p className="text-[9px] uppercase tracking-[0.2em] opacity-70 shrink-0">op komst</p>
-              <p className="text-[10px] uppercase tracking-[0.14em] truncate" style={{ color: PISTACHIO }}>{hasCurrent ? `${current.title} · €${current.amount || 0}` : "—"}</p>
+      {/* FOTOKAART — schuift links ↔ rechts (4 hoeken, flush) */}
+      <motion.div
+        className="absolute inset-y-0 z-20 overflow-hidden rounded-[24px]"
+        initial={false}
+        animate={{ left: selected ? "0%" : "50%" }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        style={{ width: "50%", boxShadow: "-12px 0 30px -14px rgba(0,0,0,0.42), 12px 0 30px -14px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.18)" }}
+        onClick={selected ? (e) => { e.stopPropagation(); setSelectedId(null); } : undefined}
+      >
+        <img src={PHOTO} alt="Things to Handle" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0.08) 55%, rgba(0,0,0,0.20))" }} />
+        {selected ? (
+          <div className="absolute inset-0 p-4 flex flex-col" style={{ color: IVORY, textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full" style={{ background: selected.color }} />
+              <span className="text-[9px] uppercase tracking-[0.18em] font-bold">last</span>
             </div>
-            <p className="text-[8px] uppercase tracking-[0.16em] opacity-50 mt-1">{weather.sub}</p>
-            <p className="text-[8px] uppercase tracking-[0.2em] mt-2" style={{ color: "rgba(255,255,255,0.7)" }}>{right ? "tik → links" : "tik → rechts"}</p>
+            <h3 className="text-[20px] leading-[1.05] font-display font-semibold tracking-[-0.02em] mt-1">{selected.title}</h3>
+            <p className="text-[10px] uppercase tracking-[0.16em] mt-1 opacity-80">€{Math.round(selected.value)} · {selected.raw.daysUntil < 0 ? "te laat" : `${selected.raw.daysUntil}d`}</p>
+            <div className="flex items-end gap-2 mt-auto">
+              <span className="text-[40px] leading-[0.8] font-display font-semibold tabular-nums">{Math.abs(selected.raw.daysUntil)}</span>
+              <p className="text-[9px] uppercase tracking-[0.18em] opacity-60 mb-1">{selected.raw.daysUntil < 0 ? "dagen te laat" : "dagen"}</p>
+            </div>
+            <p className="text-[8px] uppercase tracking-[0.2em] mt-2 opacity-50">tik → terug</p>
           </div>
-        </div>
+        ) : (
+          <div className="absolute inset-0 p-3.5 flex flex-col" style={{ color: IVORY, textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>
+            <WidgetHeader type="briefing" label="Things to Handle!" count={overdue.length ? `${overdue.length} te laat` : ""} />
+            <h3 className="text-[20px] leading-[1.05] font-display font-semibold tracking-[-0.02em] mt-1">{overdue.length > 0 ? `${overdue.length} TE LAAT` : active > 0 ? `${active} OP KOMST` : "YOU'RE FINE!"}</h3>
+            <p className="text-[10px] uppercase tracking-[0.18em] mt-1 opacity-60">{active} lasten in de lijst</p>
+            <div className="mt-auto space-y-1.5">
+              {coming.slice(0, 3).map((e) => (
+                <div key={e.id} className="flex items-center gap-2">
+                  <span className="h-7 w-2 rounded-full shrink-0" style={{ background: potColor(e.portfolio_id) }} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-display font-semibold leading-none truncate">{e.title}</p>
+                    <p className="text-[8px] uppercase tracking-[0.14em] opacity-60 mt-1">€{Math.round(e.amount)} · {e.daysUntil < 0 ? "te laat" : `${e.daysUntil}d`}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </motion.div>
+
+      {/* RECHTS: actie-paneel bij selectie */}
+      <AnimatePresence>
+        {selected && (
+          <motion.div
+            key="act"
+            className="absolute inset-y-0 right-0 w-1/2 z-30 overflow-hidden rounded-r-[24px]"
+            style={glassShell}
+            initial={{ x: 40, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 40, opacity: 0 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="absolute inset-0 p-4 flex flex-col" style={{ color: IVORY }}>
+              <p className="text-[9px] uppercase tracking-[0.2em] font-semibold text-ivory/70">{selected.title}</p>
+              <h3 className="text-[18px] font-display font-semibold mt-1">€{Math.round(selected.value)}</h3>
+              <p className="text-[10px] uppercase tracking-[0.14em] opacity-70 mt-1">{selected.raw.daysUntil < 0 ? "Te laat" : `Over ${selected.raw.daysUntil} dagen`}</p>
+              <div className="mt-auto space-y-2">
+                <button onClick={() => markDone(selected.raw)} className="w-full inline-flex items-center justify-center gap-1.5 rounded-full bg-ivory text-charcoal px-3 py-2 text-xs font-semibold">Markeer betaald</button>
+                <button onClick={() => openModule("personaladmin")} className="w-full inline-flex items-center justify-center rounded-full bg-white/10 text-ivory px-3 py-2 text-xs font-semibold">Open in admin</button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

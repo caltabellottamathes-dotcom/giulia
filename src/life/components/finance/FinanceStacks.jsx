@@ -6,6 +6,7 @@ import HealthBadge from "@/life/components/finance/HealthBadge";
 import DistributionBar from "@/life/components/finance/DistributionBar";
 import ThingsHandleHorizontal from "@/life/components/finance/ThingsHandleHorizontal";
 import ForecastChart from "@/life/components/finance/ForecastChart";
+import HebbenBestedenBar from "@/life/components/finance/HebbenBestedenBar";
 import { fmtEuro, FREQ_LABELS, calcPortfolio, upcomingExpenses } from "@/lib/financeUtils";
 
 const Card = ({ children, className = "" }) => (
@@ -34,14 +35,12 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
         <ThingsHandleHorizontal />
         <Card>
           <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Geld hebben vs. besteden</p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Stat label="TOTAL MONEY" value={fmtEuro(totalMoney)} color="hsl(var(--life-olive))" note="Totaal aanwezig" />
-            <Stat label="RESERVED" value={fmtEuro(totalReserved)} color="hsl(var(--life-olive))" note="Heeft een bestemming" />
-            <Stat label="AVAILABLE" value={fmtEuro(Math.max(0, dist.available))} color="hsl(var(--life-ridge))" note="Vrij besteedbaar" />
+          <HebbenBestedenBar total={totalMoney} reserved={totalReserved} available={Math.max(0, totalMoney - totalReserved)} />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
+            <Stat label="TOTAL MONEY" value={fmtEuro(totalMoney)} color="hsl(var(--smoke))" note="Totaal aanwezig" />
+            <Stat label="BESTEMD" value={fmtEuro(totalReserved)} color="hsl(var(--life-olive))" note="Heeft een bestemming" />
+            <Stat label="VRIJ" value={fmtEuro(Math.max(0, dist.available))} color="hsl(var(--life-ridge))" note="Vrij besteedbaar" />
             <Stat label="INKOMEN / mnd" value={fmtEuro(dist.income)} note={`Reserveringen ${fmtEuro(dist.reserved)}`} />
-          </div>
-          <div className="mt-4">
-            <DistributionBar income={dist.income} reserved={dist.reserved} available={dist.available} />
           </div>
         </Card>
 

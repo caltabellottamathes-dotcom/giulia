@@ -11,9 +11,12 @@ export default function PortfolioCard({ portfolio, expenses, onClick }) {
   return (
     <button onClick={onClick} className="group text-left w-full rounded-2xl bg-white/55 backdrop-blur-md border border-white/60 shadow-[0_18px_44px_-18px_rgba(0,0,0,0.35)] p-5 hover:shadow-[0_24px_54px_-20px_rgba(0,0,0,0.45)] hover:-translate-y-0.5 transition-all">
       <div className="flex items-start justify-between gap-2 mb-3">
-        <div className="min-w-0">
-          <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">{portfolio.category || "Portefeuille"}</p>
-          <h3 className="text-lg font-display font-semibold tracking-tight text-foreground truncate">{portfolio.name}</h3>
+        <div className="min-w-0 flex items-center gap-2">
+          <span className="h-3 w-3 rounded-full shrink-0" style={{ background: portfolio.color || "hsl(var(--smoke))" }} />
+          <div className="min-w-0">
+            <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">{portfolio.category || "Portefeuille"}</p>
+            <h3 className="text-lg font-display font-semibold tracking-tight text-foreground truncate">{portfolio.name}</h3>
+          </div>
         </div>
         <HealthBadge status={calc.status} />
       </div>
@@ -21,7 +24,7 @@ export default function PortfolioCard({ portfolio, expenses, onClick }) {
       <div className="grid grid-cols-2 gap-3 mt-4">
         <div>
           <p className="text-[9px] uppercase tracking-[0.16em] text-muted-foreground font-semibold">Current</p>
-          <p className="text-2xl font-display font-semibold tabular-nums leading-none mt-0.5" style={{ color: "hsl(var(--life-olive))" }}>{fmtEuro(balance)}</p>
+          <p className="text-2xl font-display font-semibold tabular-nums leading-none mt-0.5" style={{ color: portfolio.color || "hsl(var(--smoke))" }}>{fmtEuro(balance)}</p>
         </div>
         <div>
           <p className="text-[9px] uppercase tracking-[0.16em] text-muted-foreground font-semibold">Reserved / mnd</p>

@@ -52,7 +52,7 @@ export default function PortfolioDetail({ portfolio, expenses, transactions, onE
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl bg-white/55 backdrop-blur-md border border-white/60 p-3">
               <p className="text-[9px] uppercase tracking-[0.16em] text-muted-foreground font-semibold">Huidig saldo</p>
-              <p className="text-2xl font-display font-semibold tabular-nums" style={{ color: "hsl(var(--life-olive))" }}>{fmtEuro(balance)}</p>
+              <p className="text-2xl font-display font-semibold tabular-nums" style={{ color: portfolio.color || "hsl(var(--smoke))" }}>{fmtEuro(balance)}</p>
             </div>
             <div className="rounded-xl bg-white/55 backdrop-blur-md border border-white/60 p-3">
               <p className="text-[9px] uppercase tracking-[0.16em] text-muted-foreground font-semibold">Reservering / mnd</p>
@@ -92,7 +92,7 @@ export default function PortfolioDetail({ portfolio, expenses, transactions, onE
                 const h = Math.max(4, (Math.abs(p.balance) / max) * 100);
                 return (
                   <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                    <div className="w-full rounded-t" style={{ height: `${h}%`, background: p.balance < 0 ? "hsl(var(--life-urgent))" : "hsl(var(--life-olive))", opacity: 0.55 + (i / points.length) * 0.45 }} />
+                    <div className="w-full rounded-t" style={{ height: `${h}%`, background: p.balance < 0 ? "hsl(var(--life-urgent))" : (portfolio.color || "hsl(var(--smoke))"), opacity: 0.55 + (i / points.length) * 0.45 }} />
                     <span className="text-[8px] text-muted-foreground">{p.label}</span>
                   </div>
                 );
@@ -128,7 +128,7 @@ export default function PortfolioDetail({ portfolio, expenses, transactions, onE
                 {txs.map((t) => (
                   <div key={t.id} className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">{t.date ? new Date(t.date).toLocaleDateString("nl-NL", { day: "numeric", month: "short" }) : "—"} · {t.type}</span>
-                    <span className="font-display font-semibold tabular-nums" style={{ color: t.type === "expense" ? "hsl(var(--life-olive))" : "hsl(var(--life-ridge))" }}>{t.type === "expense" ? "−" : "+"}{fmtEuro(t.amount)}</span>
+                    <span className="font-display font-semibold tabular-nums" style={{ color: t.type === "expense" ? "hsl(var(--smoke))" : "hsl(var(--life-ridge))" }}>{t.type === "expense" ? "−" : "+"}{fmtEuro(t.amount)}</span>
                   </div>
                 ))}
               </div>
@@ -141,7 +141,7 @@ export default function PortfolioDetail({ portfolio, expenses, transactions, onE
             <div className="flex gap-2">
               <input type="number" step="0.01" value={txAmount} onChange={(e) => setTxAmount(e.target.value)} placeholder="0,00" className="flex-1 min-w-0 rounded-xl glass-1 px-3 py-2 text-sm outline-none" />
               <button onClick={() => logTx("reservation")} disabled={!txAmount} className="inline-flex items-center gap-1 rounded-xl bg-foreground/10 px-3 py-2 text-xs font-semibold disabled:opacity-40"><ArrowDownLeft className="w-3.5 h-3.5" />Reservering</button>
-              <button onClick={() => logTx("expense")} disabled={!txAmount} className="inline-flex items-center gap-1 rounded-xl px-3 py-2 text-xs font-semibold text-ivory disabled:opacity-40" style={{ background: "hsl(var(--life-olive))" }}><ArrowUpRight className="w-3.5 h-3.5" />Betaling</button>
+              <button onClick={() => logTx("expense")} disabled={!txAmount} className="inline-flex items-center gap-1 rounded-xl px-3 py-2 text-xs font-semibold text-ivory disabled:opacity-40" style={{ background: portfolio.color || "hsl(var(--smoke))" }}><ArrowUpRight className="w-3.5 h-3.5" />Betaling</button>
             </div>
             <p className="text-[10px] text-muted-foreground mt-1">Reservering verhoogt het saldo, betaling verlaagt het.</p>
           </div>

@@ -16,6 +16,7 @@ const PRIORITIES = [
   { v: "medium", l: "Gemiddeld" },
   { v: "high", l: "Hoog" },
 ];
+const COLORS = ["#b1bec6", "#d8dab3", "#cfd9dd", "#dfe0db", "#86837c", "#94925d", "#d5e24a"];
 
 const inputCls = "w-full rounded-xl glass-1 px-3 py-2.5 text-sm outline-none focus:border-olive transition";
 const labelCls = "text-[10px] uppercase tracking-[0.16em] text-muted-foreground font-semibold mb-1.5 block";
@@ -30,7 +31,7 @@ export default function PortfolioEditor({ open, item, onClose, onSaved, onDelete
       setForm(
         item
           ? { ...item }
-          : { name: "", kind: "vaste_last", category: "", goal: "", current_balance: "", target_balance: "", desired_buffer: "", monthly_reservation_actual: "", payment_frequency: "monthly", priority: "medium", notes: "", active: true }
+          : { name: "", color: "#b1bec6", kind: "vaste_last", category: "", goal: "", current_balance: "", target_balance: "", desired_buffer: "", monthly_reservation_actual: "", payment_frequency: "monthly", priority: "medium", notes: "", active: true }
       );
     }
   }, [open, item]);
@@ -45,6 +46,7 @@ export default function PortfolioEditor({ open, item, onClose, onSaved, onDelete
     try {
       const payload = {
         name: form.name.trim(),
+        color: form.color || "#b1bec6",
         kind: form.kind || "vaste_last",
         category: form.category || "",
         goal: form.goal || "",
@@ -103,6 +105,15 @@ export default function PortfolioEditor({ open, item, onClose, onSaved, onDelete
           <div>
             <label className={labelCls}>Naam</label>
             <input value={form.name || ""} onChange={(e) => set("name", e.target.value)} placeholder="bv. Woonkosten, Verzekering auto" className={inputCls} />
+          </div>
+
+          <div>
+            <label className={labelCls}>Kleur</label>
+            <div className="flex flex-wrap items-center gap-2">
+              {COLORS.map((c) => (
+                <button key={c} type="button" onClick={() => set("color", c)} title={c} className={`h-7 w-7 rounded-full transition ${form.color === c ? "ring-2 ring-offset-2 ring-foreground scale-110" : "ring-1 ring-foreground/15"}`} style={{ background: c }} />
+              ))}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

@@ -3,13 +3,15 @@ import { base44 } from "@/api/base44Client";
 import { RefreshCw, Pencil, ChevronDown } from "lucide-react";
 import SpaceRecapEditor from "./SpaceRecapEditor";
 
+const STALE_MS = 8 * 60 * 60 * 1000; // 8 uur — een paar keer per dag
+
 const SCHEMA = {
   type: "object",
   properties: {
-    eyebrow: { type: "string", description: "Kleine uppercase label, bijv. 'PERSONAL ADMIN / CURRENT STATE'" },
-    title: { type: "string", description: "Grote kop in FULL CAPS met punt erachter, max ~7 woorden" },
-    subtitle: { type: "string", description: "Ondertitel, één korte zin" },
-    body: { type: "string", description: "1-2 zinnen met concrete cijfers" },
+    eyebrow: { type: "string" },
+    title: { type: "string" },
+    subtitle: { type: "string" },
+    body: { type: "string" },
     footerLeft: { type: "string" },
     footerRight: { type: "string" },
     attentionTitle: { type: "string" },
@@ -30,59 +32,54 @@ const SCHEMA = {
 
 const pad = (n) => String(n).padStart(2, "0");
 
-/** EditorialLayout — reference editorial: top block + attention list + closing.
- *  LIFE-kleuren (Olive) voor accenttekst; hoofd titel in FULL CAPS met punt. */
+/** EditorialLayout — LIFE-palet: smoke als hoofdtekst, een beetje olive voor
+ *  nummers/badge, urgent alleen subtiel bij aandacht. Titel blijft zwart. */
 export function EditorialLayout({ data, onRefresh, onEdit, loading }) {
   const items = Array.isArray(data?.items) ? data.items : [];
   const rawTitle = (data?.title || "").toUpperCase();
   const title = rawTitle.endsWith(".") ? rawTitle : `${rawTitle}.`;
   return (
     <div className="flex flex-col min-h-full">
-      {/* editorial section header — duwt de tekst iets naar beneden */}
       <div className="flex items-center justify-between pb-3 border-b border-foreground/12">
-        <p className="text-[9px] uppercase tracking-[0.3em] font-bold text-life-olive">Editorial Summary</p>
-        <p className="text-[9px] uppercase tracking-[0.24em] font-semibold text-life-olive">Giulia AI</p>
+        <p className="text-[9px] uppercase tracking-[0.3em] font-bold text-smoke">Editorial Summary</p>
+        <p className="text-[9px] uppercase tracking-[0.24em] font-semibold text-smoke">Giulia AI</p>
       </div>
 
-      {/* TOP BLOCK */}
       <section className="mt-6">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-[10px] uppercase tracking-[0.28em] font-semibold text-life-olive">{data.eyebrow}</p>
+          <p className="text-[10px] uppercase tracking-[0.28em] font-semibold text-smoke">{data.eyebrow}</p>
           <div className="flex items-center gap-1">
             {onRefresh && (
-              <button onClick={onRefresh} title="GIULIA opnieuw genereren" className="p-1 rounded-full hover:bg-foreground/5 text-life-olive transition">
+              <button onClick={onRefresh} title="GIULIA opnieuw genereren" className="p-1 rounded-full hover:bg-foreground/5 text-smoke transition">
                 <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
               </button>
             )}
             {onEdit && (
-              <button onClick={onEdit} title="Handmatig aanpassen" className="p-1 rounded-full hover:bg-foreground/5 text-life-olive transition">
+              <button onClick={onEdit} title="Handmatig aanpassen" className="p-1 rounded-full hover:bg-foreground/5 text-smoke transition">
                 <Pencil className="w-3 h-3" />
               </button>
             )}
           </div>
         </div>
         <h2 className="font-display text-[32px] sm:text-[38px] leading-[0.98] tracking-[-0.03em] text-foreground font-medium mt-3">{title}</h2>
-        <p className="text-[11px] uppercase tracking-[0.22em] font-semibold text-life-olive mt-3">{data.subtitle}</p>
+        <p className="text-[11px] uppercase tracking-[0.22em] font-semibold text-smoke mt-3">{data.subtitle}</p>
         <div className="flex items-start gap-3 mt-5">
-          <p className="font-body text-[14px] leading-[1.7] text-life-olive text-balance flex-1">{data.body}</p>
-          <ChevronDown className="w-4 h-4 text-life-olive shrink-0 mt-1" />
+          <p className="font-body text-[14px] leading-[1.7] text-smoke text-balance flex-1">{data.body}</p>
+          <ChevronDown className="w-4 h-4 text-smoke shrink-0 mt-1" />
         </div>
       </section>
 
-      {/* footer rule */}
       <div className="mt-6 pt-3 border-t border-foreground/15 flex items-center justify-between">
-        <p className="text-[9px] uppercase tracking-[0.24em] font-semibold text-life-olive">{data.footerLeft || "HERE'S HOW WE READ A FRAME"}</p>
-        <p className="text-[9px] uppercase tracking-[0.24em] font-semibold text-life-olive">{data.footerRight || "(SCROLL)"}</p>
+        <p className="text-[9px] uppercase tracking-[0.24em] font-semibold text-smoke">{data.footerLeft || "HERE'S HOW WE READ A FRAME"}</p>
+        <p className="text-[9px] uppercase tracking-[0.24em] font-semibold text-smoke">{data.footerRight || "(SCROLL)"}</p>
       </div>
 
-      {/* spacer — duwt het aandachtsblok naar beneden zodat het de hoogte vult */}
       <div className="flex-1 min-h-5" />
 
-      {/* ATTENTION BLOCK */}
       {items.length > 0 && (
         <section>
           <div className="flex items-center justify-between gap-3">
-            <h3 className="text-[14px] uppercase tracking-[0.14em] font-bold text-life-olive">{data.attentionTitle || "WHAT NEEDS YOUR ATTENTION"}</h3>
+            <h3 className="text-[14px] uppercase tracking-[0.14em] font-bold text-smoke">{data.attentionTitle || "WHAT NEEDS YOUR ATTENTION"}</h3>
             <span className="text-[9px] uppercase tracking-[0.2em] font-semibold text-life-olive shrink-0">{data.attentionBadge || `${pad(items.length)} ITEMS`}</span>
           </div>
           <div className="mt-3 border-t border-foreground/15">
@@ -90,8 +87,8 @@ export function EditorialLayout({ data, onRefresh, onEdit, loading }) {
               <div key={i} className={`flex items-start gap-4 py-4 ${i > 0 ? "border-t border-foreground/12" : ""}`}>
                 <span className="font-display text-[22px] leading-none font-light text-life-olive tabular-nums shrink-0 w-7">{pad(i + 1)}</span>
                 <div className="min-w-0">
-                  <p className="text-[13px] font-bold text-life-olive leading-tight">{it.title}</p>
-                  <p className="text-[12px] text-life-olive/75 leading-[1.55] mt-1.5">{it.sub}</p>
+                  <p className="text-[13px] font-bold text-smoke leading-tight">{it.title}</p>
+                  <p className="text-[12px] text-smoke/75 leading-[1.55] mt-1.5">{it.sub}</p>
                 </div>
               </div>
             ))}
@@ -99,66 +96,67 @@ export function EditorialLayout({ data, onRefresh, onEdit, loading }) {
         </section>
       )}
 
-      {/* CLOSING */}
       <section className={items.length > 0 ? "pt-6" : "pt-3"}>
-        <p className="text-[11px] uppercase tracking-[0.2em] font-semibold text-life-olive">{data.restTitle}</p>
-        <p className="font-body text-[13px] leading-[1.6] text-life-olive/80 mt-2">{data.restBody}</p>
+        <p className="text-[11px] uppercase tracking-[0.2em] font-semibold text-smoke">{data.restTitle}</p>
+        <p className="font-body text-[13px] leading-[1.6] text-smoke/80 mt-2">{data.restBody}</p>
       </section>
     </div>
   );
 }
 
-/** SpaceRecap — per-tab editorial recap. Handmatig bewerkbaar (opgeslagen in
- *  localStorage per tab); GIULIA genereert een standaard wanneer er nog niets
- *  is opgeslagen. */
-export default function SpaceRecap({ storageKey, prompt, fallback, onRefresh }) {
+/** SpaceRecap — per-tab editorial recap. Handmatig bewerkbaar; GIULIA
+ *  regenereert alleen wanneer er geen opgeslagen versie is, de data is
+ *  veranderd (signature wijkt af), of de cache ouder is dan 8 uur. Niet bij
+ *  elke page-load. */
+export default function SpaceRecap({ storageKey, dataSignature = "", prompt, fallback, onRefresh }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const promptRef = useRef(prompt);
   promptRef.current = prompt;
 
-  useEffect(() => {
-    let cancelled = false;
-    const saved = localStorage.getItem(storageKey);
-    if (saved) {
-      try {
-        const p = JSON.parse(saved);
-        if (p && p.title) { setData(p); setLoading(false); return; }
-      } catch { /* ignore */ }
-    }
-    setLoading(true);
-    base44.integrations.Core.InvokeLLM({ prompt: promptRef.current, response_json_schema: SCHEMA })
-      .then((r) => { if (cancelled) return; if (r && r.title && Array.isArray(r.items)) { setData(r); localStorage.setItem(storageKey, JSON.stringify(r)); } else if (fallback) { setData(fallback); } })
-      .catch(() => { if (!cancelled && fallback) setData(fallback); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [storageKey]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const generate = async () => {
     try {
-      const r = await base44.integrations.Core.InvokeLLM({ prompt: promptRef.current, response_json_schema: SCHEMA });
-      if (r && r.title && Array.isArray(r.items)) return r;
+      const res = await base44.functions.invoke("generateAdminRecap", { prompt: promptRef.current, schema: SCHEMA });
+      if (res && res.ok && res.data && res.data.title && Array.isArray(res.data.items)) return res.data;
     } catch { /* ignore */ }
     return null;
   };
 
+  const persist = (content) => {
+    localStorage.setItem(storageKey, JSON.stringify({ _content: content, _ts: Date.now(), _sig: dataSignature }));
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    const saved = localStorage.getItem(storageKey);
+    let savedContent = null, savedTs = 0, savedSig = "";
+    if (saved) {
+      try {
+        const p = JSON.parse(saved);
+        if (p && p._content && p._content.title) { savedContent = p._content; savedTs = p._ts || 0; savedSig = p._sig || ""; }
+      } catch { /* ignore */ }
+    }
+    const fresh = savedContent && savedSig === dataSignature && (Date.now() - savedTs < STALE_MS);
+    if (savedContent) setData(savedContent);
+    if (fresh) { setLoading(false); return; }
+    setLoading(true);
+    generate()
+      .then((r) => { if (cancelled) return; if (r) { setData(r); persist(r); } else if (!savedContent && fallback) { setData(fallback); } })
+      .catch(() => { if (!cancelled && !savedContent && fallback) setData(fallback); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [storageKey, dataSignature]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const regenerate = async () => {
     setLoading(true);
     const r = await generate();
-    if (r) { setData(r); localStorage.setItem(storageKey, JSON.stringify(r)); }
+    if (r) { setData(r); persist(r); }
     setLoading(false);
     onRefresh?.();
   };
-
-  const editorRegen = async () => {
-    setLoading(true);
-    const r = await generate();
-    setLoading(false);
-    return r;
-  };
-
-  const save = (d) => { setData(d); localStorage.setItem(storageKey, JSON.stringify(d)); setEditing(false); onRefresh?.(); };
+  const editorRegen = async () => { setLoading(true); const r = await generate(); setLoading(false); return r; };
+  const save = (d) => { setData(d); persist(d); setEditing(false); onRefresh?.(); };
 
   return (
     <>
@@ -170,7 +168,6 @@ export default function SpaceRecap({ storageKey, prompt, fallback, onRefresh }) 
           <div className="h-4 w-full rounded shimmer mt-4" />
           <div className="h-4 w-5/6 rounded shimmer" />
           <div className="mt-8 space-y-4">
-            <div className="h-16 rounded shimmer" />
             <div className="h-16 rounded shimmer" />
             <div className="h-16 rounded shimmer" />
           </div>

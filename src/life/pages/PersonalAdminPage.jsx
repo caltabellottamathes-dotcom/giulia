@@ -102,6 +102,7 @@ export default function PersonalAdminPage() {
   const dist = useMemo(() => monthlyDistribution(incomes, portfolios, expenses), [incomes, portfolios, expenses]);
   const tm = useMemo(() => totalMoney(portfolios, incomes, expenses), [portfolios, incomes, expenses]);
   const tr = useMemo(() => totalReserved(portfolios), [portfolios]);
+  const dataSignature = useMemo(() => `${tab}:${Math.round(tm)}:${Math.round(tr)}:${portfolios.length}:${expenses.filter((e) => e.status !== "done").length}:${incomes.length}`, [tab, tm, tr, portfolios, expenses, incomes]);
   const data = {
     portfolios: portfolios.filter((p) => !p.archived),
     expenses, incomes, transactions, docs,
@@ -139,7 +140,7 @@ export default function PersonalAdminPage() {
         onTab={setTab}
         navInfo="LIFE · FINANCE"
         onAdd={onAdd}
-        recap={<SpaceRecap storageKey={`personalAdmin:${tab}`} prompt={recapPrompt} fallback={fallback} onRefresh={() => setRecapRefresh((r) => r + 1)} />}
+        recap={<SpaceRecap storageKey={`personalAdmin:${tab}`} dataSignature={dataSignature} prompt={recapPrompt} fallback={fallback} onRefresh={() => setRecapRefresh((r) => r + 1)} />}
       >
         {loading ? (
           <div className="space-y-3">
