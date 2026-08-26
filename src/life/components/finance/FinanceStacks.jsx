@@ -6,8 +6,9 @@ import HealthBadge from "@/life/components/finance/HealthBadge";
 import DistributionBar from "@/life/components/finance/DistributionBar";
 import PortfolioBarsWidget from "@/life/components/finance/PortfolioBarsWidget";
 import ForecastChart from "@/life/components/finance/ForecastChart";
-import HebbenBestedenBar from "@/life/components/finance/HebbenBestedenBar";
+import FinanceTreemap from "@/life/components/finance/FinanceTreemap";
 import HealthyMoneyTab from "@/life/components/finance/HealthyMoneyTab";
+import HebbenBestedenBar from "@/life/components/finance/HebbenBestedenBar";
 import { fmtEuro, FREQ_LABELS, calcPortfolio, upcomingExpenses } from "@/lib/financeUtils";
 
 const Card = ({ children, className = "" }) =>
@@ -35,8 +36,8 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
       <>
         <PortfolioBarsWidget portfolios={portfolios} expenses={expenses} onOpenPortfolio={onOpenPortfolio} />
         <Card>
-          <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Geld hebben vs. besteden</p>
-          <HebbenBestedenBar total={totalMoney} reserved={totalReserved} available={Math.max(0, totalMoney - totalReserved)} />
+          <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Verdeling van je inkomen per portefeuille</p>
+          <FinanceTreemap portfolios={portfolios} totalIncome={dist.income} />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
             <Stat label="TOTAL MONEY" value={fmtEuro(totalMoney)} color="hsl(var(--smoke))" note="Totaal aanwezig" />
             <Stat label="BESTEMD" value={fmtEuro(totalReserved)} color="hsl(var(--life-olive))" note="Heeft een bestemming" />

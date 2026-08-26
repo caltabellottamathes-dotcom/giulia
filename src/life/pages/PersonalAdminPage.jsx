@@ -8,7 +8,7 @@ import {
   upcomingExpenses,
 } from "@/lib/financeUtils";
 import SpaceShell from "@/life/components/space/SpaceShell";
-import SpaceRecap from "@/life/components/space/SpaceRecap";
+import SpaceRecap, { SCHEMA } from "@/life/components/space/SpaceRecap";
 import FinanceStacks from "@/life/components/finance/FinanceStacks";
 import PortfolioEditor from "@/life/components/finance/PortfolioEditor";
 import ExpenseEditor from "@/life/components/finance/ExpenseEditor";
@@ -24,6 +24,16 @@ const TABS = [
   { key: "HEALTHY_MONEY", label: "Healthy Money", icon: HeartPulse },
   { key: "DOCUMENTEN", label: "Documenten", icon: FileText },
 ];
+
+const TAB_TITLES = {
+  OVERVIEW: "CURRENT STATE",
+  PORTEFEUILLES: "PORTFOLIO OVERVIEW",
+  LASTEN: "UPCOMING COMMITMENTS",
+  INKOMEN: "INCOME & ALLOCATION",
+  FORECAST: "FORWARD VIEW",
+  HEALTHY_MONEY: "HEALTHY MONEY",
+  DOCUMENTEN: "DOCUMENTS",
+};
 
 const recalcServer = () => base44.functions.invoke("calcReservations", {}).catch(() => null);
 
@@ -101,6 +111,30 @@ export default function PersonalAdminPage() {
   };
   useEffect(() => { load(); }, []);
 
+  // Prewarm: genereer per-tab editorial voor álle tabs op de achtergrond,
+  // zodat bij het openen van een tab de analyse al geladen is (geen wachten).
+  useEffect(() => {
+    if (loading) return;
+    let cancelled = false;
+    (async () => {
+      for (const t of TABS) {
+        if (cancelled) return;
+        const sig = `${t.key}:${Math.round(tm)}:${Math.round(tr)}:${portfolios.length}:${expenses.filter((e) => e.status !== "done").length}:${incomes.length}`;
+        const key = `personalAdmin:${t.key}`;
+        const saved = localStorage.getItem(key);
+        let fresh = false;
+        if (saved) { try { const p = JSON.parse(saved); fresh = p && p._content && p._sig === sig && (Date.now() - (p._ts || 0) < 8 * 3600 * 1000); } catch { /* */ } }
+        if (fresh) continue;
+        try {
+          const prompt = buildPrompt(t.key, data);
+          const res = await base44.functions.invoke("generateAdminRecap", { prompt, schema: SCHEMA });
+          if (res && res.ok && res.data && res.data.title) localStorage.setItem(key, JSON.stringify({ _content: res.data, _ts: Date.now(), _sig: sig }));
+        } catch { /* */ }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const dist = useMemo(() => monthlyDistribution(incomes, portfolios, expenses), [incomes, portfolios, expenses]);
   const tm = useMemo(() => totalMoney(portfolios, incomes, expenses), [portfolios, incomes, expenses]);
   const tr = useMemo(() => totalReserved(portfolios), [portfolios]);
@@ -144,7 +178,7 @@ export default function PersonalAdminPage() {
         onAdd={onAdd}
         cardHeader={(
           <div className="flex items-center justify-between px-5 lg:px-7 pt-4 pb-3 border-b border-foreground/12">
-            <p className="text-[9px] uppercase tracking-[0.3em] font-bold text-life-ridge">Editorial Summary</p>
+            <p className="text-[9px] uppercase tracking-[0.3em] font-bold text-life-ridge">PERSONAL ADMIN | {TAB_TITLES[tab] || "CURRENT STATE"}</p>
             <p className="text-[9px] uppercase tracking-[0.24em] font-semibold text-life-pistachio">Giulia AI</p>
           </div>
         )}

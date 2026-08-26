@@ -6,7 +6,7 @@ const STALE_MS = 8 * 60 * 60 * 1000; // 8 uur — een paar keer per dag
 
 const TAB_LINKS = ["OVERVIEW", "PORTEFEUILLES", "LASTEN", "INKOMEN", "FORECAST", "DOCUMENTEN", "HEALTHY_MONEY"];
 
-const SCHEMA = {
+export const SCHEMA = {
   type: "object",
   properties: {
     eyebrow: { type: "string" },
@@ -58,7 +58,7 @@ export function EditorialLayout({ data, onRefresh, onNavigate, loading }) {
         <h2 className="font-display text-[32px] sm:text-[38px] leading-[0.98] tracking-[-0.03em] text-foreground font-medium mt-3">{title}</h2>
         <p className="text-[11px] uppercase tracking-[0.22em] font-semibold text-life-ridge mt-3">{data.subtitle}</p>
         <div className="flex items-start gap-3 mt-5">
-          <p className="font-body text-[14px] leading-[1.7] text-smoke text-balance flex-1">{data.body}</p>
+          <p className="font-body text-[14px] leading-[1.7] text-foreground text-balance flex-1">{data.body}</p>
           <ChevronDown className="w-4 h-4 text-life-ridge shrink-0 mt-1" />
         </div>
       </section>
@@ -73,7 +73,7 @@ export function EditorialLayout({ data, onRefresh, onNavigate, loading }) {
       {items.length > 0 && (
         <section>
           <div className="flex items-center justify-between gap-3">
-            <h3 className="text-[14px] uppercase tracking-[0.14em] font-bold text-smoke">{data.attentionTitle || "WHAT NEEDS YOUR ATTENTION"}</h3>
+            <h3 className="text-[14px] uppercase tracking-[0.14em] font-bold text-life-ridge">{data.attentionTitle || "WHAT NEEDS YOUR ATTENTION"}</h3>
             <span className="text-[9px] uppercase tracking-[0.2em] font-semibold text-life-pistachio shrink-0">{data.attentionBadge || `${pad(items.length)} ITEMS`}</span>
           </div>
           <div className="mt-3 border-t border-foreground/15">
@@ -88,8 +88,8 @@ export function EditorialLayout({ data, onRefresh, onNavigate, loading }) {
                 >
                   <span className="font-display text-[22px] leading-none font-light text-life-pistachio tabular-nums shrink-0 w-7">{pad(i + 1)}</span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-bold text-smoke leading-tight">{it.title}</p>
-                    <p className="text-[12px] text-smoke/75 leading-[1.55] mt-1.5">{it.sub}</p>
+                    <p className="text-[13px] font-bold text-foreground leading-tight">{it.title}</p>
+                    <p className="text-[12px] text-foreground/70 leading-[1.55] mt-1.5">{it.sub}</p>
                   </div>
                   {nav && <ArrowRight className="w-3.5 h-3.5 text-life-ridge shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition" />}
                 </Tag>
@@ -101,7 +101,7 @@ export function EditorialLayout({ data, onRefresh, onNavigate, loading }) {
 
       <section className={items.length > 0 ? "pt-6" : "pt-3"}>
         <p className="text-[11px] uppercase tracking-[0.2em] font-semibold text-life-ridge">{data.restTitle}</p>
-        <p className="font-body text-[13px] leading-[1.6] text-smoke/80 mt-2">{data.restBody}</p>
+        <p className="font-body text-[13px] leading-[1.6] text-foreground/80 mt-2">{data.restBody}</p>
       </section>
     </div>
   );

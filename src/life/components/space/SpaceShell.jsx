@@ -84,12 +84,12 @@ export default function SpaceShell({ bgImage, heroImage, eyebrow, title, tabs, a
           <div className="w-full shrink-0">{cardHeader}</div>
           }
 
-          {/* Body — links editorial (breder), rechts widget-stapel die er iets boven zweeft */}
+          {/* Body — links editorial (breder), rechts widget-stapel naar de voorgrond */}
           <div className="flex-1 flex flex-col lg:flex-row min-h-0">
-            <div className="lg:w-[46%] xl:w-[44%] shrink-0 overflow-y-auto px-5 lg:px-7 pt-4 pb-6">
+            <div className="lg:w-[46%] xl:w-[44%] shrink-0 overflow-y-auto px-5 lg:px-7 pt-4 pb-6 relative z-10">
               {recap}
             </div>
-            <div className="flex-1 overflow-y-auto px-5 lg:px-7 py-6 space-y-4 lg:-ml-8 relative z-20">
+            <div className="flex-1 overflow-y-auto px-5 lg:px-7 py-6 space-y-4 lg:-ml-10 relative z-30">
               {children}
             </div>
           </div>
