@@ -24,15 +24,15 @@ export const SCHEMA = {
         properties: {
           title: { type: "string" },
           sub: { type: "string" },
-          link: { type: "string", enum: TAB_LINKS, description: "tab waar Salvo heen moet om dit op te lossen" },
+          link: { type: "string", enum: TAB_LINKS, description: "tab waar Salvo heen moet om dit op te lossen" }
         },
-        required: ["title", "sub"],
-      },
+        required: ["title", "sub"]
+      }
     },
     restTitle: { type: "string" },
-    restBody: { type: "string" },
+    restBody: { type: "string" }
   },
-  required: ["eyebrow", "title", "subtitle", "body", "items", "restTitle", "restBody"],
+  required: ["eyebrow", "title", "subtitle", "body", "items", "restTitle", "restBody"]
 };
 
 const pad = (n) => String(n).padStart(2, "0");
@@ -49,13 +49,13 @@ export function EditorialLayout({ data, onRefresh, onNavigate, loading }) {
       <section className="mt-5">
         <div className="flex items-center justify-between gap-3">
           <p className="text-[10px] uppercase tracking-[0.28em] font-semibold text-life-ridge">{data.eyebrow}</p>
-          {onRefresh && (
-            <button onClick={onRefresh} title="GIULIA opnieuw genereren" className="p-1 rounded-full hover:bg-foreground/5 text-life-ridge transition">
+          {onRefresh &&
+          <button onClick={onRefresh} title="GIULIA opnieuw genereren" className="p-1 rounded-full hover:bg-foreground/5 text-life-ridge transition">
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
             </button>
-          )}
+          }
         </div>
-        <h2 className="font-display text-[32px] sm:text-[38px] leading-[0.98] tracking-[-0.03em] text-foreground font-medium mt-3">{title}</h2>
+        <h2 className="font-display text-[32px] sm:text-[38px] leading-[0.98] tracking-[-0.03em] font-medium mt-3 text-[hsl(var(--sand))]">{title}</h2>
         <p className="text-[11px] uppercase tracking-[0.22em] font-semibold text-life-ridge mt-3">{data.subtitle}</p>
         <div className="flex items-start gap-3 mt-5">
           <p className="font-body text-[14px] leading-[1.7] text-foreground text-balance flex-1">{data.body}</p>
@@ -70,41 +70,41 @@ export function EditorialLayout({ data, onRefresh, onNavigate, loading }) {
 
       <div className="flex-1 min-h-5" />
 
-      {items.length > 0 && (
-        <section>
+      {items.length > 0 &&
+      <section>
           <div className="flex items-center justify-between gap-3">
             <h3 className="text-[14px] uppercase tracking-[0.14em] font-bold text-life-ridge">{data.attentionTitle || "WHAT NEEDS YOUR ATTENTION"}</h3>
             <span className="text-[9px] uppercase tracking-[0.2em] font-semibold text-life-pistachio shrink-0">{data.attentionBadge || `${pad(items.length)} ITEMS`}</span>
           </div>
           <div className="mt-3 border-t border-foreground/15">
             {items.map((it, i) => {
-              const nav = it.link && onNavigate;
-              const Tag = nav ? "button" : "div";
-              return (
-                <Tag
-                  key={i}
-                  {...(nav ? { onClick: () => onNavigate(it.link) } : {})}
-                  className={`flex items-start gap-4 py-4 w-full text-left ${i > 0 ? "border-t border-foreground/12" : ""} ${nav ? "hover:bg-foreground/[0.03] transition group cursor-pointer" : ""}`}
-                >
+            const nav = it.link && onNavigate;
+            const Tag = nav ? "button" : "div";
+            return (
+              <Tag
+                key={i}
+                {...nav ? { onClick: () => onNavigate(it.link) } : {}}
+                className={`flex items-start gap-4 py-4 w-full text-left ${i > 0 ? "border-t border-foreground/12" : ""} ${nav ? "hover:bg-foreground/[0.03] transition group cursor-pointer" : ""}`}>
+                
                   <span className="font-display text-[22px] leading-none font-light text-life-pistachio tabular-nums shrink-0 w-7">{pad(i + 1)}</span>
                   <div className="min-w-0 flex-1">
                     <p className="text-[13px] font-bold text-foreground leading-tight">{it.title}</p>
                     <p className="text-[12px] text-foreground/70 leading-[1.55] mt-1.5">{it.sub}</p>
                   </div>
                   {nav && <ArrowRight className="w-3.5 h-3.5 text-life-ridge shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition" />}
-                </Tag>
-              );
-            })}
+                </Tag>);
+
+          })}
           </div>
         </section>
-      )}
+      }
 
       <section className={items.length > 0 ? "pt-6" : "pt-3"}>
         <p className="text-[11px] uppercase tracking-[0.2em] font-semibold text-life-ridge">{data.restTitle}</p>
         <p className="font-body text-[13px] leading-[1.6] text-foreground/80 mt-2">{data.restBody}</p>
       </section>
-    </div>
-  );
+    </div>);
+
 }
 
 /** SpaceRecap — per-tab editorial recap. Giulia's analyse; regenereert alleen
@@ -121,7 +121,7 @@ export default function SpaceRecap({ storageKey, dataSignature = "", prompt, fal
     try {
       const res = await base44.functions.invoke("generateAdminRecap", { prompt: promptRef.current, schema: SCHEMA });
       if (res && res.ok && res.data && res.data.title && Array.isArray(res.data.items)) return res.data;
-    } catch { /* ignore */ }
+    } catch {/* ignore */}
     return null;
   };
 
@@ -132,36 +132,36 @@ export default function SpaceRecap({ storageKey, dataSignature = "", prompt, fal
   useEffect(() => {
     let cancelled = false;
     const saved = localStorage.getItem(storageKey);
-    let savedContent = null, savedTs = 0, savedSig = "";
+    let savedContent = null,savedTs = 0,savedSig = "";
     if (saved) {
       try {
         const p = JSON.parse(saved);
-        if (p && p._content && p._content.title) { savedContent = p._content; savedTs = p._ts || 0; savedSig = p._sig || ""; }
-      } catch { /* ignore */ }
+        if (p && p._content && p._content.title) {savedContent = p._content;savedTs = p._ts || 0;savedSig = p._sig || "";}
+      } catch {/* ignore */}
     }
-    const fresh = savedContent && savedSig === dataSignature && (Date.now() - savedTs < STALE_MS);
+    const fresh = savedContent && savedSig === dataSignature && Date.now() - savedTs < STALE_MS;
     if (savedContent) setData(savedContent);
-    if (fresh) { setLoading(false); return; }
+    if (fresh) {setLoading(false);return;}
     setLoading(true);
-    generate()
-      .then((r) => { if (cancelled) return; if (r) { setData(r); persist(r); } else if (!savedContent && fallback) { setData(fallback); } })
-      .catch(() => { if (!cancelled && !savedContent && fallback) setData(fallback); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+    generate().
+    then((r) => {if (cancelled) return;if (r) {setData(r);persist(r);} else if (!savedContent && fallback) {setData(fallback);}}).
+    catch(() => {if (!cancelled && !savedContent && fallback) setData(fallback);}).
+    finally(() => {if (!cancelled) setLoading(false);});
+    return () => {cancelled = true;};
   }, [storageKey, dataSignature]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const regenerate = async () => {
     setLoading(true);
     const r = await generate();
-    if (r) { setData(r); persist(r); }
+    if (r) {setData(r);persist(r);}
     setLoading(false);
     onRefresh?.();
   };
 
   return (
     <>
-      {loading && !data ? (
-        <div className="space-y-3">
+      {loading && !data ?
+      <div className="space-y-3">
           <div className="h-3 w-1/2 rounded shimmer" />
           <div className="h-10 w-3/4 rounded-lg shimmer" />
           <div className="h-3 w-2/3 rounded shimmer" />
@@ -171,10 +171,10 @@ export default function SpaceRecap({ storageKey, dataSignature = "", prompt, fal
             <div className="h-16 rounded shimmer" />
             <div className="h-16 rounded shimmer" />
           </div>
-        </div>
-      ) : data ? (
-        <EditorialLayout data={data} onRefresh={regenerate} onNavigate={onNavigate} loading={loading} />
-      ) : null}
-    </>
-  );
+        </div> :
+      data ?
+      <EditorialLayout data={data} onRefresh={regenerate} onNavigate={onNavigate} loading={loading} /> :
+      null}
+    </>);
+
 }
