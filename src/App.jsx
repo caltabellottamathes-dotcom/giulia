@@ -46,6 +46,7 @@ import LifeGallery from '@/life/pages/LifeGallery';
 import WakeMode from '@/life/pages/WakeMode';
 import LifeLanding from '@/life/pages/LifeLanding';
 import SocialPage from '@/life/pages/SocialPage';
+import SocialPage2 from '@/life/pages/SocialPage2';
 import HouseholdPage from '@/life/pages/HouseholdPage';
 import PersonalAdminPage from '@/life/pages/PersonalAdminPage';
 import HobbiesPage from '@/life/pages/HobbiesPage';
@@ -131,6 +132,7 @@ const AuthenticatedApp = () => {
           <Route path="/updates" element={<Updates />} />
           <Route path="/life" element={<LifeLanding />} />
           <Route path="/life/social" element={<SocialPage />} />
+          <Route path="/life/social-2" element={<SocialPage2 />} />
           <Route path="/life/household" element={<HouseholdPage />} />
           <Route path="/life/personal-admin" element={<PersonalAdminPage />} />
           <Route path="/life/hobbies" element={<HobbiesPage />} />
