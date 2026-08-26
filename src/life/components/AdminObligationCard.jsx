@@ -7,11 +7,11 @@ const labelOf = (s) => s === "urgent" ? "TE LAAT" : s === "soon" ? "NADERT" : "O
 
 /** AdminObligationCard — heldere administratieve kaart: titel, bedrag, datum,
  *  korte statusregel en één primaire actie. Donker (panel) of licht (page). */
-export default function AdminObligationCard({ item, action = "OPEN", onAction, onEdit, onDelete, tone = "light", extra }) {
+export default function AdminObligationCard({ item, action = "OPEN", onAction, onEdit, onDelete, tone = "light", extra, focus = false }) {
   if (!item) return null;
   const dark = tone === "dark";
   const s = statusOf(item);
-  const c = accentFor(s);
+  const c = focus ? (s === "urgent" ? "hsl(var(--d-focus-urgent))" : "hsl(var(--d-focus-deep))") : accentFor(s);
   return (
     <div className="rounded-2xl p-4" style={{ background: dark ? "rgba(120,122,128,0.12)" : "hsl(var(--card))", boxShadow: dark ? "none" : "0 14px 34px -26px rgba(0,0,0,0.28)" }}>
       <div className="flex items-center justify-between gap-2">
@@ -28,7 +28,7 @@ export default function AdminObligationCard({ item, action = "OPEN", onAction, o
       </div>
       {item.notes && <p className={`text-xs italic mt-2 ${dark ? "text-ivory/50" : "text-muted-foreground"}`}>{item.notes}</p>}
       {extra}
-      {action && onAction && <button onClick={() => onAction(item)} className="mt-3 inline-flex rounded-full px-3.5 py-1.5 text-xs font-bold transition hover:brightness-110" style={{ background: c, color: "hsl(var(--charcoal))" }}>{action}</button>}
+      {action && onAction && <button onClick={() => onAction(item)} className="mt-3 inline-flex rounded-full px-3.5 py-1.5 text-xs font-bold transition hover:brightness-110" style={focus ? { background: "hsl(var(--d-focus-deep))", color: "hsl(var(--ivory))" } : { background: c, color: "hsl(var(--charcoal))" }}>{action}</button>}
     </div>
   );
 }

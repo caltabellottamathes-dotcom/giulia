@@ -4,7 +4,7 @@ import AdminObligationCard from "@/life/components/AdminObligationCard";
 import { accentFor, daysUntil, fmtDate } from "@/lib/adminUtils";
 
 const Card = ({ children, className = "" }) => (
-  <div className={`rounded-2xl bg-background/70 border border-foreground/8 shadow-sm p-4 ${className}`}>{children}</div>
+  <div className={`rounded-2xl bg-white shadow-[0_10px_30px_-14px_rgba(0,0,0,0.22)] p-4 ${className}`}>{children}</div>
 );
 
 const Stat = ({ label, value, color, note }) => (
@@ -26,7 +26,7 @@ export default function AdminStacks({ tab, data, onDone, onEdit, onDelete }) {
           <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Admin weather</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {zones.map((z) => {
-              const c = z.status === "urgent" ? "hsl(var(--urgent))" : z.status === "soon" ? "hsl(var(--life-sand-deep))" : "hsl(var(--life-blue-deep))";
+              const c = z.status === "urgent" ? "hsl(var(--d-focus-urgent))" : z.status === "soon" ? "hsl(var(--d-focus-deep))" : "hsl(var(--d-focus-deep))";
               return <Stat key={z.key} label={z.label} value={z.count} color={c} note={z.note} />;
             })}
           </div>
@@ -49,7 +49,7 @@ export default function AdminStacks({ tab, data, onDone, onEdit, onDelete }) {
               <React.Fragment key={p.id}>
                 {i > 0 && <span className="text-muted-foreground/40 shrink-0">→</span>}
                 <div className="shrink-0 rounded-xl px-3 py-2 bg-foreground/[0.04]">
-                  <p className="text-lg font-display font-semibold tabular-nums" style={{ color: "hsl(var(--life-blue-deep))" }}>€{p.amount}</p>
+                  <p className="text-lg font-display font-semibold tabular-nums" style={{ color: "hsl(var(--d-focus-deep))" }}>€{p.amount}</p>
                   <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">{p.title} · {fmtDate(p.due_date)}</p>
                 </div>
               </React.Fragment>
@@ -65,12 +65,12 @@ export default function AdminStacks({ tab, data, onDone, onEdit, onDelete }) {
         {stuck && (
           <Card className="border-urgent/30">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" style={{ color: "hsl(var(--urgent))" }} />
+              <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" style={{ color: "hsl(var(--d-focus-urgent))" }} />
               <div className="flex-1">
-                <p className="text-[10px] uppercase tracking-[0.24em] font-semibold" style={{ color: "hsl(var(--urgent))" }}>Eén ding zit vast</p>
+                <p className="text-[10px] uppercase tracking-[0.24em] font-semibold" style={{ color: "hsl(var(--d-focus-urgent))" }}>Eén ding zit vast</p>
                 <h3 className="text-lg font-display font-semibold tracking-tight mt-0.5">{stuck.title}</h3>
                 <p className="text-sm text-muted-foreground mt-0.5">{stuck.notes || "Wachtende"} · {daysUntil(stuck.due_date) < 0 ? `${Math.abs(daysUntil(stuck.due_date))} dagen te laat` : `${daysUntil(stuck.due_date)} dagen`}</p>
-                <button onClick={() => onDone(stuck)} className="mt-3 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold" style={{ background: "hsl(var(--urgent))", color: "hsl(var(--charcoal))" }}><CheckCircle2 className="w-3.5 h-3.5" /> Oplossen</button>
+                <button onClick={() => onDone(stuck)} className="mt-3 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold" style={{ background: "hsl(var(--d-focus-urgent))", color: "hsl(var(--charcoal))" }}><CheckCircle2 className="w-3.5 h-3.5" /> Oplossen</button>
               </div>
             </div>
           </Card>
@@ -84,13 +84,13 @@ export default function AdminStacks({ tab, data, onDone, onEdit, onDelete }) {
       <>
         <Card>
           <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-1">Geld op komst (30 dagen)</p>
-          <p className="text-4xl font-display font-semibold tabular-nums tracking-[-0.03em]" style={{ color: "hsl(var(--life-blue-deep))" }}>€{Math.round(w.counts.money)}</p>
+          <p className="text-4xl font-display font-semibold tabular-nums tracking-[-0.03em]" style={{ color: "hsl(var(--d-focus-deep))" }}>€{Math.round(w.counts.money)}</p>
           <div className="flex items-center gap-2 overflow-x-auto mt-4 pb-1">
             {moneyPayments.map((p, i) => (
               <React.Fragment key={p.id}>
                 {i > 0 && <span className="text-muted-foreground/40 shrink-0">→</span>}
                 <div className="shrink-0 rounded-xl px-3.5 py-2.5 bg-foreground/[0.04]">
-                  <p className="text-xl font-display font-semibold tabular-nums" style={{ color: "hsl(var(--life-blue-deep))" }}>€{p.amount}</p>
+                  <p className="text-xl font-display font-semibold tabular-nums" style={{ color: "hsl(var(--d-focus-deep))" }}>€{p.amount}</p>
                   <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">{p.title} · {fmtDate(p.due_date)}</p>
                 </div>
               </React.Fragment>
@@ -103,12 +103,12 @@ export default function AdminStacks({ tab, data, onDone, onEdit, onDelete }) {
           <p className="text-xs uppercase tracking-wide text-muted-foreground font-semibold">Elke maand · {rep.monthly.length}</p>
           <div className="flex flex-wrap gap-2 mt-1.5 mb-3">
             {rep.monthly.length === 0 && <span className="text-sm text-muted-foreground italic">Geen.</span>}
-            {rep.monthly.map((o) => <span key={o.id} className="rounded-full px-3 py-1 text-xs font-medium" style={{ background: "hsl(var(--life-sand)/0.25)", color: "hsl(var(--life-sand-deep))" }}>{o.title} · €{o.amount}</span>)}
+            {rep.monthly.map((o) => <span key={o.id} className="rounded-full px-3 py-1 text-xs font-medium" style={{ background: "hsl(var(--d-focus-light)/0.4)", color: "hsl(var(--d-focus-deep))" }}>{o.title} · €{o.amount}</span>)}
           </div>
           <p className="text-xs uppercase tracking-wide text-muted-foreground font-semibold">Elk jaar · {rep.yearly.length}</p>
           <div className="flex flex-wrap gap-2 mt-1.5">
             {rep.yearly.length === 0 && <span className="text-sm text-muted-foreground italic">Geen.</span>}
-            {rep.yearly.map((o) => <span key={o.id} className="rounded-full px-3 py-1 text-xs font-medium" style={{ background: "hsl(var(--life-blue)/0.3)", color: "hsl(var(--life-blue-deep))" }}>{o.title}</span>)}
+            {rep.yearly.map((o) => <span key={o.id} className="rounded-full px-3 py-1 text-xs font-medium" style={{ background: "hsl(var(--d-focus-deep)/0.12)", color: "hsl(var(--d-focus-deep))" }}>{o.title}</span>)}
           </div>
         </Card>
       </>
@@ -124,7 +124,7 @@ export default function AdminStacks({ tab, data, onDone, onEdit, onDelete }) {
         </Card>
         {renewals.length === 0 && <Card><p className="text-sm text-muted-foreground italic">Nog geen documenten gekoppeld.</p></Card>}
         <div className="grid sm:grid-cols-2 gap-3">
-          {renewals.slice(0, 4).map((o) => <AdminObligationCard key={o.id} item={o} action="Open" onAction={onDone} onEdit={onEdit} onDelete={onDelete} />)}
+          {renewals.slice(0, 4).map((o) => <AdminObligationCard key={o.id} item={o} action="Open" focus onAction={onDone} onEdit={onEdit} onDelete={onDelete} />)}
         </div>
       </>
     );
@@ -139,7 +139,7 @@ export default function AdminStacks({ tab, data, onDone, onEdit, onDelete }) {
         </Card>
         {renewals.length === 0 && <Card><p className="text-sm text-muted-foreground italic">Geen verlengingen of abonnementen.</p></Card>}
         <div className="grid sm:grid-cols-2 gap-3">
-          {renewals.map((o) => <AdminObligationCard key={o.id} item={o} action="Open" onAction={onDone} onEdit={onEdit} onDelete={onDelete} />)}
+          {renewals.map((o) => <AdminObligationCard key={o.id} item={o} action="Open" focus onAction={onDone} onEdit={onEdit} onDelete={onDelete} />)}
         </div>
       </>
     );
@@ -151,15 +151,15 @@ export default function AdminStacks({ tab, data, onDone, onEdit, onDelete }) {
         <Card>
           <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Verplichtingen</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Stat label="DO" value={data.needsYouCount} color="hsl(var(--life-sand-deep))" note="Vereist actie" />
-            <Stat label="WAITING" value={obs.filter((o) => /waiting|wacht/i.test(o.notes || "")).length} color="hsl(var(--life-blue-deep))" note="Wacht op anderen" />
-            <Stat label="SCHEDULED" value={events.filter((o) => daysUntil(o.due_date) > 7).length} color="hsl(var(--life-blue))" note="Ingepland" />
+            <Stat label="DO" value={data.needsYouCount} color="hsl(var(--d-focus-deep))" note="Vereist actie" />
+            <Stat label="WAITING" value={obs.filter((o) => /waiting|wacht/i.test(o.notes || "")).length} color="hsl(var(--d-focus-deep))" note="Wacht op anderen" />
+            <Stat label="SCHEDULED" value={events.filter((o) => daysUntil(o.due_date) > 7).length} color="hsl(var(--muted-foreground))" note="Ingepland" />
             <Stat label="WATCHING" value={obs.filter((o) => o.status !== "done").length} color="hsl(var(--muted-foreground))" note="In de gaten" />
           </div>
         </Card>
         {events.length === 0 && <Card><p className="text-sm text-muted-foreground italic">Geen actieve verplichtingen.</p></Card>}
         <div className="grid sm:grid-cols-2 gap-3">
-          {events.map((o) => <AdminObligationCard key={o.id} item={o} action="Open" onAction={onDone} onEdit={onEdit} onDelete={onDelete} />)}
+          {events.map((o) => <AdminObligationCard key={o.id} item={o} action="Open" focus onAction={onDone} onEdit={onEdit} onDelete={onDelete} />)}
         </div>
       </>
     );
@@ -175,7 +175,7 @@ export default function AdminStacks({ tab, data, onDone, onEdit, onDelete }) {
         {loops.length === 0 && <Card><p className="text-sm text-muted-foreground italic">Alles dicht — niets open.</p></Card>}
         <div className="grid sm:grid-cols-2 gap-3">
           {loops.map((o) => (
-            <AdminObligationCard key={o.id} item={o} action="Sluit" onAction={onDone} onEdit={onEdit} onDelete={onDelete} />
+            <AdminObligationCard key={o.id} item={o} action="Sluit" focus onAction={onDone} onEdit={onEdit} onDelete={onDelete} />
           ))}
         </div>
       </>
