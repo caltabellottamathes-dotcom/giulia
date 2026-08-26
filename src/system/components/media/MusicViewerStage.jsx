@@ -34,6 +34,11 @@ export default function MusicViewerStage({ analyserRef, tracks = [], currentTrac
     <div className="absolute inset-0 overflow-hidden" style={{ "--tile-accent": DEEP, color: BLUE }}>
       <span className="pointer-events-none absolute inset-x-0 top-0 h-px z-10" style={{ background: `linear-gradient(90deg, transparent, ${DEEP} 18%, ${DEEP} 82%, transparent)` }} />
 
+      {/* Header-titel — geen overlay */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none text-center" style={{ color: IVORY, textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>
+        <p className="text-[10px] uppercase tracking-[0.22em] font-bold opacity-70">Melodies I listen to!</p>
+      </div>
+
       {/* BOVENSTE HELFT — bloom + sine + audio-reactieve knoppen */}
       <div className="absolute top-0 inset-x-0 h-1/2 z-10">
         <AudioReactiveLife analyserRef={analyserRef} isPlaying={playing} className="absolute inset-0" />

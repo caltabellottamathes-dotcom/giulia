@@ -237,8 +237,20 @@ export default function MediaFullscreenWindow() {
   const onResizeMove = (e) => {
     const d = resizeRef.current;
     if (!d) return;
-    const nw = Math.max(180, Math.min(d.w + (e.clientX - d.sx), vw - 16));
-    const nh = Math.max(140, Math.min(d.h + (e.clientY - d.sy), vh - 16));
+    const dw = e.clientX - d.sx;
+    const dh = e.clientY - d.sy;
+    let nw = d.w + dw;
+    let nh = d.h + dh;
+    // Foto's en video's behouden hun media-verhouding; muziek mag vrij verschaald.
+    if (kind === "image" || kind === "video") {
+      let s = Math.max(nw / d.w, nh / d.h, 180 / d.w);
+      s = Math.min(s, (vw - 16) / d.w, (vh - 16) / d.h);
+      nw = d.w * s;
+      nh = d.h * s;
+    } else {
+      nw = Math.max(180, Math.min(nw, vw - 16));
+      nh = Math.max(140, Math.min(nh, vh - 16));
+    }
     setMinSize({ w: nw, h: nh });
   };
   const onResizeUp = () => { resizeRef.current = null; };

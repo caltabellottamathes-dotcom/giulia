@@ -1,10 +1,9 @@
 import React, { useMemo, useState } from "react";
-import { Cloud, HardDrive, Play, Film, Music, Image as ImageIcon, FileText, FolderOpen, Loader2, RefreshCw } from "lucide-react";
+import { Cloud, HardDrive, FolderOpen, Loader2, RefreshCw } from "lucide-react";
 import { useMediaViewer } from "@/lib/MediaViewerContext";
 import { useMediaLibrary, kindOfUpload } from "@/lib/useMediaLibrary";
 import { useLocalMedia } from "@/lib/useLocalMedia";
-
-const KIND_ICON = { image: ImageIcon, video: Film, music: Music, doc: FileText };
+import MediaTile from "@/system/components/media/MediaTile";
 
 /** MediaPlayerPreview — QuickAccess tot alle beschikbare bestanden, cloud
  *  en lokaal. Wissel tussen Cloud / Lokaal; tik een bestand → speelt af in
@@ -102,36 +101,9 @@ export default function MediaPlayerPreview() {
           </p>
         )}
         <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2.5 content-start">
-          {list.map((f) => {
-            const Icon = KIND_ICON[f.kind] || FileText;
-            const active = busy === f.id;
-            const hasThumb = f.source === "cloud" && (f.kind === "image" || f.kind === "video");
-            return (
-              <button key={f.id} onClick={() => open(f)} className="group relative aspect-square rounded-xl overflow-hidden border border-marble/15 bg-marble/5 text-left">
-                {/* voorvertoning */}
-                {f.kind === "image" && f.source === "cloud" && <img src={f.url} alt={f.name} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />}
-                {f.kind === "video" && f.source === "cloud" && <video src={f.url + "#t=0.5"} preload="metadata" muted playsInline className="absolute inset-0 w-full h-full object-cover" />}
-                {f.kind === "music" && <div className="absolute inset-0" style={{ background: "linear-gradient(150deg, #d8dab3, #5d7388)" }} />}
-                {(!hasThumb && f.kind !== "music") && (
-                  <div className="absolute inset-0 flex items-center justify-center" style={{ background: f.kind === "doc" ? "rgba(0,0,0,0.05)" : "linear-gradient(150deg, #c6d3de, #8fa3b6)" }}>
-                    <Icon className="h-6 w-6 text-white/80" />
-                  </div>
-                )}
-                {/* kleuroverlay + naam in de tegel */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
-                <div className="absolute bottom-0 inset-x-0 p-2">
-                  <p className="text-[11px] font-medium text-white truncate" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.4)" }}>{f.name}</p>
-                  <p className="text-[9px] uppercase tracking-[0.14em] text-white/75">{f.kind === "music" ? "audio" : f.kind}</p>
-                </div>
-                {/* play-overlay */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                  <span className="h-9 w-9 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-                    {active ? <Loader2 className="h-4 w-4 animate-spin text-charcoal" /> : <Play className="h-4 w-4 text-charcoal translate-x-0.5" />}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
+          {list.map((f) => (
+            <MediaTile key={f.id} file={f} busy={busy === f.id} onOpen={open} />
+          ))}
         </div>
       </div>
     </div>
