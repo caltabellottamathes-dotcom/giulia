@@ -36,7 +36,7 @@ export default function RelationshipsTab({ data, openPerson }) {
             {shown.slice(0, 12).map((c) => {
               const sig = contactSignals(c, data.whatsapps);
               return (
-                <motion.button key={c.id} whileHover={{ y: -2 }} onClick={() => openPerson(c)} className="text-left rounded-xl border border-foreground/10 p-3 space-y-2">
+                <motion.button key={c.id} whileHover={{ y: -2 }} onClick={() => openPerson(c)} className="text-left glass-1 rounded-xl p-3 space-y-2 w-full">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium truncate">{c.name}</span>
                     <Chip tone={c.relationship_state === "CLOSE" ? "olive" : c.relationship_state === "QUIETER_THAN_USUAL" ? "sand" : "neutral"}>{RELATIONSHIP_LABEL[c.relationship_state] || "UNKNOWN"}</Chip>
@@ -71,12 +71,12 @@ export default function RelationshipsTab({ data, openPerson }) {
         <ObjectCard kicker="02.9" title="Relationship Patterns">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {shown.filter((c) => c.relationship_pattern_note).slice(0, 4).map((c) => (
-              <div key={c.id} className="rounded-xl bg-foreground/[0.04] p-3">
+              <div key={c.id} className="glass-1 rounded-xl p-3">
                 <p className="text-xs font-medium mb-1">{c.name}</p>
                 <p className="text-[11px] text-muted-foreground leading-relaxed">{c.relationship_pattern_note}</p>
               </div>
             ))}
-            {shown.filter((c) => !c.relationship_pattern_note).length > 0 && <div className="rounded-xl bg-foreground/[0.04] p-3 col-span-full"><p className="text-[11px] text-muted-foreground">No patterns detected yet — patterns emerge from historical rhythm. Positions on the map are a visualisation of recency, never psychological truth.</p></div>}
+            {shown.filter((c) => !c.relationship_pattern_note).length > 0 && <div className="glass-1 rounded-xl p-3 col-span-full"><p className="text-[11px] text-muted-foreground">No patterns detected yet — patterns emerge from historical rhythm. Positions on the map are a visualisation of recency, never psychological truth.</p></div>}
           </div>
         </ObjectCard>
       )}

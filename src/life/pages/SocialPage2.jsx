@@ -85,7 +85,7 @@ export default function SocialPage2() {
               {attention.length > 0 && <span className="inline-flex items-center gap-2"><span className="uppercase tracking-wider">Needs attention</span><span className="font-display font-bold text-base text-urgent tabular-nums">{attention.length}</span></span>}
             </div>
           </div>
-          <div className="flex flex-col items-center lg:items-end">
+          <div className="glass rounded-2xl p-6 flex flex-col items-center lg:items-end float-shadow">
             <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-2">Social state</p>
             <div className="font-display font-bold tracking-tight text-3xl lg:text-4xl" style={{ color: state === "OVERLOADED" ? "hsl(var(--urgent))" : "hsl(var(--olive))" }}>{PULSE_LABEL[state] || "UNKNOWN"}</div>
             <div className="flex gap-1.5 mt-2">
