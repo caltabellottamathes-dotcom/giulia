@@ -11,29 +11,56 @@
         "low",
         "overwhelmed"
       ],
+      "default": "neutral",
       "title": "State"
+    },
+    "window": {
+      "type": "string",
+      "enum": [
+        "orient",
+        "check",
+        "reflect"
+      ],
+      "title": "Check-in Window",
+      "description": "Welk dagdeel: 10:00 ORIENT \u00b7 16:00 CHECK \u00b7 20:00 REFLECT."
+    },
+    "mood": {
+      "type": "string",
+      "title": "Mood",
+      "description": "Natuurlijke emotie-label (vrije tekst), niet genormaliseerd."
+    },
+    "emotion": {
+      "type": "string",
+      "title": "Emotion"
     },
     "energy": {
       "type": "number",
       "title": "Energy",
-      "description": "0-100"
+      "description": "0-100 (ORIENT batterij)"
     },
     "capacity": {
       "type": "number",
       "title": "Capacity",
-      "description": "0-100"
+      "description": "0-100 (ORIENT batterij)"
     },
-    "mood": {
+    "energy_trajectory": {
       "type": "string",
-      "enum": [
-        "good",
-        "neutral",
-        "low",
-        "anxious",
-        "tired",
-        "energetic"
-      ],
-      "title": "Mood"
+      "title": "Energy Trajectory",
+      "description": "CHECK: veel hoger/.../veel lager"
+    },
+    "capacity_trajectory": {
+      "type": "string",
+      "title": "Capacity Trajectory",
+      "description": "CHECK: veel meer/.../veel minder"
+    },
+    "stress": {
+      "type": "string",
+      "title": "Stress / Head",
+      "description": "Waar zit je hoofd (ORIENT)."
+    },
+    "need": {
+      "type": "string",
+      "title": "Need"
     },
     "needs": {
       "type": "array",
@@ -41,6 +68,81 @@
         "type": "string"
       },
       "title": "Needs"
+    },
+    "body": {
+      "type": "string",
+      "title": "Body Signals",
+      "description": "Lichamelijke signalen v\u00f3\u00f3r interpretatie (ORIENT)."
+    },
+    "direction": {
+      "type": "string",
+      "title": "Direction vs Morning",
+      "description": "Beter / Ongeveer hetzelfde / Moeilijker / Anders."
+    },
+    "trigger": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Triggers",
+      "description": "CHECK: invloeden op hoe je je voelt (max 2)."
+    },
+    "behaviour": {
+      "type": "string",
+      "title": "Behaviour",
+      "description": "CHECK: impuls vs bewuste keuze."
+    },
+    "urge": {
+      "type": "string",
+      "title": "Urge"
+    },
+    "skill_used": {
+      "type": "string",
+      "title": "Skill Used"
+    },
+    "helped": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Helped",
+      "description": "CHECK: wat hielp vandaag."
+    },
+    "harder": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Harder",
+      "description": "CHECK: wat maakte het moeilijker."
+    },
+    "difficult_moment": {
+      "type": "string",
+      "title": "Difficult Moment",
+      "description": "REFLECT: moeilijkste moment vandaag."
+    },
+    "coping": {
+      "type": "string",
+      "title": "Coping",
+      "description": "Hoe ben je met het (moeilijke) moment omgegaan."
+    },
+    "proud": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "title": "Proud Of",
+      "description": "REFLECT: waar ben je tevreden over."
+    },
+    "tomorrow": {
+      "type": "string",
+      "title": "Tomorrow",
+      "description": "REFLECT: wat wil je morgen anders doen."
+    },
+    "memory": {
+      "type": "string",
+      "title": "Memory",
+      "description": "REFLECT: wat moet GIULIA onthouden uit vandaag."
     },
     "reflection": {
       "type": "string",
@@ -67,7 +169,7 @@
         "proactive",
         "manual"
       ],
-      "default": "manual",
+      "default": "scheduled",
       "title": "Check-in Type"
     },
     "timestamp": {

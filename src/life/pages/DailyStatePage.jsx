@@ -9,11 +9,14 @@ import { SectionLabel, Empty, Card, Stat, Progress } from "@/system/panels/previ
 import { stateColor, stateLabel, energyColor, capacityColor, moodColor, moodLabel, levelLabel, fmtTime, fmtDate, fmtAgo } from "@/lib/selfUtils";
 import { Activity as ActivityIcon, Plus, Search, Sliders, Battery, Heart, Sparkles, Clock, ArrowUpRight } from "lucide-react";
 import TherapyPanel from "@/life/panels/TherapyPanel";
+import CheckInFlow from "@/life/components/CheckInFlow";
+import { currentWindowKey } from "@/life/components/checkInConfig";
 
 const SAGE = "hsl(var(--self-accent))";
 const URGENT = "hsl(var(--self-urgent))";
 
 const TABS = [
+  { key: "incheck", label: "Incheck" },
   { key: "state", label: "Self State" },
   { key: "capacity", label: "Capacity" },
   { key: "energy", label: "Energy" },
@@ -34,7 +37,6 @@ export default function DailyStatePage() {
   const [timeBlocks, setTimeBlocks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCheckIn, setShowCheckIn] = useState(false);
-  const [form, setForm] = useState({ state: "neutral", energy: 50, capacity: 50, mood: "neutral", need: "", reflection: "", context: "" });
 
   const load = async () => {
     try {
@@ -54,15 +56,10 @@ export default function DailyStatePage() {
   }, [timeBlocks]);
   const protectedToday = todayBlocks.filter((b) => b.is_protected).reduce((s, b) => s + (b.duration_min || 0), 0);
 
-  const saveCheckIn = async () => {
+  const saveCheckIn = async (entity) => {
     try {
-      await base44.entities.SelfCheckIn.create({
-        state: form.state, energy: Number(form.energy), capacity: Number(form.capacity),
-        mood: form.mood, needs: form.need ? [form.need] : [], reflection: form.reflection || undefined,
-        context: form.context || undefined, timestamp: new Date().toISOString(), source: "manual", check_in_type: "manual",
-      });
-      setForm({ state: "neutral", energy: 50, capacity: 50, mood: "neutral", need: "", reflection: "", context: "" });
-      setShowCheckIn(false); await load();
+      await base44.entities.SelfCheckIn.create(entity);
+      await load();
     } catch { /* ignore */ }
   };
   const setTab2 = (t) => { setTab(t); navigate(`/life/daily-state?tab=${t}`, { replace: true }); };
@@ -74,32 +71,10 @@ export default function DailyStatePage() {
           <div className="flex items-center gap-2">
             <GlassButton variant="glass" size="icon" onClick={() => navigate("/search")}><Search className="h-4 w-4" /></GlassButton>
             <GlassButton variant="glass" size="icon"><Sliders className="h-4 w-4" /></GlassButton>
-            <GlassButton variant="primary" size="md" onClick={() => setShowCheckIn((v) => !v)}><Sparkles className="h-4 w-4" /> Check-in</GlassButton>
+            <GlassButton variant="primary" size="md" onClick={() => setTab2("incheck")}><Sparkles className="h-4 w-4" /> Check-in</GlassButton>
           </div>
         } />
 
-      {showCheckIn && (
-        <GlassPanel level={2} className="p-6 animate-fade-up space-y-3">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Nieuwe check-in</p>
-          <div className="grid sm:grid-cols-4 gap-3">
-            <select value={form.state} onChange={(e) => setForm((f) => ({ ...f, state: e.target.value }))} className="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none">
-              {["calm", "charged", "neutral", "low", "overwhelmed"].map((s) => <option key={s} value={s}>{stateLabel(s)}</option>)}
-            </select>
-            <select value={form.mood} onChange={(e) => setForm((f) => ({ ...f, mood: e.target.value }))} className="rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none">
-              {["good", "neutral", "low", "anxious", "tired", "energetic"].map((m) => <option key={m} value={m}>{moodLabel(m)}</option>)}
-            </select>
-            <label className="text-xs text-muted-foreground">Energy: {form.energy}%
-              <input type="range" min="0" max="100" value={form.energy} onChange={(e) => setForm((f) => ({ ...f, energy: e.target.value }))} className="w-full" style={{ accentColor: SAGE }} />
-            </label>
-            <label className="text-xs text-muted-foreground">Capacity: {form.capacity}%
-              <input type="range" min="0" max="100" value={form.capacity} onChange={(e) => setForm((f) => ({ ...f, capacity: e.target.value }))} className="w-full" style={{ accentColor: SAGE }} />
-            </label>
-          </div>
-          <input value={form.need} onChange={(e) => setForm((f) => ({ ...f, need: e.target.value }))} placeholder="Belangrijkste behoefte" className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none" />
-          <textarea value={form.reflection} onChange={(e) => setForm((f) => ({ ...f, reflection: e.target.value }))} placeholder="Reflectie" rows={2} className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm outline-none resize-none" />
-          <button onClick={saveCheckIn} className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-ivory" style={{ background: "hsl(var(--self-primary))" }}><Plus className="h-4 w-4" /> Opslaan</button>
-        </GlassPanel>
-      )}
 
       <div className="flex items-center gap-1 overflow-x-auto -mx-1 px-1 pb-1">
         {TABS.map((t) => (
@@ -111,6 +86,12 @@ export default function DailyStatePage() {
 
       {loading ? <p className="text-sm text-muted-foreground">Laden…</p> : (
         <>
+          {tab === "incheck" && (
+            <GlassPanel level={2} className="p-6 animate-fade-up">
+              <CheckInFlow window={currentWindowKey() || "orient"} theme="light" onSave={saveCheckIn} onDone={() => load()} />
+            </GlassPanel>
+          )}
+
           {tab === "state" && (
             <div className="space-y-6">
               <div className="grid sm:grid-cols-3 gap-4">

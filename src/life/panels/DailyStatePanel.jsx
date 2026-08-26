@@ -8,13 +8,14 @@ import { stateLabel, moodLabel, fmtAgo } from "@/lib/selfUtils";
 import { BLUE, SAND, TRACK, moodScore } from "@/glass/components/self/palette";
 import { AnimatedRing, ConcentricRings, LiveAreaChart, ContextGrid, ActionRow, OpenLink, PulseDot } from "@/life/components/SelfViz";
 import { Plus, Sparkles } from "lucide-react";
+import CheckInFlow from "@/life/components/CheckInFlow";
+import { currentWindowKey } from "@/life/components/checkInConfig";
 
 export default function DailyStatePanel() {
   const navigate = useNavigate();
   const [checkIns, setCheckIns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCheckIn, setShowCheckIn] = useState(false);
-  const [form, setForm] = useState({ state: "neutral", energy: 50, capacity: 50, mood: "neutral", need: "", reflection: "" });
 
   const load = async () => {
     try { const list = await base44.entities.SelfCheckIn.list("-timestamp", 20).catch(() => []); setCheckIns(list || []); }
@@ -25,14 +26,9 @@ export default function DailyStatePanel() {
   const latest = checkIns[0];
   const needs = useMemo(() => latest?.needs || [], [latest]);
 
-  const saveCheckIn = async () => {
+  const saveCheckIn = async (entity) => {
     try {
-      await base44.entities.SelfCheckIn.create({
-        state: form.state, energy: Number(form.energy), capacity: Number(form.capacity),
-        mood: form.mood, needs: form.need ? [form.need] : [], reflection: form.reflection || undefined,
-        timestamp: new Date().toISOString(), source: "manual", check_in_type: "manual",
-      });
-      setForm({ state: "neutral", energy: 50, capacity: 50, mood: "neutral", need: "", reflection: "" });
+      await base44.entities.SelfCheckIn.create(entity);
       setShowCheckIn(false); await load();
     } catch { /* ignore */ }
   };
@@ -128,32 +124,12 @@ export default function DailyStatePanel() {
         { label: "Open Daily State", to: "/self/daily-state" },
       ]} />
 
-      {/* Check-in form */}
+      {/* INCHECK — How I'm Doing? */}
       <AnimatePresence>
         {showCheckIn && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden">
-            <div className="rounded-2xl glass-card-2 p-4 space-y-3">
-              <p className="text-[10px] uppercase tracking-wide text-ivory/55 font-semibold">Nieuwe check-in</p>
-              <div className="grid grid-cols-2 gap-2.5">
-                <select value={form.state} onChange={(e) => setForm((f) => ({ ...f, state: e.target.value }))} className="rounded-xl bg-white/5 border border-white/15 px-3 py-2 text-sm text-ivory outline-none">
-                  {["calm", "charged", "neutral", "low", "overwhelmed"].map((s) => <option key={s} value={s} className="text-charcoal">{stateLabel(s)}</option>)}
-                </select>
-                <select value={form.mood} onChange={(e) => setForm((f) => ({ ...f, mood: e.target.value }))} className="rounded-xl bg-white/5 border border-white/15 px-3 py-2 text-sm text-ivory outline-none">
-                  {["good", "neutral", "low", "anxious", "tired", "energetic"].map((m) => <option key={m} value={m} className="text-charcoal">{moodLabel(m)}</option>)}
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <label className="text-[11px] text-ivory/55">Energy: {form.energy}%
-                  <input type="range" min="0" max="100" value={form.energy} onChange={(e) => setForm((f) => ({ ...f, energy: e.target.value }))} className="w-full" style={{ accentColor: BLUE }} />
-                </label>
-                <label className="text-[11px] text-ivory/55">Capacity: {form.capacity}%
-                  <input type="range" min="0" max="100" value={form.capacity} onChange={(e) => setForm((f) => ({ ...f, capacity: e.target.value }))} className="w-full" style={{ accentColor: BLUE }} />
-                </label>
-              </div>
-              <input value={form.need} onChange={(e) => setForm((f) => ({ ...f, need: e.target.value }))} placeholder="Belangrijkste behoefte nu" className="w-full rounded-xl bg-white/5 border border-white/15 px-3 py-2 text-sm text-ivory placeholder:text-ivory/40 outline-none" />
-              <textarea value={form.reflection} onChange={(e) => setForm((f) => ({ ...f, reflection: e.target.value }))} placeholder="Reflectie (optioneel)" rows={2} className="w-full rounded-xl bg-white/5 border border-white/15 px-3 py-2 text-sm text-ivory placeholder:text-ivory/40 outline-none resize-none" />
-              <button onClick={saveCheckIn} className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-charcoal transition" style={{ background: BLUE }}><Plus className="w-4 w-4" /> Check-in opslaan</button>
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+            <div className="rounded-2xl glass-card-2 p-4">
+              <CheckInFlow window={currentWindowKey() || "orient"} theme="dark" onSave={saveCheckIn} onDone={() => setShowCheckIn(false)} />
             </div>
           </motion.div>
         )}
