@@ -19,7 +19,7 @@ export default function SpaceShell({ bgImage, heroImage, eyebrow, title, tabs, a
       <motion.div initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE, delay: 0.15 }} className="hidden lg:flex absolute left-[2.5%] top-[3%] z-[20] flex-col gap-5">
         <div>
           <p className="text-[10px] uppercase tracking-[0.28em] text-life-olive font-semibold mb-1">{eyebrow}</p>
-          <h1 className="text-[34px] font-display font-semibold tracking-[-0.02em] text-foreground leading-[1.05]">{title}</h1>
+          <h1 className="text-[34px] font-display font-semibold tracking-[-0.02em] leading-[1.05] text-[hsl(var(--ridge))]">{title}</h1>
         </div>
         {onAdd &&
         <button onClick={onAdd} className="inline-flex items-center gap-1.5 self-start rounded-full bg-plum text-ivory px-5 py-2.5 text-xs font-semibold hover:bg-plum/90 transition shadow-[0_14px_34px_-14px_rgba(0,0,0,0.5)]">
