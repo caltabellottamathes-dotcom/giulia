@@ -82,9 +82,8 @@ export default function MasonryGrid({ children, className, gap = 16, spans, scal
   // Catch async content loads shortly after mount.
   useLayoutEffect(() => {
     if (colW == null) return;
-    const t1 = setTimeout(recompute, 250);
-    const t2 = setTimeout(recompute, 900);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    const t = setTimeout(recompute, 250);
+    return () => clearTimeout(t);
   }, [colW, recompute]);
 
   const ready = positions.length === items.length && colW != null;
@@ -109,7 +108,7 @@ export default function MasonryGrid({ children, className, gap = 16, spans, scal
           <div
             key={i}
             ref={(el) => (itemRefs.current[i] = el)}
-            className={cn("transition-[left,top,width] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]", !ready && "opacity-0")}
+            className={cn("transition-[left,top,width] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]", colW == null && "opacity-0")}
             style={pos
               ? { position: "absolute", left: pos.left, top: pos.top, width: pos.width }
               : { position: "absolute", left: 0, top: 0, width: initWidth }}

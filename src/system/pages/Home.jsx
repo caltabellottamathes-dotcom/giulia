@@ -184,7 +184,9 @@ export default function Home() {
     // een leeg board halverwege een delete — de race die "lege dashboards"
     // veroorzaakte. Tot die tijd toont het dashboard de shimmer-state.
     let cancelled = false;
-    ensureAllBoards().finally(() => { if (!cancelled) { setReady(true); reloadRef.current?.(); } });
+    // ready gaat pas true ná het zaaien; de useEffect in useDashboardBoard
+    // pakt de load op zodra ready flip → exact één load (geen dubbele race).
+    ensureAllBoards().finally(() => { if (!cancelled) setReady(true); });
     // De opstart-video zet startGiulia + refreshDashboard op gang. Bij een
     // terugkerende sessie (video al geweest) houden we de throttle-refresh aan.
     if (startupDone) {
@@ -331,7 +333,7 @@ export default function Home() {
               ))}
             </div>
           ) : visible.length > 0 ? (
-            <MasonryGrid key={activeBoard + resetKey} className="max-w-[1280px] xl:max-w-[1500px]" gap={24} spans={cells.map((c) => c.span)} scale={0.8} columnTiers={[[0, 1], [640, 6], [1024, 12], [1280, 25]]} fitHeight={howdoingDue ? undefined : fitH}>
+            <MasonryGrid key={activeBoard + resetKey} className="max-w-[1280px] xl:max-w-[1500px] min-h-[52vh]" gap={24} spans={cells.map((c) => c.span)} scale={0.8} columnTiers={[[0, 1], [640, 6], [1024, 12], [1280, 25]]} fitHeight={howdoingDue ? undefined : fitH}>
               {cells.map((c) => c.node)}
             </MasonryGrid>
           ) : (
