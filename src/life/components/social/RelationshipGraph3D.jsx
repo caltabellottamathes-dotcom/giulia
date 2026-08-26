@@ -1,24 +1,41 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { daysSince } from "@/lib/domainUtils";
-import { LIFE } from "./socialColors";
+
+// LIFE-kleuren voor de node/edge-materialen (three.js werkt met losse hex,
+// niet met CSS-tokens) — Ridge Sky, Whipped Pistachio, Olive, Urgent.
+const LIFE = { ridgeSky: "#b1bec6", pistachio: "#d8dab3", olive: "#94925d", urgent: "#d5e24a" };
 
 function hexLerp(a, b, t) {
   return new THREE.Color(a).lerp(new THREE.Color(b), Math.max(0, Math.min(1, t)));
 }
 
-function makeLabelSprite(text, color) {
+function makeLabelSprite(text, accent) {
+  // Donkere pil achter de tekst zodat het label leesbaar blijft op de
+  // lichte OS-achtergrond, ongeacht de node-kleur erachter.
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   const fontSize = 42;
   ctx.font = `600 ${fontSize}px 'Space Grotesk', sans-serif`;
-  const w = Math.ceil(ctx.measureText(text).width) + 40;
-  canvas.width = w;
-  canvas.height = fontSize + 20;
+  const textW = ctx.measureText(text).width;
+  const padX = 22, padY = 14;
+  canvas.width = Math.ceil(textW) + padX * 2;
+  canvas.height = fontSize + padY * 2;
+  const r = canvas.height / 2;
+  ctx.beginPath();
+  ctx.moveTo(r, 0);
+  ctx.arcTo(canvas.width, 0, canvas.width, canvas.height, r);
+  ctx.arcTo(canvas.width, canvas.height, 0, canvas.height, r);
+  ctx.arcTo(0, canvas.height, 0, 0, r);
+  ctx.arcTo(0, 0, canvas.width, 0, r);
+  ctx.closePath();
+  ctx.fillStyle = "rgba(20,20,20,0.62)";
+  ctx.fill();
+  if (accent) { ctx.strokeStyle = accent; ctx.lineWidth = 2; ctx.stroke(); }
   ctx.font = `600 ${fontSize}px 'Space Grotesk', sans-serif`;
-  ctx.fillStyle = color;
+  ctx.fillStyle = "#ffffff";
   ctx.textBaseline = "middle";
-  ctx.fillText(text, 20, canvas.height / 2);
+  ctx.fillText(text, padX, canvas.height / 2 + 1);
   const tex = new THREE.CanvasTexture(canvas);
   const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
   const sprite = new THREE.Sprite(mat);
@@ -84,13 +101,13 @@ export default function RelationshipGraph3D({ contacts = [], onHover, onSelect }
       group.add(mesh);
       nodeMeshes.push(mesh);
 
-      const label = makeLabelSprite(c.name || "?", overdue ? LIFE.urgent : "#ffffff");
+      const label = makeLabelSprite(c.name || "?", overdue ? LIFE.urgent : null);
       label.position.copy(mesh.position).add(new THREE.Vector3(0, sizeBase + 0.22, 0));
       group.add(label);
     });
 
     const K = Math.min(3, n - 1);
-    const lineMat = new THREE.LineBasicMaterial({ color: new THREE.Color(LIFE.pistachio), transparent: true, opacity: 0.25 });
+    const lineMat = new THREE.LineBasicMaterial({ color: new THREE.Color(LIFE.olive), transparent: true, opacity: 0.35 });
     if (K > 0) {
       nodeMeshes.forEach((m, i) => {
         const dists = nodeMeshes.map((m2, j) => ({ j, d: i === j ? Infinity : m.position.distanceTo(m2.position) }));

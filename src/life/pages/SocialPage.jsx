@@ -1,44 +1,25 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import { base44 } from "@/api/base44Client";
-import { Heart, Users, Sparkles, CalendarHeart, Clock } from "lucide-react";
-import { closeCircle, socialPulse, meaningfulInteractions, pulseState, PULSE_LABEL } from "@/lib/domainUtils";
-import { LIFE, DARK } from "@/life/components/social/socialColors";
-import SocialSidebar from "@/life/components/social/SocialSidebar";
+import SocialHeader from "@/life/components/social/SocialHeader";
+import SocialNav from "@/life/components/social/SocialNav";
 import OverviewSection from "@/life/components/social/sections/OverviewSection";
 import RelationshipsSection from "@/life/components/social/sections/RelationshipsSection";
 import PulseSection from "@/life/components/social/sections/PulseSection";
 import PlannerSection from "@/life/components/social/sections/PlannerSection";
 import PersonalTimeSection from "@/life/components/social/sections/PersonalTimeSection";
-
-const TABS = [
-  { key: "overview", label: "Overview", icon: Sparkles },
-  { key: "relationships", label: "Relationships", icon: Users },
-  { key: "pulse", label: "Pulse", icon: Heart },
-  { key: "planner", label: "Planner", icon: CalendarHeart },
-  { key: "personaltime", label: "Personal Time", icon: Clock },
-];
-const VALID = TABS.map((t) => t.key);
+import { closeCircle, socialPulse, meaningfulInteractions, pulseState } from "@/lib/domainUtils";
 
 const EMPTY = { contacts: [], emails: [], whatsapps: [], events: [], plans: [], blocks: [], opportunities: [], intentions: [], insights: [], moments: [] };
 
 /**
- * SocialPage — "What Social Life?" §14.1. ProjectDetail-anatomie (header +
- * horizontale nav + secties) in een donkere Network Graph-stijl, met een
- * 3D relatie-graaf als centrale viz op de Relationships-tab. LIFE-kleuren
- * consequent; Urgent (#d5e24a) alleen bij overdue/conflict.
+ * SocialPage — "What Social Life?" §14.1, rebuilt on the exact ProjectDetail
+ * anatomy (sticky hero photo + horizontal tab-nav + sections underneath),
+ * in the OS's own light glass design language — no separate dark theme.
  */
 export default function SocialPage() {
-  const navigate = useNavigate();
-  const [view, setView] = useState(() => {
-    const v = new URLSearchParams(window.location.search).get("view");
-    return VALID.includes(v) ? v : "overview";
-  });
+  const [section, setSection] = useState("Overview");
   const [data, setData] = useState(EMPTY);
   const [loading, setLoading] = useState(true);
-
-  const setView2 = (v) => { setView(v); navigate(`/life/social?view=${v}`, { replace: true }); };
 
   const load = async () => {
     try {
@@ -83,60 +64,26 @@ export default function SocialPage() {
     return Math.max(0, (24 - 6) * 60 - used);
   }, [data.blocks]);
   const state = pulseState({ meaningfulCount: mi.total, activePlans: activePlans.length, openInvitations: data.intentions.length, availableMin });
-  const urgentCount = attention.length;
 
-  const SECTION = {
-    overview: <OverviewSection data={data} />,
-    relationships: <RelationshipsSection contacts={data.contacts} />,
-    pulse: <PulseSection data={data} mi={mi} attention={attention} />,
-    planner: <PlannerSection data={data} contacts={data.contacts} reload={load} />,
-    personaltime: <PersonalTimeSection blocks={data.blocks} reload={load} />,
-  };
+  if (loading) return <div className="space-y-4"><div className="h-40 rounded-2xl shimmer" /><div className="h-64 rounded-2xl shimmer" /></div>;
 
   return (
-    <div className="rounded-[28px] overflow-hidden animate-fade-up" style={{ background: DARK.bg }}>
-      <div className="relative px-6 lg:px-9 pt-8 pb-6" style={{ background: `radial-gradient(circle at 15% 0%, rgba(148,146,93,0.16), transparent 55%), ${DARK.bg}` }}>
-        <div className="flex items-center gap-2 mb-6">
-          <span className="h-1.5 w-1.5 rounded-full" style={{ background: LIFE.pistachio }} />
-          <span className="text-[10px] uppercase tracking-[0.32em] font-semibold" style={{ color: LIFE.morningDew }}>GIULIA · What Social Life?</span>
+    <div className="-mt-6 lg:-mt-8">
+      <SocialHeader mi={mi} state={state} urgentCount={attention.length} />
+      <div className="relative z-10 rounded-t-[28px] mt-[calc(50vh-4.5rem)] lg:mt-[calc(52vh-4.5rem)] px-4 lg:px-6 pt-4 pb-28 space-y-6 min-h-[60vh]">
+        <div className="hidden lg:block">
+          <SocialNav active={section} onChange={setSection} variant="top" />
         </div>
-        <div className="flex items-end justify-between flex-wrap gap-4">
-          <div>
-            <h1 className="text-4xl lg:text-5xl font-display font-bold tracking-tight text-white leading-none">
-              {mi.total} <span style={{ color: LIFE.pistachio }}>MEANINGFUL</span> <sup className="text-lg text-white/40 font-medium">7d</sup>
-            </h1>
-            <p className="text-[11px] uppercase tracking-[0.24em] text-white/45 mt-2">Interactions · last 7 days · {PULSE_LABEL[state]}</p>
-          </div>
-          {urgentCount > 0 && (
-            <div className="flex items-center gap-2 rounded-full px-4 py-2" style={{ background: "rgba(213,226,74,0.14)", border: `1px solid ${LIFE.urgent}55` }}>
-              <span className="h-2 w-2 rounded-full animate-pulse" style={{ background: LIFE.urgent }} />
-              <span className="text-[11px] font-semibold" style={{ color: LIFE.urgent }}>{urgentCount} needs attention</span>
-            </div>
-          )}
-        </div>
+
+        {section === "Overview" && <OverviewSection data={data} mi={mi} circle={circle} attention={attention} activePlans={activePlans} state={state} onNavigate={setSection} />}
+        {section === "Relationships" && <RelationshipsSection contacts={data.contacts} />}
+        {section === "Pulse" && <PulseSection data={data} mi={mi} attention={attention} />}
+        {section === "Planner" && <PlannerSection data={data} contacts={data.contacts} reload={load} />}
+        {section === "Personal Time" && <PersonalTimeSection blocks={data.blocks} reload={load} />}
       </div>
 
-      <div className="px-6 lg:px-9 flex items-center gap-1 border-b overflow-x-auto" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-        {TABS.map((t) => {
-          const Icon = t.icon;
-          const active = view === t.key;
-          return (
-            <button key={t.key} onClick={() => setView2(t.key)} className="flex items-center gap-2 px-4 py-3 text-sm whitespace-nowrap border-b-2 -mb-px transition-colors" style={{ borderColor: active ? LIFE.pistachio : "transparent", color: active ? "#fff" : "rgba(255,255,255,0.4)" }}>
-              <Icon className="h-3.5 w-3.5" /> {t.label}
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-5 p-6 lg:p-9 min-h-[640px]">
-        <SocialSidebar mi={mi} attention={attention} activePlans={activePlans} />
-        <div className="min-h-[560px]">
-          <AnimatePresence mode="wait">
-            <motion.div key={view} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }} className="h-full">
-              {loading ? <div className="h-full min-h-[560px] rounded-[24px] animate-pulse" style={{ background: "rgba(255,255,255,0.03)" }} /> : SECTION[view]}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-30 glass-2 border-t border-border/40">
+        <SocialNav active={section} onChange={setSection} variant="bottom" />
       </div>
     </div>
   );
