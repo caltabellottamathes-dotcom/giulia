@@ -11,7 +11,7 @@ const EASE = [0.16, 1, 0.3, 1];
  * (stopt op 2/3), paginahoofdfoto schuift vanaf links in (zelfde formaat als paneel).
  * Witte zwevende kaart over het glas-paneel met links een glas-strook (tabs + nav).
  */
-export default function SpaceShell({ bgImage, heroImage, eyebrow, title, tabs, activeTab, onTab, navInfo, recap, children, onAdd, addLabel = "Toevoegen" }) {
+export default function SpaceShell({ bgImage, heroImage, eyebrow, title, tabs, activeTab, onTab, navInfo, recap, children, onAdd, addLabel = "Toevoegen", cardHeader }) {
   const navigate = useNavigate();
   return (
     <div className="fixed inset-x-0 top-14 bottom-0 overflow-hidden z-[1]">
@@ -79,12 +79,17 @@ export default function SpaceShell({ bgImage, heroImage, eyebrow, title, tabs, a
             )}
           </div>
 
-          {/* Body — links recap, rechts widget-stapel */}
+          {/* Full-width editorial header — Editorial Summary / Giulia AI */}
+          {cardHeader && (
+            <div className="w-full shrink-0">{cardHeader}</div>
+          )}
+
+          {/* Body — links editorial (breder), rechts widget-stapel die er iets boven zweeft */}
           <div className="flex-1 flex flex-col lg:flex-row min-h-0">
-            <div className="lg:w-[42%] xl:w-[40%] shrink-0 overflow-y-auto px-5 lg:px-7 pt-3 lg:pt-4 pb-6">
+            <div className="lg:w-[46%] xl:w-[44%] shrink-0 overflow-y-auto px-5 lg:px-7 pt-4 pb-6">
               {recap}
             </div>
-            <div className="flex-1 overflow-y-auto px-5 lg:px-7 py-6 space-y-4">
+            <div className="flex-1 overflow-y-auto px-5 lg:px-7 py-6 space-y-4 lg:-ml-8 relative z-20">
               {children}
             </div>
           </div>

@@ -4,9 +4,10 @@ import AdminObligationCard from "@/life/components/AdminObligationCard";
 import PortfolioCard from "@/life/components/finance/PortfolioCard";
 import HealthBadge from "@/life/components/finance/HealthBadge";
 import DistributionBar from "@/life/components/finance/DistributionBar";
-import ThingsHandleHorizontal from "@/life/components/finance/ThingsHandleHorizontal";
+import PortfolioBarsWidget from "@/life/components/finance/PortfolioBarsWidget";
 import ForecastChart from "@/life/components/finance/ForecastChart";
 import HebbenBestedenBar from "@/life/components/finance/HebbenBestedenBar";
+import HealthyMoneyTab from "@/life/components/finance/HealthyMoneyTab";
 import { fmtEuro, FREQ_LABELS, calcPortfolio, upcomingExpenses } from "@/lib/financeUtils";
 
 const Card = ({ children, className = "" }) =>
@@ -22,7 +23,7 @@ const Stat = ({ label, value, color, note }) =>
 
 
 /** FinanceStacks — per-tab widget-stapel voor de Finance Space. */
-export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpense, onEditExpense, onDeleteExpense, onEditIncome, onDeleteIncome }) {
+export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpense, onEditExpense, onDeleteExpense, onEditIncome, onDeleteIncome, onNavigate }) {
   const { portfolios, expenses, incomes, dist, totalMoney, totalReserved, docs } = data;
   const [potFilter, setPotFilter] = useState("");
   const [showDone, setShowDone] = useState(false);
@@ -32,7 +33,7 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     const upcoming = upcomingExpenses(expenses, 30);
     return (
       <>
-        <ThingsHandleHorizontal />
+        <PortfolioBarsWidget portfolios={portfolios} expenses={expenses} onOpenPortfolio={onOpenPortfolio} />
         <Card>
           <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Geld hebben vs. besteden</p>
           <HebbenBestedenBar total={totalMoney} reserved={totalReserved} available={Math.max(0, totalMoney - totalReserved)} />

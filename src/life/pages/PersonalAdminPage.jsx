@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
-import { CircleDot, Wallet, ListChecks, Banknote, LineChart, FileText } from "lucide-react";
+import { CircleDot, Wallet, ListChecks, Banknote, LineChart, FileText, HeartPulse } from "lucide-react";
 import { logLifeActivity } from "@/lib/lifeActivity";
 import {
   calcPortfolio, monthlyDistribution, totalMoney, totalReserved,
@@ -21,6 +21,7 @@ const TABS = [
   { key: "LASTEN", label: "Lasten", icon: ListChecks },
   { key: "INKOMEN", label: "Inkomen", icon: Banknote },
   { key: "FORECAST", label: "Forecast", icon: LineChart },
+  { key: "HEALTHY_MONEY", label: "Healthy Money", icon: HeartPulse },
   { key: "DOCUMENTEN", label: "Documenten", icon: FileText },
 ];
 
@@ -60,7 +61,8 @@ Output JSON met deze velden (editorial frame-labels in het Engels zoals de voorb
 - footerRight: blauw editorial label, bijv. "(SCROLL)".
 - attentionTitle: zwarte uppercase titel aandachtsblok, bijv. "WHAT NEEDS YOUR ATTENTION".
 - attentionBadge: blauw uppercase badge, formaat "0N ITEMS NEED ACTION" met het echte aantal urgente items.
-- items: 0-3 dingen die nu aandacht vragen — het aantal hangt af van wat er op dit moment echt nodig is (geen vaste 3). Elk item: title (kort, "Onderwerp • wanneer", bijv. "Payment • Due tomorrow") en sub (1 zin uitleg met concrete bedragen). Gebruik echte komende betalingen of korte potjes uit de data. Als er niets urgents is, geef een lege array.
+- items: 0-3 dingen die nu aandacht vragen — het aantal hangt af van wat er op dit moment echt nodig is (geen vaste 3). Elk item: title (kort), sub (1 zin uitleg met concrete bedragen) en link (één van: OVERVIEW, PORTEFEUILLES, LASTEN, INKOMEN, FORECAST, HEALTHY_MONEY) — de tab waar Salvo heen moet om het op te lossen. Gebruik echte komende betalingen of korte potjes uit de data. Als er niets urgents is, geef een lege array.
+- diepgang: schrijf een DIEPE, tab-specifieke analyse — niet generisch. OVERVIEW = globale samenvatting van het hele financieel beeld; elke andere tab = een diepere analyse van precies dat onderwerp (portefeuilles, lasten, inkomen, forecast, healthy money of documenten).
 - restTitle: blauw uppercase afsluitende kop, bijv. "THE REST CAN WAIT."
 - restBody: één geruststellende zin over de rest.
 
@@ -140,7 +142,13 @@ export default function PersonalAdminPage() {
         onTab={setTab}
         navInfo="LIFE · FINANCE"
         onAdd={onAdd}
-        recap={<SpaceRecap storageKey={`personalAdmin:${tab}`} dataSignature={dataSignature} prompt={recapPrompt} fallback={fallback} onRefresh={() => setRecapRefresh((r) => r + 1)} />}
+        cardHeader={(
+          <div className="flex items-center justify-between px-5 lg:px-7 pt-4 pb-3 border-b border-foreground/12">
+            <p className="text-[9px] uppercase tracking-[0.3em] font-bold text-life-ridge">Editorial Summary</p>
+            <p className="text-[9px] uppercase tracking-[0.24em] font-semibold text-life-pistachio">Giulia AI</p>
+          </div>
+        )}
+        recap={<SpaceRecap storageKey={`personalAdmin:${tab}`} dataSignature={dataSignature} prompt={recapPrompt} fallback={fallback} onRefresh={() => setRecapRefresh((r) => r + 1)} onNavigate={setTab} />}
       >
         {loading ? (
           <div className="space-y-3">
@@ -156,6 +164,7 @@ export default function PersonalAdminPage() {
             onDeleteExpense={deleteExpense}
             onEditIncome={(i) => setIncomeEditor({ open: true, item: i })}
             onDeleteIncome={deleteIncome}
+            onNavigate={setTab}
           />
         )}
       </SpaceShell>
