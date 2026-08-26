@@ -132,13 +132,19 @@ export function nextWindowInfo(date = new Date()) {
 
 export function isCompletedForWindow(checkIns, windowKey, date = new Date()) {
   if (!windowKey) return false;
-  const d = new Date(date); d.setHours(0, 0, 0, 0);
-  const start = d.getTime();
-  const end = start + 86400000;
+  const now = new Date(date);
+  // Een check-in-cyclus loopt 09:00 → 09:00, zodat de overnight REFLECT
+  // (18:00 → ochtend) bij dezelfde cyclus hoort als de ORIENT/CHECK van
+  // die dag. Voor 09:00 hoort "nu" dus bij de vorige dag.
+  const cycleStart = new Date(now);
+  if (now.getHours() < 9) cycleStart.setDate(cycleStart.getDate() - 1);
+  cycleStart.setHours(9, 0, 0, 0);
+  const start = cycleStart.getTime();
+  const end = now.getTime();
   return (checkIns || []).some((c) => {
     if (c.window !== windowKey) return false;
     const t = c.timestamp ? new Date(c.timestamp).getTime() : 0;
-    return t >= start && t < end;
+    return t >= start && t <= end;
   });
 }
 

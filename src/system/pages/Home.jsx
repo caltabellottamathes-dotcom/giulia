@@ -179,12 +179,12 @@ export default function Home() {
         })
         .catch(() => {});
     }).catch(() => {});
-    // Dashboards laden direct (ready=true); ensureAllBoards zaait op de
-    // achtergrond en herlaadt het board zodra klaar. Zo blijft het dashboard
-    // altijd zichtbaar — ook als de seeding traag of gedeeltelijk faalt.
+    // Eerst zaaien (ensureAllBoards), dán ready. Zo loopt load() pas ná de
+    // eventuele nieuwe-dag reset (deleteMany + bulkCreate) en treft nooit
+    // een leeg board halverwege een delete — de race die "lege dashboards"
+    // veroorzaakte. Tot die tijd toont het dashboard de shimmer-state.
     let cancelled = false;
-    setReady(true);
-    ensureAllBoards().finally(() => { if (!cancelled) reloadRef.current?.(); });
+    ensureAllBoards().finally(() => { if (!cancelled) { setReady(true); reloadRef.current?.(); } });
     // De opstart-video zet startGiulia + refreshDashboard op gang. Bij een
     // terugkerende sessie (video al geweest) houden we de throttle-refresh aan.
     if (startupDone) {
