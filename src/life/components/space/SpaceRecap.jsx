@@ -61,10 +61,10 @@ export function EditorialLayout({ data, onRefresh, onEdit, loading }) {
             }
           </div>
         </div>
-        <h2 className="leading-[0.98] tracking-[-0.03em] text-editorial-blue font-medium text-4xl sm:text-4xl [font-family:'JetBrains_Mono',_monospace] my-3">{title}</h2>
+        <h2 className="leading-[0.98] tracking-[-0.03em] text-editorial-blue font-medium [font-family:'JetBrains_Mono',_monospace] text-[32px] sm:text-[32px] my-4 px-1">{title}</h2>
         <p className="text-[11px] uppercase tracking-[0.22em] font-semibold mt-3 text-[hsl(var(--ridge))]">{data.subtitle}</p>
         <div className="flex items-start gap-3 mt-5">
-          <p className="font-body text-[14px] leading-[1.7] text-balance flex-1 uppercase">{data.body}</p>
+          <p className="font-body text-[14px] leading-[1.7] text-balance flex-1 normal-case">{data.body}</p>
           <ChevronDown className="w-4 h-4 text-life-olive shrink-0 mt-1" />
         </div>
       </section>
