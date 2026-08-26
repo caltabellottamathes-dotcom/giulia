@@ -41,7 +41,6 @@ export default function MediaFullscreenWindow() {
   const dragRef = useRef(null);
   const ctxRef = useRef(null);
   const analyserRef = useRef(null);
-  const graphReadyRef = useRef(false);
 
   const kind = media?.kind;
   const isPlayable = kind === "music" || kind === "video";
@@ -69,10 +68,18 @@ export default function MediaFullscreenWindow() {
     return m.url;
   }, [local]);
 
-  const ensureGraph = useCallback(() => {
-    if (graphReadyRef.current) return;
-    const a = mediaRef.current;
-    if (!a) return;
+  // WebAudio-grafo (AnalyserNode) — eenmaal per <audio>-DOM-node opgezet via
+  // een callback-ref. Bij opnieuw openen van de viewer krijgt het element een
+  // nieuwe node, dus ook een verse context + source + analyser. Zo blijven
+  // bloom & sine echt audio-reactief.
+  const attachAudio = useCallback((el) => {
+    if (mediaRef.current && mediaRef.current !== el) {
+      try { ctxRef.current?.close(); } catch {}
+      ctxRef.current = null;
+      analyserRef.current = null;
+    }
+    mediaRef.current = el;
+    if (!el || kind !== "music") return;
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
     try {
@@ -80,14 +87,14 @@ export default function MediaFullscreenWindow() {
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 256;
       analyser.smoothingTimeConstant = 0.74;
-      const src = ctx.createMediaElementSource(a);
+      const src = ctx.createMediaElementSource(el);
       src.connect(analyser);
       analyser.connect(ctx.destination);
       ctxRef.current = ctx;
       analyserRef.current = analyser;
-      graphReadyRef.current = true;
-    } catch { /* grafo al bestaat of niet ondersteund */ }
-  }, []);
+      ctx.resume().catch(() => {});
+    } catch { /* source al verbonden of niet ondersteund */ }
+  }, [kind]);
 
   // Nieuwe media → reset + ratio
   useEffect(() => {
@@ -98,15 +105,15 @@ export default function MediaFullscreenWindow() {
     }
   }, [mediaFullscreen, media?.url, kind]);
 
-  // Voor muziek: grafo opzetten + initieel track uit de geopende url afleiden
+  // Voor muziek: initieel track uit de geopende url afleiden (de grafo wordt
+  // opgezet in de callback-ref op het <audio>-element).
   useEffect(() => {
     if (kind !== "music") return;
-    ensureGraph();
     if (currentTrackId) return;
     const match = cloudMusic.find((t) => t.url === media.url);
     if (match) setCurrentTrackId(match.id);
     else if (tracks.length) setCurrentTrackId(tracks[0].id);
-  }, [kind, cloudMusic, tracks, media?.url, currentTrackId, ensureGraph]);
+  }, [kind, cloudMusic, tracks, media?.url, currentTrackId]);
 
   // Esc sluit (enkel in window-stand)
   useEffect(() => {
@@ -141,7 +148,7 @@ export default function MediaFullscreenWindow() {
     return () => window.removeEventListener("resize", onR);
   }, []);
 
-  const onPlay = () => setPlaying(true);
+  const onPlay = () => { setPlaying(true); ctxRef.current?.resume?.().catch(() => {}); };
   const onPause = () => setPlaying(false);
   const onEnded = () => setPlaying(false);
 
@@ -153,12 +160,11 @@ export default function MediaFullscreenWindow() {
       const a = mediaRef.current;
       if (!a) return;
       a.src = url;
-      ensureGraph();
       ctxRef.current?.resume?.();
       await a.play();
       setCurrentTrackId(t.id);
     } catch { /* negeer */ } finally { setBusy(false); }
-  }, [resolveUrl, ensureGraph]);
+  }, [resolveUrl]);
 
   const togglePlay = useCallback(() => {
     const a = mediaRef.current;
@@ -250,14 +256,16 @@ export default function MediaFullscreenWindow() {
           />
         )}
 
-        {/* Titel-overlay — VoiceWindow-stijl, met de titel van het nummer bij audio */}
-        <div className={cn("absolute top-0 inset-x-0 bg-gradient-to-b from-black/50 to-transparent flex items-center gap-3 z-30 pointer-events-none", compact ? "px-3 pt-3 pb-6 ml-10" : "px-5 pt-5 pb-10 ml-12")}>
-          <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", playing && isPlayable ? "bg-olive animate-pulse-soft" : "bg-ivory/30")} />
-          <div className="min-w-0">
-            <p className={cn("font-display font-semibold tracking-[0.22em] uppercase text-ivory leading-none", compact ? "text-[10px]" : "text-[13px]")}>MEDIA · {KIND_LABEL[kind] || "BESTAND"}</p>
-            <p className={cn("text-ivory/60 tracking-wide truncate", compact ? "text-[9px] mt-1" : "text-[11px] mt-1.5")}>{kind === "music" ? (currentTrack?.name || media.name || "Media") : (media.name || "Media")}</p>
+        {/* Titel-overlay — VoiceWindow-stijl (enkel niet-muziek) */}
+        {kind !== "music" && (
+          <div className={cn("absolute top-0 inset-x-0 bg-gradient-to-b from-black/50 to-transparent flex items-center gap-3 z-30 pointer-events-none", compact ? "px-3 pt-3 pb-6 ml-10" : "px-5 pt-5 pb-10 ml-12")}>
+            <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", playing && isPlayable ? "bg-olive animate-pulse-soft" : "bg-ivory/30")} />
+            <div className="min-w-0">
+              <p className={cn("font-display font-semibold tracking-[0.22em] uppercase text-ivory leading-none", compact ? "text-[10px]" : "text-[13px]")}>MEDIA · {KIND_LABEL[kind] || "BESTAND"}</p>
+              <p className={cn("text-ivory/60 tracking-wide truncate", compact ? "text-[9px] mt-1" : "text-[11px] mt-1.5")}>{media.name || "Media"}</p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Media — flush in de shell */}
         {kind === "music" && (
@@ -307,7 +315,7 @@ export default function MediaFullscreenWindow() {
       {/* Persistente audio voor muziek — blijft spelen bij minimaliseren */}
       {kind === "music" && (
         <audio
-          ref={mediaRef}
+          ref={attachAudio}
           src={media.url}
           crossOrigin="anonymous"
           autoPlay

@@ -87,7 +87,7 @@ const MODULE_IMAGE = {
   household: IMAGES.lifeHousehold, personaladmin: IMAGES.lifePersonalAdmin, hobbies: IMAGES.lifeHobbies,
   food: IMAGES.lifeFood,
   wantstoknow: IMAGES.wWantsToKnow,
-  mediaplayer: IMAGES.bootPhone,
+  mediaplayer: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/aa291c631_MElodies.jpeg",
 };
 
 const MODULE_ROUTE = {
