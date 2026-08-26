@@ -34,7 +34,7 @@ export const EDITORIAL_SCHEMA = {
  *  rustig, alleen Ridge Sky + Morning Dew (geen blauw). Zwart op wit, dunne
  *  Ridge Sky lijnen, Morning Dew tint achter eyebrow + aandachtsblok. */
 export default function FinanceEditorial({ data, loading, onRefresh, onNavigate }) {
-  if (loading && !data) {
+  if (!data) {
     return (
       <div className="space-y-3 pt-5">
         <div className="h-4 w-1/2 rounded-full shimmer" />
@@ -49,7 +49,6 @@ export default function FinanceEditorial({ data, loading, onRefresh, onNavigate 
       </div>
     );
   }
-  if (!data) return null;
   const items = Array.isArray(data.items) ? data.items : [];
   const pad = (n) => String(n).padStart(2, "0");
   return (

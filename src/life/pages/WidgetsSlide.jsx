@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import RemindersHomeWidget from "@/life/widgets/new/RemindersHomeWidget";
 import ThingsHandleWidget from "@/life/widgets/new/ThingsHandleWidget";
@@ -11,10 +11,18 @@ import WhatsAppChatFocusWidget from "@/focus/widgets/new/WhatsAppChatFocusWidget
 import { IMAGES } from "@/lib/images";
 import MasonryGrid from "@/system/widgets/MasonryGrid";
 
+/** WidgetsSlide — kopie van /widgets-life (zonder 01 SOCIAL LIFE + 06 HOW I'M
+ *  DOING), met 03 WHAT I'M BUILDING, 07 WHAT'S HAPPENING en 02 WHO'S TEXTING uit
+ *  /widgets-focus. Widgets renderen op exact dezelfde maat als het dashboard:
+ *  25-koloms grid, scale 0.8, fitHeight, WIDGET_SPAN-verhoudingen. */
 export default function WidgetsSlide() {
-  const Label = ({ children }) => (
-    <p className="text-[10px] uppercase tracking-[0.24em] font-semibold text-charcoal/55 mb-2">{children}</p>
-  );
+  const [fitH, setFitH] = useState(0);
+  useEffect(() => {
+    const calc = () => setFitH(window.innerHeight - 180);
+    calc();
+    window.addEventListener("resize", calc);
+    return () => window.removeEventListener("resize", calc);
+  }, []);
 
   return (
     <div className="relative min-h-screen px-5 lg:px-10 py-8 pb-24">
@@ -31,40 +39,22 @@ export default function WidgetsSlide() {
         LIFE-widget-skelet met Focus-toevoegingen — ridge-sky, pistase, beton, urgent.
       </p>
 
-      <MasonryGrid className="max-w-[1280px] xl:max-w-[1500px]" gap={24} spans={[1, 2, 1, 2, 2, 1, 1, 1]} scale={0.9}>
-        <div>
-          <Label>02 · REMINDERS FOR HOME. — G·21x9·PHOTOSHELL · flush glaskaart links + cijfer rechts</Label>
-          <RemindersHomeWidget />
-        </div>
-        <div>
-          <Label>03 · THINGS TO HANDLE! — P·9x16·B·SIDE · admin capacity-ring (InRhythm-stijl)</Label>
-          <ThingsHandleWidget />
-        </div>
-        <div>
-          <Label>04 · THINGS I LOVE. — G·3:2·R·SIDE · hobby-veld met aandachtsflow</Label>
-          <ThingsLoveWidget />
-        </div>
-        <div>
-          <Label>05 · WHAT'S FOR DINNER? — G·4:3·SLIDE · dag-tijdlijn vandaag/morgen, flush kaart</Label>
-          <DinnerWidget />
-        </div>
-        <div>
-          <Label>07 · MELODIES TO LISTEN. — P·3:4·SPLIT · pistase-blauwe bloom, flush fotokaart + bibliotheek</Label>
-          <MusicWidget />
-        </div>
-
-        <div>
-          <Label>03 · WHAT I'M BUILDING. — G·4:3·R·SIDE · gauge + voortgang per project (Projects)</Label>
-          <ProjectsFocusWidget />
-        </div>
-        <div>
-          <Label>07 · WHAT'S HAPPENING? — G·21x9·L·SIDE · kinetisch + tijdlijn (Agenda)</Label>
-          <AgendaFocusWidget />
-        </div>
-        <div>
-          <Label>02 · WHO'S TEXTING? — P·16x9·L·SIDE · chatvenster + 5 ongelezen berichten (WhatsApp)</Label>
-          <WhatsAppChatFocusWidget />
-        </div>
+      <MasonryGrid
+        className="max-w-[1280px] xl:max-w-[1500px] min-h-[52vh]"
+        gap={24}
+        spans={[10, 5, 10, 10, 5, 10, 10, 10]}
+        scale={0.8}
+        columnTiers={[[0, 1], [640, 6], [1024, 12], [1280, 25]]}
+        fitHeight={fitH}
+      >
+        <RemindersHomeWidget />
+        <ThingsHandleWidget />
+        <ThingsLoveWidget />
+        <DinnerWidget />
+        <MusicWidget />
+        <ProjectsFocusWidget />
+        <AgendaFocusWidget />
+        <WhatsAppChatFocusWidget />
       </MasonryGrid>
     </div>
   );
