@@ -5,7 +5,7 @@ import { WidgetHeader } from "@/system/widgets/primitives";
 import { useEntityList } from "@/hooks/useEntity";
 import { useLearningSync } from "@/hooks/useLearningSync";
 import { base44 } from "@/api/base44Client";
-import { stateLabel } from "@/lib/selfUtils";
+import { usePanel } from "@/lib/PanelContext";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/a3ade5ba2_BecomingMe.jpeg";
 const IVORY = "hsl(var(--ivory))";
@@ -43,6 +43,7 @@ function moodToState(m) {
 }
 
 export default function HowDoingWidget() {
+  const { openModule } = usePanel();
   const learnTick = useLearningSync();
   const { data: checkIns } = useEntityList("SelfCheckIn", { sort: "-timestamp", limit: 10, realtime: true, externalTick: learnTick });
 
@@ -117,9 +118,14 @@ export default function HowDoingWidget() {
   };
 
   return (
-    <div className="relative w-full aspect-[2/3] rounded-[28px] overflow-hidden">
+    <div className="relative w-full aspect-[2/3] rounded-[28px] overflow-hidden" style={{ "--tile-accent": PISTACHIO, color: IVORY }}>
       <motion.img src={PHOTO} alt="How I'm Doing" className="absolute inset-0 w-full h-full object-cover" initial={{ scale: 1.1, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }} draggable={false} />
       <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(20,22,26,0.9) 14%, rgba(20,22,26,0.32) 58%, rgba(20,22,26,0.12))" }} />
+
+      {/* bovenin de PhotoShell — bewegende icoon + titel, opent dailystate-paneel */}
+      <div className="absolute top-0 left-0 right-0 z-20 cursor-pointer p-3.5 pb-2" onClick={() => openModule("dailystate")} style={{ textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>
+        <WidgetHeader type="pulse" label="How I'm Doing." count={title} />
+      </div>
 
 
       {/* glaskaart */}
@@ -130,7 +136,6 @@ export default function HowDoingWidget() {
           {completedThisWindow ? (
             /* NEUTRALE vorm na voltooide check-in */
             <motion.div key="idle" className="flex flex-col h-full" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <WidgetHeader type="pulse" label="How I'm Doing." count={stateLabel(latest?.state || "neutral")} />
               <div className="flex-1 flex flex-col items-center justify-center text-center">
                 {/* adem-ring met state erin */}
                 <div className="relative h-24 w-24 flex items-center justify-center">

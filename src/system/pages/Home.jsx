@@ -289,8 +289,12 @@ export default function Home() {
         const def = WIDGETS[wType];
         if (!def) return null;
         const W = def.Component;
+        // Food / Hobbies / Household hebben brede widgets — geef ze een
+        // groter zwevend formaat zodat ze meeschalen met de andere widgets.
+        const FLOAT_W = { dinner: 460, thingslove: 400, remindershome: 500 };
+        const fw = FLOAT_W[wType] || 340;
         return (
-          <div className="hidden lg:block fixed left-10 bottom-[5.5rem] z-20 w-[340px] animate-fade-up">
+          <div className="hidden lg:block fixed left-10 bottom-[5.5rem] z-20 animate-fade-up" style={{ width: fw }}>
             <W />
           </div>
         );
