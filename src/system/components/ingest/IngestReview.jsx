@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import GlassPanel from "@/system/components/glass/GlassPanel";
 import GlassButton from "@/system/components/glass/GlassButton";
 import ProposedRecordCard from "./ProposedRecordCard";
 import IngestStructure from "./IngestStructure";
-import { Sparkles, Loader2, RefreshCw, HelpCircle, Check, Layers, ListChecks } from "lucide-react";
+import { Sparkles, Loader2, RefreshCw, HelpCircle, Check, Layers, ListChecks, FolderInput } from "lucide-react";
 
 export default function IngestReview({ source, onApproved, onReprocess }) {
   const [view, setView] = useState("changes"); // changes | structure
@@ -16,7 +16,13 @@ export default function IngestReview({ source, onApproved, onReprocess }) {
     }))
   );
   const [busy, setBusy] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [targetProjectId, setTargetProjectId] = useState(source.detected_project_id || "");
   const gaps = source.gaps || [];
+
+  useEffect(() => {
+    base44.entities.Project.list("title", 200).then(setProjects).catch(() => setProjects([]));
+  }, []);
 
   const update = (i, patch) => setRecords((rs) => rs.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
   const included = records.filter((r) => r.action !== "skip");
@@ -28,7 +34,7 @@ export default function IngestReview({ source, onApproved, onReprocess }) {
         index: r.index, entity_class: r.entity_class, title: r.title, description: r.description,
         fields: r.fields, action: r.action, existing_id: r.existing_id, theme_title: r.theme_title
       }));
-      await base44.functions.invoke("approveIngestion", { source_id: source.id, records: payload }).catch(() => null);
+      await base44.functions.invoke("approveIngestion", { source_id: source.id, records: payload, target_project_id: targetProjectId || null }).catch(() => null);
       await onApproved?.();
     } finally {
       setBusy(false);
@@ -51,6 +57,31 @@ export default function IngestReview({ source, onApproved, onReprocess }) {
           <span className="text-[10px] uppercase tracking-wide text-olive border border-olive/30 rounded-full px-2.5 py-1 shrink-0">{source.confidence || "—"}</span>
         </div>
         <p className="text-xs text-muted-foreground">Niets wordt toegevoegd tot je goedkeurt. Pas titels en velden aan, of kies Skip voor wat niet klopt.</p>
+      </GlassPanel>
+
+      {/* Target project — prominent, editable. Giulia stelt voor, jij bevestigt of corrigeert. */}
+      <GlassPanel level={2} className="p-5 border-olive/30">
+        <div className="flex items-center gap-3">
+          <span className="h-10 w-10 rounded-2xl bg-olive/15 ring-1 ring-olive/30 flex items-center justify-center shrink-0">
+            <FolderInput className="w-5 h-5 text-olive" />
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-0.5">Doelproject — Giulia stelt voor</p>
+            <select
+              value={targetProjectId}
+              onChange={(e) => setTargetProjectId(e.target.value)}
+              className="w-full rounded-xl glass-1 px-3 py-2.5 text-sm font-display font-semibold outline-none focus:border-olive cursor-pointer"
+            >
+              <option value="">— Geen project (globaal / Knowledge / LIFE) —</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>{p.title}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        {targetProjectId && (
+          <p className="text-[11px] text-muted-foreground mt-2.5 pl-[3.25rem]">Alle goedgekeurde records worden gekoppeld aan dit project.</p>
+        )}
       </GlassPanel>
 
       {/* View toggle: Structure | Changes */}

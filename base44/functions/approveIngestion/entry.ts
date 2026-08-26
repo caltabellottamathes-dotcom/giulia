@@ -30,11 +30,17 @@ export default async function (req) {
     if (!src) return Response.json({ error: "source not found" }, { status: 404 });
     if (src.status !== "pending_approval") return Response.json({ error: "source is not pending approval" }, { status: 400 });
 
+    // User-confirmed target project overrides auto-detection
+    const targetProjectId = body.target_project_id || src.detected_project_id || "";
+    if (body.target_project_id && body.target_project_id !== src.detected_project_id) {
+      await sr.entities.IngestionSource.update(sourceId, { detected_project_id: body.target_project_id }).catch(() => null);
+    }
+
     const candidates = await loadCandidates(sr);
     const ctx = { projectIds: {}, contactIds: {}, themeIds: {} };
-    // seed ctx with detected project
-    if (src.detected_project_id) {
-      const dp = candidates.projects.find((p) => p.id === src.detected_project_id);
+    // seed ctx with (confirmed) target project
+    if (targetProjectId) {
+      const dp = candidates.projects.find((p) => p.id === targetProjectId);
       if (dp) ctx.projectIds[(dp.title || "").toLowerCase()] = dp.id;
     }
     const generated = [], updated = [], relationships = [], conflicts = [], unresolved = [];
@@ -57,7 +63,7 @@ export default async function (req) {
           confidence: "certain",
           reason: "",
           themeId: "",
-          projectId: src.detected_project_id || "",
+          projectId: targetProjectId,
           sourceId: sourceId
         }, src, candidates, ctx);
         if (out.generated) generated.push(...out.generated);
@@ -70,7 +76,7 @@ export default async function (req) {
     }
 
     // ── EVENT ENGINE: emit per record (canonical propagation) ────────
-    const touchedProjectIds = new Set(src.detected_project_id ? [src.detected_project_id] : []);
+    const touchedProjectIds = new Set(targetProjectId ? [targetProjectId] : []);
     const touchedCalendar = [];
     for (const g of generated) {
       const evType = eventTypeFor(g.entity, false);

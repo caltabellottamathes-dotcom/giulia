@@ -7,7 +7,7 @@ import { Plus, Trash2, Gavel } from "lucide-react";
 import EmptyState from "@/focus/components/projects/EmptyState";
 
 /** Decisions — historical record of why choices were made. */
-export default function DecisionsSection({ project }) {
+export default function DecisionsSection({ project, themes = [] }) {
   const [decisions, setDecisions] = useState([]);
   const [panel, setPanel] = useState(null);
   const [form, setForm] = useState({ title: "", description: "", date: "" });
@@ -31,6 +31,9 @@ export default function DecisionsSection({ project }) {
   };
   const del = async (d) => { if (window.confirm("Beslissing verwijderen?")) { await base44.entities.Decision.delete(d.id); load(); } };
 
+  const themeMap = new Map((themes || []).map((t) => [t.id, t]));
+  const groups = groupByTheme(decisions, themeMap);
+
   const field = "w-full bg-foreground/[0.03] border border-border/50 rounded-xl px-3 py-2 text-sm outline-none focus:border-olive";
 
   return (
@@ -40,20 +43,32 @@ export default function DecisionsSection({ project }) {
         <GlassButton variant="glass" size="sm" onClick={openNew}><Plus className="h-3.5 w-3.5" /> Nieuwe beslissing</GlassButton>
       </div>
 
-      <div className="space-y-3">
-        {decisions.map((d) => (
-          <div key={d.id} className="glass rounded-2xl p-5 group">
-            <div className="flex items-start gap-3">
-              <Gavel className="h-4 w-4 text-olive mt-0.5 shrink-0" />
-              <div className="min-w-0 flex-1">
-                <h3 className="text-sm font-display font-semibold">{d.title}</h3>
-                {d.description && <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">{d.description}</p>}
-                {d.date && <p className="text-[11px] text-muted-foreground mt-2">Datum: {new Date(d.date).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" })}</p>}
+      <div className="space-y-5">
+        {groups.map((g) => (
+          <div key={g.key}>
+            {g.label && (
+              <div className="flex items-center gap-2 mb-2.5">
+                <span className="h-1 w-1 rounded-full bg-olive" />
+                <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">{g.label}</p>
               </div>
-              <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition">
-                <button onClick={() => openEdit(d)} className="text-[11px] text-muted-foreground hover:text-foreground">Bewerk</button>
-                <button onClick={() => del(d)} className="text-[11px] text-muted-foreground hover:text-red-500">Verwijder</button>
-              </div>
+            )}
+            <div className="space-y-3">
+              {g.items.map((d) => (
+                <div key={d.id} className="glass rounded-2xl p-5 group">
+                  <div className="flex items-start gap-3">
+                    <Gavel className="h-4 w-4 text-olive mt-0.5 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-sm font-display font-semibold">{d.title}</h3>
+                      {d.description && <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">{d.description}</p>}
+                      {d.date && <p className="text-[11px] text-muted-foreground mt-2">Datum: {new Date(d.date).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" })}</p>}
+                    </div>
+                    <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition">
+                      <button onClick={() => openEdit(d)} className="text-[11px] text-muted-foreground hover:text-foreground">Bewerk</button>
+                      <button onClick={() => del(d)} className="text-[11px] text-muted-foreground hover:text-red-500">Verwijder</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         ))}
@@ -97,4 +112,18 @@ export default function DecisionsSection({ project }) {
       </PanelForm>
     </div>
   );
+}
+
+function groupByTheme(items, themeMap) {
+  if (!items.length) return [];
+  const hasThemed = items.some((i) => i.theme_id && themeMap.has(i.theme_id));
+  if (!hasThemed) return [{ key: "_algemeen", label: "", items }];
+  const groups = [];
+  themeMap.forEach((t) => {
+    const its = items.filter((i) => i.theme_id === t.id);
+    if (its.length) groups.push({ key: `theme:${t.id}`, label: t.title, items: its });
+  });
+  const unthemed = items.filter((i) => !i.theme_id || !themeMap.has(i.theme_id));
+  if (unthemed.length) groups.push({ key: "_algemeen", label: "Algemeen", items: unthemed });
+  return groups;
 }

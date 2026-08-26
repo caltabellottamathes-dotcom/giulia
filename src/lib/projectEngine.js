@@ -1,10 +1,68 @@
 // Deterministic GIULIA project intelligence — progress, breakdown,
 // context interpretation and task extraction. Runs without LLM credits.
+//
+// Theme-aware: when ProjectTheme records exist and tasks carry theme_id,
+// the breakdown groups by theme (themes → subthemes). Tasks without a
+// theme fall into an "Algemeen" bucket. Falls back to the legacy
+// context-based (onderdeel · sub) grouping when no themes are present.
 
 import { parseContext, isTaskDone } from "./projectStatus";
 
-/** Nested onderdeel → subonderdeel breakdown with per-level completion. */
-export function buildBreakdown(tasks) {
+/** Nested breakdown — theme hierarchy when themes exist, else context-based. */
+export function buildBreakdown(tasks, themes = []) {
+  const themeMap = new Map((themes || []).map((t) => [t.id, t]));
+  const hasThemed = (tasks || []).some((t) => t.theme_id && themeMap.has(t.theme_id));
+  if (hasThemed) return buildThemeBreakdown(tasks || [], themes || [], themeMap);
+  return buildContextBreakdown(tasks || []);
+}
+
+function buildThemeBreakdown(tasks, themes, themeMap) {
+  const topLevel = themes
+    .filter((t) => !t.parent_theme_id)
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
+  const subthemesByParent = {};
+  themes.filter((t) => t.parent_theme_id).forEach((t) => {
+    (subthemesByParent[t.parent_theme_id] ||= []).push(t);
+  });
+
+  const buckets = topLevel.map((th) => {
+    const all = tasks.filter((t) => t.theme_id === th.id);
+    const subsForTheme = (subthemesByParent[th.id] || [])
+      .map((st) => {
+        const ts = tasks.filter((t) => t.theme_id === st.id);
+        const d = ts.filter(isTaskDone).length;
+        return { name: st.title, total: ts.length, done: d, pct: ts.length ? Math.round((d / ts.length) * 100) : 0 };
+      })
+      .filter((s) => s.total > 0);
+    // tasks directly under the top theme (not under a subtheme) → "Algemeen" sub
+    const direct = all.filter((t) => !subthemesByParent[th.id]?.some((st) => st.id === t.theme_id));
+    if (direct.length) {
+      const d = direct.filter(isTaskDone).length;
+      subsForTheme.unshift({ name: "Algemeen", total: direct.length, done: d, pct: direct.length ? Math.round((d / direct.length) * 100) : 0 });
+    }
+    const done = all.filter(isTaskDone).length;
+    return { id: th.id, name: th.title, isTheme: true, total: all.length, done, pct: all.length ? Math.round((done / all.length) * 100) : 0, subs: subsForTheme };
+  });
+
+  // unthemed / orphan bucket
+  const unthemed = tasks.filter((t) => !t.theme_id || !themeMap.has(t.theme_id));
+  if (unthemed.length) {
+    const subs = {};
+    unthemed.forEach((t) => {
+      const { sub } = parseContext(t.context);
+      (subs[sub] ||= []).push(t);
+    });
+    const subArr = Object.entries(subs).map(([name, ts]) => {
+      const d = ts.filter(isTaskDone).length;
+      return { name, total: ts.length, done: d, pct: ts.length ? Math.round((d / ts.length) * 100) : 0 };
+    });
+    const done = unthemed.filter(isTaskDone).length;
+    buckets.push({ id: "_algemeen", name: "Algemeen", isTheme: false, total: unthemed.length, done, pct: unthemed.length ? Math.round((done / unthemed.length) * 100) : 0, subs: subArr });
+  }
+  return buckets;
+}
+
+function buildContextBreakdown(tasks) {
   const map = {};
   tasks.forEach((t) => {
     const { ond, sub } = parseContext(t.context);
@@ -24,10 +82,11 @@ export function buildBreakdown(tasks) {
   }).sort((a, b) => a.name.localeCompare(b.name));
 }
 
-/** Onderdeel-weighted progress — each onderdeel counts equally, so a giant
- *  open onderdeel isn't drowned out by many tiny done ones. */
-export function weightedProgress(tasks) {
-  const bd = buildBreakdown(tasks);
+/** Weighted progress — each bucket counts equally so a giant open bucket
+ *  isn't drowned out. Reflects ALL tasks (themed + unthemed), avoiding the
+ *  misleading 0% when unthemed tasks exist alongside themed ones. */
+export function weightedProgress(tasks, themes = []) {
+  const bd = buildBreakdown(tasks, themes);
   if (!bd.length) return 0;
   return Math.round(bd.reduce((a, o) => a + o.pct, 0) / bd.length);
 }
@@ -45,9 +104,9 @@ const PROJECT_NOTES = {
 };
 
 /** GIULIA interprets the whole project into a short, human summary + next step. */
-export function giuliaInterpret(project, tasks) {
-  const bd = buildBreakdown(tasks);
-  const progress = weightedProgress(tasks);
+export function giuliaInterpret(project, tasks, themes = []) {
+  const bd = buildBreakdown(tasks, themes);
+  const progress = weightedProgress(tasks, themes);
   const done = tasks.filter(isTaskDone).length;
   const active = tasks.filter((t) => ["actief", "in_progress", "today"].includes(t.status));
   const waiting = tasks.filter((t) => ["wacht", "waiting"].includes(t.status));

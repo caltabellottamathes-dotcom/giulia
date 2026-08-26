@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Check, Link2, X, AlertTriangle } from "lucide-react";
+import { Check, Link2, X, AlertTriangle, Sparkles } from "lucide-react";
 
 const FIELD_LABELS = {
   name: "Naam", project_name: "Project", deadline: "Deadline", date: "Datum", start: "Start", end: "Eind",
@@ -26,7 +26,11 @@ export default function ProposedRecordCard({ record, onChange }) {
         <span className="text-[9px] uppercase tracking-wider font-bold px-2 py-1 rounded-full bg-olive/15 text-olive">{record.entity_class}</span>
         {record.theme_title && <span className="text-[9px] uppercase tracking-wider px-2 py-1 rounded-full bg-olive/10 text-olive/80">↳ {record.theme_title}</span>}
         <span className={`h-2 w-2 rounded-full ${CONF_DOT[record.confidence] || "bg-muted-foreground/40"}`} title={record.confidence} />
-        <span className="text-[9px] text-muted-foreground">{record.explicit ? "explicit" : "inferred"}</span>
+        {record.explicit ? (
+          <span className="text-[9px] uppercase tracking-wider text-muted-foreground">explicit</span>
+        ) : (
+          <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded-full bg-olive/10 text-olive"><Sparkles className="w-2.5 h-2.5" />afgeleid</span>
+        )}
         {record.decision === "CONFLICT" && <span className="text-[9px] uppercase tracking-wider font-bold text-urgent">conflict</span>}
         <div className="ml-auto flex gap-1">
           {["create", "update", "link", "skip"].map((a) => (

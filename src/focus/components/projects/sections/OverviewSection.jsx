@@ -23,7 +23,7 @@ const tierColor = (pct) => {
   return "bg-steel/30";
 };
 
-export default function OverviewSection({ project, tasks, onNavigate, reload }) {
+export default function OverviewSection({ project, tasks, themes = [], onNavigate, reload }) {
   const [emails, setEmails] = useState([]);
   const [events, setEvents] = useState([]);
   const [documents, setDocuments] = useState([]);
@@ -50,9 +50,9 @@ export default function OverviewSection({ project, tasks, onNavigate, reload }) 
   };
   useEffect(() => { load(); }, [project.id]);
 
-  const breakdown = buildBreakdown(tasks);
-  const progress = weightedProgress(tasks);
-  const giulia = giuliaInterpret(project, tasks);
+  const breakdown = buildBreakdown(tasks, themes);
+  const progress = weightedProgress(tasks, themes);
+  const giulia = giuliaInterpret(project, tasks, themes);
   const ps = projectStatusMeta[project.status] || projectStatusMeta.planning;
 
   const today = new Date();

@@ -24,6 +24,7 @@ export default function ProjectDetail() {
   const navigate = useNavigate();
   const [project, setProject] = useState(null);
   const [tasks, setTasks] = useState([]);
+  const [themes, setThemes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [section, setSection] = useState("Overview");
   const [editorOpen, setEditorOpen] = useState(false);
@@ -32,8 +33,12 @@ export default function ProjectDetail() {
     try {
       const p = await base44.entities.Project.get(id);
       setProject(p);
-      const allTasks = await base44.entities.Task.list();
+      const [allTasks, allThemes] = await Promise.all([
+        base44.entities.Task.list(),
+        base44.entities.ProjectTheme.list(),
+      ]);
       setTasks(allTasks.filter((t) => t.project_id === id));
+      setThemes(allThemes.filter((t) => t.project_id === id).sort((a, b) => (a.order || 0) - (b.order || 0)));
     } catch {
       /* not found */
     } finally {
@@ -51,6 +56,9 @@ export default function ProjectDetail() {
     const reload = () => load();
     try { unsubs.push(base44.entities.Project.subscribe(reload)); } catch { /* */ }
     try { unsubs.push(base44.entities.Task.subscribe(reload)); } catch { /* */ }
+    try { unsubs.push(base44.entities.ProjectTheme.subscribe(reload)); } catch { /* */ }
+    try { unsubs.push(base44.entities.Milestone.subscribe(reload)); } catch { /* */ }
+    try { unsubs.push(base44.entities.Decision.subscribe(reload)); } catch { /* */ }
     try { unsubs.push(base44.entities.Email.subscribe(reload)); } catch { /* */ }
     try { unsubs.push(base44.entities.WhatsAppMessage.subscribe(reload)); } catch { /* */ }
     try { unsubs.push(base44.entities.Document.subscribe(reload)); } catch { /* */ }
@@ -84,15 +92,15 @@ export default function ProjectDetail() {
           <ProjectNav active={section} onChange={setSection} variant="top" />
         </div>
 
-        {section === "Overview" && <OverviewSection project={project} tasks={tasks} onNavigate={setSection} reload={load} />}
-        {section === "Tasks" && <TasksSection project={project} tasks={tasks} reload={load} />}
+        {section === "Overview" && <OverviewSection project={project} tasks={tasks} themes={themes} onNavigate={setSection} reload={load} />}
+        {section === "Tasks" && <TasksSection project={project} tasks={tasks} themes={themes} reload={load} />}
         {section === "Timeline" && <TimelineSection project={project} tasks={tasks} />}
-        {section === "Milestones" && <MilestonesSection project={project} />}
+        {section === "Milestones" && <MilestonesSection project={project} themes={themes} />}
         {section === "Files" && <FilesSection project={project} tasks={tasks} />}
-        {section === "Notes" && <NotesSection project={project} />}
+        {section === "Notes" && <NotesSection project={project} themes={themes} />}
         {section === "People" && <PeopleSection project={project} />}
         {section === "Communication" && <CommunicationSection project={project} />}
-        {section === "Decisions" && <DecisionsSection project={project} />}
+        {section === "Decisions" && <DecisionsSection project={project} themes={themes} />}
         {section === "Activity" && <ActivitySection project={project} />}
         {section === "Time" && <TimeSection project={project} tasks={tasks} />}
         {section === "Giulia" && <GiuliaSection project={project} tasks={tasks} reload={load} />}

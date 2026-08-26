@@ -19,7 +19,7 @@ const VIEWS = [
  * TasksSection — three views: Lijst (collapsible onderdelen → subonderdelen),
  * Bord (kanban per status) and Kalender (weekgrid op deadline).
  */
-export default function TasksSection({ project, tasks, reload }) {
+export default function TasksSection({ project, tasks, themes = [], reload }) {
   const [view, setView] = useState("lijst");
   const [editTask, setEditTask] = useState(null);
   const [newContext, setNewContext] = useState(null);
@@ -64,7 +64,7 @@ export default function TasksSection({ project, tasks, reload }) {
         </div>
       </div>
 
-      {view === "lijst" && <TaskListView tasks={tasks} onEdit={setEditTask} onRenameOnd={renameOnd} onSchedule={scheduleTask} />}
+      {view === "lijst" && <TaskListView tasks={tasks} themes={themes} onEdit={setEditTask} onRenameOnd={renameOnd} onSchedule={scheduleTask} />}
       {view === "bord" && <TaskBoardView tasks={tasks} onEdit={setEditTask} />}
       {view === "kalender" && <TaskCalendarView tasks={tasks} onEdit={setEditTask} />}
 
