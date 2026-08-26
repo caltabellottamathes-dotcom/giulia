@@ -1,5 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { geminiDecide } from '../../shared/gemini.ts';
 
 /**
  * ingestSource — Universal Information Ingestion pipeline.
@@ -134,19 +133,16 @@ export default async function (req) {
     let understanding = null;
     if (src.source_type === "image" && src.file_url) {
       understanding = await base44.integrations.Core.InvokeLLM({
-        prompt: "Analyseer deze afbeelding volledig (OCR + visueel). Extract alle relevante entiteiten, datums, bedragen, relaties en commitments als gestructureerde JSON volgens het schema.",
+        prompt: "Analyseer deze afbeelding volledig (OCR + visueel). Extract alle relevante entiteiten, datums, bedragen, relaties en commitments als gestructureerde JSON volgens het schema.\n" + SYSTEM_TEXT,
         file_urls: [src.file_url],
         response_json_schema: UNDERSTANDING_SCHEMA,
         model: "gemini_3_flash"
       }).catch(() => null);
     } else if (text) {
-      understanding = await geminiDecide({
-        prompt: `Bron:\n"""${String(text).slice(0, 12000)}"""`,
-        schema: UNDERSTANDING_SCHEMA,
-        systemText: SYSTEM_TEXT,
-        temperature: 0.2,
-        keyName: "BACKDESK_GEMINI_API_KEY"
-      });
+      understanding = await base44.integrations.Core.InvokeLLM({
+        prompt: SYSTEM_TEXT + "\n\nBron:\n\"\"\"" + String(text).slice(0, 12000) + "\"\"\"",
+        response_json_schema: UNDERSTANDING_SCHEMA
+      }).catch(() => null);
     }
     if (!understanding || !Array.isArray(understanding.entities)) {
       throw new Error("understanding failed — no entities extracted");
@@ -162,13 +158,10 @@ export default async function (req) {
     await hist("matching");
     const candidates = await loadCandidates(sr);
     const entities = understanding.entities;
-    const resolution = await geminiDecide({
-      prompt: buildResolutionPrompt(entities, candidates),
-      schema: RESOLUTION_SCHEMA,
-      systemText: "You resolve extracted entities against existing GIULIA OS records by name/alias/date/email/semantic match. Return JSON {results:[{index, decision, existing_id, reason}]}. Prefer EXISTING over NEW to avoid duplicates; use CONFLICT when the source contradicts existing data.",
-      temperature: 0.1,
-      keyName: "BACKDESK_GEMINI_API_KEY"
-    });
+    const resolution = await base44.integrations.Core.InvokeLLM({
+      prompt: "You resolve extracted entities against existing GIULIA OS records by name/alias/date/email/semantic match. Return JSON {results:[{index, decision, existing_id, reason}]}. Prefer EXISTING over NEW to avoid duplicates; use CONFLICT when the source contradicts existing data.\n\n" + buildResolutionPrompt(entities, candidates),
+      response_json_schema: RESOLUTION_SCHEMA
+    }).catch(() => null);
     const results = (resolution && resolution.results) || entities.map((_, i) => ({ index: i, decision: "NEW" }));
 
     // Idempotent reprocess: prefer previously generated records for this source
