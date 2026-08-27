@@ -58,7 +58,7 @@ export default function PaginaOntwerp() {
         </div>
 
         {/* Witte-kaart wrapper — steekt 56px boven en 70px onder het paneel uit (zweeft); per tab schuivend */}
-        <div className="relative flex-1 ml-[2.5%] -mt-[56px] -mb-[70px] min-w-0">
+        <div className="relative flex-1 ml-[2.5%] -mt-[134px] -mb-[70px] min-w-0">
           <AnimatePresence initial={false}>
             <OntwerpWhiteCard key={tab} tab={tab} />
           </AnimatePresence>

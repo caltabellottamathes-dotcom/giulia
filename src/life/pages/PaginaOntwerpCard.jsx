@@ -156,7 +156,7 @@ export default function OntwerpWhiteCard({ tab }) {
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
       transition={{ duration: 0.5, ease: EASE }}
-      className="absolute inset-0 rounded-t-[20px] rounded-l-[20px] rounded-r-none bg-white flex overflow-hidden shadow-[-40px_8px_64px_-18px_rgba(0,0,0,0.55)]"
+      className="absolute inset-0 rounded-bl-[20px] rounded-r-none bg-white flex overflow-hidden shadow-[-40px_8px_64px_-18px_rgba(0,0,0,0.55)]"
     >
       {/* Editorial — left ~42% */}
       <div className="w-[42%] h-full flex flex-col overflow-hidden border-r" style={{ borderColor: GREY }}>
@@ -166,7 +166,7 @@ export default function OntwerpWhiteCard({ tab }) {
             <span className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>N°1</span>
           </div>
 
-          <h2 className="font-display font-bold tracking-[-0.035em] leading-[0.92] mt-6" style={{ color: BLACK, fontSize: "clamp(34px, 3vw, 54px)", textShadow: "0 0 18px rgba(177,191,199,0.7), 0 0 38px rgba(177,191,199,0.4)" }}>
+          <h2 className="font-display font-bold uppercase tracking-[-0.035em] leading-[0.92] mt-6" style={{ color: BLACK, fontSize: "clamp(34px, 3vw, 54px)", textShadow: "0 0 18px rgba(177,191,199,0.7), 0 0 38px rgba(177,191,199,0.4)" }}>
             {c.title1}<br />{c.title2}<span aria-hidden className="ontwerp-dot-bounce inline-block rounded-full bg-current ml-[6px] align-baseline" style={{ color: BLUE, width: "clamp(8px, 0.7vw, 13px)", height: "clamp(8px, 0.7vw, 13px)" }} />
           </h2>
 
@@ -194,8 +194,8 @@ export default function OntwerpWhiteCard({ tab }) {
             <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>{c.itemsLabel}</p>
             {c.items.map((it, idx) => (
               <button key={it.n} onClick={() => navigate(`/life/personal-admin?tab=${tab}`)} className="flex gap-3 items-end text-left w-full hover:opacity-70 transition">
-                <span className="inline-flex items-end gap-[5px] shrink-0">
-                  <BounceBalls color={NUM_COLORS[idx % 3]} count={idx + 1} ml="0" />
+                <span className="w-[84px] shrink-0 flex justify-end items-end gap-[5px]">
+                  <BounceBalls colors={NUM_COLORS.slice(0, idx + 1)} ml="0" />
                   <span className="font-display font-bold leading-none" style={{ color: NUM_COLORS[idx % 3], fontSize: "30px" }}>{it.n}</span>
                 </span>
                 <div className="min-w-0">
