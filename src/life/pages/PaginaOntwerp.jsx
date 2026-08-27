@@ -87,7 +87,7 @@ export default function PaginaOntwerp() {
                   Here's where<br />things stand<span style={{ color: BLUE }}>®</span>
                 </h2>
 
-                <p className="font-display font-medium tracking-[-0.01em] mt-4 text-[13px]" style={{ color: BLACK }}>A clear view of what's in motion.</p>
+                <p className="font-display font-medium tracking-[-0.05em] mt-4 text-[13px]" style={{ color: BLACK }}>A clear view of what's in motion.</p>
 
                 <p className="font-body text-[13px] leading-[1.65] mt-6" style={{ color: INK }}>
                   PersonalAdmin currently has 24 active matters, with most routine administration under control. Several financial commitments are already planned, while a smaller number of open items still require attention in the coming days.
