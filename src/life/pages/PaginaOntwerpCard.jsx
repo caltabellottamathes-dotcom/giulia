@@ -179,7 +179,7 @@ export default function OntwerpWhiteCard({ tab }) {
           <div className="flex-1 min-h-8" />
 
           {/* What needs your attention — boven de lijn, links uitgelijnd, zwart, 2 regels, BounceBalls i.p.v. ... */}
-          <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98] mb-5" style={{ color: BLACK, fontSize: "clamp(24px, 1.9vw, 38px)" }}>
+          <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98] mb-5" style={{ color: NUM_COLORS[0], fontSize: "clamp(24px, 1.9vw, 38px)" }}>
             {c.heading1}<br />{h2Clean}<BounceBalls colors={NUM_COLORS} />
           </h3>
 
@@ -195,11 +195,11 @@ export default function OntwerpWhiteCard({ tab }) {
             {c.items.map((it, idx) => (
               <button key={it.n} onClick={() => navigate(`/life/personal-admin?tab=${tab}`)} className="flex gap-3 items-end text-left w-full hover:opacity-70 transition">
                 <span className="w-[84px] shrink-0 flex justify-end items-end gap-[5px]">
-                  <BounceBalls colors={NUM_COLORS.slice(0, idx + 1)} ml="0" />
+                  <BounceBalls color={NUM_COLORS[idx % 3]} count={idx + 1} ml="0" />
                   <span className="font-display font-bold leading-none" style={{ color: NUM_COLORS[idx % 3], fontSize: "30px" }}>{it.n}</span>
                 </span>
                 <div className="min-w-0">
-                  <p className="font-display font-bold text-[13px] leading-tight" style={{ color: BLACK }}>{it.title}</p>
+                  <p className="font-display font-bold text-[13px] leading-tight" style={{ color: NUM_COLORS[idx % 3] }}>{it.title}</p>
                   <p className="font-body text-[12px] leading-[1.4] mt-1" style={{ color: "#333" }}>{it.desc}</p>
                 </div>
               </button>

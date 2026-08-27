@@ -212,8 +212,8 @@ export default function WorkspaceToolbar() {
                 <button onClick={() => { expand(); active ? stop() : start(); }} aria-label="Context toevoegen" className={cn(actionBtn, active && "text-foreground")}><BrainCircuit className="h-4 w-4" /></button>
                 </>
                 )}
-                <button onClick={() => { expand(); openVoice(); }} aria-label="Bel Giulia" className={actionBtn}><Phone className="h-4 w-4" /></button>
-                <button onClick={() => { expand(); openChat(); }} aria-label="Chat met Giulia" className={actionBtn}><MessageSquare className="h-4 w-4" /></button>
+                <button onClick={() => { expand(); if (stayCollapsed) window.dispatchEvent(new CustomEvent("giulia:ontwerp-stage", { detail: "voice" })); else openVoice(); }} aria-label="Bel Giulia" className={actionBtn}><Phone className="h-4 w-4" /></button>
+                <button onClick={() => { expand(); if (stayCollapsed) window.dispatchEvent(new CustomEvent("giulia:ontwerp-stage", { detail: "chat" })); else openChat(); }} aria-label="Chat met Giulia" className={actionBtn}><MessageSquare className="h-4 w-4" /></button>
           </div>
         </div>
       </div>

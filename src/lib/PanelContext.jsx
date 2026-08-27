@@ -19,9 +19,15 @@ export function PanelProvider({ children }) {
 
   // "chat" opens the dedicated chat window instead of a module panel.
   // "voice" opens the dedicated, navigation-persistent voice window.
-  // De GlassPanel is nu een multi-functioneel display: chat, voice én modules
-  // komen allemaal in hetzelfde naar-links uitschuivende paneel.
   const openModule = (key) => {
+    if (key === "chat") {
+      setChatOpen(true);
+      return;
+    }
+    if (key === "voice") {
+      setVoiceOpen(true);
+      return;
+    }
     if (key === "browser") {
       setBrowserOpen(true);
       setBrowserMinimized(false);
@@ -30,10 +36,10 @@ export function PanelProvider({ children }) {
     setActiveModule(key);
   };
   const closeModule = () => setActiveModule(null);
-  const openChat = () => setActiveModule("chat");
-  const closeChat = () => setActiveModule(null);
-  const openVoice = () => setActiveModule("voice");
-  const closeVoice = () => setActiveModule(null);
+  const openChat = () => setChatOpen(true);
+  const closeChat = () => setChatOpen(false);
+  const openVoice = () => setVoiceOpen(true);
+  const closeVoice = () => setVoiceOpen(false);
   const openBrowser = () => { setBrowserOpen(true); setBrowserMinimized(false); };
   const closeBrowser = () => { setBrowserOpen(false); setBrowserMinimized(false); };
   const minimizeBrowser = () => setBrowserMinimized(true);
