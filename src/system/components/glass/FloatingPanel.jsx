@@ -74,6 +74,8 @@ export default function FloatingPanel({
   const posClass =
     position === "right"
       ? `fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 w-[calc(100%-2rem)] ${widthClass[width] || widthClass[720]} z-50`
+      : position === "left"
+      ? `fixed left-4 lg:left-6 top-4 lg:top-6 bottom-4 lg:bottom-6 w-[calc(100%-2rem)] ${widthClass[width] || widthClass[720]} z-50`
       : positions[position];
 
   return createPortal(

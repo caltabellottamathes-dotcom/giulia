@@ -24,7 +24,7 @@ export default function PaginaOntwerp() {
     <div className="fixed inset-x-0 top-14 bottom-0 overflow-visible z-[30]">
       {/* Hero photo — links, vast aan de bodem */}
       <motion.div initial={{ x: "-118%" }} animate={{ x: 0 }} transition={{ duration: 0.7, ease: EASE }}
-        className="hidden lg:block absolute left-0 top-[36%] bottom-0 w-[34%] overflow-hidden rounded-r-[24px] z-[5]">
+        className="hidden lg:block absolute left-0 top-[14%] bottom-0 w-[34%] overflow-hidden rounded-r-[24px] z-[5]">
         <img src={HERO} alt="" className="h-full w-full object-cover" draggable={false} />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/65 via-charcoal/15 to-charcoal/10" />
       </motion.div>

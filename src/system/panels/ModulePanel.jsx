@@ -34,6 +34,8 @@ import QuestionsPreview from "@/giulia/panels/QuestionsPreview";
 import GoodMorningMorningPreview from "@/giulia/panels/GoodMorningMorningPreview";
 import GoodMorningRoutinePreview from "@/giulia/panels/GoodMorningRoutinePreview";
 import GoodMorningSettingsPreview from "@/giulia/panels/GoodMorningSettingsPreview";
+import ChatStage from "@/giulia/panels/ChatStage";
+import VoiceStage from "@/giulia/panels/VoiceStage";
 
 /** LEVEL 02 quick-context previews — one per data module. Modules without
  *  a preview (chat, voice, settings, profile, integrations) keep the full
@@ -202,10 +204,14 @@ export default function ModulePanel() {
   const selectTab = (m) => { setActiveTab(m); setFooter(null); setHelpOpen(false); };
   const runAction = (a) => { if (a.onClick) a.onClick(); else if (a.to) navigate(a.to); };
 
+  const isStage = activeModule === "chat" || activeModule === "voice";
+  const panelWidth = activeModule === "chat" ? 460 : activeModule === "voice" ? 720 : (mod?.panelWidth || 720);
   return (
-    <FloatingPanel open={!!mod} onClose={closeModule} position="right" level={3} width={mod?.panelWidth || 720} showOverlay dim={false}>
-      {mod && (
-        FULL_BLEED[activeModule] ? (
+    <FloatingPanel open={!!activeModule} onClose={closeModule} position="left" level={3} width={panelWidth} showOverlay dim={false}>
+      {activeModule && (
+        isStage ? (
+          activeModule === "chat" ? <ChatStage /> : <VoiceStage />
+        ) : FULL_BLEED[activeModule] ? (
           <div className="h-full"><ActiveComponent /></div>
         ) : (
         <div className="flex flex-col h-full">

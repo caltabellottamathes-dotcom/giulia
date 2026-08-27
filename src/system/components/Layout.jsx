@@ -1,8 +1,6 @@
 import React from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import ModulePanel from "@/system/panels/ModulePanel";
-import ChatWindow from "@/giulia/panels/ChatWindow";
-import VoiceWindow from "@/giulia/panels/VoiceWindow";
 import BrowserWindow from "@/system/components/BrowserWindow";
 import MediaFullscreenWindow from "@/system/components/MediaFullscreenWindow";
 import WorkspaceToolbar from "@/system/components/WorkspaceToolbar";
@@ -71,14 +69,8 @@ function LayoutInner() {
         </main>
       </div>
 
-      {/* The single sliding glass panel that hosts every module */}
+      {/* The single sliding glass panel — multi-functional: hosts modules, chat & voice */}
       <ModulePanel />
-
-      {/* Dedicated chat window — the Giulia agent */}
-      <ChatWindow />
-
-      {/* Persistent voice window — stays open across dashboard navigation */}
-      <VoiceWindow />
 
       {/* Fullscreen in-app browser window */}
       <BrowserWindow />

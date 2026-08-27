@@ -9,7 +9,7 @@ import QuickLauncher from "@/system/components/glass/QuickLauncher";
 import { useActiveDomain } from "@/lib/useActiveDomain";
 import { DEFAULT_BOARDS, loadCustomBoards, createCustomBoard, renameCustomBoard, deleteCustomBoard, getActiveBoard, setActiveBoard, isDefaultBoard } from "@/lib/useDashboardBoard";
 
-const actionBtn = "h-8 w-8 flex items-center justify-center text-foreground/80 hover:bg-foreground/15 hover:text-foreground transition-colors shrink-0 rounded-lg";
+const actionBtn = "h-8 w-8 flex items-center justify-center text-white hover:bg-white/15 hover:text-white transition-colors shrink-0 rounded-lg";
 
 /**
  * WorkspaceToolbar — minimalistische volledig-brede werkbalk onderaan.
@@ -184,7 +184,7 @@ export default function WorkspaceToolbar() {
                     </span>
                   );
                 })}
-                <button onClick={addBoard} title="Dashboard toevoegen" className="shrink-0 h-7 w-7 flex items-center justify-center text-foreground/40 hover:text-foreground hover:bg-foreground/10 transition"><Plus className="h-3.5 w-3.5" /></button>
+                <button onClick={addBoard} title="Dashboard toevoegen" className="shrink-0 h-7 w-7 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition"><Plus className="h-3.5 w-3.5" /></button>
               </div>
 
               {/* spacer */}
@@ -258,7 +258,7 @@ export default function WorkspaceToolbar() {
           boxShadow: "0 18px 40px -16px rgba(0,0,0,0.40), inset 0 1px 0 0 rgba(255,255,255,0.18)",
         }}
       >
-        <Plus className="h-4 w-4 text-foreground/80" />
+        <Plus className="h-4 w-4 text-white" />
       </button>
 
       <QuickLauncher open={launcherOpen} onClose={() => setLauncherOpen(false)} />
