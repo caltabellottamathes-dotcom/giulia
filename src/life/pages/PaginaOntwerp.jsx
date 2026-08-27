@@ -5,10 +5,10 @@ import { ArrowLeft, ChevronDown, CircleDot, Wallet, ListChecks, Banknote, LineCh
 import { IMAGES } from "@/lib/images";
 
 const EASE = [0.16, 1, 0.3, 1];
-const BLUE = "#d0d9dd";
+const BLUE = "#b1bfc7";
 const GREY = "#CCCCCC";
 const BLACK = "#000000";
-const INK = "#1a1a1a";
+const INK = "#595c64";
 const HERO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0a68f996a_ADMIN.jpeg";
 
 const TABS = [
