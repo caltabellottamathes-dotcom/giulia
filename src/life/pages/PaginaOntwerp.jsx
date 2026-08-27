@@ -11,20 +11,20 @@ const INK = "#595c64";
 const HERO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0a68f996a_ADMIN.jpeg";
 
 const TABS = [
-  { key: "OVERVIEW", label: "Overview", icon: CircleDot },
-  { key: "PORTEFEUILLES", label: "Portefeuilles", icon: Wallet },
-  { key: "LASTEN", label: "Lasten", icon: ListChecks },
-  { key: "INKOMEN", label: "Inkomen", icon: Banknote },
-  { key: "FORECAST", label: "Forecast", icon: LineChart },
-  { key: "HEALTHY_MONEY", label: "Healthy Money", icon: HeartPulse },
-  { key: "DOCUMENTEN", label: "Documenten", icon: FileText },
-];
+{ key: "OVERVIEW", label: "Overview", icon: CircleDot },
+{ key: "PORTEFEUILLES", label: "Portefeuilles", icon: Wallet },
+{ key: "LASTEN", label: "Lasten", icon: ListChecks },
+{ key: "INKOMEN", label: "Inkomen", icon: Banknote },
+{ key: "FORECAST", label: "Forecast", icon: LineChart },
+{ key: "HEALTHY_MONEY", label: "Healthy Money", icon: HeartPulse },
+{ key: "DOCUMENTEN", label: "Documenten", icon: FileText }];
+
 
 const ITEMS = [
-  { n: "01", title: "Payment • Due tomorrow", desc: "A recurring payment is approaching its deadline and has not yet been confirmed." },
-  { n: "02", title: "Document • Waiting", desc: "An important document is still missing and is blocking completion of an administrative matter." },
-  { n: "03", title: "Appointment • This week", desc: "An upcoming appointment requires preparation before the scheduled date." },
-];
+{ n: "01", title: "Payment • Due tomorrow", desc: "A recurring payment is approaching its deadline and has not yet been confirmed." },
+{ n: "02", title: "Document • Waiting", desc: "An important document is still missing and is blocking completion of an administrative matter." },
+{ n: "03", title: "Appointment • This week", desc: "An upcoming appointment requires preparation before the scheduled date." }];
+
 
 /** PaginaOntwerp — kopie van PersonalAdminPage, glazen paneel en fotokaart iets
  *  minder hoog, effen achtergrond (geen foto), bredere editorial-kolom die
@@ -39,41 +39,41 @@ export default function PaginaOntwerp() {
 
       {/* Hero photo — links, iets minder hoog */}
       <motion.div initial={{ x: "-118%" }} animate={{ x: 0 }} transition={{ duration: 0.7, ease: EASE }}
-        className="hidden lg:block absolute left-0 top-[22%] bottom-[7%] w-[34%] overflow-hidden rounded-r-[24px] z-[5]">
+      className="hidden lg:block absolute left-0 top-[22%] bottom-[7%] w-[34%] overflow-hidden rounded-r-[24px] z-[5]">
         <img src={HERO} alt="" className="h-full w-full object-cover" draggable={false} />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/65 via-charcoal/15 to-charcoal/10" />
       </motion.div>
 
       {/* Titel — links boven (over de hero) */}
       <motion.div initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE, delay: 0.15 }}
-        className="hidden lg:flex absolute left-[2.5%] top-[3%] z-[20] flex-col gap-1">
+      className="hidden lg:flex absolute left-[2.5%] top-[3%] z-[20] flex-col gap-1">
         <p className="text-[10px] uppercase tracking-[0.28em] text-life-olive font-semibold">LIFE → ONTWERP</p>
         <h1 className="text-[34px] font-display font-semibold tracking-[-0.02em] text-foreground leading-[1.05]">Pagina-Ontwerp</h1>
       </motion.div>
 
       {/* Glazen paneel — iets minder hoog */}
       <motion.div initial={{ x: "118%" }} animate={{ x: 0 }} transition={{ duration: 0.7, ease: EASE }}
-        className="absolute right-0 top-[4%] bottom-[4%] w-full lg:w-[76%] glass-2 rounded-l-[32px] rounded-r-none shadow-[0_64px_150px_-34px_rgba(0,0,0,0.55), -20px_0_70px_-34px_rgba(0,0,0,0.32)] flex z-[15]">
+      className="absolute right-0 top-[4%] bottom-[4%] w-full lg:w-[76%] glass-2 rounded-r-none shadow-[0_64px_150px_-34px_rgba(0,0,0,0.55), -20px_0_70px_-34px_rgba(0,0,0,0.32)] flex z-[15]">
         {/* Linker glas-strook — tabs */}
         <div className="hidden lg:flex flex-col items-center gap-1 py-8 w-[88px] shrink-0 relative z-30">
           <button onClick={() => navigate("/")} title="Terug naar dashboard" className="mb-6 inline-flex items-center justify-center w-10 h-10 rounded-full glass-1 hover:bg-foreground/8 transition text-foreground/70">
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div className="flex flex-col gap-1.5 flex-1">
-            {TABS.map((t) => (
-              <button key={t.key} onClick={() => setTab(t.key)} title={t.label}
-                className={`relative flex items-center justify-center w-11 h-11 rounded-2xl transition ${tab === t.key ? "bg-foreground/12 text-foreground" : "text-foreground/55 hover:bg-foreground/8 hover:text-foreground/85"}`}>
+            {TABS.map((t) =>
+            <button key={t.key} onClick={() => setTab(t.key)} title={t.label}
+            className={`relative flex items-center justify-center w-11 h-11 rounded-2xl transition ${tab === t.key ? "bg-foreground/12 text-foreground" : "text-foreground/55 hover:bg-foreground/8 hover:text-foreground/85"}`}>
                 <t.icon className="w-4 h-4" />
                 {tab === t.key && <span className="absolute -left-[11px] top-1/2 -translate-y-1/2 h-6 w-1 rounded-full bg-foreground/70" />}
               </button>
-            ))}
+            )}
           </div>
           <div className="text-[8px] uppercase tracking-[0.22em] text-foreground/40 [writing-mode:vertical-rl] rotate-180">LIFE · ONTWERP</div>
         </div>
 
         {/* Witte kaart — links bredere editorial-kolom (exact kaart-hoogte), rechts leeg */}
         <motion.div initial={{ opacity: 0, y: 28, scale: 0.985 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.6, ease: EASE, delay: 0.32 }}
-          className="relative flex-1 ml-[2.5%] min-w-0">
+        className="relative flex-1 ml-[2.5%] min-w-0">
           <div className="absolute inset-0 rounded-l-[20px] rounded-r-none bg-white flex overflow-hidden shadow-[-28px_24px_64px_-22px_rgba(0,0,0,0.42)]">
             {/* Editorial — linker kolom, h-full = exact kaart-hoogte */}
             <div className="w-[42%] h-full overflow-y-auto no-scrollbar border-r shrink-0" style={{ borderColor: GREY }}>
@@ -107,15 +107,15 @@ export default function PaginaOntwerp() {
                   <p className="font-mono text-[10px] tracking-[0.18em] uppercase mt-3" style={{ color: BLUE }}>03 items need action</p>
 
                   <div className="mt-8 space-y-6">
-                    {ITEMS.map((it) => (
-                      <div key={it.n} className="flex gap-5">
+                    {ITEMS.map((it) =>
+                    <div key={it.n} className="flex gap-5">
                         <span className="font-display font-bold leading-none shrink-0" style={{ color: BLUE, fontSize: "32px" }}>{it.n}</span>
                         <div className="min-w-0">
                           <p className="font-display font-bold text-[13.5px] leading-tight" style={{ color: BLACK }}>{it.title}</p>
                           <p className="font-body text-[12.5px] leading-[1.42] mt-1.5" style={{ color: "#333" }}>{it.desc}</p>
                         </div>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
 
@@ -131,6 +131,6 @@ export default function PaginaOntwerp() {
           </div>
         </motion.div>
       </motion.div>
-    </div>
-  );
+    </div>);
+
 }
