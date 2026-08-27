@@ -8,6 +8,7 @@ const BLACK = "#000000";
 const INK = "#595c64";
 const CARD = "#f5f5f4";
 const SHADOW = "0_16px_34px_-18px_rgba(0,0,0,0.20)";
+const NUM_COLORS = ["#d0d9dd", "#595c64", "#d8dab3"];
 
 const TAB_CONTENT = {
   OVERVIEW: {
@@ -165,19 +166,19 @@ export default function OntwerpWhiteCard({ tab }) {
             <span className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>§ 02</span>
           </div>
 
-          <div className="mt-4 flex items-start">
-            {/* What needs your attention... — 90° CCW gedraaid, verticaal vóór de items */}
+          <div className="mt-4 flex items-end">
+            {/* What needs your attention... — 90° CCW gedraaid, verticaal vóór de items, 2 regels */}
             <div className="shrink-0 w-[80px] flex justify-end pr-1">
-              <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98] whitespace-nowrap" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', color: BLACK, fontSize: "clamp(24px, 1.9vw, 38px)" }}>
-                {c.heading1} <span style={{ color: BLUE }}>{c.heading2}</span>
+              <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98]" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', color: BLACK, fontSize: "clamp(24px, 1.9vw, 38px)" }}>
+                {c.heading1}<br /><span style={{ color: BLUE }}>{c.heading2}</span>
               </h3>
             </div>
-            {/* Items — beginnen op dezelfde lijn als de body erboven (80px), minder witruimte ertussen */}
+            {/* Items — onderaan uitgelijnd, beginnen op dezelfde lijn als de body erboven (80px) */}
             <div className="flex-1 space-y-3">
               <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>{c.itemsLabel}</p>
-              {c.items.map((it) => (
+              {c.items.map((it, idx) => (
                 <div key={it.n} className="flex gap-3">
-                  <span className="font-display font-bold leading-none shrink-0" style={{ color: BLUE, fontSize: "30px" }}>{it.n}</span>
+                  <span className="font-display font-bold leading-none shrink-0" style={{ color: NUM_COLORS[idx % 3], fontSize: "30px" }}>{it.n}</span>
                   <div className="min-w-0">
                     <p className="font-display font-bold text-[13px] leading-tight" style={{ color: BLACK }}>{it.title}</p>
                     <p className="font-body text-[12px] leading-[1.4] mt-1" style={{ color: "#333" }}>{it.desc}</p>
