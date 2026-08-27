@@ -5,7 +5,7 @@ import { ArrowLeft, ChevronDown, CircleDot, Wallet, ListChecks, Banknote, LineCh
 import { IMAGES } from "@/lib/images";
 
 const EASE = [0.16, 1, 0.3, 1];
-const BLUE = "#003399";
+const BLUE = "#d0d9dd";
 const GREY = "#CCCCCC";
 const BLACK = "#000000";
 const INK = "#1a1a1a";
