@@ -20,7 +20,7 @@ export default function WorkspaceToolbar() {
   const { openModule, openChat, openVoice, setPendingMessage } = usePanel();
   const { active, start, stop, captured, clear } = useContextCapture();
   const location = useLocation();
-  const isPersonalAdmin = location.pathname === "/life/personal-admin";
+  const stayCollapsed = location.pathname === "/life/personal-admin" || location.pathname === "/Pagina-Ontwerp";
   const [launcherOpen, setLauncherOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [board, setBoard] = useState(getActiveBoard());
@@ -36,22 +36,22 @@ export default function WorkspaceToolbar() {
   // kalme, sensitievere hover — hij wacht 450ms voor hij opent (blijft dus
   // even dicht bij een snelle muisbeweging) en blijft na verlaten ±6s open.
   const expand = () => {
-    if (isPersonalAdmin) return;
+    if (stayCollapsed) return;
     clearTimeout(collapseTimer.current);
     clearTimeout(enterTimer.current);
     enterTimer.current = setTimeout(() => setExpanded(true), 1000);
   };
   const scheduleCollapse = (ms = 6000) => {
-    if (isPersonalAdmin) return;
+    if (stayCollapsed) return;
     clearTimeout(collapseTimer.current);
     clearTimeout(enterTimer.current);
     collapseTimer.current = setTimeout(() => setExpanded(false), ms);
   };
   useEffect(() => {
-    if (isPersonalAdmin) { setExpanded(false); return; }
+    if (stayCollapsed) { setExpanded(false); return; }
     setExpanded(true); scheduleCollapse(6000);
     return () => { clearTimeout(collapseTimer.current); clearTimeout(enterTimer.current); };
-  }, [isPersonalAdmin]);
+  }, [stayCollapsed]);
 
   useEffect(() => { if (captured) setNote(""); }, [captured]);
   useEffect(() => {
@@ -198,7 +198,7 @@ export default function WorkspaceToolbar() {
             </>
           ) : (
             <button
-              onClick={() => { if (!isPersonalAdmin) setExpanded(true); }}
+              onClick={() => { if (!stayCollapsed) setExpanded(true); }}
               className="ml-3 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap text-foreground shrink-0"
             >
               {all.find((b) => b.id === board)?.label || "GIULIA"}

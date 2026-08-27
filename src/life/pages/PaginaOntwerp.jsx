@@ -35,7 +35,7 @@ export default function PaginaOntwerp() {
     <div className="fixed inset-x-0 top-14 bottom-0 overflow-hidden z-[1]">
       {/* Hero photo — links, vast aan de bodem */}
       <motion.div initial={{ x: "-118%" }} animate={{ x: 0 }} transition={{ duration: 0.7, ease: EASE }}
-        className="hidden lg:block absolute left-0 top-[20%] bottom-0 w-[34%] overflow-hidden rounded-r-[24px] z-[5]">
+        className="hidden lg:block absolute left-0 top-[36%] bottom-0 w-[34%] overflow-hidden rounded-r-[24px] z-[5]">
         <img src={HERO} alt="" className="h-full w-full object-cover" draggable={false} />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/65 via-charcoal/15 to-charcoal/10" />
       </motion.div>
@@ -49,9 +49,10 @@ export default function PaginaOntwerp() {
 
       {/* Glazen paneel — vast aan de bodem (witte kaart beweegt niet) */}
       <motion.div initial={{ x: "118%" }} animate={{ x: 0 }} transition={{ duration: 0.7, ease: EASE }}
-        className="absolute right-0 top-[2%] bottom-0 w-full lg:w-[76%] glass-2 rounded-l-[32px] rounded-r-none shadow-[0_64px_150px_-34px_rgba(0,0,0,0.55), -20px_0_70px_-34px_rgba(0,0,0,0.32)] flex z-[15]">
+        className="absolute right-0 top-[78px] bottom-0 w-full lg:w-[76%] glass-2 rounded-l-[32px] rounded-r-none shadow-[0_64px_150px_-34px_rgba(0,0,0,0.55), -20px_0_70px_-34px_rgba(0,0,0,0.32)] flex z-[15]"
+        style={{ backdropFilter: "blur(16px) saturate(1.25)", WebkitBackdropFilter: "blur(16px) saturate(1.25)" }}>
         {/* Linker glas-strook — tabs (blijft klein, op witte-kaart-hoogte) */}
-        <div className="hidden lg:flex flex-col items-center gap-1 py-8 w-[88px] mb-[4%] shrink-0 relative z-30">
+        <div className="hidden lg:flex flex-col items-center gap-1 py-8 w-[88px] mb-[24px] shrink-0 relative z-30">
           <button onClick={() => navigate("/")} title="Terug naar dashboard" className="mb-6 inline-flex items-center justify-center w-10 h-10 rounded-full glass-1 hover:bg-foreground/8 transition text-foreground/70">
             <ArrowLeft className="w-4 h-4" />
           </button>
@@ -69,7 +70,7 @@ export default function PaginaOntwerp() {
 
         {/* Witte kaart — beweegt niet (mb-[4%] houdt hem op zijn plaats), links editorial + rechts bento */}
         <motion.div initial={{ opacity: 0, y: 28, scale: 0.985 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.6, ease: EASE, delay: 0.32 }}
-          className="relative flex-1 ml-[2.5%] mb-[4%] min-w-0">
+          className="relative flex-1 ml-[2.5%] mb-[24px] min-w-0">
           <div className="absolute inset-0 rounded-l-[20px] rounded-r-none bg-white flex overflow-hidden shadow-[-28px_24px_64px_-22px_rgba(0,0,0,0.42)]">
             {/* Editorial — linker ~42%, past exact, lijn + onderaan naar beneden */}
             <div className="w-[42%] h-full flex flex-col overflow-hidden border-r" style={{ borderColor: GREY }}>
