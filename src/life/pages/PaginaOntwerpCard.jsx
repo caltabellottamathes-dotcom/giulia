@@ -11,11 +11,11 @@ const CARD = "#f5f5f4";
 const SHADOW = "0_16px_34px_-18px_rgba(0,0,0,0.20)";
 const NUM_COLORS = ["#d0d9dd", "#595c64", "#d8dab3"];
 
-const BounceBalls = ({ color = "#000", count = 3 }) =>
-<span className="inline-flex items-end gap-[3px] ml-[7px] align-baseline" aria-hidden>
-    {Array.from({ length: count }).map((_, i) =>
-  <span key={i} className="ontwerp-dot-bounce inline-block rounded-full bg-current" style={{ color, width: "clamp(7px, 0.55vw, 10px)", height: "clamp(7px, 0.55vw, 10px)", animationDelay: `${i * 0.18}s` }} />
-  )}
+const BounceBalls = ({ colors = NUM_COLORS }) =>
+  <span className="inline-flex items-end gap-[3px] ml-[7px] align-baseline" aria-hidden>
+    {colors.map((col, i) =>
+      <span key={i} className="ontwerp-dot-bounce inline-block rounded-full" style={{ background: col, width: "clamp(7px, 0.55vw, 10px)", height: "clamp(7px, 0.55vw, 10px)", animationDelay: `${i * 0.18}s` }} />
+    )}
   </span>;
 
 
@@ -144,9 +144,9 @@ export default function OntwerpWhiteCard({ tab }) {
   const navigate = useNavigate();
   const h2Clean = c.heading2.replace(/\.+$/, "");
   const [eyeA, ...eyeRest] = c.eyebrow.split("|");
-  const eyeB = eyeRest.length ? " | " + eyeRest.join("|").trim() : "";
+  const eyeBpart = eyeRest.length ? eyeRest.join("|").trim() : "";
   const [s2a, ...s2rest] = c.section2.split("|");
-  const s2b = s2rest.length ? " | " + s2rest.join("|").trim() : "";
+  const s2bpart = s2rest.length ? s2rest.join("|").trim() : "";
   return (
     <motion.div
       initial={{ x: "100%" }}
@@ -159,11 +159,11 @@ export default function OntwerpWhiteCard({ tab }) {
       <div className="w-[42%] h-full flex flex-col overflow-hidden border-r" style={{ borderColor: GREY }}>
         <div className="flex-1 flex flex-col min-h-0 px-6 lg:px-8 pt-7 pb-6">
           <div className="flex items-center justify-between">
-            <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}><span className="font-bold">{eyeA.trim()}</span>{eyeB}</p>
+            <p className="font-mono text-[10px] tracking-[0.18em]" style={{ color: BLUE }}><span className="font-bold uppercase">{eyeA.trim().toUpperCase()}</span>{eyeBpart && <span className="lowercase"> | {eyeBpart}</span>}</p>
             <span className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>N°1</span>
           </div>
 
-          <h2 className="font-display font-bold tracking-[-0.035em] leading-[0.92] mt-6" style={{ color: BLACK, fontSize: "clamp(34px, 3vw, 54px)" }}>
+          <h2 className="font-display font-bold tracking-[-0.035em] leading-[0.92] mt-6" style={{ color: BLACK, fontSize: "clamp(34px, 3vw, 54px)", textShadow: "0 0 14px rgba(177,191,199,0.55)" }}>
             {c.title1}<br />{c.title2}<span aria-hidden className="ontwerp-dot-bounce inline-block rounded-full bg-current ml-[6px] align-baseline" style={{ color: BLUE, width: "clamp(8px, 0.7vw, 13px)", height: "clamp(8px, 0.7vw, 13px)" }} />
           </h2>
 
@@ -175,29 +175,35 @@ export default function OntwerpWhiteCard({ tab }) {
           {/* Witruimte — duwt de kop + lijn + items naar beneden */}
           <div className="flex-1 min-h-8" />
 
-          {/* What needs your attention — boven de lijn, links uitgelijnd, zwart, 2 regels, BounceBalls i.p.v. ... */}
-          <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98] mb-5" style={{ color: BLACK, fontSize: "clamp(24px, 1.9vw, 38px)" }}>
-            {c.heading1}<br />{h2Clean}<BounceBalls color={BLACK} />
-          </h3>
-
-          <div className="h-px w-full" style={{ background: "#d8dab3" }} />
-          <div className="flex items-center justify-between mt-5">
-            <p className="font-mono text-[10px] tracking-[0.18em] uppercase text-[hsl(var(--life-pistachio))]" style={{ color: BLUE }}><span className="font-bold">{s2a.trim()}</span>{s2b}</p>
-            <span className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>N°2</span>
+          {/* What needs your attention — 90° CCW gedraaid, links uitgelijnd, boven de lijn, zwart, 2 regels, gekleurde BounceBalls */}
+          <div className="mb-5 self-start">
+            <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98]" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', color: BLACK, fontSize: "clamp(18px, 1.4vw, 26px)" }}>
+              {c.heading1}<br />{h2Clean}<BounceBalls />
+            </h3>
           </div>
 
-          {/* Items — knoppen die meteen navigeren naar de actieplek, op 80px (lijn met body) */}
-          <div className="mt-4 ml-[80px] space-y-3">
-            <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>{c.itemsLabel}</p>
-            {c.items.map((it, idx) =>
-            <button key={it.n} onClick={() => navigate(`/life/personal-admin?tab=${tab}`)} className="flex gap-3 text-left w-full hover:opacity-70 transition">
-                <span className="font-display font-bold leading-none shrink-0" style={{ color: NUM_COLORS[idx % 3], fontSize: "30px" }}>{it.n}</span>
-                <div className="min-w-0">
-                  <p className="font-display font-bold text-[13px] leading-tight" style={{ color: BLACK }}>{it.title}</p>
-                  <p className="font-body text-[12px] leading-[1.4] mt-1" style={{ color: "#333" }}>{it.desc}</p>
-                </div>
-              </button>
-            )}
+          <div className="h-px w-full" style={{ background: "#d8dab3" }} />
+
+          {/* ON WHAT MATTERS | now ... N°2 — itemsLabel + items in kolom 2 (uitgelijnd op 'now') */}
+          <div className="mt-5 grid items-start" style={{ gridTemplateColumns: "auto 1fr auto", columnGap: "0.5rem" }}>
+            <span className="font-mono text-[10px] tracking-[0.18em] font-bold uppercase" style={{ color: BLUE }}>{s2a.trim().toUpperCase()}</span>
+            <div className="min-w-0">
+              {s2bpart && <span className="font-mono text-[10px] tracking-[0.18em] lowercase" style={{ color: BLUE }}>| {s2bpart}</span>}
+              <p className="font-mono text-[10px] tracking-[0.18em] uppercase mt-1" style={{ color: BLUE }}>{c.itemsLabel}</p>
+              <div className="mt-3 space-y-3">
+                {c.items.map((it, idx) =>
+                  <button key={it.n} onClick={() => navigate(`/life/personal-admin?tab=${tab}`)} className="flex items-center gap-2 text-left w-full hover:opacity-70 transition">
+                    <span className="ontwerp-dot-bounce inline-block rounded-full shrink-0" style={{ background: NUM_COLORS[idx % 3], width: 9, height: 9 }} />
+                    <span className="font-display font-bold leading-none shrink-0" style={{ color: NUM_COLORS[idx % 3], fontSize: "30px" }}>{it.n}</span>
+                    <div className="min-w-0">
+                      <p className="font-display font-bold text-[13px] leading-tight" style={{ color: BLACK }}>{it.title}</p>
+                      <p className="font-body text-[12px] leading-[1.4] mt-1" style={{ color: "#333" }}>{it.desc}</p>
+                    </div>
+                  </button>
+                )}
+              </div>
+            </div>
+            <span className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>N°2</span>
           </div>
 
           <div className="pt-6 mt-6 border-t" style={{ borderColor: GREY }}>
