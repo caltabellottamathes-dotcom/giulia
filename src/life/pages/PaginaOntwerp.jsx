@@ -21,7 +21,7 @@ const TABS = [
   { key: "DOCUMENTEN", label: "Documenten", icon: FileText },
 ];
 
-// Multi-functionele stages — schuiven van onder de witte kaart het glaspaneel op.
+// Multi-functionele stages — het glaspaneel schuift links onder de kaart vandaan.
 const STAGE_TABS = [
   { key: "chat", label: "Chat", icon: MessageSquare },
   { key: "voice", label: "Voice", icon: Phone },
@@ -50,22 +50,26 @@ export default function PaginaOntwerp() {
 
   return (
     <div className="fixed inset-x-0 top-14 bottom-0 overflow-visible z-[30]">
-      {/* Hero photo — links, vast aan de bodem */}
-      <motion.div initial={{ x: "-118%" }} animate={{ x: 0 }} transition={{ duration: 0.7, ease: EASE }}
-        className="hidden lg:block absolute left-0 top-[14%] bottom-0 w-[34%] overflow-hidden rounded-r-[24px] z-[5]">
-        <img src={HERO} alt="" className="h-full w-full object-cover" draggable={false} />
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/65 via-charcoal/15 to-charcoal/10" />
-      </motion.div>
+      {/* Hero photo — alleen in finance-modus */}
+      {!isStage && (
+        <motion.div initial={{ x: "-118%" }} animate={{ x: 0 }} transition={{ duration: 0.7, ease: EASE }}
+          className="hidden lg:block absolute left-0 top-[14%] bottom-0 w-[34%] overflow-hidden rounded-r-[24px] z-[5]">
+          <img src={HERO} alt="" className="h-full w-full object-cover" draggable={false} />
+          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/65 via-charcoal/15 to-charcoal/10" />
+        </motion.div>
+      )}
 
-      {/* Titel — achtergrondlaag (z-[2]), zodat witte kaart + schaduw erboven liggen */}
-      <motion.div initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE, delay: 0.15 }}
-        className="hidden lg:flex absolute left-[2.5%] top-[3%] z-[2] flex-col gap-1">
-        <p className="text-[10px] uppercase tracking-[0.28em] text-life-olive font-semibold">LIFE → ONTWERP</p>
-        <h1 className="text-[34px] font-display font-semibold tracking-[-0.02em] text-foreground leading-[1.05]">Pagina-Ontwerp</h1>
-      </motion.div>
+      {/* Titel — alleen in finance-modus */}
+      {!isStage && (
+        <motion.div initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE, delay: 0.15 }}
+          className="hidden lg:flex absolute left-[2.5%] top-[3%] z-[2] flex-col gap-1">
+          <p className="text-[10px] uppercase tracking-[0.28em] text-life-olive font-semibold">LIFE → ONTWERP</p>
+          <h1 className="text-[34px] font-display font-semibold tracking-[-0.02em] text-foreground leading-[1.05]">Pagina-Ontwerp</h1>
+        </motion.div>
+      )}
 
-      {/* Glazen paneel — dít is het multi-functionele display */}
-      <motion.div initial={{ x: "118%" }} animate={{ x: 0 }} transition={{ duration: 0.7, ease: EASE }}
+      {/* Glazen paneel — schuift naar links wanneer een stage actief is */}
+      <motion.div initial={{ x: "118%" }} animate={{ x: isStage ? "-24vw" : 0 }} transition={{ duration: 0.7, ease: EASE }}
         className="absolute right-0 top-[78px] bottom-[94px] w-full lg:w-[76%] glass-2 rounded-l-[32px] rounded-r-none shadow-[0_64px_150px_-34px_rgba(0,0,0,0.55), -36px_0_80px_-28px_rgba(0,0,0,0.42)] flex z-[15]"
         style={{ backdropFilter: "blur(16px) saturate(1.25)", WebkitBackdropFilter: "blur(16px) saturate(1.25)" }}>
         {/* Linker glas-strook — tabs */}
@@ -93,20 +97,23 @@ export default function PaginaOntwerp() {
           <div className="text-[8px] uppercase tracking-[0.22em] text-white [writing-mode:vertical-rl] rotate-180">{isStage ? "MATTIA" : "LIFE · ONTWERP"}</div>
         </div>
 
-        {/* Witte-kaart wrapper — de stage schuift van onder de witte kaart omhoog */}
+        {/* Inhoud-wrapper — stage verschijnt links, witte kaart blijft staan */}
         <div className="relative flex-1 ml-[2.5%] -mt-[134px] -mb-[70px] min-w-0">
-          {/* Stage — onder de witte kaart; schuift van onder naar boven */}
+          {/* Stage-kolom — op het glas, links van de witte kaart */}
           <AnimatePresence>
             {isStage && (
-              <motion.div key={stage} initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ duration: 0.6, ease: EASE }}
-                className="absolute inset-0 z-10 overflow-hidden rounded-bl-[20px]">
+              <motion.div key={stage} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35, ease: EASE }}
+                className="absolute inset-y-0 left-0 w-full lg:w-[24vw] z-10 overflow-hidden">
+                <button onClick={() => setStage(null)} className="absolute top-4 left-4 z-40 h-9 w-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors" aria-label="Terug">
+                  <ArrowLeft className="h-4 w-4" />
+                </button>
                 {stageContent}
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Witte kaart — bovenop; schuift omhoog weg wanneer een stage actief is */}
-          <motion.div animate={{ y: isStage ? "-100%" : 0 }} transition={{ duration: 0.6, ease: EASE }}
+          {/* Witte kaart — schuift tegen om op zijn plek te blijven staan */}
+          <motion.div animate={{ x: isStage ? "24vw" : 0 }} transition={{ duration: 0.7, ease: EASE }}
             className="absolute inset-0 z-20">
             <AnimatePresence initial={false}>
               <OntwerpWhiteCard key={tab} tab={tab} />
