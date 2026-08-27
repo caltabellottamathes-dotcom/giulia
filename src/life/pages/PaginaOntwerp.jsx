@@ -49,14 +49,14 @@ export default function PaginaOntwerp() {
 
       {/* Glazen paneel — vast aan de bodem (witte kaart beweegt niet) */}
       <motion.div initial={{ x: "118%" }} animate={{ x: 0 }} transition={{ duration: 0.7, ease: EASE }}
-        className="absolute right-0 top-[78px] bottom-0 w-full lg:w-[76%] glass-2 rounded-l-[32px] rounded-r-none shadow-[0_64px_150px_-34px_rgba(0,0,0,0.55), -20px_0_70px_-34px_rgba(0,0,0,0.32)] flex z-[15]"
+        className="absolute right-0 top-[78px] bottom-0 w-full lg:w-[76%] glass-2 rounded-l-[32px] rounded-r-none shadow-[0_64px_150px_-34px_rgba(0,0,0,0.55), -36px_0_80px_-28px_rgba(0,0,0,0.42)] flex z-[15]"
         style={{ backdropFilter: "blur(16px) saturate(1.25)", WebkitBackdropFilter: "blur(16px) saturate(1.25)" }}>
         {/* Linker glas-strook — tabs (blijft klein, op witte-kaart-hoogte) */}
         <div className="hidden lg:flex flex-col items-center gap-1 py-8 w-[88px] mb-[24px] shrink-0 relative z-30">
           <button onClick={() => navigate("/")} title="Terug naar dashboard" className="mb-6 inline-flex items-center justify-center w-10 h-10 rounded-full glass-1 hover:bg-foreground/8 transition text-foreground/70">
             <ArrowLeft className="w-4 h-4" />
           </button>
-          <div className="flex flex-col gap-1.5 flex-1">
+          <div className="flex flex-col gap-1 flex-1">
             {TABS.map((t) => (
               <button key={t.key} onClick={() => setTab(t.key)} title={t.label}
                 className={`relative flex items-center justify-center w-11 h-11 rounded-2xl transition ${tab === t.key ? "bg-foreground/12 text-foreground" : "text-foreground/55 hover:bg-foreground/8 hover:text-foreground/85"}`}>
@@ -65,13 +65,13 @@ export default function PaginaOntwerp() {
               </button>
             ))}
           </div>
-          <div className="text-[8px] uppercase tracking-[0.22em] text-foreground/40 [writing-mode:vertical-rl] rotate-180">LIFE · ONTWERP</div>
+          <div className="text-[8px] uppercase tracking-[0.22em] text-white [writing-mode:vertical-rl] rotate-180">LIFE · ONTWERP</div>
         </div>
 
         {/* Witte kaart — beweegt niet (mb-[4%] houdt hem op zijn plaats), links editorial + rechts bento */}
         <motion.div initial={{ opacity: 0, y: 28, scale: 0.985 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.6, ease: EASE, delay: 0.32 }}
           className="relative flex-1 ml-[2.5%] -mt-[56px] mb-[24px] min-w-0">
-          <div className="absolute inset-0 rounded-t-[20px] rounded-l-[20px] rounded-r-none bg-white flex overflow-hidden shadow-[-28px_24px_64px_-22px_rgba(0,0,0,0.42),0_-22px_50px_-24px_rgba(0,0,0,0.30)]">
+          <div className="absolute inset-0 rounded-t-[20px] rounded-l-[20px] rounded-r-none bg-white flex overflow-hidden shadow-[-40px_8px_64px_-18px_rgba(0,0,0,0.55)]">
             {/* Editorial — linker ~42%, past exact, lijn + onderaan naar beneden */}
             <div className="w-[42%] h-full flex flex-col overflow-hidden border-r" style={{ borderColor: GREY }}>
               <div className="flex-1 flex flex-col min-h-0 px-6 lg:px-8 pt-7 pb-6">
@@ -84,11 +84,12 @@ export default function PaginaOntwerp() {
                   Here's where<br />things stand<span style={{ color: BLUE }}>®</span>
                 </h2>
 
-                <p className="font-display font-medium tracking-[-0.05em] mt-4 text-[14px]" style={{ color: BLACK }}>A clear view of what's in motion.</p>
-
-                <p className="font-body text-[13.5px] leading-[1.35] mt-5" style={{ color: INK }}>
-                  PersonalAdmin currently holds 24 active matters, with most routine administration under control. Several financial commitments are already scheduled for the weeks ahead, while a smaller set of open items still asks for your attention in the coming days. Nothing is urgent — yet a few threads are worth following up before they quietly grow.
-                </p>
+                <div className="ml-[80px] mt-1 space-y-2">
+                  <p className="font-display font-medium tracking-[-0.05em] text-[12px]" style={{ color: BLACK }}>A clear view of what's in motion.</p>
+                  <p className="font-body text-[12px] leading-[1.5]" style={{ color: INK }}>
+                    PersonalAdmin currently holds 24 active matters, with most routine administration under control. Several financial commitments are already scheduled for the weeks ahead, while a smaller set of open items still asks for your attention in the coming days. Nothing is urgent — yet a few threads are worth following up before they quietly grow.
+                  </p>
+                </div>
 
                 {/* Witruimte — duwt de lijn + alles eronder naar beneden */}
                 <div className="flex-1 min-h-8" />
@@ -99,7 +100,7 @@ export default function PaginaOntwerp() {
                   <span className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>§ 02</span>
                 </div>
 
-                <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98] mt-6" style={{ color: BLACK, fontSize: "clamp(24px, 1.9vw, 38px)" }}>What needs<br />your attention.</h3>
+                <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98] mt-4" style={{ color: BLACK, fontSize: "clamp(24px, 1.9vw, 38px)" }}>What needs<br />your attention.</h3>
                 <p className="font-mono text-[10px] tracking-[0.18em] uppercase mt-3" style={{ color: BLUE }}>03 items need action</p>
 
                 <div className="mt-5 space-y-5">
@@ -115,7 +116,7 @@ export default function PaginaOntwerp() {
                 </div>
 
                 <div className="pt-6 mt-6 border-t" style={{ borderColor: GREY }}>
-                  <p className="font-mono text-[10px] tracking-[0.5em] uppercase" style={{ color: BLUE }}>The rest can wait.</p>
+                  <p className="font-mono text-[10px] tracking-[0.5em] uppercase text-giulia-pistachio">The rest can wait.</p>
                   <p className="font-body text-[12.5px] leading-[1.4] mt-3" style={{ color: "#333" }}>Most other items are currently on track, with no immediate action required.</p>
                 </div>
               </div>
