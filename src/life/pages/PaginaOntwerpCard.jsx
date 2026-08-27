@@ -165,19 +165,26 @@ export default function OntwerpWhiteCard({ tab }) {
             <span className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>§ 02</span>
           </div>
 
-          <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98] mt-4" style={{ color: BLACK, fontSize: "clamp(24px, 1.9vw, 38px)" }}>{c.heading1}<br />{c.heading2}</h3>
-          <p className="font-mono text-[10px] tracking-[0.18em] uppercase mt-3" style={{ color: BLUE }}>{c.itemsLabel}</p>
-
-          <div className="mt-5 space-y-5">
-            {c.items.map((it) => (
-              <div key={it.n} className="flex gap-5">
-                <span className="font-display font-bold leading-none shrink-0" style={{ color: BLUE, fontSize: "30px" }}>{it.n}</span>
-                <div className="min-w-0">
-                  <p className="font-display font-bold text-[13px] leading-tight" style={{ color: BLACK }}>{it.title}</p>
-                  <p className="font-body text-[12px] leading-[1.4] mt-1.5" style={{ color: "#333" }}>{it.desc}</p>
+          <div className="mt-4 flex items-start">
+            {/* What needs your attention... — 90° CCW gedraaid, verticaal vóór de items */}
+            <div className="shrink-0 w-[80px] flex justify-end pr-1">
+              <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98] whitespace-nowrap" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', color: BLACK, fontSize: "clamp(24px, 1.9vw, 38px)" }}>
+                {c.heading1} <span style={{ color: BLUE }}>{c.heading2}</span>
+              </h3>
+            </div>
+            {/* Items — beginnen op dezelfde lijn als de body erboven (80px), minder witruimte ertussen */}
+            <div className="flex-1 space-y-3">
+              <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>{c.itemsLabel}</p>
+              {c.items.map((it) => (
+                <div key={it.n} className="flex gap-3">
+                  <span className="font-display font-bold leading-none shrink-0" style={{ color: BLUE, fontSize: "30px" }}>{it.n}</span>
+                  <div className="min-w-0">
+                    <p className="font-display font-bold text-[13px] leading-tight" style={{ color: BLACK }}>{it.title}</p>
+                    <p className="font-body text-[12px] leading-[1.4] mt-1" style={{ color: "#333" }}>{it.desc}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           <div className="pt-6 mt-6 border-t" style={{ borderColor: GREY }}>
