@@ -33,8 +33,8 @@ export default function Layout() {
           </GiuliaVoiceProvider>
         </MediaViewerProvider>
       </BeeldbankProvider>
-    </PanelProvider>
-  );
+    </PanelProvider>);
+
 }
 
 function LayoutInner() {
@@ -50,12 +50,12 @@ function LayoutInner() {
       {/* Full-width workspace — navigation lives in the bottom plus-button menu */}
       <div className="flex flex-col h-screen relative overflow-hidden">
         {/* Header */}
-        <header className="sticky top-0 z-20 h-14 shrink-0 flex items-center px-5 lg:px-10 bg-transparent">
+        <header className="sticky top-0 z-20 h-14 shrink-0 flex items-center px-5 lg:px-10 bg-transparent opacity-0">
           <button
             onClick={() => navigate("/")}
             className="flex items-center gap-2 shrink-0 pr-1 group"
-            aria-label="Naar dashboard"
-          >
+            aria-label="Naar dashboard">
+            
             <span className="h-2.5 w-2.5 rounded-sm bg-charcoal transition-transform group-hover:scale-110" />
             <span className="font-display font-semibold tracking-[0.22em] text-[13px] uppercase group-hover:text-foreground transition-colors">
               Giulia
@@ -99,6 +99,6 @@ function LayoutInner() {
       <BeeldbankOverlay />
 
 
-    </div>
-  );
+    </div>);
+
 }
