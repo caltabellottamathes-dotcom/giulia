@@ -106,7 +106,7 @@ export default function PaginaOntwerp() {
                 </div>
 
                 <div className="mt-10">
-                  <h3 className="font-display font-bold tracking-[-0.02em] leading-[1.0]" style={{ color: BLACK, fontSize: "clamp(20px, 1.6vw, 28px)" }}>What needs your attention</h3>
+                  <h3 className="font-display font-bold tracking-[-0.02em] leading-[1.0]" style={{ color: BLACK, fontSize: "clamp(20px, 1.6vw, 28px)" }}>What needs your attention.</h3>
                   <p className="font-mono text-[10px] tracking-[0.18em] uppercase mt-3" style={{ color: BLUE }}>03 items need action</p>
 
                   <div className="mt-8 space-y-6">
@@ -123,7 +123,7 @@ export default function PaginaOntwerp() {
                 </div>
 
                 <div className="mt-12 pt-8 border-t" style={{ borderColor: GREY }}>
-                  <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>The rest can wait.</p>
+                  <p className="font-mono text-[10px] tracking-[0.5em] uppercase" style={{ color: BLUE }}>The rest can wait.</p>
                   <p className="font-body text-[12.5px] leading-[1.6] mt-3" style={{ color: "#333" }}>Most other items are currently on track, with no immediate action required.</p>
                 </div>
               </div>
