@@ -133,7 +133,7 @@ export default function OntwerpWhiteCard({ tab }) {
   const c = TAB_CONTENT[tab] || TAB_CONTENT.OVERVIEW;
   return (
     <motion.div
-      initial={{ x: "-100%" }}
+      initial={{ x: "100%" }}
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
       transition={{ duration: 0.5, ease: EASE }}
@@ -148,7 +148,7 @@ export default function OntwerpWhiteCard({ tab }) {
           </div>
 
           <h2 className="font-display font-bold tracking-[-0.035em] leading-[0.92] mt-6" style={{ color: BLACK, fontSize: "clamp(34px, 3vw, 54px)" }}>
-            {c.title1}<br />{c.title2}<motion.span aria-hidden className="inline-block rounded-full bg-current ml-[6px] align-baseline" style={{ color: BLUE, width: "clamp(8px, 0.7vw, 13px)", height: "clamp(8px, 0.7vw, 13px)" }} animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 1.3, ease: "easeInOut" }} />
+            {c.title1}<br />{c.title2}<span aria-hidden className="ontwerp-dot-bounce inline-block rounded-full bg-current ml-[6px] align-baseline" style={{ color: BLUE, width: "clamp(8px, 0.7vw, 13px)", height: "clamp(8px, 0.7vw, 13px)" }} />
           </h2>
 
           <div className="ml-[80px] mt-8 space-y-2">

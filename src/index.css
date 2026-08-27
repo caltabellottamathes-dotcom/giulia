@@ -490,6 +490,10 @@
   animation: float-slow 6s ease-in-out infinite;
 }
 
+/* Bouncing dot — Pagina-Ontwerp title accent */
+@keyframes ontwerp-dot-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+.ontwerp-dot-bounce { animation: ontwerp-dot-bounce 1.3s ease-in-out infinite; }
+
 /* Media player — draaiende vinyl + equalizer-balken */
 @keyframes spin-slow { to { transform: rotate(360deg); } }
 .spin-slow { animation: spin-slow 26s linear infinite; }
