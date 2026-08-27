@@ -50,7 +50,7 @@ function LayoutInner() {
       {/* Full-width workspace — navigation lives in the bottom plus-button menu */}
       <div className="flex flex-col h-screen relative overflow-hidden">
         {/* Header */}
-        <header className="sticky top-0 z-20 h-14 shrink-0 flex items-center px-5 lg:px-10 bg-transparent opacity-0">
+        <header className="sticky top-0 z-20 h-14 shrink-0 flex items-center px-5 lg:px-10 bg-transparent opacity-100">
           <button
             onClick={() => navigate("/")}
             className="flex items-center gap-2 shrink-0 pr-1 group"
