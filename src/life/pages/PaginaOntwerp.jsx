@@ -70,7 +70,7 @@ export default function PaginaOntwerp() {
 
         {/* Witte kaart — beweegt niet (mb-[4%] houdt hem op zijn plaats), links editorial + rechts bento */}
         <motion.div initial={{ opacity: 0, y: 28, scale: 0.985 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ duration: 0.6, ease: EASE, delay: 0.32 }}
-          className="relative flex-1 ml-[2.5%] -mt-[40px] mb-[24px] min-w-0">
+          className="relative flex-1 ml-[2.5%] -mt-[56px] mb-[24px] min-w-0">
           <div className="absolute inset-0 rounded-t-[20px] rounded-l-[20px] rounded-r-none bg-white flex overflow-hidden shadow-[-28px_24px_64px_-22px_rgba(0,0,0,0.42),0_-22px_50px_-24px_rgba(0,0,0,0.30)]">
             {/* Editorial — linker ~42%, past exact, lijn + onderaan naar beneden */}
             <div className="w-[42%] h-full flex flex-col overflow-hidden border-r" style={{ borderColor: GREY }}>
@@ -99,7 +99,7 @@ export default function PaginaOntwerp() {
                   <span className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>§ 02</span>
                 </div>
 
-                <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98] mt-6" style={{ color: BLACK, fontSize: "clamp(24px, 1.9vw, 38px)" }}>What needs your attention.</h3>
+                <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98] mt-6" style={{ color: BLACK, fontSize: "clamp(24px, 1.9vw, 38px)" }}>What needs<br />your attention.</h3>
                 <p className="font-mono text-[10px] tracking-[0.18em] uppercase mt-3" style={{ color: BLUE }}>03 items need action</p>
 
                 <div className="mt-5 space-y-5">
