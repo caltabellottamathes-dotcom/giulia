@@ -37,7 +37,7 @@ function BouncingDots() {
 }
 
 export default function ChatStage() {
-  const { pendingMessage, setPendingMessage, openVoice } = usePanel();
+  const { pendingMessage, setPendingMessage } = usePanel();
   const { messages, send, sending, ready } = useGiuliaChat();
   const [input, setInput] = useState("");
   const scrollRef = useRef(null);
@@ -101,7 +101,7 @@ export default function ChatStage() {
           </div>
         </div>
         <button
-          onClick={openVoice}
+          onClick={() => window.dispatchEvent(new CustomEvent("giulia:ontwerp-stage", { detail: "voice" }))}
           className="flex items-center gap-2 rounded-full pl-3 pr-4 py-2 bg-ivory/10 border border-ivory/15 text-ivory/80 text-[12px] font-medium hover:bg-ivory/15 transition-all"
           title="Bel Giulia (ElevenLabs voice agent)"
         >
