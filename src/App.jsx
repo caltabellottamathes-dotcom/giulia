@@ -70,6 +70,7 @@ import WidgetsFocus from '@/focus/pages/WidgetsFocus';
 import WidgetsLife from '@/life/pages/WidgetsLife';
 import WidgetsSlide from '@/life/pages/WidgetsSlide';
 import PaginaOntwerp from '@/life/pages/PaginaOntwerp';
+import AdminPage from '@/life/pages/AdminPage';
 import ShellCollection from '@/system/pages/ShellCollection';
 import PanelDesign from '@/system/pages/PanelDesign';
 import QuestionsPanelPage from '@/system/pages/QuestionsPanelPage';
@@ -160,6 +161,7 @@ const AuthenticatedApp = () => {
           <Route path="/widgets-life" element={<WidgetsLife />} />
           <Route path="/widget-slide" element={<WidgetsSlide />} />
           <Route path="/Pagina-Ontwerp" element={<PaginaOntwerp />} />
+          <Route path="/life/admin" element={<AdminPage />} />
           <Route path="/shell-collection" element={<ShellCollection />} />
           <Route path="/panel-design" element={<PanelDesign />} />
           <Route path="/questions-panel" element={<QuestionsPanelPage />} />

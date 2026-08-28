@@ -20,8 +20,8 @@ export default function WorkspaceToolbar() {
   const { openModule, openChat, openVoice, setPendingMessage } = usePanel();
   const { active, start, stop, captured, clear } = useContextCapture();
   const location = useLocation();
-  const stayCollapsed = location.pathname === "/life/personal-admin" || location.pathname === "/Pagina-Ontwerp";
-  const onPaginaOntwerp = location.pathname === "/Pagina-Ontwerp";
+  const stayCollapsed = location.pathname === "/life/personal-admin" || location.pathname === "/Pagina-Ontwerp" || location.pathname === "/life/admin";
+  const onPaginaOntwerp = location.pathname === "/Pagina-Ontwerp" || location.pathname === "/life/admin";
   const [launcherOpen, setLauncherOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [board, setBoard] = useState(getActiveBoard());

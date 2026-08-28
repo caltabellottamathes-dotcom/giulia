@@ -30,7 +30,7 @@ export default function PersonalAdminPreview({ onOpen }) {
         { label: "TE LAAT", text: w.counts.overdue > 0 ? `${w.counts.overdue} zaken zijn al te laat.` : "Niets te laat." },
         { label: "BEDRAG", text: `€${Math.round(w.counts.money)} aan administratie in de wachtrij.` },
       ]}
-      actions={[{ label: "Open Personal Admin", primary: true, to: "/life/personal-admin" }]}>
+      actions={[{ label: "Open Personal Admin", primary: true, to: "/life/admin" }]}>
       <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6 h-full overflow-hidden">
         <div className="flex flex-col gap-5 overflow-auto pr-1">
           <div className="rounded-2xl border border-marble/20 bg-marble/5 p-4">

@@ -102,7 +102,7 @@ const MODULE_ROUTE = {
   updates: "/updates",
   goodmorning: "/wake",
   social: "/life/social",
-  household: "/life/household", personaladmin: "/life/personal-admin", hobbies: "/life/hobbies",
+  household: "/life/household", personaladmin: "/life/admin", hobbies: "/life/hobbies",
   food: "/life/food",
   wantstoknow: "/wants-to-know",
   dailystate: "/life/daily-state", development: "/life/development",
