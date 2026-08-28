@@ -35,12 +35,14 @@ export default function DocViewerPanel() {
   }
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-center px-6">
-      <div className="h-16 w-16 rounded-2xl bg-ivory/8 flex items-center justify-center"><FileText className="h-8 w-8 text-ivory/55" /></div>
-      <p className="text-sm text-ivory/85">{media.name}</p>
-      <div className="flex items-center gap-4">
-        <a href={media.url} download target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[12px] text-olive hover:underline"><Download className="h-3.5 w-3.5" /> Downloaden</a>
-        <button onClick={openMediaFullscreen} className="inline-flex items-center gap-1.5 text-[12px] text-olive hover:underline"><Maximize2 className="h-3.5 w-3.5" /> Vergroten</button>
+    <div className="h-full w-full flex items-center justify-center p-6">
+      <div className="flex flex-col items-center text-center gap-4 rounded-2xl px-6 py-8 max-w-xs" style={{ background: "rgba(20,22,26,0.45)", backdropFilter: "blur(28px) saturate(1.3)", WebkitBackdropFilter: "blur(28px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.12)" }}>
+        <div className="h-16 w-16 rounded-2xl bg-white/10 flex items-center justify-center"><FileText className="h-8 w-8 text-ivory/85" /></div>
+        <p className="text-sm text-ivory/95 truncate max-w-full">{media.name}</p>
+        <div className="flex items-center gap-4">
+          <a href={media.url} download target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[12px] text-ivory/90 hover:text-ivory underline"><Download className="h-3.5 w-3.5" /> Downloaden</a>
+          <button onClick={openMediaFullscreen} className="inline-flex items-center gap-1.5 text-[12px] text-ivory/90 hover:text-ivory underline"><Maximize2 className="h-3.5 w-3.5" /> Vergroten</button>
+        </div>
       </div>
     </div>
   );

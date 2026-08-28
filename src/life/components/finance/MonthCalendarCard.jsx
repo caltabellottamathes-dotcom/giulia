@@ -2,64 +2,76 @@ import React, { useMemo } from "react";
 
 const INK = "hsl(var(--foreground))";
 const MUTED = "hsl(var(--muted-foreground))";
-const WEEKDAYS = ["M", "D", "W", "D", "V", "Z", "Z"];
+const OLIVE = "hsl(var(--life-olive))";
 
-/** MonthCalendarCard — vierkante kaart met grafische maandkalender van de
- *  huidige maand. Elke last wordt op zijn betaaldatum gemarkeerd met de kleur
- *  van de gekoppelde wallet. Vandaag is gemarkeerd. */
+/** MonthCalendarCard — verticaal chronologisch overzicht van alle lasten die
+ *  betaald moeten worden, op volgorde van betaaldatum. Grafische tijdlijn met
+ *  een verticale lijn, gekleurde wallet-dots en datum-pillen. */
 export default function MonthCalendarCard({ expenses, portfolios }) {
-  const { cells, monthLabel } = useMemo(() => {
-    const now = new Date();
-    const y = now.getFullYear();
-    const m = now.getMonth();
-    const first = new Date(y, m, 1).getDay();
-    const offset = (first + 6) % 7; // week start Ma
-    const days = new Date(y, m + 1, 0).getDate();
+  const { items, monthLabel } = useMemo(() => {
     const colorOf = (id) => (portfolios || []).find((p) => p.id === id)?.color || "#9c9c9c";
-    const byDate = {};
-    for (const e of expenses || []) {
-      const d = e.next_payment_date || e.due_date;
-      if (!d) continue;
-      const dd = new Date(d);
-      if (dd.getFullYear() === y && dd.getMonth() === m) {
-        const k = dd.getDate();
-        (byDate[k] = byDate[k] || []).push({ title: e.title, color: colorOf(e.portfolio_id) });
-      }
-    }
-    const arr = [];
-    for (let i = 0; i < 42; i++) {
-      const dayNum = i - offset + 1;
-      const inMonth = dayNum >= 1 && dayNum <= days;
-      arr.push({ day: inMonth ? dayNum : null, inMonth, items: byDate[dayNum] || [], today: inMonth && dayNum === now.getDate() });
-    }
+    const now = new Date();
+    const list = (expenses || [])
+      .filter((e) => e.status !== "done")
+      .map((e) => {
+        const d = e.next_payment_date || e.due_date;
+        return { e, date: d ? new Date(d + "T00:00:00") : null, color: colorOf(e.portfolio_id), amount: Number(e.expected_amount ?? e.amount) || 0 };
+      })
+      .filter((x) => x.date)
+      .sort((a, b) => a.date - b.date);
     const label = now.toLocaleDateString("nl-NL", { month: "long", year: "numeric" });
-    return { cells: arr, monthLabel: label.charAt(0).toUpperCase() + label.slice(1) };
+    return { items: list, monthLabel: label.charAt(0).toUpperCase() + label.slice(1) };
   }, [expenses, portfolios]);
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const open = (id) => window.dispatchEvent(new CustomEvent("giulia:open-expense", { detail: id }));
+
   return (
-    <div className="relative h-full aspect-square shrink-0 rounded-[24px] p-3 flex flex-col" style={{ background: "#f5f5f4", border: "1px solid rgba(0,0,0,0.06)", boxShadow: "-16px 16px 40px -16px rgba(0,0,0,0.30)" }}>
-      <div className="flex items-center justify-between mb-2 shrink-0">
-        <p className="text-[11px] font-display font-bold uppercase tracking-[-0.01em]" style={{ color: INK }}>{monthLabel}</p>
-        <span className="text-[9px] uppercase tracking-[0.18em] font-semibold" style={{ color: MUTED }}>maand</span>
+    <div className="relative h-full w-full rounded-[24px] flex flex-col overflow-hidden" style={{ background: "#f5f5f4", border: "1px solid rgba(0,0,0,0.06)", boxShadow: "-16px 16px 40px -16px rgba(0,0,0,0.30)" }}>
+      {/* header */}
+      <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0 border-b" style={{ borderColor: "rgba(0,0,0,0.06)" }}>
+        <div>
+          <p className="text-[9px] uppercase tracking-[0.2em] font-semibold" style={{ color: MUTED }}>Chronologisch</p>
+          <p className="text-[13px] font-display font-bold uppercase tracking-[-0.01em] leading-none mt-0.5" style={{ color: INK }}>{monthLabel}</p>
+        </div>
+        <span className="text-[9px] font-mono tabular-nums" style={{ color: MUTED }}>{items.length} lasten</span>
       </div>
-      <div className="grid grid-cols-7 gap-0.5 mb-1 shrink-0">
-        {WEEKDAYS.map((w, i) => <div key={i} className="text-center text-[8px] uppercase tracking-wide font-bold" style={{ color: MUTED }}>{w}</div>)}
-      </div>
-      <div className="grid grid-cols-7 grid-rows-6 gap-0.5 flex-1 min-h-0">
-        {cells.map((c, i) => (
-          <div key={i} className="relative rounded-md flex flex-col items-center justify-start pt-1" style={{ background: c.inMonth ? "rgba(0,0,0,0.03)" : "transparent", outline: c.today ? `1.5px solid hsl(var(--life-olive))` : "none" }}>
-            {c.day && (
-              <span className="text-[8px] font-display font-bold leading-none" style={{ color: c.today ? "hsl(var(--life-olive))" : INK }}>{c.day}</span>
-            )}
-            {c.items.length > 0 && (
-              <div className="flex flex-wrap gap-[2px] justify-center mt-1 max-w-full px-0.5">
-                {c.items.slice(0, 4).map((it, j) => (
-                  <span key={j} className="h-1.5 w-1.5 rounded-full" style={{ background: it.color }} title={it.title} />
-                ))}
-              </div>
-            )}
+
+      {/* tijdlijn */}
+      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-4 py-3">
+        {items.length === 0 && <p className="text-[12px] italic" style={{ color: MUTED }}>Geen geplande lasten.</p>}
+        <div className="relative">
+          {/* verticale lijn */}
+          <div className="absolute left-[14px] top-1 bottom-1 w-px" style={{ background: "linear-gradient(to bottom, hsl(var(--life-olive)) 0%, rgba(0,0,0,0.10) 100%)" }} />
+          <div className="space-y-2.5">
+            {items.map(({ e, date, color, amount }) => {
+              const isToday = date.toDateString() === today.toDateString();
+              const isPast = date < today && !isToday;
+              const day = date.getDate();
+              const mon = date.toLocaleDateString("nl-NL", { month: "short" });
+              const weekday = date.toLocaleDateString("nl-NL", { weekday: "short" });
+              const dotColor = isPast ? "#c44" : color;
+              return (
+                <div key={e.id} className="relative pl-[34px]">
+                  {/* dot op de lijn */}
+                  <div className="absolute left-[8px] top-2 h-3 w-3 rounded-full" style={{ background: dotColor, boxShadow: "0 0 0 3px #f5f5f4" }} />
+                  {/* kaart */}
+                  <button onClick={() => open(e.id)} className="w-full text-left rounded-xl px-2.5 py-2 hover:-translate-y-0.5 transition-transform" style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.06)", boxShadow: "-10px 10px 24px -14px rgba(0,0,0,0.28)" }}>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[9px] uppercase tracking-wide font-bold truncate" style={{ color: isToday ? OLIVE : isPast ? "#c44" : MUTED }}>
+                        {day} {mon} · {weekday}{isToday ? " · vandaag" : isPast ? " · te laat" : ""}
+                      </span>
+                      <span className="text-[13px] font-display font-bold tabular-nums leading-none" style={{ color: INK }}>€{Math.round(amount).toLocaleString("en-US")}</span>
+                    </div>
+                    <p className="text-[11px] font-medium truncate mt-1" style={{ color: INK }}>{e.title}</p>
+                  </button>
+                </div>
+              );
+            })}
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );

@@ -39,7 +39,12 @@ export default function ThingsHandleWidget({ className }) {
   const learnTick = useLearningSync();
   const { data: obs } = useEntityList("AdminObligation", { realtime: true, externalTick: learnTick });
 
-  const coming = useMemo(() => (obs || []).filter(isActive).filter(effDate).sort((a, b) => daysUntil(a) - daysUntil(b)), [obs]);
+  // Enkel echte expenses uit de PersonalAdmin-database (AdminObligation): actief,
+  // mét een betaaldatum én een titel — geen synthetische of lege records.
+  const coming = useMemo(
+    () => (obs || []).filter(isActive).filter(effDate).filter((o) => o.title).sort((a, b) => daysUntil(a) - daysUntil(b)),
+    [obs]
+  );
   const overdue = useMemo(() => coming.filter((o) => daysUntil(o) < 0), [coming]);
   const sub = overdue.length ? `${overdue.length} te laat — pak het op.` : coming.length === 0 ? "Alles is bij." : coming.length <= 2 ? `${coming.length} op komst.` : `${coming.length} zaken komen eraan.`;
 
