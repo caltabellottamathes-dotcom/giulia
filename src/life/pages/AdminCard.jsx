@@ -6,6 +6,7 @@ import { fmtEuro, calcPortfolio, upcomingExpenses, monthlyDistribution, totalMon
 import WalletBarChartWidget from "@/life/components/finance/WalletBarChartWidget";
 import WalletTreemapBar from "@/life/components/finance/WalletTreemapBar";
 import FinanceHealthCard from "@/life/components/finance/FinanceHealthCard";
+import NewDocumentsCard from "@/life/components/finance/NewDocumentsCard";
 import FinanceStacks from "@/life/components/finance/FinanceStacks";
 
 const EASE = [0.16, 1, 0.3, 1];
@@ -193,17 +194,19 @@ export default function AdminCard({ tab, onNavigate }) {
       {/* RECHTS — Overview: 2 widgets + bento. Andere tabs: echte FinanceStacks-elementen. */}
       <div className="flex-1 min-w-0 h-full flex flex-col">
         {tab === "OVERVIEW" ? (
-          <div className="flex-1 min-h-0 p-6 flex flex-col gap-4">
+          <div className="flex-1 min-h-0 px-6 pb-6 pt-[68px] flex flex-col gap-4">
             <div className="flex-[1.4] min-h-0 overflow-hidden rounded-[18px]">
               <WalletBarChartWidget />
             </div>
-            <div className="flex-[0.5] min-h-0 overflow-hidden rounded-[18px]">
+            <div className="flex-[1.1] min-h-0 overflow-hidden rounded-[18px]">
               <WalletTreemapBar />
             </div>
             <div className="flex-1 flex gap-4 min-h-0">
-              <div className="flex-1 rounded-[18px]" style={{ background: CARD, boxShadow: SHADOW }} />
               <div className="h-full aspect-square shrink-0">
                 <FinanceHealthCard />
+              </div>
+              <div className="flex-1 min-h-0">
+                <NewDocumentsCard />
               </div>
             </div>
           </div>

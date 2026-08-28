@@ -30,9 +30,10 @@ const isLight = (hex) => {
 
 /**
  * WalletBarChartWidget — capsule-bars in vaste volgorde, hoogte proportioneel
- * met de huur (Wonen = 100%). Gekleurde capsule = huidig saldo; daarboven een
- * glazen capsule in een subtiele tint van de wallet die aanvult tot het doel,
- * met daarin hoeveel er nog nodig is. Verticaal bedrag onderaan, 180° gedraaid.
+ * met de huur (Wonen = 100%). Boven elke bar een horizontale lijn met de waarde
+ * (zelfde idee als Allocation). Glazen capsule = subtiele wallet-tint, zelfde
+ * breedte als de bar, zonder border, met daarin hoeveel nog tot doel. Bars >100%
+ * cap op 100% en knipperen.
  */
 export default function WalletBarChartWidget() {
   const { data: portfolios } = useEntityList("Portfolio", { realtime: true });
@@ -41,7 +42,7 @@ export default function WalletBarChartWidget() {
   const wallets = useMemo(() => {
     const pots = (portfolios || []).filter((p) => p.active !== false && !p.archived);
     const find = (key) => pots.find((p) => p.name.toLowerCase().includes(key));
-    const list = ORDER.map((key) => {
+    return ORDER.map((key) => {
       const p = find(key);
       if (!p) return null;
       return {
@@ -54,10 +55,8 @@ export default function WalletBarChartWidget() {
         raw: p,
       };
     }).filter(Boolean);
-    return list;
   }, [portfolios]);
 
-  // Schaal = Wonen (huur) = 100%.
   const scale = useMemo(() => {
     const wonen = wallets.find((w) => w.name.toLowerCase().includes("wonen"));
     return Math.max(1, wonen ? wonen.balance : Math.max(1, ...wallets.map((w) => Math.max(w.balance, w.target))));
@@ -67,7 +66,6 @@ export default function WalletBarChartWidget() {
 
   return (
     <div className="relative w-full h-full rounded-[18px] overflow-hidden glass-2">
-      {/* LINKS: capsule BarChart */}
       <AnimatePresence>
         {!selected && (
           <motion.div
@@ -79,14 +77,16 @@ export default function WalletBarChartWidget() {
             transition={{ duration: 0.25 }}
           >
             <p className="text-[9px] uppercase tracking-[0.22em] text-foreground/55 font-medium">Wallets · t.o.v. huur</p>
-            <div className="flex-1 flex items-end gap-[clamp(3px,0.5vw,7px)] mt-3 min-h-0 overflow-visible">
+            <div className="flex-1 flex items-end gap-[clamp(3px,0.5vw,7px)] mt-5 min-h-0 overflow-visible">
               {wallets.length === 0 && (
                 <p className="text-[11px] text-foreground/40 self-center w-full text-center">No wallets yet.</p>
               )}
               {wallets.map((w) => {
-                const balanceH = (w.balance / scale) * 100;
+                const ratio = w.balance / scale;
+                const over = ratio > 1;
+                const cappedH = Math.min(100, ratio * 100);
                 const remaining = Math.max(0, w.target - w.balance);
-                const glassH = w.target > w.balance ? (remaining / scale) * 100 : 0;
+                const glassH = !over && w.target > w.balance ? (remaining / scale) * 100 : 0;
                 const txt = isLight(w.color) ? "#1a1a1a" : "rgba(255,255,255,0.92)";
                 return (
                   <button
@@ -95,45 +95,46 @@ export default function WalletBarChartWidget() {
                     className="relative flex-1 h-full hover:opacity-90 transition min-w-0 overflow-visible"
                     title={w.name}
                   >
-                    {/* glazen capsule — subtiele wallet-tint, aanvulling tot doel */}
+                    {/* horizontale lijn + waarde bovenop de bar */}
+                    {cappedH > 3 && (
+                      <>
+                        <span
+                          className="absolute left-1/2 -translate-x-1/2 text-[8px] font-mono font-semibold whitespace-nowrap z-20"
+                          style={{ bottom: `calc(${cappedH}% + 3px)`, color: txt }}
+                        >
+                          {fmt(w.balance)}
+                        </span>
+                        <div
+                          className="absolute left-1/2 -translate-x-1/2 z-20"
+                          style={{ bottom: `${cappedH}%`, width: "82%", height: "1px", background: w.color }}
+                        />
+                      </>
+                    )}
+                    {/* glazen capsule — subtiele wallet-tint, zelfde breedte, geen border */}
                     {glassH > 1 && (
                       <div
                         className="absolute left-1/2 -translate-x-1/2 rounded-full overflow-hidden"
                         style={{
-                          bottom: `calc(${balanceH}% + 2px)`,
-                          width: "58%",
+                          bottom: `calc(${cappedH}% + 2px)`,
+                          width: "82%",
                           height: `${glassH}%`,
                           background: `${w.color}33`,
                           backdropFilter: "blur(8px)",
                           WebkitBackdropFilter: "blur(8px)",
-                          border: `1px solid ${w.color}66`,
-                          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3)",
                         }}
                       >
                         {glassH > 26 && (
-                          <span
-                            className="absolute bottom-1 left-1/2 -translate-x-1/2"
-                            style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
-                          >
+                          <span className="absolute bottom-1 left-1/2 -translate-x-1/2" style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}>
                             <span className="text-[8px] font-mono whitespace-nowrap" style={{ color: "rgba(0,0,0,0.55)" }}>{fmt(remaining)} left</span>
                           </span>
                         )}
                       </div>
                     )}
-                    {/* gekleurde capsule — huidig saldo (proportioneel met huur) */}
+                    {/* gekleurde capsule — huidig saldo (proportioneel met huur), cap 100% + blink bij over */}
                     <div
-                      className="absolute bottom-0 left-1/2 -translate-x-1/2 rounded-full transition-all duration-500 overflow-hidden"
-                      style={{ width: "82%", height: `${balanceH}%`, background: w.color, boxShadow: "0 6px 16px -8px rgba(0,0,0,0.35)" }}
-                    >
-                      {balanceH > 15 && (
-                        <span
-                          className="absolute bottom-1 left-1/2 -translate-x-1/2"
-                          style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
-                        >
-                          <span className="text-[9px] font-mono font-semibold tracking-tight whitespace-nowrap" style={{ color: txt }}>{fmt(w.balance)}</span>
-                        </span>
-                      )}
-                    </div>
+                      className={`absolute bottom-0 left-1/2 -translate-x-1/2 rounded-full transition-all duration-500 overflow-hidden ${over ? "animate-pulse-soft" : ""}`}
+                      style={{ width: "82%", height: `${cappedH}%`, background: w.color, boxShadow: "0 6px 16px -8px rgba(0,0,0,0.35)" }}
+                    />
                   </button>
                 );
               })}
@@ -143,7 +144,7 @@ export default function WalletBarChartWidget() {
         )}
       </AnimatePresence>
 
-      {/* FOTOKAART — zelfde foto als linker PhotoCard */}
+      {/* FOTOKAART */}
       <motion.div
         className="absolute inset-y-0 z-20 overflow-hidden rounded-[14px]"
         initial={false}
@@ -180,7 +181,6 @@ export default function WalletBarChartWidget() {
         )}
       </motion.div>
 
-      {/* RECHTS: detail-paneel bij selectie (glas) */}
       <AnimatePresence>
         {selected && (
           <motion.div

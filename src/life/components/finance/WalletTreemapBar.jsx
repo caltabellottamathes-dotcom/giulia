@@ -87,7 +87,7 @@ export default function WalletTreemapBar() {
         {segments.map((s, i) => {
           const w = hovered ? (hovered === s.id ? 100 : 0) : total > 0 ? (s.cost / total) * 100 : 0;
           if (w <= 0) return <div key={s.id} style={{ width: 0 }} />;
-          const lineH = [10, 26, 16, 30, 20, 12][i % 6];
+          const lineH = [6, 44, 20, 56, 32, 14][i % 6];
           return (
             <div key={s.id} className="relative flex flex-col items-start justify-end min-w-0" style={{ width: `${w}%` }}>
               <p className={LABEL} style={{ color: "hsl(var(--foreground))" }}>{s.name.split(" ")[0]}</p>
