@@ -1,23 +1,68 @@
-import React, { useMemo, useState } from "react";
-import { ArrowRight, ArrowLeftRight, ChevronDown } from "lucide-react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
+import { ArrowRight, ArrowLeftRight, ChevronDown, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import { fmtEuro } from "@/lib/financeUtils";
 import { useToast } from "@/components/ui/use-toast";
 
-/** GlassSelect — frosted glass keuzemenu met afgeronde hoeken + custom chevron. */
-function GlassSelect({ value, onChange, children }) {
+const GLASS = { background: "rgba(255,255,255,0.55)", backdropFilter: "blur(16px) saturate(1.3)", WebkitBackdropFilter: "blur(16px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.9)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)" };
+const POPOVER = { background: "rgba(255,255,255,0.82)", backdropFilter: "blur(24px) saturate(1.4)", WebkitBackdropFilter: "blur(24px) saturate(1.4)", border: "1px solid rgba(255,255,255,0.95)", boxShadow: "0 24px 56px -18px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.8)" };
+
+/** WalletDropdown — custom OS-stijl glasmenu (geen native <select>). */
+function WalletDropdown({ value, onChange, options, placeholder }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const selected = options.find((o) => o.id === value) || null;
+
+  useEffect(() => {
+    const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+
   return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={onChange}
-        className="appearance-none w-full min-w-[150px] rounded-xl pl-3 pr-9 py-2 text-sm outline-none cursor-pointer font-medium"
-        style={{ background: "rgba(255,255,255,0.55)", backdropFilter: "blur(16px) saturate(1.3)", WebkitBackdropFilter: "blur(16px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.9)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)" }}
-      >
-        {children}
-      </select>
-      <ChevronDown className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-foreground/50" />
+    <div className="relative" ref={ref}>
+      <button type="button" onClick={() => setOpen((v) => !v)} className="flex items-center gap-2 min-w-[160px] rounded-xl px-3 py-2 text-sm font-medium transition" style={GLASS}>
+        {selected ? (
+          <>
+            <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: selected.color || "hsl(var(--smoke))" }} />
+            <span className="truncate flex-1 text-left">{selected.name}</span>
+          </>
+        ) : (
+          <span className="flex-1 text-left text-muted-foreground">{placeholder}</span>
+        )}
+        <ChevronDown className={`w-4 h-4 text-foreground/50 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.98 }}
+            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute z-50 mt-1.5 left-0 w-full min-w-[200px] rounded-2xl p-1.5 max-h-72 overflow-y-auto no-scrollbar"
+            style={POPOVER}
+          >
+            {options.length === 0 && <p className="px-2.5 py-2 text-sm text-muted-foreground">Geen wallets</p>}
+            {options.map((o) => {
+              const active = o.id === value;
+              return (
+                <button
+                  key={o.id}
+                  onClick={() => { onChange(o.id); setOpen(false); }}
+                  className={`flex items-center gap-2 w-full rounded-xl px-2.5 py-1.5 text-sm text-left transition ${active ? "bg-foreground/8" : "hover:bg-foreground/6"}`}
+                >
+                  <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: o.color || "hsl(var(--smoke))" }} />
+                  <span className="truncate flex-1 font-medium">{o.name}</span>
+                  <span className="text-[11px] font-mono tabular-nums text-muted-foreground">{fmtEuro(o.current_balance || 0)}</span>
+                  {active && <Check className="w-3.5 h-3.5 text-foreground/70 shrink-0" />}
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -64,17 +109,11 @@ export default function TransferBetweenWallets() {
           <p className="text-sm font-display font-semibold">between wallets</p>
         </div>
       </div>
-      <GlassSelect value={fromId} onChange={(e) => setFromId(e.target.value)}>
-        <option value="">Van wallet…</option>
-        {active.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-      </GlassSelect>
+      <WalletDropdown value={fromId} onChange={setFromId} options={active} placeholder="Van wallet…" />
       <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
-      <GlassSelect value={toId} onChange={(e) => setToId(e.target.value)}>
-        <option value="">Naar wallet…</option>
-        {active.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-      </GlassSelect>
+      <WalletDropdown value={toId} onChange={setToId} options={active} placeholder="Naar wallet…" />
       <div className="flex items-center gap-2 ml-auto">
-        <div className="flex items-center rounded-xl pl-3 pr-1 py-1" style={{ background: "rgba(255,255,255,0.55)", backdropFilter: "blur(16px) saturate(1.3)", WebkitBackdropFilter: "blur(16px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.9)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)" }}>
+        <div className="flex items-center rounded-xl pl-3 pr-1 py-1" style={GLASS}>
           <span className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground font-semibold mr-1">€</span>
           <input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0,00" className="w-24 bg-transparent py-1 text-sm outline-none tabular-nums" />
         </div>

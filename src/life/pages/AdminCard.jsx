@@ -220,6 +220,16 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
               </div>
             </div>
           </div>
+        ) : tab === "PORTEFEUILLES" ? (
+          <div className="flex-1 min-h-0 pl-6 pr-6 lg:-ml-[48px] pb-6 pt-[68px] overflow-hidden">
+            {data ? (
+              <FinanceStacks tab={tab} data={data} {...handlers} />
+            ) : (
+              <div className="space-y-3">
+                {[0, 1, 2, 3].map((i) => <div key={i} className="h-24 rounded-2xl shimmer" />)}
+              </div>
+            )}
+          </div>
         ) : (
           <div className="flex-1 min-h-0 overflow-y-auto p-6">
             {data ? (
