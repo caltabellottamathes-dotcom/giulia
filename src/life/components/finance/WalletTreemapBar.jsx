@@ -20,10 +20,9 @@ const textOn = (color) => (LIGHT_COLORS.includes(color) ? "#595c64" : "rgba(255,
 
 /**
  * WalletTreemapBar — live horizontale allocatie in afgeronde pills. Labels met
- * dunne verbindingslijnen staan BOVEN de bar; lijnen hebben variabele hoogtes
- * zodat de tekst volledig leesbaar blijft. Volle breedte = 100% inkomen; elke
- * pill = netto kosten per portefeuille (Dagelijks Leven = target); Voorzorg =
- * restant. Hover → pill strekt uit + expense-breakdown.
+ * dunne verbindingslijnen staan BOVEN de bar, links uitgelijnd op de lijn (start
+ * van de pill). Lijnen + tekst zwart, zelfde mono/uppercase/tracking-stijl als
+ * de titel. Hover → pill strekt uit + expense-breakdown.
  */
 export default function WalletTreemapBar() {
   const { data: portfolios } = useEntityList("Portfolio", { realtime: true });
@@ -74,6 +73,8 @@ export default function WalletTreemapBar() {
     return { segments: segs, total: totalIncome > 0 ? totalIncome : spent + leftover };
   }, [portfolios, expenses, incomes]);
 
+  const LABEL = "font-mono text-[9px] uppercase tracking-[0.2em] leading-tight whitespace-nowrap";
+
   return (
     <div className="w-full h-full rounded-[18px] glass-2 flex flex-col px-4 py-3 overflow-hidden">
       <div className="flex items-center justify-between">
@@ -81,17 +82,17 @@ export default function WalletTreemapBar() {
         <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-foreground/55">{total > 0 ? `${fmt(total)} / mnd` : "—"}</p>
       </div>
 
-      {/* LABELS + DUNNE LIJNEN boven de bar — variabele lijnhoogtes */}
+      {/* LABELS + DUNNE LIJNEN boven de bar — lijn links uitgelijnd op de pill-start */}
       <div className="flex-1 min-h-0 flex items-end gap-[3px] mt-1">
         {segments.map((s, i) => {
           const w = hovered ? (hovered === s.id ? 100 : 0) : total > 0 ? (s.cost / total) * 100 : 0;
           if (w <= 0) return <div key={s.id} style={{ width: 0 }} />;
           const lineH = [10, 26, 16, 30, 20, 12][i % 6];
           return (
-            <div key={s.id} className="relative flex flex-col items-center justify-end min-w-0" style={{ width: `${w}%` }}>
-              <p className="text-[11px] font-mono font-semibold leading-tight whitespace-nowrap" style={{ color: s.color }}>{s.name.split(" ")[0]}</p>
-              <p className="text-[11px] font-mono text-foreground/55 leading-tight whitespace-nowrap">{Math.round((s.cost / total) * 100)}%</p>
-              <div className="w-px mt-[3px]" style={{ height: `${lineH}px`, background: s.color }} />
+            <div key={s.id} className="relative flex flex-col items-start justify-end min-w-0" style={{ width: `${w}%` }}>
+              <p className={LABEL} style={{ color: "hsl(var(--foreground))" }}>{s.name.split(" ")[0]}</p>
+              <p className={LABEL} style={{ color: "hsl(var(--foreground))", opacity: 0.55 }}>{Math.round((s.cost / total) * 100)}%</p>
+              <div className="w-px mt-[3px]" style={{ height: `${lineH}px`, background: "hsl(var(--foreground))" }} />
             </div>
           );
         })}

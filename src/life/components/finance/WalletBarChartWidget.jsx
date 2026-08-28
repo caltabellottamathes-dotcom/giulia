@@ -29,9 +29,10 @@ const isLight = (hex) => {
 };
 
 /**
- * WalletBarChartWidget — capsule-bars in vaste volgorde. Elke bar is zijn eigen
- * 100%: de gekleurde capsule = huidig saldo (als % van het doel), daarboven een
- * glazen capsule die aanvult tot 100%. Verticaal in elke bar staat het bedrag.
+ * WalletBarChartWidget — capsule-bars in vaste volgorde, hoogte proportioneel
+ * met de huur (Wonen = 100%). Gekleurde capsule = huidig saldo; daarboven een
+ * glazen capsule in een subtiele tint van de wallet die aanvult tot het doel,
+ * met daarin hoeveel er nog nodig is. Verticaal bedrag onderaan, 180° gedraaid.
  */
 export default function WalletBarChartWidget() {
   const { data: portfolios } = useEntityList("Portfolio", { realtime: true });
@@ -40,23 +41,27 @@ export default function WalletBarChartWidget() {
   const wallets = useMemo(() => {
     const pots = (portfolios || []).filter((p) => p.active !== false && !p.archived);
     const find = (key) => pots.find((p) => p.name.toLowerCase().includes(key));
-    return ORDER.map((key) => {
+    const list = ORDER.map((key) => {
       const p = find(key);
       if (!p) return null;
-      const target = p.target_balance || p.desired_buffer || p.current_balance || 0;
-      const fill = target > 0 ? Math.min(100, ((p.current_balance || 0) / target) * 100) : 100;
       return {
         id: p.id,
         name: p.name,
         color: p.color || colorFor(p.name),
         balance: p.current_balance || 0,
         buffer: p.desired_buffer || 0,
-        target,
-        fill,
+        target: p.target_balance || p.desired_buffer || p.current_balance || 0,
         raw: p,
       };
     }).filter(Boolean);
+    return list;
   }, [portfolios]);
+
+  // Schaal = Wonen (huur) = 100%.
+  const scale = useMemo(() => {
+    const wonen = wallets.find((w) => w.name.toLowerCase().includes("wonen"));
+    return Math.max(1, wonen ? wonen.balance : Math.max(1, ...wallets.map((w) => Math.max(w.balance, w.target))));
+  }, [wallets]);
 
   const selected = wallets.find((w) => w.id === selectedId) || null;
 
@@ -67,51 +72,64 @@ export default function WalletBarChartWidget() {
         {!selected && (
           <motion.div
             key="bars"
-            className="absolute inset-y-0 left-0 w-1/2 flex flex-col p-4 z-10"
+            className="absolute inset-y-0 left-0 w-1/2 flex flex-col p-4 z-10 overflow-visible"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
           >
-            <p className="text-[9px] uppercase tracking-[0.22em] text-foreground/55 font-medium">Wallets · balance vs buffer</p>
-            <div className="flex-1 flex items-end gap-[clamp(3px,0.5vw,7px)] mt-3 min-h-0">
+            <p className="text-[9px] uppercase tracking-[0.22em] text-foreground/55 font-medium">Wallets · t.o.v. huur</p>
+            <div className="flex-1 flex items-end gap-[clamp(3px,0.5vw,7px)] mt-3 min-h-0 overflow-visible">
               {wallets.length === 0 && (
                 <p className="text-[11px] text-foreground/40 self-center w-full text-center">No wallets yet.</p>
               )}
               {wallets.map((w) => {
-                const fillH = w.fill;
-                const glassH = 100 - fillH;
+                const balanceH = (w.balance / scale) * 100;
+                const remaining = Math.max(0, w.target - w.balance);
+                const glassH = w.target > w.balance ? (remaining / scale) * 100 : 0;
                 const txt = isLight(w.color) ? "#1a1a1a" : "rgba(255,255,255,0.92)";
                 return (
                   <button
                     key={w.id}
                     onClick={() => setSelectedId(w.id)}
-                    className="relative flex-1 h-full hover:opacity-90 transition min-w-0"
+                    className="relative flex-1 h-full hover:opacity-90 transition min-w-0 overflow-visible"
                     title={w.name}
                   >
-                    {/* glazen capsule — aanvulling tot 100% */}
+                    {/* glazen capsule — subtiele wallet-tint, aanvulling tot doel */}
                     {glassH > 1 && (
                       <div
-                        className="absolute left-1/2 -translate-x-1/2 rounded-full"
+                        className="absolute left-1/2 -translate-x-1/2 rounded-full overflow-hidden"
                         style={{
-                          bottom: `calc(${fillH}% + 2px)`,
+                          bottom: `calc(${balanceH}% + 2px)`,
                           width: "58%",
                           height: `${glassH}%`,
-                          background: "rgba(255,255,255,0.22)",
+                          background: `${w.color}33`,
                           backdropFilter: "blur(8px)",
                           WebkitBackdropFilter: "blur(8px)",
-                          border: "1px solid rgba(255,255,255,0.45)",
-                          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4)",
+                          border: `1px solid ${w.color}66`,
+                          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.3)",
                         }}
-                      />
+                      >
+                        {glassH > 26 && (
+                          <span
+                            className="absolute bottom-1 left-1/2 -translate-x-1/2"
+                            style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+                          >
+                            <span className="text-[8px] font-mono whitespace-nowrap" style={{ color: "rgba(0,0,0,0.55)" }}>{fmt(remaining)} left</span>
+                          </span>
+                        )}
+                      </div>
                     )}
-                    {/* gekleurde capsule — huidig saldo (fill %) */}
+                    {/* gekleurde capsule — huidig saldo (proportioneel met huur) */}
                     <div
                       className="absolute bottom-0 left-1/2 -translate-x-1/2 rounded-full transition-all duration-500 overflow-hidden"
-                      style={{ width: "82%", height: `${fillH}%`, background: w.color, boxShadow: "0 6px 16px -8px rgba(0,0,0,0.35)" }}
+                      style={{ width: "82%", height: `${balanceH}%`, background: w.color, boxShadow: "0 6px 16px -8px rgba(0,0,0,0.35)" }}
                     >
-                      {fillH > 15 && (
-                        <span className="absolute inset-0 flex items-center justify-center" style={{ writingMode: "vertical-rl" }}>
+                      {balanceH > 15 && (
+                        <span
+                          className="absolute bottom-1 left-1/2 -translate-x-1/2"
+                          style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+                        >
                           <span className="text-[9px] font-mono font-semibold tracking-tight whitespace-nowrap" style={{ color: txt }}>{fmt(w.balance)}</span>
                         </span>
                       )}

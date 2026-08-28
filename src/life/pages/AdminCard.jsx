@@ -200,8 +200,11 @@ export default function AdminCard({ tab, onNavigate }) {
             <div className="flex-[0.5] min-h-0 overflow-hidden rounded-[18px]">
               <WalletTreemapBar />
             </div>
-            <div className="flex-1 min-h-0">
-              <FinanceHealthCard />
+            <div className="flex-1 flex gap-4 min-h-0">
+              <div className="flex-1 rounded-[18px]" style={{ background: CARD, boxShadow: SHADOW }} />
+              <div className="h-full aspect-square shrink-0">
+                <FinanceHealthCard />
+              </div>
             </div>
           </div>
         ) : (
