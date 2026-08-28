@@ -4,12 +4,12 @@ import AdminObligationCard from "@/life/components/AdminObligationCard";
 import PortfolioCard from "@/life/components/finance/PortfolioCard";
 import HealthBadge from "@/life/components/finance/HealthBadge";
 import DistributionBar from "@/life/components/finance/DistributionBar";
+import WalletsBuildingWidget from "@/life/components/finance/WalletsBuildingWidget";
 import PortfolioBarsWidget from "@/life/components/finance/PortfolioBarsWidget";
 import ForecastChart from "@/life/components/finance/ForecastChart";
 import HebbenBestedenBar from "@/life/components/finance/HebbenBestedenBar";
 import HealthyMoneyTab from "@/life/components/finance/HealthyMoneyTab";
 import ThingsHandleWidget from "@/life/widgets/new/ThingsHandleWidget";
-import ProjectsFocusWidget from "@/focus/widgets/new/ProjectsFocusWidget";
 import NewDocumentsCard from "@/life/components/finance/NewDocumentsCard";
 import { fmtEuro, FREQ_LABELS, calcPortfolio, upcomingExpenses } from "@/lib/financeUtils";
 
@@ -96,17 +96,14 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     );
   }
 
-  // ---- WALLET / PORTEFEUILLES ---- bento: What I'm Building + bars + potjes
+  // ---- WALLETS ---- bento: What I'm Building (wallets) + wallet-kaarten
   if (tab === "PORTEFEUILLES") {
     const active = (portfolios || []).filter((p) => !p.archived);
     return (
       <div className="grid gap-4 content-start">
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Tile><ProjectsFocusWidget /></Tile>
-          <Tile><PortfolioBarsWidget portfolios={portfolios} expenses={expenses} onOpenPortfolio={onOpenPortfolio} /></Tile>
-        </div>
+        <WalletsBuildingWidget />
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {active.length === 0 && <Tile className="p-4"><p className="text-sm text-muted-foreground italic">Nog geen portefeuilles.</p></Tile>}
+          {active.length === 0 && <Tile className="p-4"><p className="text-sm text-muted-foreground italic">Nog geen wallets.</p></Tile>}
           {active.map((p) => <Tile key={p.id}><PortfolioCard portfolio={p} expenses={expenses} onClick={() => onOpenPortfolio(p)} /></Tile>)}
         </div>
       </div>
@@ -126,7 +123,7 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
         <Tile className="p-4">
           <div className="flex flex-wrap items-center gap-3">
             <select value={potFilter} onChange={(e) => setPotFilter(e.target.value)} className="rounded-xl glass-1 px-3 py-2 text-sm outline-none">
-              <option value="">Alle portefeuilles</option>
+              <option value="">Alle wallets</option>
               {(portfolios || []).filter((p) => !p.archived).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
             <label className="flex items-center gap-1.5 text-sm cursor-pointer">

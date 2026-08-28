@@ -13,7 +13,7 @@ const HERO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0a
 
 const TABS = [
   { key: "OVERVIEW", label: "Overview", icon: CircleDot },
-  { key: "PORTEFEUILLES", label: "Portefeuilles", icon: Wallet },
+  { key: "PORTEFEUILLES", label: "Wallets", icon: Wallet },
   { key: "LASTEN", label: "Lasten", icon: ListChecks },
   { key: "INKOMEN", label: "Inkomen", icon: Banknote },
   { key: "FORECAST", label: "Forecast", icon: LineChart },

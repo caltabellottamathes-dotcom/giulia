@@ -66,10 +66,10 @@ export default function PortfolioEditor({ open, item, onClose, onSaved, onDelete
       }
       if (isNew) {
         await base44.entities.Portfolio.create(payload);
-        await logLifeActivity("Finance", "created", `Portefeuille ${payload.name} aangemaakt`);
+        await logLifeActivity("Finance", "created", `Wallet ${payload.name} aangemaakt`);
       } else {
         await base44.entities.Portfolio.update(item.id, payload);
-        await logLifeActivity("Finance", "updated", `Portefeuille ${payload.name} bewerkt`);
+        await logLifeActivity("Finance", "updated", `Wallet ${payload.name} bewerkt`);
       }
       onSaved?.();
       onClose?.();
@@ -83,7 +83,7 @@ export default function PortfolioEditor({ open, item, onClose, onSaved, onDelete
     setBusy(true);
     try {
       await base44.entities.Portfolio.update(item.id, { archived: true, active: false });
-      await logLifeActivity("Finance", "archived", `Portefeuille ${item.name} gearchiveerd`);
+      await logLifeActivity("Finance", "archived", `Wallet ${item.name} gearchiveerd`);
       onDeleted?.();
       onClose?.();
     } finally {
@@ -98,7 +98,7 @@ export default function PortfolioEditor({ open, item, onClose, onSaved, onDelete
         <button onClick={onClose} className="absolute top-4 left-4 inline-flex items-center justify-center w-9 h-9 rounded-full glass-1 hover:bg-foreground/10 transition"><X className="w-4 h-4" /></button>
         <div className="mt-10 space-y-4">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">{isNew ? "Nieuwe portefeuille" : "Portefeuille bewerken"}</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">{isNew ? "Nieuwe wallet" : "Wallet bewerken"}</p>
             <h2 className="text-2xl font-display font-semibold mt-1">{isNew ? "Toevoegen" : form.name || "Bewerken"}</h2>
           </div>
 

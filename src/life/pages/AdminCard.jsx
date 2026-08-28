@@ -32,7 +32,7 @@ const BounceBalls = ({ color = "#000", colors, count, size = "clamp(7px, 0.55vw,
 
 const TAB_COPY = {
   OVERVIEW: { eyebrow: "Personal Admin | current_state_", title1: "Here's where", title2: "things stand", heading1: "What needs", heading2: "your attention" },
-  PORTEFEUILLES: { eyebrow: "Personal Admin | Portefeuilles", title1: "Six pots,", title2: "each with a job.", heading1: "Which pots", heading2: "need catching up" },
+  PORTEFEUILLES: { eyebrow: "Personal Admin | Wallets", title1: "Six wallets,", title2: "each with a job.", heading1: "Which wallets", heading2: "need catching up" },
   LASTEN: { eyebrow: "Personal Admin | Lasten", title1: "What's due,", title2: "and when.", heading1: "Payments", heading2: "coming up" },
   INKOMEN: { eyebrow: "Personal Admin | Inkomen", title1: "What comes", title2: "in, and when.", heading1: "Income", heading2: "to confirm" },
   FORECAST: { eyebrow: "Personal Admin | Forecast", title1: "Where", title2: "you're heading.", heading1: "Pressure", heading2: "points ahead" },
@@ -59,9 +59,9 @@ function buildDynamic(tab, data) {
     rest = `${Math.max(0, expenses.length - upcoming.length)} andere lasten staan gepland en vragen geen directe actie.`;
   } else if (tab === "PORTEFEUILLES") {
     items = potsBehind.slice(0, 3).map((p, i) => { const c = calc(p); return { n: pad2(i + 1), title: `${p.name} • Under-reserved`, desc: `Reservering ${fmtEuro(p.monthly_reservation_actual || 0)}/mnd, aanbevolen ${fmtEuro(c.recommended_monthly)}/mnd.` }; });
-    itemsLabel = `${pad2(items.length)}_pots_behind_`;
-    body = `${portfolios.length} portefeuilles · TOTAL MONEY ${fmtEuro(tm)} · BESTEMD ${fmtEuro(tr)}. ${potsBehind.length} potje(s) lopen achter op hun aanbevolen reservering.`;
-    rest = `De andere ${Math.max(0, portfolios.length - potsBehind.length)} potjes zijn gezond en hoeven geen actie.`;
+    itemsLabel = `${pad2(items.length)}_wallets_behind_`;
+    body = `${portfolios.length} wallets · TOTAL MONEY ${fmtEuro(tm)} · BESTEMD ${fmtEuro(tr)}. ${potsBehind.length} wallet(s) lopen achter op hun aanbevolen reservering.`;
+    rest = `De andere ${Math.max(0, portfolios.length - potsBehind.length)} wallets zijn gezond en hoeven geen actie.`;
   } else if (tab === "INKOMEN") {
     items = pendingIncome.slice(0, 3).map((i, idx) => ({ n: pad2(idx + 1), title: `${i.description || i.category || "Inkomen"} • Expected`, desc: `${fmtEuro(i.amount)}${i.expected_date ? ` · ${i.expected_date}` : ""}` }));
     itemsLabel = `${pad2(items.length)}_streams_pending_`;

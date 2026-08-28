@@ -42,7 +42,7 @@ export default function PortfolioDetail({ portfolio, expenses, transactions, onE
         <div className="mt-10 space-y-5">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">{portfolio.category || "Portefeuille"}</p>
+              <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">{portfolio.category || "Wallet"}</p>
               <h2 className="text-2xl font-display font-semibold tracking-tight">{portfolio.name}</h2>
               <p className="text-sm text-muted-foreground mt-0.5">{portfolio.goal || portfolio.description || ""}</p>
             </div>
@@ -79,7 +79,7 @@ export default function PortfolioDetail({ portfolio, expenses, transactions, onE
           )}
 
           <div className="flex gap-2">
-            <button onClick={onEditPortfolio} className="inline-flex items-center gap-1.5 rounded-full bg-plum text-ivory px-3.5 py-1.5 text-xs font-semibold"><Pencil className="w-3.5 h-3.5" />Bewerk pot</button>
+            <button onClick={onEditPortfolio} className="inline-flex items-center gap-1.5 rounded-full bg-plum text-ivory px-3.5 py-1.5 text-xs font-semibold"><Pencil className="w-3.5 h-3.5" />Bewerk wallet</button>
             <button onClick={onAddExpense} className="inline-flex items-center gap-1.5 rounded-full bg-foreground/10 text-foreground px-3.5 py-1.5 text-xs font-semibold"><Plus className="w-3.5 h-3.5" />Last toevoegen</button>
           </div>
 

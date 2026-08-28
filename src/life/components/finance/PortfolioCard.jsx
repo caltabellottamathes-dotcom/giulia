@@ -14,7 +14,7 @@ export default function PortfolioCard({ portfolio, expenses, onClick }) {
         <div className="min-w-0 flex items-center gap-2">
           <span className="h-3 w-3 rounded-full shrink-0" style={{ background: portfolio.color || "hsl(var(--smoke))" }} />
           <div className="min-w-0">
-            <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">{portfolio.category || "Portefeuille"}</p>
+            <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">{portfolio.category || "Wallet"}</p>
             <h3 className="text-lg font-display font-semibold tracking-tight text-foreground truncate">{portfolio.name}</h3>
           </div>
         </div>
