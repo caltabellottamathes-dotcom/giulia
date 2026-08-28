@@ -97,11 +97,13 @@ function VoiceStageInner() {
 
   return (
     <div className="relative w-full h-full overflow-hidden">
-      <Image src={VOICE_PHOTO} fittingType="fill" alt="" className="absolute inset-0 w-full h-full" draggable={false} />
+      <div className="absolute inset-0" style={{ maskImage: "linear-gradient(to right, transparent 0%, black 42%)", WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 42%)" }}>
+        <Image src={VOICE_PHOTO} fittingType="fill" alt="" className="w-full h-full" draggable={false} />
+      </div>
       <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/25 to-black/30" />
 
       {/* Header op de foto — ml-12 om de FloatingPanel-close-knop vrij te houden */}
-      <div className="absolute top-0 inset-x-0 px-5 pt-5 pb-10 bg-gradient-to-b from-black/50 to-transparent flex items-center gap-3 ml-12">
+      <div className="absolute top-0 inset-x-0 px-5 pt-5 pb-10 bg-gradient-to-b from-black/50 to-transparent flex items-center gap-3">
         <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", connected ? "bg-olive animate-pulse-soft" : "bg-ivory/30")} />
         <div className="min-w-0">
           <p className="font-display font-semibold tracking-[0.22em] text-[13px] uppercase text-ivory leading-none">GIULIA · VOICE</p>

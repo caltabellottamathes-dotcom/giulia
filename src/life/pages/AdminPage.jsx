@@ -87,7 +87,7 @@ export default function AdminPage() {
       )}
 
       {/* Glazen paneel — schuift naar links wanneer een stage actief is */}
-      <motion.div initial={{ x: "118%" }} animate={{ x: isStage ? "-24vw" : 0 }} transition={{ duration: 0.7, ease: EASE, delay: first ? 0.15 : 0 }}
+      <motion.div initial={{ x: "118%" }} animate={{ x: isStage ? "-24vw" : 0 }} transition={{ duration: 0.6, ease: EASE, delay: first ? 0.15 : 0 }}
         className="absolute right-0 top-[78px] bottom-[94px] w-full lg:w-[76%] glass-2 rounded-l-[32px] rounded-r-none shadow-[0_64px_150px_-34px_rgba(0,0,0,0.55), -36px_0_80px_-28px_rgba(0,0,0,0.42)] flex z-[15]"
         style={{ backdropFilter: "blur(16px) saturate(1.25)", WebkitBackdropFilter: "blur(16px) saturate(1.25)" }}>
         {/* Linker glas-strook — tabs */}
@@ -136,7 +136,7 @@ export default function AdminPage() {
           <motion.div animate={{ x: isStage ? "24vw" : 0 }} transition={{ duration: 0.7, ease: EASE }}
             className="absolute inset-0 z-20">
             <AnimatePresence initial={false}>
-              <AdminCard key={tab} tab={tab} onNavigate={setTab} enterDelay={first ? 0.3 : 0} />
+              <AdminCard key={tab} tab={tab} onNavigate={setTab} enterDelay={first ? 0.75 : 0} />
             </AnimatePresence>
           </motion.div>
         </div>
