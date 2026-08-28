@@ -24,7 +24,7 @@ export default function VideoPlayerPanel() {
   }
   return (
     <div onClick={openMediaFullscreen} className="w-full h-full flex items-center justify-center cursor-zoom-in bg-transparent p-4" role="button" tabIndex={0} aria-label="Vergroten">
-      <video src={media.url} autoPlay playsInline muted preload="auto" className="max-w-full max-h-full object-contain rounded-[18px] shadow-[0_20px_44px_-20px_rgba(0,0,0,0.35)]" />
+      <video src={media.url} autoPlay playsInline className="max-w-full max-h-full object-contain rounded-[18px] shadow-[0_20px_44px_-20px_rgba(0,0,0,0.35)]" />
     </div>
   );
 }
