@@ -8,6 +8,7 @@ import PortfolioBarsWidget from "@/life/components/finance/PortfolioBarsWidget";
 import ForecastChart from "@/life/components/finance/ForecastChart";
 import HebbenBestedenBar from "@/life/components/finance/HebbenBestedenBar";
 import HealthyMoneyTab from "@/life/components/finance/HealthyMoneyTab";
+import ThingsHandleWidget from "@/life/widgets/new/ThingsHandleWidget";
 import { fmtEuro, FREQ_LABELS, calcPortfolio, upcomingExpenses } from "@/lib/financeUtils";
 
 const Card = ({ children, className = "" }) =>
@@ -85,8 +86,11 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     return (
       <>
         {active.length === 0 && <Card><p className="text-sm text-muted-foreground italic">Nog geen portefeuilles. Voeg er een toe om je inkomen een bestemming te geven.</p></Card>}
-        <div className="grid sm:grid-cols-2 gap-3">
-          {active.map((p) => <PortfolioCard key={p.id} portfolio={p} expenses={expenses} onClick={() => onOpenPortfolio(p)} />)}
+        <div className="grid gap-4 sm:grid-cols-[minmax(0,300px)_minmax(0,1fr)] items-start">
+          <div className="max-w-[300px] mx-auto sm:mx-0 w-full"><ThingsHandleWidget /></div>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {active.map((p) => <PortfolioCard key={p.id} portfolio={p} expenses={expenses} onClick={() => onOpenPortfolio(p)} />)}
+          </div>
         </div>
       </>);
 

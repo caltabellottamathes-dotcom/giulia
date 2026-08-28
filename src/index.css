@@ -496,6 +496,10 @@
 @keyframes ontwerp-dot-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 .ontwerp-dot-bounce { animation: ontwerp-dot-bounce 1.3s ease-in-out infinite; }
 
+/* BounceDot — hardere stuit voor FinanceHealthCard */
+@keyframes dot-bounce-hard { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-18px); } }
+.bounce-hard { animation: dot-bounce-hard 0.85s ease-in-out infinite; }
+
 /* Wallet reached-blink — trage pulse voor bars die hun doel behaald hebben */
 @keyframes wallet-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 .wallet-blink { animation: wallet-blink 2.8s ease-in-out infinite; }
