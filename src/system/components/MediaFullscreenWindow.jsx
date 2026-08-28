@@ -332,7 +332,7 @@ export default function MediaFullscreenWindow() {
         )}
         {kind === "doc" && (
           (isPdf && !drive)
-            ? <div className="absolute inset-0"><PdfViewer url={media.url} compact /></div>
+            ? <div className="absolute inset-0"><PdfViewer url={media.url} compact mode="height" onAspect={setRatio} /></div>
             : (drive || isPdf)
               ? <div className="absolute inset-4 sm:inset-6 rounded-2xl bg-white overflow-hidden shadow-[0_24px_60px_-20px_rgba(0,0,0,0.4)]"><iframe src={media.url} title={media.name} className="w-full h-full" /></div>
               : (
