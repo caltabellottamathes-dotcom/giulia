@@ -89,7 +89,7 @@ export default function ChatStage() {
   };
 
   return (
-    <div className="refraction-panel h-full flex flex-col">
+    <div className="relative h-full flex flex-col">
       <div className="pointer-events-none absolute top-0 inset-x-0 h-44" style={{ background: "radial-gradient(120% 70% at 50% 0%, rgba(255,255,255,0.07), transparent 72%)" }} />
 
       <div className="shrink-0 px-7 pt-7 pb-5 flex items-center justify-between">

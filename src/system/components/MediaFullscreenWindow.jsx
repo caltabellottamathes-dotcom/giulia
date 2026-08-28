@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { X, Download, Minus, Maximize2, FileText } from "lucide-react";
+import { X, Download, Minus, Maximize2, FileText, ChevronLeft, ChevronRight } from "lucide-react";
+import * as pdfjsLib from "pdfjs-dist";
 import { usePanel } from "@/lib/PanelContext";
 import { useMediaViewer, isDriveUrl } from "@/lib/MediaViewerContext";
 import { useMediaLibrary, kindOfUpload } from "@/lib/useMediaLibrary";
@@ -9,35 +10,37 @@ import { cn } from "@/lib/utils";
 import MusicViewerStage from "@/system/components/media/MusicViewerStage";
 import PdfViewer from "@/system/panels/viewers/PdfViewer";
 
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+
 const DEFAULT_RATIO = { image: 4 / 3, video: 16 / 9, music: 3 / 4, doc: 4 / 3 };
 
 /**
- * MediaFullscreenWindow — VoiceWindow-stijl shell (rechts, volledige hoogte,
- * schuift in) waarin de media helemaal flush (geen rand) vult. De shell-breedte
- * past zich aan de aspect-ratio van de media aan. Muziek toont de vergrote
- * LIFE MusicWidget (MusicViewerStage). Bij minimaliseren verkleint de hele
- * shell exact mee in de verhouding van de media — dus een 9:16 video blijft
- * 9:16, en muziek blijft 3:4 met dezelfde MusicWidget-look.
- *
- * Het <audio>-element voor muziek leeft op top-level (altijd gemount) zodat
- * playback doorloopt bij minimaliseren/vergroten. De WebAudio-grafo
- * (AnalyserNode) wordt eenmalig op dat element opgezet en gedeeld met
- * MusicViewerStage.
+ * MediaFullscreenWindow — grote viewer die rechts uitschuift tot tegen de
+ * bovenrand (top-0), even hoog als de witte kaart, met een slagschaduw naar
+ * links. De shell-breedte past zich aan de media-verhouding aan. Voor pdf
+ * wordt de pagina-verhouding vooraf opgehaald, zodat de viewer meteen in
+ * het juiste formaat inschuift (geen glitch). Vorige/volgende-pagina knop
+ * staat buiten de viewer, linksonder. Sluiten → glijdt visueel naar rechts
+ * uit beeld. Muziek toont de vergrote LIFE MusicWidget; bij minimaliseren
+ * verkleint de hele shell mee in de media-verhouding.
  */
 export default function MediaFullscreenWindow() {
   const { mediaFullscreen, closeMediaFullscreen, mediaMinimized, minimizeMedia, restoreMedia } = usePanel();
   const { media, closeMedia } = useMediaViewer();
   const [playing, setPlaying] = useState(false);
   const [ratio, setRatio] = useState(3 / 4);
-  const [boxH, setBoxH] = useState(0);
+  const [ratioReady, setRatioReady] = useState(false);
+  const [boxH, setBoxH] = useState(typeof window !== "undefined" ? window.innerHeight - 24 : 0);
   const [vw, setVw] = useState(typeof window !== "undefined" ? window.innerWidth : 1280);
   const [vh, setVh] = useState(typeof window !== "undefined" ? window.innerHeight : 800);
   const [currentTrackId, setCurrentTrackId] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [pos, setPos] = useState(null); // null = standaard rechtsonder; {x,y} na slepen
-  const [minSize, setMinSize] = useState(null); // {w,h} na verschalen
+  const [pos, setPos] = useState(null);
+  const [minSize, setMinSize] = useState(null);
+  const [closing, setClosing] = useState(false);
+  const [pdfPage, setPdfPage] = useState(1);
+  const [pdfPages, setPdfPages] = useState(0);
   const mediaRef = useRef(null);
-  const shellRef = useRef(null);
   const minWrapRef = useRef(null);
   const dragRef = useRef(null);
   const resizeRef = useRef(null);
@@ -45,6 +48,8 @@ export default function MediaFullscreenWindow() {
   const analyserRef = useRef(null);
 
   const kind = media?.kind;
+  const drive = isDriveUrl(media?.url);
+  const isPdf = media?.type === "pdf" || /\.pdf$/i.test(media?.name || media?.url || "");
 
   // ── Muziekbibliotheek (cloud + lokaal) ──
   const cloud = useMediaLibrary();
@@ -69,13 +74,9 @@ export default function MediaFullscreenWindow() {
     return m.url;
   }, [local]);
 
-  // WebAudio-grafo (AnalyserNode) — eenmaal per <audio>-DOM-node opgezet via
-  // een callback-ref. Bij opnieuw openen van de viewer krijgt het element een
-  // nieuwe node, dus ook een verse context + source + analyser. Zo blijven
-  // bloom & sine echt audio-reactief.
   const attachAudio = useCallback((el) => {
     if (mediaRef.current && mediaRef.current !== el) {
-      try { ctxRef.current?.close(); } catch {}
+      try { ctxRef.current?.close(); } catch { /* negeer */ }
       ctxRef.current = null;
       analyserRef.current = null;
     }
@@ -97,7 +98,7 @@ export default function MediaFullscreenWindow() {
     } catch { /* source al verbonden of niet ondersteund */ }
   }, [kind]);
 
-  // Nieuwe media → reset + ratio
+  // Nieuwe media → reset
   useEffect(() => {
     if (mediaFullscreen) {
       setPlaying(false);
@@ -105,11 +106,43 @@ export default function MediaFullscreenWindow() {
       setCurrentTrackId(null);
       setMinSize(null);
       setPos(null);
+      setClosing(false);
+      setPdfPage(1);
+      setPdfPages(0);
     }
   }, [mediaFullscreen, media?.url, kind]);
 
-  // Voor muziek: initieel track uit de geopende url afleiden (de grafo wordt
-  // opgezet in de callback-ref op het <audio>-element).
+  // ── ratio klaar? ── voor pdf wordt de pagina-verhouding vooraf opgehaald
+  // zodat de shell meteen op de juiste breedte inschuift. Foto/video wachten
+  // op load; muziek en overige soorten zijn meteen klaar.
+  useEffect(() => {
+    if (!mediaFullscreen) return;
+    setRatioReady(false);
+    let cancelled = false;
+    const t = setTimeout(() => { if (!cancelled) setRatioReady(true); }, 2500);
+    if (kind === "music") {
+      setRatioReady(true);
+    } else if (kind === "doc" && isPdf && !drive) {
+      (async () => {
+        try {
+          const doc = await pdfjsLib.getDocument(media.url).promise;
+          if (cancelled) return;
+          const p1 = await doc.getPage(1);
+          const vp = p1.getViewport({ scale: 1 });
+          setRatio(vp.width / vp.height);
+          try { doc.destroy(); } catch { /* negeer */ }
+          if (!cancelled) setRatioReady(true);
+        } catch { if (!cancelled) setRatioReady(true); }
+      })();
+    } else if (kind === "image" || kind === "video") {
+      // ratio + ratioReady worden op onLoad / onLoadedMetadata gezet
+    } else {
+      setRatioReady(true);
+    }
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [mediaFullscreen, media?.url, kind, isPdf, drive]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Muziek: initieel track uit de geopende url afleiden
   useEffect(() => {
     if (kind !== "music") return;
     if (currentTrackId) return;
@@ -135,18 +168,9 @@ export default function MediaFullscreenWindow() {
     }
   }, [mediaFullscreen, mediaMinimized]);
 
-  // Shell-hoogte meten (voor breedte-berekening) + viewport-breedte
+  // Viewport + hoogte (shell = top-0 bottom-6 → vh - 24)
   useEffect(() => {
-    const el = shellRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(() => setBoxH(el.clientHeight));
-    ro.observe(el);
-    setBoxH(el.clientHeight);
-    return () => ro.disconnect();
-  }, [mediaFullscreen, mediaMinimized]);
-
-  useEffect(() => {
-    const onR = () => { setVw(window.innerWidth); setVh(window.innerHeight); };
+    const onR = () => { setVw(window.innerWidth); setVh(window.innerHeight); setBoxH(window.innerHeight - 24); };
     window.addEventListener("resize", onR);
     return () => window.removeEventListener("resize", onR);
   }, []);
@@ -188,29 +212,25 @@ export default function MediaFullscreenWindow() {
     playTrack(tracks[i]);
   }, [tracks, idx, playTrack]);
 
+  // Sluiten → eerst visueel naar rechts uit beeld glijden, dan pas unmounten
   const handleClose = useCallback(() => {
     const el = mediaRef.current;
     if (el) el.pause();
-    closeMediaFullscreen();
-    closeMedia();
+    setClosing(true);
+    setTimeout(() => { closeMediaFullscreen(); closeMedia(); setClosing(false); }, 430);
   }, [closeMediaFullscreen, closeMedia]);
 
   if (!mediaFullscreen || !media) return null;
 
-  const drive = isDriveUrl(media.url);
-  const isPdf = media.type === "pdf" || /\.pdf$/i.test(media.name || media.url || "");
-
   // ── Afmetingen ──
-  // Window-stand: breedte = ratio × hoogte (geklemd).
   const maxWindowW = Math.min(vw - 32, 1400);
   const windowW = Math.max(320, Math.min(ratio && boxH ? ratio * boxH : 720, maxWindowW));
-  // Geminimaliseerd: verkleind in de media-eigen verhouding (geen horizontale dwang).
   const MAX_MIN_W = 360, MAX_MIN_H = 240;
   let minW, minH;
   if (ratio >= 1) { minW = Math.min(MAX_MIN_W, MAX_MIN_H * ratio); minH = minW / ratio; }
   else { minH = Math.min(MAX_MIN_H, MAX_MIN_W / ratio); minW = minH * ratio; }
 
-  // ── Vrij verplaatsbare geminimaliseerde widget (slepen via de bovenrand) ──
+  // ── Vrij verplaatsbare geminimaliseerde widget ──
   const onHandleDown = (e) => {
     const el = minWrapRef.current;
     if (!el) return;
@@ -227,7 +247,6 @@ export default function MediaFullscreenWindow() {
   };
   const onHandleUp = () => { dragRef.current = null; };
 
-  // ── Verschalingshandvat (geminimaliseerde widget) ──
   const onResizeDown = (e) => {
     const el = minWrapRef.current;
     if (!el) return;
@@ -243,7 +262,6 @@ export default function MediaFullscreenWindow() {
     const dh = e.clientY - d.sy;
     let nw = d.w + dw;
     let nh = d.h + dh;
-    // Foto's en video's behouden hun media-verhouding; muziek mag vrij verschaald.
     if (kind === "image" || kind === "video") {
       let s = Math.max(nw / d.w, nh / d.h, 180 / d.w);
       s = Math.min(s, (vw - 16) / d.w, (vh - 16) / d.h);
@@ -264,11 +282,9 @@ export default function MediaFullscreenWindow() {
     const radius = compact ? "rounded-[20px]" : "rounded-l-[28px]";
     const glassBtn = "bg-black/25 border border-white/15 backdrop-blur-md flex items-center justify-center text-ivory/90 hover:text-white hover:bg-black/40 transition-colors";
     return (
-      <div className={cn("relative w-full h-full overflow-hidden glass-3", radius)}>
-        {/* Sluitknop linksboven */}
+      <div className={cn("relative w-full h-full overflow-hidden glass-3", radius, !compact && "shadow-[-48px_0_90px_-30px_rgba(0,0,0,0.55)]")}>
         <button onClick={handleClose} className={cn("absolute top-4 left-4 z-50 rounded-full", btn, glassBtn)} aria-label="Sluiten"><X className={ico} /></button>
 
-        {/* Acties rechtsboven */}
         <div className="absolute top-4 right-4 z-50 flex items-center gap-1.5">
           <a href={media.url} target="_blank" rel="noreferrer" className={cn("rounded-full", btn, glassBtn)} aria-label="Openen in nieuw tabblad" title="Openen in nieuw tabblad"><Download className={ico} /></a>
           {compact ? (
@@ -278,7 +294,6 @@ export default function MediaFullscreenWindow() {
           )}
         </div>
 
-        {/* Sleepgreep langs de bovenrand (enkel geminimaliseerd) */}
         {compact && (
           <div
             onPointerDown={onHandleDown}
@@ -290,7 +305,6 @@ export default function MediaFullscreenWindow() {
           />
         )}
 
-        {/* Titel in de header — geen overlay */}
         {kind !== "music" && kind !== "doc" && !compact && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none text-center" style={{ color: "hsl(var(--ivory))", textShadow: "0 1px 8px rgba(0,0,0,0.65)" }}>
             <p className="font-display font-semibold tracking-[0.22em] uppercase text-[10px] leading-none opacity-70">{kind === "video" ? "VIDEO" : kind === "image" ? "FOTO" : kind === "doc" ? "DOCUMENT" : "BESTAND"}</p>
@@ -298,7 +312,6 @@ export default function MediaFullscreenWindow() {
           </div>
         )}
 
-        {/* Media — flush in de shell */}
         {kind === "music" && (
           <MusicViewerStage
             analyserRef={analyserRef}
@@ -321,18 +334,18 @@ export default function MediaFullscreenWindow() {
             onPlay={onPlay}
             onPause={onPause}
             onEnded={onEnded}
-            onLoadedMetadata={(e) => setRatio(e.currentTarget.videoWidth / e.currentTarget.videoHeight)}
+            onLoadedMetadata={(e) => { setRatio(e.currentTarget.videoWidth / e.currentTarget.videoHeight); setRatioReady(true); }}
             className="absolute inset-0 w-full h-full object-contain"
           />
         )}
         {kind === "image" && (
           drive
             ? <iframe src={media.url} title={media.name} className="absolute inset-0 w-full h-full" />
-            : <img src={media.url} alt={media.name} className="absolute inset-0 w-full h-full object-contain" onLoad={(e) => setRatio(e.currentTarget.naturalWidth / e.currentTarget.naturalHeight)} />
+            : <img src={media.url} alt={media.name} className="absolute inset-0 w-full h-full object-contain" onLoad={(e) => { setRatio(e.currentTarget.naturalWidth / e.currentTarget.naturalHeight); setRatioReady(true); }} />
         )}
         {kind === "doc" && (
           (isPdf && !drive)
-            ? <div className="absolute inset-0"><PdfViewer url={media.url} compact mode="height" onAspect={setRatio} /></div>
+            ? <div className="absolute inset-0"><PdfViewer url={media.url} compact mode="height" page={pdfPage} onPageChange={setPdfPage} onNumPages={setPdfPages} onAspect={setRatio} showControls={false} /></div>
             : (drive || isPdf)
               ? <div className="absolute inset-4 sm:inset-6 rounded-2xl bg-white overflow-hidden shadow-[0_24px_60px_-20px_rgba(0,0,0,0.4)]"><iframe src={media.url} title={media.name} className="w-full h-full" /></div>
               : (
@@ -347,9 +360,17 @@ export default function MediaFullscreenWindow() {
     );
   };
 
+  // Externe vorige/volgende-knop voor pdf — buiten de viewer, linksonder
+  const pdfNav = !mediaMinimized && kind === "doc" && isPdf && !drive && ratioReady && (
+    <div className="fixed left-6 bottom-8 z-[57] flex items-center gap-1 rounded-full glass-2 px-2 py-1.5 text-ivory">
+      <button onClick={() => setPdfPage((p) => Math.max(1, p - 1))} disabled={pdfPage <= 1} className="h-8 w-8 rounded-full flex items-center justify-center text-ivory/80 hover:bg-ivory/10 disabled:opacity-30 transition"><ChevronLeft className="h-4 w-4" /></button>
+      <span className="font-mono text-[11px] text-ivory/70 px-1 min-w-[56px] text-center">{pdfPage} / {pdfPages || "—"}</span>
+      <button onClick={() => setPdfPage((p) => Math.min(pdfPages || 1, p + 1))} disabled={pdfPage >= pdfPages} className="h-8 w-8 rounded-full flex items-center justify-center text-ivory/80 hover:bg-ivory/10 disabled:opacity-30 transition"><ChevronRight className="h-4 w-4" /></button>
+    </div>
+  );
+
   return createPortal(
     <>
-      {/* Persistente audio voor muziek — blijft spelen bij minimaliseren */}
       {kind === "music" && (
         <audio
           ref={attachAudio}
@@ -370,7 +391,6 @@ export default function MediaFullscreenWindow() {
           style={pos ? { left: pos.x, top: pos.y, width: minSize?.w || minW, height: minSize?.h || minH } : { right: 16, bottom: 16, width: minSize?.w || minW, height: minSize?.h || minH }}
         >
           {renderShell(true)}
-          {/* Verschalingshandvat — rechteronderhoek */}
           <div
             onPointerDown={onResizeDown}
             onPointerMove={onResizeMove}
@@ -385,11 +405,16 @@ export default function MediaFullscreenWindow() {
             </svg>
           </div>
         </div>
-      ) : (
-        <div ref={shellRef} className="fixed right-0 top-4 lg:top-6 bottom-4 lg:bottom-6 z-[56] animate-slide-right" style={{ width: windowW }}>
+      ) : ratioReady && boxH > 0 ? (
+        <div
+          className="fixed right-0 top-0 bottom-6 z-[56] animate-slide-right transition-transform duration-[430ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+          style={{ width: windowW, transform: closing ? "translateX(100%)" : undefined }}
+        >
           {renderShell(false)}
         </div>
-      )}
+      ) : null}
+
+      {pdfNav}
     </>,
     document.body
   );

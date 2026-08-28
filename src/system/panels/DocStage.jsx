@@ -1,21 +1,26 @@
 import React from "react";
-import { FileText } from "lucide-react";
+import { useMediaViewer } from "@/lib/MediaViewerContext";
+import DocViewerPanel from "@/system/panels/viewers/DocViewerPanel";
+import MediaLibraryList from "@/system/components/media/MediaLibraryList";
 
 /**
- * DocStage — document-view in het multi-functionele Pagina-Ontwerp paneel.
- * Lichtgewicht stub: gelinkte documenten verschijnen hier zodra ze geselecteerd
- * worden. Mattia houdt de map in de gaten.
+ * DocStage — document-view in het multi-functionele paneel. Zonder
+ * geselecteerd document toont de stage de documenten-lijst (transparant,
+ * glas van het paneel eronder zichtbaar). Bij een geselecteerde pdf opent
+ * de DocViewerPanel (eigen pdf.js viewer).
  */
 export default function DocStage() {
+  const { media, previewMedia } = useMediaViewer();
+
+  if (media && media.kind === "doc") {
+    return <div className="h-full w-full"><DocViewerPanel /></div>;
+  }
+
   return (
-    <div className="refraction-panel h-full flex flex-col items-center justify-center text-center px-8">
-      <div className="h-14 w-14 rounded-2xl bg-ivory/10 border border-ivory/15 flex items-center justify-center mb-5">
-        <FileText className="h-6 w-6 text-ivory/70" />
-      </div>
-      <p className="font-display font-semibold text-xl tracking-[-0.01em] text-ivory">Documenten</p>
-      <p className="text-[13px] text-ivory/55 mt-2 max-w-[16rem] leading-relaxed">
-        Gelinkte documenten verschijnen hier. Mattia houdt de map in de gaten.
-      </p>
-    </div>
+    <MediaLibraryList
+      filter="doc"
+      onPick={(f) => previewMedia(f)}
+      emptyHint="Nog geen documenten. Upload een pdf via de Media-pagina."
+    />
   );
 }

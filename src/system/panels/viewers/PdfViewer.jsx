@@ -2,23 +2,23 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Loader2, FileWarning } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
 
-// Worker via CDN op de geïnstalleerde versie — robuuster dan Vite's ?worker/?url
-// imports voor pdfjs-dist v4.
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 /**
  * PdfViewer — OS-eigen pdf.js viewer. Pagina's renderen naar canvas op de
- * transparante glas-ondergrond (geen browser-chrome). De besturing (vorige/
- * volgende + zoom) zit binnen het pdf-beeld, rechtsonder.
+ * transparante glas-ondergrond (geen browser-chrome). De besturing (vorige /
+ * volgende + zoom) staat onder de pdf, links uitgelijnd met de pagina.
  *
  * mode="width"  → pagina past op de container-breedte; hoogte volgt (stage).
  * mode="height" → pagina is exact zo hoog als de viewer; breedte volgt (groot).
- * onAspect(word/height) → meldt de pagina-verhouding zodat de shell meeschalen kan.
+ * page/onPageChange/onNumPages → externe besturing (grote viewer gebruikt een
+ * eigen knop buiten het beeld).
+ * onAspect(word/height) → meldt de pagina-verhouding voor shell-breedte.
  */
-export default function PdfViewer({ url, compact = false, mode = "width", onAspect }) {
+export default function PdfViewer({ url, compact = false, mode = "width", onAspect, page: ctrlPage, onPageChange, onNumPages, showControls = true }) {
   const [pdf, setPdf] = useState(null);
+  const [innerPage, setInnerPage] = useState(1);
   const [numPages, setNumPages] = useState(0);
-  const [page, setPage] = useState(1);
   const [scale, setScale] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,14 +26,19 @@ export default function PdfViewer({ url, compact = false, mode = "width", onAspe
   const canvasRef = useRef(null);
   const renderRef = useRef(null);
 
+  const page = ctrlPage != null ? ctrlPage : innerPage;
+  const setPage = (p) => { if (ctrlPage != null) onPageChange?.(p); else setInnerPage(p); };
+
   useEffect(() => {
     let cancelled = false;
-    setLoading(true); setError(null); setPdf(null); setPage(1); setScale(1);
+    setLoading(true); setError(null); setPdf(null); setNumPages(0);
+    if (ctrlPage == null) setInnerPage(1);
+    setScale(1);
     (async () => {
       try {
         const doc = await pdfjsLib.getDocument(url).promise;
         if (cancelled) return;
-        setPdf(doc); setNumPages(doc.numPages); setLoading(false);
+        setPdf(doc); setNumPages(doc.numPages); onNumPages?.(doc.numPages); setLoading(false);
         try {
           const p1 = await doc.getPage(1);
           const vp = p1.getViewport({ scale: 1 });
@@ -55,7 +60,7 @@ export default function PdfViewer({ url, compact = false, mode = "width", onAspe
         const ch = Math.max(120, wrapRef.current.clientHeight);
         setScale(Math.max(0.2, ch / vp.height));
       } else {
-        const cw = Math.max(120, wrapRef.current.clientWidth - 24);
+        const cw = Math.max(120, wrapRef.current.clientWidth - 64);
         setScale(Math.max(0.25, cw / vp.width));
       }
     } catch { /* negeer */ }
@@ -93,7 +98,7 @@ export default function PdfViewer({ url, compact = false, mode = "width", onAspe
   const zoom = (d) => setScale((s) => Math.max(0.25, Math.min(3, +(s + d).toFixed(2))));
 
   return (
-    <div ref={wrapRef} className={"relative w-full h-full flex items-start justify-center overflow-y-auto " + (mode === "height" ? "" : "py-3 px-3")}>
+    <div ref={wrapRef} className={"relative w-full h-full flex items-start justify-center overflow-y-auto " + (mode === "height" ? "" : "py-6 px-8")}>
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center">
           <Loader2 className="h-6 w-6 animate-spin text-foreground/55" />
@@ -105,13 +110,13 @@ export default function PdfViewer({ url, compact = false, mode = "width", onAspe
           <p className="text-[12px] text-foreground/65">{error}</p>
         </div>
       )}
-      <div className="relative">
-        <canvas ref={canvasRef} className="block rounded-md bg-white shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)]" />
-        {!loading && !error && numPages > 0 && (
-          <div className={"absolute bottom-2.5 right-2.5 z-20 flex items-center gap-1 rounded-full glass-2 px-2 py-1 " + (compact ? "scale-90 origin-bottom-right" : "")}>
-            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="h-7 w-7 rounded-full flex items-center justify-center text-foreground/75 hover:bg-foreground/10 disabled:opacity-30 transition"><ChevronLeft className="h-4 w-4" /></button>
+      <div className="flex flex-col items-start">
+        <canvas ref={canvasRef} className="block rounded-md bg-white shadow-[0_20px_44px_-20px_rgba(0,0,0,0.35)]" />
+        {showControls && !loading && !error && numPages > 0 && (
+          <div className={"mt-3 flex items-center gap-1 rounded-full glass-2 px-2 py-1 " + (compact ? "scale-90 origin-left" : "")}>
+            <button onClick={() => setPage(Math.max(1, page - 1))} disabled={page <= 1} className="h-7 w-7 rounded-full flex items-center justify-center text-foreground/75 hover:bg-foreground/10 disabled:opacity-30 transition"><ChevronLeft className="h-4 w-4" /></button>
             <span className="font-mono text-[10px] tracking-wide text-foreground/70 px-1 min-w-[54px] text-center">{page} / {numPages}</span>
-            <button onClick={() => setPage((p) => Math.min(numPages, p + 1))} disabled={page >= numPages} className="h-7 w-7 rounded-full flex items-center justify-center text-foreground/75 hover:bg-foreground/10 disabled:opacity-30 transition"><ChevronRight className="h-4 w-4" /></button>
+            <button onClick={() => setPage(Math.min(numPages, page + 1))} disabled={page >= numPages} className="h-7 w-7 rounded-full flex items-center justify-center text-foreground/75 hover:bg-foreground/10 disabled:opacity-30 transition"><ChevronRight className="h-4 w-4" /></button>
             <span className="w-px h-4 bg-foreground/15 mx-0.5" />
             <button onClick={() => zoom(-0.2)} className="h-7 w-7 rounded-full flex items-center justify-center text-foreground/75 hover:bg-foreground/10 transition"><ZoomOut className="h-4 w-4" /></button>
             <span className="font-mono text-[10px] text-foreground/60 px-1 min-w-[34px] text-center">{Math.round(scale * 100)}%</span>
