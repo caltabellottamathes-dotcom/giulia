@@ -42,6 +42,8 @@ export default function AdminPage() {
   const [stage, setStage] = useState("chat"); // "chat" | "voice" | "doc" | "media"
   const [panelOpen, setPanelOpen] = useState(false);
   const isStage = panelOpen;
+  const [first, setFirst] = useState(true);
+  useEffect(() => { const t = setTimeout(() => setFirst(false), 900); return () => clearTimeout(t); }, []);
 
   // Toolbar (chat/phone) routeert naar dit paneel wanneer op Admin.
   useEffect(() => {
@@ -85,7 +87,7 @@ export default function AdminPage() {
       )}
 
       {/* Glazen paneel — schuift naar links wanneer een stage actief is */}
-      <motion.div initial={{ x: "118%" }} animate={{ x: isStage ? "-24vw" : 0 }} transition={{ duration: 0.7, ease: EASE }}
+      <motion.div initial={{ x: "118%" }} animate={{ x: isStage ? "-24vw" : 0 }} transition={{ duration: 0.7, ease: EASE, delay: first ? 0.15 : 0 }}
         className="absolute right-0 top-[78px] bottom-[94px] w-full lg:w-[76%] glass-2 rounded-l-[32px] rounded-r-none shadow-[0_64px_150px_-34px_rgba(0,0,0,0.55), -36px_0_80px_-28px_rgba(0,0,0,0.42)] flex z-[15]"
         style={{ backdropFilter: "blur(16px) saturate(1.25)", WebkitBackdropFilter: "blur(16px) saturate(1.25)" }}>
         {/* Linker glas-strook — tabs */}
@@ -120,9 +122,11 @@ export default function AdminPage() {
             {isStage && (
               <motion.div key={stage} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35, ease: EASE }}
                 className="absolute top-[134px] bottom-[70px] left-0 w-full lg:w-[24vw] z-10 overflow-hidden">
-                <button onClick={() => setPanelOpen(false)} className="absolute top-4 left-4 z-40 h-9 w-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors" aria-label="Terug">
-                  <ArrowLeft className="h-4 w-4" />
-                </button>
+                {(stage === "doc" || stage === "media") && (
+                  <button onClick={() => setPanelOpen(false)} className="absolute top-4 left-4 z-40 h-9 w-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors" aria-label="Terug">
+                    <ArrowLeft className="h-4 w-4" />
+                  </button>
+                )}
                 {stageContent}
               </motion.div>
             )}
@@ -132,7 +136,7 @@ export default function AdminPage() {
           <motion.div animate={{ x: isStage ? "24vw" : 0 }} transition={{ duration: 0.7, ease: EASE }}
             className="absolute inset-0 z-20">
             <AnimatePresence initial={false}>
-              <AdminCard key={tab} tab={tab} onNavigate={setTab} />
+              <AdminCard key={tab} tab={tab} onNavigate={setTab} enterDelay={first ? 0.3 : 0} />
             </AnimatePresence>
           </motion.div>
         </div>

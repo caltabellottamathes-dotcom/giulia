@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import { WidgetHeader } from "@/system/widgets/primitives";
-import { usePanel } from "@/lib/PanelContext";
+import { useNavigate } from "react-router-dom";
 import { useEntityList } from "@/hooks/useEntity";
 import { useLearningSync } from "@/hooks/useLearningSync";
 import { adminWeather, comingUp, overdueList } from "@/lib/adminUtils";
@@ -35,7 +35,7 @@ function pressure(diff) {
  *  breedte vult van links (NEXT) tot rechts (pijl). Glaskaart: WIT ghost +
  *  "WHEN / TO HANDLE?" + status + op komst met item + weather.sub. */
 export default function ThingsHandleWidget() {
-  const { openModule } = usePanel();
+  const navigate = useNavigate();
   const learnTick = useLearningSync();
   const { data: obs } = useEntityList("AdminObligation", { realtime: true, externalTick: learnTick });
 
@@ -67,7 +67,7 @@ export default function ThingsHandleWidget() {
   ];
 
   return (
-    <div className="relative w-full aspect-[9/16] rounded-[28px] overflow-hidden cursor-pointer" onClick={() => openModule("personaladmin")}>
+    <div className="relative w-full aspect-[9/16] rounded-[28px] overflow-hidden cursor-pointer" onClick={() => navigate("/life/admin")}>
       <motion.img src={PHOTO} alt="Things to Handle" className="absolute inset-0 h-full w-full object-cover" initial={{ scale: 1.14, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }} draggable={false} />
       <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(20,22,26,0.92) 8%, rgba(20,22,26,0.42) 50%, rgba(20,22,26,0.20) 100%)" }} />
 

@@ -97,7 +97,7 @@ export default function FinanceHealthCard() {
           bottom: 0,
           top: `${100 - health}%`,
           borderRadius: 16,
-          background: "rgba(60,66,74,0.38)",
+          background: "rgba(24,26,30,0.22)",
           backdropFilter: "blur(96px) saturate(1.4)",
           WebkitBackdropFilter: "blur(96px) saturate(1.4)",
           border: "1px solid rgba(255,255,255,0.18)",

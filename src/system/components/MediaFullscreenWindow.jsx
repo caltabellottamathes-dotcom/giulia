@@ -362,7 +362,7 @@ export default function MediaFullscreenWindow() {
 
   // Externe vorige/volgende-knop voor pdf — buiten de viewer, linksonder
   const pdfNav = !mediaMinimized && kind === "doc" && isPdf && !drive && ratioReady && (
-    <div className="fixed left-6 bottom-8 z-[57] flex items-center gap-1 rounded-full glass-2 px-2 py-1.5 text-ivory">
+    <div className="fixed z-[57] flex items-center gap-1 rounded-full glass-2 px-2 py-1.5 text-ivory" style={{ right: windowW + 8, bottom: 72 }}>
       <button onClick={() => setPdfPage((p) => Math.max(1, p - 1))} disabled={pdfPage <= 1} className="h-8 w-8 rounded-full flex items-center justify-center text-ivory/80 hover:bg-ivory/10 disabled:opacity-30 transition"><ChevronLeft className="h-4 w-4" /></button>
       <span className="font-mono text-[11px] text-ivory/70 px-1 min-w-[56px] text-center">{pdfPage} / {pdfPages || "—"}</span>
       <button onClick={() => setPdfPage((p) => Math.min(pdfPages || 1, p + 1))} disabled={pdfPage >= pdfPages} className="h-8 w-8 rounded-full flex items-center justify-center text-ivory/80 hover:bg-ivory/10 disabled:opacity-30 transition"><ChevronRight className="h-4 w-4" /></button>

@@ -87,7 +87,7 @@ function buildDynamic(tab, data) {
   return { items, itemsLabel, body, rest, restLabel };
 }
 
-export default function AdminCard({ tab, onNavigate }) {
+export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
 
@@ -136,7 +136,7 @@ export default function AdminCard({ tab, onNavigate }) {
       initial={{ x: "100%" }}
       animate={{ x: 0 }}
       exit={{ x: "100%" }}
-      transition={{ duration: 0.5, ease: EASE }}
+      transition={{ duration: 0.5, ease: EASE, delay: enterDelay }}
       className="absolute inset-0 rounded-bl-[20px] rounded-r-none bg-white flex overflow-hidden shadow-[-40px_8px_64px_-18px_rgba(0,0,0,0.55)]"
     >
       {/* Editorial — left ~42% */}

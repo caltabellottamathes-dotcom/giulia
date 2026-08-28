@@ -114,12 +114,12 @@ export default function PdfViewer({ url, compact = false, mode = "width", onAspe
         <canvas ref={canvasRef} className="block rounded-md bg-white shadow-[0_20px_44px_-20px_rgba(0,0,0,0.35)]" />
         {showControls && !loading && !error && numPages > 0 && (
           <div className={"mt-3 flex items-center gap-1 rounded-full glass-2 px-2 py-1 " + (compact ? "scale-90 origin-left" : "")}>
-            <button onClick={() => setPage(Math.max(1, page - 1))} disabled={page <= 1} className="h-7 w-7 rounded-full flex items-center justify-center text-foreground/75 hover:bg-foreground/10 disabled:opacity-30 transition"><ChevronLeft className="h-4 w-4" /></button>
-            <span className="font-mono text-[10px] tracking-wide text-foreground/70 px-1 min-w-[54px] text-center">{page} / {numPages}</span>
-            <button onClick={() => setPage(Math.min(numPages, page + 1))} disabled={page >= numPages} className="h-7 w-7 rounded-full flex items-center justify-center text-foreground/75 hover:bg-foreground/10 disabled:opacity-30 transition"><ChevronRight className="h-4 w-4" /></button>
-            <span className="w-px h-4 bg-foreground/15 mx-0.5" />
+            <button onClick={() => setPage(Math.max(1, page - 1))} disabled={page <= 1} className="h-7 w-7 rounded-full flex items-center justify-center text-ivory/80 hover:bg-ivory/10 disabled:opacity-30 transition"><ChevronLeft className="h-4 w-4" /></button>
+            <span className="font-mono text-[10px] tracking-wide text-ivory/70 px-1 min-w-[54px] text-center">{page} / {numPages}</span>
+            <button onClick={() => setPage(Math.min(numPages, page + 1))} disabled={page >= numPages} className="h-7 w-7 rounded-full flex items-center justify-center text-ivory/80 hover:bg-ivory/10 disabled:opacity-30 transition"><ChevronRight className="h-4 w-4" /></button>
+            <span className="w-px h-4 bg-ivory/15 mx-0.5" />
             <button onClick={() => zoom(-0.2)} className="h-7 w-7 rounded-full flex items-center justify-center text-foreground/75 hover:bg-foreground/10 transition"><ZoomOut className="h-4 w-4" /></button>
-            <span className="font-mono text-[10px] text-foreground/60 px-1 min-w-[34px] text-center">{Math.round(scale * 100)}%</span>
+            <span className="font-mono text-[10px] text-ivory/60 px-1 min-w-[34px] text-center">{Math.round(scale * 100)}%</span>
             <button onClick={() => zoom(0.2)} className="h-7 w-7 rounded-full flex items-center justify-center text-foreground/75 hover:bg-foreground/10 transition"><ZoomIn className="h-4 w-4" /></button>
           </div>
         )}
