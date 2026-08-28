@@ -15,13 +15,15 @@ const NAME_COLOR = {
   mobiliteit: "#8b8471",
   voorzorg: "#d0d9dd",
 };
+const LIGHT_COLORS = ["#d8dab3", "#d0d9dd", "#abab69"];
+const textOn = (color) => (LIGHT_COLORS.includes(color) ? "#595c64" : "rgba(255,255,255,0.95)");
 
 /**
- * WalletTreemapBar — live horizontale allocatie in afgeronde pills (glas-2).
- * Volle breedte = 100% van je inkomen. Elke pill = exacte netto kosten van één
- * portefeuille (Dagelijks Leven = volledige target); Voorzorg = wat overblijft
- * na alle expenses. Kleuren = vaste portefeuille-kleuren. Hover → pill strekt
- * uit tot volle breedte en onderverdeelt zich in de exacte expenses + %.
+ * WalletTreemapBar — live horizontale allocatie in afgeronde pills. Labels met
+ * dunne verbindingslijnen staan BOVEN de bar; lijnen hebben variabele hoogtes
+ * zodat de tekst volledig leesbaar blijft. Volle breedte = 100% inkomen; elke
+ * pill = netto kosten per portefeuille (Dagelijks Leven = target); Voorzorg =
+ * restant. Hover → pill strekt uit + expense-breakdown.
  */
 export default function WalletTreemapBar() {
   const { data: portfolios } = useEntityList("Portfolio", { realtime: true });
@@ -79,8 +81,24 @@ export default function WalletTreemapBar() {
         <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-foreground/55">{total > 0 ? `${fmt(total)} / mnd` : "—"}</p>
       </div>
 
-      {/* PILLS — afgerond, strakke spacing */}
-      <div className="flex items-stretch w-full h-[clamp(20px,2.4vw,32px)] mt-3 gap-[3px]">
+      {/* LABELS + DUNNE LIJNEN boven de bar — variabele lijnhoogtes */}
+      <div className="flex-1 min-h-0 flex items-end gap-[3px] mt-1">
+        {segments.map((s, i) => {
+          const w = hovered ? (hovered === s.id ? 100 : 0) : total > 0 ? (s.cost / total) * 100 : 0;
+          if (w <= 0) return <div key={s.id} style={{ width: 0 }} />;
+          const lineH = [10, 26, 16, 30, 20, 12][i % 6];
+          return (
+            <div key={s.id} className="relative flex flex-col items-center justify-end min-w-0" style={{ width: `${w}%` }}>
+              <p className="text-[11px] font-mono font-semibold leading-tight whitespace-nowrap" style={{ color: s.color }}>{s.name.split(" ")[0]}</p>
+              <p className="text-[11px] font-mono text-foreground/55 leading-tight whitespace-nowrap">{Math.round((s.cost / total) * 100)}%</p>
+              <div className="w-px mt-[3px]" style={{ height: `${lineH}px`, background: s.color }} />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* PILLS — afgerond, onderaan, strakke spacing */}
+      <div className="flex items-stretch w-full h-[clamp(22px,2.6vw,34px)] gap-[3px]">
         {segments.length === 0 && <p className="text-[10px] text-foreground/40 self-center">{total > 0 ? "" : "No income recorded."}</p>}
         {segments.map((s) => {
           const w = hovered ? (hovered === s.id ? 100 : 0) : total > 0 ? (s.cost / total) * 100 : 0;
@@ -94,9 +112,9 @@ export default function WalletTreemapBar() {
               onMouseEnter={() => setHovered(s.id)}
               onMouseLeave={() => setHovered(null)}
             >
-              {w > 16 && !hovered && (
-                <span className="absolute inset-0 flex items-center px-2 text-[8px] font-mono whitespace-nowrap" style={{ color: ["#d8dab3", "#d0d9dd", "#abab69"].includes(s.color) ? "#595c64" : "rgba(255,255,255,0.9)" }}>
-                  {s.name.split(" ")[0]} {Math.round((s.cost / total) * 100)}%
+              {w > 18 && !hovered && (
+                <span className="absolute inset-0 flex items-center px-2 text-[8px] font-mono whitespace-nowrap" style={{ color: textOn(s.color) }}>
+                  {Math.round((s.cost / total) * 100)}%
                 </span>
               )}
               <AnimatePresence>
@@ -118,7 +136,7 @@ export default function WalletTreemapBar() {
                           style={{ width: `${segPct}%`, background: s.color, borderLeft: idx > 0 ? "1px solid rgba(255,255,255,0.28)" : "none" }}
                         >
                           {segPct > 8 && (
-                            <span className="text-[8px] font-mono truncate px-1 whitespace-nowrap" style={{ color: ["#d8dab3", "#d0d9dd", "#abab69"].includes(s.color) ? "#595c64" : "rgba(255,255,255,0.95)" }}>
+                            <span className="text-[8px] font-mono truncate px-1 whitespace-nowrap" style={{ color: textOn(s.color) }}>
                               {it.title} {Math.round(segPct)}%
                             </span>
                           )}
@@ -129,21 +147,6 @@ export default function WalletTreemapBar() {
                 )}
               </AnimatePresence>
             </motion.div>
-          );
-        })}
-      </div>
-
-      {/* DUNNE LIJNEN + LABELS onder de pills */}
-      <div className="flex w-full mt-1 min-h-[34px] gap-[3px]">
-        {segments.map((s) => {
-          const w = hovered ? (hovered === s.id ? 100 : 0) : total > 0 ? (s.cost / total) * 100 : 0;
-          if (w <= 0) return <div key={s.id} style={{ width: 0 }} />;
-          return (
-            <div key={s.id} className="relative flex flex-col items-center min-w-0" style={{ width: `${w}%` }}>
-              <div className="w-px h-2 mx-auto" style={{ background: s.color }} />
-              <p className="text-[8px] font-mono truncate w-full text-center" style={{ color: s.color }}>{s.name.split(" ")[0]}</p>
-              <p className="text-[8px] font-mono text-foreground/45">{Math.round((s.cost / total) * 100)}%</p>
-            </div>
           );
         })}
       </div>

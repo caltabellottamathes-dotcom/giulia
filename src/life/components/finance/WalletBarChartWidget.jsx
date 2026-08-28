@@ -6,6 +6,8 @@ const HERO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0a
 const EASE = [0.16, 1, 0.3, 1];
 const fmt = (n) => `€${Math.round(n).toLocaleString("en-US")}`;
 
+// Vaste volgorde + kleuren per portefeuille.
+const ORDER = ["wonen", "gezondheid", "communicatie", "dagelijks leven", "mobiliteit", "voorzorg"];
 const NAME_COLOR = {
   wonen: "#d8dab3",
   gezondheid: "#301728",
@@ -19,38 +21,42 @@ const colorFor = (name) => {
   for (const key of Object.keys(NAME_COLOR)) if (k.includes(key)) return NAME_COLOR[key];
   return "#9c9c9c";
 };
+const isLight = (hex) => {
+  const c = String(hex || "").replace("#", "");
+  if (c.length < 6) return true;
+  const r = parseInt(c.substr(0, 2), 16), g = parseInt(c.substr(2, 2), 16), b = parseInt(c.substr(4, 2), 16);
+  return 0.299 * r + 0.587 * g + 0.114 * b > 150;
+};
 
 /**
- * WalletBarChartWidget — glazen widget-shell (glas-2) met capsule-bars links +
- * fotokaart rechts (zelfde foto als linker PhotoCard). Elke bar = een
- * portefeuille. De gekleurde capsule = huidig saldo; daarboven een glazen
- * capsule die aanvult tot de hoogte die nodig is om de buffer te halen.
- * Kleuren = vaste portefeuille-kleuren.
+ * WalletBarChartWidget — capsule-bars in vaste volgorde. Elke bar is zijn eigen
+ * 100%: de gekleurde capsule = huidig saldo (als % van het doel), daarboven een
+ * glazen capsule die aanvult tot 100%. Verticaal in elke bar staat het bedrag.
  */
 export default function WalletBarChartWidget() {
   const { data: portfolios } = useEntityList("Portfolio", { realtime: true });
   const [selectedId, setSelectedId] = useState(null);
 
   const wallets = useMemo(() => {
-    return (portfolios || [])
-      .filter((p) => p.active !== false && !p.archived)
-      .sort((a, b) => (b.current_balance || 0) - (a.current_balance || 0))
-      .map((p) => ({
+    const pots = (portfolios || []).filter((p) => p.active !== false && !p.archived);
+    const find = (key) => pots.find((p) => p.name.toLowerCase().includes(key));
+    return ORDER.map((key) => {
+      const p = find(key);
+      if (!p) return null;
+      const target = p.target_balance || p.desired_buffer || p.current_balance || 0;
+      const fill = target > 0 ? Math.min(100, ((p.current_balance || 0) / target) * 100) : 100;
+      return {
         id: p.id,
         name: p.name,
         color: p.color || colorFor(p.name),
         balance: p.current_balance || 0,
         buffer: p.desired_buffer || 0,
-        reservation: p.monthly_reservation_actual || 0,
+        target,
+        fill,
         raw: p,
-      }));
+      };
+    }).filter(Boolean);
   }, [portfolios]);
-
-  // 100% hoogte = de grootste (saldo of buffer) over alle wallets.
-  const scale = useMemo(
-    () => Math.max(1, ...wallets.map((w) => Math.max(w.balance, w.buffer))),
-    [wallets]
-  );
 
   const selected = wallets.find((w) => w.id === selectedId) || null;
 
@@ -73,10 +79,9 @@ export default function WalletBarChartWidget() {
                 <p className="text-[11px] text-foreground/40 self-center w-full text-center">No wallets yet.</p>
               )}
               {wallets.map((w) => {
-                const balanceH = (w.balance / scale) * 100;
-                const gap = Math.max(0, w.buffer - w.balance);
-                const glassH = w.buffer > 0 ? (gap / scale) * 100 : 0;
-                const reached = w.buffer > 0 && w.balance >= w.buffer;
+                const fillH = w.fill;
+                const glassH = 100 - fillH;
+                const txt = isLight(w.color) ? "#1a1a1a" : "rgba(255,255,255,0.92)";
                 return (
                   <button
                     key={w.id}
@@ -84,12 +89,12 @@ export default function WalletBarChartWidget() {
                     className="relative flex-1 h-full hover:opacity-90 transition min-w-0"
                     title={w.name}
                   >
-                    {/* glazen capsule — aanvulling tot buffer (bovenop gekleurde bar) */}
-                    {glassH > 0 && (
+                    {/* glazen capsule — aanvulling tot 100% */}
+                    {glassH > 1 && (
                       <div
                         className="absolute left-1/2 -translate-x-1/2 rounded-full"
                         style={{
-                          bottom: `calc(${balanceH}% + 2px)`,
+                          bottom: `calc(${fillH}% + 2px)`,
                           width: "58%",
                           height: `${glassH}%`,
                           background: "rgba(255,255,255,0.22)",
@@ -100,21 +105,17 @@ export default function WalletBarChartWidget() {
                         }}
                       />
                     )}
-                    {/* gekleurde capsule — huidig saldo */}
+                    {/* gekleurde capsule — huidig saldo (fill %) */}
                     <div
-                      className="absolute bottom-0 left-1/2 -translate-x-1/2 rounded-full transition-all duration-500"
-                      style={{
-                        width: "82%",
-                        height: `${balanceH}%`,
-                        background: w.color,
-                        boxShadow: "0 6px 16px -8px rgba(0,0,0,0.35)",
-                        border: reached ? "1px solid rgba(255,255,255,0.5)" : "none",
-                      }}
-                    />
-                    {/* buffer-reached marker */}
-                    {reached && (
-                      <div className="absolute left-1/2 -translate-x-1/2 w-[58%] h-[3px] rounded-full" style={{ bottom: `${(w.buffer / scale) * 100}%`, background: "rgba(255,255,255,0.6)" }} />
-                    )}
+                      className="absolute bottom-0 left-1/2 -translate-x-1/2 rounded-full transition-all duration-500 overflow-hidden"
+                      style={{ width: "82%", height: `${fillH}%`, background: w.color, boxShadow: "0 6px 16px -8px rgba(0,0,0,0.35)" }}
+                    >
+                      {fillH > 15 && (
+                        <span className="absolute inset-0 flex items-center justify-center" style={{ writingMode: "vertical-rl" }}>
+                          <span className="text-[9px] font-mono font-semibold tracking-tight whitespace-nowrap" style={{ color: txt }}>{fmt(w.balance)}</span>
+                        </span>
+                      )}
+                    </div>
                   </button>
                 );
               })}
@@ -142,7 +143,7 @@ export default function WalletBarChartWidget() {
               <span className="text-[9px] uppercase tracking-[0.18em] font-bold">{selected.name}</span>
             </div>
             <h3 className="text-[22px] leading-[1.05] font-display font-semibold tracking-[-0.02em] mt-1">{fmt(selected.balance)}</h3>
-            <p className="text-[10px] uppercase tracking-[0.16em] mt-1 opacity-80">buffer {selected.buffer > 0 ? fmt(selected.buffer) : "—"}</p>
+            <p className="text-[10px] uppercase tracking-[0.16em] mt-1 opacity-80">doel {selected.target > 0 ? fmt(selected.target) : "—"}</p>
             <p className="text-[8px] uppercase tracking-[0.2em] mt-auto opacity-50">tap → back</p>
           </div>
         ) : (
@@ -182,10 +183,10 @@ export default function WalletBarChartWidget() {
 }
 
 function WalletDetail({ wallet }) {
-  const reached = wallet.buffer > 0 && wallet.balance >= wallet.buffer;
-  const remaining = wallet.buffer - wallet.balance;
-  const surplus = wallet.balance - wallet.buffer;
-  const pct = wallet.buffer > 0 ? Math.min(100, (wallet.balance / wallet.buffer) * 100) : 100;
+  const reached = wallet.target > 0 && wallet.balance >= wallet.target;
+  const remaining = wallet.target - wallet.balance;
+  const surplus = wallet.balance - wallet.target;
+  const pct = wallet.target > 0 ? Math.min(100, (wallet.balance / wallet.target) * 100) : 100;
   return (
     <div className="h-full p-4 flex flex-col text-foreground">
       <div className="flex items-center gap-1.5">
@@ -197,23 +198,23 @@ function WalletDetail({ wallet }) {
 
       <div className="mt-5 space-y-2.5">
         <div className="flex items-center justify-between text-[10px]">
-          <span className="uppercase tracking-[0.14em] opacity-60">Buffer</span>
-          <span className="font-medium">{wallet.buffer > 0 ? fmt(wallet.buffer) : "—"}</span>
+          <span className="uppercase tracking-[0.14em] opacity-60">Doel</span>
+          <span className="font-medium">{wallet.target > 0 ? fmt(wallet.target) : "—"}</span>
         </div>
         <div className="h-1.5 w-full rounded-full bg-foreground/10 overflow-hidden">
           <div className="h-full rounded-full" style={{ width: `${pct}%`, background: wallet.color }} />
         </div>
-        {wallet.buffer > 0 && (
+        {wallet.target > 0 && (
           reached ? (
-            <p className="text-[11px] opacity-80">Buffer bereikt · <span className="font-semibold">{fmt(surplus)} over</span></p>
+            <p className="text-[11px] opacity-80">Doel bereikt · <span className="font-semibold">{fmt(surplus)} over</span></p>
           ) : (
-            <p className="text-[11px] opacity-80"><span className="font-semibold">{fmt(remaining)}</span> nog tot buffer</p>
+            <p className="text-[11px] opacity-80"><span className="font-semibold">{fmt(remaining)}</span> nog tot doel</p>
           )
         )}
       </div>
 
       <div className="mt-auto pt-4 space-y-2 text-[10px] opacity-70">
-        <div className="flex items-center justify-between"><span className="uppercase tracking-[0.14em] opacity-60">Reservering</span><span className="font-medium">{wallet.reservation > 0 ? `${fmt(wallet.reservation)}/mnd` : "—"}</span></div>
+        <div className="flex items-center justify-between"><span className="uppercase tracking-[0.14em] opacity-60">Buffer</span><span className="font-medium">{wallet.buffer > 0 ? fmt(wallet.buffer) : "—"}</span></div>
         <div className="flex items-center justify-between"><span className="uppercase tracking-[0.14em] opacity-60">Kind</span><span className="font-medium">{wallet.raw.kind || "—"}</span></div>
         <div className="flex items-center justify-between"><span className="uppercase tracking-[0.14em] opacity-60">Status</span><span className="font-medium">{wallet.raw.status || "—"}</span></div>
       </div>

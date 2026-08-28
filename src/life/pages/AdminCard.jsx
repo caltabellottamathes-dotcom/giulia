@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { fmtEuro, calcPortfolio, upcomingExpenses, monthlyDistribution, totalMoney, totalReserved } from "@/lib/financeUtils";
 import WalletBarChartWidget from "@/life/components/finance/WalletBarChartWidget";
 import WalletTreemapBar from "@/life/components/finance/WalletTreemapBar";
+import FinanceHealthCard from "@/life/components/finance/FinanceHealthCard";
 import FinanceStacks from "@/life/components/finance/FinanceStacks";
 
 const EASE = [0.16, 1, 0.3, 1];
@@ -199,9 +200,8 @@ export default function AdminCard({ tab, onNavigate }) {
             <div className="flex-[0.5] min-h-0 overflow-hidden rounded-[18px]">
               <WalletTreemapBar />
             </div>
-            <div className="flex-1 flex gap-4 min-h-0">
-              <div className="flex-[0.9] rounded-[18px]" style={{ background: CARD, boxShadow: SHADOW }} />
-              <div className="flex-[1.5] rounded-[18px]" style={{ background: CARD, boxShadow: SHADOW }} />
+            <div className="flex-1 min-h-0">
+              <FinanceHealthCard />
             </div>
           </div>
         ) : (
