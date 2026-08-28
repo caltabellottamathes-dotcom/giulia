@@ -3,16 +3,25 @@ import { Maximize2, Download, FileText } from "lucide-react";
 import { useMediaViewer, isDriveUrl } from "@/lib/MediaViewerContext";
 import { usePanel } from "@/lib/PanelContext";
 import ViewerEmpty from "@/system/panels/viewers/ViewerEmpty";
+import PdfViewer from "@/system/panels/viewers/PdfViewer";
 
-/** DocViewerStage — pdf drijft op het glas (inset, afgeronde witte pagina) zodat
- *  de glasmorfisme van de stage als achtergrond zichtbaar blijft. Geen header.
- *  Vergrootknop opent de MediaFullscreenWindow. */
+/** DocViewerPanel — pdf opent in de OS-eigen PdfViewer (canvas op glas, eigen
+ *  besturing). Drive-embeds en non-pdf vallen terug op een ingebed iframe. */
 export default function DocViewerPanel() {
   const { media } = useMediaViewer();
   const { openMediaFullscreen } = usePanel();
   if (!media || media.kind !== "doc") return <ViewerEmpty icon={FileText} label="document" />;
   const drive = isDriveUrl(media.url);
   const isPdf = media.type === "pdf" || /\.pdf$/i.test(media.name || media.url || "");
+
+  if (isPdf && !drive) {
+    return (
+      <div className="relative w-full h-full p-3 sm:p-4">
+        <PdfViewer url={media.url} />
+        <button onClick={openMediaFullscreen} className="absolute top-5 right-5 z-30 h-9 w-9 rounded-full bg-black/25 border border-white/15 backdrop-blur-md flex items-center justify-center text-ivory/90 hover:text-white hover:bg-black/40 transition" aria-label="Vergroten"><Maximize2 className="h-4 w-4" /></button>
+      </div>
+    );
+  }
 
   if (drive || isPdf) {
     return (

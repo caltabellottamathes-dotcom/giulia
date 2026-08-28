@@ -7,6 +7,7 @@ import { useMediaLibrary, kindOfUpload } from "@/lib/useMediaLibrary";
 import { useLocalMedia } from "@/lib/useLocalMedia";
 import { cn } from "@/lib/utils";
 import MusicViewerStage from "@/system/components/media/MusicViewerStage";
+import PdfViewer from "@/system/panels/viewers/PdfViewer";
 
 const DEFAULT_RATIO = { image: 4 / 3, video: 16 / 9, music: 3 / 4, doc: 4 / 3 };
 
@@ -330,15 +331,17 @@ export default function MediaFullscreenWindow() {
             : <img src={media.url} alt={media.name} className="absolute inset-0 w-full h-full object-contain" onLoad={(e) => setRatio(e.currentTarget.naturalWidth / e.currentTarget.naturalHeight)} />
         )}
         {kind === "doc" && (
-          (drive || isPdf)
-            ? <div className="absolute inset-4 sm:inset-6 rounded-2xl bg-white overflow-hidden shadow-[0_24px_60px_-20px_rgba(0,0,0,0.4)]"><iframe src={media.url} title={media.name} className="w-full h-full" /></div>
-            : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center px-6 pointer-events-auto">
-                <div className="h-16 w-16 rounded-2xl bg-ivory/10 flex items-center justify-center"><FileText className="h-8 w-8 text-ivory/55" /></div>
-                <p className="text-sm text-ivory/85 max-w-xs">{media.name}</p>
-                <a href={media.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[12px] text-olive hover:underline"><Download className="h-3.5 w-3.5" /> Openen in nieuw tabblad</a>
-              </div>
-            )
+          (isPdf && !drive)
+            ? <div className="absolute inset-0"><PdfViewer url={media.url} compact /></div>
+            : (drive || isPdf)
+              ? <div className="absolute inset-4 sm:inset-6 rounded-2xl bg-white overflow-hidden shadow-[0_24px_60px_-20px_rgba(0,0,0,0.4)]"><iframe src={media.url} title={media.name} className="w-full h-full" /></div>
+              : (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center px-6 pointer-events-auto">
+                  <div className="h-16 w-16 rounded-2xl bg-ivory/10 flex items-center justify-center"><FileText className="h-8 w-8 text-ivory/55" /></div>
+                  <p className="text-sm text-ivory/85 max-w-xs">{media.name}</p>
+                  <a href={media.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[12px] text-olive hover:underline"><Download className="h-3.5 w-3.5" /> Openen in nieuw tabblad</a>
+                </div>
+              )
         )}
       </div>
     );
