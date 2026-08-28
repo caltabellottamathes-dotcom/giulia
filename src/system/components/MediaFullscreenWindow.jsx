@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { X, Download, Minus, Maximize2, FileText, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, Download, Minus, Maximize2, FileText, ChevronLeft, ChevronRight } from "lucide-react";
 import * as pdfjsLib from "pdfjs-dist";
 import { usePanel } from "@/lib/PanelContext";
 import { useMediaViewer, isDriveUrl } from "@/lib/MediaViewerContext";
@@ -280,17 +280,18 @@ export default function MediaFullscreenWindow() {
     const btn = compact ? "h-8 w-8" : "h-9 w-9";
     const ico = compact ? "h-3.5 w-3.5" : "h-4 w-4";
     const radius = compact ? "rounded-[20px]" : "rounded-l-[28px]";
-    const glassBtn = "bg-black/25 border border-white/15 backdrop-blur-md flex items-center justify-center text-ivory/90 hover:text-white hover:bg-black/40 transition-colors";
+    const closeBtn = "bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory hover:bg-ivory/15 transition-colors";
+    const bareBtn = "flex items-center justify-center text-foreground/80 hover:text-foreground transition-colors";
     return (
       <div className={cn("relative w-full h-full overflow-hidden glass-3", radius, !compact && "shadow-[-48px_0_90px_-30px_rgba(0,0,0,0.55)]")}>
-        <button onClick={handleClose} className={cn("absolute top-4 left-4 z-50 rounded-full", btn, glassBtn)} aria-label="Sluiten"><X className={ico} /></button>
+        <button onClick={handleClose} className={cn("absolute top-4 left-4 z-50 rounded-full", btn, closeBtn)} aria-label="Sluiten"><ArrowRight className={ico} /></button>
 
         <div className="absolute top-4 right-4 z-50 flex items-center gap-1.5">
-          <a href={media.url} target="_blank" rel="noreferrer" className={cn("rounded-full", btn, glassBtn)} aria-label="Openen in nieuw tabblad" title="Openen in nieuw tabblad"><Download className={ico} /></a>
+          <a href={media.url} target="_blank" rel="noreferrer" className={cn(btn, bareBtn)} aria-label="Openen in nieuw tabblad" title="Openen in nieuw tabblad"><Download className={ico} /></a>
           {compact ? (
-            <button onClick={restoreMedia} className={cn("rounded-full", btn, glassBtn)} aria-label="Vergroten" title="Vergroten"><Maximize2 className={ico} /></button>
+            <button onClick={restoreMedia} className={cn(btn, bareBtn)} aria-label="Vergroten" title="Vergroten"><Maximize2 className={ico} /></button>
           ) : (
-            <button onClick={minimizeMedia} className={cn("rounded-full", btn, glassBtn)} aria-label="Minimaliseren" title="Minimaliseren naar widget"><Minus className={ico} /></button>
+            <button onClick={minimizeMedia} className={cn(btn, bareBtn)} aria-label="Minimaliseren" title="Minimaliseren naar widget"><Minus className={ico} /></button>
           )}
         </div>
 
@@ -330,6 +331,7 @@ export default function MediaFullscreenWindow() {
             ref={mediaRef}
             src={media.url}
             autoPlay
+            preload="auto"
             controls
             onPlay={onPlay}
             onPause={onPause}
@@ -362,10 +364,10 @@ export default function MediaFullscreenWindow() {
 
   // Externe vorige/volgende-knop voor pdf — buiten de viewer, linksonder
   const pdfNav = !mediaMinimized && kind === "doc" && isPdf && !drive && ratioReady && (
-    <div className="fixed z-[57] flex items-center gap-1 rounded-full glass-2 px-2 py-1.5 text-ivory" style={{ right: windowW + 8, bottom: 72 }}>
-      <button onClick={() => setPdfPage((p) => Math.max(1, p - 1))} disabled={pdfPage <= 1} className="h-8 w-8 rounded-full flex items-center justify-center text-ivory/80 hover:bg-ivory/10 disabled:opacity-30 transition"><ChevronLeft className="h-4 w-4" /></button>
-      <span className="font-mono text-[11px] text-ivory/70 px-1 min-w-[56px] text-center">{pdfPage} / {pdfPages || "—"}</span>
-      <button onClick={() => setPdfPage((p) => Math.min(pdfPages || 1, p + 1))} disabled={pdfPage >= pdfPages} className="h-8 w-8 rounded-full flex items-center justify-center text-ivory/80 hover:bg-ivory/10 disabled:opacity-30 transition"><ChevronRight className="h-4 w-4" /></button>
+    <div className="fixed z-[57] flex items-center gap-1 rounded-full glass-2 px-2 py-1.5" style={{ right: windowW + 8, bottom: 72 }}>
+      <button onClick={() => setPdfPage((p) => Math.max(1, p - 1))} disabled={pdfPage <= 1} className="h-8 w-8 rounded-full flex items-center justify-center text-foreground/80 hover:bg-foreground/10 disabled:opacity-30 transition"><ChevronLeft className="h-4 w-4" /></button>
+      <span className="font-mono text-[11px] text-foreground/70 px-1 min-w-[56px] text-center">{pdfPage} / {pdfPages || "—"}</span>
+      <button onClick={() => setPdfPage((p) => Math.min(pdfPages || 1, p + 1))} disabled={pdfPage >= pdfPages} className="h-8 w-8 rounded-full flex items-center justify-center text-foreground/80 hover:bg-foreground/10 disabled:opacity-30 transition"><ChevronRight className="h-4 w-4" /></button>
     </div>
   );
 

@@ -93,7 +93,7 @@ export default function ChatStage() {
       <div className="pointer-events-none absolute top-0 inset-x-0 h-44" style={{ background: "radial-gradient(120% 70% at 50% 0%, rgba(255,255,255,0.07), transparent 72%)" }} />
 
       <div className="shrink-0 px-7 pt-7 pb-5 flex items-center justify-between">
-        <div className="flex items-center gap-3 ml-12">
+        <div className="flex items-center gap-3">
           <span className="h-2.5 w-2.5 rounded-full animate-pulse-soft" style={{ background: accent }} />
           <div>
             <p className="font-display font-semibold tracking-[0.22em] text-[13px] uppercase text-ivory leading-none">GIULIA-GIULIA</p>
