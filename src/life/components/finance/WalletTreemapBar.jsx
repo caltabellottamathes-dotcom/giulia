@@ -84,7 +84,7 @@ export default function WalletTreemapBar() {
   }, [portfolios, expenses, incomes]);
 
   // Lijnhoogtes — Dagelijks (idx 3) laag, onder Communicatie (idx 2).
-  const LINE_H = [6, 22, 14, 4, 26, 10];
+  const LINE_H = [10, 30, 20, 6, 36, 14];
 
   return (
     <div className="w-full h-full rounded-[18px] glass-2 flex flex-col px-4 py-3 overflow-visible">
@@ -104,7 +104,7 @@ export default function WalletTreemapBar() {
               <p className="font-mono text-[9px] uppercase tracking-[0.2em] leading-tight whitespace-nowrap text-foreground">
                 {s.name.split(" ")[0]} {Math.round((s.cost / total) * 100)}%
               </p>
-              <div className="w-px mt-[3px]" style={{ height: `${lineH}px`, background: "hsl(var(--foreground))" }} />
+              <div className="w-px mt-[6px]" style={{ height: `${lineH}px`, background: "hsl(var(--foreground))" }} />
             </div>
           );
         })}

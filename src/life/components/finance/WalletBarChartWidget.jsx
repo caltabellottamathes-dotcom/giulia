@@ -59,7 +59,7 @@ export default function WalletBarChartWidget() {
   const selected = wallets.find((w) => w.id === selectedId) || null;
 
   return (
-    <div className="relative w-full h-full rounded-[18px] overflow-hidden glass-2">
+    <div className="relative w-full h-full rounded-[18px] overflow-hidden">
       <AnimatePresence>
         {!selected &&
         <motion.div
@@ -158,15 +158,17 @@ export default function WalletBarChartWidget() {
         onClick={selected ? (e) => {e.stopPropagation();setSelectedId(null);} : undefined}>
         
         <img src={HERO} alt="Wallets" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.62), rgba(0,0,0,0.18) 50%, rgba(0,0,0,0.34))" }} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.32), rgba(0,0,0,0.04) 55%, rgba(0,0,0,0.10))" }} />
         {selected ?
         <div className="absolute inset-0 p-4 flex flex-col text-ivory" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>
             <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full" style={{ background: selected.color }} />
-              <span className="text-[9px] uppercase tracking-[0.18em] font-bold">{selected.name}</span>
+              <span className="text-[9px] uppercase tracking-[0.18em] font-bold">{selected.raw?.kind || "pot"}</span>
             </div>
-            <h3 className="text-[22px] leading-[1.05] font-display font-semibold tracking-[-0.02em] mt-1">{fmt(selected.balance)}</h3>
-            <p className="text-[10px] uppercase tracking-[0.16em] mt-1 opacity-80">doel {selected.target > 0 ? fmt(selected.target) : "—"}</p>
+            <h3 className="text-[16px] leading-tight font-display font-semibold tracking-[-0.01em] mt-1">{selected.name}</h3>
+            {selected.raw?.goal ? (
+              <p className="text-[10px] mt-1 opacity-80 leading-snug">{selected.raw.goal}</p>
+            ) : null}
             <p className="text-[8px] uppercase tracking-[0.2em] mt-auto opacity-50">tap → back</p>
           </div> :
 
@@ -189,7 +191,7 @@ export default function WalletBarChartWidget() {
         {selected &&
         <motion.div
           key="detail"
-          className="absolute inset-y-0 right-0 w-1/2 z-30 overflow-hidden rounded-r-[14px] glass-3"
+          className="absolute inset-y-0 right-0 w-1/2 z-30 overflow-hidden rounded-r-[14px]"
           initial={{ x: 40, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: 40, opacity: 0 }}

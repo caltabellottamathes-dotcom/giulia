@@ -76,7 +76,7 @@ export default function FinanceHealthCard() {
       }}
     >
       {/* Header linksboven (op blauw glas, boven het glas-paneel) */}
-      <p className="absolute top-3 left-3 z-30 text-white text-[10px] uppercase tracking-[0.2em] font-light" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.25)" }}>
+      <p className="absolute top-3 left-3 z-30 text-foreground/70 text-[10px] uppercase tracking-[0.2em] font-light">
         Financial Health
       </p>
 
@@ -98,8 +98,8 @@ export default function FinanceHealthCard() {
           top: `${100 - health}%`,
           borderRadius: 16,
           background: "rgba(60,66,74,0.38)",
-          backdropFilter: "blur(14px) saturate(1.3)",
-          WebkitBackdropFilter: "blur(14px) saturate(1.3)",
+          backdropFilter: "blur(28px) saturate(1.3)",
+          WebkitBackdropFilter: "blur(28px) saturate(1.3)",
           border: "1px solid rgba(255,255,255,0.18)",
           boxShadow: "0 -16px 34px -12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3)",
           transition: "top 0.6s cubic-bezier(0.16,1,0.3,1)",

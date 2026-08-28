@@ -128,7 +128,8 @@ export default function WorkspaceToolbar() {
       <div
         className={cn(
           "fixed bottom-4 left-4 lg:bottom-6 lg:left-6 z-30 flex items-center transition-[width,transform] duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
-          expanded ? "w-[calc(100vw-5.5rem)] lg:w-[calc(100vw-7.5rem)]" : "w-[224px]"
+          expanded ? "w-[calc(100vw-5.5rem)] lg:w-[calc(100vw-7.5rem)]" : "w-[224px]",
+          onPaginaOntwerp && "hidden"
         )}
         onMouseEnter={expand}
         onMouseLeave={() => scheduleCollapse(8000)}
@@ -250,7 +251,10 @@ export default function WorkspaceToolbar() {
       <button
         onClick={() => setLauncherOpen(true)}
         aria-label="QuickLauncher"
-        className="fixed bottom-4 lg:bottom-6 right-4 lg:right-6 z-30 h-11 w-11 rounded-full flex items-center justify-center hover:scale-105 transition-transform"
+        className={cn(
+          "fixed bottom-4 lg:bottom-6 z-30 h-11 w-11 rounded-full flex items-center justify-center hover:scale-105 transition-transform",
+          onPaginaOntwerp ? "left-4 lg:left-6" : "right-4 lg:right-6"
+        )}
         style={{
           background: "rgba(120,122,128,0.10)",
           backdropFilter: "blur(30px) saturate(1.4)",
@@ -262,7 +266,7 @@ export default function WorkspaceToolbar() {
         <Plus className="h-4 w-4 text-white" />
       </button>
 
-      <QuickLauncher open={launcherOpen} onClose={() => setLauncherOpen(false)} />
+      <QuickLauncher open={launcherOpen} onClose={() => setLauncherOpen(false)} side={onPaginaOntwerp ? "left" : "right"} />
     </>
   );
 }

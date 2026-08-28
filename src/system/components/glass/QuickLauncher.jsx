@@ -89,7 +89,7 @@ function useClock() {
   return now.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Amsterdam" });
 }
 
-export default function QuickLauncher({ open, onClose }) {
+export default function QuickLauncher({ open, onClose, side = "right" }) {
   const navigate = useNavigate();
   const { openModule, openChat, openBrowser } = usePanel();
   const [q, setQ] = useState("");
@@ -158,7 +158,7 @@ export default function QuickLauncher({ open, onClose }) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed z-[39] left-2 right-2 bottom-[4.75rem] sm:left-auto sm:right-10 sm:w-[440px] sm:max-h-[80vh] flex flex-col"
+          className={"fixed z-[39] left-2 right-2 bottom-[4.75rem] sm:w-[440px] sm:max-h-[80vh] flex flex-col " + (side === "left" ? "sm:left-10 sm:right-auto" : "sm:left-auto sm:right-10")}
         >
           <div className="glass-2 rounded-[26px] overflow-hidden text-ivory border border-white/12 shadow-[0_32px_72px_-20px_rgba(0,0,0,0.4)] flex flex-col max-h-[80vh]">
             {/* Masthead */}
