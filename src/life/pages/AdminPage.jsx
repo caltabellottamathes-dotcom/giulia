@@ -7,6 +7,7 @@ import ChatStage from "@/giulia/panels/ChatStage";
 import VoiceStage from "@/giulia/panels/VoiceStage";
 import DocStage from "@/system/panels/DocStage";
 import MediaStage from "@/system/panels/MediaStage";
+import WalletStage from "@/life/components/finance/WalletStage";
 
 const EASE = [0.16, 1, 0.3, 1];
 const HERO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0a68f996a_ADMIN.jpeg";
@@ -41,6 +42,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState("OVERVIEW");
   const [stage, setStage] = useState("chat"); // "chat" | "voice" | "doc" | "media"
   const [panelOpen, setPanelOpen] = useState(false);
+  const [walletId, setWalletId] = useState(null);
   const isStage = panelOpen;
   const [first, setFirst] = useState(true);
   useEffect(() => { const t = setTimeout(() => setFirst(false), 900); return () => clearTimeout(t); }, []);
@@ -52,10 +54,18 @@ export default function AdminPage() {
     return () => window.removeEventListener("giulia:ontwerp-stage", h);
   }, []);
 
+  // Wallet-widget klik → wallet-stage met alle info + editor.
+  useEffect(() => {
+    const h = (e) => { setWalletId(e.detail); setStage("wallet"); setPanelOpen(true); };
+    window.addEventListener("giulia:open-wallet", h);
+    return () => window.removeEventListener("giulia:open-wallet", h);
+  }, []);
+
   const stageContent =
     stage === "chat" ? <ChatStage />
     : stage === "voice" ? <VoiceStage />
     : stage === "doc" ? <DocStage />
+    : stage === "wallet" ? <WalletStage walletId={walletId} onClose={() => setPanelOpen(false)} />
     : <MediaStage />;
 
   const tabTitle = TABS.find((t) => t.key === tab)?.label || "Admin";

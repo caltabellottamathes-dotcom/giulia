@@ -9,7 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 const GLASS = { background: "rgba(255,255,255,0.55)", backdropFilter: "blur(16px) saturate(1.3)", WebkitBackdropFilter: "blur(16px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.9)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)" };
 const POPOVER = { background: "rgba(255,255,255,0.82)", backdropFilter: "blur(24px) saturate(1.4)", WebkitBackdropFilter: "blur(24px) saturate(1.4)", border: "1px solid rgba(255,255,255,0.95)", boxShadow: "0 24px 56px -18px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.8)" };
 
-/** WalletDropdown — custom OS-stijl glasmenu (geen native <select>). */
+/** WalletDropdown — custom OS-stijl glasmenu. */
 function WalletDropdown({ value, onChange, options, placeholder }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -22,17 +22,18 @@ function WalletDropdown({ value, onChange, options, placeholder }) {
   }, []);
 
   return (
-    <div className="relative" ref={ref}>
-      <button type="button" onClick={() => setOpen((v) => !v)} className="flex items-center gap-2 min-w-[160px] rounded-xl px-3 py-2 text-sm font-medium transition" style={GLASS}>
+    <div className="relative w-full" ref={ref}>
+      <button type="button" onClick={() => setOpen((v) => !v)} className="flex items-center gap-2 w-full rounded-2xl px-3 py-2.5 text-sm font-medium transition" style={GLASS}>
         {selected ? (
           <>
             <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: selected.color || "hsl(var(--smoke))" }} />
             <span className="truncate flex-1 text-left">{selected.name}</span>
+            <span className="text-[10px] font-mono tabular-nums text-muted-foreground shrink-0">{fmtEuro(selected.current_balance || 0)}</span>
           </>
         ) : (
           <span className="flex-1 text-left text-muted-foreground">{placeholder}</span>
         )}
-        <ChevronDown className={`w-4 h-4 text-foreground/50 transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown className={`w-4 h-4 text-foreground/50 transition-transform shrink-0 ${open ? "rotate-180" : ""}`} />
       </button>
       <AnimatePresence>
         {open && (
@@ -41,7 +42,7 @@ function WalletDropdown({ value, onChange, options, placeholder }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute z-50 mt-1.5 left-0 w-full min-w-[200px] rounded-2xl p-1.5 max-h-72 overflow-y-auto no-scrollbar"
+            className="absolute z-50 mt-1.5 left-0 w-full min-w-[220px] rounded-2xl p-1.5 max-h-72 overflow-y-auto no-scrollbar"
             style={POPOVER}
           >
             {options.length === 0 && <p className="px-2.5 py-2 text-sm text-muted-foreground">Geen wallets</p>}
@@ -67,9 +68,9 @@ function WalletDropdown({ value, onChange, options, placeholder }) {
   );
 }
 
-/** TransferBetweenWallets — lange strip-kaart om geld tussen wallets over te
- *  boeken. Van → Naar + bedrag; maakt een transfer-Transaction en verschuift
- *  de saldo's. */
+/** TransferBetweenWallets — grafische strip-kaart om geld tussen wallets over
+ *  te boeken. Van → bedrag → Naar met flow-connectors; maakt een
+ *  transfer-Transaction en verschuift de saldo's. */
 export default function TransferBetweenWallets() {
   const { data: portfolios } = useEntityList("Portfolio", { sort: "order", limit: 50, realtime: true });
   const { toast } = useToast();
@@ -100,25 +101,48 @@ export default function TransferBetweenWallets() {
     }
   };
 
+  const connector = (c1, c2) => ({ background: `linear-gradient(90deg, ${c1}, ${c2})` });
+  const fromC = from?.color || "#b6bfc9";
+  const toC = to?.color || "#d8dab3";
+
   return (
-    <div className="w-full rounded-[18px] bg-[#f5f5f4] p-4 flex flex-wrap items-center gap-3" style={{ boxShadow: "-16px 16px 40px -16px rgba(0,0,0,0.30)" }}>
-      <div className="flex items-center gap-2 shrink-0 mr-2">
-        <span className="h-9 w-9 rounded-full bg-foreground/8 flex items-center justify-center"><ArrowLeftRight className="w-4 h-4 text-foreground/60" /></span>
+    <div className="w-full rounded-[20px] bg-[#f5f5f4] p-5 flex flex-col gap-4" style={{ boxShadow: "-16px 16px 40px -16px rgba(0,0,0,0.30)" }}>
+      {/* header */}
+      <div className="flex items-center gap-3">
+        <span className="h-10 w-10 rounded-2xl flex items-center justify-center" style={{ background: "rgba(120,128,133,0.14)", border: "1px solid rgba(255,255,255,0.7)" }}>
+          <ArrowLeftRight className="w-5 h-5 text-foreground/70" />
+        </span>
         <div className="leading-tight">
-          <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">Transfer</p>
-          <p className="text-sm font-display font-semibold">between wallets</p>
+          <p className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground font-semibold">Transfer</p>
+          <p className="text-base font-display font-bold tracking-[-0.01em]">between wallets</p>
+        </div>
+        <div className="ml-auto hidden sm:flex items-center gap-1.5 text-[10px] uppercase tracking-[0.16em] text-muted-foreground font-semibold">
+          <span className="h-1.5 w-1.5 rounded-full" style={{ background: canTransfer ? "hsl(var(--life-olive))" : "hsl(var(--muted-foreground))" }} />
+          {canTransfer ? "klaar" : "kies wallets"}
         </div>
       </div>
-      <WalletDropdown value={fromId} onChange={setFromId} options={active} placeholder="Van wallet…" />
-      <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
-      <WalletDropdown value={toId} onChange={setToId} options={active} placeholder="Naar wallet…" />
-      <div className="flex items-center gap-2 ml-auto">
-        <div className="flex items-center rounded-xl pl-3 pr-1 py-1" style={GLASS}>
-          <span className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground font-semibold mr-1">€</span>
-          <input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0,00" className="w-24 bg-transparent py-1 text-sm outline-none tabular-nums" />
+
+      {/* flow */}
+      <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
+        <div className="flex-1 min-w-[160px]"><WalletDropdown value={fromId} onChange={setFromId} options={active} placeholder="Van wallet…" /></div>
+
+        <div className="flex items-center gap-2 shrink-0 order-none">
+          <div className="hidden sm:block h-[3px] w-8 rounded-full" style={connector(fromC, toC)} />
+          <div className="flex items-center rounded-2xl pl-3 pr-2 py-2.5" style={GLASS}>
+            <span className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground font-bold mr-1.5">€</span>
+            <input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0,00" className="w-20 bg-transparent text-base font-display font-bold outline-none tabular-nums" />
+          </div>
+          <ArrowRight className="w-5 h-5 shrink-0" style={{ color: canTransfer ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))" }} />
+          <div className="hidden sm:block h-[3px] w-8 rounded-full" style={connector(toC, fromC)} />
         </div>
-        <button onClick={transfer} disabled={busy || !canTransfer} className="inline-flex items-center gap-1.5 rounded-full bg-foreground text-background px-4 py-2 text-sm font-semibold disabled:opacity-40 transition">
-          <ArrowRight className="w-4 h-4" />{busy ? "…" : "Transfer"}
+
+        <div className="flex-1 min-w-[160px]"><WalletDropdown value={toId} onChange={setToId} options={active} placeholder="Naar wallet…" /></div>
+      </div>
+
+      {/* action */}
+      <div className="flex justify-end">
+        <button onClick={transfer} disabled={busy || !canTransfer} className="inline-flex items-center gap-2 rounded-full bg-foreground text-background px-6 py-2.5 text-sm font-bold disabled:opacity-40 transition">
+          <ArrowRight className="w-4 h-4" />{busy ? "Bezig…" : "Transfer uitvoeren"}
         </button>
       </div>
     </div>

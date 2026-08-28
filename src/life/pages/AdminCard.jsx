@@ -221,7 +221,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
             </div>
           </div>
         ) : tab === "PORTEFEUILLES" ? (
-          <div className="flex-1 min-h-0 pl-6 pr-6 lg:-ml-[48px] pb-6 pt-[68px] overflow-hidden">
+          <div className="flex-1 min-h-0 pl-6 pr-6 lg:-ml-[48px] pb-6 pt-[68px]">
             {data ? (
               <FinanceStacks tab={tab} data={data} {...handlers} />
             ) : (

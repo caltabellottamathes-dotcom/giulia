@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { ArrowUpRight } from "lucide-react";
 import { fmtEuro, calcPortfolio } from "@/lib/financeUtils";
 
 const INK = "hsl(var(--foreground))";
@@ -7,25 +8,29 @@ const MUTED = "hsl(var(--muted-foreground))";
 const EASE = [0.16, 1, 0.3, 1];
 
 /** WalletPhotoCard — dinner-widget-patroon maar per wallet.
- *  Shell: zelfde lichte kaartkleur als de andere kaarten (#f5f5f4), donkere
- *  tekst, slagschaduw naar links. Boven = saldo (+ voortgang naar doel),
- *  onder = vaste lasten die bij deze wallet horen. PhotoCard eroverheen:
- *  de nieuwe foto + wallet-naam; tik → schuift naar boven zodat de
- *  vaste-lastenlijst verschijnt. */
+ *  Shell: lichte kaartkleur, donkere tekst, slagschaduw naar links. Boven = saldo,
+ *  onder = vaste lasten. PhotoCard eroverheen: foto + wallet-naam; tik → schuift
+ *  naar boven. Klik op de shell (saldo / vaste lasten) → opent de wallet-stage
+ *  met alle info + editor. */
 export default function WalletPhotoCard({ wallet, expenses, photoUrl }) {
   const [up, setUp] = useState(false);
   const potExpenses = useMemo(() => (expenses || []).filter((e) => e.portfolio_id === wallet.id), [expenses, wallet.id]);
-  calcPortfolio(wallet, potExpenses); // health (niet weergegeven, wel berekend voor consistentie)
+  calcPortfolio(wallet, potExpenses);
   const balance = Number(wallet.current_balance) || 0;
   const target = Number(wallet.target_balance) || Number(wallet.desired_buffer) || 0;
   const fill = target > 0 ? Math.min(100, Math.round((balance / target) * 100)) : 100;
   const color = wallet.color || "hsl(var(--smoke))";
 
+  const openWallet = () => window.dispatchEvent(new CustomEvent("giulia:open-wallet", { detail: wallet.id }));
+
   return (
     <div className="relative w-full h-full rounded-[28px] overflow-hidden" style={{ background: "#f5f5f4", border: "1px solid rgba(0,0,0,0.06)", boxShadow: "-16px 16px 40px -16px rgba(0,0,0,0.30)", color: INK }}>
-      {/* BOVEN — saldo (zichtbaar wanneer foto beneden staat) */}
-      <div className="absolute top-0 left-0 right-0 h-1/2 z-0 p-3 flex flex-col">
-        <p className="text-[9px] uppercase tracking-[0.2em] font-bold" style={{ color: MUTED }}>Saldo</p>
+      {/* BOVEN — saldo (klik → open wallet-stage) */}
+      <button type="button" onClick={openWallet} className="absolute top-0 left-0 right-0 h-1/2 z-0 p-3 flex flex-col text-left cursor-pointer hover:bg-foreground/[0.03] transition-colors">
+        <div className="flex items-center justify-between">
+          <p className="text-[9px] uppercase tracking-[0.2em] font-bold" style={{ color: MUTED }}>Saldo</p>
+          <ArrowUpRight className="w-3.5 h-3.5" style={{ color: MUTED }} />
+        </div>
         <p className="text-[26px] leading-none font-display font-bold tabular-nums mt-1">{fmtEuro(balance)}</p>
         <div className="mt-auto w-full">
           <div className="flex items-end justify-between mb-1">
@@ -37,10 +42,10 @@ export default function WalletPhotoCard({ wallet, expenses, photoUrl }) {
           </div>
           <p className="text-[8px] uppercase tracking-[0.14em] mt-1.5" style={{ color: MUTED }}>Doel {fmtEuro(target)}</p>
         </div>
-      </div>
+      </button>
 
-      {/* ONDER — vaste lasten / transacties bij deze wallet */}
-      <div className="absolute bottom-0 left-0 right-0 h-1/2 z-0 p-3 overflow-hidden flex flex-col">
+      {/* ONDER — vaste lasten (klik → open wallet-stage) */}
+      <button type="button" onClick={openWallet} className="absolute bottom-0 left-0 right-0 h-1/2 z-0 p-3 overflow-hidden flex flex-col text-left cursor-pointer hover:bg-foreground/[0.03] transition-colors">
         <p className="text-[9px] uppercase tracking-[0.2em] font-bold shrink-0" style={{ color: MUTED }}>Vaste lasten · {potExpenses.length}</p>
         <div className="mt-1.5 space-y-1 overflow-y-auto no-scrollbar flex-1 min-h-0">
           {potExpenses.length === 0 && <p className="text-[10px] italic" style={{ color: MUTED }}>Geen vaste lasten gekoppeld.</p>}
@@ -51,7 +56,7 @@ export default function WalletPhotoCard({ wallet, expenses, photoUrl }) {
             </div>
           ))}
         </div>
-      </div>
+      </button>
 
       {/* PHOTO — schuift beneden ↔ boven */}
       <motion.button
