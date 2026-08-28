@@ -197,6 +197,7 @@ export default function MediaFullscreenWindow() {
   if (!mediaFullscreen || !media) return null;
 
   const drive = isDriveUrl(media.url);
+  const isPdf = media.type === "pdf" || /\.pdf$/i.test(media.name || media.url || "");
 
   // ── Afmetingen ──
   // Window-stand: breedte = ratio × hoogte (geklemd).
@@ -289,7 +290,7 @@ export default function MediaFullscreenWindow() {
         )}
 
         {/* Titel in de header — geen overlay */}
-        {kind !== "music" && !compact && (
+        {kind !== "music" && kind !== "doc" && !compact && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none text-center" style={{ color: "hsl(var(--ivory))", textShadow: "0 1px 8px rgba(0,0,0,0.65)" }}>
             <p className="font-display font-semibold tracking-[0.22em] uppercase text-[10px] leading-none opacity-70">{kind === "video" ? "VIDEO" : kind === "image" ? "FOTO" : kind === "doc" ? "DOCUMENT" : "BESTAND"}</p>
             <p className="text-[12px] tracking-wide truncate max-w-[46vw] mt-1">{media.name || "Media"}</p>
@@ -329,11 +330,15 @@ export default function MediaFullscreenWindow() {
             : <img src={media.url} alt={media.name} className="absolute inset-0 w-full h-full object-contain" onLoad={(e) => setRatio(e.currentTarget.naturalWidth / e.currentTarget.naturalHeight)} />
         )}
         {kind === "doc" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center px-6 pointer-events-auto">
-            <div className="h-16 w-16 rounded-2xl bg-ivory/10 flex items-center justify-center"><FileText className="h-8 w-8 text-ivory/55" /></div>
-            <p className="text-sm text-ivory/85 max-w-xs">{media.name}</p>
-            <a href={media.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[12px] text-olive hover:underline"><Download className="h-3.5 w-3.5" /> Openen in nieuw tabblad</a>
-          </div>
+          (drive || isPdf)
+            ? <iframe src={media.url} title={media.name} className="absolute inset-0 w-full h-full bg-white" />
+            : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center px-6 pointer-events-auto">
+                <div className="h-16 w-16 rounded-2xl bg-ivory/10 flex items-center justify-center"><FileText className="h-8 w-8 text-ivory/55" /></div>
+                <p className="text-sm text-ivory/85 max-w-xs">{media.name}</p>
+                <a href={media.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[12px] text-olive hover:underline"><Download className="h-3.5 w-3.5" /> Openen in nieuw tabblad</a>
+              </div>
+            )
         )}
       </div>
     );

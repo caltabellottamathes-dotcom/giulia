@@ -20,7 +20,7 @@ const SUBTLE = "h-9 w-9 flex items-center justify-center transition-transform ho
  *  fotokaart (precies halve shell) die omhoog/beneden schuift; eronder de
  *  bibliotheek. Bloom/sine bewegen enkel als de muziek speelt, écht op de
  *  audio. Tik op de achtergrond of het lijstknopje opent het ModulePanel. */
-export default function MusicWidget() {
+export default function MusicWidget({ fill }) {
   const { openModule } = usePanel();
   const cloud = useMediaLibrary();
   const local = useLocalMedia();
@@ -132,7 +132,7 @@ export default function MusicWidget() {
   const statusLabel = !current ? "—" : isPlaying ? "SPEELT" : loadedId === current.id ? "PAUZE" : "KLAAR";
 
   return (
-    <div className="relative w-full aspect-[3/4] rounded-[28px] overflow-hidden cursor-pointer" style={{ "--tile-accent": DEEP, color: BLUE }} onClick={() => openModule("mediaplayer")}>
+    <div className={"relative w-full rounded-[28px] overflow-hidden cursor-pointer " + (fill ? "h-full" : "aspect-[3/4]")} style={{ "--tile-accent": DEEP, color: BLUE }} onClick={() => openModule("mediaplayer")}>
       <div className="absolute inset-0 rounded-[28px] ring-1 ring-inset ring-white/10" style={glassShell} />
       <span className="pointer-events-none absolute inset-x-0 top-0 h-px z-10" style={{ background: `linear-gradient(90deg, transparent, ${DEEP} 18%, ${DEEP} 82%, transparent)` }} />
 

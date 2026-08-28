@@ -134,8 +134,9 @@ export default function QuickLauncher({ open, onClose, side = "right" }) {
   if (!open) return null;
 
   const toggle = (label) => setOpenGroups((s) => {
-    const n = new Set(s);
-    if (n.has(label)) n.delete(label); else n.add(label);
+    const n = new Set();
+    if (s.has(label) && s.size === 1) return n; // open domein weer sluiten
+    n.add(label); // ander domein opent → vorige sluit
     return n;
   });
 
@@ -151,16 +152,15 @@ export default function QuickLauncher({ open, onClose, side = "right" }) {
 
   return (
     <>
-      <div className="fixed inset-0 z-[38] bg-charcoal/15 backdrop-blur-[1px] animate-fade-in" onClick={onClose} />
       <AnimatePresence>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className={"fixed z-[39] left-2 right-2 bottom-[4.75rem] sm:w-[440px] sm:max-h-[80vh] flex flex-col " + (side === "left" ? "sm:left-10 sm:right-auto" : "sm:left-auto sm:right-10")}
+          className={"fixed z-[39] left-2 right-2 bottom-[4.75rem] sm:w-[440px] sm:max-h-[80vh] flex flex-col " + (side === "left" ? "sm:left-4 lg:left-6 sm:right-auto" : "sm:left-auto sm:right-4 lg:right-6")}
         >
-          <div className="glass-2 rounded-[26px] overflow-hidden text-ivory border border-white/12 shadow-[0_32px_72px_-20px_rgba(0,0,0,0.4)] flex flex-col max-h-[80vh]">
+          <div className="glass-2 rounded-[26px] overflow-hidden text-ivory border border-white/12 shadow-[0_32px_72px_-20px_rgba(0,0,0,0.4)] flex flex-col max-h-[80vh]" style={{ backdropFilter: "blur(18px) saturate(1.3)", WebkitBackdropFilter: "blur(18px) saturate(1.3)" }}>
             {/* Masthead */}
             <div className="px-6 pt-5 pb-4 border-b border-ivory/10 shrink-0">
               <div className="flex items-center justify-between">
@@ -198,10 +198,8 @@ export default function QuickLauncher({ open, onClose, side = "right" }) {
                   <button onClick={onClose} className="text-ivory/45 hover:text-ivory transition" aria-label="Sluiten"><X className="h-4 w-4" /></button>
                 </div>
               </div>
-              <div className="mt-4 flex items-center gap-2.5">
-                <span className="text-[15px] font-mono text-olive leading-none">›</span>
-                <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="naar onderdeel…" className="flex-1 bg-transparent text-[17px] font-display font-medium text-ivory placeholder:text-ivory/35 focus:outline-none tracking-[-0.01em]" />
-                <span className="text-[10px] font-mono text-ivory/30 hidden sm:inline">↵ enter</span>
+              <div className="mt-4 flex items-center">
+                <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Naar onderdeel…" className="flex-1 bg-transparent text-[15px] font-display font-medium tracking-[-0.012em] text-ivory placeholder:text-ivory/75 focus:outline-none" />
               </div>
             </div>
 

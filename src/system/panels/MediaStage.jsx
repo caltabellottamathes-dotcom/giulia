@@ -1,16 +1,17 @@
 import React, { useEffect } from "react";
 import { useMediaViewer } from "@/lib/MediaViewerContext";
+import MusicWidget from "@/life/widgets/new/MusicWidget";
 import ImageViewerPanel from "@/system/panels/viewers/ImageViewerPanel";
 import VideoPlayerPanel from "@/system/panels/viewers/VideoPlayerPanel";
-import MusicPlayerPanel from "@/system/panels/viewers/MusicPlayerPanel";
 import DocViewerPanel from "@/system/panels/viewers/DocViewerPanel";
 import { Film } from "lucide-react";
 
 /**
- * MediaStage — transparante stage (zelfde glas als de tab-strook) die het
- * aangeklikte bestand toont met de echte speler: afbeelding, video, audio of
- * pdf/document. Leest uit de MediaViewerContext. Pikt pending media op bij
- * mount (één klik) én luistert naar giulia:open-media.
+ * MediaStage — transparante stage (zelfde glas als de tab-strook). Muziek opent
+ * de LIFE MusicWidget (volledig gevuld); beeld/video/pdf vullen de stage op
+ * eigen verhouding (geen zwarte villing) en spelen automatisch — tik opent de
+ * grote MediaFullscreenWindow. Pikt pending media op bij mount (één klik) en
+ * luistert naar giulia:open-media.
  */
 export default function MediaStage() {
   const { media, previewMedia } = useMediaViewer();
@@ -26,7 +27,7 @@ export default function MediaStage() {
   }, [previewMedia]);
 
   return (
-    <div className="h-full w-full flex flex-col overflow-y-auto p-3">
+    <div className="h-full w-full flex flex-col overflow-hidden">
       {!media ? (
         <div className="h-full flex flex-col items-center justify-center text-center text-ivory/70">
           <div className="h-14 w-14 rounded-2xl bg-ivory/10 border border-ivory/15 flex items-center justify-center mb-5">
@@ -37,12 +38,14 @@ export default function MediaStage() {
             Klik een bestand aan om het hier te openen — beeld, video, audio of pdf.
           </p>
         </div>
+      ) : media.kind === "music" ? (
+        <div className="flex-1 min-h-0 p-3">
+          <MusicWidget fill />
+        </div>
       ) : media.kind === "image" ? (
         <ImageViewerPanel />
       ) : media.kind === "video" ? (
         <VideoPlayerPanel />
-      ) : media.kind === "music" ? (
-        <MusicPlayerPanel />
       ) : (
         <DocViewerPanel />
       )}
