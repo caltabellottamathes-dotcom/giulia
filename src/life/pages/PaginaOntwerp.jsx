@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import { ArrowLeft, CircleDot, Wallet, ListChecks, Banknote, LineChart, HeartPulse, FileText, MessageSquare, Phone, Film } from "lucide-react";
 import OntwerpWhiteCard from "./PaginaOntwerpCard";
 import ChatStage from "@/giulia/panels/ChatStage";
@@ -30,14 +29,14 @@ const STAGE_TABS = [
 ];
 
 export default function PaginaOntwerp() {
-  const navigate = useNavigate();
   const [tab, setTab] = useState("OVERVIEW");
-  const [stage, setStage] = useState(null); // null | "chat" | "voice" | "doc" | "media"
-  const isStage = stage !== null;
+  const [stage, setStage] = useState("chat"); // "chat" | "voice" | "doc" | "media"
+  const [panelOpen, setPanelOpen] = useState(false);
+  const isStage = panelOpen;
 
   // Toolbar (chat/phone) routeert naar dit paneel wanneer op Pagina-Ontwerp.
   useEffect(() => {
-    const h = (e) => setStage(e.detail);
+    const h = (e) => { setStage(e.detail); setPanelOpen(true); };
     window.addEventListener("giulia:ontwerp-stage", h);
     return () => window.removeEventListener("giulia:ontwerp-stage", h);
   }, []);
@@ -74,12 +73,12 @@ export default function PaginaOntwerp() {
         style={{ backdropFilter: "blur(16px) saturate(1.25)", WebkitBackdropFilter: "blur(16px) saturate(1.25)" }}>
         {/* Linker glas-strook — tabs */}
         <div className="hidden lg:flex flex-col items-center gap-1 py-8 w-[88px] mb-[24px] shrink-0 relative z-30">
-          <button onClick={() => navigate("/")} title="Terug naar dashboard" className="mb-6 inline-flex items-center justify-center w-10 h-10 rounded-full glass-1 hover:bg-foreground/8 transition text-foreground/70">
-            <ArrowLeft className="w-4 h-4" />
+          <button onClick={() => setPanelOpen((o) => !o)} title={isStage ? "Paneel sluiten" : "Paneel openen"} className="mb-6 inline-flex items-center justify-center w-10 h-10 rounded-full glass-1 hover:bg-foreground/8 transition text-foreground/70">
+            <ArrowLeft className={`w-4 h-4 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${isStage ? "rotate-180" : ""}`} />
           </button>
           <div className="flex flex-col gap-1 flex-1">
             {TABS.map((t) => (
-              <button key={t.key} onClick={() => { setTab(t.key); setStage(null); }} title={t.label}
+              <button key={t.key} onClick={() => { setTab(t.key); setPanelOpen(false); }} title={t.label}
                 className={`relative flex items-center justify-center w-11 h-11 rounded-2xl transition ${!isStage && tab === t.key ? "bg-foreground/12 text-foreground" : "text-foreground/55 hover:bg-foreground/8 hover:text-foreground/85"}`}>
                 <t.icon className="w-4 h-4" />
                 {!isStage && tab === t.key && <span className="absolute -left-[11px] top-1/2 -translate-y-1/2 h-6 w-1 rounded-full bg-foreground/70" />}
@@ -87,7 +86,7 @@ export default function PaginaOntwerp() {
             ))}
             <div className="h-px w-6 bg-foreground/15 my-2 mx-auto" />
             {STAGE_TABS.map((s) => (
-              <button key={s.key} onClick={() => setStage(s.key)} title={s.label}
+              <button key={s.key} onClick={() => { setStage(s.key); setPanelOpen(true); }} title={s.label}
                 className={`relative flex items-center justify-center w-11 h-11 rounded-2xl transition ${isStage && stage === s.key ? "bg-foreground/12 text-foreground" : "text-foreground/55 hover:bg-foreground/8 hover:text-foreground/85"}`}>
                 <s.icon className="w-4 h-4" />
                 {isStage && stage === s.key && <span className="absolute -left-[11px] top-1/2 -translate-y-1/2 h-6 w-1 rounded-full bg-foreground/70" />}
@@ -104,7 +103,7 @@ export default function PaginaOntwerp() {
             {isStage && (
               <motion.div key={stage} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35, ease: EASE }}
                 className="absolute top-[134px] bottom-[70px] left-0 w-full lg:w-[24vw] z-10 overflow-hidden">
-                <button onClick={() => setStage(null)} className="absolute top-4 left-4 z-40 h-9 w-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors" aria-label="Terug">
+                <button onClick={() => setPanelOpen(false)} className="absolute top-4 left-4 z-40 h-9 w-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors" aria-label="Terug">
                   <ArrowLeft className="h-4 w-4" />
                 </button>
                 {stageContent}
