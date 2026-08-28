@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import { ArrowLeft, CircleDot, Wallet, ListChecks, Banknote, LineChart, HeartPulse, FileText, MessageSquare, Phone, Film } from "lucide-react";
 import OntwerpWhiteCard from "./PaginaOntwerpCard";
 import ChatStage from "@/giulia/panels/ChatStage";
@@ -30,10 +29,10 @@ const STAGE_TABS = [
 ];
 
 export default function PaginaOntwerp() {
-  const navigate = useNavigate();
   const [tab, setTab] = useState("OVERVIEW");
   const [stage, setStage] = useState(null); // null | "chat" | "voice" | "doc" | "media"
   const isStage = stage !== null;
+  const [closed, setClosed] = useState(false);
 
   // Toolbar (chat/phone) routeert naar dit paneel wanneer op Pagina-Ontwerp.
   useEffect(() => {
@@ -69,14 +68,18 @@ export default function PaginaOntwerp() {
       )}
 
       {/* Glazen paneel — schuift naar links wanneer een stage actief is */}
-      <motion.div initial={{ x: "118%" }} animate={{ x: isStage ? "-24vw" : 0 }} transition={{ duration: 0.7, ease: EASE }}
+      <motion.div initial={{ x: "118%" }} animate={{ x: closed ? "100%" : (isStage ? "-24vw" : 0) }} transition={{ duration: 0.7, ease: EASE }}
         className="absolute right-0 top-[78px] bottom-[94px] w-full lg:w-[76%] glass-2 rounded-l-[32px] rounded-r-none shadow-[0_64px_150px_-34px_rgba(0,0,0,0.55), -36px_0_80px_-28px_rgba(0,0,0,0.42)] flex z-[15]"
         style={{ backdropFilter: "blur(16px) saturate(1.25)", WebkitBackdropFilter: "blur(16px) saturate(1.25)" }}>
         {/* Linker glas-strook — tabs */}
         <div className="hidden lg:flex flex-col items-center gap-1 py-8 w-[88px] mb-[24px] shrink-0 relative z-30">
-          <button onClick={() => navigate("/")} title="Terug naar dashboard" className="mb-6 inline-flex items-center justify-center w-10 h-10 rounded-full glass-1 hover:bg-foreground/8 transition text-foreground/70">
-            <ArrowLeft className="w-4 h-4" />
-          </button>
+          <motion.button onClick={() => setClosed(c => !c)} title={closed ? "Paneel openen" : "Paneel sluiten"}
+            animate={{ x: closed ? -80 : 0 }} transition={{ duration: 0.7, ease: EASE }}
+            className="mb-6 inline-flex items-center justify-center w-10 h-10 rounded-full glass-1 hover:bg-foreground/8 transition text-foreground/70 shrink-0">
+            <motion.span animate={{ rotate: closed ? 0 : 180 }} transition={{ duration: 0.5, ease: EASE }} className="inline-flex">
+              <ArrowLeft className="w-4 h-4" />
+            </motion.span>
+          </motion.button>
           <div className="flex flex-col gap-1 flex-1">
             {TABS.map((t) => (
               <button key={t.key} onClick={() => { setTab(t.key); setStage(null); }} title={t.label}
