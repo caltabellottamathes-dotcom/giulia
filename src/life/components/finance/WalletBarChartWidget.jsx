@@ -59,7 +59,7 @@ export default function WalletBarChartWidget() {
   const selected = wallets.find((w) => w.id === selectedId) || null;
 
   return (
-    <div className="relative w-full h-full rounded-[18px] overflow-hidden">
+    <div className="relative w-full h-full rounded-[18px] overflow-hidden glass-2">
       <AnimatePresence>
         {!selected &&
         <motion.div
@@ -162,14 +162,14 @@ export default function WalletBarChartWidget() {
         {selected ?
         <div className="absolute inset-0 p-4 flex flex-col text-ivory" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>
             <div className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full" style={{ background: selected.color }} />
-              <span className="text-[9px] uppercase tracking-[0.18em] font-bold">{selected.raw?.kind || "pot"}</span>
+              <span className="h-2.5 w-2.5 rounded-full" style={{ background: selected.color }} />
+              <span className="text-[11px] uppercase tracking-[0.18em] font-bold">{selected.raw?.kind || "pot"}</span>
             </div>
-            <h3 className="text-[16px] leading-tight font-display font-semibold tracking-[-0.01em] mt-1">{selected.name}</h3>
+            <h3 className="text-[24px] leading-tight font-display font-semibold tracking-[-0.02em] mt-2">{selected.name}</h3>
             {selected.raw?.goal ? (
-              <p className="text-[10px] mt-1 opacity-80 leading-snug">{selected.raw.goal}</p>
+              <p className="text-[13px] mt-2 opacity-85 leading-snug">{selected.raw.goal}</p>
             ) : null}
-            <p className="text-[8px] uppercase tracking-[0.2em] mt-auto opacity-50">tap → back</p>
+            <p className="text-[9px] uppercase tracking-[0.2em] mt-auto opacity-55">tap → back</p>
           </div> :
 
         <div className="absolute inset-0 p-4 flex flex-col text-ivory" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>

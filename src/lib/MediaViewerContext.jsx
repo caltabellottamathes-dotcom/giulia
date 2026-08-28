@@ -43,10 +43,16 @@ export function MediaViewerProvider({ children }) {
     panel?.openMediaFullscreen?.();
   }, [panel]);
 
+  const previewMedia = useCallback((file) => {
+    if (!file) return;
+    const kind = kindOfFile(file);
+    setMedia({ name: file.name, url: file.url, type: file.type, kind });
+  }, []);
+
   const closeMedia = useCallback(() => setMedia(null), []);
 
   return (
-    <MediaViewerContext.Provider value={{ media, openMedia, closeMedia }}>
+    <MediaViewerContext.Provider value={{ media, openMedia, previewMedia, closeMedia }}>
       {children}
     </MediaViewerContext.Provider>
   );
