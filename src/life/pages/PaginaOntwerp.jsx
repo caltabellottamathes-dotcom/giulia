@@ -103,7 +103,7 @@ export default function PaginaOntwerp() {
           <AnimatePresence>
             {isStage && (
               <motion.div key={stage} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35, ease: EASE }}
-                className="absolute inset-y-0 left-0 w-full lg:w-[24vw] z-10 overflow-hidden">
+                className="absolute top-[134px] bottom-[70px] left-0 w-full lg:w-[24vw] z-10 overflow-hidden">
                 <button onClick={() => setStage(null)} className="absolute top-4 left-4 z-40 h-9 w-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors" aria-label="Terug">
                   <ArrowLeft className="h-4 w-4" />
                 </button>
