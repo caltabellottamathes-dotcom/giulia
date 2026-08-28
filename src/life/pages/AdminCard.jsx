@@ -195,17 +195,17 @@ export default function AdminCard({ tab, onNavigate }) {
       <div className="flex-1 min-w-0 h-full flex flex-col">
         {tab === "OVERVIEW" ? (
           <div className="flex-1 min-h-0 px-6 pb-6 pt-[68px] flex flex-col gap-4">
-            <div className="flex-[1.2] min-h-0 overflow-hidden rounded-[18px]">
+            <div className="flex-[1.2] min-h-0 overflow-hidden rounded-[18px]" style={{ boxShadow: "-16px 16px 40px -16px rgba(0,0,0,0.35)" }}>
               <WalletBarChartWidget />
             </div>
-            <div className="flex-[0.5] min-h-0 overflow-hidden rounded-[18px]">
+            <div className="flex-[0.5] min-h-0 overflow-hidden rounded-[18px]" style={{ boxShadow: "-14px 14px 36px -16px rgba(0,0,0,0.32)" }}>
               <WalletTreemapBar />
             </div>
             <div className="flex-[1.5] flex gap-4 min-h-0">
-              <div className="h-full aspect-square shrink-0">
+              <div className="h-full aspect-square shrink-0 overflow-hidden rounded-[20px]" style={{ boxShadow: "-16px 16px 40px -16px rgba(0,0,0,0.35)" }}>
                 <FinanceHealthCard />
               </div>
-              <div className="flex-1 min-h-0">
+              <div className="flex-1 min-h-0 overflow-hidden rounded-[18px]" style={{ boxShadow: "-16px 16px 40px -16px rgba(0,0,0,0.3)" }}>
                 <NewDocumentsCard />
               </div>
             </div>

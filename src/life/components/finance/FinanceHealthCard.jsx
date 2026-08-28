@@ -1,5 +1,6 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import { useEntityList } from "@/hooks/useEntity";
+import { base44 } from "@/api/base44Client";
 
 const NAME_COLOR = {
   wonen: "#d8dab3",
@@ -14,19 +15,22 @@ const colorFor = (name) => {
   for (const key of Object.keys(NAME_COLOR)) if (k.includes(key)) return NAME_COLOR[key];
   return "#9c9c9c";
 };
+const fmt = (n) => `€${Math.round(n).toLocaleString("en-US")}`;
 
 /**
- * FinanceHealthCard — vierkante meter. Blauwe shell met 4 ronde hoeken; grote
- * BOUNCE-dot in het midden (kleur = portefeuille die aandacht nodig heeft);
- * glazen kaart flush tegen de randen met 4 ronde hoeken + schaduw op het blauw,
- * hoogte = health %; grote asymmetrische, half afgekopte ghost-number rechtsonder.
+ * FinanceHealthCard — vierkante meter met glasachtige blauwe shell. Grote
+ * BOUNCE-dot (kleur = aandachtsportefeuille); glazen kaart flush met 4 ronde
+ * hoeken + schaduw, hoogte = health % (de ghost number, max 100); bovenaan een
+ * korte Giulia-insight over wat aandacht nodig heeft; ghost-number half
+ * afgekopt rechtsonder.
  */
 export default function FinanceHealthCard() {
   const { data: portfolios } = useEntityList("Portfolio", { realtime: true });
+  const [insight, setInsight] = useState("");
 
-  const { health, attention } = useMemo(() => {
+  const { health, attention, worst } = useMemo(() => {
     const pots = (portfolios || []).filter((p) => p.active !== false && !p.archived);
-    if (!pots.length) return { health: 0, attention: "#0a0a0a" };
+    if (!pots.length) return { health: 0, attention: "#0a0a0a", worst: null };
     let sum = 0;
     let worst = null;
     let worstRatio = 2;
@@ -37,22 +41,44 @@ export default function FinanceHealthCard() {
       const ratio = target > 0 ? (p.current_balance || 0) / target : 1;
       if (ratio < worstRatio && ratio < 1) {
         worstRatio = ratio;
-        worst = p;
+        worst = { name: p.name, fill: Math.round(fill), remaining: Math.max(0, target - (p.current_balance || 0)), color: p.color || colorFor(p.name) };
       }
     }
     return {
       health: Math.round(sum / pots.length),
-      attention: worst ? worst.color || colorFor(worst.name) : "#0a0a0a",
+      attention: worst ? worst.color : "#0a0a0a",
+      worst,
     };
   }, [portfolios]);
 
-  const message =
-    health >= 90 ? "Fully covered" : health >= 70 ? "Strong shape" : health >= 40 ? "You're almost there..." : "Just getting started";
+  // Giulia genereert een korte insight over wat aandacht nodig heeft.
+  useEffect(() => {
+    if (!portfolios || portfolios.length === 0) return;
+    let active = true;
+    const fallback = worst ? `${worst.name} staat op ${worst.fill}% — nog ${fmt(worst.remaining)} tot doel.` : "Alles op peil.";
+    setInsight(fallback);
+    base44.integrations.Core.InvokeLLM({
+      prompt: `Jij bent Giulia, een persoonlijk AI-assistent. De financiële gezondheidsscore is ${health}%. Het meest achterlopende potje is "${worst?.name || "—"}" met nog ${fmt(worst?.remaining || 0)} tot doel. Geef één korte, vriendelijke, concrete zin (max 14 woorden, Nederlands, 2e persoon) over wat nu het meeste aandacht nodig heeft om dit getal te verbeteren. Alleen de zin, geen voorvoegsel.`,
+    })
+      .then((txt) => { if (active && txt) setInsight(String(txt).trim().slice(0, 140)); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [portfolios, health, worst]);
 
   return (
-    <div className="relative w-full h-full rounded-[20px] overflow-hidden" style={{ background: "#b1bfc7" }}>
-      {/* Header linksboven (op blauw, boven het glas) */}
-      <p className="absolute top-3 left-3 z-30 text-white text-[10px] uppercase tracking-[0.2em] font-light">Financial Health</p>
+    <div
+      className="relative w-full h-full rounded-[20px] overflow-hidden"
+      style={{
+        background: "rgba(177,191,199,0.45)",
+        backdropFilter: "blur(12px) saturate(1.3)",
+        WebkitBackdropFilter: "blur(12px) saturate(1.3)",
+        border: "1px solid rgba(255,255,255,0.25)",
+      }}
+    >
+      {/* Header linksboven (op blauw glas, boven het glas-paneel) */}
+      <p className="absolute top-3 left-3 z-30 text-white text-[10px] uppercase tracking-[0.2em] font-light" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.25)" }}>
+        Financial Health
+      </p>
 
       {/* Grote BOUNCE-dot in het midden — kleur = aandachtsportefeuille */}
       <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none">
@@ -62,7 +88,7 @@ export default function FinanceHealthCard() {
         />
       </div>
 
-      {/* Glazen kaart — flush, 4 ronde hoeken, donkerder, schaduw op blauw, hoogte = health % */}
+      {/* Glazen kaart — flush, 4 ronde hoeken, schaduw op blauw, hoogte = health % */}
       <div
         className="absolute z-10 overflow-hidden"
         style={{
@@ -76,11 +102,12 @@ export default function FinanceHealthCard() {
           WebkitBackdropFilter: "blur(14px) saturate(1.3)",
           border: "1px solid rgba(255,255,255,0.18)",
           boxShadow: "0 -16px 34px -12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3)",
+          transition: "top 0.6s cubic-bezier(0.16,1,0.3,1)",
         }}
       >
-        {/* Bericht linksboven op het glas */}
-        <p className="absolute top-3 left-3 text-white/90 text-[11px] font-light" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.2)" }}>
-          {message}
+        {/* Giulia insight linksboven op het glas */}
+        <p className="absolute top-3 left-3 right-16 text-white/90 text-[11px] font-light leading-snug" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.25)" }}>
+          {insight || "…"}
         </p>
 
         {/* Grote asymmetrische, half afgekopte ghost-number rechtsonder */}

@@ -19,7 +19,6 @@ import WhatsApp from '@/focus/pages/WhatsApp';
 import Chat from '@/giulia/pages/Chat';
 import Voice from '@/giulia/pages/Voice';
 import Knowledge from '@/focus/pages/Knowledge';
-import Documents from '@/focus/pages/Documents';
 import People from '@/focus/pages/People';
 import PersonDetail from '@/focus/pages/PersonDetail';
 import Approvals from '@/giulia/pages/Approvals';
@@ -120,7 +119,6 @@ const AuthenticatedApp = () => {
           <Route path="/chat" element={<Chat />} />
           <Route path="/voice" element={<Voice />} />
           <Route path="/knowledge" element={<Knowledge />} />
-          <Route path="/documents" element={<Documents />} />
           <Route path="/people" element={<People />} />
           <Route path="/people/:id" element={<PersonDetail />} />
           <Route path="/approvals" element={<Approvals />} />

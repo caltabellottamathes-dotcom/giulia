@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEntityList } from "@/hooks/useEntity";
 
@@ -29,6 +29,16 @@ export default function WalletTreemapBar() {
   const { data: expenses } = useEntityList("AdminObligation", { realtime: true });
   const { data: incomes } = useEntityList("Income", { realtime: true });
   const [hovered, setHovered] = useState(null);
+  const resetTimer = useRef(null);
+  const hoverIn = (id) => {
+    clearTimeout(resetTimer.current);
+    setHovered(id);
+    resetTimer.current = setTimeout(() => setHovered(null), 3500);
+  };
+  const hoverOut = () => {
+    clearTimeout(resetTimer.current);
+    setHovered(null);
+  };
 
   const { segments, total } = useMemo(() => {
     const pots = (portfolios || []).filter((p) => p.active !== false && !p.archived);
@@ -112,8 +122,8 @@ export default function WalletTreemapBar() {
               style={{ background: s.color }}
               animate={{ width: `${w}%` }}
               transition={{ duration: 0.4, ease: EASE }}
-              onMouseEnter={() => setHovered(s.id)}
-              onMouseLeave={() => setHovered(null)}
+              onMouseEnter={() => hoverIn(s.id)}
+              onMouseLeave={hoverOut}
             >
               {w > 18 && !hovered && (
                 <span className="absolute inset-0 flex items-center px-2 text-[8px] font-mono whitespace-nowrap" style={{ color: textOn(s.color) }}>

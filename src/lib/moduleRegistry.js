@@ -10,7 +10,6 @@ import Tasks from "@/focus/pages/Tasks";
 import Email from "@/focus/pages/Email";
 import WhatsApp from "@/focus/pages/WhatsApp";
 import Knowledge from "@/focus/pages/Knowledge";
-import Documents from "@/focus/pages/Documents";
 import People from "@/focus/pages/People";
 import Chat from "@/giulia/pages/Chat";
 import Voice from "@/giulia/pages/Voice";
@@ -54,7 +53,6 @@ export const MODULES = {
   email:       { label: "Online Postoffice.",  icon: Mail,          Component: Email,       panelWidth: 1000 },
   whatsapp:    { label: "Who's Texting?",      icon: MessageCircle, Component: WhatsApp,    panelWidth: 1100 },
   knowledge:   { label: "What I Know.",        icon: BookOpen,      Component: Knowledge,    panelWidth: 860 },
-  documents:   { label: "Files to Share.",      icon: FileText,      Component: Documents,    panelWidth: 860 },
   people:      { label: "People Around Me.",   icon: Users,         Component: People,       panelWidth: 720 },
   chat:        { label: "Chat",                icon: MessageSquare, Component: Chat,         panelWidth: 720 },
   voice:       { label: "Voice",               icon: Mic,           Component: Voice,        panelWidth: 720 },

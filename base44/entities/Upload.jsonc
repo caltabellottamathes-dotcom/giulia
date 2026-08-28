@@ -29,6 +29,11 @@
       "type": "string",
       "title": "Uploaded For"
     },
+    "folder": {
+      "type": "string",
+      "title": "Map",
+      "description": "Naam van de map binnen de mediatheek."
+    },
     "project_id": {
       "type": "string",
       "title": "Project ID"

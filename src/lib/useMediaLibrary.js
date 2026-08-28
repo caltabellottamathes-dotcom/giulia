@@ -3,10 +3,9 @@ import { base44 } from "@/api/base44Client";
 import { kindOfFile } from "@/lib/MediaViewerContext";
 
 /**
- * useMediaLibrary — beheert geüploade media (foto / video / audio) in de
- * bestaande Upload-entity. Items worden getagd met `uploaded_for: "media"`
- * zodat ze gescheiden blijven van andere uploads. Het type wordt afgeleid
- * uit de bestandsnaam via kindOfFile en in `note` opgeslagen.
+ * useMediaLibrary — beheert geüploade media (foto / video / audio / pdf) in de
+ * Upload-entity. Items worden getagd met `uploaded_for: "media"` en optioneel
+ * een `folder`. Het type wordt afgeleid via kindOfFile en in `note` opgeslagen.
  */
 const TAG = "media";
 
@@ -23,7 +22,7 @@ export function useMediaLibrary() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const list = await base44.entities.Upload.filter({ uploaded_for: TAG }, "-created_date", 200);
+      const list = await base44.entities.Upload.filter({ uploaded_for: TAG }, "-created_date", 500);
       setItems(list || []);
     } catch {
       setItems([]);
@@ -34,7 +33,7 @@ export function useMediaLibrary() {
 
   useEffect(() => { load(); }, [load]);
 
-  const upload = useCallback(async (file) => {
+  const upload = useCallback(async (file, folder) => {
     if (!file) return null;
     setUploading((n) => n + 1);
     try {
@@ -47,6 +46,7 @@ export function useMediaLibrary() {
         document_type: kind === "image" ? "image" : "other",
         note: kind,
         status: "new",
+        folder: folder || "",
       });
       setItems((a) => [rec, ...(a || [])]);
       return rec;
@@ -64,5 +64,19 @@ export function useMediaLibrary() {
     } catch { /* negeer */ }
   }, []);
 
-  return { items, loading, uploading, upload, remove, reload: load };
+  const rename = useCallback(async (id, filename) => {
+    try {
+      const rec = await base44.entities.Upload.update(id, { filename });
+      setItems((a) => (a || []).map((x) => (x.id === id ? { ...x, ...rec } : x)));
+    } catch { /* negeer */ }
+  }, []);
+
+  const setFolder = useCallback(async (id, folder) => {
+    try {
+      const rec = await base44.entities.Upload.update(id, { folder: folder || "" });
+      setItems((a) => (a || []).map((x) => (x.id === id ? { ...x, ...rec } : x)));
+    } catch { /* negeer */ }
+  }, []);
+
+  return { items, loading, uploading, upload, remove, rename, setFolder, reload: load };
 }

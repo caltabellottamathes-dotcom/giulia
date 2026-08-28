@@ -1,28 +1,30 @@
 import React from "react";
-import { useEntityList } from "@/hooks/useEntity";
+import { useMediaLibrary, kindOfUpload } from "@/lib/useMediaLibrary";
 import { FileText } from "lucide-react";
 
 /**
  * NewDocumentsCard — witte kaart met titel "NEW DOCUMENTS" en de 5 laatst
- * toegevoegde documenten. Klik op een document opent het in de Media Stage.
+ * toegevoegde documenten uit de mediatheek (Upload, note = "doc"). Klik opent
+ * het bestand in de Media Stage die uitschuift.
  */
 export default function NewDocumentsCard() {
-  const { data: docs } = useEntityList("Document", { sort: "-created_date", limit: 5, realtime: true });
-  const list = (docs || []).slice(0, 5);
+  const { items, loading } = useMediaLibrary();
+  const list = (items || []).filter((i) => kindOfUpload(i) === "doc").slice(0, 5);
 
-  const open = (d) => {
+  const open = (item) => {
     window.dispatchEvent(new CustomEvent("giulia:ontwerp-stage", { detail: "media" }));
-    window.dispatchEvent(new CustomEvent("giulia:open-media", { detail: d }));
+    window.dispatchEvent(new CustomEvent("giulia:open-media", { detail: { name: item.filename, url: item.file_url, type: kindOfUpload(item) } }));
   };
 
   return (
     <div
       className="w-full h-full rounded-[18px] flex flex-col p-4 overflow-hidden"
-      style={{ background: "#f5f5f4", boxShadow: "0 16px 34px -18px rgba(0,0,0,0.20)" }}
+      style={{ background: "#f5f5f4" }}
     >
       <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-foreground/55">New Documents</p>
       <div className="mt-3 space-y-2 flex-1 min-h-0 overflow-hidden">
-        {list.length === 0 && <p className="text-[11px] text-foreground/40">No documents yet.</p>}
+        {loading && list.length === 0 && <p className="text-[11px] text-foreground/40">Laden…</p>}
+        {!loading && list.length === 0 && <p className="text-[11px] text-foreground/40">Nog geen documenten. Upload een pdf via Media.</p>}
         {list.map((d) => (
           <button
             key={d.id}
@@ -33,8 +35,8 @@ export default function NewDocumentsCard() {
               <FileText className="w-3.5 h-3.5 text-foreground/55" />
             </div>
             <div className="min-w-0">
-              <p className="text-[12px] font-medium truncate">{d.name || d.title || "Document"}</p>
-              <p className="text-[9px] uppercase tracking-wide text-foreground/45">{d.document_type || d.type || "other"}</p>
+              <p className="text-[12px] font-medium truncate">{d.filename || "Document"}</p>
+              <p className="text-[9px] uppercase tracking-wide text-foreground/45">pdf</p>
             </div>
           </button>
         ))}
