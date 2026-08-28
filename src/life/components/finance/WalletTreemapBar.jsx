@@ -5,9 +5,10 @@ const COLORS = ["#d0d9dd", "#595c64", "#abab69", "#8b8471", "#dbdbd6", "#d8dab3"
 const fmt = (n) => `€${Math.round(n).toLocaleString("en-US")}`;
 
 /**
- * WalletTreemapBar — horizontale treemap: de volle breedte = 100% van je
- * inkomen. Elk gekleurd segment = 1 portefeuille; breedte ∝ de som van alle
- * expenses in die portefeuille ten opzichte van het totaal inkomen.
+ * WalletTreemapBar — glazen horizontale treemap (glas-2): de volle breedte =
+ * 100% van je inkomen. Elk gekleurd segment = 1 portefeuille; breedte ∝ de
+ * som van alle expenses in die portefeuille ten opzichte van het totaal
+ * inkomen. Alleggebruikt alle Personal Admin-data.
  */
 export default function WalletTreemapBar() {
   const { data: portfolios } = useEntityList("Portfolio", { realtime: true });
@@ -20,7 +21,7 @@ export default function WalletTreemapBar() {
   );
 
   const segments = useMemo(() => {
-    const list = (portfolios || []).filter((p) => p.active !== false).slice(0, 6);
+    const list = (portfolios || []).filter((p) => p.active !== false);
     return list
       .map((p, i) => {
         const exp = (expenses || [])
@@ -42,10 +43,10 @@ export default function WalletTreemapBar() {
   const free = totalIncome > 0 ? Math.max(0, 100 - covered) : 0;
 
   return (
-    <div className="w-full h-full rounded-[18px] bg-[#0d0d0d] flex flex-col justify-center gap-2 px-4 py-3 overflow-hidden">
+    <div className="w-full h-full rounded-[18px] glass-2 flex flex-col justify-center gap-2 px-4 py-3 overflow-hidden">
       <div className="flex items-center justify-between">
-        <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/50">Income allocation</p>
-        <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-white/50">{totalIncome > 0 ? `${fmt(totalIncome)} in` : "—"}</p>
+        <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-foreground/55">Income allocation</p>
+        <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-foreground/55">{totalIncome > 0 ? `${fmt(totalIncome)} in` : "—"}</p>
       </div>
       <div className="flex items-stretch gap-1.5 w-full h-[clamp(16px,2vw,26px)]">
         {segments.map((s) => (
@@ -63,12 +64,12 @@ export default function WalletTreemapBar() {
         {free > 0.5 && (
           <div
             className="rounded-full min-w-[6px] h-full"
-            style={{ width: `${free}%`, background: "rgba(255,255,255,0.08)", border: "1px dashed rgba(255,255,255,0.18)" }}
+            style={{ width: `${free}%`, background: "rgba(0,0,0,0.06)", border: "1px dashed rgba(0,0,0,0.18)" }}
             title="Free"
           />
         )}
         {segments.length === 0 && (
-          <p className="text-[10px] text-white/40 self-center">{totalIncome > 0 ? "No expenses linked to wallets yet." : "No income recorded."}</p>
+          <p className="text-[10px] text-foreground/40 self-center">{totalIncome > 0 ? "No expenses linked to wallets yet." : "No income recorded."}</p>
         )}
       </div>
     </div>

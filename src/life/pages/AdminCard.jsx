@@ -215,31 +215,18 @@ export default function AdminCard({ tab }) {
         </div>
       </div>
 
-      {/* Rechts — bento. First tab: wallet bar-chart widget + income treemap. Others: plain cards. */}
+      {/* Rechts — bento met wallet bar-chart widget + income treemap (glazen kaarten, alle tabs) */}
       <div className="flex-1 min-w-0 p-6 flex flex-col gap-4">
-        {tab === "OVERVIEW" ? (
-          <>
-            <div className="flex-[1.4] min-h-0 overflow-hidden rounded-[18px]">
-              <WalletBarChartWidget />
-            </div>
-            <div className="flex-[0.5] min-h-0 overflow-hidden rounded-[18px]">
-              <WalletTreemapBar />
-            </div>
-            <div className="flex-1 flex gap-4 min-h-0">
-              <div className="flex-[0.9] rounded-[18px]" style={{ background: CARD, boxShadow: SHADOW }} />
-              <div className="flex-[1.5] rounded-[18px]" style={{ background: CARD, boxShadow: SHADOW }} />
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="flex-[1.4] rounded-[18px]" style={{ background: CARD, boxShadow: SHADOW }} />
-            <div className="flex-[0.5] rounded-[18px]" style={{ background: CARD, boxShadow: SHADOW }} />
-            <div className="flex-1 flex gap-4">
-              <div className="flex-[0.9] rounded-[18px]" style={{ background: CARD, boxShadow: SHADOW }} />
-              <div className="flex-[1.5] rounded-[18px]" style={{ background: CARD, boxShadow: SHADOW }} />
-            </div>
-          </>
-        )}
+        <div className="flex-[1.4] min-h-0 overflow-hidden rounded-[18px]">
+          <WalletBarChartWidget />
+        </div>
+        <div className="flex-[0.5] min-h-0 overflow-hidden rounded-[18px]">
+          <WalletTreemapBar />
+        </div>
+        <div className="flex-1 flex gap-4 min-h-0">
+          <div className="flex-[0.9] rounded-[18px]" style={{ background: CARD, boxShadow: SHADOW }} />
+          <div className="flex-[1.5] rounded-[18px]" style={{ background: CARD, boxShadow: SHADOW }} />
+        </div>
       </div>
     </motion.div>
   );
