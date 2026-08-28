@@ -49,14 +49,12 @@ export default function PaginaOntwerp() {
 
   return (
     <div className="fixed inset-x-0 top-14 bottom-0 overflow-visible z-[30]">
-      {/* Hero photo — alleen in finance-modus */}
-      {!isStage && (
-        <motion.div initial={{ x: "-118%" }} animate={{ x: 0 }} transition={{ duration: 0.7, ease: EASE }}
-          className="hidden lg:block absolute left-0 top-[14%] bottom-0 w-[34%] overflow-hidden rounded-r-[24px] z-[5]">
-          <img src={HERO} alt="" className="h-full w-full object-cover" draggable={false} />
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/65 via-charcoal/15 to-charcoal/10" />
-        </motion.div>
-      )}
+      {/* Hero photo — blijft open wanneer het glaspaneel opent */}
+      <motion.div initial={{ x: "-118%" }} animate={{ x: 0 }} transition={{ duration: 0.7, ease: EASE }}
+        className="hidden lg:block absolute left-0 top-[14%] bottom-0 w-[34%] overflow-hidden rounded-r-[24px] z-[5]">
+        <img src={HERO} alt="" className="h-full w-full object-cover" draggable={false} />
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/65 via-charcoal/15 to-charcoal/10" />
+      </motion.div>
 
       {/* Titel — alleen in finance-modus */}
       {!isStage && (
@@ -87,9 +85,9 @@ export default function PaginaOntwerp() {
             <div className="h-px w-6 bg-foreground/15 my-2 mx-auto" />
             {STAGE_TABS.map((s) => (
               <button key={s.key} onClick={() => { setStage(s.key); setPanelOpen(true); }} title={s.label}
-                className={`relative flex items-center justify-center w-11 h-11 rounded-2xl transition ${isStage && stage === s.key ? "bg-foreground/12 text-foreground" : "text-foreground/55 hover:bg-foreground/8 hover:text-foreground/85"}`}>
+                className={`relative flex items-center justify-center w-11 h-11 rounded-2xl transition ${isStage && stage === s.key ? "bg-white/15 text-white" : "text-white/70 hover:bg-white/10 hover:text-white"}`}>
                 <s.icon className="w-4 h-4" />
-                {isStage && stage === s.key && <span className="absolute -left-[11px] top-1/2 -translate-y-1/2 h-6 w-1 rounded-full bg-foreground/70" />}
+                {isStage && stage === s.key && <span className="absolute -left-[11px] top-1/2 -translate-y-1/2 h-6 w-1 rounded-full bg-white/80" />}
               </button>
             ))}
           </div>

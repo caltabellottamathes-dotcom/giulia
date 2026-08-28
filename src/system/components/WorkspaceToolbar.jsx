@@ -21,6 +21,7 @@ export default function WorkspaceToolbar() {
   const { active, start, stop, captured, clear } = useContextCapture();
   const location = useLocation();
   const stayCollapsed = location.pathname === "/life/personal-admin" || location.pathname === "/Pagina-Ontwerp";
+  const onPaginaOntwerp = location.pathname === "/Pagina-Ontwerp";
   const [launcherOpen, setLauncherOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [board, setBoard] = useState(getActiveBoard());
@@ -171,7 +172,7 @@ export default function WorkspaceToolbar() {
                         title={customBoard ? "Dubbelklik om te hernoemen" : b.label}
                         className={cn(
                           "px-2.5 lg:px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap transition-colors",
-                          on ? "text-foreground" : "text-foreground/55 hover:text-foreground/85"
+                          on ? (onPaginaOntwerp ? "text-white" : "text-foreground") : (onPaginaOntwerp ? "text-white/70 hover:text-white" : "text-foreground/55 hover:text-foreground/85")
                         )}
                       >
                         {b.label}
@@ -199,7 +200,7 @@ export default function WorkspaceToolbar() {
           ) : (
             <button
               onClick={() => { if (!stayCollapsed) setExpanded(true); }}
-              className="ml-3 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap text-foreground shrink-0"
+              className={cn("ml-3 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap shrink-0", onPaginaOntwerp ? "text-white" : "text-foreground")}
             >
               {all.find((b) => b.id === board)?.label || "GIULIA"}
             </button>
