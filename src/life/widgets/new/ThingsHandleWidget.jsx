@@ -49,7 +49,8 @@ export default function ThingsHandleWidget({ className }) {
   const sub = overdue.length ? `${overdue.length} te laat — pak het op.` : coming.length === 0 ? "Alles is bij." : coming.length <= 2 ? `${coming.length} op komst.` : `${coming.length} zaken komen eraan.`;
 
   const [idx, setIdx] = useState(0);
-  const current = coming.length ? coming[idx % coming.length] : null;
+  const [pinned, setPinned] = useState(null);
+  const current = pinned || (coming.length ? coming[idx % coming.length] : null);
   const atStart = idx === 0;
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
@@ -65,6 +66,14 @@ export default function ThingsHandleWidget({ className }) {
   const status = pressure(diff);
 
   const [up, setUp] = useState(false);
+
+  // Agendaklik → pin deze last en schuif de glaskaart omhoog met zijn klok.
+  useEffect(() => {
+    const h = (ev) => { setPinned(ev.detail); setUp(true); };
+    window.addEventListener("giulia:things-handle-select", h);
+    return () => window.removeEventListener("giulia:things-handle-select", h);
+  }, []);
+
   const units = [
     { v: pad(dDay), l: "Dagen" },
     { v: pad(dHr), l: "Uren" },
@@ -80,7 +89,11 @@ export default function ThingsHandleWidget({ className }) {
       {/* ACHTER: Next/Terug + neon klok (vult breedte) */}
       <div className="absolute inset-x-0 bottom-0 h-1/2 z-0 flex flex-col justify-end px-3 pb-4 gap-3" style={{ color: IVORY }}>
         <div className="flex items-center justify-between">
-          {atStart ? (
+          {pinned ? (
+            <button onClick={(e) => { e.stopPropagation(); setPinned(null); setUp(false); }} className="p-0.5" aria-label="terug naar lijst">
+              <ArrowLeft size={13} style={{ color: IVORY, opacity: 0.85 }} />
+            </button>
+          ) : atStart ? (
             <p className="text-[8px] uppercase tracking-[0.22em] opacity-55">Next in the list</p>
           ) : (
             <button onClick={(e) => { e.stopPropagation(); setIdx(0); }} className="p-0.5" aria-label="terug naar start">
@@ -88,7 +101,7 @@ export default function ThingsHandleWidget({ className }) {
             </button>
           )}
           {coming.length > 1 && (
-            <button onClick={(e) => { e.stopPropagation(); setIdx((i) => (i + 1) % coming.length); }} className="p-0.5" aria-label="volgende">
+            <button onClick={(e) => { e.stopPropagation(); setPinned(null); setIdx((i) => (i + 1) % coming.length); }} className="p-0.5" aria-label="volgende">
               <ArrowRight size={13} style={{ color: IVORY, opacity: 0.85 }} />
             </button>
           )}
