@@ -16,11 +16,10 @@ const colorFor = (name) => {
 };
 
 /**
- * FinanceHealthCard — vierkante meter conform referentie. Blauwe shell met 4
- * ronde hoeken; grote BOUNCE-dot in het midden waarvan de kleur = de portefeuille
- * die nu aandacht nodig heeft; glazen kaart (donkerder, ronde hoeken, schaduw)
- * waarvan de hoogte = health %, met bericht linksboven en een grote asymmetrische
- * ghost-number rechtsonder.
+ * FinanceHealthCard — vierkante meter. Blauwe shell met 4 ronde hoeken; grote
+ * BOUNCE-dot in het midden (kleur = portefeuille die aandacht nodig heeft);
+ * glazen kaart flush tegen de randen met 4 ronde hoeken + schaduw op het blauw,
+ * hoogte = health %; grote asymmetrische, half afgekopte ghost-number rechtsonder.
  */
 export default function FinanceHealthCard() {
   const { data: portfolios } = useEntityList("Portfolio", { realtime: true });
@@ -55,7 +54,7 @@ export default function FinanceHealthCard() {
       {/* Header linksboven (op blauw, boven het glas) */}
       <p className="absolute top-3 left-3 z-30 text-white text-[10px] uppercase tracking-[0.2em] font-light">Financial Health</p>
 
-      {/* Grote BOUNCE-dot in het midden — kleur = portefeuille die aandacht nodig heeft */}
+      {/* Grote BOUNCE-dot in het midden — kleur = aandachtsportefeuille */}
       <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none">
         <div
           className="ontwerp-dot-bounce rounded-full"
@@ -63,20 +62,20 @@ export default function FinanceHealthCard() {
         />
       </div>
 
-      {/* Glazen kaart — donkerder, ronde hoeken, schaduw, hoogte = health % */}
+      {/* Glazen kaart — flush, 4 ronde hoeken, donkerder, schaduw op blauw, hoogte = health % */}
       <div
         className="absolute z-10 overflow-hidden"
         style={{
-          left: 8,
-          right: 8,
-          bottom: 8,
+          left: 0,
+          right: 0,
+          bottom: 0,
           top: `${100 - health}%`,
           borderRadius: 16,
           background: "rgba(60,66,74,0.38)",
           backdropFilter: "blur(14px) saturate(1.3)",
           WebkitBackdropFilter: "blur(14px) saturate(1.3)",
           border: "1px solid rgba(255,255,255,0.18)",
-          boxShadow: "0 14px 34px -10px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.3)",
+          boxShadow: "0 -16px 34px -12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3)",
         }}
       >
         {/* Bericht linksboven op het glas */}
@@ -84,15 +83,15 @@ export default function FinanceHealthCard() {
           {message}
         </p>
 
-        {/* Grote asymmetrische ghost-number rechtsonder */}
+        {/* Grote asymmetrische, half afgekopte ghost-number rechtsonder */}
         <span
           className="absolute font-display font-bold leading-none select-none"
           style={{
-            fontSize: "clamp(96px, 17vw, 240px)",
+            fontSize: "clamp(120px, 22vw, 300px)",
             color: "rgba(255,255,255,0.5)",
             letterSpacing: "-0.06em",
-            right: "-3%",
-            bottom: "-14%",
+            right: "-4%",
+            bottom: "-26%",
           }}
         >
           {health}

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEntityList } from "@/hooks/useEntity";
 
-const HERO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0a68f996a_ADMIN.jpeg";
+const HERO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0d7ad9eb5_Make_a_Close-up_photo_2K_202608281619.jpeg";
 const EASE = [0.16, 1, 0.3, 1];
 const fmt = (n) => `€${Math.round(n).toLocaleString("en-US")}`;
 
@@ -21,19 +21,13 @@ const colorFor = (name) => {
   for (const key of Object.keys(NAME_COLOR)) if (k.includes(key)) return NAME_COLOR[key];
   return "#9c9c9c";
 };
-const isLight = (hex) => {
-  const c = String(hex || "").replace("#", "");
-  if (c.length < 6) return true;
-  const r = parseInt(c.substr(0, 2), 16), g = parseInt(c.substr(2, 2), 16), b = parseInt(c.substr(4, 2), 16);
-  return 0.299 * r + 0.587 * g + 0.114 * b > 150;
-};
 
 /**
  * WalletBarChartWidget — capsule-bars in vaste volgorde, hoogte proportioneel
- * met de huur (Wonen = 100%). Boven elke bar een horizontale lijn met de waarde
- * (zelfde idee als Allocation). Glazen capsule = subtiele wallet-tint, zelfde
- * breedte als de bar, zonder border, met daarin hoeveel nog tot doel. Bars >100%
- * cap op 100% en knipperen.
+ * met de huur (Wonen = 100%). Boven elke bar een horizontale lijn met target
+ * (boven) + saldo (onder), beide zwart. Glazen capsule = subtiele wallet-tint,
+ * zelfde breedte, zonder border, met daarin hoeveel nog tot doel. Bars die hun
+ * doel behaald hebben knipperen (langzaam); gekleurde bars zweven met schaduw.
  */
 export default function WalletBarChartWidget() {
   const { data: portfolios } = useEntityList("Portfolio", { realtime: true });
@@ -76,8 +70,8 @@ export default function WalletBarChartWidget() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
           >
-            <p className="text-[9px] uppercase tracking-[0.22em] text-foreground/55 font-medium">Wallets · t.o.v. huur</p>
-            <div className="flex-1 flex items-end gap-[clamp(3px,0.5vw,7px)] mt-5 min-h-0 overflow-visible">
+            <p className="text-[9px] uppercase tracking-[0.2em] text-foreground/55 font-medium">tap a bar → detail</p>
+            <div className="flex-1 flex items-end gap-[clamp(3px,0.5vw,7px)] mt-7 min-h-0 overflow-visible">
               {wallets.length === 0 && (
                 <p className="text-[11px] text-foreground/40 self-center w-full text-center">No wallets yet.</p>
               )}
@@ -85,9 +79,9 @@ export default function WalletBarChartWidget() {
                 const ratio = w.balance / scale;
                 const over = ratio > 1;
                 const cappedH = Math.min(100, ratio * 100);
+                const reached = w.target > 0 && w.balance >= w.target;
                 const remaining = Math.max(0, w.target - w.balance);
                 const glassH = !over && w.target > w.balance ? (remaining / scale) * 100 : 0;
-                const txt = isLight(w.color) ? "#1a1a1a" : "rgba(255,255,255,0.92)";
                 return (
                   <button
                     key={w.id}
@@ -95,12 +89,18 @@ export default function WalletBarChartWidget() {
                     className="relative flex-1 h-full hover:opacity-90 transition min-w-0 overflow-visible"
                     title={w.name}
                   >
-                    {/* horizontale lijn + waarde bovenop de bar */}
+                    {/* target (boven) + saldo (onder) + horizontale lijn — beide zwart */}
                     {cappedH > 3 && (
                       <>
                         <span
-                          className="absolute left-1/2 -translate-x-1/2 text-[8px] font-mono font-semibold whitespace-nowrap z-20"
-                          style={{ bottom: `calc(${cappedH}% + 3px)`, color: txt }}
+                          className="absolute left-1/2 -translate-x-1/2 text-[8px] font-mono whitespace-nowrap z-20 text-black"
+                          style={{ bottom: `calc(${cappedH}% + 17px)` }}
+                        >
+                          {fmt(w.target)}
+                        </span>
+                        <span
+                          className="absolute left-1/2 -translate-x-1/2 text-[8px] font-mono font-semibold whitespace-nowrap z-20 text-black"
+                          style={{ bottom: `calc(${cappedH}% + 3px)` }}
                         >
                           {fmt(w.balance)}
                         </span>
@@ -125,21 +125,25 @@ export default function WalletBarChartWidget() {
                       >
                         {glassH > 26 && (
                           <span className="absolute bottom-1 left-1/2 -translate-x-1/2" style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}>
-                            <span className="text-[8px] font-mono whitespace-nowrap" style={{ color: "rgba(0,0,0,0.55)" }}>{fmt(remaining)} left</span>
+                            <span className="text-[8px] font-mono whitespace-nowrap text-black">{fmt(remaining)} left</span>
                           </span>
                         )}
                       </div>
                     )}
-                    {/* gekleurde capsule — huidig saldo (proportioneel met huur), cap 100% + blink bij over */}
+                    {/* gekleurde capsule — zwevend, knippert bij behaald doel */}
                     <div
-                      className={`absolute bottom-0 left-1/2 -translate-x-1/2 rounded-full transition-all duration-500 overflow-hidden ${over ? "animate-pulse-soft" : ""}`}
-                      style={{ width: "82%", height: `${cappedH}%`, background: w.color, boxShadow: "0 6px 16px -8px rgba(0,0,0,0.35)" }}
+                      className={`absolute bottom-0 left-1/2 -translate-x-1/2 rounded-full transition-all duration-500 overflow-hidden ${reached ? "wallet-blink" : ""}`}
+                      style={{
+                        width: "82%",
+                        height: `${cappedH}%`,
+                        background: w.color,
+                        boxShadow: "0 14px 28px -12px rgba(0,0,0,0.45), 0 2px 6px -2px rgba(0,0,0,0.25)",
+                      }}
                     />
                   </button>
                 );
               })}
             </div>
-            <p className="text-[8px] uppercase tracking-[0.2em] text-foreground/45 mt-2">tap a bar → detail</p>
           </motion.div>
         )}
       </AnimatePresence>

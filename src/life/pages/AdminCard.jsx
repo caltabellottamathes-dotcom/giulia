@@ -195,13 +195,13 @@ export default function AdminCard({ tab, onNavigate }) {
       <div className="flex-1 min-w-0 h-full flex flex-col">
         {tab === "OVERVIEW" ? (
           <div className="flex-1 min-h-0 px-6 pb-6 pt-[68px] flex flex-col gap-4">
-            <div className="flex-[1.4] min-h-0 overflow-hidden rounded-[18px]">
+            <div className="flex-[1.2] min-h-0 overflow-hidden rounded-[18px]">
               <WalletBarChartWidget />
             </div>
-            <div className="flex-[1.1] min-h-0 overflow-hidden rounded-[18px]">
+            <div className="flex-[0.5] min-h-0 overflow-hidden rounded-[18px]">
               <WalletTreemapBar />
             </div>
-            <div className="flex-1 flex gap-4 min-h-0">
+            <div className="flex-[1.5] flex gap-4 min-h-0">
               <div className="h-full aspect-square shrink-0">
                 <FinanceHealthCard />
               </div>

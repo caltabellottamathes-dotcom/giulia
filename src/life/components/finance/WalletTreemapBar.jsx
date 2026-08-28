@@ -20,9 +20,9 @@ const textOn = (color) => (LIGHT_COLORS.includes(color) ? "#595c64" : "rgba(255,
 
 /**
  * WalletTreemapBar — live horizontale allocatie in afgeronde pills. Labels met
- * dunne verbindingslijnen staan BOVEN de bar, links uitgelijnd op de lijn (start
- * van de pill). Lijnen + tekst zwart, zelfde mono/uppercase/tracking-stijl als
- * de titel. Hover → pill strekt uit + expense-breakdown.
+ * dunne verbindingslijnen staan BOVEN de bar, links uitgelijnd op de lijn. Lijnen
+ * + tekst zwart, zelfde mono/uppercase/tracking-stijl als de titel. 'Dagelijks'
+ * komt onder 'Communicatie' te staan. Hover → pill strekt uit + breakdown.
  */
 export default function WalletTreemapBar() {
   const { data: portfolios } = useEntityList("Portfolio", { realtime: true });
@@ -73,10 +73,11 @@ export default function WalletTreemapBar() {
     return { segments: segs, total: totalIncome > 0 ? totalIncome : spent + leftover };
   }, [portfolios, expenses, incomes]);
 
-  const LABEL = "font-mono text-[9px] uppercase tracking-[0.2em] leading-tight whitespace-nowrap";
+  // Lijnhoogtes — Dagelijks (idx 3) laag, onder Communicatie (idx 2).
+  const LINE_H = [6, 22, 14, 4, 26, 10];
 
   return (
-    <div className="w-full h-full rounded-[18px] glass-2 flex flex-col px-4 py-3 overflow-hidden">
+    <div className="w-full h-full rounded-[18px] glass-2 flex flex-col px-4 py-3 overflow-visible">
       <div className="flex items-center justify-between">
         <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-foreground/55">Income allocation</p>
         <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-foreground/55">{total > 0 ? `${fmt(total)} / mnd` : "—"}</p>
@@ -87,11 +88,12 @@ export default function WalletTreemapBar() {
         {segments.map((s, i) => {
           const w = hovered ? (hovered === s.id ? 100 : 0) : total > 0 ? (s.cost / total) * 100 : 0;
           if (w <= 0) return <div key={s.id} style={{ width: 0 }} />;
-          const lineH = [6, 44, 20, 56, 32, 14][i % 6];
+          const lineH = LINE_H[i % LINE_H.length];
           return (
             <div key={s.id} className="relative flex flex-col items-start justify-end min-w-0" style={{ width: `${w}%` }}>
-              <p className={LABEL} style={{ color: "hsl(var(--foreground))" }}>{s.name.split(" ")[0]}</p>
-              <p className={LABEL} style={{ color: "hsl(var(--foreground))", opacity: 0.55 }}>{Math.round((s.cost / total) * 100)}%</p>
+              <p className="font-mono text-[9px] uppercase tracking-[0.2em] leading-tight whitespace-nowrap text-foreground">
+                {s.name.split(" ")[0]} {Math.round((s.cost / total) * 100)}%
+              </p>
               <div className="w-px mt-[3px]" style={{ height: `${lineH}px`, background: "hsl(var(--foreground))" }} />
             </div>
           );
