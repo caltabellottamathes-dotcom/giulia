@@ -4,8 +4,9 @@ import { useMediaViewer, isDriveUrl } from "@/lib/MediaViewerContext";
 import { usePanel } from "@/lib/PanelContext";
 import ViewerEmpty from "@/system/panels/viewers/ViewerEmpty";
 
-/** DocViewerPanel — pdf vult de volle stage (wit, geen zwarte vulling). Tik op
- *  de vergrootknop → MediaFullscreenWindow. Andere docs tonen een icoon. */
+/** DocViewerStage — pdf drijft op het glas (inset, afgeronde witte pagina) zodat
+ *  de glasmorfisme van de stage als achtergrond zichtbaar blijft. Geen header.
+ *  Vergrootknop opent de MediaFullscreenWindow. */
 export default function DocViewerPanel() {
   const { media } = useMediaViewer();
   const { openMediaFullscreen } = usePanel();
@@ -15,9 +16,11 @@ export default function DocViewerPanel() {
 
   if (drive || isPdf) {
     return (
-      <div className="relative w-full h-full">
-        <iframe src={media.url} title={media.name} className="w-full h-full bg-white" />
-        <button onClick={openMediaFullscreen} className="absolute top-3 right-3 z-10 h-9 w-9 rounded-full bg-black/30 border border-white/15 backdrop-blur-md flex items-center justify-center text-ivory/90 hover:text-white hover:bg-black/45 transition" aria-label="Vergroten"><Maximize2 className="h-4 w-4" /></button>
+      <div className="relative w-full h-full p-4 sm:p-6">
+        <div className="relative h-full w-full rounded-2xl bg-white overflow-hidden shadow-[0_24px_60px_-20px_rgba(0,0,0,0.4)]">
+          <iframe src={media.url} title={media.name} className="w-full h-full" />
+        </div>
+        <button onClick={openMediaFullscreen} className="absolute top-7 right-7 z-10 h-9 w-9 rounded-full bg-black/30 border border-white/15 backdrop-blur-md flex items-center justify-center text-ivory/90 hover:text-white hover:bg-black/45 transition" aria-label="Vergroten"><Maximize2 className="h-4 w-4" /></button>
       </div>
     );
   }

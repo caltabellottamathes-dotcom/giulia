@@ -7,6 +7,7 @@ import WalletBarChartWidget from "@/life/components/finance/WalletBarChartWidget
 import WalletTreemapBar from "@/life/components/finance/WalletTreemapBar";
 import FinanceHealthCard from "@/life/components/finance/FinanceHealthCard";
 import NewDocumentsCard from "@/life/components/finance/NewDocumentsCard";
+import RenewOverviewCard from "@/life/components/finance/RenewOverviewCard";
 import FinanceStacks from "@/life/components/finance/FinanceStacks";
 
 const EASE = [0.16, 1, 0.3, 1];
@@ -195,8 +196,13 @@ export default function AdminCard({ tab, onNavigate }) {
       <div className="flex-1 min-w-0 h-full flex flex-col">
         {tab === "OVERVIEW" ? (
           <div className="flex-1 min-h-0 pl-6 pr-6 lg:-ml-[48px] pb-6 pt-[68px] flex flex-col gap-4">
-            <div className="flex-[1.2] min-h-0 overflow-hidden rounded-[18px]" style={{ boxShadow: "-16px 16px 40px -16px rgba(0,0,0,0.35)" }}>
-              <WalletBarChartWidget />
+            <div className="flex-[1.2] min-h-0 flex gap-4">
+              <div className="flex-1 min-h-0 overflow-hidden rounded-[18px]" style={{ boxShadow: "-16px 16px 40px -16px rgba(0,0,0,0.30)" }}>
+                <RenewOverviewCard />
+              </div>
+              <div className="h-full aspect-[3/2] shrink-0 overflow-hidden rounded-[18px]" style={{ boxShadow: "-16px 16px 40px -16px rgba(0,0,0,0.35)" }}>
+                <WalletBarChartWidget />
+              </div>
             </div>
             <div className="flex-[0.5] min-h-0 overflow-hidden rounded-[18px]" style={{ boxShadow: "-14px 14px 36px -16px rgba(0,0,0,0.32)" }}>
               <WalletTreemapBar />

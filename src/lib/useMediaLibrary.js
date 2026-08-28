@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { kindOfFile } from "@/lib/MediaViewerContext";
+import { onRefresh } from "@/lib/refreshBus";
 
 /**
  * useMediaLibrary — beheert geüploade media (foto / video / audio / pdf) in de
@@ -32,6 +33,8 @@ export function useMediaLibrary() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+  // Update-knop (refreshBus) → mediatheek wereldwijd opnieuw laden
+  useEffect(() => onRefresh(load), [load]);
 
   const upload = useCallback(async (file, folder) => {
     if (!file) return null;

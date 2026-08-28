@@ -260,7 +260,7 @@ export default function MediaFullscreenWindow() {
   const renderShell = (compact) => {
     const btn = compact ? "h-8 w-8" : "h-9 w-9";
     const ico = compact ? "h-3.5 w-3.5" : "h-4 w-4";
-    const radius = compact ? "rounded-[20px]" : "rounded-[28px]";
+    const radius = compact ? "rounded-[20px]" : "rounded-l-[28px]";
     const glassBtn = "bg-black/25 border border-white/15 backdrop-blur-md flex items-center justify-center text-ivory/90 hover:text-white hover:bg-black/40 transition-colors";
     return (
       <div className={cn("relative w-full h-full overflow-hidden glass-3", radius)}>
@@ -331,7 +331,7 @@ export default function MediaFullscreenWindow() {
         )}
         {kind === "doc" && (
           (drive || isPdf)
-            ? <iframe src={media.url} title={media.name} className="absolute inset-0 w-full h-full bg-white" />
+            ? <div className="absolute inset-4 sm:inset-6 rounded-2xl bg-white overflow-hidden shadow-[0_24px_60px_-20px_rgba(0,0,0,0.4)]"><iframe src={media.url} title={media.name} className="w-full h-full" /></div>
             : (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center px-6 pointer-events-auto">
                 <div className="h-16 w-16 rounded-2xl bg-ivory/10 flex items-center justify-center"><FileText className="h-8 w-8 text-ivory/55" /></div>
@@ -383,7 +383,7 @@ export default function MediaFullscreenWindow() {
           </div>
         </div>
       ) : (
-        <div ref={shellRef} className="fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 z-[56] animate-slide-right" style={{ width: windowW }}>
+        <div ref={shellRef} className="fixed right-0 top-4 lg:top-6 bottom-4 lg:bottom-6 z-[56] animate-slide-right" style={{ width: windowW }}>
           {renderShell(false)}
         </div>
       )}

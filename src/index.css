@@ -502,6 +502,12 @@
 @keyframes spin-slow { to { transform: rotate(360deg); } }
 .spin-slow { animation: spin-slow 26s linear infinite; }
 
+/* Renew Overview — draaiende ring + eenmalige icon-spin bij vernieuwen */
+@keyframes renew-ring { to { transform: rotate(360deg); } }
+.renew-ring { animation: renew-ring 6s linear infinite; }
+@keyframes renew-spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+.renew-spin { animation: renew-spin 0.9s cubic-bezier(0.16,1,0.3,1); }
+
 @keyframes eq-bar { 0%, 100% { transform: scaleY(0.22); } 50% { transform: scaleY(1); } }
 .eq-bar { transform-origin: bottom; animation: eq-bar 1s ease-in-out infinite; }
 
@@ -544,11 +550,12 @@
 body.beeldbank-active img { cursor: pointer !important; }
 body.beeldbank-active img:hover { outline: 2px solid hsl(var(--olive)); outline-offset: 2px; }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 8px; height: 8px; }
+/* Scrollbar — verborgen door het hele OS, scrollen blijft werken */
+* { scrollbar-width: none; -ms-overflow-style: none; }
+::-webkit-scrollbar { width: 0; height: 0; display: none; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: hsl(var(--smoke) / 0.25); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: hsl(var(--smoke) / 0.4); }
+::-webkit-scrollbar-thumb { background: transparent; }
+::-webkit-scrollbar-thumb:hover { background: transparent; }
 
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
