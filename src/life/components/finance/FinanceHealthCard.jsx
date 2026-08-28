@@ -8,7 +8,7 @@ const NAME_COLOR = {
   communicatie: "#595c64",
   "dagelijks leven": "#abab69",
   mobiliteit: "#8b8471",
-  voorzorg: "#d0d9dd",
+  voorzorg: "#d0d9dd"
 };
 const colorFor = (name) => {
   const k = String(name || "").toLowerCase();
@@ -36,7 +36,7 @@ export default function FinanceHealthCard() {
     let worstRatio = 2;
     for (const p of pots) {
       const target = p.target_balance || p.desired_buffer || p.current_balance || 0;
-      const fill = target > 0 ? Math.min(100, ((p.current_balance || 0) / target) * 100) : 100;
+      const fill = target > 0 ? Math.min(100, (p.current_balance || 0) / target * 100) : 100;
       sum += fill;
       const ratio = target > 0 ? (p.current_balance || 0) / target : 1;
       if (ratio < worstRatio && ratio < 1) {
@@ -47,7 +47,7 @@ export default function FinanceHealthCard() {
     return {
       health: Math.round(sum / pots.length),
       attention: worst ? worst.color : "#0a0a0a",
-      worst,
+      worst
     };
   }, [portfolios]);
 
@@ -58,11 +58,11 @@ export default function FinanceHealthCard() {
     const fallback = worst ? `${worst.name} staat op ${worst.fill}% — nog ${fmt(worst.remaining)} tot doel.` : "Alles op peil.";
     setInsight(fallback);
     base44.integrations.Core.InvokeLLM({
-      prompt: `Jij bent Giulia, een persoonlijk AI-assistent. De financiële gezondheidsscore is ${health}%. Het meest achterlopende potje is "${worst?.name || "—"}" met nog ${fmt(worst?.remaining || 0)} tot doel. Geef één korte, vriendelijke, concrete zin (max 14 woorden, Nederlands, 2e persoon) over wat nu het meeste aandacht nodig heeft om dit getal te verbeteren. Alleen de zin, geen voorvoegsel.`,
-    })
-      .then((txt) => { if (active && txt) setInsight(String(txt).trim().slice(0, 140)); })
-      .catch(() => {});
-    return () => { active = false; };
+      prompt: `Jij bent Giulia, een persoonlijk AI-assistent. De financiële gezondheidsscore is ${health}%. Het meest achterlopende potje is "${worst?.name || "—"}" met nog ${fmt(worst?.remaining || 0)} tot doel. Geef één korte, vriendelijke, concrete zin (max 14 woorden, Nederlands, 2e persoon) over wat nu het meeste aandacht nodig heeft om dit getal te verbeteren. Alleen de zin, geen voorvoegsel.`
+    }).
+    then((txt) => {if (active && txt) setInsight(String(txt).trim().slice(0, 140));}).
+    catch(() => {});
+    return () => {active = false;};
   }, [portfolios, health, worst]);
 
   return (
@@ -72,9 +72,9 @@ export default function FinanceHealthCard() {
         background: "rgba(177,191,199,0.45)",
         backdropFilter: "blur(12px) saturate(1.3)",
         WebkitBackdropFilter: "blur(12px) saturate(1.3)",
-        border: "1px solid rgba(255,255,255,0.25)",
-      }}
-    >
+        border: "1px solid rgba(255,255,255,0.25)"
+      }}>
+      
       {/* Header linksboven (op blauw glas, boven het glas-paneel) */}
       <p className="absolute top-3 left-3 z-30 text-foreground/70 text-[10px] uppercase tracking-[0.2em] font-light">
         Financial Health
@@ -84,13 +84,13 @@ export default function FinanceHealthCard() {
       <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none">
         <div
           className="ontwerp-dot-bounce rounded-full"
-          style={{ width: "58%", aspectRatio: "1 / 1", background: attention, boxShadow: "0 10px 30px -8px rgba(0,0,0,0.4)" }}
-        />
+          style={{ width: "58%", aspectRatio: "1 / 1", background: attention, boxShadow: "0 10px 30px -8px rgba(0,0,0,0.4)" }} />
+        
       </div>
 
       {/* Glazen kaart — flush, 4 ronde hoeken, schaduw op blauw, hoogte = health % */}
       <div
-        className="absolute z-10 overflow-hidden"
+        className="absolute z-10 overflow-hidden opacity-100"
         style={{
           left: 0,
           right: 0,
@@ -102,9 +102,9 @@ export default function FinanceHealthCard() {
           WebkitBackdropFilter: "blur(96px) saturate(1.4)",
           border: "1px solid rgba(255,255,255,0.18)",
           boxShadow: "0 -16px 34px -12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3)",
-          transition: "top 0.6s cubic-bezier(0.16,1,0.3,1)",
-        }}
-      >
+          transition: "top 0.6s cubic-bezier(0.16,1,0.3,1)"
+        }}>
+        
         {/* Giulia insight linksboven op het glas */}
         <p className="absolute top-3 left-3 right-16 text-white/90 text-[11px] font-light leading-snug" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.25)" }}>
           {insight || "…"}
@@ -118,12 +118,12 @@ export default function FinanceHealthCard() {
             color: "rgba(255,255,255,0.5)",
             letterSpacing: "-0.06em",
             right: "-4%",
-            bottom: "-26%",
-          }}
-        >
+            bottom: "-26%"
+          }}>
+          
           {health}
         </span>
       </div>
-    </div>
-  );
+    </div>);
+
 }
