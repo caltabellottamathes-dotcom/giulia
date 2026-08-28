@@ -9,6 +9,7 @@ import ForecastChart from "@/life/components/finance/ForecastChart";
 import HebbenBestedenBar from "@/life/components/finance/HebbenBestedenBar";
 import HealthyMoneyTab from "@/life/components/finance/HealthyMoneyTab";
 import ThingsHandleWidget from "@/life/widgets/new/ThingsHandleWidget";
+import ProjectsFocusWidget from "@/focus/widgets/new/ProjectsFocusWidget";
 import NewDocumentsCard from "@/life/components/finance/NewDocumentsCard";
 import { fmtEuro, FREQ_LABELS, calcPortfolio, upcomingExpenses } from "@/lib/financeUtils";
 
@@ -95,18 +96,18 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     );
   }
 
-  // ---- WALLET / PORTEFEUILLES ---- bento: Things-handle + bars + potjes
+  // ---- WALLET / PORTEFEUILLES ---- bento: What I'm Building + bars + potjes
   if (tab === "PORTEFEUILLES") {
     const active = (portfolios || []).filter((p) => !p.archived);
     return (
-      <div className="grid gap-4 lg:grid-cols-[300px_1fr] items-start">
-        <ThingsHandleWidget />
-        <div className="grid gap-4 content-start">
+      <div className="grid gap-4 content-start">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Tile><ProjectsFocusWidget /></Tile>
           <Tile><PortfolioBarsWidget portfolios={portfolios} expenses={expenses} onOpenPortfolio={onOpenPortfolio} /></Tile>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {active.length === 0 && <Tile className="p-4"><p className="text-sm text-muted-foreground italic">Nog geen portefeuilles.</p></Tile>}
-            {active.map((p) => <Tile key={p.id}><PortfolioCard portfolio={p} expenses={expenses} onClick={() => onOpenPortfolio(p)} /></Tile>)}
-          </div>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {active.length === 0 && <Tile className="p-4"><p className="text-sm text-muted-foreground italic">Nog geen portefeuilles.</p></Tile>}
+          {active.map((p) => <Tile key={p.id}><PortfolioCard portfolio={p} expenses={expenses} onClick={() => onOpenPortfolio(p)} /></Tile>)}
         </div>
       </div>
     );
@@ -119,7 +120,9 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     const potName = (id) => (portfolios || []).find((p) => p.id === id)?.name;
     const upcoming = upcomingExpenses(expenses, 30);
     return (
-      <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr] items-start">
+      <div className="grid gap-4 lg:grid-cols-[300px_1.4fr] items-start">
+        <ThingsHandleWidget />
+        <div className="grid gap-4 content-start">
         <Tile className="p-4">
           <div className="flex flex-wrap items-center gap-3">
             <select value={potFilter} onChange={(e) => setPotFilter(e.target.value)} className="rounded-xl glass-1 px-3 py-2 text-sm outline-none">
@@ -160,6 +163,7 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
               />
             </Tile>
           )}
+        </div>
         </div>
       </div>
     );

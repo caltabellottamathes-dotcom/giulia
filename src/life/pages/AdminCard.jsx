@@ -127,7 +127,11 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
   const c = TAB_COPY[tab] || TAB_COPY.OVERVIEW;
   const dyn = data ? buildDynamic(tab, data) : null;
   const items = dyn?.items || [];
-  const h2Clean = c.heading2.replace(/\.+$/, "");
+  const cleanTail = (s) => String(s).replace(/[.,;:!?]+$/, "").trim();
+  const t1 = cleanTail(c.title1);
+  const t2 = cleanTail(c.title2);
+  const h1 = cleanTail(c.heading1);
+  const h2 = cleanTail(c.heading2);
   const [eyeA, ...eyeRest] = c.eyebrow.split("|");
   const eyeB = eyeRest.length ? " | " + eyeRest.join("|").trim() : "";
 
@@ -148,7 +152,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
           </div>
 
           <h2 className="font-display font-bold uppercase tracking-[-0.035em] leading-[0.92] mt-6" style={{ color: BLACK, fontSize: "clamp(34px, 3vw, 54px)", textShadow: "0 0 18px rgba(177,191,199,0.7), 0 0 38px rgba(177,191,199,0.4)" }}>
-            {c.title1}<br />{c.title2}<span aria-hidden className="ontwerp-dot-bounce inline-block rounded-full bg-current ml-[6px] align-baseline" style={{ color: BLUE, width: "clamp(8px, 0.7vw, 13px)", height: "clamp(8px, 0.7vw, 13px)" }} />
+            {t1}<br />{t2}<span aria-hidden className="ontwerp-dot-bounce inline-block rounded-full bg-current ml-[6px] align-baseline" style={{ color: BLUE, width: "clamp(8px, 0.7vw, 13px)", height: "clamp(8px, 0.7vw, 13px)" }} />
           </h2>
 
           <div className="ml-[80px] mt-8 space-y-2">
@@ -159,7 +163,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
           <div className="flex-1 min-h-8" />
 
           <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98] mb-5" style={{ color: NUM_COLORS[0], fontSize: "clamp(24px, 1.9vw, 38px)" }}>
-            {c.heading1}<br />{h2Clean}<BounceBalls colors={NUM_COLORS} />
+            {h1}<br />{h2}<BounceBalls colors={NUM_COLORS} />
           </h3>
 
           <div className="h-px w-full" style={{ background: "#d8dab3" }} />

@@ -85,6 +85,9 @@ export default function FinanceHealthCard() {
 
   return (
     <div className="relative w-full h-full rounded-[20px] overflow-hidden" style={{ background: "rgba(176,188,194,0.92)" }}>
+      <p className="absolute top-3 left-3 z-30 text-white/80 text-[10px] uppercase tracking-[0.2em] font-light" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.3)" }}>
+        Financial Health
+      </p>
       {/* BounceDot — achter het glas, stuitert harder */}
       <div className="absolute inset-0 flex items-center justify-center z-0 pointer-events-none">
         <div
@@ -93,20 +96,18 @@ export default function FinanceHealthCard() {
         />
       </div>
 
-      {/* Normale glaskaart — statisch, groeit niet */}
+      {/* Glaskaart — statisch, bedekt onderste 2/3 van de blauwe kaart */}
       <div
-        className="absolute inset-0 z-10 rounded-[20px] overflow-hidden"
+        className="absolute left-0 right-0 bottom-0 z-10 overflow-hidden rounded-b-[20px]"
         style={{
+          top: "33.33%",
           background: "rgba(118,118,118,0.30)",
           backdropFilter: "blur(40px)",
           WebkitBackdropFilter: "blur(40px)",
-          boxShadow: "0 18px 40px -16px rgba(0,0,0,0.45)"
+          boxShadow: "0 -18px 40px -16px rgba(0,0,0,0.45)"
         }}
       >
-        <p className="absolute top-3 left-3 z-30 text-white/75 text-[10px] uppercase tracking-[0.2em] font-light" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.3)" }}>
-          Financial Health
-        </p>
-        <p className="absolute top-9 left-3 right-3 text-white/85 text-[11px] font-light leading-snug" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.3)" }}>
+        <p className="absolute top-3 left-3 right-3 text-white/85 text-[11px] font-light leading-snug" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.3)" }}>
           {insight || "…"}
         </p>
         <span
