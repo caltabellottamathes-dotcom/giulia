@@ -1,6 +1,5 @@
 import React from "react";
 import { useMediaLibrary, kindOfUpload } from "@/lib/useMediaLibrary";
-import { useMediaViewer } from "@/lib/MediaViewerContext";
 import { FileText, Film, Music, Image as ImageIcon } from "lucide-react";
 
 function KindIcon({ kind, className }) {
@@ -12,16 +11,17 @@ function KindIcon({ kind, className }) {
 
 /**
  * NewDocumentsCard — witte kaart met de 5 laatst toegevoegde bestanden uit de
- * mediatheek (elk type). Eén klik opent het bestand direct in de Media Stage
- * met de juiste speler (beeld / video / audio / pdf).
+ * mediatheek (elk type). Provider-onafhankelijk: op klik wordt het bestand als
+ * pending media geplaatst + de Media Stage geopend; MediaStage pakt het op.
  */
 export default function NewDocumentsCard() {
   const { items, loading } = useMediaLibrary();
-  const { previewMedia } = useMediaViewer();
   const list = (items || []).slice(0, 5);
 
   const open = (item) => {
-    previewMedia({ name: item.filename, url: item.file_url, type: kindOfUpload(item) });
+    const detail = { name: item.filename, url: item.file_url, type: kindOfUpload(item) };
+    window.__giuliaPendingMedia = detail;
+    window.dispatchEvent(new CustomEvent("giulia:open-media", { detail }));
     window.dispatchEvent(new CustomEvent("giulia:ontwerp-stage", { detail: "media" }));
   };
 

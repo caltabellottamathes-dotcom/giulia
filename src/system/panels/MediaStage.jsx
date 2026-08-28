@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useMediaViewer } from "@/lib/MediaViewerContext";
 import ImageViewerPanel from "@/system/panels/viewers/ImageViewerPanel";
 import VideoPlayerPanel from "@/system/panels/viewers/VideoPlayerPanel";
@@ -9,10 +9,21 @@ import { Film } from "lucide-react";
 /**
  * MediaStage — transparante stage (zelfde glas als de tab-strook) die het
  * aangeklikte bestand toont met de echte speler: afbeelding, video, audio of
- * pdf/document. Leest uit de MediaViewerContext → opent in één klik.
+ * pdf/document. Leest uit de MediaViewerContext. Pikt pending media op bij
+ * mount (één klik) én luistert naar giulia:open-media.
  */
 export default function MediaStage() {
-  const { media } = useMediaViewer();
+  const { media, previewMedia } = useMediaViewer();
+
+  useEffect(() => {
+    if (window.__giuliaPendingMedia) {
+      previewMedia(window.__giuliaPendingMedia);
+      window.__giuliaPendingMedia = null;
+    }
+    const h = (e) => { if (e.detail) previewMedia(e.detail); };
+    window.addEventListener("giulia:open-media", h);
+    return () => window.removeEventListener("giulia:open-media", h);
+  }, [previewMedia]);
 
   return (
     <div className="h-full w-full flex flex-col overflow-y-auto p-3">
