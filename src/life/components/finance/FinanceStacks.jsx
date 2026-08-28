@@ -6,7 +6,7 @@ import HealthBadge from "@/life/components/finance/HealthBadge";
 import DistributionBar from "@/life/components/finance/DistributionBar";
 import WalletsBuildingWidget from "@/life/components/finance/WalletsBuildingWidget";
 import TransferBetweenWallets from "@/life/components/finance/TransferBetweenWallets";
-import DinnerWidget from "@/life/widgets/new/DinnerWidget";
+import WalletPhotoCard from "@/life/components/finance/WalletPhotoCard";
 import PortfolioBarsWidget from "@/life/components/finance/PortfolioBarsWidget";
 import ForecastChart from "@/life/components/finance/ForecastChart";
 import HebbenBestedenBar from "@/life/components/finance/HebbenBestedenBar";
@@ -98,14 +98,23 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     );
   }
 
-  // ---- WALLETS ---- bento: What I'm Building (wallets) + transfer + dinner x6
+  // ---- WALLETS ---- bento: Wallets widget + transfer + 6 wallet PhotoCards (vullen resthoogte)
   if (tab === "PORTEFEUILLES") {
+    const wallets = (portfolios || []).filter((p) => !p.archived && p.active !== false).slice(0, 6);
+    const PHOTOS = [
+      "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/08a2e3d43_Make_blurred_motion_photo_withou_202608281636.jpeg",
+      "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/502c59dfe_Textile_in_motion_detail_shot_202608282236.jpeg",
+      "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/b37f0e218_Photographing_textile_in_motion_2K_202608282236.jpeg",
+      "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/3e01cb4e4_Textile_in_motion_close-up_2K_202608282234.jpeg",
+      "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/12dcc9b96_Textile_in_motion_close-up_2K_202608282233.jpeg",
+      "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/a651a1b5c_Man_in_motion_close-up_2K_202608282233.jpeg",
+    ];
     return (
-      <div className="grid gap-4 content-start">
+      <div className="h-full flex flex-col gap-4">
         <WalletsBuildingWidget />
         <TransferBetweenWallets />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[0, 1, 2, 3, 4, 5].map((i) => <DinnerWidget key={i} />)}
+        <div className="flex-1 min-h-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2 gap-4">
+          {wallets.map((p, i) => <WalletPhotoCard key={p.id} wallet={p} expenses={expenses} photoUrl={PHOTOS[i % PHOTOS.length]} />)}
         </div>
       </div>
     );
