@@ -97,7 +97,7 @@ export default function FinanceHealthCard() {
       <div
         className="absolute inset-0 z-10 rounded-[20px] overflow-hidden"
         style={{
-          background: "rgba(118,118,118,0.55)",
+          background: "rgba(118,118,118,0.30)",
           backdropFilter: "blur(40px)",
           WebkitBackdropFilter: "blur(40px)",
           boxShadow: "0 18px 40px -16px rgba(0,0,0,0.45)"
