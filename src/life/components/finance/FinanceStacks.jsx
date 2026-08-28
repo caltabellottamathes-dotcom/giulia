@@ -5,6 +5,8 @@ import PortfolioCard from "@/life/components/finance/PortfolioCard";
 import HealthBadge from "@/life/components/finance/HealthBadge";
 import DistributionBar from "@/life/components/finance/DistributionBar";
 import WalletsBuildingWidget from "@/life/components/finance/WalletsBuildingWidget";
+import TransferBetweenWallets from "@/life/components/finance/TransferBetweenWallets";
+import DinnerWidget from "@/life/widgets/new/DinnerWidget";
 import PortfolioBarsWidget from "@/life/components/finance/PortfolioBarsWidget";
 import ForecastChart from "@/life/components/finance/ForecastChart";
 import HebbenBestedenBar from "@/life/components/finance/HebbenBestedenBar";
@@ -96,15 +98,14 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     );
   }
 
-  // ---- WALLETS ---- bento: What I'm Building (wallets) + wallet-kaarten
+  // ---- WALLETS ---- bento: What I'm Building (wallets) + transfer + dinner x6
   if (tab === "PORTEFEUILLES") {
-    const active = (portfolios || []).filter((p) => !p.archived);
     return (
       <div className="grid gap-4 content-start">
         <WalletsBuildingWidget />
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {active.length === 0 && <Tile className="p-4"><p className="text-sm text-muted-foreground italic">Nog geen wallets.</p></Tile>}
-          {active.map((p) => <Tile key={p.id}><PortfolioCard portfolio={p} expenses={expenses} onClick={() => onOpenPortfolio(p)} /></Tile>)}
+        <TransferBetweenWallets />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[0, 1, 2, 3, 4, 5].map((i) => <DinnerWidget key={i} />)}
         </div>
       </div>
     );
@@ -166,9 +167,11 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     );
   }
 
-  // ---- INKOMEN ---- bento: verdeling + bronnen
+  // ---- INKOMEN ---- bento: verdeling + bronnen + wallets
   if (tab === "INKOMEN") {
+    const wallets = (portfolios || []).filter((p) => !p.archived);
     return (
+      <div className="grid gap-4 content-start">
       <div className="grid gap-4 lg:grid-cols-[1fr_1fr] items-start">
         <Tile className="p-4">
           <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Maandelijkse verdeling</p>
@@ -205,6 +208,14 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
             )}
           </div>
         </Tile>
+      </div>
+      <div>
+        <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Wallets · {wallets.length}</p>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {wallets.length === 0 && <Tile className="p-4"><p className="text-sm text-muted-foreground italic">Nog geen wallets.</p></Tile>}
+          {wallets.map((p) => <Tile key={p.id}><PortfolioCard portfolio={p} expenses={expenses} onClick={() => onOpenPortfolio(p)} /></Tile>)}
+        </div>
+      </div>
       </div>
     );
   }
