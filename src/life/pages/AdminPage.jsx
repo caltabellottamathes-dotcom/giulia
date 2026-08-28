@@ -132,7 +132,7 @@ export default function AdminPage() {
           <motion.div animate={{ x: isStage ? "24vw" : 0 }} transition={{ duration: 0.7, ease: EASE }}
             className="absolute inset-0 z-20">
             <AnimatePresence initial={false}>
-              <AdminCard key={tab} tab={tab} />
+              <AdminCard key={tab} tab={tab} onNavigate={setTab} />
             </AnimatePresence>
           </motion.div>
         </div>

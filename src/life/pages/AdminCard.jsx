@@ -5,6 +5,7 @@ import { base44 } from "@/api/base44Client";
 import { fmtEuro, calcPortfolio, upcomingExpenses, monthlyDistribution, totalMoney, totalReserved } from "@/lib/financeUtils";
 import WalletBarChartWidget from "@/life/components/finance/WalletBarChartWidget";
 import WalletTreemapBar from "@/life/components/finance/WalletTreemapBar";
+import FinanceStacks from "@/life/components/finance/FinanceStacks";
 
 const EASE = [0.16, 1, 0.3, 1];
 const BLUE = "#b1bfc7";
@@ -83,30 +84,42 @@ function buildDynamic(tab, data) {
   return { items, itemsLabel, body, rest, restLabel };
 }
 
-export default function AdminCard({ tab }) {
+export default function AdminCard({ tab, onNavigate }) {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const [p, e, i] = await Promise.all([
-          base44.entities.Portfolio.list().catch(() => []),
-          base44.entities.AdminObligation.list().catch(() => []),
-          base44.entities.Income.list().catch(() => []),
-        ]);
-        if (!alive) return;
-        const portfolios = (p || []).filter((x) => !x.archived);
-        const expenses = e || [];
-        const incomes = i || [];
-        const dist = monthlyDistribution(incomes, portfolios, expenses);
-        const tm = totalMoney(portfolios, incomes, expenses);
-        const tr = totalReserved(portfolios);
-        setData({ portfolios, expenses, incomes, dist, totalMoney: tm, totalReserved: tr });
-      } catch { if (alive) setData(null); }
-    })();
-    return () => { alive = false; };
-  }, []);
+
+  const load = async () => {
+    try {
+      const [p, e, i, d] = await Promise.all([
+        base44.entities.Portfolio.list().catch(() => []),
+        base44.entities.AdminObligation.list().catch(() => []),
+        base44.entities.Income.list().catch(() => []),
+        base44.entities.Document.list().catch(() => []),
+      ]);
+      const portfolios = (p || []).filter((x) => !x.archived);
+      const expenses = e || [];
+      const incomes = i || [];
+      const docs = d || [];
+      const dist = monthlyDistribution(incomes, portfolios, expenses);
+      const tm = totalMoney(portfolios, incomes, expenses);
+      const tr = totalReserved(portfolios);
+      setData({ portfolios, expenses, incomes, docs, dist, totalMoney: tm, totalReserved: tr });
+    } catch { setData(null); }
+  };
+  useEffect(() => { load(); }, []);
+
+  // Handlers — done/delete direct + reload; edit/open sturen naar de juiste tab.
+  const reload = () => load();
+  const goTab = (t) => (onNavigate ? onNavigate(t) : navigate(`/life/personal-admin?tab=${t}`));
+  const handlers = {
+    onOpenPortfolio: (p) => goTab("PORTEFEUILLES"),
+    onDoneExpense: async (e) => { try { await base44.entities.AdminObligation.update(e.id, { status: "done", last_payment_date: new Date().toISOString().slice(0, 10) }); await reload(); } catch {} },
+    onEditExpense: (e) => goTab("LASTEN"),
+    onDeleteExpense: async (e) => { try { await base44.entities.AdminObligation.delete(e.id); await reload(); } catch {} },
+    onEditIncome: (i) => goTab("INKOMEN"),
+    onDeleteIncome: async (i) => { try { await base44.entities.Income.delete(i.id); await reload(); } catch {} },
+    onNavigate: goTab,
+  };
 
   const c = TAB_COPY[tab] || TAB_COPY.OVERVIEW;
   const dyn = data ? buildDynamic(tab, data) : null;
@@ -156,7 +169,7 @@ export default function AdminCard({ tab }) {
             <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>{dyn?.itemsLabel || ""}</p>
             {items.length === 0 && <p className="font-body text-[12px]" style={{ color: INK }}>{data ? "Niets dringends." : "Laden…"}</p>}
             {items.map((it, idx) => (
-              <button key={it.n} onClick={() => navigate(`/life/personal-admin?tab=${tab}`)} className="flex gap-3 items-end text-left w-full hover:opacity-70 transition">
+              <button key={it.n} onClick={() => goTab(tab)} className="flex gap-3 items-end text-left w-full hover:opacity-70 transition">
                 <span className="w-[84px] shrink-0 flex justify-end items-end gap-[5px]">
                   <BounceBalls color={NUM_COLORS[idx % 3]} count={idx + 1} ml="0" />
                   <span className="font-display font-bold leading-none" style={{ color: NUM_COLORS[idx % 3], fontSize: "30px" }}>{it.n}</span>
@@ -176,18 +189,32 @@ export default function AdminCard({ tab }) {
         </div>
       </div>
 
-      {/* Rechts — bento met wallet bar-chart widget + income treemap (glazen kaarten, alle tabs) */}
-      <div className="flex-1 min-w-0 p-6 flex flex-col gap-4">
-        <div className="flex-[1.4] min-h-0 overflow-hidden rounded-[18px]">
-          <WalletBarChartWidget />
-        </div>
-        <div className="flex-[0.5] min-h-0 overflow-hidden rounded-[18px]">
-          <WalletTreemapBar />
-        </div>
-        <div className="flex-1 flex gap-4 min-h-0">
-          <div className="flex-[0.9] rounded-[18px]" style={{ background: CARD, boxShadow: SHADOW }} />
-          <div className="flex-[1.5] rounded-[18px]" style={{ background: CARD, boxShadow: SHADOW }} />
-        </div>
+      {/* RECHTS — Overview: 2 widgets + bento. Andere tabs: echte FinanceStacks-elementen. */}
+      <div className="flex-1 min-w-0 h-full flex flex-col">
+        {tab === "OVERVIEW" ? (
+          <div className="flex-1 min-h-0 p-6 flex flex-col gap-4">
+            <div className="flex-[1.4] min-h-0 overflow-hidden rounded-[18px]">
+              <WalletBarChartWidget />
+            </div>
+            <div className="flex-[0.5] min-h-0 overflow-hidden rounded-[18px]">
+              <WalletTreemapBar />
+            </div>
+            <div className="flex-1 flex gap-4 min-h-0">
+              <div className="flex-[0.9] rounded-[18px]" style={{ background: CARD, boxShadow: SHADOW }} />
+              <div className="flex-[1.5] rounded-[18px]" style={{ background: CARD, boxShadow: SHADOW }} />
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 min-h-0 overflow-y-auto p-6">
+            {data ? (
+              <FinanceStacks tab={tab} data={data} {...handlers} />
+            ) : (
+              <div className="space-y-3">
+                {[0, 1, 2, 3].map((i) => <div key={i} className="h-24 rounded-2xl shimmer" />)}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </motion.div>
   );
