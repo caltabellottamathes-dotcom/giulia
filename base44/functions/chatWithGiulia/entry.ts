@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { geminiGenerate, geminiEmbed, cosineSimilarity } from '../../shared/gemini.ts';
+import { calcPortfolio, monthlyDistribution } from '../../shared/financeEngine.ts';
 import { AGENT_CONTEXT, GIULIA_TONE } from '../../shared/agentContext.ts';
 import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
 import { logActivity } from '../../shared/learningLayer.ts';
@@ -101,7 +102,10 @@ export default async function (req) {
       pendingNotifications,
       protocolDocs,
       upcomingEvents,
-      activeTherapy
+      activeTherapy,
+      allPortfolios,
+      allExpenses,
+      allIncomes
     ] = await Promise.all([
       sr.entities.Memory.list("-created_date", 10).catch(() => []),
       // Recente projecten — Giulia weet wat actueel is (ook gepauzeerd/afgerond).
@@ -116,6 +120,9 @@ export default async function (req) {
       sr.entities.Document.filter({ document_type: "reference" }).catch(() => []),
       sr.entities.CalendarEvent.filter({ start: { $gte: new Date(Date.now() - 86400000).toISOString() } }, "start", 8).catch(() => []),
       sr.entities.TherapyTrajectory.filter({ status: "active" }).catch(() => []),
+      sr.entities.Portfolio.filter({ archived: false }, "order", 50).catch(() => []),
+      sr.entities.AdminObligation.list("-created_date", 50).catch(() => []),
+      sr.entities.Income.list("-created_date", 30).catch(() => []),
     ]);
 
     // Semantische geheugen-selectie — alleen bij complexere vragen (sla API-call
@@ -139,6 +146,21 @@ export default async function (req) {
         }
       }
     }
+
+    // FINANCE — Personal Admin snapshot (portefeuilles, lasten, inkomen)
+    const fPortfolios = (allPortfolios || []).filter((p) => !p.archived);
+    const fExpenses = allExpenses || [];
+    const fIncomes = allIncomes || [];
+    const finDist = monthlyDistribution(fIncomes, fPortfolios, fExpenses);
+    const finReserved = Math.round(fPortfolios.reduce((s, p) => s + (Number(p.current_balance) || 0), 0) * 100) / 100;
+    const finTotal = Math.round((finReserved + Math.max(0, finDist.available)) * 100) / 100;
+    const FIN_DAY_MS = 86400000;
+    const finUpcoming = fExpenses
+      .filter((e) => e.status !== "done" && e.next_payment_date)
+      .map((e) => ({ title: e.title, amount: e.expected_amount ?? e.amount, daysUntil: Math.round((new Date(e.next_payment_date).getTime() - Date.now()) / FIN_DAY_MS) }))
+      .filter((e) => e.daysUntil <= 30)
+      .sort((a, b) => a.daysUntil - b.daysUntil)
+      .slice(0, 8);
 
     // Format Context for LLM
     const contextLines = [
@@ -169,7 +191,16 @@ export default async function (req) {
       upcomingEvents.slice(0, 12).map(e => `- ID: ${e.id} | ${e.title} | start: ${e.start} | domain: ${e.domain || "?"} | therapy_trajectory_id: ${e.therapy_trajectory_id || "—"}`).join("\n"),
       ``,
       `THERAPIE-/BEGELEIDINGSTRAJECTEN (actief, ${activeTherapy.length}):`,
-      activeTherapy.map(t => `- ID: ${t.id} | ${t.title} | type: ${t.type} | therapeut: ${t.therapist_name || "—"} | next: ${t.next_appointment || "—"}`).join("\n")
+      activeTherapy.map(t => `- ID: ${t.id} | ${t.title} | type: ${t.type} | therapeut: ${t.therapist_name || "—"} | next: ${t.next_appointment || "—"}`).join("\n"),
+      ``,
+      `PERSOONLIJKE ADMIN / FINANCE:`,
+      `TOTAL MONEY €${Math.round(finTotal)} · BESTEMD €${Math.round(finReserved)} · VRIJ €${Math.round(Math.max(0, finDist.available))} · INKOMEN/mnd €${Math.round(finDist.income)} · RESERVERINGEN/mnd €${Math.round(finDist.reserved)}`,
+      `Portefeuilles (${fPortfolios.length}):`,
+      fPortfolios.map((p) => { const c = calcPortfolio(p, fExpenses.filter((e) => e.portfolio_id === p.id)); return `- ${p.name} [${p.kind}] saldo €${Math.round(p.current_balance || 0)} · reservering €${Math.round(p.monthly_reservation_actual || 0)}/mnd (aanbevolen €${Math.round(c.recommended_monthly)}) · volgende €${Math.round(c.next_expected_payment)} ${c.next_payment_date || ""} · status ${c.status}`; }).join("\n"),
+      `Komende betalingen (${finUpcoming.length}):`,
+      finUpcoming.map((e) => `- ${e.title} · €${Math.round(e.amount)} · ${e.daysUntil < 0 ? "te laat" : `${e.daysUntil}d`}`).join("\n"),
+      `Inkomstenbronnen (${fIncomes.length}):`,
+      fIncomes.map((i) => `- ${i.description || i.category || "Inkomen"} · €${i.amount} · ${i.frequency || "monthly"} · ${i.status}`).join("\n")
     ].join("\n");
 
     // 2. THE SYSTEM PROMPT (The Personality & Rules)

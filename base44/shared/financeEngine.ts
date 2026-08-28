@@ -42,6 +42,7 @@ export interface ExpenseLike {
   recurrence?: string;
   next_payment_date?: string;
   status?: string;
+  portfolio_id?: string;
   min_amount?: number;
   max_amount?: number;
 }
@@ -74,7 +75,7 @@ export function monthsUntil(dateStr?: string): number | null {
 
 /** Core per-portfolio computation. expenses = all AdminObligations linked to this portfolio. */
 export function calcPortfolio(p: PortfolioLike, expenses: ExpenseLike[]): PortfolioCalc {
-  const linked = expenses.filter((e) => e.status !== "done");
+  const linked = expenses.filter((e) => e.portfolio_id === p.id && e.status !== "done");
 
   // recommended monthly = sum of normalized expense amounts
   let recommended = 0;
