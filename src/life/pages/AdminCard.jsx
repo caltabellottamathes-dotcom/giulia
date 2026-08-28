@@ -111,6 +111,13 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
   };
   useEffect(() => { load(); }, []);
 
+  // Stage-edits (wallet/expense) vragen om een herladen van de bento-data.
+  useEffect(() => {
+    const h = () => load();
+    window.addEventListener("giulia:admin-reload", h);
+    return () => window.removeEventListener("giulia:admin-reload", h);
+  }, []);
+
   // Handlers — done/delete direct + reload; edit/open sturen naar de juiste tab.
   const reload = () => load();
   const goTab = (t) => (onNavigate ? onNavigate(t) : navigate(`/life/personal-admin?tab=${t}`));
@@ -122,6 +129,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
     onEditIncome: (i) => goTab("INKOMEN"),
     onDeleteIncome: async (i) => { try { await base44.entities.Income.delete(i.id); await reload(); } catch {} },
     onNavigate: goTab,
+    onReload: reload,
   };
 
   const c = TAB_COPY[tab] || TAB_COPY.OVERVIEW;
@@ -220,7 +228,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
               </div>
             </div>
           </div>
-        ) : tab === "PORTEFEUILLES" ? (
+        ) : (tab === "PORTEFEUILLES" || tab === "LASTEN") ? (
           <div className="flex-1 min-h-0 pl-6 pr-6 lg:-ml-[48px] pb-6 pt-[68px]">
             {data ? (
               <FinanceStacks tab={tab} data={data} {...handlers} />

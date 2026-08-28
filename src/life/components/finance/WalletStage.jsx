@@ -3,6 +3,7 @@ import { ArrowLeft, Save } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { fmtEuro, FREQ_LABELS } from "@/lib/financeUtils";
 import { useToast } from "@/components/ui/use-toast";
+import StageSelect from "./StageSelect";
 
 const KINDS = ["vaste_last", "onvoorzien", "sparen"];
 const FREQS = ["weekly", "biweekly", "monthly", "bimonthly", "quarterly", "semiannual", "annual", "once", "variable"];
@@ -13,8 +14,8 @@ const input = "w-full rounded-xl bg-white/10 border border-white/15 px-3 py-2 te
 const label = "text-[9px] uppercase tracking-[0.18em] text-ivory/60 font-semibold mb-1 block";
 const sub = "text-[9px] text-ivory/50 mb-1 block";
 
-/** WalletStage — opent in het Admin-paneel. Toont alle informatie en data over
- *  één wallet én een complete inline editor om alles handmatig in te stellen. */
+/** WalletStage — toont alle informatie + data over één wallet én een complete
+ *  inline editor. OS-stijl dropdowns (StageSelect). */
 export default function WalletStage({ walletId, onClose }) {
   const { toast } = useToast();
   const [wallet, setWallet] = useState(null);
@@ -45,15 +46,12 @@ export default function WalletStage({ walletId, onClose }) {
   }, [walletId]);
 
   if (!wallet || !form) {
-    return (
-      <div className="h-full flex items-center justify-center text-ivory/60">
-        <div className="h-5 w-5 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" />
-      </div>
-    );
+    return <div className="h-full flex items-center justify-center text-ivory/60"><div className="h-5 w-5 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" /></div>;
   }
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const num = (v) => (v === "" || v == null ? 0 : Number(v));
+  const reload = () => window.dispatchEvent(new CustomEvent("giulia:admin-reload"));
 
   const save = async () => {
     setSaving(true);
@@ -63,6 +61,7 @@ export default function WalletStage({ walletId, onClose }) {
       await base44.entities.Portfolio.update(walletId, updates);
       toast({ title: "Wallet opgeslagen" });
       setWallet({ ...wallet, ...updates });
+      reload();
     } catch {
       toast({ title: "Opslaan mislukt", variant: "destructive" });
     } finally {
@@ -85,7 +84,6 @@ export default function WalletStage({ walletId, onClose }) {
       <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-3 pb-4 space-y-5">
         <h2 className="text-[20px] font-display font-bold tracking-[-0.02em] leading-tight">{form.name}</h2>
 
-        {/* Identiteit */}
         <div className="space-y-2">
           <p className={label}>Identiteit</p>
           <input className={input} placeholder="Naam" value={form.name || ""} onChange={(e) => set("name", e.target.value)} />
@@ -96,9 +94,7 @@ export default function WalletStage({ walletId, onClose }) {
             </div>
             <div>
               <span className={sub}>Soort</span>
-              <select className={input} value={form.kind || "vaste_last"} onChange={(e) => set("kind", e.target.value)}>
-                {KINDS.map((k) => <option key={k} value={k} className="text-foreground">{k}</option>)}
-              </select>
+              <StageSelect value={form.kind || "vaste_last"} onChange={(v) => set("kind", v)} options={KINDS.map((k) => ({ value: k, label: k }))} />
             </div>
           </div>
           <input className={input} placeholder="Categorie" value={form.category || ""} onChange={(e) => set("category", e.target.value)} />
@@ -106,7 +102,6 @@ export default function WalletStage({ walletId, onClose }) {
           <textarea className={input} rows={2} placeholder="Beschrijving" value={form.description || ""} onChange={(e) => set("description", e.target.value)} />
         </div>
 
-        {/* Saldi */}
         <div className="space-y-2">
           <p className={label}>Saldi</p>
           <div className="grid grid-cols-2 gap-2">
@@ -117,29 +112,22 @@ export default function WalletStage({ walletId, onClose }) {
           </div>
         </div>
 
-        {/* Planning */}
         <div className="space-y-2">
           <p className={label}>Planning</p>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <span className={sub}>Frequentie</span>
-              <select className={input} value={form.payment_frequency || "monthly"} onChange={(e) => set("payment_frequency", e.target.value)}>
-                {FREQS.map((f) => <option key={f} value={f} className="text-foreground">{FREQ_LABELS[f] || f}</option>)}
-              </select>
+              <StageSelect value={form.payment_frequency || "monthly"} onChange={(v) => set("payment_frequency", v)} options={FREQS.map((f) => ({ value: f, label: FREQ_LABELS[f] || f }))} />
             </div>
             <div><span className={sub}>Volgende betaling €</span><input type="number" step="0.01" className={input} value={form.next_expected_payment || 0} onChange={(e) => set("next_expected_payment", num(e.target.value))} /></div>
             <div><span className={sub}>Volgende datum</span><input type="date" className={input} value={form.next_payment_date || ""} onChange={(e) => set("next_payment_date", e.target.value)} /></div>
             <div>
               <span className={sub}>Status</span>
-              <select className={input} value={form.status || "on_track"} onChange={(e) => set("status", e.target.value)}>
-                {STATUSES.map((s) => <option key={s} value={s} className="text-foreground">{s}</option>)}
-              </select>
+              <StageSelect value={form.status || "on_track"} onChange={(v) => set("status", v)} options={STATUSES.map((s) => ({ value: s, label: s }))} />
             </div>
             <div>
               <span className={sub}>Prioriteit</span>
-              <select className={input} value={form.priority || "medium"} onChange={(e) => set("priority", e.target.value)}>
-                {PRIOS.map((p) => <option key={p} value={p} className="text-foreground">{p}</option>)}
-              </select>
+              <StageSelect value={form.priority || "medium"} onChange={(v) => set("priority", v)} options={PRIOS.map((p) => ({ value: p, label: p }))} />
             </div>
             <div><span className={sub}>Volgorde</span><input type="number" className={input} value={form.order || 0} onChange={(e) => set("order", num(e.target.value))} /></div>
           </div>
@@ -148,13 +136,11 @@ export default function WalletStage({ walletId, onClose }) {
           </label>
         </div>
 
-        {/* Notities */}
         <div className="space-y-2">
           <p className={label}>Notities</p>
           <textarea className={input} rows={3} value={form.notes || ""} onChange={(e) => set("notes", e.target.value)} />
         </div>
 
-        {/* Gekoppelde data */}
         <div className="space-y-2">
           <p className={label}>Vaste lasten · {expenses.length}</p>
           {expenses.length === 0 && <p className="text-[11px] text-ivory/50 italic">Geen vaste lasten gekoppeld.</p>}

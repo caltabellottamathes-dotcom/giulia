@@ -5,7 +5,6 @@ import { WidgetHeader } from "@/system/widgets/primitives";
 import { useNavigate } from "react-router-dom";
 import { useEntityList } from "@/hooks/useEntity";
 import { useLearningSync } from "@/hooks/useLearningSync";
-import { adminWeather, comingUp, overdueList } from "@/lib/adminUtils";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0a68f996a_ADMIN.jpeg";
 const IVORY = "hsl(var(--ivory))";
@@ -14,14 +13,16 @@ const OLIVE = "#94925d";
 const RIDGE = "#b1bec6";
 const NEON = "#d8dab3";
 
-/** pressure → 3 LIFE-tiers (géén Urgent):
- *  Olive · >14d YOU'RE FINE! · 7–14d YOU'VE GOT TIME.
- *  Ridge · 3–7d KEEP AN EYE. · 1–3d DEAL WITH IT!
- *  Pistachio · <24h NOW, PLEASE! · voorbij MISSED. */
+const DAY = 86400000;
+const isActive = (o) => !!o && o.status !== "done";
+const effDate = (o) => o?.next_payment_date || o?.due_date;
+const daysUntil = (o) => { const d = effDate(o); return d ? Math.round((new Date(d).getTime() - Date.now()) / DAY) : null; };
+const amt = (o) => Number(o?.expected_amount ?? o?.amount) || 0;
+
 function pressure(diff) {
   if (diff == null) return { label: "YOU'RE FINE!", color: OLIVE };
   if (diff < 0) return { label: "MISSED.", color: PISTACHIO };
-  const d = Math.floor(diff / 86400000);
+  const d = Math.floor(diff / DAY);
   if (d >= 15) return { label: "YOU'RE FINE!", color: OLIVE };
   if (d >= 7) return { label: "YOU'VE GOT TIME.", color: OLIVE };
   if (d >= 3) return { label: "KEEP AN EYE.", color: RIDGE };
@@ -29,26 +30,26 @@ function pressure(diff) {
   return { label: "NOW, PLEASE!", color: PISTACHIO };
 }
 
-/** ThingsHandleWidget — P·9x16·SLIDE · "Things to Handle!"
- *  Achter: bij start "Next in the list" + → ; na → "← terug naar start" +
- *  → (tekst verdwijnt). Neon klok DD:UU:MM:SS (bold, beschrijvingen boven),
- *  breedte vult van links (NEXT) tot rechts (pijl). Glaskaart: WIT ghost +
- *  "WHEN / TO HANDLE?" + status + op komst met item + weather.sub. */
-export default function ThingsHandleWidget() {
+/** ThingsHandleWidget — "Things to Handle!" met een live neon klok (DD:UU:MM:SS)
+ *  tot de vervaldatum. Gebruikt de effectieve datum (next_payment_date, anders
+ *  legacy due_date) en het verwachte bedrag, zodat de klok en info voor élk item
+ *  kloppen. */
+export default function ThingsHandleWidget({ className }) {
   const navigate = useNavigate();
   const learnTick = useLearningSync();
   const { data: obs } = useEntityList("AdminObligation", { realtime: true, externalTick: learnTick });
 
-  const weather = useMemo(() => adminWeather(obs || []), [obs]);
-  const coming = useMemo(() => comingUp(obs || []), [obs]);
-  const overdue = useMemo(() => overdueList(obs || []), [obs]);
+  const coming = useMemo(() => (obs || []).filter(isActive).filter(effDate).sort((a, b) => daysUntil(a) - daysUntil(b)), [obs]);
+  const overdue = useMemo(() => coming.filter((o) => daysUntil(o) < 0), [coming]);
+  const sub = overdue.length ? `${overdue.length} te laat — pak het op.` : coming.length === 0 ? "Alles is bij." : coming.length <= 2 ? `${coming.length} op komst.` : `${coming.length} zaken komen eraan.`;
 
   const [idx, setIdx] = useState(0);
   const current = coming.length ? coming[idx % coming.length] : null;
   const atStart = idx === 0;
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
-  const diff = current?.due_date ? new Date(current.due_date).getTime() - now : null;
+
+  const diff = current ? new Date(effDate(current)).getTime() - now : null;
   const hasCurrent = !!current;
   const safe = Math.max(0, diff || 0);
   const dDay = Math.floor(safe / 86400000);
@@ -67,7 +68,7 @@ export default function ThingsHandleWidget() {
   ];
 
   return (
-    <div className="relative w-full aspect-[9/16] rounded-[28px] overflow-hidden cursor-pointer" onClick={() => navigate("/life/admin")}>
+    <div className={`relative w-full ${className || "aspect-[9/16]"} rounded-[28px] overflow-hidden cursor-pointer`} onClick={() => navigate("/life/admin")} style={{ boxShadow: "-16px 16px 40px -16px rgba(0,0,0,0.45)" }}>
       <motion.img src={PHOTO} alt="Things to Handle" className="absolute inset-0 h-full w-full object-cover" initial={{ scale: 1.14, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }} draggable={false} />
       <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(20,22,26,0.92) 8%, rgba(20,22,26,0.42) 50%, rgba(20,22,26,0.20) 100%)" }} />
 
@@ -117,7 +118,6 @@ export default function ThingsHandleWidget() {
         transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
         style={{ background: "rgba(120,128,133,0.18)", backdropFilter: "blur(16px) saturate(1.3)", WebkitBackdropFilter: "blur(16px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.16)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2)" }}
       >
-        {/* WIT ghost-cijfer links-onder, half afgesneden */}
         <span className="absolute pointer-events-none select-none" style={{ left: "-12px", bottom: "-48px", fontSize: "190px", lineHeight: "0.78", fontWeight: 800, color: IVORY, opacity: 0.16, fontFamily: "var(--font-display)", letterSpacing: "-0.04em" }}>{coming.length}</span>
 
         <div className="absolute inset-0 p-4 flex flex-col justify-between" style={{ color: IVORY, textShadow: "0 1px 6px rgba(0,0,0,0.45)" }}>
@@ -129,9 +129,9 @@ export default function ThingsHandleWidget() {
           <div>
             <div className="flex items-baseline gap-2">
               <p className="text-[10px] uppercase tracking-[0.2em] opacity-70 shrink-0">op komst</p>
-              <p className="text-[10px] uppercase tracking-[0.2em] truncate" style={{ color: PISTACHIO }}>{hasCurrent ? `${current.title} · €${current.amount || 0}` : "—"}</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] truncate" style={{ color: PISTACHIO }}>{hasCurrent ? `${current.title} · €${amt(current)}` : "—"}</p>
             </div>
-            <p className="text-[9px] uppercase tracking-[0.16em] opacity-50 mt-1">{weather.sub}</p>
+            <p className="text-[9px] uppercase tracking-[0.16em] opacity-50 mt-1">{sub}</p>
           </div>
         </div>
       </motion.button>

@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import { Pencil, Trash2, FileText, Film, Music, Image as ImageIcon } from "lucide-react";
-import AdminObligationCard from "@/life/components/AdminObligationCard";
 import PortfolioCard from "@/life/components/finance/PortfolioCard";
 import HealthBadge from "@/life/components/finance/HealthBadge";
 import DistributionBar from "@/life/components/finance/DistributionBar";
@@ -12,6 +11,8 @@ import ForecastChart from "@/life/components/finance/ForecastChart";
 import HebbenBestedenBar from "@/life/components/finance/HebbenBestedenBar";
 import HealthyMoneyTab from "@/life/components/finance/HealthyMoneyTab";
 import ThingsHandleWidget from "@/life/widgets/new/ThingsHandleWidget";
+import MonthCalendarCard from "@/life/components/finance/MonthCalendarCard";
+import LastenKanban from "@/life/components/finance/LastenKanban";
 import NewDocumentsCard from "@/life/components/finance/NewDocumentsCard";
 import { fmtEuro, FREQ_LABELS, calcPortfolio, upcomingExpenses } from "@/lib/financeUtils";
 
@@ -44,10 +45,8 @@ const openInMediaStage = (doc) => {
 
 /** FinanceStacks — per-tab bento-grid van zwevende widget-kaartjes (zelfde
  *  floating style als de Overview). Document-items openen in de MediaStage. */
-export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpense, onEditExpense, onDeleteExpense, onEditIncome, onDeleteIncome, onNavigate }) {
+export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpense, onEditExpense, onDeleteExpense, onEditIncome, onDeleteIncome, onNavigate, onReload }) {
   const { portfolios, expenses, incomes, dist, totalMoney, totalReserved, docs } = data;
-  const [potFilter, setPotFilter] = useState("");
-  const [showDone, setShowDone] = useState(false);
 
   if (tab === "OVERVIEW") {
     const badges = (portfolios || []).filter((p) => !p.archived).map((p) => ({ p, calc: calcPortfolio(p, expenses) }));
@@ -120,58 +119,17 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     );
   }
 
-  // ---- LASTEN ---- bento: komende betalingen + lasten-grid
+  // ---- LASTEN ---- bento: maandkalender + Things to handle + 3-koloms kanban
   if (tab === "LASTEN") {
-    let list = (expenses || []).filter((e) => potFilter ? e.portfolio_id === potFilter : true);
-    list = list.filter((e) => showDone ? true : e.status !== "done");
-    const potName = (id) => (portfolios || []).find((p) => p.id === id)?.name;
-    const upcoming = upcomingExpenses(expenses, 30);
     return (
-      <div className="grid gap-4 lg:grid-cols-[300px_1.4fr] items-start">
-        <ThingsHandleWidget />
-        <div className="grid gap-4 content-start">
-        <Tile className="p-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <select value={potFilter} onChange={(e) => setPotFilter(e.target.value)} className="rounded-xl glass-1 px-3 py-2 text-sm outline-none">
-              <option value="">Alle wallets</option>
-              {(portfolios || []).filter((p) => !p.archived).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-            <label className="flex items-center gap-1.5 text-sm cursor-pointer">
-              <input type="checkbox" checked={showDone} onChange={(e) => setShowDone(e.target.checked)} />
-              <span>Toon afgerond</span>
-            </label>
-            <p className="text-xs text-muted-foreground ml-auto">{list.length} lasten</p>
+      <div className="h-full flex flex-col gap-4">
+        <div className="flex gap-4 h-[320px] shrink-0">
+          <MonthCalendarCard expenses={expenses} portfolios={portfolios} />
+          <div className="flex-1 min-w-0">
+            <ThingsHandleWidget className="h-full" />
           </div>
-          <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3 mt-4">Komende betalingen · {upcoming.length}</p>
-          {upcoming.length === 0 ? <p className="text-sm text-muted-foreground italic">Rustig — niets binnen 30 dagen.</p> :
-          <div className="flex gap-1 h-28 rounded-xl overflow-hidden shadow-[0_14px_30px_-16px_rgba(0,0,0,0.3)]">
-            {upcoming.slice(0, 10).map((e, i) => {
-              const bg = ["hsl(var(--life-olive))", "hsl(var(--life-ridge))", "hsl(var(--life-pistachio))"][i % 3];
-              const dark = i % 3 === 0;
-              return (
-                <div key={e.id} style={{ flexGrow: Math.max(Number(e.amount) || 1, 1), flexBasis: 0, background: bg }} className={`flex flex-col justify-end p-2.5 min-w-0 ${dark ? "text-ivory" : "text-foreground"}`}>
-                  <p className="text-lg font-display font-semibold tabular-nums leading-none">{fmtEuro(e.amount)}</p>
-                  <p className="text-[9px] uppercase tracking-wide font-semibold truncate mt-1 opacity-80">{e.title}</p>
-                  <p className="text-[9px] opacity-60">{e.daysUntil < 0 ? "te laat" : `${e.daysUntil}d`}</p>
-                </div>
-              );
-            })}
-          </div>}
-        </Tile>
-        <div className="grid gap-4 sm:grid-cols-2 content-start">
-          {list.length === 0 && <Tile className="p-4"><p className="text-sm text-muted-foreground italic">Geen lasten.</p></Tile>}
-          {list.map((e) =>
-            <Tile key={e.id}>
-              <AdminObligationCard
-                item={{ ...e, amount: e.expected_amount ?? e.amount, due_date: e.next_payment_date ?? e.due_date }}
-                action="Open" focus
-                onAction={onDoneExpense} onEdit={onEditExpense} onDelete={onDeleteExpense}
-                extra={potName(e.portfolio_id) ? <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold mt-1 inline-block">{potName(e.portfolio_id)}</span> : null}
-              />
-            </Tile>
-          )}
         </div>
-        </div>
+        <LastenKanban expenses={expenses} portfolios={portfolios} onReload={onReload} />
       </div>
     );
   }
