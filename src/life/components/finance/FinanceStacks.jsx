@@ -5,6 +5,7 @@ import DistributionBar from "@/life/components/finance/DistributionBar";
 import WalletBarChartWidget from "@/life/components/finance/WalletBarChartWidget";
 import FinanceHealthCard from "@/life/components/finance/FinanceHealthCard";
 import ExpenseAllocationBar from "@/life/components/finance/ExpenseAllocationBar";
+import IncomeSourcesWidget from "@/life/components/finance/IncomeSourcesWidget";
 import WalletsBuildingWidget from "@/life/components/finance/WalletsBuildingWidget";
 import TransferBetweenWallets from "@/life/components/finance/TransferBetweenWallets";
 import WalletPhotoCard from "@/life/components/finance/WalletPhotoCard";
@@ -138,45 +139,14 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     );
   }
 
-  // ---- INKOMEN ---- bronnen (full width) + expense-allocation bar + wallets + financial health
+  // ---- INKOMEN ---- maandelijkse verdeling (hover-balk) + inkomstenbronnen widget
   if (tab === "INKOMEN") {
     return (
       <div className="flex flex-col gap-4">
-        {/* Inkomstenbronnen — volledige breedte */}
-        <Tile className="p-4">
-          <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Inkomstenbronnen · {(incomes || []).length}</p>
-          {(incomes || []).length === 0 && <p className="text-sm text-muted-foreground italic">Nog geen inkomensbronnen.</p>}
-          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-            {(incomes || []).map((i) =>
-              <div key={i.id} className="flex items-center justify-between gap-2 rounded-xl bg-white/55 backdrop-blur-md border border-white/60 p-2.5">
-                <div className="min-w-0">
-                  <p className="text-sm font-display font-semibold truncate">{i.description || i.category || "Inkomen"}</p>
-                  <p className="text-[10px] text-muted-foreground">{FREQ_LABELS[i.frequency] || "Maandelijks"} · {i.status}{i.expected_date ? ` · ${new Date(i.expected_date).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}` : ""}</p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="font-display font-semibold tabular-nums">{fmtEuro(i.amount)}</span>
-                  <button onClick={() => onEditIncome(i)} className="p-1.5 rounded-lg hover:bg-foreground/10 transition"><Pencil className="w-3.5 h-3.5" /></button>
-                  <button onClick={() => onDeleteIncome(i)} className="p-1.5 rounded-lg hover:bg-foreground/10 transition"><Trash2 className="w-3.5 h-3.5" /></button>
-                </div>
-              </div>
-            )}
-          </div>
-        </Tile>
-
-        {/* Maandelijkse verdeling — bar per individuele last + lijst */}
         <Tile className="p-4">
           <ExpenseAllocationBar />
         </Tile>
-
-        {/* WalletWidget — bars */}
-        <div className="aspect-[3/2] overflow-hidden rounded-[18px]" style={{ boxShadow: TILE_SHADOW }}>
-          <WalletBarChartWidget />
-        </div>
-
-        {/* Financial Health — resterende ruimte beneden */}
-        <div className="overflow-hidden rounded-[20px] min-h-[280px]" style={{ boxShadow: TILE_SHADOW }}>
-          <FinanceHealthCard />
-        </div>
+        <IncomeSourcesWidget />
       </div>
     );
   }

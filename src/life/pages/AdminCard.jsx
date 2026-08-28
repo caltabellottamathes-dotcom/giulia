@@ -152,7 +152,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
       className="absolute inset-0 rounded-bl-[20px] rounded-r-none bg-white flex overflow-hidden shadow-[-40px_8px_64px_-18px_rgba(0,0,0,0.55)]"
     >
       {/* Editorial — left ~42% */}
-      <div className="w-[38%] h-full flex flex-col overflow-hidden border-r" style={{ borderColor: GREY }}>
+      <div className="relative z-0 w-[38%] h-full flex flex-col overflow-hidden border-r" style={{ borderColor: GREY }}>
         <div className="flex-1 flex flex-col min-h-0 px-6 lg:px-8 pt-7 pb-6">
           <div className="flex items-center justify-between">
             <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}><span className="font-bold">{eyeA.trim()}</span>{eyeB}</p>
@@ -205,7 +205,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
       </div>
 
       {/* RECHTS — Overview: 2 widgets + bento. Andere tabs: echte FinanceStacks-elementen. */}
-      <div className="flex-1 min-w-0 h-full flex flex-col">
+      <div className="relative z-10 flex-1 min-w-0 h-full flex flex-col">
         {tab === "OVERVIEW" ? (
           <div className="flex-1 min-h-0 pl-6 pr-6 lg:-ml-[48px] pb-6 pt-[68px] flex flex-col gap-4">
             <div className="flex-[1.2] min-h-0 flex gap-4">
@@ -239,7 +239,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
             )}
           </div>
         ) : tab === "INKOMEN" ? (
-          <div className="flex-1 min-h-0 pl-6 pr-6 lg:-ml-[48px] pb-6 pt-[68px] overflow-y-auto no-scrollbar">
+          <div className="flex-1 min-h-0 pl-6 pr-6 lg:-ml-[48px] pb-6 pt-[68px]">
             {data ? (
               <FinanceStacks tab={tab} data={data} {...handlers} />
             ) : (
