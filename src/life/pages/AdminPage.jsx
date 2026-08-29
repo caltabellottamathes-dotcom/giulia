@@ -144,9 +144,9 @@ export default function AdminPage() {
               </button>
             )}
           </div>
-          <button onClick={() => setMattiaOpen(true)} title="Mattia" className="mb-3 h-11 w-11 rounded-full flex items-center justify-center transition hover:scale-105 hidden" style={{ background: "#d8dab3", color: "#2a2c30", boxShadow: "0 10px 24px -10px rgba(0,0,0,0.45)" }}>
-            <span className="font-display font-black text-sm">M</span>
-          </button>
+          
+
+          
           <div className="text-[8px] uppercase tracking-[0.22em] text-white [writing-mode:vertical-rl] rotate-180">{isStage ? "MATTIA" : "GIULIA · GIULIA"}</div>
         </div>
 
