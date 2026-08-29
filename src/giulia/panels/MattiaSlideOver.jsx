@@ -2,6 +2,8 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import MattiaPanel from "./MattiaPanel";
+import { Image } from "@/components/ui/image";
+import { LIFE_PHOTO_MATTIA } from "@/lib/lifePhotos";
 
 const EASE = [0.16, 1, 0.3, 1];
 
@@ -20,6 +22,9 @@ export default function MattiaSlideOver({ open, onClose }) {
           className="fixed left-[2%] top-1/2 -translate-y-1/2 w-[400px] max-w-[92vw] h-[88vh] z-[80] rounded-[26px] overflow-hidden"
           style={{ background: "rgba(120,128,133,0.16)", backdropFilter: "blur(56px) saturate(1.45)", WebkitBackdropFilter: "blur(56px) saturate(1.45)", border: "1px solid rgba(255,255,255,0.20)", boxShadow: "0 48px 100px -28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.24)" }}
         >
+          {/* LIFE foto achtergrond */}
+          <Image src={LIFE_PHOTO_MATTIA} fittingType="fill" alt="" className="absolute inset-0 w-full h-full opacity-30" draggable={false} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(248,248,248,0.45), rgba(120,128,133,0.35))" }} />
           {/* pistache bloom */}
           <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(circle at 18% 16%, rgba(216,218,179,0.34), transparent 62%)" }} />
 

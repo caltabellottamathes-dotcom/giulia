@@ -92,6 +92,9 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
   const [data, setData] = useState(null);
   const [editorial, setEditorial] = useState({});
   const [genBusy, setGenBusy] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [longBody, setLongBody] = useState({});
+  const [loadingLong, setLoadingLong] = useState(false);
 
   const load = async () => {
     try {
@@ -156,6 +159,22 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
     onReload: reload,
   };
 
+  const toggleExpand = async () => {
+    if (!expanded && !longBody[tab]) {
+      setLoadingLong(true);
+      try {
+        const digest = data ? `DATA — TOTAL MONEY ${fmtEuro(data.totalMoney)}, BESTEMD ${fmtEuro(data.totalReserved)}, VRIJ ${fmtEuro(Math.max(0, data.dist.available))}, ${data.portfolios.length} wallets, ${data.expenses.length} lasten, ${data.incomes.length} inkomsten. KORTE EDITORIAL: ${bodyText}` : `KORTE EDITORIAL: ${bodyText}`;
+        const res = await base44.integrations.Core.InvokeLLM({
+          prompt: `Je bent Giulia, editor van Personal Admin. Hier is de korte editorial voor de ${tab}-tab. Schrijf een UITGEBREIDE versie (250-400 woorden) in dezelfde compacte, ADHD-ritme stijl: korte zinnen, wisselende lengte, direct, spreektaal, één gedachte per zin, af en toe een "wacht" of "nee, hold on". Gebruik de actuele data. Bouw uit met meer context, nuance en wat eronder ligt — geen herhaling van de korte versie. Output alleen de uitgebreide tekst, geen titels.\n\n${digest}`,
+        });
+        const txt = typeof res === "string" ? res : (res?.response || res?.text || "");
+        setLongBody((m) => ({ ...m, [tab]: txt }));
+      } catch {}
+      setLoadingLong(false);
+    }
+    setExpanded((e) => !e);
+  };
+
   const c = TAB_COPY[tab] || TAB_COPY.OVERVIEW;
   const dyn = data ? buildDynamic(tab, data) : null;
   const ed = editorial[tab] || null;
@@ -195,6 +214,9 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
           <div className="ml-[80px] mt-8 space-y-2">
             <p className="font-display font-medium tracking-[-0.05em] text-[12px]" style={{ color: BLACK }}>{data ? `${fmtEuro(data.totalMoney)} beschikbaar · ${data.portfolios.length} potjes` : "Laden…"}</p>
             <p className="font-body text-[12px] leading-[1.55] whitespace-pre-line" style={{ color: INK }}>{bodyText}</p>
+            {expanded && longBody[tab] && <p className="font-body text-[12px] leading-[1.55] whitespace-pre-line mt-2" style={{ color: INK }}>{longBody[tab]}</p>}
+            {expanded && loadingLong && <p className="font-mono text-[9px] tracking-[0.18em] uppercase mt-2 animate-pulse" style={{ color: BLUE }}>Giulia breidt uit…</p>}
+            <button onClick={toggleExpand} className="font-mono text-[9px] tracking-[0.18em] uppercase mt-2 hover:opacity-70 transition" style={{ color: BLUE }}>{expanded ? "← lees minder" : "lees meer →"}</button>
             {genBusy && <p className="font-mono text-[9px] tracking-[0.18em] uppercase mt-2 animate-pulse" style={{ color: BLUE }}>Giulia schrijft…</p>}
           </div>
 
