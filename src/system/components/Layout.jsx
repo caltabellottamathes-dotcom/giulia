@@ -3,7 +3,6 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import ModulePanel from "@/system/panels/ModulePanel";
 import ChatWindow from "@/giulia/panels/ChatWindow";
 import VoiceWindow from "@/giulia/panels/VoiceWindow";
-import MattiaSlideOver from "@/giulia/panels/MattiaSlideOver";
 import BrowserWindow from "@/system/components/BrowserWindow";
 import MediaFullscreenWindow from "@/system/components/MediaFullscreenWindow";
 import WorkspaceToolbar from "@/system/components/WorkspaceToolbar";
@@ -41,7 +40,7 @@ export default function Layout() {
 function LayoutInner() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { openModule, mattiaOpen, closeMattia } = usePanel();
+  const { openModule } = usePanel();
   useAgentNavigation({ openModule });
 
   return (
@@ -80,9 +79,6 @@ function LayoutInner() {
 
       {/* Persistent voice window — stays open across dashboard navigation */}
       <VoiceWindow />
-
-      {/* Mattia — chat + voice, groot glazen paneel van rechts (via QuickLauncher) */}
-      <MattiaSlideOver open={mattiaOpen} onClose={closeMattia} />
 
       {/* Fullscreen in-app browser window */}
       <BrowserWindow />

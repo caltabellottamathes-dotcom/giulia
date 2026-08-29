@@ -10,13 +10,10 @@
  *      browser — geen proxy, geen key-fallback, geen live-injectie.
  */
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
-import { GIULIA_CORE_INSTRUCTIONS, MATTIA_CORE_INSTRUCTIONS } from "../../shared/elevenPrompt.ts";
+import { GIULIA_CORE_INSTRUCTIONS } from "../../shared/elevenPrompt.ts";
 import { ELEVEN_TOOLS } from "../../shared/elevenTools.ts";
 
-const AGENTS = {
-  giulia: { id: "agent_5501kza2zx7hehxbh0ydey1mq5gv", key: "ELEVEN_GEMINI_API_KEY", core: GIULIA_CORE_INSTRUCTIONS },
-  mattia: { id: "agent_0301m14xfjxhfnh86pd8m19mdgvb", key: "ELEVEN_2_GEMINI_API_KEY", core: MATTIA_CORE_INSTRUCTIONS },
-};
+const AGENT_ID = "agent_5501kza2zx7hehxbh0ydey1mq5gv";
 const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 const GEMINI_MODEL = "gemini-3.5-flash-lite";
 
@@ -107,7 +104,7 @@ REGELS:
 - De uitvoering gebeurt op de achtergrond door je kern (chatWithGiulia); wat daar verschijnt is het echte resultaat. Zeg dus nooit "ik heb een taak aangemaakt" als jij het niet zelf deed — zeg alleen dat het wordt geregeld.
 - Wees rustig en scherp, niet overdreven enthousiast. Geen SaaS-taal.`;
 
-// SYSTEM_PROMPT wordt per-target samengesteld in de handler (core + VOICE_ADDENDUM).
+const SYSTEM_PROMPT = GIULIA_CORE_INSTRUCTIONS + "\n" + VOICE_ADDENDUM;
 
 // Zet platte params ({ key: { type, description, required } }) om naar een
 // geldige JSON-Schema zoals ElevenLabs verwacht: { type:"object", properties, required }.
@@ -163,21 +160,14 @@ async function ensureSecret(xiKey, name, value) {
 
 export default async function (req) {
   try {
-    const body = await req.json().catch(() => ({}));
-    const targetKey = body?.target === "mattia" ? "mattia" : "giulia";
-    const T = AGENTS[targetKey];
-    const AGENT_ID = T.id;
-
     const xiKey = process.env.ELEVENLABS_API_KEY;
     if (!xiKey) {
       return Response.json({ error: "ELEVENLABS_API_KEY niet ingesteld." }, { status: 400 });
     }
-    let geminiKey = process.env[T.key] || process.env.ELEVEN_GEMINI_API_KEY;
+    const geminiKey = process.env.ELEVEN_GEMINI_API_KEY;
     if (!geminiKey) {
-      return Response.json({ error: `${T.key} niet ingesteld.` }, { status: 400 });
+      return Response.json({ error: "ELEVEN_GEMINI_API_KEY niet ingesteld." }, { status: 400 });
     }
-
-    const SYSTEM_PROMPT = T.core + "\n" + VOICE_ADDENDUM;
 
     // Directe verbinding op Gemini's OpenAI-endpoint met één key. Geen proxy;
     // navigatie en acties lopen via de client-tools (ELEVEN_TOOLS) in de browser.
@@ -251,7 +241,6 @@ export default async function (req) {
     return Response.json({
       ok: true,
       agent_id: AGENT_ID,
-      target: targetKey,
       llm: "custom-llm",
       model: GEMINI_MODEL,
       mode: "direct",

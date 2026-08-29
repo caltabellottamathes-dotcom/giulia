@@ -11,7 +11,6 @@ export function PanelProvider({ children }) {
   const [activeModule, setActiveModule] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [voiceOpen, setVoiceOpen] = useState(false);
-  const [mattiaOpen, setMattiaOpen] = useState(false);
   const [browserOpen, setBrowserOpen] = useState(false);
   const [browserMinimized, setBrowserMinimized] = useState(false);
   const [mediaFullscreen, setMediaFullscreen] = useState(false);
@@ -34,10 +33,6 @@ export function PanelProvider({ children }) {
       setBrowserMinimized(false);
       return;
     }
-    if (key === "mattia") {
-      setMattiaOpen(true);
-      return;
-    }
     setActiveModule(key);
   };
   const closeModule = () => setActiveModule(null);
@@ -46,8 +41,6 @@ export function PanelProvider({ children }) {
   const openVoice = () => setVoiceOpen(true);
   const closeVoice = () => setVoiceOpen(false);
   const openBrowser = () => { setBrowserOpen(true); setBrowserMinimized(false); };
-  const openMattia = () => setMattiaOpen(true);
-  const closeMattia = () => setMattiaOpen(false);
   const closeBrowser = () => { setBrowserOpen(false); setBrowserMinimized(false); };
   const minimizeBrowser = () => setBrowserMinimized(true);
   const restoreBrowser = () => setBrowserMinimized(false);
@@ -62,7 +55,6 @@ export function PanelProvider({ children }) {
         activeModule, openModule, closeModule,
         chatOpen, openChat, closeChat,
         voiceOpen, openVoice, closeVoice,
-        mattiaOpen, openMattia, closeMattia,
         browserOpen, openBrowser, closeBrowser,
         browserMinimized, minimizeBrowser, restoreBrowser,
         mediaFullscreen, openMediaFullscreen, closeMediaFullscreen,
