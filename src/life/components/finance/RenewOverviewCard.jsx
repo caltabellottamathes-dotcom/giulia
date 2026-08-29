@@ -14,6 +14,7 @@ export default function RenewOverviewCard() {
   const trigger = () => {
     bumpRefresh();
     setSpinKey((k) => k + 1);
+    window.dispatchEvent(new CustomEvent("giulia:renew-editorial"));
   };
 
   return (

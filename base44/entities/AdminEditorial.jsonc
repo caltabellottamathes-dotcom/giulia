@@ -1,0 +1,95 @@
+{
+  "name": "AdminEditorial",
+  "type": "object",
+  "title": "AdminEditorial",
+  "description": "Door Giulia geschreven editorial-tekst per Admin-tab. Dagelijks of via de Renew-knop gegenereerd op basis van de volledige financi\u00eble/administratieve data.",
+  "properties": {
+    "tab": {
+      "type": "string",
+      "enum": [
+        "OVERVIEW",
+        "PORTEFEUILLES",
+        "LASTEN",
+        "INKOMEN",
+        "FORECAST",
+        "HEALTHY_MONEY",
+        "DOCUMENTEN"
+      ],
+      "title": "Tab"
+    },
+    "eyebrow": {
+      "type": "string",
+      "title": "Eyebrow"
+    },
+    "title1": {
+      "type": "string",
+      "title": "Titel regel 1"
+    },
+    "title2": {
+      "type": "string",
+      "title": "Titel regel 2"
+    },
+    "heading1": {
+      "type": "string",
+      "title": "Heading regel 1"
+    },
+    "heading2": {
+      "type": "string",
+      "title": "Heading regel 2"
+    },
+    "body": {
+      "type": "string",
+      "title": "Samenvatting"
+    },
+    "items_label": {
+      "type": "string",
+      "title": "Items label"
+    },
+    "items": {
+      "type": "array",
+      "title": "Aandachtspunten",
+      "items": {
+        "type": "object",
+        "properties": {
+          "n": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "desc": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "rest_label": {
+      "type": "string",
+      "title": "Rest label"
+    },
+    "rest": {
+      "type": "string",
+      "title": "De rest"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Gegenereerd op"
+    }
+  },
+  "required": [
+    "tab"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}

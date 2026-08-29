@@ -90,6 +90,8 @@ function buildDynamic(tab, data) {
 export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
+  const [editorial, setEditorial] = useState({});
+  const [genBusy, setGenBusy] = useState(false);
 
   const load = async () => {
     try {
@@ -118,6 +120,25 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
     return () => window.removeEventListener("giulia:admin-reload", h);
   }, []);
 
+  // Editorial (door Giulia geschreven) laden + Renew-knop luistert.
+  useEffect(() => {
+    const loadEd = async () => {
+      try {
+        const list = await base44.entities.AdminEditorial.list("-generated_at", 50).catch(() => []);
+        const map = {};
+        (list || []).forEach((e) => { map[e.tab] = e; });
+        setEditorial(map);
+      } catch {}
+    };
+    loadEd();
+    const h = () => {
+      setGenBusy(true);
+      base44.functions.invoke("generateAdminEditorial", {}).then(() => loadEd()).catch(() => {}).finally(() => setGenBusy(false));
+    };
+    window.addEventListener("giulia:renew-editorial", h);
+    return () => window.removeEventListener("giulia:renew-editorial", h);
+  }, []);
+
   // Handlers — done/delete direct + reload; edit/open sturen naar de juiste tab.
   const reload = () => load();
   const goTab = (t) => (onNavigate ? onNavigate(t) : navigate(`/life/personal-admin?tab=${t}`));
@@ -134,13 +155,18 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
 
   const c = TAB_COPY[tab] || TAB_COPY.OVERVIEW;
   const dyn = data ? buildDynamic(tab, data) : null;
-  const items = dyn?.items || [];
+  const ed = editorial[tab] || null;
   const cleanTail = (s) => String(s).replace(/[.,;:!?]+$/, "").trim();
-  const t1 = cleanTail(c.title1);
-  const t2 = cleanTail(c.title2);
-  const h1 = cleanTail(c.heading1);
-  const h2 = cleanTail(c.heading2);
-  const [eyeA, ...eyeRest] = c.eyebrow.split("|");
+  const items = ed?.items?.length ? ed.items : (dyn?.items || []);
+  const bodyText = ed?.body || dyn?.body || (data ? "" : "Laden…");
+  const itemsLabel = ed?.items_label || dyn?.itemsLabel || "";
+  const restLabel = ed?.rest_label || dyn?.restLabel || "The rest can wait.";
+  const rest = ed?.rest || dyn?.rest || "";
+  const t1 = cleanTail(ed?.title1 || c.title1);
+  const t2 = cleanTail(ed?.title2 || c.title2);
+  const h1 = cleanTail(ed?.heading1 || c.heading1);
+  const h2 = cleanTail(ed?.heading2 || c.heading2);
+  const [eyeA, ...eyeRest] = (ed?.eyebrow || c.eyebrow).split("|");
   const eyeB = eyeRest.length ? " | " + eyeRest.join("|").trim() : "";
 
   return (
@@ -165,7 +191,8 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
 
           <div className="ml-[80px] mt-8 space-y-2">
             <p className="font-display font-medium tracking-[-0.05em] text-[12px]" style={{ color: BLACK }}>{data ? `${fmtEuro(data.totalMoney)} beschikbaar · ${data.portfolios.length} potjes` : "Laden…"}</p>
-            <p className="font-body text-[12px] leading-[1.5]" style={{ color: INK }}>{dyn?.body || (data ? "" : "Laden…")}</p>
+            <p className="font-body text-[12px] leading-[1.5]" style={{ color: INK }}>{bodyText}</p>
+            {genBusy && <p className="font-mono text-[9px] tracking-[0.18em] uppercase mt-2 animate-pulse" style={{ color: BLUE }}>Giulia schrijft…</p>}
           </div>
 
           <div className="flex-1 min-h-8" />
@@ -181,7 +208,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
           </div>
 
           <div className="mt-4 ml-[80px] space-y-3">
-            <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>{dyn?.itemsLabel || ""}</p>
+            <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>{itemsLabel}</p>
             {items.length === 0 && <p className="font-body text-[12px]" style={{ color: INK }}>{data ? "Niets dringends." : "Laden…"}</p>}
             {items.map((it, idx) => (
               <button key={it.n} onClick={() => goTab(tab)} className="flex gap-3 items-end text-left w-full hover:opacity-70 transition">
@@ -190,16 +217,16 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
                   <span className="font-display font-bold leading-none" style={{ color: NUM_COLORS[idx % 3], fontSize: "30px" }}>{it.n}</span>
                 </span>
                 <div className="min-w-0">
-                  <p className="font-display font-bold text-[13px] leading-tight" style={{ color: NUM_COLORS[idx % 3] }}>{it.title}</p>
-                  <p className="font-body text-[12px] leading-[1.4] mt-1" style={{ color: "#333" }}>{it.desc}</p>
+                  <p className={`font-display ${it.desc ? "font-bold text-[13px]" : "font-medium text-[12.5px] leading-[1.4]"} leading-tight`} style={{ color: NUM_COLORS[idx % 3] }}>{it.title}</p>
+                  {it.desc && <p className="font-body text-[12px] leading-[1.4] mt-1" style={{ color: "#333" }}>{it.desc}</p>}
                 </div>
               </button>
             ))}
           </div>
 
           <div className="pt-6 mt-6 border-t" style={{ borderColor: GREY }}>
-            <p className="font-mono text-[10px] tracking-[0.5em] uppercase" style={{ color: "#abab69" }}>{dyn?.restLabel || "The rest can wait."}</p>
-            <p className="font-body text-[12.5px] leading-[1.4] mt-3" style={{ color: "#333" }}>{dyn?.rest || ""}</p>
+            <p className="font-mono text-[10px] tracking-[0.5em] uppercase" style={{ color: "#abab69" }}>{restLabel}</p>
+            <p className="font-body text-[12.5px] leading-[1.4] mt-3" style={{ color: "#333" }}>{rest}</p>
           </div>
         </div>
       </div>

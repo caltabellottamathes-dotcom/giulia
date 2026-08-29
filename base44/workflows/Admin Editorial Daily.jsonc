@@ -1,0 +1,45 @@
+{
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 6 * * *",
+      "one_time_date": null,
+      "timezone": "Europe/Amsterdam",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "admin_editorial_daily",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "gen_editorial": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "generateAdminEditorial",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Editorial per tab schrijven",
+            "description": "Giulia analyseert alle financi\u00eble/admin data en schrijft per Admin-tab een editorial samenvatting"
+          }
+        }
+      }
+    ]
+  },
+  "description": "Giulia schrijft dagelijks (06:00) per Admin-tab een editorial samenvatting op basis van de volledige financi\u00eble en administratieve data.",
+  "name": "Admin Editorial Daily"
+}

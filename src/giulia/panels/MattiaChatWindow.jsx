@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Send, X } from "lucide-react";
+import { Send } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { base44 } from "@/api/base44Client";
 
@@ -36,12 +36,11 @@ export default function MattiaChatWindow({ onClose }) {
 
   return (
     <div className="flex flex-col h-full" style={{ color: INK }}>
-      <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "rgba(0,0,0,0.08)" }}>
+      <div className="flex items-center px-4 py-3 border-b" style={{ borderColor: "rgba(0,0,0,0.08)" }}>
         <div>
           <p className="text-[9px] uppercase tracking-[0.22em] font-bold" style={{ color: OLIVE }}>Mattia · chat</p>
           <h3 className="text-base font-display font-bold leading-tight">Mattia</h3>
         </div>
-        <button onClick={onClose} className="h-8 w-8 rounded-full flex items-center justify-center transition hover:bg-black/5" style={{ background: "rgba(0,0,0,0.06)" }}><X className="w-4 h-4" /></button>
       </div>
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-4 py-3 space-y-2.5">
         {messages.length === 0 && <p className="text-sm italic opacity-50">Zeg hallo tegen Mattia…</p>}

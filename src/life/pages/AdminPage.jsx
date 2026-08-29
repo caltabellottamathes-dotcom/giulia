@@ -10,10 +10,10 @@ import MediaStage from "@/system/panels/MediaStage";
 import WalletStage from "@/life/components/finance/WalletStage";
 import ExpenseStage from "@/life/components/finance/ExpenseStage";
 import IncomeStage from "@/life/components/finance/IncomeStage";
-import MattiaPanel from "@/giulia/panels/MattiaPanel";
+import MattiaSlideOver from "@/giulia/panels/MattiaSlideOver";
 
 const EASE = [0.16, 1, 0.3, 1];
-const HERO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0a68f996a_ADMIN.jpeg";
+const HERO_VIDEO = "https://media.base44.com/videos/public/6a7608690d4ea2c9edc3d59b/cbb9adc9f_Mattia_into.mp4";
 
 const TABS = [
   { key: "OVERVIEW", label: "Overview", icon: CircleDot },
@@ -97,7 +97,7 @@ export default function AdminPage() {
       {/* Hero photo — blijft open wanneer het glaspaneel opent */}
       <motion.div initial={{ x: "-118%" }} animate={{ x: 0 }} transition={{ duration: 0.7, ease: EASE }}
         className="hidden lg:block absolute left-0 top-[14%] bottom-0 w-[34%] overflow-hidden rounded-r-[24px] z-[5]">
-        <img src={HERO} alt="" className="h-full w-full object-cover" draggable={false} />
+        <video src={HERO_VIDEO} autoPlay loop muted playsInline className="h-full w-full object-cover" draggable={false} />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/65 via-charcoal/15 to-charcoal/10" />
       </motion.div>
 
@@ -144,6 +144,9 @@ export default function AdminPage() {
               </button>
             ))}
           </div>
+          <button onClick={() => setMattiaOpen(true)} title="Mattia" className="mb-3 h-11 w-11 rounded-full flex items-center justify-center transition hover:scale-105" style={{ background: "#d8dab3", color: "#2a2c30", boxShadow: "0 10px 24px -10px rgba(0,0,0,0.45)" }}>
+            <span className="font-display font-black text-sm">M</span>
+          </button>
           <div className="text-[8px] uppercase tracking-[0.22em] text-white [writing-mode:vertical-rl] rotate-180">{isStage ? "MATTIA" : "GIULIA · GIULIA"}</div>
         </div>
 
@@ -159,14 +162,6 @@ export default function AdminPage() {
                     <ArrowLeft className="h-4 w-4" />
                   </button>
                 )}
-                {stage === "media" && !mattiaOpen && (
-                  <button onClick={() => setMattiaOpen(true)} className="absolute bottom-4 left-4 z-40 flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition hover:scale-[1.03]" style={{ background: "#d8dab3", color: "#2a2c30", boxShadow: "0 10px 24px -10px rgba(0,0,0,0.45)" }}>
-                    Mattia
-                  </button>
-                )}
-                {stage === "media" && mattiaOpen && (
-                  <MattiaPanel onClose={() => setMattiaOpen(false)} />
-                )}
                 {stageContent}
               </motion.div>
             )}
@@ -181,6 +176,8 @@ export default function AdminPage() {
           </motion.div>
         </div>
       </motion.div>
+
+      <MattiaSlideOver open={mattiaOpen} onClose={() => setMattiaOpen(false)} />
     </div>
   );
 }

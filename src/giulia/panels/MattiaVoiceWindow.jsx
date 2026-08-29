@@ -1,6 +1,6 @@
 import React from "react";
 import { useConversation } from "@elevenlabs/react";
-import { Mic, MicOff, X, Loader2 } from "lucide-react";
+import { Mic, MicOff, Loader2 } from "lucide-react";
 
 const PISTACHIO = "#d8dab3";
 const OLIVE = "#94925d";
@@ -34,9 +34,8 @@ export default function MattiaVoiceWindow({ onClose }) {
 
   return (
     <div className="flex flex-col h-full" style={{ color: INK }}>
-      <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: "rgba(0,0,0,0.08)" }}>
+      <div className="flex items-center px-4 py-3 border-b" style={{ borderColor: "rgba(0,0,0,0.08)" }}>
         <p className="text-[9px] uppercase tracking-[0.22em] font-bold" style={{ color: OLIVE }}>Mattia · voice</p>
-        <button onClick={onClose} className="h-8 w-8 rounded-full flex items-center justify-center hover:bg-black/5" style={{ background: "rgba(0,0,0,0.06)" }}><X className="w-4 h-4" /></button>
       </div>
       <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-5 p-5">
         <button onClick={toggle} className="relative h-28 w-28 rounded-full flex items-center justify-center transition" style={{ background: active ? OLIVE : PISTACHIO, color: INK, boxShadow: active && isSpeaking ? "0 0 0 12px rgba(148,146,93,0.22), 0 12px 30px -10px rgba(0,0,0,0.35)" : "0 12px 30px -10px rgba(0,0,0,0.3)" }}>
