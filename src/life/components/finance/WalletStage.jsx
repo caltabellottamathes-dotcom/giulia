@@ -106,8 +106,8 @@ export default function WalletStage({ walletId, onClose }) {
           <p className={label}>Saldi</p>
           <div className="grid grid-cols-2 gap-2">
             <div><span className={sub}>Huidig saldo</span><input type="number" step="0.01" className={input} value={form.current_balance || 0} onChange={(e) => set("current_balance", num(e.target.value))} /></div>
-            <div><span className={sub}>Gewenst doel</span><input type="number" step="0.01" className={input} value={form.target_balance || 0} onChange={(e) => set("target_balance", num(e.target.value))} /></div>
-            <div><span className={sub}>Gewenste buffer</span><input type="number" step="0.01" className={input} value={form.desired_buffer || 0} onChange={(e) => set("desired_buffer", num(e.target.value))} /></div>
+            <div><span className={sub}>Doel 1 · Dekking (betalingen)</span><input type="number" step="0.01" className={input} value={form.target_balance || 0} onChange={(e) => set("target_balance", num(e.target.value))} /></div>
+            <div><span className={sub}>Doel 2 · Buffer (gezondheid)</span><input type="number" step="0.01" className={input} value={form.desired_buffer || 0} onChange={(e) => set("desired_buffer", num(e.target.value))} /></div>
             <div><span className={sub}>Reservering / mnd</span><input type="number" step="0.01" className={input} value={form.monthly_reservation_actual || 0} onChange={(e) => set("monthly_reservation_actual", num(e.target.value))} /></div>
           </div>
         </div>

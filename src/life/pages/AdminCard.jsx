@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { useToast } from "@/components/ui/use-toast";
 import { fmtEuro, calcPortfolio, upcomingExpenses, monthlyDistribution, totalMoney, totalReserved } from "@/lib/financeUtils";
 import WalletBarChartWidget from "@/life/components/finance/WalletBarChartWidget";
 import WalletTreemapBar from "@/life/components/finance/WalletTreemapBar";
@@ -92,6 +93,8 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
   const [data, setData] = useState(null);
   const [editorial, setEditorial] = useState({});
   const [genBusy, setGenBusy] = useState(false);
+  const { toast } = useToast();
+  const [executing, setExecuting] = useState(null);
 
   const load = async () => {
     try {
@@ -165,12 +168,26 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
     onReload: reload,
   };
 
+  const executeItem = async (it) => {
+    if (!it || !it.action_type || it.action_type === "none") { goTab(resolveTab(it, tab)); return; }
+    setExecuting(it.n);
+    try {
+      const res = await base44.functions.invoke("executeActiepunt", { item: it });
+      toast({ title: res?.ok ? `Actie uitgevoerd · ${it.title}` : "Actie niet gelukt", variant: res?.ok ? "default" : "destructive" });
+      window.dispatchEvent(new CustomEvent("giulia:admin-reload"));
+      load();
+    } catch (e) {
+      toast({ title: "Actie niet gelukt", variant: "destructive" });
+    } finally { setExecuting(null); }
+  };
+
   const c = TAB_COPY[tab] || TAB_COPY.OVERVIEW;
   const dyn = data ? buildDynamic(tab, data) : null;
   const ed = editorial[tab] || null;
   const cleanTail = (s) => String(s).replace(/[.,;:!?]+$/, "").trim();
   const items = ed?.items?.length ? ed.items : (dyn?.items || []);
   const bodyText = ed?.body || dyn?.body || (data ? "" : "Laden…");
+  const proposal = ed?.proposal || "";
   const itemsLabel = ed?.items_label || dyn?.itemsLabel || "";
   const restLabel = ed?.rest_label || dyn?.restLabel || "The rest can wait.";
   const rest = ed?.rest || dyn?.rest || "";
@@ -204,6 +221,12 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
           <div className="ml-[80px] mt-8 space-y-2">
             <p className="font-display font-medium tracking-[-0.05em] text-[12px]" style={{ color: BLACK }}>{data ? `${fmtEuro(data.totalMoney)} beschikbaar · ${data.portfolios.length} potjes` : "Laden…"}</p>
             <p className="font-body text-[12px] leading-[1.55] whitespace-pre-line" style={{ color: INK }}>{bodyText}</p>
+            {proposal && (
+              <div className="mt-3 pt-3 border-t" style={{ borderColor: GREY }}>
+                <p className="font-mono text-[10px] tracking-[0.18em] uppercase mb-1.5" style={{ color: BLUE }}><span className="font-bold">Voorstel</span> | Giulia adviseert_</p>
+                <p className="font-body text-[12px] leading-[1.55] whitespace-pre-line" style={{ color: INK }}>{proposal}</p>
+              </div>
+            )}
             {genBusy && <p className="font-mono text-[9px] tracking-[0.18em] uppercase mt-2 animate-pulse" style={{ color: BLUE }}>Giulia schrijft…</p>}
           </div>
 
@@ -223,14 +246,19 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
             <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>{itemsLabel}</p>
             {items.length === 0 && <p className="font-body text-[12px]" style={{ color: INK }}>{data ? "Niets dringends." : "Laden…"}</p>}
             {items.map((it, idx) => (
-              <button key={it.n} onClick={() => goTab(resolveTab(it, tab))} className="flex gap-3 items-end text-left w-full hover:opacity-70 transition">
+              <button key={it.n} onClick={() => executeItem(it)} disabled={executing === it.n} className="flex gap-3 items-end text-left w-full hover:opacity-70 transition disabled:opacity-40">
                 <span className="w-[84px] shrink-0 flex justify-end items-end gap-[5px]">
                   <BounceBalls color={NUM_COLORS[idx % 3]} count={idx + 1} ml="0" />
                   <span className="font-display font-bold leading-none" style={{ color: NUM_COLORS[idx % 3], fontSize: "30px" }}>{it.n}</span>
                 </span>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className={`font-display ${it.desc ? "font-bold text-[13px]" : "font-medium text-[12.5px] leading-[1.4]"} leading-tight`} style={{ color: NUM_COLORS[idx % 3] }}>{it.title}</p>
                   {it.desc && <p className="font-body text-[12px] leading-[1.4] mt-1" style={{ color: "#333" }}>{it.desc}</p>}
+                  {it.action_type && it.action_type !== "none" && (
+                    <span className="inline-flex items-center gap-1 mt-1.5 font-mono text-[8px] uppercase tracking-[0.18em]" style={{ color: BLUE }}>
+                      {executing === it.n ? "uitvoeren…" : `→ ${it.action_type === "pay" ? "betalen" : it.action_type === "transfer" ? "verplaatsen" : "reserveren"}`}
+                    </span>
+                  )}
                 </div>
               </button>
             ))}

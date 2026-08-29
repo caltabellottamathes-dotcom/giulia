@@ -37,12 +37,13 @@ function schemaFor() {
       heading1: { type: "string" },
       heading2: { type: "string" },
       body: { type: "string" },
+      proposal: { type: "string" },
       itemsLabel: { type: "string" },
-      items: { type: "array", items: { type: "object", properties: { n: { type: "string" }, title: { type: "string" }, desc: { type: "string" } } } },
+      items: { type: "array", items: { type: "object", properties: { n: { type: "string" }, title: { type: "string" }, desc: { type: "string" }, action_type: { type: "string", enum: ["none", "transfer", "pay", "reserve"] }, amount: { type: "number" }, from_id: { type: "string" }, to_id: { type: "string" }, expense_id: { type: "string" } } } },
       restLabel: { type: "string" },
       rest: { type: "string" },
     },
-    required: ["title1", "title2", "heading1", "heading2", "body", "items", "rest"],
+    required: ["title1", "title2", "heading1", "heading2", "body", "proposal", "items", "rest"],
   };
 }
 
@@ -54,11 +55,12 @@ Geef:
 - eyebrow: kort label (bv "Personal Admin | Lasten")
 - title1, title2: twee korte titelregels (hoofdletters, max ~4 woorden per regel, stijlvol — geen volledige zinnen)
 - heading1, heading2: twee korte aandachts-headingregels (wat op dit tabblad aandacht vraagt)
-- body: HUIDIGE STAND van dit tabblad (2-3 korte zinnen, max 55 woorden). Analyseer het thema van het tabblad (Overview = gezamenlijke analyse van alle domeinen). Beschrijf concreet en specifiek met de getallen uit de data als cijfers. Geen uitgeschreven getallen
-- itemsLabel: mono-label (bv "03_payments_due_")
-- items: 0-3 actiepunten, elk { n: "01", title: "korte titel", desc: "1 korte zin met bedrag/datum als cijfers" } — concreet, specifiek, wat aandacht vraagt
-- restLabel: "Giulia stelt voor"
-- rest: 2-3 concrete VOORSTELLEN om het te verbeteren, genummerd "1. … 2. … 3. …", elk 1 uitvoerbare zin met cijfers. Praktisch en toepasbaar
+- body: DEEL 1 — SAMENVATTING VAN DE ANALYSE van het huidige tabblad (3-5 zinnen, max 90 woorden). Analyseer het thema van het tabblad (Overview = gezamenlijke analyse over alle domeinen). Beschrijf de huidige stand concreet met de getallen uit de data als cijfers. Geen uitgeschreven getallen
+- proposal: DEEL 2 — EEN TEKSTUEEL VOORSTEL komend uit de analyse om admin te verbeteren (4-7 zinnen, max 150 woorden). Denk VEEL verder dan triviaal "vul wallet X met €Y". Stel: een betaling (bv Mobiliteit) komt eraan maar er zit te weinig in de wallet — kijk naar ALLE opties om het te laten slagen: is er surplus in een andere wallet om te verplaatsen? welke reserveringen kunnen omhoog? welke lasten kunnen verschuiven? welke inkomsten staan eraan te komen? Adviseer écht financieel, met cijfers als cijfers
+- itemsLabel: mono-label (bv "03_actiepunten_")
+- items: 1-3 ACTIEPUNTEN — de uitvoerbare vertaling van het voorstel. Elk { n: "01", title: "korte titel", desc: "1 korte zin met bedrag/datum als cijfers", action_type, amount, from_id, to_id, expense_id }. action_type ∈ "transfer" (verplaats amount van from_id wallet naar to_id wallet), "pay" (voer expense_id uit / betaal), "reserve" (verplaats amount van from_id naar to_id om te reserveren), "none" (informatief, geen auto-actie). Gebruik de ECHTE wallet-ID's uit de data voor from_id/to_id en de echte expense-ID voor expense_id. Zonder bruikbare ID's → action_type "none"
+- restLabel: "De rest kan wachten"
+- rest: 1 korte zin over wat niet dringend is op dit tabblad (cijfers als cijfers)
 
 Baseer je op de data. Kort, krachtig, direct, menselijk, geen SaaS-enthousiasme. Alle getallen als cijfers, nooit uitgeschreven.
 
@@ -119,9 +121,9 @@ export default async function (req) {
     lines.push(`INKOMEN recurring/mnd: ${fmt(incMonthly)} · RESERVERINGEN/mnd: ${fmt(reservedMonthly)} · VRIJ ≈ ${fmt(Math.max(0, incMonthly - reservedMonthly))}`);
     lines.push(`Openstaande lasten: ${openExp.length} · Betaald(oit): ${doneExp.length} · Inkomsten: ${incomes.length} (pending: ${incPending.length}) · Transacties: ${txns.length} · Documenten: ${docs.length}`);
     lines.push("", "WALLETS:");
-    for (const p of activeP.slice(0, 12)) lines.push(`- ${p.name} [${p.kind || "vaste_last"}] saldo ${fmt(p.current_balance)} doel ${fmt(p.target_balance)} reservering ${fmt(p.monthly_reservation_actual)}/mnd (aanbevolen ${fmt(p.monthly_reservation_recommended)}) status ${p.status || "on_track"}${p.next_payment_date ? ` volgende ${dstr(p.next_payment_date)} ${fmt(p.next_expected_payment)}` : ""}`);
+    for (const p of activeP.slice(0, 12)) lines.push(`- ${p.name} [id=${p.id}] [${p.kind || "vaste_last"}] saldo ${fmt(p.current_balance)} doel ${fmt(p.target_balance)} buffer ${fmt(p.desired_buffer)} reservering ${fmt(p.monthly_reservation_actual)}/mnd (aanbevolen ${fmt(p.monthly_reservation_recommended)}) status ${p.status || "on_track"}${p.next_payment_date ? ` volgende ${dstr(p.next_payment_date)} ${fmt(p.next_expected_payment)}` : ""}`);
     lines.push("", "OPEN LASTEN:");
-    for (const e of openExp.slice(0, 20)) lines.push(`- ${e.title} ${fmt(e.expected_amount)} ${e.frequency || "monthly"} ${e.next_payment_date ? `volgende ${dstr(e.next_payment_date)}` : ""} → ${potName(e.portfolio_id)}${e.auto_payment ? " (auto)" : ""}`);
+    for (const e of openExp.slice(0, 20)) lines.push(`- ${e.title} [id=${e.id}] ${fmt(e.expected_amount)} ${e.frequency || "monthly"} ${e.next_payment_date ? `volgende ${dstr(e.next_payment_date)}` : ""} → ${potName(e.portfolio_id)} [id=${e.portfolio_id || "-"}]${e.auto_payment ? " (auto)" : ""}`);
     lines.push("", "INKOMSTEN:");
     for (const i of incomes.slice(0, 15)) lines.push(`- ${i.description || i.category || "inkomen"} ${fmt(i.amount)} ${i.frequency || "monthly"}${i.expected_date ? ` verwacht ${dstr(i.expected_date)}` : ""} status ${i.status || "expected"}${i.recurring ? " (recurring)" : ""}`);
     lines.push("", `DOCUMENTEN: ${docs.length} (${docs.slice(0, 8).map((d) => d.name || d.title).filter(Boolean).join(", ") || "geen"})`);
@@ -143,8 +145,9 @@ export default async function (req) {
         heading1: ed.heading1 || "",
         heading2: ed.heading2 || "",
         body: ed.body || "",
+        proposal: ed.proposal || "",
         items_label: ed.itemsLabel || "",
-        items: Array.isArray(ed.items) ? ed.items.slice(0, 3).map((it, idx) => ({ n: it.n || String(idx + 1).padStart(2, "0"), title: it.title || "", desc: it.desc || "" })) : [],
+        items: Array.isArray(ed.items) ? ed.items.slice(0, 3).map((it, idx) => ({ n: it.n || String(idx + 1).padStart(2, "0"), title: it.title || "", desc: it.desc || "", action_type: it.action_type || "none", amount: Number(it.amount) || 0, from_id: it.from_id || "", to_id: it.to_id || "", expense_id: it.expense_id || "" })) : [],
         rest_label: ed.restLabel || "The rest can wait.",
         rest: ed.rest || "",
         generated_at: now,

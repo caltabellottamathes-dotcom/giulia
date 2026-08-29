@@ -2,7 +2,7 @@
   "name": "AdminEditorial",
   "type": "object",
   "title": "AdminEditorial",
-  "description": "Door Giulia geschreven editorial-tekst per Admin-tab. Dagelijks of via de Renew-knop gegenereerd op basis van de volledige financi\u00eble/administratieve data.",
+  "description": "Door Giulia geschreven editorial per Admin-tab. Deel 1 = analyse, deel 2 = voorstel, items = uitvoerbare actiepunten.",
   "properties": {
     "tab": {
       "type": "string",
@@ -39,7 +39,11 @@
     },
     "body": {
       "type": "string",
-      "title": "Samenvatting"
+      "title": "Deel 1 \u00b7 Analyse"
+    },
+    "proposal": {
+      "type": "string",
+      "title": "Deel 2 \u00b7 Voorstel"
     },
     "items_label": {
       "type": "string",
@@ -47,7 +51,7 @@
     },
     "items": {
       "type": "array",
-      "title": "Aandachtspunten",
+      "title": "Actiepunten",
       "items": {
         "type": "object",
         "properties": {
@@ -58,6 +62,27 @@
             "type": "string"
           },
           "desc": {
+            "type": "string"
+          },
+          "action_type": {
+            "type": "string",
+            "enum": [
+              "none",
+              "transfer",
+              "pay",
+              "reserve"
+            ]
+          },
+          "amount": {
+            "type": "number"
+          },
+          "from_id": {
+            "type": "string"
+          },
+          "to_id": {
+            "type": "string"
+          },
+          "expense_id": {
             "type": "string"
           }
         }

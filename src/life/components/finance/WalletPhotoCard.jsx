@@ -17,8 +17,11 @@ export default function WalletPhotoCard({ wallet, expenses, photoUrl }) {
   const potExpenses = useMemo(() => (expenses || []).filter((e) => e.portfolio_id === wallet.id), [expenses, wallet.id]);
   calcPortfolio(wallet, potExpenses);
   const balance = Number(wallet.current_balance) || 0;
-  const target = Number(wallet.target_balance) || Number(wallet.desired_buffer) || 0;
-  const fill = target > 0 ? Math.min(100, Math.round((balance / target) * 100)) : 100;
+  const openExp = potExpenses.filter((e) => e.status !== "done");
+  const goal1 = openExp.reduce((s, e) => s + (Number(e.expected_amount ?? e.amount) || 0), 0) || Number(wallet.target_balance) || 0;
+  const buffer = Number(wallet.desired_buffer) || 0;
+  const fill1 = goal1 > 0 ? Math.min(100, Math.round((balance / goal1) * 100)) : 100;
+  const bufferProg = goal1 > 0 ? Math.min(100, Math.round((Math.max(0, balance - goal1) / Math.max(1, buffer)) * 100)) : (buffer > 0 ? Math.min(100, Math.round((balance / buffer) * 100)) : 100);
   const color = wallet.color || "hsl(var(--smoke))";
 
   const openWallet = () => window.dispatchEvent(new CustomEvent("giulia:open-wallet", { detail: wallet.id }));
@@ -32,15 +35,27 @@ export default function WalletPhotoCard({ wallet, expenses, photoUrl }) {
           <ArrowUpRight className="w-3.5 h-3.5" style={{ color: MUTED }} />
         </div>
         <p className="text-[26px] leading-none font-display font-bold tabular-nums mt-1">{fmtEuro(balance)}</p>
-        <div className="mt-auto w-full">
-          <div className="flex items-end justify-between mb-1">
-            <p className="text-[8px] uppercase tracking-[0.16em]" style={{ color: MUTED }}>Naar doel</p>
-            <p className="text-[14px] leading-none font-display font-bold tabular-nums">{fill}%</p>
+        <div className="mt-auto w-full space-y-2">
+          <div>
+            <div className="flex items-end justify-between mb-1">
+              <p className="text-[8px] uppercase tracking-[0.16em] font-bold" style={{ color: MUTED }}>Doel 1 · Dekking</p>
+              <p className="text-[13px] leading-none font-display font-bold tabular-nums">{fill1}%</p>
+            </div>
+            <div className="h-1.5 rounded-full bg-foreground/10 overflow-hidden">
+              <div className="h-full rounded-full" style={{ width: `${fill1}%`, background: color }} />
+            </div>
+            <p className="text-[8px] uppercase tracking-[0.14em] mt-1" style={{ color: MUTED }}>{fmtEuro(balance)} / {fmtEuro(goal1)}</p>
           </div>
-          <div className="h-1.5 rounded-full bg-foreground/10 overflow-hidden">
-            <div className="h-full rounded-full" style={{ width: `${fill}%`, background: color }} />
+          <div>
+            <div className="flex items-end justify-between mb-1">
+              <p className="text-[8px] uppercase tracking-[0.16em] font-bold" style={{ color: MUTED }}>Doel 2 · Buffer</p>
+              <p className="text-[13px] leading-none font-display font-bold tabular-nums">{bufferProg}%</p>
+            </div>
+            <div className="h-1.5 rounded-full bg-foreground/10 overflow-hidden">
+              <div className="h-full rounded-full" style={{ width: `${bufferProg}%`, background: color, opacity: 0.6 }} />
+            </div>
+            <p className="text-[8px] uppercase tracking-[0.14em] mt-1" style={{ color: MUTED }}>Buffer {fmtEuro(buffer)}</p>
           </div>
-          <p className="text-[8px] uppercase tracking-[0.14em] mt-1.5" style={{ color: MUTED }}>Doel {fmtEuro(target)}</p>
         </div>
       </button>
 

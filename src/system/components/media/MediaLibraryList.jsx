@@ -10,7 +10,7 @@ function KindIcon({ kind, className }) {
   return <FileText className={className} />;
 }
 
-const GLASS = { background: "rgba(20,22,26,0.42)", backdropFilter: "blur(28px) saturate(1.3)", WebkitBackdropFilter: "blur(28px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.12)" };
+const GLASS = { background: "transparent" };
 
 /**
  * MediaLibraryList — compacte lijst van de cloud-mediatheek, gegroepeerd per
