@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
@@ -134,6 +134,28 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
 
   const c = TAB_COPY[tab] || TAB_COPY.OVERVIEW;
   const dyn = data ? buildDynamic(tab, data) : null;
+
+  // Wallet-gradient — elke actieve wallet levert zijn kleur, gewogen naar hoe
+  // vol het potje zit (current/target). Hoe meer erbij komt, hoe meer de
+  // kleur van die wallet in de gradient verschijnt.
+  const gradient = useMemo(() => {
+    if (!data) return null;
+    const active = data.portfolios.filter((p) => !p.archived && p.active !== false);
+    if (!active.length) return null;
+    const fills = active.map((p) => {
+      const target = Number(p.target_balance) || Number(p.current_balance) || 1;
+      const fill = Math.max(0.04, Math.min(1, (Number(p.current_balance) || 0) / target));
+      return { color: p.color || "#b1bfc7", fill };
+    });
+    const total = fills.reduce((s, w) => s + w.fill, 0) || 1;
+    let cum = 0;
+    const stops = fills.map((w) => {
+      const share = (w.fill / total) * 100;
+      const start = cum; cum += share;
+      return `${w.color} ${start.toFixed(1)}% ${cum.toFixed(1)}%`;
+    }).join(", ");
+    return `linear-gradient(135deg, ${stops})`;
+  }, [data]);
   const items = dyn?.items || [];
   const cleanTail = (s) => String(s).replace(/[.,;:!?]+$/, "").trim();
   const t1 = cleanTail(c.title1);
@@ -150,6 +172,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
       exit={{ x: "100%", opacity: 0 }}
       transition={{ duration: 0.55, ease: EASE, delay: enterDelay }}
       className="absolute inset-0 rounded-bl-[20px] rounded-r-none bg-white flex overflow-hidden shadow-[-40px_8px_64px_-18px_rgba(0,0,0,0.55)]"
+      style={{ background: gradient ? `linear-gradient(rgba(255,255,255,0.74), rgba(255,255,255,0.74)), ${gradient}` : undefined }}
     >
       {/* Editorial — left ~42% */}
       <div className="relative z-0 w-[38%] h-full flex flex-col overflow-hidden border-r" style={{ borderColor: GREY }}>
@@ -229,7 +252,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
             </div>
           </div>
         ) : (tab === "PORTEFEUILLES" || tab === "LASTEN") ? (
-          <div className="flex-1 min-h-0 pl-6 pr-6 lg:-ml-[48px] pb-6 pt-[68px]">
+          <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar pl-6 pr-6 lg:-ml-[48px] pb-6 pt-[68px]">
             {data ? (
               <FinanceStacks tab={tab} data={data} {...handlers} />
             ) : (
