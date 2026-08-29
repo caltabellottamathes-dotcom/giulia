@@ -2,7 +2,7 @@
   "name": "AdminObligation",
   "type": "object",
   "title": "AdminObligation",
-  "description": "Financi\u00eble verplichting / expense. Uitgebreid met portefeuille-koppeling, betalingsfrequentie, expected/min/max/actual bedragen en betrouwbaarheid. Dient als Expense binnen het portefeuille-systeem.",
+  "description": "Financi\u00eble verplichting / expense. Uitgebreid met portefeuille-koppeling, betalingsfrequentie, expected/min/max/actual bedragen, betrouwbaarheid en per-last maandelijkse reservering. Dient als Expense binnen het portefeuille-systeem.",
   "properties": {
     "title": {
       "type": "string",
@@ -76,6 +76,12 @@
     "actual_amount": {
       "type": "number",
       "title": "Daadwerkelijk betaald bedrag"
+    },
+    "monthly_reservation": {
+      "type": "number",
+      "default": 0,
+      "title": "Maandelijkse reservering",
+      "description": "Bedrag dat er per maand vanuit inkomen in de wallet geplaatst wordt (automatisch)."
     },
     "next_payment_date": {
       "type": "string",

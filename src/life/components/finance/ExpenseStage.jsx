@@ -10,12 +10,14 @@ const TYPES = ["payment", "insurance", "contract", "renewal", "subscription"];
 const FREQS = ["weekly", "biweekly", "monthly", "bimonthly", "quarterly", "semiannual", "annual", "once", "variable"];
 const STATUSES = ["open", "done", "overdue"];
 const CONFIDENCE = ["known", "estimated", "unknown"];
+const PERIODS = { weekly: 52, biweekly: 26, monthly: 12, bimonthly: 6, quarterly: 4, semiannual: 2, annual: 1, once: 1, variable: 12 };
+const defaultReservation = (f) => { const a = Number(f.expected_amount) || 0; const ppy = PERIODS[f.frequency || "monthly"] || 12; return Math.round((a * ppy / 12) * 100) / 100; };
 
 const input = "w-full rounded-xl bg-white/10 border border-white/15 px-3 py-2 text-sm text-ivory placeholder-ivory/40 outline-none focus:border-white/30";
 const label = "text-[9px] uppercase tracking-[0.18em] text-ivory/60 font-semibold mb-1 block";
 const sub = "text-[9px] text-ivory/50 mb-1 block";
 
-const blank = { title: "", type: "payment", portfolio_id: "", frequency: "monthly", expected_amount: 0, next_payment_date: "", status: "open", auto_payment: false, confidence: "known", notes: "" };
+const blank = { title: "", type: "payment", portfolio_id: "", frequency: "monthly", expected_amount: 0, monthly_reservation: 0, next_payment_date: "", status: "open", auto_payment: false, confidence: "known", notes: "" };
 
 /** ExpenseStage — toont alle data van één last (AdminObligation) en laat alles
  *  handmatig instellen/wijzigen. Modus "new" maakt een nieuwe last aan. */
@@ -54,7 +56,7 @@ export default function ExpenseStage({ expenseId, onClose }) {
   const save = async () => {
     setBusy(true);
     try {
-      const payload = { ...form, expected_amount: num(form.expected_amount) };
+      const payload = { ...form, expected_amount: num(form.expected_amount), monthly_reservation: num(form.monthly_reservation) || defaultReservation(form) };
       delete payload.id; delete payload.created_date; delete payload.updated_date; delete payload.created_by_id;
       if (isCreate) {
         await base44.entities.AdminObligation.create(payload);
@@ -144,6 +146,13 @@ export default function ExpenseStage({ expenseId, onClose }) {
             </div>
             <div><span className={sub}>Volgorde</span><input type="number" className={input} value={form.order || 0} onChange={(e) => set("order", num(e.target.value))} /></div>
           </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <span className={sub}>Reservering / mnd €</span>
+              <input type="number" step="0.01" className={input} value={form.monthly_reservation ?? 0} onChange={(e) => set("monthly_reservation", num(e.target.value))} />
+            </div>
+          </div>
+          <p className="text-[9px] text-ivory/50">Bedrag dat automatisch per maand vanuit inkomen in de wallet geplaatst wordt. Leeg = berekend uit bedrag/frequentie.</p>
           <label className="flex items-center gap-2 text-sm mt-1 cursor-pointer">
             <input type="checkbox" checked={!!form.auto_payment} onChange={(e) => set("auto_payment", e.target.checked)} /> Automatische betaling
           </label>

@@ -1,0 +1,41 @@
+{
+  "name": "Income Distribution",
+  "description": "Verdeelt ontvangen inkomen automatisch over wallets op basis van per-last reservering (naar boven afgerond om te sparen).",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "Income",
+      "events": [
+        "create",
+        "update"
+      ]
+    },
+    "condition": "${ .trigger.data.status == \"received\" and .trigger.old_data.status != \"received\" }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "income_distribution",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "distribute": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "distributeIncome",
+            "args": {
+              "incomeId": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Verdeel inkomen over wallets",
+            "description": "Naar boven afgerond"
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,5 +1,6 @@
 import React from "react";
-import { Pencil, Trash2, FileText, Film, Music, Image as ImageIcon } from "lucide-react";
+import { Pencil, Trash2, FileText, Film, Music, Image as ImageIcon, Wallet } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 import HealthBadge from "@/life/components/finance/HealthBadge";
 import DistributionBar from "@/life/components/finance/DistributionBar";
 import WalletBarChartWidget from "@/life/components/finance/WalletBarChartWidget";
@@ -141,6 +142,11 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     return (
       <div className="flex flex-col gap-4">
         <MonthlyIncomeCounter />
+        <div className="flex justify-end">
+          <button onClick={async () => { try { await base44.functions.invoke("distributeIncome", {}); window.dispatchEvent(new CustomEvent("giulia:admin-reload")); } catch {} }} className="inline-flex items-center gap-1.5 rounded-full bg-foreground/[0.06] hover:bg-foreground/[0.1] px-3.5 py-2 text-[11px] font-bold text-foreground transition">
+            <Wallet className="w-3.5 h-3.5" /> Verdeel inkomen over wallets
+          </button>
+        </div>
         <Tile className="p-4">
           <ExpenseAllocationBar />
         </Tile>
