@@ -205,9 +205,9 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
       </div>
 
       {/* RECHTS — Overview: 2 widgets + bento. Andere tabs: echte FinanceStacks-elementen. */}
-      <div className="relative z-10 flex-1 min-w-0 h-full flex flex-col">
+      <div className="relative z-20 flex-1 min-w-0 h-full flex flex-col overflow-visible">
         {tab === "OVERVIEW" ? (
-          <div className="flex-1 min-h-0 pl-6 pr-6 lg:-ml-[48px] pb-6 pt-[68px] flex flex-col gap-4">
+          <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-[68px] flex flex-col gap-4">
             <div className="flex-[1.2] min-h-0 flex gap-4">
               <div className="flex-1 min-h-0 overflow-hidden rounded-[18px]" style={{ boxShadow: "-16px 16px 40px -16px rgba(0,0,0,0.30)" }}>
                 <RenewOverviewCard />
@@ -229,7 +229,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
             </div>
           </div>
         ) : (tab === "PORTEFEUILLES" || tab === "LASTEN") ? (
-          <div className="flex-1 min-h-0 pl-6 pr-6 lg:-ml-[48px] pb-6 pt-[68px] overflow-y-auto">
+          <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-[68px] overflow-y-auto">
             {data ? (
               <FinanceStacks tab={tab} data={data} {...handlers} />
             ) : (
@@ -239,7 +239,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
             )}
           </div>
         ) : tab === "INKOMEN" ? (
-          <div className="flex-1 min-h-0 pl-6 pr-6 lg:-ml-[48px] pb-6 pt-[68px]">
+          <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-[68px]">
             {data ? (
               <FinanceStacks tab={tab} data={data} {...handlers} />
             ) : (
@@ -249,7 +249,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
             )}
           </div>
         ) : (
-          <div className="flex-1 min-h-0 overflow-y-auto p-6">
+          <div className="flex-1 min-h-0 overflow-y-auto p-6 pl-8">
             {data ? (
               <FinanceStacks tab={tab} data={data} {...handlers} />
             ) : (

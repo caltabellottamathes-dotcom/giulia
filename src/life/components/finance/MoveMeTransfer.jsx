@@ -99,18 +99,18 @@ export default function MoveMeTransfer() {
       {/* SHELL — full photo + donkere gradient + glass */}
       <img src={PHOTO} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
       <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(20,22,26,0.74), rgba(20,22,26,0.46) 55%, rgba(20,22,26,0.68))" }} />
-      <div className="absolute inset-0 rounded-[22px]" style={{ background: "rgba(120,128,133,0.12)", backdropFilter: "blur(8px) saturate(1.25)", WebkitBackdropFilter: "blur(8px) saturate(1.25)", border: "1px solid rgba(255,255,255,0.16)" }} />
+      <div className="absolute inset-0 rounded-[22px]" style={{ background: "rgba(120,128,133,0.08)", border: "1px solid rgba(255,255,255,0.14)" }} />
 
-      {/* 3 GROTE BOUNCEDOTS — links, midden, kleur = from/mid/to */}
-      <div className="absolute left-6 top-1/2 -translate-y-1/2 flex flex-col gap-4 z-10">
+      {/* 3 LARGE BOUNCEDOTS — horizontaal, links midden, half achter de glaskaart (geblurred) */}
+      <div className="absolute left-5 top-1/2 -translate-y-1/2 flex flex-row gap-3 z-10">
         {dotColors.map((c, i) => (
-          <span key={i} className="ontwerp-dot-bounce block rounded-full" style={{ width: 42, height: 42, background: c, animationDelay: `${i * 0.18}s`, boxShadow: "0 0 14px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.25)" }} />
+          <span key={i} className="ontwerp-dot-bounce block rounded-full" style={{ width: 52, height: 52, background: c, animationDelay: `${i * 0.18}s`, boxShadow: "0 0 18px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.3)" }} />
         ))}
       </div>
 
       {/* INVULSTROKEN op de shell — onderste helft (vervalt achter glaskaart wanneer kaart omlaag) */}
       <div className="absolute bottom-0 left-0 right-0 h-[105px] z-20 px-4 pt-2.5 pb-3 flex items-center gap-2.5" style={{ color: IVORY }}>
-        <div className="w-[88px] shrink-0" />
+        <div className="w-[230px] shrink-0" />
         <div className="flex-1 min-w-0 flex items-center gap-2">
           <DarkWalletDropdown value={fromId} onChange={setFromId} options={active} placeholder="Van…" label="haal uit" />
           <DarkWalletDropdown value={toId} onChange={setToId} options={active} placeholder="Naar…" label="breng naar" />
@@ -132,7 +132,7 @@ export default function MoveMeTransfer() {
         initial={false}
         animate={{ y: up ? "-100%" : "0%" }}
         transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-        style={{ background: "rgba(20,22,26,0.30)", backdropFilter: "blur(22px) saturate(1.4)", WebkitBackdropFilter: "blur(22px) saturate(1.4)", border: "1px solid rgba(255,255,255,0.22)", boxShadow: up ? "0 14px 34px -10px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.25)" : "0 -12px 30px -14px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.18)" }}
+        style={{ background: "rgba(20,22,26,0.22)", backdropFilter: "blur(6px) saturate(1.2)", WebkitBackdropFilter: "blur(6px) saturate(1.2)", border: "1px solid rgba(255,255,255,0.22)", boxShadow: up ? "0 14px 34px -10px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.25)" : "0 -12px 30px -14px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.18)" }}
       >
         <div className="absolute inset-0 px-5 flex items-center justify-between" style={{ color: IVORY, textShadow: "0 1px 8px rgba(0,0,0,0.55)" }}>
           <div>

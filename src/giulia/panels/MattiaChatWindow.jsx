@@ -7,35 +7,31 @@ const PISTACHIO = "#d8dab3";
 const OLIVE = "#94925d";
 const INK = "#2a2c30";
 
-/** MattiaChatWindow — Whipped Pistachio glas-paneel. Praat met de Mattia-agent
- *  (agent_name "mattia") via de agents SDK. */
+/** MattiaChatWindow — Whipped Pistachio glas-paneel. Chat met Mattia via de
+ *  BYOK chatWithMattia backend-functie (Mattia Gemini API-key). */
 export default function MattiaChatWindow({ onClose }) {
-  const [conversation, setConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const scrollRef = useRef(null);
 
-  useEffect(() => {
-    let conv = null;
-    try { conv = base44.agents.createConversation({ agent_name: "mattia", metadata: { name: "Mattia" } }); } catch { conv = null; }
-    if (!conv) return;
-    setConversation(conv);
-    setMessages(conv.messages || []);
-    let unsub = () => {};
-    try { unsub = base44.agents.subscribeToConversation(conv.id, (data) => setMessages(data.messages || [])); } catch {}
-    return () => { try { unsub && unsub(); } catch {} };
-  }, []);
-
-  useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages]);
+  useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight; }, [messages, busy]);
 
   const send = async () => {
-    if (!input.trim() || !conversation || busy) return;
     const text = input.trim();
+    if (!text || busy) return;
+    const next = [...messages, { role: "user", content: text }];
+    setMessages(next);
     setInput("");
     setBusy(true);
-    try { await base44.agents.addMessage(conversation, { role: "user", content: text }); } catch {}
-    setBusy(false);
+    try {
+      const res = await base44.functions.invoke("chatWithMattia", { messages: next });
+      setMessages([...next, { role: "assistant", content: res?.reply || "…" }]);
+    } catch {
+      setMessages([...next, { role: "assistant", content: "Mattia is even stil." }]);
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (

@@ -16,7 +16,7 @@ import ForecastChart from "@/life/components/finance/ForecastChart";
 import HebbenBestedenBar from "@/life/components/finance/HebbenBestedenBar";
 import HealthyMoneyTab from "@/life/components/finance/HealthyMoneyTab";
 import ThingsHandleStrip from "@/life/components/finance/ThingsHandleStrip";
-import LastenActionWidget from "@/life/components/finance/LastenActionWidget";
+import LastenAllocationCard from "@/life/components/finance/LastenAllocationCard";
 import NewDocumentsCard from "@/life/components/finance/NewDocumentsCard";
 import { fmtEuro, FREQ_LABELS, calcPortfolio, upcomingExpenses } from "@/lib/financeUtils";
 
@@ -128,10 +128,8 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     return (
       <div className="h-full flex flex-col gap-4">
         <ThingsHandleStrip />
-        <div className="h-[260px] shrink-0">
-          <LastenActionWidget expenses={expenses} portfolios={portfolios} onReload={onReload} />
-        </div>
         <LastenBarsWidget expenses={expenses} portfolios={portfolios} onReload={onReload} />
+        <LastenAllocationCard expenses={expenses} portfolios={portfolios} />
       </div>
     );
   }
