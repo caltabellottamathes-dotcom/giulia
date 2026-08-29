@@ -270,9 +270,11 @@
   .graph-paper {
     background-color: hsl(var(--warm-white));
     background-image:
-      linear-gradient(to right, hsl(var(--foreground) / 0.08) 1px, transparent 1px),
-      linear-gradient(to bottom, hsl(var(--foreground) / 0.08) 1px, transparent 1px);
-    background-size: 96px 96px, 96px 96px;
+      linear-gradient(to right, hsl(var(--foreground) / 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--foreground) / 0.04) 1px, transparent 1px),
+      linear-gradient(to right, hsl(var(--foreground) / 0.075) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--foreground) / 0.075) 1px, transparent 1px);
+    background-size: 24px 24px, 24px 24px, 96px 96px, 96px 96px;
   }
 
   .shimmer {

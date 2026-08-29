@@ -8,9 +8,7 @@ import ExpenseAllocationBar from "@/life/components/finance/ExpenseAllocationBar
 import IncomeSourcesWidget from "@/life/components/finance/IncomeSourcesWidget";
 import MonthlyIncomeCounter from "@/life/components/finance/MonthlyIncomeCounter";
 import WalletsBuildingWidget from "@/life/components/finance/WalletsBuildingWidget";
-import DinnerWidget from "@/life/widgets/new/DinnerWidget";
-import HobbiesWidget from "@/life/widgets/HobbiesWidget";
-import ExpectedIncomeWidget from "@/life/components/finance/ExpectedIncomeWidget";
+import TransferBetweenWallets from "@/life/components/finance/TransferBetweenWallets";
 import WalletPhotoCard from "@/life/components/finance/WalletPhotoCard";
 import PortfolioBarsWidget from "@/life/components/finance/PortfolioBarsWidget";
 import ForecastChart from "@/life/components/finance/ForecastChart";
@@ -116,7 +114,7 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     return (
       <div className="h-full flex flex-col gap-4">
         <WalletsBuildingWidget />
-        <DinnerWidget />
+        <TransferBetweenWallets />
         <div className="flex-1 min-h-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2 gap-4">
           {wallets.map((p, i) => <WalletPhotoCard key={p.id} wallet={p} expenses={expenses} photoUrl={PHOTOS[i % PHOTOS.length]} />)}
         </div>
@@ -124,15 +122,15 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     );
   }
 
-  // ---- LASTEN ---- Things to handle (volledige breedte strook) + lasten-actie + things I love
+  // ---- LASTEN ---- Things to handle (volledige breedte strook) + lasten-actie + wallets
   if (tab === "LASTEN") {
     return (
       <div className="h-full flex flex-col gap-4">
         <ThingsHandleStrip />
-        <div className="h-[340px] min-h-0 overflow-hidden">
+        <div className="flex-1 min-h-0">
           <LastenActionWidget expenses={expenses} portfolios={portfolios} onReload={onReload} />
         </div>
-        <HobbiesWidget />
+        <WalletsBuildingWidget />
       </div>
     );
   }
@@ -146,7 +144,6 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
           <ExpenseAllocationBar />
         </Tile>
         <IncomeSourcesWidget />
-        <ExpectedIncomeWidget />
       </div>
     );
   }
