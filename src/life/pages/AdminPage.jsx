@@ -11,6 +11,7 @@ import WalletStage from "@/life/components/finance/WalletStage";
 import ExpenseStage from "@/life/components/finance/ExpenseStage";
 import IncomeStage from "@/life/components/finance/IncomeStage";
 import MattiaSlideOver from "@/giulia/panels/MattiaSlideOver";
+import LifeHeroPhoto from "@/life/components/LifeHeroPhoto";
 
 const EASE = [0.16, 1, 0.3, 1];
 const HERO_VIDEO = "https://media.base44.com/videos/public/6a7608690d4ea2c9edc3d59b/cbb9adc9f_Mattia_into.mp4";
@@ -97,7 +98,7 @@ export default function AdminPage() {
       {/* Hero photo — blijft open wanneer het glaspaneel opent */}
       <motion.div initial={{ x: "-118%" }} animate={{ x: 0 }} transition={{ duration: 0.7, ease: EASE }}
         className="hidden lg:block absolute left-0 top-[14%] bottom-0 w-[34%] overflow-hidden rounded-r-[24px] z-[5]">
-        <video src={HERO_VIDEO} autoPlay loop muted playsInline className="h-full w-full object-cover" draggable={false} />
+        <LifeHeroPhoto />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/65 via-charcoal/15 to-charcoal/10" />
       </motion.div>
 
