@@ -9,6 +9,7 @@ import FinanceHealthCard from "@/life/components/finance/FinanceHealthCard";
 import NewDocumentsCard from "@/life/components/finance/NewDocumentsCard";
 import RenewOverviewCard from "@/life/components/finance/RenewOverviewCard";
 import FinanceStacks from "@/life/components/finance/FinanceStacks";
+import ExpenseAllocationBar from "@/life/components/finance/ExpenseAllocationBar";
 
 const EASE = [0.16, 1, 0.3, 1];
 const BLUE = "#b1bfc7";
@@ -226,6 +227,9 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
               <div className="flex-1 min-h-0 overflow-hidden rounded-[18px]" style={{ boxShadow: "-16px 16px 40px -16px rgba(0,0,0,0.3)" }}>
                 <NewDocumentsCard />
               </div>
+            </div>
+            <div className="flex-[0.6] min-h-0 overflow-hidden rounded-[18px] graph-paper p-4" style={{ boxShadow: "-14px 14px 36px -16px rgba(0,0,0,0.30)" }}>
+              <ExpenseAllocationBar />
             </div>
           </div>
         ) : (tab === "PORTEFEUILLES" || tab === "LASTEN") ? (
