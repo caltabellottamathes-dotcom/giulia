@@ -6,6 +6,7 @@ import WalletBarChartWidget from "@/life/components/finance/WalletBarChartWidget
 import FinanceHealthCard from "@/life/components/finance/FinanceHealthCard";
 import ExpenseAllocationBar from "@/life/components/finance/ExpenseAllocationBar";
 import IncomeSourcesWidget from "@/life/components/finance/IncomeSourcesWidget";
+import MonthlyIncomeCounter from "@/life/components/finance/MonthlyIncomeCounter";
 import WalletsBuildingWidget from "@/life/components/finance/WalletsBuildingWidget";
 import TransferBetweenWallets from "@/life/components/finance/TransferBetweenWallets";
 import WalletPhotoCard from "@/life/components/finance/WalletPhotoCard";
@@ -15,7 +16,7 @@ import HebbenBestedenBar from "@/life/components/finance/HebbenBestedenBar";
 import HealthyMoneyTab from "@/life/components/finance/HealthyMoneyTab";
 import ThingsHandleWidget from "@/life/widgets/new/ThingsHandleWidget";
 import MonthCalendarCard from "@/life/components/finance/MonthCalendarCard";
-import LastenKanban from "@/life/components/finance/LastenKanban";
+import LastenActionWidget from "@/life/components/finance/LastenActionWidget";
 import NewDocumentsCard from "@/life/components/finance/NewDocumentsCard";
 import { fmtEuro, FREQ_LABELS, calcPortfolio, upcomingExpenses } from "@/lib/financeUtils";
 
@@ -134,15 +135,18 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
             <ThingsHandleWidget className="h-full" />
           </div>
         </div>
-        <LastenKanban expenses={expenses} portfolios={portfolios} onReload={onReload} />
+        <div className="flex-1 min-h-0">
+          <LastenActionWidget expenses={expenses} portfolios={portfolios} onReload={onReload} />
+        </div>
       </div>
     );
   }
 
-  // ---- INKOMEN ---- maandelijkse verdeling (hover-balk) + inkomstenbronnen widget
+  // ---- INKOMEN ---- teller + maandelijkse verdeling (hover-balk) + inkomstenbronnen widget
   if (tab === "INKOMEN") {
     return (
       <div className="flex flex-col gap-4">
+        <MonthlyIncomeCounter />
         <Tile className="p-4">
           <ExpenseAllocationBar />
         </Tile>

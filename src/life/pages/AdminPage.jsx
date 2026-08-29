@@ -9,6 +9,7 @@ import DocStage from "@/system/panels/DocStage";
 import MediaStage from "@/system/panels/MediaStage";
 import WalletStage from "@/life/components/finance/WalletStage";
 import ExpenseStage from "@/life/components/finance/ExpenseStage";
+import IncomeStage from "@/life/components/finance/IncomeStage";
 
 const EASE = [0.16, 1, 0.3, 1];
 const HERO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0a68f996a_ADMIN.jpeg";
@@ -45,6 +46,7 @@ export default function AdminPage() {
   const [panelOpen, setPanelOpen] = useState(false);
   const [walletId, setWalletId] = useState(null);
   const [expenseId, setExpenseId] = useState(null);
+  const [incomeId, setIncomeId] = useState(null);
   const isStage = panelOpen;
   const [first, setFirst] = useState(true);
   useEffect(() => { const t = setTimeout(() => setFirst(false), 900); return () => clearTimeout(t); }, []);
@@ -70,12 +72,20 @@ export default function AdminPage() {
     return () => window.removeEventListener("giulia:open-expense", h);
   }, []);
 
+  // Inkomsten-beheer klik → income-stage (alles beheren in het uitgeschoven paneel).
+  useEffect(() => {
+    const h = (e) => { setIncomeId(e.detail); setStage("income"); setPanelOpen(true); };
+    window.addEventListener("giulia:open-income-stage", h);
+    return () => window.removeEventListener("giulia:open-income-stage", h);
+  }, []);
+
   const stageContent =
     stage === "chat" ? <ChatStage />
     : stage === "voice" ? <VoiceStage />
     : stage === "doc" ? <DocStage />
     : stage === "wallet" ? <WalletStage walletId={walletId} onClose={() => setPanelOpen(false)} />
     : stage === "expense" ? <ExpenseStage expenseId={expenseId} onClose={() => setPanelOpen(false)} />
+    : stage === "income" ? <IncomeStage incomeId={incomeId} onClose={() => setPanelOpen(false)} />
     : <MediaStage />;
 
   const tabTitle = TABS.find((t) => t.key === tab)?.label || "Admin";

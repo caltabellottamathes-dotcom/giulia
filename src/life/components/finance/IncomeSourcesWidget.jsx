@@ -4,7 +4,7 @@ import { ArrowLeft, Plus, Pencil, Trash2 } from "lucide-react";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import { fmtEuro, FREQ_LABELS } from "@/lib/financeUtils";
-import IncomeEditor from "./IncomeEditor";
+
 
 const EASE = [0.16, 1, 0.3, 1];
 const INK = "hsl(var(--foreground))";
@@ -26,8 +26,7 @@ const STATUS_LABEL = { expected: "Verwacht", received: "Ontvangen", partial: "Ge
 export default function IncomeSourcesWidget() {
   const { data: incomes } = useEntityList("Income", { limit: 200, realtime: true });
   const [selectedId, setSelectedId] = useState(null);
-  const [editorOpen, setEditorOpen] = useState(false);
-  const [editorItem, setEditorItem] = useState(null);
+  const openStage = (id) => window.dispatchEvent(new CustomEvent("giulia:open-income-stage", { detail: id }));
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 60000); return () => clearInterval(t); }, []);
 
@@ -44,8 +43,7 @@ export default function IncomeSourcesWidget() {
   }, [list, now]);
   const pad2 = (n) => String(Math.max(0, n)).padStart(2, "0");
 
-  const openEditor = (item = null) => { setEditorItem(item); setEditorOpen(true); };
-  const closeEditor = () => { setEditorOpen(false); setEditorItem(null); };
+
   const del = async (i) => { try { await base44.entities.Income.delete(i.id); } catch {} };
 
   const Pill = ({ income, active }) => (
@@ -77,7 +75,7 @@ export default function IncomeSourcesWidget() {
           {oneTime.map((i) => <Pill key={i.id} income={i} active={selectedId === i.id} />)}
           {/* 3e pil — knop voor eenmalige inkomsten */}
           <button
-            onClick={() => openEditor(null)}
+            onClick={() => openStage("new")}
             className="w-full rounded-full pl-4 pr-3 py-2.5 flex items-center justify-center gap-2 border border-dashed border-foreground/25 hover:bg-foreground/[0.04] transition"
           >
             <Plus className="w-3.5 h-3.5" style={{ color: INK }} />
@@ -98,7 +96,7 @@ export default function IncomeSourcesWidget() {
                 <div className="flex items-center justify-between">
                   <button onClick={() => setSelectedId(null)} className="flex items-center gap-1 text-[9px] uppercase tracking-[0.18em] font-bold text-white/90"><ArrowLeft className="h-3 w-3" /> dicht</button>
                   <div className="flex items-center gap-1.5">
-                    <button onClick={() => openEditor(selected)} className="h-7 w-7 rounded-full bg-white/12 flex items-center justify-center hover:bg-white/20 transition"><Pencil className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => openStage(selected.id)} className="h-7 w-7 rounded-full bg-white/12 flex items-center justify-center hover:bg-white/20 transition"><Pencil className="h-3.5 w-3.5" /></button>
                     <button onClick={() => { del(selected); setSelectedId(null); }} className="h-7 w-7 rounded-full bg-white/12 flex items-center justify-center hover:bg-white/20 transition"><Trash2 className="h-3.5 w-3.5" /></button>
                   </div>
                 </div>
@@ -158,7 +156,6 @@ export default function IncomeSourcesWidget() {
         </motion.div>
       </div>
 
-      <IncomeEditor open={editorOpen} item={editorItem} onClose={closeEditor} />
     </div>
   );
 }
