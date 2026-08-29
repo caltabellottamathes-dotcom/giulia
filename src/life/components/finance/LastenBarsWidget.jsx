@@ -127,14 +127,14 @@ export default function LastenBarsWidget({ expenses, portfolios, onReload }) {
                   initial={false}
                   animate={isPaid ? { x: "130%", opacity: 0 } : { x: 0, opacity: 1 }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="relative w-full rounded-[14px] px-4 py-2.5 flex items-center justify-between gap-3 text-left transition"
-                  style={{ ...GLASS_PILL, borderColor: isSel ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.24)", boxShadow: isSel ? "0 10px 26px -10px rgba(0,0,0,0.5)" : "none" }}
+                  className="relative w-full rounded-full pl-3 pr-3.5 py-2 flex items-center justify-between gap-3 text-left transition group"
+                  style={{ ...GLASS_PILL, borderColor: isSel ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.18)", boxShadow: isSel ? "0 12px 28px -12px rgba(0,0,0,0.55)" : "none", background: isSel ? "rgba(255,255,255,0.20)" : "rgba(255,255,255,0.10)" }}
                 >
                   <span className="flex items-center gap-2.5 min-w-0">
-                    <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: colorOf(b.portfolio_id) }} />
-                    <span className="text-sm font-display font-semibold truncate" style={{ color: IVORY }}>{b.title}</span>
+                    <span className="h-1 w-1 rounded-full shrink-0" style={{ background: colorOf(b.portfolio_id), boxShadow: `0 0 8px ${colorOf(b.portfolio_id)}` }} />
+                    <span className="text-[13px] font-display font-medium truncate tracking-[-0.01em]" style={{ color: IVORY }}>{b.title}</span>
                   </span>
-                  <span className="text-sm font-mono tabular-nums font-bold shrink-0" style={{ color: IVORY }}>{fmtEuro(amt(b))}</span>
+                  <span className="text-[13px] font-mono tabular-nums font-semibold shrink-0" style={{ color: IVORY }}>{fmtEuro(amt(b))}</span>
                 </motion.button>
               );
             })}
@@ -194,6 +194,10 @@ export default function LastenBarsWidget({ expenses, portfolios, onReload }) {
                 <button onClick={pay} disabled={busy || !selected} className="mt-3 w-full rounded-full py-2.5 text-xs font-bold disabled:opacity-40 transition" style={{ background: PISTACHIO, color: "#2a2c30", boxShadow: "0 10px 24px -10px rgba(0,0,0,0.5)" }}>
                   {busy ? "…" : "Betaal nu"}
                 </button>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <button onClick={() => selected && window.dispatchEvent(new CustomEvent("giulia:open-expense", { detail: selected.id }))} className="rounded-full py-2 text-[11px] font-bold transition hover:bg-white/10" style={{ background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.2)", color: IVORY }}>Bewerk</button>
+                  <button onClick={() => window.dispatchEvent(new CustomEvent("giulia:open-expense", { detail: "new" }))} className="rounded-full py-2 text-[11px] font-bold transition hover:bg-white/10" style={{ background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.2)", color: IVORY }}>Nieuw</button>
+                </div>
               </div>
             </motion.div>
           ) : (

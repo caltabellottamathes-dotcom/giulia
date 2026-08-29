@@ -18,6 +18,7 @@ import HealthyMoneyTab from "@/life/components/finance/HealthyMoneyTab";
 import ThingsHandleStrip from "@/life/components/finance/ThingsHandleStrip";
 import LastenAllocationCard from "@/life/components/finance/LastenAllocationCard";
 import NewDocumentsCard from "@/life/components/finance/NewDocumentsCard";
+import MonthlyReceiptForecast from "@/life/components/finance/MonthlyReceiptForecast";
 import { fmtEuro, FREQ_LABELS, calcPortfolio, upcomingExpenses } from "@/lib/financeUtils";
 
 const TILE_SHADOW = "-16px 16px 40px -16px rgba(0,0,0,0.30)";
@@ -150,17 +151,23 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
   // ---- FORECAST ---- bento: forecast-chart + hebben/besteden + verdeling
   if (tab === "FORECAST") {
     return (
-      <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr] items-start">
-        <Tile className="p-4">
-          <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Saldi-ontwikkeling (12 mnd)</p>
-          <ForecastChart portfolios={(portfolios || []).filter((p) => !p.archived)} expenses={expenses} months={12} />
-        </Tile>
-        <Tile className="p-4">
-          <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Hebben vs. besteden</p>
-          <HebbenBestedenBar total={totalMoney} reserved={totalReserved} available={Math.max(0, totalMoney - totalReserved)} />
-          <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3 mt-5">Maandelijkse verdeling</p>
-          <DistributionBar income={dist.income} reserved={dist.reserved} available={dist.available} />
-        </Tile>
+      <div className="space-y-4">
+        <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr] items-start">
+          <Tile className="p-4">
+            <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Saldi-ontwikkeling (12 mnd)</p>
+            <ForecastChart portfolios={(portfolios || []).filter((p) => !p.archived)} expenses={expenses} months={12} />
+          </Tile>
+          <Tile className="p-4">
+            <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Hebben vs. besteden</p>
+            <HebbenBestedenBar total={totalMoney} reserved={totalReserved} available={Math.max(0, totalMoney - totalReserved)} />
+            <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3 mt-5">Maandelijkse verdeling</p>
+            <DistributionBar income={dist.income} reserved={dist.reserved} available={dist.available} />
+          </Tile>
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Vaste lasten · kassabon per maand</p>
+          <MonthlyReceiptForecast expenses={expenses} portfolios={portfolios} months={6} />
+        </div>
       </div>
     );
   }

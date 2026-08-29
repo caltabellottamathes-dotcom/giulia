@@ -101,12 +101,10 @@ export default function MoveMeTransfer() {
       <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(20,22,26,0.74), rgba(20,22,26,0.46) 55%, rgba(20,22,26,0.68))" }} />
       <div className="absolute inset-0 rounded-[22px]" style={{ background: "rgba(120,128,133,0.08)", border: "1px solid rgba(255,255,255,0.14)" }} />
 
-      {/* 3 LARGE BOUNCEDOTS — horizontaal, links midden, half achter de glaskaart (geblurred) */}
-      <div className="absolute left-5 top-1/2 -translate-y-1/2 flex flex-row gap-3 z-10">
-        {dotColors.map((c, i) => (
-          <span key={i} className="ontwerp-dot-bounce block rounded-full" style={{ width: 52, height: 52, background: c, animationDelay: `${i * 0.18}s`, boxShadow: "0 0 18px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.3)" }} />
-        ))}
-      </div>
+      {/* 1 GROTE BOUNCEDOT — horizontaal stuiterend, links midden, half achter de glaskaart */}
+      <motion.div className="absolute left-6 top-1/2 -translate-y-1/2 z-10" animate={{ x: [-30, 30, -30] }} transition={{ repeat: Infinity, duration: 1.7, ease: "easeInOut" }}>
+        <span className="block rounded-full" style={{ width: 76, height: 76, background: `linear-gradient(135deg, ${from?.color || "#b1bec6"}, ${to?.color || "#d8dab3"})`, boxShadow: "0 0 26px rgba(0,0,0,0.55), inset 0 3px 0 rgba(255,255,255,0.32)" }} />
+      </motion.div>
 
       {/* INVULSTROKEN op de shell — onderste helft (vervalt achter glaskaart wanneer kaart omlaag) */}
       <div className="absolute bottom-0 left-0 right-0 h-[105px] z-20 px-4 pt-2.5 pb-3 flex items-center gap-2.5" style={{ color: IVORY }}>

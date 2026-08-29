@@ -25,7 +25,7 @@ const MODELS = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite"];
 const fmt = (n) => `€${Number(n || 0).toLocaleString("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const dstr = (d) => (d ? String(d).slice(0, 10) : "—");
 
-const SYSTEM = "Je bent Giulia, een persoonlijk OS. Je schrijft editorial blokken voor een persoonlijk financieel besturingssysteem. Kort, menselijk, droog, stijlvol. Nederlands.";
+const SYSTEM = "Je bent Giulia, een persoonlijk OS. Je schrijft editorial blokken voor een persoonlijk financieel besturingssysteem. Ultrakort, punchy, ADHD-vriendelijk — direct opvallend. Menselijk, droog, stijlvol. Nederlands. Schrijf ALLE getallen als cijfers (€1.419,91, 6 wallets, 3 dagen), nóóit uitgeschreven in woorden.";
 
 function schemaFor() {
   return {
@@ -54,13 +54,14 @@ Geef:
 - eyebrow: kort label (bv "Personal Admin | Lasten")
 - title1, title2: twee korte titelregels (hoofdletters, max ~4 woorden per regel, stijlvol — geen volledige zinnen)
 - heading1, heading2: twee korte aandachts-headingregels (wat op dit tabblad aandacht vraagt)
-- body: een COMPACTE maar ADHD-interessante copy (2-3 korte alinea's, 140-240 woorden). Wisselende ritme: korte felle zinnen afgewisseld met één iets langere. Alsof Giulia net iets opviel en het je wil vertellen — nieuwsgierig makend, prikkelend, specifiek met de getallen uit de data. Geen bulletlist, geen saaie opsomming. Persoonlijk, scherp, een tikje rusteloos
+- body: ULTRAKORTE punchy copy (max 2 zinnen, 25-45 woorden). Eén fel hoofdinzicht dat direct opvalt. ADHD-vriendelijk: prikkelend, specifiek met de getallen uit de data als cijfers. Geen bulletlist, geen saaie opsomming, geen uitgeschreven getallen
+- items: 0-3 aandachtspunten, elk { n: "01", title: "korte titel", desc: "1 korte zin met bedrag/datum als cijfers" } — concreet, specifiek voor dit tabblad
 - itemsLabel: mono-label (bv "03_payments_due_")
 - items: 0-3 aandachtspunten, elk { n: "01", title: "korte titel", desc: "1 zin met bedrag/datum" } — concreet, specifiek voor dit tabblad
 - restLabel: korte zin (bv "The rest can wait.")
 - rest: 1 zin over wat niet dringend is op dit tabblad
 
-Baseer je op de data. Direct, menselijk, geen SaaS-enthousiasme.
+Baseer je op de data. Kort, krachtig, direct, menselijk, geen SaaS-enthousiasme. Alle getallen als cijfers, nooit uitgeschreven.
 
 DATA:
 ${digest}`;

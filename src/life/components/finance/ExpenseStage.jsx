@@ -24,6 +24,7 @@ export default function ExpenseStage({ expenseId, onClose }) {
   const { data: portfolios } = useEntityList("Portfolio", { sort: "order", limit: 50, realtime: true });
   const [form, setForm] = useState(blank);
   const [busy, setBusy] = useState(false);
+  const [oneTime, setOneTime] = useState(false);
   const [loading, setLoading] = useState(false);
   const isCreate = expenseId === "new";
 
@@ -56,8 +57,14 @@ export default function ExpenseStage({ expenseId, onClose }) {
       const payload = { ...form, expected_amount: num(form.expected_amount) };
       delete payload.id; delete payload.created_date; delete payload.updated_date; delete payload.created_by_id;
       if (isCreate) {
-        const created = await base44.entities.AdminObligation.create(payload);
+        await base44.entities.AdminObligation.create(payload);
         toast({ title: "Last aangemaakt" });
+        reload();
+        onClose?.();
+      } else if (oneTime) {
+        const once = { ...payload, frequency: "once", title: `${form.title} (1×)`, notes: `Eenmalige wijziging t.o.v. terugkerende last.\n${form.notes || ""}` };
+        await base44.entities.AdminObligation.create(once);
+        toast({ title: "Eenmalige last toegevoegd" });
         reload();
         onClose?.();
       } else {
@@ -148,9 +155,19 @@ export default function ExpenseStage({ expenseId, onClose }) {
         </div>
       </div>
 
+      {!isCreate && (
+        <div className="px-3 pb-2 shrink-0">
+          <p className="text-[9px] uppercase tracking-[0.18em] text-ivory/60 font-semibold mb-1.5">Wijziging</p>
+          <div className="grid grid-cols-2 gap-1.5 rounded-full p-1 bg-white/8 border border-white/12">
+            <button onClick={() => setOneTime(false)} className={`rounded-full py-1.5 text-[11px] font-bold transition ${!oneTime ? "bg-ivory text-charcoal" : "text-ivory/70 hover:text-ivory"}`}>Permanent</button>
+            <button onClick={() => setOneTime(true)} className={`rounded-full py-1.5 text-[11px] font-bold transition ${oneTime ? "bg-ivory text-charcoal" : "text-ivory/70 hover:text-ivory"}`}>Alleen deze keer</button>
+          </div>
+        </div>
+      )}
+
       <div className="p-3 shrink-0 border-t border-white/10 flex gap-2">
         <button onClick={save} disabled={busy} className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-full bg-ivory text-charcoal px-4 py-2.5 text-sm font-bold disabled:opacity-50 transition">
-          {isCreate ? <Plus className="w-4 h-4" /> : <Save className="w-4 h-4" />}{busy ? "Bezig…" : isCreate ? "Aanmaken" : "Opslaan"}
+          {isCreate ? <Plus className="w-4 h-4" /> : <Save className="w-4 h-4" />}{busy ? "Bezig…" : isCreate ? "Aanmaken" : oneTime ? "Eenmalig toevoegen" : "Opslaan"}
         </button>
         {!isCreate && (
           <button onClick={del} disabled={busy} className="inline-flex items-center justify-center rounded-full bg-white/10 text-ivory px-4 py-2.5 text-sm font-bold disabled:opacity-50 transition" aria-label="Verwijderen">

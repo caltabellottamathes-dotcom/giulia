@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { usePanel } from "@/lib/PanelContext";
 import { calcPortfolio, fmtEuro } from "@/lib/financeUtils";
 
-const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0a68f996a_ADMIN.jpeg";
+const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ee2108479_Overview_Widget.jpeg";
 const RIDGE = "#b1bec6";
 
 /** PortfolioBarsWidget — 6 eigen ronde bars in een GLAS-shell (zelfde glas als
@@ -50,13 +50,14 @@ export default function PortfolioBarsWidget({ portfolios, expenses, onOpenPortfo
               {rows.map((r) => (
                 <button key={r.p.id} onClick={(e) => { e.stopPropagation(); setSelectedId(r.p.id); }} className="flex-1 h-full flex flex-col items-center justify-end gap-1.5 group" title={r.p.name}>
                   <div className="relative w-full flex-1 flex items-end" style={{ minHeight: 6 }}>
-                    <div className="absolute inset-0 rounded-full bg-white/10" />
-                    {/* glasmorphism: nog-te-gaan tot doel, óf buffer — altijd aanwezig */}
-                    <div className="absolute left-0 right-0 rounded-full" style={{ bottom: `${r.solidPct}%`, height: `${r.glassPct}%`, background: "rgba(255,255,255,0.20)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.4)" }} />
-                    {/* vulling = saldo (portfolio-kleur) */}
-                    <div className="relative w-full rounded-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:brightness-110" style={{ height: `${r.cur > 0 ? Math.max(r.solidPct, 1.5) : 0}%`, background: r.p.color || RIDGE, boxShadow: "0 10px 22px -8px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.3)" }} />
+                    {/* ghost — hoeveel er nog nodig is tot het doel (transparanter, dun erbovenop) */}
+                    {r.glassPct > 0 && (
+                      <div className="absolute left-0 right-0 rounded-full" style={{ bottom: `${r.solidPct}%`, height: `${r.glassPct}%`, background: "rgba(255,255,255,0.05)", border: "1px dashed rgba(255,255,255,0.26)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08)" }} />
+                    )}
+                    {/* vulling = voortgang naar doel (portfolio-kleur) */}
+                    <div className="relative w-full rounded-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:brightness-110" style={{ height: `${r.solidPct > 0 ? Math.max(r.solidPct, 1.5) : 0}%`, background: r.p.color || RIDGE, boxShadow: "0 10px 22px -8px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.3)" }} />
                   </div>
-                  <span className="text-[7px] uppercase tracking-[0.04em] opacity-50 truncate w-full text-center">{(r.p.name.split(" ")[0] || "").slice(0, 6)}</span>
+                  <span className="text-[8px] font-mono tabular-nums opacity-60 w-full text-center">{Math.round(r.toTarget)}%</span>
                 </button>
               ))}
             </div>
