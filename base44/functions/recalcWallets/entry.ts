@@ -39,6 +39,18 @@ export default async function (req) {
       backfilled.push({ id: e.id, title: e.title, amount: amt, wallet: e.portfolio_id });
     }
 
+    // Auto monthly_reservation — vul bestaande lasten zonder expliciete reservering
+    const PERIODS = { weekly: 52, biweekly: 26, monthly: 12, bimonthly: 6, quarterly: 4, semiannual: 2, annual: 1, once: 1, variable: 12 };
+    let reservationFilled = 0;
+    for (const e of (expenses || [])) {
+      if ((Number(e.monthly_reservation) || 0) > 0) continue;
+      const a = Number(e.expected_amount ?? e.amount) || 0;
+      if (a <= 0) continue;
+      const ppy = PERIODS[e.frequency || "monthly"] || 12;
+      const def = Math.round((a * ppy / 12) * 100) / 100;
+      try { await sr.entities.AdminObligation.update(e.id, { monthly_reservation: def }); reservationFilled++; } catch {}
+    }
+
     // Herbereken alle portefeuilles
     const recomputed = [];
     for (const p of (portfolios || [])) {
@@ -56,7 +68,7 @@ export default async function (req) {
       } catch {}
     }
 
-    return Response.json({ ok: true, backfilled: backfilled.length, backfilledDetails: backfilled, recomputed: recomputed.length, portfolios: recomputed });
+    return Response.json({ ok: true, backfilled: backfilled.length, backfilledDetails: backfilled, reservationFilled, recomputed: recomputed.length, portfolios: recomputed });
   } catch (error) {
     return Response.json({ ok: false, error: String(error.message) }, { status: 500 });
   }

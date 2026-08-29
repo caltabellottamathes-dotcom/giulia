@@ -1,5 +1,5 @@
 import React from "react";
-import { Pencil, Trash2, FileText, Film, Music, Image as ImageIcon, Wallet } from "lucide-react";
+import { Pencil, Trash2, FileText, Film, Music, Image as ImageIcon, Wallet, SlidersHorizontal } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import HealthBadge from "@/life/components/finance/HealthBadge";
 import DistributionBar from "@/life/components/finance/DistributionBar";
@@ -118,6 +118,11 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     ];
     return (
       <div className="h-full flex flex-col gap-4">
+        <div className="flex justify-end -mb-1">
+          <button onClick={() => window.dispatchEvent(new CustomEvent("giulia:open-reservation"))} className="inline-flex items-center gap-1.5 rounded-full bg-foreground/[0.06] hover:bg-foreground/[0.1] px-3.5 py-2 text-[11px] font-bold text-foreground transition">
+            <SlidersHorizontal className="w-3.5 h-3.5" /> Beheer reserveringen
+          </button>
+        </div>
         <WalletsBuildingWidget />
         <MoveMeTransfer />
         <div className="flex-1 min-h-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2 gap-4">

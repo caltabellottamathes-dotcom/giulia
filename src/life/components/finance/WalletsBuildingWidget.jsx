@@ -24,12 +24,9 @@ export default function WalletsBuildingWidget() {
   const selected = (portfolios || []).find((p) => p.id === selectedId) || null;
   const selCalc = selected ? calcPortfolio(selected, (expenses || []).filter((e) => e.portfolio_id === selected.id)) : null;
 
-  const fillOf = (p) => {
-    const target = p.target_balance || p.desired_buffer || 0;
-    return target > 0 ? Math.min(100, Math.round(((p.current_balance || 0) / target) * 100)) : 100;
-  };
-  const fillDoel1 = (p) => { const t = p.target_balance || 0; return t > 0 ? Math.min(100, Math.round(((p.current_balance || 0) / t) * 100)) : (p.current_balance > 0 ? 100 : 0); };
-  const fillDoel2 = (p) => { const t = p.desired_buffer || 0; return t > 0 ? Math.min(100, Math.round(((p.current_balance || 0) / t) * 100)) : (p.current_balance > 0 ? 100 : 0); };
+  const fillOf = (p) => { const t = p.target_balance || 0; return t > 0 ? Math.min(100, Math.round(((p.current_balance || 0) / t) * 100)) : 0; };
+  const fillDoel1 = (p) => { const t = p.target_balance || 0; return t > 0 ? Math.min(100, Math.round(((p.current_balance || 0) / t) * 100)) : 0; };
+  const fillDoel2 = (p) => { const t = p.desired_buffer || 0; return t > 0 ? Math.min(100, Math.round(((p.current_balance || 0) / t) * 100)) : 0; };
   const overDoel1 = (p) => { const t = p.target_balance || 0; return t > 0 ? Math.max(0, Math.round(((p.current_balance || 0) - t) * 100) / 100) : 0; };
 
   return (

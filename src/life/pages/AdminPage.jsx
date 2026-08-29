@@ -10,6 +10,7 @@ import MediaStage from "@/system/panels/MediaStage";
 import WalletStage from "@/life/components/finance/WalletStage";
 import ExpenseStage from "@/life/components/finance/ExpenseStage";
 import IncomeStage from "@/life/components/finance/IncomeStage";
+import ReservationStage from "@/life/components/finance/ReservationStage";
 import MattiaSlideOver from "@/giulia/panels/MattiaSlideOver";
 
 const EASE = [0.16, 1, 0.3, 1];
@@ -81,6 +82,13 @@ export default function AdminPage() {
     return () => window.removeEventListener("giulia:open-income-stage", h);
   }, []);
 
+  // Reserveringen-beheer klik → reservation-stage (Doel 1/2 + reserveringen).
+  useEffect(() => {
+    const h = () => {setStage("reservation");setPanelOpen(true);};
+    window.addEventListener("giulia:open-reservation", h);
+    return () => window.removeEventListener("giulia:open-reservation", h);
+  }, []);
+
   const stageContent =
   stage === "chat" ? <ChatStage /> :
   stage === "voice" ? <VoiceStage /> :
@@ -88,6 +96,7 @@ export default function AdminPage() {
   stage === "wallet" ? <WalletStage walletId={walletId} onClose={() => setPanelOpen(false)} /> :
   stage === "expense" ? <ExpenseStage expenseId={expenseId} onClose={() => setPanelOpen(false)} /> :
   stage === "income" ? <IncomeStage incomeId={incomeId} onClose={() => setPanelOpen(false)} /> :
+  stage === "reservation" ? <ReservationStage onClose={() => setPanelOpen(false)} /> :
   <MediaStage />;
 
   const tabTitle = TABS.find((t) => t.key === tab)?.label || "Admin";
