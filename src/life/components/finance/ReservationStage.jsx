@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { ArrowLeft, Save, SlidersHorizontal } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, Save, SlidersHorizontal, ChevronDown, Plus } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { fmtEuro, FREQ_LABELS } from "@/lib/financeUtils";
 import { useEntityList } from "@/hooks/useEntity";
@@ -11,52 +11,56 @@ const defaultReservation = (e) => { const a = Number(e.expected_amount ?? e.amou
 const input = "w-full rounded-xl bg-white/10 border border-white/15 px-3 py-2 text-sm text-ivory placeholder-ivory/40 outline-none focus:border-white/30";
 const label = "text-[9px] uppercase tracking-[0.18em] text-ivory/60 font-semibold mb-1 block";
 
-/** ReservationStage — beheer alle reserveringen op één plek. Wallets: Doel 1
- *  (target_balance) + Doel 2 (desired_buffer) instellen. Lasten: maandelijkse
- *  reservering per last. Auto-fill zet de standaard-reservering voor lasten
- *  die er nog geen hebben. Slaat alles in één keer op. */
+/** ReservationStage — beheer alle reserveringen op één plek. Wallets zijn
+ *  uitklapbaar: klik een wallet → toont de bijbehorende vaste lasten. Doel 1
+ *  is vast = de som van de maandelijkse lasten in de wallet (auto-berekend,
+ *  niet bewerkbaar). Doel 2 (buffer) stel je zelf in. Per last kun je de
+ *  maandelijkse reservering aanpassen. "Alles opslaan" schrijft Doel 1 (berekend),
+ *  Doel 2 en alle reserveringen weg. */
 export default function ReservationStage({ onClose }) {
   const { toast } = useToast();
   const { data: portfolios } = useEntityList("Portfolio", { sort: "order", limit: 50, realtime: true });
   const { data: expenses } = useEntityList("AdminObligation", { limit: 500, realtime: true });
-  const [wallets, setWallets] = useState({});
+  const [buffers, setBuffers] = useState({});
   const [lasten, setLasten] = useState({});
+  const [expanded, setExpanded] = useState(null);
   const [busy, setBusy] = useState(false);
 
+  const activeP = useMemo(() => (portfolios || []).filter((p) => !p.archived && p.active !== false), [portfolios]);
+  const openLasten = useMemo(() => (expenses || []).filter((e) => e.status !== "done"), [expenses]);
+
+  const linkedOf = (pid) => openLasten.filter((e) => e.portfolio_id === pid);
+  const doel1Of = (pid) => linkedOf(pid).reduce((s, e) => s + defaultReservation(e), 0);
+
   useEffect(() => {
-    const w = {};
-    for (const p of (portfolios || [])) if (!p.archived && p.active !== false) w[p.id] = { target_balance: p.target_balance || 0, desired_buffer: p.desired_buffer || 0 };
-    setWallets(w);
-  }, [portfolios]);
+    const b = {};
+    for (const p of activeP) b[p.id] = p.desired_buffer || 0;
+    setBuffers(b);
+  }, [activeP]);
 
   useEffect(() => {
     const l = {};
-    for (const e of (expenses || [])) if (e.status !== "done") l[e.id] = { monthly_reservation: e.monthly_reservation ?? 0, default: defaultReservation(e) };
+    for (const e of openLasten) l[e.id] = e.monthly_reservation ?? 0;
     setLasten(l);
-  }, [expenses]);
+  }, [openLasten]);
 
-  const activeP = (portfolios || []).filter((p) => !p.archived && p.active !== false);
-  const openLasten = (expenses || []).filter((e) => e.status !== "done");
-
-  const setW = (id, k, v) => setWallets((s) => ({ ...s, [id]: { ...s[id], [k]: v } }));
-  const setL = (id, v) => setLasten((s) => ({ ...s, [id]: { ...s[id], monthly_reservation: v } }));
+  const setB = (id, v) => setBuffers((s) => ({ ...s, [id]: v }));
+  const setL = (id, v) => setLasten((s) => ({ ...s, [id]: v }));
 
   const saveAll = async () => {
     setBusy(true);
     let ok = 0;
     try {
       for (const p of activeP) {
-        const w = wallets[p.id];
-        if (!w) continue;
-        if ((Number(p.target_balance) || 0) !== Number(w.target_balance) || (Number(p.desired_buffer) || 0) !== Number(w.desired_buffer)) {
-          await base44.entities.Portfolio.update(p.id, { target_balance: Number(w.target_balance) || 0, desired_buffer: Number(w.desired_buffer) || 0 });
+        const d1 = Math.round(doel1Of(p.id) * 100) / 100;
+        const d2 = Number(buffers[p.id]) || 0;
+        if ((Number(p.target_balance) || 0) !== d1 || (Number(p.desired_buffer) || 0) !== d2) {
+          await base44.entities.Portfolio.update(p.id, { target_balance: d1, desired_buffer: d2 });
           ok++;
         }
       }
       for (const e of openLasten) {
-        const l = lasten[e.id];
-        if (!l) continue;
-        const v = Number(l.monthly_reservation) || 0;
+        const v = Number(lasten[e.id]) || 0;
         if ((Number(e.monthly_reservation) || 0) !== v) {
           await base44.entities.AdminObligation.update(e.id, { monthly_reservation: v });
           ok++;
@@ -87,7 +91,7 @@ export default function ReservationStage({ onClose }) {
   };
 
   const totalRes = activeP.reduce((s, p) => s + (Number(p.monthly_reservation_actual) || 0), 0);
-  const totalRec = activeP.reduce((s, p) => s + (Number(p.monthly_reservation_recommended) || 0), 0);
+  const totalDoel1 = activeP.reduce((s, p) => s + doel1Of(p.id), 0);
 
   return (
     <div className="h-full flex flex-col text-ivory">
@@ -98,11 +102,11 @@ export default function ReservationStage({ onClose }) {
         <span className="text-[9px] uppercase tracking-[0.18em] font-bold">Reserveringen</span>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-3 pb-4 space-y-5">
+      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-3 pb-4 space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-[20px] font-display font-bold tracking-[-0.02em] leading-tight">Reserveringen beheren</p>
-            <p className="text-[11px] text-ivory/60">Stel Doel 1 & Doel 2 per wallet en de reservering per last in.</p>
+            <p className="text-[11px] text-ivory/60">Tik een wallet om de lasten te zien. Doel 1 = som der lasten (vast). Doel 2 stel je zelf in.</p>
           </div>
           <button onClick={autoFill} disabled={busy} className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/15 px-3 py-2 text-[11px] font-bold disabled:opacity-50">
             <SlidersHorizontal className="w-3.5 h-3.5" /> Auto-fill
@@ -111,49 +115,64 @@ export default function ReservationStage({ onClose }) {
 
         <div className="rounded-2xl bg-white/5 border border-white/10 p-3">
           <div className="grid grid-cols-3 gap-2 text-center">
+            <div><p className="text-[16px] font-display font-bold tabular-nums">{fmtEuro(totalDoel1)}</p><p className="text-[9px] uppercase tracking-wide text-ivory/55">Doel 1 totaal / mnd</p></div>
             <div><p className="text-[16px] font-display font-bold tabular-nums">{fmtEuro(totalRes)}</p><p className="text-[9px] uppercase tracking-wide text-ivory/55">reservering / mnd</p></div>
-            <div><p className="text-[16px] font-display font-bold tabular-nums">{fmtEuro(totalRec)}</p><p className="text-[9px] uppercase tracking-wide text-ivory/55">aanbevolen / mnd</p></div>
             <div><p className="text-[16px] font-display font-bold tabular-nums">{openLasten.length}</p><p className="text-[9px] uppercase tracking-wide text-ivory/55">open lasten</p></div>
           </div>
         </div>
 
         <div className="space-y-2">
-          <p className={label}>Wallets · Doel 1 & Doel 2</p>
+          <p className={label}>Wallets · tik om uit te klappen</p>
           {activeP.map((p) => {
-            const w = wallets[p.id] || { target_balance: 0, desired_buffer: 0 };
+            const isOpen = expanded === p.id;
+            const linked = linkedOf(p.id);
+            const d1 = doel1Of(p.id);
             return (
-              <div key={p.id} className="rounded-xl bg-white/5 border border-white/10 p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: p.color || "hsl(var(--smoke))" }} />
-                  <span className="text-[13px] font-display font-semibold truncate">{p.name}</span>
-                  <span className="text-[10px] text-ivory/55 ml-auto">saldo {fmtEuro(p.current_balance || 0)}</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div><span className="text-[9px] text-ivory/50 mb-1 block">Doel 1 · dekking €</span><input type="number" step="0.01" className={input} value={w.target_balance} onChange={(e) => setW(p.id, "target_balance", e.target.value)} /></div>
-                  <div><span className="text-[9px] text-ivory/50 mb-1 block">Doel 2 · buffer €</span><input type="number" step="0.01" className={input} value={w.desired_buffer} onChange={(e) => setW(p.id, "desired_buffer", e.target.value)} /></div>
-                </div>
-                <p className="text-[9px] text-ivory/45 mt-1.5">Reservering nu {fmtEuro(p.monthly_reservation_actual || 0)}/mnd · aanbevolen {fmtEuro(p.monthly_reservation_recommended || 0)}/mnd</p>
-              </div>
-            );
-          })}
-        </div>
+              <div key={p.id} className="rounded-xl bg-white/5 border border-white/10 overflow-hidden">
+                <button onClick={() => setExpanded(isOpen ? null : p.id)} className="w-full flex items-center gap-2 p-3 text-left">
+                  <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: p.color || "hsl(var(--smoke))" }} />
+                  <span className="text-[13px] font-display font-semibold truncate flex-1">{p.name}</span>
+                  <span className="text-[10px] text-ivory/55 shrink-0">saldo {fmtEuro(p.current_balance || 0)}</span>
+                  <ChevronDown className={`w-4 h-4 text-ivory/60 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+                </button>
 
-        <div className="space-y-2">
-          <p className={label}>Lasten · maandelijkse reservering</p>
-          {openLasten.length === 0 && <p className="text-sm text-ivory/50 italic">Geen open lasten.</p>}
-          {openLasten.map((e) => {
-            const l = lasten[e.id] || { monthly_reservation: 0, default: defaultReservation(e) };
-            const pot = activeP.find((p) => p.id === e.portfolio_id);
-            return (
-              <div key={e.id} className="rounded-xl bg-white/5 border border-white/10 p-2.5 flex items-center gap-2">
-                <div className="min-w-0 flex-1">
-                  <p className="text-[12px] font-display font-semibold truncate">{e.title}</p>
-                  <p className="text-[10px] text-ivory/50">{pot?.name || "—"} · {FREQ_LABELS[e.frequency] || e.frequency} · {fmtEuro(e.expected_amount || 0)}</p>
-                </div>
-                <div className="w-24 shrink-0">
-                  <input type="number" step="0.01" className={input} value={l.monthly_reservation} onChange={(ev) => setL(e.id, ev.target.value)} />
-                  <p className="text-[8px] text-ivory/45 mt-0.5 text-right">std {fmtEuro(l.default)}</p>
-                </div>
+                {isOpen && (
+                  <div className="px-3 pb-3 space-y-3 border-t border-white/8 pt-3">
+                    {/* Doel 1 — vast, som der lasten */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="rounded-lg bg-white/8 px-2.5 py-2">
+                        <p className="text-[8px] uppercase tracking-[0.14em] text-ivory/55">Doel 1 · dekking (vast)</p>
+                        <p className="text-[14px] font-display font-bold tabular-nums leading-none mt-1">{fmtEuro(d1)}<span className="text-[9px] text-ivory/50"> /mnd</span></p>
+                        <p className="text-[8px] text-ivory/45 mt-1">som van {linked.length} lasten</p>
+                      </div>
+                      <div>
+                        <span className="text-[9px] text-ivory/50 mb-1 block">Doel 2 · buffer €</span>
+                        <input type="number" step="0.01" className={input} value={buffers[p.id] || 0} onChange={(e) => setB(p.id, e.target.value)} />
+                        <p className="text-[8px] text-ivory/45 mt-1">vrije buffer die je zelf bepaalt</p>
+                      </div>
+                    </div>
+
+                    {/* Linked lasten */}
+                    <div>
+                      <p className="text-[9px] uppercase tracking-[0.16em] text-ivory/55 font-semibold mb-1.5">Lasten in deze wallet · {linked.length}</p>
+                      {linked.length === 0 && <p className="text-[11px] text-ivory/45 italic">Geen lasten gekoppeld aan deze wallet.</p>}
+                      <div className="space-y-1.5">
+                        {linked.map((e) => (
+                          <div key={e.id} className="flex items-center gap-2 rounded-lg bg-white/5 p-2">
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[12px] font-display font-semibold truncate">{e.title}</p>
+                              <p className="text-[10px] text-ivory/50">{FREQ_LABELS[e.frequency] || e.frequency} · {fmtEuro(e.expected_amount || 0)}</p>
+                            </div>
+                            <div className="w-24 shrink-0">
+                              <input type="number" step="0.01" className={input} value={lasten[e.id] || 0} onChange={(ev) => setL(e.id, ev.target.value)} />
+                              <p className="text-[8px] text-ivory/45 mt-0.5 text-right">std {fmtEuro(defaultReservation(e))}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
