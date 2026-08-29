@@ -156,26 +156,6 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
     onReload: reload,
   };
 
-  const openItem = (it) => {
-    const title = String(it.title || "").split(" • ")[0].split(" · ")[0].trim().toLowerCase();
-    if (!title) { goTab(tab); return; }
-    if (tab === "OVERVIEW" || tab === "LASTEN") {
-      goTab("LASTEN");
-      const exp = (data?.expenses || []).find((e) => String(e.title || "").toLowerCase().includes(title));
-      if (exp) window.dispatchEvent(new CustomEvent("giulia:open-expense", { detail: exp.id }));
-    } else if (tab === "PORTEFEUILLES") {
-      goTab("PORTEFEUILLES");
-      const pot = (data?.portfolios || []).find((p) => String(p.name || "").toLowerCase().includes(title));
-      if (pot) window.dispatchEvent(new CustomEvent("giulia:open-wallet", { detail: pot.id }));
-    } else if (tab === "INKOMEN") {
-      goTab("INKOMEN");
-      const inc = (data?.incomes || []).find((i) => `${i.description || ""} ${i.category || ""}`.toLowerCase().includes(title));
-      if (inc) window.dispatchEvent(new CustomEvent("giulia:open-income-stage", { detail: inc.id }));
-    } else {
-      goTab(tab);
-    }
-  };
-
   const c = TAB_COPY[tab] || TAB_COPY.OVERVIEW;
   const dyn = data ? buildDynamic(tab, data) : null;
   const ed = editorial[tab] || null;
@@ -234,7 +214,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
             <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>{itemsLabel}</p>
             {items.length === 0 && <p className="font-body text-[12px]" style={{ color: INK }}>{data ? "Niets dringends." : "Laden…"}</p>}
             {items.map((it, idx) => (
-              <button key={it.n} onClick={() => openItem(it)} className="flex gap-3 items-end text-left w-full hover:opacity-70 transition">
+              <button key={it.n} onClick={() => goTab(tab)} className="flex gap-3 items-end text-left w-full hover:opacity-70 transition">
                 <span className="w-[84px] shrink-0 flex justify-end items-end gap-[5px]">
                   <BounceBalls color={NUM_COLORS[idx % 3]} count={idx + 1} ml="0" />
                   <span className="font-display font-bold leading-none" style={{ color: NUM_COLORS[idx % 3], fontSize: "30px" }}>{it.n}</span>

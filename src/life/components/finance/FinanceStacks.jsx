@@ -18,7 +18,7 @@ import HealthyMoneyTab from "@/life/components/finance/HealthyMoneyTab";
 import ThingsHandleStrip from "@/life/components/finance/ThingsHandleStrip";
 import LastenAllocationCard from "@/life/components/finance/LastenAllocationCard";
 import NewDocumentsCard from "@/life/components/finance/NewDocumentsCard";
-import MonthlyBarChartForecast from "@/life/components/finance/MonthlyBarChartForecast";
+import MonthlyReceiptForecast from "@/life/components/finance/MonthlyReceiptForecast";
 import { fmtEuro, FREQ_LABELS, calcPortfolio, upcomingExpenses } from "@/lib/financeUtils";
 
 const TILE_SHADOW = "-16px 16px 40px -16px rgba(0,0,0,0.30)";
@@ -166,7 +166,7 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
         </div>
         <div>
           <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Vaste lasten · kassabon geschiedenis</p>
-          <MonthlyBarChartForecast portfolios={portfolios} months={6} />
+          <MonthlyReceiptForecast portfolios={portfolios} months={6} />
         </div>
       </div>
     );

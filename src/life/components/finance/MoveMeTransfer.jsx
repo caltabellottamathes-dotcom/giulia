@@ -10,7 +10,7 @@ const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0
 const IVORY = "hsl(var(--ivory))";
 
 const DARK_GLASS = { background: "rgba(20,22,26,0.42)", backdropFilter: "blur(14px) saturate(1.3)", WebkitBackdropFilter: "blur(14px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.18)", color: IVORY };
-const DARK_POPOVER = { background: "rgba(20,22,26,0.78)", backdropFilter: "blur(22px) saturate(1.4)", WebkitBackdropFilter: "blur(22px) saturate(1.4)", border: "1px solid rgba(255,255,255,0.20)", boxShadow: "0 24px 56px -18px rgba(0,0,0,0.6)" };
+const DARK_POPOVER = { background: "rgba(20,22,26,0.74)", backdropFilter: "blur(22px) saturate(1.4)", WebkitBackdropFilter: "blur(22px) saturate(1.4)", border: "1px solid rgba(255,255,255,0.20)", boxShadow: "0 24px 56px -18px rgba(0,0,0,0.6)" };
 
 function DarkWalletDropdown({ value, onChange, options, placeholder, label }) {
   const [open, setOpen] = useState(false);
@@ -37,7 +37,7 @@ function DarkWalletDropdown({ value, onChange, options, placeholder, label }) {
       </button>
       <AnimatePresence>
         {open && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.16 }} className="absolute z-50 mb-1 right-0 bottom-full w-full min-w-[200px] rounded-xl p-1 max-h-56 overflow-y-auto no-scrollbar" style={DARK_POPOVER}>
+          <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.16 }} className="absolute z-50 mt-1 right-0 w-full min-w-[200px] rounded-xl p-1 max-h-56 overflow-y-auto no-scrollbar" style={DARK_POPOVER}>
             {options.map((o) => {
               const active = o.id === value;
               return (
@@ -56,10 +56,11 @@ function DarkWalletDropdown({ value, onChange, options, placeholder, label }) {
   );
 }
 
-/** MoveMeTransfer — editorial transfer-kaart. SHELL = full photo (geen donkere
- *  overlay). 1 grote BounceDot links, hoger geplaatst, horizontaal stuiterend.
- *  Onderste strook: 3 gelijke glazen pillen (van/naar/bedrag) + Move-knop.
- *  Keuzemenu's schuiven boven de widget uit (niet afgesneden door de shell). */
+/** MoveMeTransfer — editorial transfer-kaart (WhatsForDinner-stijl).
+ *  SHELL = full photo achterin met de knoppen/invulstroken. 3 grote BounceDots
+ *  links in het midden, gekleurd naar de gekozen wallets. SCHUIVENDE KAART =
+ *  glaskaart (geen foto), half de widget hoog, met titel "Move Me!"; tik →
+ *  schuift omhoog → vul to + bedrag in → Transfer. Gelogd (Transaction) + opgeslagen. */
 export default function MoveMeTransfer() {
   const { data: portfolios } = useEntityList("Portfolio", { sort: "order", limit: 50, realtime: true });
   const { toast } = useToast();
@@ -73,6 +74,7 @@ export default function MoveMeTransfer() {
   const from = active.find((p) => p.id === fromId);
   const to = active.find((p) => p.id === toId);
   const canTransfer = !!from && !!to && from.id !== to.id && Number(amount) > 0;
+  const dotColors = [from?.color || "#b1bec6", "#9aa1a6", to?.color || "#d8dab3"];
 
   const transfer = async () => {
     if (!canTransfer) return;
@@ -93,27 +95,26 @@ export default function MoveMeTransfer() {
   };
 
   return (
-    <div className="relative w-full h-[210px] shrink-0 rounded-[22px]" style={{ boxShadow: "-16px 16px 44px -16px rgba(0,0,0,0.40)" }}>
-      {/* SHELL — full photo (geen donkere overlay) */}
-      <div className="absolute inset-0 rounded-[22px] overflow-hidden">
-        <img src={PHOTO} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
-      </div>
-      <div className="absolute inset-0 rounded-[22px] pointer-events-none" style={{ background: "rgba(120,128,133,0.06)", border: "1px solid rgba(255,255,255,0.14)" }} />
+    <div className="relative w-full h-[210px] shrink-0 rounded-[22px] overflow-hidden" style={{ boxShadow: "-16px 16px 44px -16px rgba(0,0,0,0.40)" }}>
+      {/* SHELL — full photo + donkere gradient + glass */}
+      <img src={PHOTO} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
+      <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(20,22,26,0.74), rgba(20,22,26,0.46) 55%, rgba(20,22,26,0.68))" }} />
+      <div className="absolute inset-0 rounded-[22px]" style={{ background: "rgba(120,128,133,0.08)", border: "1px solid rgba(255,255,255,0.14)" }} />
 
-      {/* 1 GROTE BOUNCEDOT — horizontaal stuiterend, links, hoger geplaatst */}
-      <motion.div className="absolute left-10 z-10" style={{ top: "28%" }} animate={{ x: [-24, 24, -24] }} transition={{ repeat: Infinity, duration: 1.7, ease: "easeInOut" }}>
+      {/* 1 GROTE BOUNCEDOT — horizontaal stuiterend, links midden, half achter de glaskaart */}
+      <motion.div className="absolute left-6 top-1/2 -translate-y-1/2 z-10" animate={{ x: [-30, 30, -30] }} transition={{ repeat: Infinity, duration: 1.7, ease: "easeInOut" }}>
         <span className="block rounded-full" style={{ width: 104, height: 104, background: `linear-gradient(135deg, ${from?.color || "#b1bec6"}, ${to?.color || "#d8dab3"})`, boxShadow: "0 0 30px rgba(0,0,0,0.55), inset 0 3px 0 rgba(255,255,255,0.32)" }} />
       </motion.div>
 
       {/* INVULSTROKEN op de shell — onderste helft (vervalt achter glaskaart wanneer kaart omlaag) */}
-      <div className="absolute bottom-0 left-0 right-0 h-[105px] z-20 px-4 pt-2.5 pb-3 flex items-center gap-2" style={{ color: IVORY }}>
-        <div className="w-[120px] shrink-0" />
+      <div className="absolute bottom-0 left-0 right-0 h-[105px] z-20 px-4 pt-2.5 pb-3 flex items-center gap-2.5" style={{ color: IVORY }}>
+        <div className="w-[230px] shrink-0" />
         <div className="flex-1 min-w-0 flex items-center gap-2">
           <DarkWalletDropdown value={fromId} onChange={setFromId} options={active} placeholder="Van…" label="haal uit" />
           <DarkWalletDropdown value={toId} onChange={setToId} options={active} placeholder="Naar…" label="breng naar" />
-          <div className="flex items-center rounded-xl pl-2.5 pr-1.5 py-1.5 flex-1 min-w-0" style={DARK_GLASS}>
+          <div className="flex items-center rounded-xl pl-2.5 pr-1.5 py-1.5 shrink-0" style={DARK_GLASS}>
             <span className="text-[10px] uppercase tracking-[0.16em] font-bold mr-1 opacity-70">€</span>
-            <input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0,00" className="w-full bg-transparent text-sm font-display font-bold outline-none tabular-nums" style={{ color: IVORY }} />
+            <input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0,00" className="w-14 bg-transparent text-sm font-display font-bold outline-none tabular-nums" style={{ color: IVORY }} />
           </div>
           <button onClick={transfer} disabled={busy || !canTransfer} className="inline-flex items-center gap-1 rounded-full px-3.5 py-2 text-xs font-bold disabled:opacity-40 transition shrink-0" style={{ background: IVORY, color: "#2a2c30", boxShadow: "0 10px 24px -10px rgba(0,0,0,0.5)" }}>
             {busy ? "…" : <><ArrowRight className="w-3.5 h-3.5" />Move</>}
