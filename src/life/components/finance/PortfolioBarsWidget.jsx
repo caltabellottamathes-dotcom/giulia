@@ -23,11 +23,11 @@ export default function PortfolioBarsWidget({ portfolios, expenses, onOpenPortfo
       const cur = Math.max(Number(p.current_balance) || 0, 0);
       const target = Math.max(Number(p.target_balance) || 0, 0);
       const buf = Math.max(Number(p.desired_buffer) || 0, 0);
-      const glassAmt = cur >= target ? buf : Math.max(0, target - cur);
-      return { p, calc, cur, target, buf, glassAmt, toTarget: target > 0 ? Math.min(100, (cur / target) * 100) : 0 };
+      const toTarget = target > 0 ? (cur / target) * 100 : (cur > 0 ? 100 : 0);
+      const solidPct = Math.max(0, Math.min(toTarget, 100));
+      const glassPct = target > 0 ? Math.max(0, 100 - toTarget) : 0;
+      return { p, calc, cur, target, buf, toTarget, solidPct, glassPct };
     });
-    const maxVal = Math.max(1, ...r.map((x) => Math.max(x.cur, x.target, x.cur + x.glassAmt)));
-    r.forEach((x) => { x.solidPct = (x.cur / maxVal) * 100; x.glassPct = (x.glassAmt / maxVal) * 100; });
     return r;
   }, [active, expenses]); // eslint-disable-line react-hooks/exhaustive-deps
 
