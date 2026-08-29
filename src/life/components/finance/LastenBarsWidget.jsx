@@ -70,6 +70,14 @@ export default function LastenBarsWidget({ expenses, portfolios, onReload }) {
     try {
       const a = amt(selected);
       await base44.entities.AdminObligation.update(selected.id, { status: "done", last_payment_date: new Date().toISOString().slice(0, 10), actual_amount: a });
+      // bedrag meteen uit de gekoppelde wallet halen
+      if (selected.portfolio_id) {
+        try {
+          const pot = await base44.entities.Portfolio.get(selected.portfolio_id);
+          const newBal = (Number(pot?.current_balance) || 0) - a;
+          await base44.entities.Portfolio.update(selected.portfolio_id, { current_balance: Math.round(newBal * 100) / 100 });
+        } catch {}
+      }
       await base44.entities.Transaction.create({ portfolio_id: selected.portfolio_id, expense_id: selected.id, type: "expense", amount: a, status: "completed", date: new Date().toISOString().slice(0, 10), note: `Betaald · ${selected.title}` });
       setPaidBarId(selected.id);
       setReceiptFor(selected.id);

@@ -54,7 +54,7 @@ Geef:
 - eyebrow: kort label (bv "Personal Admin | Lasten")
 - title1, title2: twee korte titelregels (hoofdletters, max ~4 woorden per regel, stijlvol — geen volledige zinnen)
 - heading1, heading2: twee korte aandachts-headingregels (wat op dit tabblad aandacht vraagt)
-- body: 1-3 zinnen samenvatting in menselijke taal over hoe het ER voor dit tabblad voor staat, met de belangrijkste getallen erin
+- body: een COMPACTE maar ADHD-interessante copy (2-3 korte alinea's, 140-240 woorden). Wisselende ritme: korte felle zinnen afgewisseld met één iets langere. Alsof Giulia net iets opviel en het je wil vertellen — nieuwsgierig makend, prikkelend, specifiek met de getallen uit de data. Geen bulletlist, geen saaie opsomming. Persoonlijk, scherp, een tikje rusteloos
 - itemsLabel: mono-label (bv "03_payments_due_")
 - items: 0-3 aandachtspunten, elk { n: "01", title: "korte titel", desc: "1 zin met bedrag/datum" } — concreet, specifiek voor dit tabblad
 - restLabel: korte zin (bv "The rest can wait.")
@@ -68,7 +68,7 @@ ${digest}`;
   const body = {
     system_instruction: { parts: [{ text: SYSTEM }] },
     contents: [{ role: "user", parts: [{ text: prompt }] }],
-    generationConfig: { response_mime_type: "application/json", response_schema: schemaFor(), temperature: 0.6 },
+    generationConfig: { response_mime_type: "application/json", response_schema: schemaFor(), temperature: 0.85 },
   };
 
   for (const model of MODELS) {

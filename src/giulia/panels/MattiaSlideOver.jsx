@@ -17,7 +17,7 @@ export default function MattiaSlideOver({ open, onClose }) {
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: "-118%", opacity: 0 }}
           transition={{ duration: 0.55, ease: EASE }}
-          className="fixed left-[2%] top-1/2 -translate-y-1/2 w-[380px] max-w-[92vw] h-[72vh] z-[80] rounded-[26px] overflow-hidden"
+          className="fixed left-[2%] top-1/2 -translate-y-1/2 w-[400px] max-w-[92vw] h-[88vh] z-[80] rounded-[26px] overflow-hidden"
           style={{ background: "rgba(120,128,133,0.16)", backdropFilter: "blur(56px) saturate(1.45)", WebkitBackdropFilter: "blur(56px) saturate(1.45)", border: "1px solid rgba(255,255,255,0.20)", boxShadow: "0 48px 100px -28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.24)" }}
         >
           {/* pistache bloom */}

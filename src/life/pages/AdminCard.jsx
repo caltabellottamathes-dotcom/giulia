@@ -133,7 +133,10 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
     loadEd();
     const h = () => {
       setGenBusy(true);
-      base44.functions.invoke("generateAdminEditorial", {}).then(() => loadEd()).catch(() => {}).finally(() => setGenBusy(false));
+      Promise.all([
+        base44.functions.invoke("generateAdminEditorial", {}).catch(() => {}),
+        base44.functions.invoke("recalcWallets", {}).catch(() => {}),
+      ]).then(() => { loadEd(); load(); }).catch(() => {}).finally(() => setGenBusy(false));
     };
     window.addEventListener("giulia:renew-editorial", h);
     return () => window.removeEventListener("giulia:renew-editorial", h);
@@ -178,7 +181,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
       className="absolute inset-0 rounded-bl-[20px] rounded-r-none graph-paper flex overflow-hidden shadow-[-40px_8px_64px_-18px_rgba(0,0,0,0.55)]"
     >
       {/* Editorial — left ~42% */}
-      <div className="relative z-0 w-[38%] h-full flex flex-col overflow-hidden border-r" style={{ borderColor: GREY }}>
+      <div className="relative z-0 w-[38%] h-full flex flex-col overflow-y-auto no-scrollbar border-r" style={{ borderColor: GREY }}>
         <div className="flex-1 flex flex-col min-h-0 px-6 lg:px-8 pt-7 pb-6">
           <div className="flex items-center justify-between">
             <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}><span className="font-bold">{eyeA.trim()}</span>{eyeB}</p>
@@ -191,7 +194,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
 
           <div className="ml-[80px] mt-8 space-y-2">
             <p className="font-display font-medium tracking-[-0.05em] text-[12px]" style={{ color: BLACK }}>{data ? `${fmtEuro(data.totalMoney)} beschikbaar · ${data.portfolios.length} potjes` : "Laden…"}</p>
-            <p className="font-body text-[12px] leading-[1.5]" style={{ color: INK }}>{bodyText}</p>
+            <p className="font-body text-[12px] leading-[1.55] whitespace-pre-line" style={{ color: INK }}>{bodyText}</p>
             {genBusy && <p className="font-mono text-[9px] tracking-[0.18em] uppercase mt-2 animate-pulse" style={{ color: BLUE }}>Giulia schrijft…</p>}
           </div>
 
