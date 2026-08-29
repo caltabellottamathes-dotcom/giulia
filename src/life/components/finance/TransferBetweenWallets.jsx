@@ -6,15 +6,14 @@ import { base44 } from "@/api/base44Client";
 import { fmtEuro } from "@/lib/financeUtils";
 import { useToast } from "@/components/ui/use-toast";
 
-// Whipped Pistachio achtergrond + donkere inkt; alle elementen zijn zwevende
-// glas-morphism pillen die van de pistache loskomen via blur + slagschaduw.
+// Whipped Pistachio achtergrond + donkere inkt. Links 3 grote BounceDots,
+// rechts alle invulelementen als zwevende glas-morphism pillen.
 const PISTACHIO = "#d8dab3";
 const INK = "#2a2c30";
 const MUTED = "rgba(40,42,46,0.62)";
 const GLASS = { background: "rgba(40,42,46,0.08)", backdropFilter: "blur(14px) saturate(1.3)", WebkitBackdropFilter: "blur(14px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.55)", boxShadow: "0 10px 26px -12px rgba(40,42,46,0.32), inset 0 1px 0 rgba(255,255,255,0.5)", color: INK };
 const POPOVER = { background: "rgba(40,42,46,0.10)", backdropFilter: "blur(24px) saturate(1.4)", WebkitBackdropFilter: "blur(24px) saturate(1.4)", border: "1px solid rgba(255,255,255,0.6)", boxShadow: "0 24px 56px -18px rgba(40,42,46,0.40), inset 0 1px 0 rgba(255,255,255,0.55)" };
 
-/** WalletDropdown — zwevende glas-morphism dropdown op pistache. */
 function WalletDropdown({ value, onChange, options, placeholder }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -47,7 +46,7 @@ function WalletDropdown({ value, onChange, options, placeholder }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute z-50 mt-1.5 left-0 w-full min-w-[220px] rounded-2xl p-1.5 max-h-72 overflow-y-auto no-scrollbar"
+            className="absolute z-50 mt-1.5 right-0 w-full min-w-[220px] rounded-2xl p-1.5 max-h-72 overflow-y-auto no-scrollbar"
             style={POPOVER}
           >
             {options.length === 0 && <p className="px-2.5 py-2 text-sm" style={{ color: MUTED }}>Geen wallets</p>}
@@ -74,10 +73,9 @@ function WalletDropdown({ value, onChange, options, placeholder }) {
   );
 }
 
-/** TransferBetweenWallets — grafische strip-kaart om geld tussen wallets over
- *  te boeken. Van → bedrag → Naar met flow-connectors; maakt een
- *  transfer-Transaction en verschuift de saldo's. Alles zweeft op Whipped
- *  Pistachio als losse glaspillen. */
+/** TransferBetweenWallets — makeover: links 3 grote BounceDots, rechts alle
+ *  invulelementen (Van → bedrag → Naar → Transfer). Whipped Pistachio, zwevende
+ *  glas-morphism pillen. Boekt een transfer-Transaction + verschuift saldo's. */
 export default function TransferBetweenWallets() {
   const { data: portfolios } = useEntityList("Portfolio", { sort: "order", limit: 50, realtime: true });
   const { toast } = useToast();
@@ -108,49 +106,34 @@ export default function TransferBetweenWallets() {
     }
   };
 
-  const connector = (c1, c2) => ({ background: `linear-gradient(90deg, ${c1}, ${c2})` });
-  const fromC = from?.color || "#8b8471";
-  const toC = to?.color || "#595c64";
-
   return (
-    <div className="w-full rounded-[20px] p-5 flex flex-col gap-4" style={{ background: PISTACHIO, boxShadow: "-16px 16px 44px -16px rgba(0,0,0,0.32)", color: INK }}>
-      {/* header — zwevende glas-tegel */}
-      <div className="flex items-center gap-3">
-        <span className="h-10 w-10 rounded-2xl flex items-center justify-center" style={GLASS}>
-          <ArrowLeftRight className="w-5 h-5" style={{ color: INK }} />
-        </span>
-        <div className="leading-tight">
-          <p className="text-[9px] uppercase tracking-[0.22em] font-semibold" style={{ color: MUTED }}>Transfer</p>
-          <p className="text-base font-display font-bold tracking-[-0.01em]">between wallets</p>
-        </div>
-        <div className="ml-auto hidden sm:flex items-center gap-1.5 text-[10px] uppercase tracking-[0.16em] font-semibold" style={{ color: MUTED }}>
-          <span className="h-1.5 w-1.5 rounded-full" style={{ background: canTransfer ? "#595c64" : "rgba(40,42,46,0.4)" }} />
-          {canTransfer ? "klaar" : "kies wallets"}
-        </div>
+    <div className="w-full rounded-[20px] p-5 flex items-center gap-5 sm:gap-7" style={{ background: PISTACHIO, boxShadow: "-16px 16px 44px -16px rgba(0,0,0,0.32)", color: INK }}>
+      {/* LINKS — 3 grote BounceDots naast elkaar */}
+      <div className="flex items-center gap-4 shrink-0">
+        {[0, 0.18, 0.36].map((d, i) => (
+          <span key={i} className="ontwerp-dot-bounce block rounded-full" style={{ width: 34, height: 34, background: INK, animationDelay: `${d}s`, boxShadow: "0 8px 18px -6px rgba(40,42,46,0.45)" }} />
+        ))}
       </div>
 
-      {/* flow — drie zwevende glaspillen + connectors */}
-      <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
-        <div className="flex-1 min-w-[160px]"><WalletDropdown value={fromId} onChange={setFromId} options={active} placeholder="Van wallet…" /></div>
+      {/* divider */}
+      <div className="h-16 w-px shrink-0 hidden sm:block" style={{ background: "rgba(40,42,46,0.18)" }} />
 
-        <div className="flex items-center gap-2 shrink-0 order-none">
-          <div className="hidden sm:block h-[3px] w-8 rounded-full" style={connector(fromC, toC)} />
-          <div className="flex items-center rounded-2xl pl-3 pr-2 py-2.5" style={GLASS}>
+      {/* RECHTS — alle invulelementen */}
+      <div className="flex-1 min-w-0 flex flex-col gap-3">
+        <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap">
+          <div className="flex-1 min-w-[150px]"><WalletDropdown value={fromId} onChange={setFromId} options={active} placeholder="Van wallet…" /></div>
+          <ArrowRight className="w-4 h-4 shrink-0 mx-0.5" style={{ color: canTransfer ? INK : MUTED }} />
+          <div className="flex-1 min-w-[150px]"><WalletDropdown value={toId} onChange={setToId} options={active} placeholder="Naar wallet…" /></div>
+          <div className="flex items-center rounded-2xl pl-3 pr-2 py-2.5 shrink-0" style={GLASS}>
             <span className="text-[11px] uppercase tracking-[0.16em] font-bold mr-1.5" style={{ color: MUTED }}>€</span>
             <input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0,00" className="w-20 bg-transparent text-base font-display font-bold outline-none tabular-nums" style={{ color: INK }} />
           </div>
-          <ArrowRight className="w-5 h-5 shrink-0" style={{ color: canTransfer ? INK : MUTED }} />
-          <div className="hidden sm:block h-[3px] w-8 rounded-full" style={connector(toC, fromC)} />
         </div>
-
-        <div className="flex-1 min-w-[160px]"><WalletDropdown value={toId} onChange={setToId} options={active} placeholder="Naar wallet…" /></div>
-      </div>
-
-      {/* action — zwevende inkt-pil */}
-      <div className="flex justify-end">
-        <button onClick={transfer} disabled={busy || !canTransfer} className="inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-bold disabled:opacity-40 transition" style={{ background: INK, color: PISTACHIO, boxShadow: "0 12px 28px -12px rgba(40,42,46,0.45)" }}>
-          <ArrowRight className="w-4 h-4" />{busy ? "Bezig…" : "Transfer uitvoeren"}
-        </button>
+        <div className="flex justify-end">
+          <button onClick={transfer} disabled={busy || !canTransfer} className="inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-bold disabled:opacity-40 transition" style={{ background: INK, color: PISTACHIO, boxShadow: "0 12px 28px -12px rgba(40,42,46,0.45)" }}>
+            <ArrowLeftRight className="w-4 h-4" />{busy ? "Bezig…" : "Transfer uitvoeren"}
+          </button>
+        </div>
       </div>
     </div>
   );

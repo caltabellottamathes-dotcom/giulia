@@ -149,7 +149,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: "100%", opacity: 0 }}
       transition={{ duration: 0.55, ease: EASE, delay: enterDelay }}
-      className="absolute inset-0 rounded-bl-[20px] rounded-r-none bg-white flex overflow-hidden shadow-[-40px_8px_64px_-18px_rgba(0,0,0,0.55)]"
+      className="absolute inset-0 rounded-bl-[20px] rounded-r-none graph-paper flex overflow-hidden shadow-[-40px_8px_64px_-18px_rgba(0,0,0,0.55)]"
     >
       {/* Editorial — left ~42% */}
       <div className="relative z-0 w-[38%] h-full flex flex-col overflow-hidden border-r" style={{ borderColor: GREY }}>

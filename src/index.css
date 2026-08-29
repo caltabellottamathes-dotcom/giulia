@@ -265,6 +265,18 @@
     background-position: center;
   }
 
+  /* Ruitjespapier / schrijfpapier —zelfde achtergrond als het dashboard,
+     voor bento-kaarten met een lichte witte achtergrond. */
+  .graph-paper {
+    background-color: hsl(var(--warm-white));
+    background-image:
+      linear-gradient(to right, hsl(var(--foreground) / 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--foreground) / 0.04) 1px, transparent 1px),
+      linear-gradient(to right, hsl(var(--foreground) / 0.075) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--foreground) / 0.075) 1px, transparent 1px);
+    background-size: 24px 24px, 24px 24px, 96px 96px, 96px 96px;
+  }
+
   .shimmer {
     background: linear-gradient(90deg, hsl(var(--muted) / 0.3) 0%, hsl(var(--muted) / 0.6) 50%, hsl(var(--muted) / 0.3) 100%);
     background-size: 200% 100%;
