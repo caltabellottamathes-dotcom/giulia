@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEntityList } from "@/hooks/useEntity";
 
-const HERO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0d7ad9eb5_Make_a_Close-up_photo_2K_202608281619.jpeg";
+const HERO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/097d5ac19_Make_editorial_fashion_photo_2K_202608281333.jpeg";
 const EASE = [0.16, 1, 0.3, 1];
 const fmt = (n) => `€${Math.round(n).toLocaleString("en-US")}`;
 
@@ -23,11 +23,9 @@ const colorFor = (name) => {
 };
 
 /**
- * WalletBarChartWidget — capsule-bars in vaste volgorde, hoogte proportioneel
- * met de huur (Wonen = 100%). Boven elke bar een horizontale lijn met target
- * (boven) + saldo (onder), beide zwart. Glazen capsule = subtiele wallet-tint,
- * zelfde breedte, zonder border, met daarin hoeveel nog tot doel. Bars die hun
- * doel behaald hebben knipperen (langzaam); gekleurde bars zweven met schaduw.
+ * WalletBarChartWidget — capsule-bars in vaste volgorde. Bar-hoogte = % naar
+ * doel (100% = doel bereikt). Boven de gekleurde bar een transparante ghost-bar
+ * die aangeeft hoeveel er nog nodig is tot het doel. Geen vaste 100%-vorm.
  */
 export default function WalletBarChartWidget() {
   const { data: portfolios } = useEntityList("Portfolio", { realtime: true });
@@ -51,11 +49,6 @@ export default function WalletBarChartWidget() {
     }).filter(Boolean);
   }, [portfolios]);
 
-  const scale = useMemo(() => {
-    const wonen = wallets.find((w) => w.name.toLowerCase().includes("wonen"));
-    return Math.max(1, wonen ? wonen.balance : Math.max(1, ...wallets.map((w) => Math.max(w.balance, w.target))));
-  }, [wallets]);
-
   const selected = wallets.find((w) => w.id === selectedId) || null;
 
   return (
@@ -69,80 +62,35 @@ export default function WalletBarChartWidget() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}>
-          
             <p className="text-[9px] uppercase tracking-[0.2em] text-foreground/55 font-medium">tap a bar → detail</p>
             <div className="flex-1 flex items-end gap-[clamp(3px,0.5vw,7px)] mt-7 min-h-0 overflow-visible">
               {wallets.length === 0 &&
             <p className="text-[11px] text-foreground/40 self-center w-full text-center">No wallets yet.</p>
             }
               {wallets.map((w) => {
-              const ratio = w.balance / scale;
-              const over = ratio > 1;
-              const cappedH = Math.min(100, ratio * 100);
-              const reached = w.target > 0 && w.balance >= w.target;
-              const remaining = Math.max(0, w.target - w.balance);
-              const glassH = !over && w.target > w.balance ? remaining / scale * 100 : 0;
-              return (
-                <button
-                  key={w.id}
-                  onClick={() => setSelectedId(w.id)}
-                  className="relative flex-1 h-full hover:opacity-90 transition min-w-0 overflow-visible"
-                  title={w.name}>
-                  
-                    {/* target (boven) + saldo (onder) + horizontale lijn — beide zwart */}
-                    {cappedH > 3 &&
-                  <>
-                        <span
-                      className="absolute left-1/2 -translate-x-1/2 text-[8px] font-mono whitespace-nowrap z-20 text-black"
-                      style={{ bottom: `calc(${cappedH}% + 17px)` }}>
-                      
-                          {fmt(w.target)}
-                        </span>
-                        <span
-                      className="absolute left-1/2 -translate-x-1/2 text-[8px] font-mono font-semibold whitespace-nowrap z-20 text-black"
-                      style={{ bottom: `calc(${cappedH}% + 3px)` }}>
-                      
-                          {fmt(w.balance)}
-                        </span>
-                        <div
-                      className="absolute left-1/2 -translate-x-1/2 z-20"
-                      style={{ bottom: `${cappedH}%`, width: "82%", height: "1px", background: w.color }} />
-                    
-                      </>
-                  }
-                    {/* glazen capsule — subtiele wallet-tint, zelfde breedte, geen border */}
-                    {glassH > 1 &&
-                  <div
-                    className="absolute left-1/2 -translate-x-1/2 rounded-full overflow-hidden"
-                    style={{
-                      bottom: `calc(${cappedH}% + 2px)`,
-                      width: "82%",
-                      height: `${glassH}%`,
-                      background: `${w.color}33`,
-                      backdropFilter: "blur(8px)",
-                      WebkitBackdropFilter: "blur(8px)"
-                    }}>
-                    
-                        {glassH > 26 &&
-                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 hidden" style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}>
-                            <span className="text-[8px] font-mono whitespace-nowrap text-black">{fmt(remaining)} left</span>
-                          </span>
-                    }
-                      </div>
-                  }
-                    {/* gekleurde capsule — zwevend, knippert bij behaald doel */}
-                    <div
-                    className={`absolute bottom-0 left-1/2 -translate-x-1/2 rounded-full transition-all duration-500 overflow-hidden ${reached ? "wallet-blink" : ""}`}
-                    style={{
-                      width: "82%",
-                      height: `${cappedH}%`,
-                      background: w.color,
-                      boxShadow: "0 14px 28px -12px rgba(0,0,0,0.45), 0 2px 6px -2px rgba(0,0,0,0.25)"
-                    }} />
-                  
-                  </button>);
-
-            })}
+                const toTarget = w.target > 0 ? (w.balance / w.target) * 100 : (w.balance > 0 ? 100 : 0);
+                const solidH = Math.max(0, Math.min(toTarget, 100));
+                const ghostH = w.target > 0 ? Math.max(0, 100 - toTarget) : 0;
+                const reached = w.target > 0 && w.balance >= w.target;
+                return (
+                  <button
+                    key={w.id}
+                    onClick={() => setSelectedId(w.id)}
+                    className="relative flex-1 h-full hover:opacity-90 transition min-w-0 overflow-visible"
+                    title={w.name}>
+                    {/* saldo label boven de gekleurde bar */}
+                    {solidH > 3 && (
+                      <span className="absolute left-1/2 -translate-x-1/2 text-[8px] font-mono font-semibold whitespace-nowrap z-20 text-black" style={{ bottom: `calc(${solidH}% + 3px)` }}>{fmt(w.balance)}</span>
+                    )}
+                    {/* ghost — hoeveel nog tot doel (transparanter, dun erbovenop) */}
+                    {ghostH > 1 && (
+                      <div className="absolute left-1/2 -translate-x-1/2 rounded-full" style={{ bottom: `calc(${solidH}% + 2px)`, width: "82%", height: `${ghostH}%`, background: `${w.color}1A`, border: `1px dashed ${w.color}55` }} />
+                    )}
+                    {/* gekleurde bar = voortgang naar doel */}
+                    <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 rounded-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden ${reached ? "wallet-blink" : ""}`} style={{ width: "82%", height: `${solidH}%`, background: w.color, boxShadow: "0 14px 28px -12px rgba(0,0,0,0.45), 0 2px 6px -2px rgba(0,0,0,0.25)" }} />
+                  </button>
+                );
+              })}
             </div>
           </motion.div>
         }
@@ -156,7 +104,6 @@ export default function WalletBarChartWidget() {
         transition={{ duration: 0.5, ease: EASE }}
         style={{ width: "50%", boxShadow: "-12px 0 30px -14px rgba(0,0,0,0.45), 12px 0 30px -14px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.22)" }}
         onClick={selected ? (e) => {e.stopPropagation();setSelectedId(null);} : undefined}>
-        
         <img src={HERO} alt="Wallets" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
         <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.32), rgba(0,0,0,0.04) 55%, rgba(0,0,0,0.10))" }} />
         {selected ?
@@ -171,7 +118,6 @@ export default function WalletBarChartWidget() {
             ) : null}
             <p className="text-[9px] uppercase tracking-[0.2em] mt-auto opacity-55">tap → back</p>
           </div> :
-
         <div className="absolute inset-0 p-4 flex flex-col text-ivory" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>
             <p className="text-[9px] uppercase tracking-[0.22em] font-semibold opacity-75">Legend</p>
             <h3 className="text-[18px] leading-[1.05] font-display font-semibold tracking-[-0.02em] mt-1">Your wallets</h3>
@@ -197,13 +143,11 @@ export default function WalletBarChartWidget() {
           exit={{ x: 40, opacity: 0 }}
           transition={{ duration: 0.4, ease: EASE }}
           onClick={(e) => e.stopPropagation()}>
-          
             <WalletDetail wallet={selected} />
           </motion.div>
         }
       </AnimatePresence>
     </div>);
-
 }
 
 function WalletDetail({ wallet }) {
@@ -231,9 +175,7 @@ function WalletDetail({ wallet }) {
         {wallet.target > 0 && (
         reached ?
         <p className="text-[11px] opacity-80">Doel bereikt · <span className="font-semibold">{fmt(surplus)} over</span></p> :
-
         <p className="text-[11px] opacity-80"><span className="font-semibold">{fmt(remaining)}</span> nog tot doel</p>)
-
         }
       </div>
 
@@ -243,5 +185,4 @@ function WalletDetail({ wallet }) {
         <div className="flex items-center justify-between"><span className="uppercase tracking-[0.14em] opacity-60">Status</span><span className="font-medium">{wallet.raw.status || "—"}</span></div>
       </div>
     </div>);
-
 }

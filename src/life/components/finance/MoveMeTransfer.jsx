@@ -6,7 +6,7 @@ import { base44 } from "@/api/base44Client";
 import { fmtEuro } from "@/lib/financeUtils";
 import { useToast } from "@/components/ui/use-toast";
 
-const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/4ff91851b_Man_in_motion_2K_202608281637.jpeg";
+const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/097d5ac19_Make_editorial_fashion_photo_2K_202608281333.jpeg";
 const IVORY = "hsl(var(--ivory))";
 
 const DARK_GLASS = { background: "rgba(20,22,26,0.42)", backdropFilter: "blur(14px) saturate(1.3)", WebkitBackdropFilter: "blur(14px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.18)", color: IVORY };
@@ -103,7 +103,7 @@ export default function MoveMeTransfer() {
 
       {/* 1 GROTE BOUNCEDOT — horizontaal stuiterend, links midden, half achter de glaskaart */}
       <motion.div className="absolute left-6 top-1/2 -translate-y-1/2 z-10" animate={{ x: [-30, 30, -30] }} transition={{ repeat: Infinity, duration: 1.7, ease: "easeInOut" }}>
-        <span className="block rounded-full" style={{ width: 76, height: 76, background: `linear-gradient(135deg, ${from?.color || "#b1bec6"}, ${to?.color || "#d8dab3"})`, boxShadow: "0 0 26px rgba(0,0,0,0.55), inset 0 3px 0 rgba(255,255,255,0.32)" }} />
+        <span className="block rounded-full" style={{ width: 104, height: 104, background: `linear-gradient(135deg, ${from?.color || "#b1bec6"}, ${to?.color || "#d8dab3"})`, boxShadow: "0 0 30px rgba(0,0,0,0.55), inset 0 3px 0 rgba(255,255,255,0.32)" }} />
       </motion.div>
 
       {/* INVULSTROKEN op de shell — onderste helft (vervalt achter glaskaart wanneer kaart omlaag) */}

@@ -165,8 +165,8 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
           </Tile>
         </div>
         <div>
-          <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Vaste lasten · kassabon per maand</p>
-          <MonthlyReceiptForecast expenses={expenses} portfolios={portfolios} months={6} />
+          <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Vaste lasten · kassabon geschiedenis</p>
+          <MonthlyReceiptForecast portfolios={portfolios} months={6} />
         </div>
       </div>
     );

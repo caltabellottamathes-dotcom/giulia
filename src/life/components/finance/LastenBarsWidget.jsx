@@ -46,11 +46,11 @@ export default function LastenBarsWidget({ expenses, portfolios, onReload }) {
 
   const bars = useMemo(() => {
     return (expenses || [])
-      .filter((e) => (e.status || "open") !== "done" && e.frequency && e.frequency !== "once")
+      .filter((e) => e.frequency && e.frequency !== "once")
       .sort((a, b) => (daysUntil(a) ?? 9999) - (daysUntil(b) ?? 9999));
   }, [expenses]);
 
-  const selected = bars.find((b) => b.id === selectedId) || bars[0] || null;
+  const selected = bars.find((b) => b.id === selectedId) || bars.find((b) => (b.status || "open") !== "done") || bars[0] || null;
   const diff = selected ? new Date(effDate(selected)).getTime() - Date.now() : null;
   const status = pressure(diff);
   const receipt = receiptFor ? (expenses || []).find((e) => e.id === receiptFor) : null;
@@ -112,40 +112,30 @@ export default function LastenBarsWidget({ expenses, portfolios, onReload }) {
           <p className="text-[10px] uppercase tracking-[0.22em] font-bold" style={{ color: IVORY }}>Vaste lasten.</p>
           <span className="text-[10px] font-mono tabular-nums" style={{ color: IVORY_DIM }}>{bars.length}</span>
         </div>
-        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar flex flex-col gap-2.5 justify-end">
-          {bars.length === 0 && <p className="text-xs italic" style={{ color: IVORY_DIM }}>Geen openstaande vaste lasten.</p>}
-          <AnimatePresence>
-            {bars.map((b) => {
-              const isPaid = paidBarId === b.id;
-              const isSel = selected?.id === b.id && !receiptFor;
-              if (isPaid) return null;
-              return (
-                <motion.button
-                  key={b.id}
-                  layout
-                  onClick={() => { setSelectedId(b.id); setReceiptFor(null); setFull(false); }}
-                  initial={false}
-                  animate={isPaid ? { x: "130%", opacity: 0 } : { x: 0, opacity: 1 }}
-                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="relative w-full rounded-full pl-3 pr-3.5 py-2 flex items-center justify-between gap-3 text-left transition group"
-                  style={{ ...GLASS_PILL, borderColor: isSel ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.18)", boxShadow: isSel ? "0 12px 28px -12px rgba(0,0,0,0.55)" : "none", background: isSel ? "rgba(255,255,255,0.20)" : "rgba(255,255,255,0.10)" }}
-                >
-                  <span className="flex items-center gap-2.5 min-w-0">
-                    <span className="h-1 w-1 rounded-full shrink-0" style={{ background: colorOf(b.portfolio_id), boxShadow: `0 0 8px ${colorOf(b.portfolio_id)}` }} />
-                    <span className="text-[13px] font-display font-medium truncate tracking-[-0.01em]" style={{ color: IVORY }}>{b.title}</span>
-                  </span>
-                  <span className="text-[13px] font-mono tabular-nums font-semibold shrink-0" style={{ color: IVORY }}>{fmtEuro(amt(b))}</span>
-                </motion.button>
-              );
-            })}
-          </AnimatePresence>
+        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar grid grid-cols-2 gap-2 content-end">
+          {bars.length === 0 && <p className="text-xs italic col-span-2" style={{ color: IVORY_DIM }}>Geen vaste lasten.</p>}
+          {bars.map((b) => {
+            const isPaid = (b.status || "open") === "done";
+            const isSel = selected?.id === b.id && !receiptFor;
+            return (
+              <button
+                key={b.id}
+                onClick={() => { setSelectedId(b.id); setReceiptFor(null); setFull(false); }}
+                className="relative w-full rounded-full pl-2.5 pr-3 py-1.5 flex items-center justify-between gap-2 text-left transition"
+                style={{ ...GLASS_PILL, borderColor: isSel ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.18)", background: isSel ? "rgba(255,255,255,0.20)" : "rgba(255,255,255,0.10)", opacity: isPaid ? 0.45 : 1 }}
+              >
+                <span className="flex items-center gap-1.5 min-w-0">
+                  <span className="h-1 w-1 rounded-full shrink-0" style={{ background: colorOf(b.portfolio_id) }} />
+                  <span className="text-[11px] font-display font-medium truncate tracking-[-0.01em]" style={{ color: IVORY }}>{b.title}</span>
+                </span>
+                <span className="text-[11px] font-mono tabular-nums font-semibold shrink-0" style={{ color: IVORY }}>{fmtEuro(amt(b))}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* BOUNCEDOT — horizontaal stuitend tussen balk en kaart */}
-      <motion.div className="absolute top-1/2 -translate-y-1/2 z-20" style={{ left: "calc(56% - 10px)" }} animate={{ x: [-14, 14, -14] }} transition={{ repeat: Infinity, duration: 1.3, ease: "easeInOut" }}>
-        <span className="block rounded-full ontwerp-dot-bounce" style={{ width: 20, height: 20, background: selected ? colorOf(selected.portfolio_id) : PISTACHIO, boxShadow: "0 0 12px rgba(0,0,0,0.4)" }} />
-      </motion.div>
+      {/* bouncedot verwijderd per request */}
 
       {/* RECHTS — glas-kaart met ThingsHandle-inhoud / kassabon */}
       <div className="absolute inset-y-0 right-0 w-[42%] rounded-[20px] overflow-hidden z-20" style={GLASS_CARD}>

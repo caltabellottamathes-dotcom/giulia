@@ -5,7 +5,7 @@ import { useEntityList } from "@/hooks/useEntity";
 import { calcPortfolio, fmtEuro } from "@/lib/financeUtils";
 import HealthBadge from "./HealthBadge";
 
-const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/f02aea791_Man_moving_in_motion_2K_202608281636.jpeg";
+const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/097d5ac19_Make_editorial_fashion_photo_2K_202608281333.jpeg";
 const INK = "hsl(var(--foreground))";
 const MUTED = "hsl(var(--muted-foreground))";
 const EASE = [0.16, 1, 0.3, 1];
