@@ -25,7 +25,7 @@ const MODELS = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite"];
 const fmt = (n) => `€${Number(n || 0).toLocaleString("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const dstr = (d) => (d ? String(d).slice(0, 10) : "—");
 
-const SYSTEM = "Je bent Giulia, een persoonlijk OS. Je schrijft editorial blokken voor een persoonlijk financieel besturingssysteem. Ultrakort, punchy, ADHD-vriendelijk — direct opvallend. Menselijk, droog, stijlvol. Nederlands. Schrijf ALLE getallen als cijfers (€1.419,91, 6 wallets, 3 dagen), nóóit uitgeschreven in woorden.";
+const SYSTEM = "Je bent Giulia, een persoonlijk OS. Je schrijft editorial blokken voor een persoonlijk financieel besturingssysteem. Ultrakort, punchy, ADHD-vriendelijk — direct opvallend. Menselijk, droog, stijlvol. Nederlands. Schrijf ALLE getallen als cijfers (€1.419,91, 6 wallets, 3 dagen), nóóit uitgeschreven in woorden. Titels zijn KORT en poëtisch/ironisch/humoristisch — geen saaie letterlijke beschrijvingen, maar een speelse rake zin. Wallets hebben twee doelen: Doel 1 = dekking van betalingen (target_balance), Doel 2 = financiële buffer (desired_buffer). Alles boven Doel 1 is buffer / vooruit gespaard. Is Doel 1 bereikt maar Doel 2 nog niet → NIET kritiek, gewoon 'on track'. Pas kritiek als ook Doel 1 niet gehaald wordt.";
 
 function schemaFor() {
   return {
@@ -53,7 +53,7 @@ Dit tabblad gaat over: ${TAB_SUBJECT[tab]}.
 
 Geef:
 - eyebrow: kort label (bv "Personal Admin | Lasten")
-- title1, title2: twee korte titelregels (hoofdletters, max ~4 woorden per regel, stijlvol — geen volledige zinnen)
+- title1, title2: twee KORTE titelregels, poëtisch/ironisch/humoristisch (max ~4 woorden per regel, hoofdletters, geen volledige zinnen, geen letterlijke beschrijving — speels en raak)
 - heading1, heading2: twee korte aandachts-headingregels (wat op dit tabblad aandacht vraagt)
 - body: DEEL 1 — SAMENVATTING VAN DE ANALYSE van het huidige tabblad (3-5 zinnen, max 90 woorden). Analyseer het thema van het tabblad (Overview = gezamenlijke analyse over alle domeinen). Beschrijf de huidige stand concreet met de getallen uit de data als cijfers. Geen uitgeschreven getallen
 - proposal: DEEL 2 — EEN TEKSTUEEL VOORSTEL komend uit de analyse om admin te verbeteren (4-7 zinnen, max 150 woorden). Denk VEEL verder dan triviaal "vul wallet X met €Y". Stel: een betaling (bv Mobiliteit) komt eraan maar er zit te weinig in de wallet — kijk naar ALLE opties om het te laten slagen: is er surplus in een andere wallet om te verplaatsen? welke reserveringen kunnen omhoog? welke lasten kunnen verschuiven? welke inkomsten staan eraan te komen? Adviseer écht financieel, met cijfers als cijfers
@@ -121,7 +121,7 @@ export default async function (req) {
     lines.push(`INKOMEN recurring/mnd: ${fmt(incMonthly)} · RESERVERINGEN/mnd: ${fmt(reservedMonthly)} · VRIJ ≈ ${fmt(Math.max(0, incMonthly - reservedMonthly))}`);
     lines.push(`Openstaande lasten: ${openExp.length} · Betaald(oit): ${doneExp.length} · Inkomsten: ${incomes.length} (pending: ${incPending.length}) · Transacties: ${txns.length} · Documenten: ${docs.length}`);
     lines.push("", "WALLETS:");
-    for (const p of activeP.slice(0, 12)) lines.push(`- ${p.name} [id=${p.id}] [${p.kind || "vaste_last"}] saldo ${fmt(p.current_balance)} doel ${fmt(p.target_balance)} buffer ${fmt(p.desired_buffer)} reservering ${fmt(p.monthly_reservation_actual)}/mnd (aanbevolen ${fmt(p.monthly_reservation_recommended)}) status ${p.status || "on_track"}${p.next_payment_date ? ` volgende ${dstr(p.next_payment_date)} ${fmt(p.next_expected_payment)}` : ""}`);
+    for (const p of activeP.slice(0, 12)) { const bal = Number(p.current_balance) || 0; const d1 = Number(p.target_balance) || 0; const d2 = Number(p.desired_buffer) || 0; lines.push(`- ${p.name} [id=${p.id}] [${p.kind || "vaste_last"}] saldo ${fmt(p.current_balance)} doel1 ${fmt(p.target_balance)} doel2/buffer ${fmt(p.desired_buffer)} reservering ${fmt(p.monthly_reservation_actual)}/mnd (aanbevolen ${fmt(p.monthly_reservation_recommended)}) doel1_${d1 > 0 ? (bal >= d1 ? "OK" : "NEE") : "-"} doel2_${d2 > 0 ? (bal >= d2 ? "OK" : "NEE") : "-"} bovenDoel1_buffer=${fmt(Math.max(0, bal - d1))} status ${p.status || "on_track"}${p.next_payment_date ? ` volgende ${dstr(p.next_payment_date)} ${fmt(p.next_expected_payment)}` : ""}`); }
     lines.push("", "OPEN LASTEN:");
     for (const e of openExp.slice(0, 20)) lines.push(`- ${e.title} [id=${e.id}] ${fmt(e.expected_amount)} ${e.frequency || "monthly"} ${e.next_payment_date ? `volgende ${dstr(e.next_payment_date)}` : ""} → ${potName(e.portfolio_id)} [id=${e.portfolio_id || "-"}]${e.auto_payment ? " (auto)" : ""}`);
     lines.push("", "INKOMSTEN:");

@@ -38,7 +38,7 @@ export default function MediaLibraryList({ filter, onPick, className, emptyHint 
   const pick = (item) => onPick?.({ name: item.filename, url: item.file_url, type: kindOfUpload(item) });
 
   return (
-    <div className={cn("h-full w-full overflow-y-auto rounded-2xl px-4 pb-6 pt-14 no-scrollbar", className)} style={GLASS}>
+    <div className={cn("h-full w-full overflow-y-auto rounded-2xl px-4 pb-6 pt-4 no-scrollbar", className)} style={GLASS}>
       {loading && (!items || items.length === 0) && (
         <div className="flex items-center justify-center py-10 text-ivory/80">
           <Loader2 className="h-5 w-5 animate-spin" />

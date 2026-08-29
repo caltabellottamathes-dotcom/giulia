@@ -42,6 +42,8 @@ export default function WalletBarChartWidget() {
         name: p.name,
         color: p.color || colorFor(p.name),
         balance: p.current_balance || 0,
+        doel1: p.target_balance || 0,
+        doel2: p.desired_buffer || 0,
         buffer: p.desired_buffer || 0,
         target: p.target_balance || p.desired_buffer || p.current_balance || 0,
         raw: p
@@ -68,10 +70,13 @@ export default function WalletBarChartWidget() {
             <p className="text-[11px] text-foreground/40 self-center w-full text-center">No wallets yet.</p>
             }
               {wallets.map((w) => {
-                const toTarget = w.target > 0 ? (w.balance / w.target) * 100 : (w.balance > 0 ? 100 : 0);
-                const solidH = Math.max(0, Math.min(toTarget, 100));
-                const ghostH = w.target > 0 ? Math.max(0, 100 - toTarget) : 0;
-                const reached = w.target > 0 && w.balance >= w.target;
+                const doel1 = w.doel1 || w.target || 0;
+                const doel2 = w.doel2 || 0;
+                const scale = Math.max(doel1, doel2, 1);
+                const solidH = Math.max(0, Math.min((w.balance / scale) * 100, 100));
+                const ghostH = Math.max(0, 100 - solidH);
+                const doel1Pct = doel1 > 0 && doel2 > doel1 ? Math.min(100, (doel1 / scale) * 100) : null;
+                const reachedDoel2 = doel2 > 0 && w.balance >= doel2;
                 return (
                   <button
                     key={w.id}
@@ -82,12 +87,18 @@ export default function WalletBarChartWidget() {
                     {solidH > 3 && (
                       <span className="absolute left-1/2 -translate-x-1/2 text-[8px] font-mono font-semibold whitespace-nowrap z-20 text-black" style={{ bottom: `calc(${solidH}% + 3px)` }}>{fmt(w.balance)}</span>
                     )}
-                    {/* ghost — hoeveel nog tot doel (transparanter, dun erbovenop) */}
+                    {/* ghost — hoeveel nog tot Doel 2 */}
                     {ghostH > 1 && (
                       <div className="absolute left-1/2 -translate-x-1/2 rounded-full" style={{ bottom: `calc(${solidH}% + 2px)`, width: "82%", height: `${ghostH}%`, background: `${w.color}1A`, border: `1px dashed ${w.color}55` }} />
                     )}
-                    {/* gekleurde bar = voortgang naar doel */}
-                    <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 rounded-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden ${reached ? "wallet-blink" : ""}`} style={{ width: "82%", height: `${solidH}%`, background: w.color, boxShadow: "0 14px 28px -12px rgba(0,0,0,0.45), 0 2px 6px -2px rgba(0,0,0,0.25)" }} />
+                    {/* Doel 1 marker line — waar dekking begint; alles erboven = buffer */}
+                    {doel1Pct != null && (
+                      <div className="absolute left-1/2 -translate-x-1/2 z-10 pointer-events-none" style={{ bottom: `${doel1Pct}%`, width: "92%" }}>
+                        <div className="h-[2px] w-full" style={{ background: w.color, opacity: 0.9, boxShadow: "0 0 6px rgba(0,0,0,0.4)" }} />
+                      </div>
+                    )}
+                    {/* gekleurde bar = voortgang naar Doel 2; boven Doel 1 = vooruit gespaard */}
+                    <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 rounded-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden ${reachedDoel2 ? "wallet-blink" : ""}`} style={{ width: "82%", height: `${solidH}%`, background: w.color, boxShadow: "0 14px 28px -12px rgba(0,0,0,0.45), 0 2px 6px -2px rgba(0,0,0,0.25)" }} />
                   </button>
                 );
               })}
@@ -151,10 +162,13 @@ export default function WalletBarChartWidget() {
 }
 
 function WalletDetail({ wallet }) {
-  const reached = wallet.target > 0 && wallet.balance >= wallet.target;
-  const remaining = wallet.target - wallet.balance;
-  const surplus = wallet.balance - wallet.target;
-  const pct = wallet.target > 0 ? Math.min(100, wallet.balance / wallet.target * 100) : 100;
+  const doel1 = wallet.doel1 || wallet.target || 0;
+  const doel2 = wallet.doel2 || wallet.buffer || 0;
+  const pct1 = doel1 > 0 ? Math.min(100, wallet.balance / doel1 * 100) : (wallet.balance > 0 ? 100 : 0);
+  const pct2 = doel2 > 0 ? Math.min(100, wallet.balance / doel2 * 100) : (wallet.balance > 0 ? 100 : 0);
+  const overDoel1 = doel1 > 0 ? Math.max(0, wallet.balance - doel1) : 0;
+  const reached1 = doel1 > 0 && wallet.balance >= doel1;
+  const reached2 = doel2 > 0 && wallet.balance >= doel2;
   return (
     <div className="h-full p-4 flex flex-col text-foreground">
       <div className="flex items-center gap-1.5">
@@ -164,23 +178,32 @@ function WalletDetail({ wallet }) {
       <h3 className="text-[26px] leading-none font-display font-semibold tracking-[-0.02em] mt-3">{fmt(wallet.balance)}</h3>
       <p className="text-[9px] uppercase tracking-[0.18em] opacity-60 mt-1">current balance</p>
 
-      <div className="mt-5 space-y-2.5">
-        <div className="flex items-center justify-between text-[10px]">
-          <span className="uppercase tracking-[0.14em] opacity-60">Doel</span>
-          <span className="font-medium">{wallet.target > 0 ? fmt(wallet.target) : "—"}</span>
+      <div className="mt-4 space-y-3">
+        <div>
+          <div className="flex items-center justify-between text-[10px] mb-1">
+            <span className="uppercase tracking-[0.14em] opacity-60">Doel 1 · dekking</span>
+            <span className="font-medium">{doel1 > 0 ? fmt(doel1) : "—"}</span>
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-foreground/10 overflow-hidden">
+            <div className="h-full rounded-full" style={{ width: `${pct1}%`, background: wallet.color }} />
+          </div>
+          {doel1 > 0 && (reached1 ? <p className="text-[10px] opacity-80 mt-1">Doel 1 bereikt{overDoel1 > 0 ? ` · ${fmt(overDoel1)} vooruit` : ""}</p> : <p className="text-[10px] opacity-80 mt-1"><span className="font-semibold">{fmt(doel1 - wallet.balance)}</span> nog tot dekking</p>)}
         </div>
-        <div className="h-1.5 w-full rounded-full bg-foreground/10 overflow-hidden">
-          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: wallet.color }} />
-        </div>
-        {wallet.target > 0 && (
-        reached ?
-        <p className="text-[11px] opacity-80">Doel bereikt · <span className="font-semibold">{fmt(surplus)} over</span></p> :
-        <p className="text-[11px] opacity-80"><span className="font-semibold">{fmt(remaining)}</span> nog tot doel</p>)
-        }
+        {doel2 > 0 && (
+          <div>
+            <div className="flex items-center justify-between text-[10px] mb-1">
+              <span className="uppercase tracking-[0.14em] opacity-60">Doel 2 · buffer</span>
+              <span className="font-medium">{fmt(doel2)}</span>
+            </div>
+            <div className="h-1.5 w-full rounded-full bg-foreground/10 overflow-hidden">
+              <div className="h-full rounded-full" style={{ width: `${pct2}%`, background: "hsl(var(--giulia-urgent))" }} />
+            </div>
+            <p className="text-[10px] opacity-80 mt-1">{reached2 ? "Buffer bereikt · vooruit gespaard" : <><span className="font-semibold">{fmt(doel2 - wallet.balance)}</span> nog tot buffer</>}</p>
+          </div>
+        )}
       </div>
 
       <div className="mt-auto pt-4 space-y-2 text-[10px] opacity-70">
-        <div className="flex items-center justify-between"><span className="uppercase tracking-[0.14em] opacity-60">Buffer</span><span className="font-medium">{wallet.buffer > 0 ? fmt(wallet.buffer) : "—"}</span></div>
         <div className="flex items-center justify-between"><span className="uppercase tracking-[0.14em] opacity-60">Kind</span><span className="font-medium">{wallet.raw.kind || "—"}</span></div>
         <div className="flex items-center justify-between"><span className="uppercase tracking-[0.14em] opacity-60">Status</span><span className="font-medium">{wallet.raw.status || "—"}</span></div>
       </div>

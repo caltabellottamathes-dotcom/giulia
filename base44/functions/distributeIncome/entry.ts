@@ -37,15 +37,24 @@ export default async function (req) {
     if (!received.length) return Response.json({ ok: true, distributed: 0, note: "geen nieuwe ontvangen inkomsten" });
 
     const activeP = (portfolios || []).filter((p) => p.active !== false);
-    const demandOf = (pid) => (expenses || [])
+    const rawDemandOf = (pid) => (expenses || [])
       .filter((e) => e.portfolio_id === pid && e.status !== "done")
       .reduce((s, e) => s + (Number(e.monthly_reservation) || 0), 0);
+    // Doel 2-cap: enkel aanvullend tot desired_buffer reserveren; rest is vrij besteedbaar.
+    const demandOf = (p) => {
+      const raw = rawDemandOf(p.id);
+      const doel2 = Number(p.desired_buffer) || 0;
+      if (doel2 <= 0) return raw;
+      const bal = Number(p.current_balance) || 0;
+      if (bal >= doel2) return 0;
+      return Math.min(raw, Math.round((doel2 - bal) * 100) / 100);
+    };
 
     const results = [];
     for (const inc of received) {
       const amt = round(inc.amount);
-      // vraag per wallet (ruw), naar boven afgerond
-      const walletDemand = activeP.map((p) => ({ id: p.id, name: p.name, kind: p.kind, demand: demandOf(p.id) }));
+      // vraag per wallet (met Doel 2-cap, herberekend per income op actueel saldo)
+      const walletDemand = activeP.map((p) => ({ id: p.id, name: p.name, kind: p.kind, demand: demandOf(p) }));
       const ceils = walletDemand.map((w) => ({ ...w, give: ceilEuro(w.demand) }));
       const sumCeils = ceils.reduce((s, w) => s + w.give, 0);
 

@@ -20,6 +20,7 @@ import ThingsHandleStrip from "@/life/components/finance/ThingsHandleStrip";
 import LastenAllocationCard from "@/life/components/finance/LastenAllocationCard";
 import NewDocumentsCard from "@/life/components/finance/NewDocumentsCard";
 import MonthlyReceiptForecast from "@/life/components/finance/MonthlyReceiptForecast";
+import LastenHistoryWidget from "@/life/components/finance/LastenHistoryWidget";
 import MonthlyBarChartForecast from "@/life/components/finance/MonthlyBarChartForecast";
 import { fmtEuro, FREQ_LABELS, calcPortfolio, upcomingExpenses } from "@/lib/financeUtils";
 
@@ -174,7 +175,7 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
         <div className="space-y-4">
           <div>
             <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Vaste lasten · kassabon geschiedenis</p>
-            <MonthlyReceiptForecast portfolios={portfolios} months={6} />
+            <LastenHistoryWidget portfolios={portfolios} months={8} />
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Uitgaven · visueel per maand</p>

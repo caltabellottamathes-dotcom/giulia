@@ -28,6 +28,9 @@ export default function WalletsBuildingWidget() {
     const target = p.target_balance || p.desired_buffer || 0;
     return target > 0 ? Math.min(100, Math.round(((p.current_balance || 0) / target) * 100)) : 100;
   };
+  const fillDoel1 = (p) => { const t = p.target_balance || 0; return t > 0 ? Math.min(100, Math.round(((p.current_balance || 0) / t) * 100)) : (p.current_balance > 0 ? 100 : 0); };
+  const fillDoel2 = (p) => { const t = p.desired_buffer || 0; return t > 0 ? Math.min(100, Math.round(((p.current_balance || 0) / t) * 100)) : (p.current_balance > 0 ? 100 : 0); };
+  const overDoel1 = (p) => { const t = p.target_balance || 0; return t > 0 ? Math.max(0, Math.round(((p.current_balance || 0) - t) * 100) / 100) : 0; };
 
   return (
     <div className="relative w-full h-[380px] rounded-[28px] overflow-hidden" style={{ background: "#f5f5f4", border: "1px solid rgba(0,0,0,0.06)", boxShadow: "-16px 16px 40px -16px rgba(0,0,0,0.30)" }}>
@@ -86,26 +89,40 @@ export default function WalletsBuildingWidget() {
                   <p className="text-[30px] leading-none font-display font-bold tabular-nums">{fmtEuro(selected.current_balance || 0)}</p>
                 </div>
 
-                {/* grafische voortgang naar doel */}
-                <div className="mt-3">
-                  <div className="flex items-end justify-between mb-1">
-                    <p className="text-[9px] uppercase tracking-[0.16em] text-white/70">Naar doel</p>
-                    <p className="text-[18px] leading-none font-display font-bold tabular-nums">{fillOf(selected)}<span className="text-[11px]">%</span></p>
+                {/* grafische voortgang naar Doel 1 + Doel 2 */}
+                <div className="mt-3 space-y-2.5">
+                  <div>
+                    <div className="flex items-end justify-between mb-1">
+                      <p className="text-[9px] uppercase tracking-[0.16em] text-white/70">Doel 1 · dekking</p>
+                      <p className="text-[14px] leading-none font-display font-bold tabular-nums">{fillDoel1(selected)}<span className="text-[10px]">%</span></p>
+                    </div>
+                    <div className="h-2 rounded-full bg-white/20 overflow-hidden">
+                      <motion.div className="h-full rounded-full bg-white" initial={{ width: "0%" }} animate={{ width: `${fillDoel1(selected)}%` }} transition={{ duration: 0.7, ease: EASE }} />
+                    </div>
                   </div>
-                  <div className="h-2 rounded-full bg-white/20 overflow-hidden">
-                    <motion.div className="h-full rounded-full bg-white" initial={{ width: "0%" }} animate={{ width: `${fillOf(selected)}%` }} transition={{ duration: 0.7, ease: EASE }} />
-                  </div>
+                  {(selected.desired_buffer || 0) > 0 && (
+                    <div>
+                      <div className="flex items-end justify-between mb-1">
+                        <p className="text-[9px] uppercase tracking-[0.16em] text-white/70">Doel 2 · buffer</p>
+                        <p className="text-[14px] leading-none font-display font-bold tabular-nums">{fillDoel2(selected)}<span className="text-[10px]">%</span></p>
+                      </div>
+                      <div className="h-2 rounded-full bg-white/20 overflow-hidden">
+                        <motion.div className="h-full rounded-full" style={{ background: "hsl(var(--giulia-urgent))" }} initial={{ width: "0%" }} animate={{ width: `${fillDoel2(selected)}%` }} transition={{ duration: 0.7, ease: EASE }} />
+                      </div>
+                    </div>
+                  )}
                 </div>
+                {overDoel1(selected) > 0 && <p className="text-[9px] uppercase tracking-[0.14em] text-white/70 mt-1.5">+ {fmtEuro(overDoel1(selected))} boven Doel 1 · vooruit gespaard</p>}
 
                 {/* stat chips */}
                 <div className="grid grid-cols-2 gap-1.5 mt-3">
                   <div className="rounded-lg bg-white/15 px-2 py-1.5">
-                    <p className="text-[8px] uppercase tracking-[0.14em] text-white/65">Doel</p>
-                    <p className="text-[12px] font-display font-bold tabular-nums leading-none mt-0.5">{fmtEuro(selected.target_balance || selected.desired_buffer || 0)}</p>
+                    <p className="text-[8px] uppercase tracking-[0.14em] text-white/65">Doel 1</p>
+                    <p className="text-[12px] font-display font-bold tabular-nums leading-none mt-0.5">{fmtEuro(selected.target_balance || 0)}</p>
                   </div>
                   <div className="rounded-lg bg-white/15 px-2 py-1.5">
-                    <p className="text-[8px] uppercase tracking-[0.14em] text-white/65">Reservering / mnd</p>
-                    <p className="text-[12px] font-display font-bold tabular-nums leading-none mt-0.5">{fmtEuro(Number(selected.monthly_reservation_actual) || selCalc.recommended_monthly)}</p>
+                    <p className="text-[8px] uppercase tracking-[0.14em] text-white/65">Doel 2 · buffer</p>
+                    <p className="text-[12px] font-display font-bold tabular-nums leading-none mt-0.5">{fmtEuro(selected.desired_buffer || 0)}</p>
                   </div>
                 </div>
 
