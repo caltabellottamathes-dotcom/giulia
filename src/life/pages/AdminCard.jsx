@@ -92,9 +92,6 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
   const [data, setData] = useState(null);
   const [editorial, setEditorial] = useState({});
   const [genBusy, setGenBusy] = useState(false);
-  const [expanded, setExpanded] = useState(false);
-  const [extra, setExtra] = useState("");
-  const [expBusy, setExpBusy] = useState(false);
 
   const load = async () => {
     try {
@@ -147,20 +144,6 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
 
   // Handlers — done/delete direct + reload; edit/open sturen naar de juiste tab.
   const reload = () => load();
-  const expandEditorial = async () => {
-    if (expanded) { setExpanded(false); return; }
-    setExpanded(true);
-    if (extra) return;
-    setExpBusy(true);
-    try {
-      const prompt = `Je bent Giulia. Hieronder staat je compacte editorial voor de Personal Admin-tab "${tab}". Schrijf een UITGEBREIDERE versie (max 320 woorden) in DEZELFDE compacte, ritmische, ADHD-pakkende stijl: korte zinnen, wisselend ritme, geen opsommingen. Geef meer context, achtergrond en wat het betekent — maar blijf direct en concreet. Geen SaaS-taal, geen herhaling van wat hierboven al staat.\n\nHuidige editorial:\n${bodyText}`;
-      const res = await base44.integrations.Core.InvokeLLM({ prompt });
-      const out = res?.data ?? res;
-      const txt = typeof out === "string" ? out : (out?.response || out?.text || out?.output || "");
-      setExtra(String(txt || "").trim() || "Geen uitbreiding beschikbaar.");
-    } catch { setExtra("Kon niet uitbreiken."); }
-    setExpBusy(false);
-  };
   const goTab = (t) => (onNavigate ? onNavigate(t) : navigate(`/life/personal-admin?tab=${t}`));
   const handlers = {
     onOpenPortfolio: (p) => goTab("PORTEFEUILLES"),
@@ -213,13 +196,6 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
             <p className="font-display font-medium tracking-[-0.05em] text-[12px]" style={{ color: BLACK }}>{data ? `${fmtEuro(data.totalMoney)} beschikbaar · ${data.portfolios.length} potjes` : "Laden…"}</p>
             <p className="font-body text-[12px] leading-[1.55] whitespace-pre-line" style={{ color: INK }}>{bodyText}</p>
             {genBusy && <p className="font-mono text-[9px] tracking-[0.18em] uppercase mt-2 animate-pulse" style={{ color: BLUE }}>Giulia schrijft…</p>}
-            {bodyText && !genBusy && (
-              <button onClick={expandEditorial} className="font-mono text-[9px] tracking-[0.18em] uppercase mt-2 transition hover:opacity-70" style={{ color: BLUE }}>{expanded ? "minder ↑" : "meer context ↓"}</button>
-            )}
-            {expanded && (expBusy
-              ? <p className="font-mono text-[9px] tracking-[0.18em] uppercase mt-2 animate-pulse" style={{ color: BLUE }}>Giulia denkt na…</p>
-              : <p className="font-body text-[12px] leading-[1.55] whitespace-pre-line mt-2" style={{ color: INK }}>{extra}</p>
-            )}
           </div>
 
           <div className="flex-1 min-h-8" />

@@ -1,9 +1,6 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { useConversation } from "@elevenlabs/react";
-import { useNavigate } from "react-router-dom";
 import { Mic, MicOff, Loader2 } from "lucide-react";
-import { buildVoiceClientTools } from "@/lib/voiceClientTools";
-import { NAV_PANEL_ROUTES } from "@/lib/voiceNavigation";
 
 const PISTACHIO = "#d8dab3";
 const OLIVE = "#94925d";
@@ -11,15 +8,9 @@ const INK = "#2a2c30";
 const AGENT_ID = "agent_0301m14xfjxhfnh86pd8m19mdgvb";
 
 /** MattiaVoiceWindow — Whipped Pistachio glas-paneel. Verbindt met de
- *  ElevenLabs Conversational AI-agent "Mattia" (agent_0301...). Alle
- *  client-tools (navigatie + directe acties + delegate) zijn verbonden —
- *  dezelfde rechten als Giulia's stem-agent. open_panel routeert via
- *  NAV_PANEL_ROUTES zodat geen PanelContext nodig is. */
+ *  ElevenLabs Conversational AI-agent "mattia" (agent_0301m14xfjxhfnh86pd8m19mdgvb).
+ *  Client-tool navigate_to stuurt Salvo real-time door de app. */
 export default function MattiaVoiceWindow({ onClose }) {
-  const navigate = useNavigate();
-  const openModule = (panelId) => { const r = NAV_PANEL_ROUTES[panelId]; if (r) navigate(r); };
-  const clientTools = useMemo(() => buildVoiceClientTools({ navigate, openModule }), [navigate, openModule]);
-
   const conversation = useConversation();
   const status = conversation?.status || "disconnected";
   const isSpeaking = conversation?.isSpeaking;
@@ -29,7 +20,15 @@ export default function MattiaVoiceWindow({ onClose }) {
   const toggle = async () => {
     try {
       if (active) { await conversation.endSession(); return; }
-      await conversation.startSession({ agentId: AGENT_ID, clientTools });
+      await conversation.startSession({
+        agentId: AGENT_ID,
+        clientTools: {
+          navigate_to: async ({ route }) => {
+            try { if (route) window.location.assign(String(route).startsWith("/") ? route : "/" + route); } catch {}
+            return { success: true };
+          },
+        },
+      });
     } catch {}
   };
 

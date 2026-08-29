@@ -12,7 +12,6 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.40";
 import { GIULIA_CORE_INSTRUCTIONS } from "../../shared/elevenPrompt.ts";
 import { ELEVEN_TOOLS } from "../../shared/elevenTools.ts";
-import { ensureSecret, readBody, toJsonSchema } from "../../shared/elevenConfig.ts";
 
 const AGENT_ID = "agent_5501kza2zx7hehxbh0ydey1mq5gv";
 const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
@@ -106,6 +105,58 @@ REGELS:
 - Wees rustig en scherp, niet overdreven enthousiast. Geen SaaS-taal.`;
 
 const SYSTEM_PROMPT = GIULIA_CORE_INSTRUCTIONS + "\n" + VOICE_ADDENDUM;
+
+// Zet platte params ({ key: { type, description, required } }) om naar een
+// geldige JSON-Schema zoals ElevenLabs verwacht: { type:"object", properties, required }.
+function toJsonSchema(flatParams) {
+  if (!flatParams || typeof flatParams !== "object") return undefined;
+  const entries = Object.entries(flatParams);
+  if (entries.length === 0) return undefined;
+  const properties = {};
+  const required = [];
+  for (const [key, val] of entries) {
+    properties[key] = { type: val.type, description: val.description };
+    if (val.required) required.push(key);
+  }
+  const schema = { type: "object", properties };
+  if (required.length) schema.required = required;
+  return schema;
+}
+
+async function readBody(res) {
+  try { return await res.text(); } catch { return ""; }
+}
+
+async function ensureSecret(xiKey, name, value) {
+  // Secrets kunnen niet in-place worden geüpdatet. Bestaand geheim met deze
+  // naam verwijderen en opnieuw aanmaken, zodat de waarde altijd fris en
+  // correct is (voorkomt een verouderde/wrong-key die de stem-agent stillegt).
+  const listRes = await fetch("https://api.elevenlabs.io/v1/convai/secrets", {
+    headers: { "xi-api-key": xiKey },
+  });
+  if (listRes.ok) {
+    let list;
+    try { list = await listRes.json(); } catch { list = null; }
+    const items = Array.isArray(list) ? list : list?.secrets || list?.data || [];
+    const found = items.find((s) => s?.name === name);
+    if (found) {
+      const oldId = found.id || found.secret_id;
+      await fetch(`https://api.elevenlabs.io/v1/convai/secrets/${oldId}`, {
+        method: "DELETE", headers: { "xi-api-key": xiKey },
+      }).catch(() => null);
+    }
+  }
+  const createRes = await fetch("https://api.elevenlabs.io/v1/convai/secrets", {
+    method: "POST",
+    headers: { "xi-api-key": xiKey, "Content-Type": "application/json" },
+    body: JSON.stringify({ name, value, type: "new" }),
+  });
+  if (!createRes.ok) {
+    throw new Error(`Secret aanmaken faalde (${createRes.status}): ${await readBody(createRes)}`);
+  }
+  const created = await createRes.json().catch(() => ({}));
+  return { secret_id: created.id || created.secret_id };
+}
 
 export default async function (req) {
   try {
