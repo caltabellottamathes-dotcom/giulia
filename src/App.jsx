@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/toaster"
+import { ConversationProvider } from '@elevenlabs/react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
@@ -183,7 +184,9 @@ function App() {
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ScrollToTop />
-          <AuthenticatedApp />
+          <ConversationProvider>
+            <AuthenticatedApp />
+          </ConversationProvider>
         </Router>
         <Toaster />
       </QueryClientProvider>
