@@ -25,6 +25,7 @@ const GROUPS = [
     label: "Giulia",
     items: [
       { label: "Chat", route: "/chat", module: "chat" },
+      { label: "Mattia", module: "mattia" },
       { label: "Questions for You", route: "/wants-to-know", module: "wantstoknow" },
       { label: "Approvals", route: "/approvals", module: "approvals" },
       { label: "Daily Briefing", route: "/briefing" },
@@ -91,7 +92,7 @@ function useClock() {
 
 export default function QuickLauncher({ open, onClose, side = "right" }) {
   const navigate = useNavigate();
-  const { openModule, openChat, openBrowser } = usePanel();
+  const { openModule, openChat, openBrowser, openMattia } = usePanel();
   const [q, setQ] = useState("");
   const [active, setActive] = useState(0);
   const [openGroups, setOpenGroups] = useState(() => new Set([GROUPS[0].label]));
@@ -142,6 +143,7 @@ export default function QuickLauncher({ open, onClose, side = "right" }) {
 
   const go = (item) => {
     if (item.module === "chat") openChat();
+    else if (item.module === "mattia") openMattia();
     else if (item.module === "browser") { openBrowser(); onClose(); return; }
     else if (item.module) openModule(item.module);
     if (item.route) navigate(item.route);

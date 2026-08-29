@@ -15,11 +15,11 @@ export default function MattiaSlideOver({ open, onClose }) {
     <AnimatePresence>
       {open && (
         <motion.div
-          initial={{ x: "-118%", opacity: 0 }}
+          initial={{ x: "118%", opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
-          exit={{ x: "-118%", opacity: 0 }}
+          exit={{ x: "118%", opacity: 0 }}
           transition={{ duration: 0.55, ease: EASE }}
-          className="fixed left-[2%] top-1/2 -translate-y-1/2 w-[400px] max-w-[92vw] h-[88vh] z-[80] rounded-[26px] overflow-hidden"
+          className="fixed right-4 lg:right-6 top-4 lg:top-6 bottom-4 lg:bottom-6 w-[calc(100%-2rem)] lg:w-[820px] z-[80] rounded-[28px] overflow-hidden"
           style={{ background: "rgba(120,128,133,0.16)", backdropFilter: "blur(56px) saturate(1.45)", WebkitBackdropFilter: "blur(56px) saturate(1.45)", border: "1px solid rgba(255,255,255,0.20)", boxShadow: "0 48px 100px -28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.24)" }}
         >
           {/* LIFE foto achtergrond */}

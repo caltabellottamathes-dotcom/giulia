@@ -10,7 +10,6 @@ import MediaStage from "@/system/panels/MediaStage";
 import WalletStage from "@/life/components/finance/WalletStage";
 import ExpenseStage from "@/life/components/finance/ExpenseStage";
 import IncomeStage from "@/life/components/finance/IncomeStage";
-import MattiaSlideOver from "@/giulia/panels/MattiaSlideOver";
 import { Image } from "@/components/ui/image";
 import { LIFE_PHOTO_HERO } from "@/lib/lifePhotos";
 
@@ -49,7 +48,6 @@ export default function AdminPage() {
   const [walletId, setWalletId] = useState(null);
   const [expenseId, setExpenseId] = useState(null);
   const [incomeId, setIncomeId] = useState(null);
-  const [mattiaOpen, setMattiaOpen] = useState(false);
   const isStage = panelOpen;
   const [first, setFirst] = useState(true);
   useEffect(() => { const t = setTimeout(() => setFirst(false), 900); return () => clearTimeout(t); }, []);
@@ -145,10 +143,7 @@ export default function AdminPage() {
               </button>
             ))}
           </div>
-          <button onClick={() => setMattiaOpen(true)} title="Mattia" className="mb-3 h-11 w-11 rounded-full flex items-center justify-center transition hover:scale-105" style={{ background: "#d8dab3", color: "#2a2c30", boxShadow: "0 10px 24px -10px rgba(0,0,0,0.45)" }}>
-            <span className="font-display font-black text-sm">M</span>
-          </button>
-          <div className="text-[8px] uppercase tracking-[0.22em] text-white [writing-mode:vertical-rl] rotate-180">{isStage ? "MATTIA" : "GIULIA · GIULIA"}</div>
+          <div className="text-[8px] uppercase tracking-[0.22em] text-white [writing-mode:vertical-rl] rotate-180">GIULIA · GIULIA</div>
         </div>
 
         {/* Inhoud-wrapper — stage verschijnt links, witte kaart blijft staan */}
@@ -178,7 +173,6 @@ export default function AdminPage() {
         </div>
       </motion.div>
 
-      <MattiaSlideOver open={mattiaOpen} onClose={() => setMattiaOpen(false)} />
     </div>
   );
 }
