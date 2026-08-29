@@ -10,6 +10,7 @@ import MediaStage from "@/system/panels/MediaStage";
 import WalletStage from "@/life/components/finance/WalletStage";
 import ExpenseStage from "@/life/components/finance/ExpenseStage";
 import IncomeStage from "@/life/components/finance/IncomeStage";
+import MattiaPanel from "@/giulia/panels/MattiaPanel";
 
 const EASE = [0.16, 1, 0.3, 1];
 const HERO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/0a68f996a_ADMIN.jpeg";
@@ -47,6 +48,7 @@ export default function AdminPage() {
   const [walletId, setWalletId] = useState(null);
   const [expenseId, setExpenseId] = useState(null);
   const [incomeId, setIncomeId] = useState(null);
+  const [mattiaOpen, setMattiaOpen] = useState(false);
   const isStage = panelOpen;
   const [first, setFirst] = useState(true);
   useEffect(() => { const t = setTimeout(() => setFirst(false), 900); return () => clearTimeout(t); }, []);
@@ -156,6 +158,14 @@ export default function AdminPage() {
                   <button onClick={() => setPanelOpen(false)} className="absolute top-4 left-4 z-40 h-9 w-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors" aria-label="Terug">
                     <ArrowLeft className="h-4 w-4" />
                   </button>
+                )}
+                {stage === "media" && !mattiaOpen && (
+                  <button onClick={() => setMattiaOpen(true)} className="absolute bottom-4 left-4 z-40 flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition hover:scale-[1.03]" style={{ background: "#d8dab3", color: "#2a2c30", boxShadow: "0 10px 24px -10px rgba(0,0,0,0.45)" }}>
+                    Mattia
+                  </button>
+                )}
+                {stage === "media" && mattiaOpen && (
+                  <MattiaPanel onClose={() => setMattiaOpen(false)} />
                 )}
                 {stageContent}
               </motion.div>

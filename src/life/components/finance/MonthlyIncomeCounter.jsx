@@ -28,6 +28,13 @@ export default function MonthlyIncomeCounter() {
     return { receivedThisMonth: sum, totalExpected: exp, lastReceived: last };
   }, [incomes]); // eslint-disable-line
 
+  const irregularExpected = useMemo(() => {
+    return (incomes || [])
+      .filter((i) => (i.status === "expected" || i.status === "partial") && !i.recurring)
+      .sort((a, b) => (a.expected_date || a.date || "").localeCompare(b.expected_date || b.date || ""))
+      .slice(0, 4);
+  }, [incomes]);
+
   const [display, setDisplay] = useState(0);
   const raf = useRef(null);
   useEffect(() => {
@@ -50,7 +57,8 @@ export default function MonthlyIncomeCounter() {
     <div className="relative w-full rounded-[18px] overflow-hidden" style={{ boxShadow: "-16px 16px 40px -16px rgba(0,0,0,0.30)" }}>
       <img src={WALLET_PHOTO} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
       <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(20,22,26,0.78), rgba(20,22,26,0.52) 55%, rgba(20,22,26,0.70))" }} />
-      <div className="relative p-5 flex items-center justify-between gap-4" style={{ color: "hsl(var(--ivory))", textShadow: "0 1px 8px rgba(0,0,0,0.6)" }}>
+      <div className="relative p-5 flex flex-col gap-3" style={{ color: "hsl(var(--ivory))", textShadow: "0 1px 8px rgba(0,0,0,0.6)" }}>
+        <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
           <p className="text-[9px] uppercase tracking-[0.22em] font-light opacity-70">Inkomsten teller · {monthLabel}</p>
           <p className="text-[10px] uppercase tracking-[0.16em] font-semibold mt-1 opacity-65 truncate">
@@ -62,6 +70,18 @@ export default function MonthlyIncomeCounter() {
           <p className="text-[clamp(34px,3.4vw,48px)] leading-none font-display font-bold tabular-nums tracking-[-0.03em]">{fmtEuro(display)}</p>
           <p className="text-[10px] mt-1 opacity-65">verwacht totaal {fmtEuro(totalExpected)} / mnd</p>
         </div>
+        </div>
+        {irregularExpected.length > 0 && (
+          <div className="flex flex-wrap gap-x-5 gap-y-1.5 pt-2.5 border-t border-white/15">
+            <p className="text-[8px] uppercase tracking-[0.2em] opacity-50 w-full">Verwacht · pijplijn (onregelmatig)</p>
+            {irregularExpected.map((inc) => (
+              <div key={inc.id} className="flex items-baseline gap-1.5">
+                <span className="text-[11px] font-display font-semibold opacity-85">{inc.description || inc.category || "—"}</span>
+                <span className="text-[10px] tabular-nums opacity-60">{fmtEuro(Number(inc.received_amount ?? inc.amount) || 0)}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -10,8 +10,7 @@ import MonthlyIncomeCounter from "@/life/components/finance/MonthlyIncomeCounter
 import WalletsBuildingWidget from "@/life/components/finance/WalletsBuildingWidget";
 import MoveMeTransfer from "@/life/components/finance/MoveMeTransfer";
 import WalletPhotoCard from "@/life/components/finance/WalletPhotoCard";
-import ThingsLoveWidget from "@/life/widgets/new/ThingsLoveWidget";
-import ExpectedIncomeWidget from "@/life/components/finance/ExpectedIncomeWidget";
+import LastenBarsWidget from "@/life/components/finance/LastenBarsWidget";
 import PortfolioBarsWidget from "@/life/components/finance/PortfolioBarsWidget";
 import ForecastChart from "@/life/components/finance/ForecastChart";
 import HebbenBestedenBar from "@/life/components/finance/HebbenBestedenBar";
@@ -129,15 +128,15 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     return (
       <div className="h-full flex flex-col gap-4">
         <ThingsHandleStrip />
-        <div className="h-[280px] shrink-0">
+        <div className="h-[260px] shrink-0">
           <LastenActionWidget expenses={expenses} portfolios={portfolios} onReload={onReload} />
         </div>
-        <ThingsLoveWidget />
+        <LastenBarsWidget expenses={expenses} portfolios={portfolios} onReload={onReload} />
       </div>
     );
   }
 
-  // ---- INKOMEN ---- teller + maandelijkse verdeling (hover-balk) + inkomstenbronnen + verwacht
+  // ---- INKOMEN ---- teller (met subtiele verwacht-pijplijn) + verdeling + inkomstenbronnen
   if (tab === "INKOMEN") {
     return (
       <div className="flex flex-col gap-4">
@@ -146,7 +145,6 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
           <ExpenseAllocationBar />
         </Tile>
         <IncomeSourcesWidget />
-        <ExpectedIncomeWidget />
       </div>
     );
   }
