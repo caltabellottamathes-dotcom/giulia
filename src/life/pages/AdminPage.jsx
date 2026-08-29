@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowLeft, CircleDot, Wallet, ListChecks, Banknote, LineChart, HeartPulse, FileText, MessageSquare, Phone, Film } from "lucide-react";
+import { ArrowLeft, CircleDot, Wallet, ListChecks, Banknote, LineChart, HeartPulse, FileText, Film } from "lucide-react";
 import AdminCard from "./AdminCard";
-import ChatStage from "@/giulia/panels/ChatStage";
-import VoiceStage from "@/giulia/panels/VoiceStage";
 import DocStage from "@/system/panels/DocStage";
 import MediaStage from "@/system/panels/MediaStage";
 import WalletStage from "@/life/components/finance/WalletStage";
@@ -27,8 +25,6 @@ const TABS = [
 
 // Multi-functionele stages — het glaspaneel schuift links onder de kaart vandaan.
 const STAGE_TABS = [
-{ key: "chat", label: "Chat", icon: MessageSquare },
-{ key: "voice", label: "Voice", icon: Phone },
 { key: "doc", label: "Document", icon: FileText },
 { key: "media", label: "Media", icon: Film }];
 
@@ -43,7 +39,7 @@ const RELATED = [
 
 export default function AdminPage() {
   const [tab, setTab] = useState("OVERVIEW");
-  const [stage, setStage] = useState("chat"); // "chat" | "voice" | "doc" | "media"
+  const [stage, setStage] = useState("doc"); // "doc" | "media" | "wallet" | "expense" | "income"
   const [panelOpen, setPanelOpen] = useState(false);
   const [walletId, setWalletId] = useState(null);
   const [expenseId, setExpenseId] = useState(null);
@@ -55,7 +51,7 @@ export default function AdminPage() {
 
   // Toolbar (chat/phone) routeert naar dit paneel wanneer op Admin.
   useEffect(() => {
-    const h = (e) => {setStage(e.detail);setPanelOpen(true);};
+    const h = (e) => { const s = e.detail; if (s === "chat" || s === "voice") return; setStage(s); setPanelOpen(true); };
     window.addEventListener("giulia:ontwerp-stage", h);
     return () => window.removeEventListener("giulia:ontwerp-stage", h);
   }, []);
@@ -82,8 +78,6 @@ export default function AdminPage() {
   }, []);
 
   const stageContent =
-  stage === "chat" ? <ChatStage /> :
-  stage === "voice" ? <VoiceStage /> :
   stage === "doc" ? <DocStage /> :
   stage === "wallet" ? <WalletStage walletId={walletId} onClose={() => setPanelOpen(false)} /> :
   stage === "expense" ? <ExpenseStage expenseId={expenseId} onClose={() => setPanelOpen(false)} /> :
@@ -155,8 +149,9 @@ export default function AdminPage() {
           {/* Stage-kolom — op het glas, links van de witte kaart */}
           <AnimatePresence>
             {isStage &&
-            <motion.div key={stage} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35, ease: EASE }}
-            className="absolute top-[134px] bottom-[70px] left-0 w-full lg:w-[24vw] z-10 overflow-hidden">
+            <motion.div key={stage} initial={{ opacity: 0, x: -28 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -28 }} transition={{ duration: 0.45, ease: EASE }}
+            className="absolute top-[134px] bottom-[70px] left-0 w-full lg:w-[24vw] z-10 overflow-hidden rounded-[20px]"
+            style={{ background: "rgba(20,22,26,0.42)", backdropFilter: "blur(28px) saturate(1.3)", WebkitBackdropFilter: "blur(28px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.12)" }}>
                 {(stage === "doc" || stage === "media") &&
               <button onClick={() => setPanelOpen(false)} className="absolute top-4 left-4 z-40 h-9 w-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors hidden" aria-label="Terug">
                     <ArrowLeft className="h-4 w-4" />
