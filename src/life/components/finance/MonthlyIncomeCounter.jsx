@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useEntityList } from "@/hooks/useEntity";
 import { fmtEuro } from "@/lib/financeUtils";
 
-const WALLET_PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/08a2e3d43_Make_blurred_motion_photo_withou_202608281636.jpeg";
+const WALLET_PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/4ff91851b_Man_in_motion_2K_202608281637.jpeg";
 
 /** MonthlyIncomeCounter — brede kaart boven de maandelijkse verdeling op de
  *  Inkomen-tab. Een teller die optelt wat deze kalendermaand aan inkomen is
@@ -49,8 +49,8 @@ export default function MonthlyIncomeCounter() {
   return (
     <div className="relative w-full rounded-[18px] overflow-hidden" style={{ boxShadow: "-16px 16px 40px -16px rgba(0,0,0,0.30)" }}>
       <img src={WALLET_PHOTO} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
-      <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(216,218,179,0.94), rgba(216,218,179,0.74) 60%, rgba(216,218,179,0.56))" }} />
-      <div className="relative p-5 flex items-center justify-between gap-4" style={{ color: "#2a2c30" }}>
+      <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(20,22,26,0.78), rgba(20,22,26,0.52) 55%, rgba(20,22,26,0.70))" }} />
+      <div className="relative p-5 flex items-center justify-between gap-4" style={{ color: "hsl(var(--ivory))", textShadow: "0 1px 8px rgba(0,0,0,0.6)" }}>
         <div className="min-w-0">
           <p className="text-[9px] uppercase tracking-[0.22em] font-light opacity-70">Inkomsten teller · {monthLabel}</p>
           <p className="text-[10px] uppercase tracking-[0.16em] font-semibold mt-1 opacity-65 truncate">

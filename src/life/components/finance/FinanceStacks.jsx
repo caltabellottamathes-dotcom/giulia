@@ -8,8 +8,10 @@ import ExpenseAllocationBar from "@/life/components/finance/ExpenseAllocationBar
 import IncomeSourcesWidget from "@/life/components/finance/IncomeSourcesWidget";
 import MonthlyIncomeCounter from "@/life/components/finance/MonthlyIncomeCounter";
 import WalletsBuildingWidget from "@/life/components/finance/WalletsBuildingWidget";
-import TransferBetweenWallets from "@/life/components/finance/TransferBetweenWallets";
+import MoveMeTransfer from "@/life/components/finance/MoveMeTransfer";
 import WalletPhotoCard from "@/life/components/finance/WalletPhotoCard";
+import ThingsLoveWidget from "@/life/widgets/new/ThingsLoveWidget";
+import ExpectedIncomeWidget from "@/life/components/finance/ExpectedIncomeWidget";
 import PortfolioBarsWidget from "@/life/components/finance/PortfolioBarsWidget";
 import ForecastChart from "@/life/components/finance/ForecastChart";
 import HebbenBestedenBar from "@/life/components/finance/HebbenBestedenBar";
@@ -114,7 +116,7 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     return (
       <div className="h-full flex flex-col gap-4">
         <WalletsBuildingWidget />
-        <TransferBetweenWallets />
+        <MoveMeTransfer />
         <div className="flex-1 min-h-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2 gap-4">
           {wallets.map((p, i) => <WalletPhotoCard key={p.id} wallet={p} expenses={expenses} photoUrl={PHOTOS[i % PHOTOS.length]} />)}
         </div>
@@ -127,15 +129,15 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     return (
       <div className="h-full flex flex-col gap-4">
         <ThingsHandleStrip />
-        <div className="flex-1 min-h-0">
+        <div className="h-[280px] shrink-0">
           <LastenActionWidget expenses={expenses} portfolios={portfolios} onReload={onReload} />
         </div>
-        <WalletsBuildingWidget />
+        <ThingsLoveWidget />
       </div>
     );
   }
 
-  // ---- INKOMEN ---- teller + maandelijkse verdeling (hover-balk) + inkomstenbronnen widget
+  // ---- INKOMEN ---- teller + maandelijkse verdeling (hover-balk) + inkomstenbronnen + verwacht
   if (tab === "INKOMEN") {
     return (
       <div className="flex flex-col gap-4">
@@ -144,6 +146,7 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
           <ExpenseAllocationBar />
         </Tile>
         <IncomeSourcesWidget />
+        <ExpectedIncomeWidget />
       </div>
     );
   }
