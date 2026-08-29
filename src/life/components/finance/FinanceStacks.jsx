@@ -15,14 +15,14 @@ import ForecastChart from "@/life/components/finance/ForecastChart";
 import HebbenBestedenBar from "@/life/components/finance/HebbenBestedenBar";
 import HealthyMoneyTab from "@/life/components/finance/HealthyMoneyTab";
 import ThingsHandleWidget from "@/life/widgets/new/ThingsHandleWidget";
-
+import MonthCalendarCard from "@/life/components/finance/MonthCalendarCard";
 import LastenActionWidget from "@/life/components/finance/LastenActionWidget";
 import NewDocumentsCard from "@/life/components/finance/NewDocumentsCard";
 import { fmtEuro, FREQ_LABELS, calcPortfolio, upcomingExpenses } from "@/lib/financeUtils";
 
 const TILE_SHADOW = "-16px 16px 40px -16px rgba(0,0,0,0.30)";
 const Tile = ({ children, className = "" }) =>
-  <div className={`overflow-hidden rounded-[18px] grid-paper ${className}`} style={{ boxShadow: TILE_SHADOW }}>{children}</div>;
+  <div className={`overflow-hidden rounded-[18px] bg-[#f5f5f4] ${className}`} style={{ boxShadow: TILE_SHADOW }}>{children}</div>;
 
 const Stat = ({ label, value, color, note }) =>
   <div>
@@ -123,15 +123,21 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
     );
   }
 
-  // ---- LASTEN ---- Things to handle (volledige-breedte strook) + Lasten-action (4:3 photo-shell) + maandelijkse verdeling onderaan
+  // ---- LASTEN ---- agenda (2 cols, even breed als 2 kanbankolommen) + Things to handle (1 col) + 3-koloms kanban
   if (tab === "LASTEN") {
     return (
-      <div className="flex flex-col gap-4">
-        <ThingsHandleWidget className="h-[180px] w-full shrink-0" />
-        <LastenActionWidget expenses={expenses} portfolios={portfolios} onReload={onReload} />
-        <Tile className="p-4">
-          <ExpenseAllocationBar />
-        </Tile>
+      <div className="h-full flex flex-col gap-4">
+        <div className="grid grid-cols-3 gap-4 h-[300px] shrink-0">
+          <div className="col-span-2 h-full min-h-0">
+            <MonthCalendarCard expenses={expenses} portfolios={portfolios} />
+          </div>
+          <div className="col-span-1 h-full min-h-0">
+            <ThingsHandleWidget className="h-full" />
+          </div>
+        </div>
+        <div className="flex-1 min-h-0">
+          <LastenActionWidget expenses={expenses} portfolios={portfolios} onReload={onReload} />
+        </div>
       </div>
     );
   }
