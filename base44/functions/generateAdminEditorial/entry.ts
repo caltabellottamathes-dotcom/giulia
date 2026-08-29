@@ -54,12 +54,11 @@ Geef:
 - eyebrow: kort label (bv "Personal Admin | Lasten")
 - title1, title2: twee korte titelregels (hoofdletters, max ~4 woorden per regel, stijlvol — geen volledige zinnen)
 - heading1, heading2: twee korte aandachts-headingregels (wat op dit tabblad aandacht vraagt)
-- body: ULTRAKORTE punchy copy (max 2 zinnen, 25-45 woorden). Eén fel hoofdinzicht dat direct opvalt. ADHD-vriendelijk: prikkelend, specifiek met de getallen uit de data als cijfers. Geen bulletlist, geen saaie opsomming, geen uitgeschreven getallen
-- items: 0-3 aandachtspunten, elk { n: "01", title: "korte titel", desc: "1 korte zin met bedrag/datum als cijfers" } — concreet, specifiek voor dit tabblad
+- body: HUIDIGE STAND van dit tabblad (2-3 korte zinnen, max 55 woorden). Analyseer het thema van het tabblad (Overview = gezamenlijke analyse van alle domeinen). Beschrijf concreet en specifiek met de getallen uit de data als cijfers. Geen uitgeschreven getallen
 - itemsLabel: mono-label (bv "03_payments_due_")
-- items: 0-3 aandachtspunten, elk { n: "01", title: "korte titel", desc: "1 zin met bedrag/datum" } — concreet, specifiek voor dit tabblad
-- restLabel: korte zin (bv "The rest can wait.")
-- rest: 1 zin over wat niet dringend is op dit tabblad
+- items: 0-3 actiepunten, elk { n: "01", title: "korte titel", desc: "1 korte zin met bedrag/datum als cijfers" } — concreet, specifiek, wat aandacht vraagt
+- restLabel: "Giulia stelt voor"
+- rest: 2-3 concrete VOORSTELLEN om het te verbeteren, genummerd "1. … 2. … 3. …", elk 1 uitvoerbare zin met cijfers. Praktisch en toepasbaar
 
 Baseer je op de data. Kort, krachtig, direct, menselijk, geen SaaS-enthousiasme. Alle getallen als cijfers, nooit uitgeschreven.
 

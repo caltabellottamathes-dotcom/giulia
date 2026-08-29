@@ -24,7 +24,7 @@ function DarkWalletDropdown({ value, onChange, options, placeholder, label }) {
   return (
     <div className="relative flex-1 min-w-0" ref={ref}>
       {label && <p className="text-[7px] uppercase tracking-[0.22em] font-bold mb-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>{label}</p>}
-      <button type="button" onClick={() => setOpen((v) => !v)} className="flex items-center gap-1.5 w-full rounded-xl px-2 py-1.5 text-xs font-medium transition" style={DARK_GLASS}>
+      <button type="button" onClick={() => setOpen((v) => !v)} className="flex items-center gap-1.5 w-full rounded-xl px-2.5 py-2 text-xs font-medium transition" style={DARK_GLASS}>
         {selected ? (
           <>
             <span className="h-2 w-2 rounded-full shrink-0" style={{ background: selected.color || "#b1bec6" }} />
@@ -37,7 +37,7 @@ function DarkWalletDropdown({ value, onChange, options, placeholder, label }) {
       </button>
       <AnimatePresence>
         {open && (
-          <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.16 }} className="absolute z-50 mt-1 right-0 w-full min-w-[200px] rounded-xl p-1 max-h-56 overflow-y-auto no-scrollbar" style={DARK_POPOVER}>
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.16 }} className="absolute z-[60] bottom-full mb-2 right-0 w-full min-w-[220px] rounded-xl p-1 max-h-56 overflow-y-auto no-scrollbar" style={{ ...DARK_POPOVER, boxShadow: "0 -18px 44px -16px rgba(0,0,0,0.65)" }}>
             {options.map((o) => {
               const active = o.id === value;
               return (
@@ -95,30 +95,37 @@ export default function MoveMeTransfer() {
   };
 
   return (
-    <div className="relative w-full h-[210px] shrink-0 rounded-[22px] overflow-hidden" style={{ boxShadow: "-16px 16px 44px -16px rgba(0,0,0,0.40)" }}>
-      {/* SHELL — full photo + donkere gradient + glass */}
-      <img src={PHOTO} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
-      <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(20,22,26,0.74), rgba(20,22,26,0.46) 55%, rgba(20,22,26,0.68))" }} />
-      <div className="absolute inset-0 rounded-[22px]" style={{ background: "rgba(120,128,133,0.08)", border: "1px solid rgba(255,255,255,0.14)" }} />
+    <div className="relative w-full h-[210px] shrink-0 rounded-[22px]" style={{ boxShadow: "-16px 16px 44px -16px rgba(0,0,0,0.40)" }}>
+      {/* SHELL — full photo (geen donkere overlay) */}
+      <div className="absolute inset-0 rounded-[22px] overflow-hidden">
+        <img src={PHOTO} alt="" className="absolute inset-0 h-full w-full object-cover" draggable={false} />
+      </div>
+      <div className="absolute inset-0 rounded-[22px]" style={{ background: "rgba(120,128,133,0.06)", border: "1px solid rgba(255,255,255,0.14)" }} />
 
-      {/* 1 GROTE BOUNCEDOT — horizontaal stuiterend, links midden, half achter de glaskaart */}
-      <motion.div className="absolute left-6 top-1/2 -translate-y-1/2 z-10" animate={{ x: [-30, 30, -30] }} transition={{ repeat: Infinity, duration: 1.7, ease: "easeInOut" }}>
-        <span className="block rounded-full" style={{ width: 104, height: 104, background: `linear-gradient(135deg, ${from?.color || "#b1bec6"}, ${to?.color || "#d8dab3"})`, boxShadow: "0 0 30px rgba(0,0,0,0.55), inset 0 3px 0 rgba(255,255,255,0.32)" }} />
+      {/* 1 GROTE BOUNCEDOT — horizontaal stuiterend, hoger + groter, geen schaduw */}
+      <motion.div className="absolute left-8 top-[34%] -translate-y-1/2 z-10" animate={{ x: [-34, 34, -34] }} transition={{ repeat: Infinity, duration: 1.7, ease: "easeInOut" }}>
+        <span className="block rounded-full" style={{ width: 130, height: 130, background: `linear-gradient(135deg, ${from?.color || "#b1bec6"}, ${to?.color || "#d8dab3"})` }} />
       </motion.div>
 
       {/* INVULSTROKEN op de shell — onderste helft (vervalt achter glaskaart wanneer kaart omlaag) */}
-      <div className="absolute bottom-0 left-0 right-0 h-[105px] z-20 px-4 pt-2.5 pb-3 flex items-center gap-2.5" style={{ color: IVORY }}>
+      <div className="absolute bottom-0 left-0 right-0 h-[105px] z-20 px-4 pt-2.5 pb-3 flex items-end gap-2.5" style={{ color: IVORY }}>
         <div className="w-[230px] shrink-0" />
-        <div className="flex-1 min-w-0 flex items-center gap-2">
+        <div className="flex-1 min-w-0 flex items-end gap-2">
           <DarkWalletDropdown value={fromId} onChange={setFromId} options={active} placeholder="Van…" label="haal uit" />
           <DarkWalletDropdown value={toId} onChange={setToId} options={active} placeholder="Naar…" label="breng naar" />
-          <div className="flex items-center rounded-xl pl-2.5 pr-1.5 py-1.5 shrink-0" style={DARK_GLASS}>
-            <span className="text-[10px] uppercase tracking-[0.16em] font-bold mr-1 opacity-70">€</span>
-            <input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0,00" className="w-14 bg-transparent text-sm font-display font-bold outline-none tabular-nums" style={{ color: IVORY }} />
+          <div className="flex flex-col shrink-0">
+            <p className="text-[7px] uppercase tracking-[0.22em] font-bold mb-0.5" style={{ color: "rgba(255,255,255,0)" }}>&nbsp;</p>
+            <div className="flex items-center rounded-xl pl-2.5 pr-1.5 py-2" style={DARK_GLASS}>
+              <span className="text-[10px] uppercase tracking-[0.16em] font-bold mr-1 opacity-70">€</span>
+              <input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0,00" className="w-16 bg-transparent text-sm font-display font-bold outline-none tabular-nums" style={{ color: IVORY }} />
+            </div>
           </div>
-          <button onClick={transfer} disabled={busy || !canTransfer} className="inline-flex items-center gap-1 rounded-full px-3.5 py-2 text-xs font-bold disabled:opacity-40 transition shrink-0" style={{ background: IVORY, color: "#2a2c30", boxShadow: "0 10px 24px -10px rgba(0,0,0,0.5)" }}>
-            {busy ? "…" : <><ArrowRight className="w-3.5 h-3.5" />Move</>}
-          </button>
+          <div className="flex flex-col shrink-0">
+            <p className="text-[7px] uppercase tracking-[0.22em] font-bold mb-0.5" style={{ color: "rgba(255,255,255,0)" }}>&nbsp;</p>
+            <button onClick={transfer} disabled={busy || !canTransfer} className="inline-flex items-center gap-1 rounded-xl px-3.5 py-2 text-xs font-bold disabled:opacity-40 transition" style={{ background: IVORY, color: "#2a2c30" }}>
+              {busy ? "…" : <><ArrowRight className="w-3.5 h-3.5" />Move</>}
+            </button>
+          </div>
         </div>
       </div>
 

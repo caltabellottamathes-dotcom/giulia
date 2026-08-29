@@ -145,6 +145,15 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
   // Handlers — done/delete direct + reload; edit/open sturen naar de juiste tab.
   const reload = () => load();
   const goTab = (t) => (onNavigate ? onNavigate(t) : navigate(`/life/personal-admin?tab=${t}`));
+  const resolveTab = (it, currentTab) => {
+    const t = `${it.title || ""} ${it.desc || ""}`.toLowerCase();
+    if (/inkom|expected|received|stroom|ontvang/.test(t)) return "INKOMEN";
+    if (/wallet|portefeuille|pot|saldo|reservering|behind|onder-reser/.test(t)) return "PORTEFEUILLES";
+    if (/document|factuur|bon|ontbreekt|chase/.test(t)) return "DOCUMENTEN";
+    if (/forecast|druk|spanning|voorblijf/.test(t)) return "FORECAST";
+    if (/impuls|vrij|besteed|healthy/.test(t)) return "HEALTHY_MONEY";
+    return currentTab === "OVERVIEW" ? "LASTEN" : currentTab;
+  };
   const handlers = {
     onOpenPortfolio: (p) => goTab("PORTEFEUILLES"),
     onDoneExpense: async (e) => { try { await base44.entities.AdminObligation.update(e.id, { status: "done", last_payment_date: new Date().toISOString().slice(0, 10) }); await reload(); } catch {} },
@@ -214,7 +223,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
             <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>{itemsLabel}</p>
             {items.length === 0 && <p className="font-body text-[12px]" style={{ color: INK }}>{data ? "Niets dringends." : "Laden…"}</p>}
             {items.map((it, idx) => (
-              <button key={it.n} onClick={() => goTab(tab)} className="flex gap-3 items-end text-left w-full hover:opacity-70 transition">
+              <button key={it.n} onClick={() => goTab(resolveTab(it, tab))} className="flex gap-3 items-end text-left w-full hover:opacity-70 transition">
                 <span className="w-[84px] shrink-0 flex justify-end items-end gap-[5px]">
                   <BounceBalls color={NUM_COLORS[idx % 3]} count={idx + 1} ml="0" />
                   <span className="font-display font-bold leading-none" style={{ color: NUM_COLORS[idx % 3], fontSize: "30px" }}>{it.n}</span>
@@ -229,7 +238,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
 
           <div className="pt-6 mt-6 border-t" style={{ borderColor: GREY }}>
             <p className="font-mono text-[10px] tracking-[0.5em] uppercase" style={{ color: "#abab69" }}>{restLabel}</p>
-            <p className="font-body text-[12.5px] leading-[1.4] mt-3" style={{ color: "#333" }}>{rest}</p>
+            <p className="font-body text-[12.5px] leading-[1.5] mt-3 whitespace-pre-line" style={{ color: "#333" }}>{rest}</p>
           </div>
         </div>
       </div>
