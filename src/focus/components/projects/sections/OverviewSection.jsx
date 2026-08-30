@@ -2,12 +2,12 @@ import React, { useState, useEffect } from "react";
 import GlassPanel from "@/system/components/glass/GlassPanel";
 import GlassButton from "@/system/components/glass/GlassButton";
 import Avatar from "@/system/components/glass/Avatar";
-import StatusBadge from "@/system/components/glass/StatusBadge";
 import StatusDistribution from "@/focus/components/projects/StatusDistribution";
 import PhotoCard from "@/focus/components/projects/PhotoCard";
+import ProjectHealthCard from "@/focus/components/projects/ProjectHealthCard";
 import { IMAGES } from "@/lib/images";
 import { base44 } from "@/api/base44Client";
-import { projectStatusMeta, isTaskDone } from "@/lib/projectStatus";
+import { isTaskDone } from "@/lib/projectStatus";
 import { buildBreakdown, weightedProgress, giuliaInterpret, parseTasksFromText } from "@/lib/projectEngine";
 import {
   ChevronDown, Bot, ArrowRight, Calendar, Users, Mail, Gavel, FileText, Plus,
@@ -55,7 +55,6 @@ export default function OverviewSection({ project, tasks, themes = [], decisions
   const breakdown = buildBreakdown(tasks, themes);
   const progress = weightedProgress(tasks, themes);
   const giulia = giuliaInterpret(project, tasks, themes);
-  const ps = projectStatusMeta[project.status] || projectStatusMeta.planning;
 
   const today = new Date();
   const upcoming = tasks
@@ -85,27 +84,10 @@ export default function OverviewSection({ project, tasks, themes = [], decisions
     <div className="space-y-4">
       {/* Editorial bento: progress (tall left) · takenverdeling + giulia (top right) · onderdeel (bottom right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 lg:grid-rows-2 gap-4">
-        {/* Progress hero — tall vertical, full height left */}
-        <GlassPanel level={2} className="lg:col-span-4 lg:col-start-1 lg:row-start-1 lg:row-span-2 relative overflow-hidden p-0 min-h-[340px] flex flex-col justify-end">
-          <img src={IMAGES.walkTowardChair} alt="" draggable={false} className="absolute inset-0 h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/95 via-charcoal/35 to-charcoal/5" />
-          <div className="absolute top-6 left-6 right-6 z-10">
-            <p className="text-[10px] uppercase tracking-[0.2em] text-ivory/70 mb-1.5">Voortgang</p>
-            <p className="text-[11px] text-ivory/55 leading-snug max-w-[220px]">Gewogen over alle onderdelen en subonderdelen.</p>
-          </div>
-          <div className="relative p-6">
-            <div className="flex items-end gap-1.5">
-              <span className="text-[112px] font-display font-bold leading-[0.78] tabular-nums text-ivory">{progress}</span>
-              <span className="text-3xl font-display text-ivory/55 mb-3">%</span>
-            </div>
-            <div className="mt-5 h-1.5 w-full bg-ivory/20 rounded-full overflow-hidden">
-              <div className="h-full bg-powder rounded-full transition-all duration-700" style={{ width: `${Math.max(progress, 2)}%` }} />
-            </div>
-            <div className="mt-4 flex items-center gap-2">
-              <StatusBadge variant={ps.variant}>{ps.label}</StatusBadge>
-            </div>
-          </div>
-        </GlassPanel>
+        {/* Project health — adaptatie van FinanceHealthCard, toont projectvoortgang */}
+        <div className="lg:col-span-4 lg:col-start-1 lg:row-start-1 lg:row-span-2 relative overflow-hidden rounded-[28px] min-h-[340px]" style={{ boxShadow: "0 16px 34px -18px rgba(0,0,0,0.20)" }}>
+          <ProjectHealthCard progress={progress} insight={giulia.insight} />
+        </div>
 
         {/* Taakverdeling — top middle · nav-glass */}
         <div className="lg:col-span-4 lg:col-start-5 lg:row-start-1 glass-dark float-shadow rounded-[28px] text-ivory flex flex-col overflow-hidden">

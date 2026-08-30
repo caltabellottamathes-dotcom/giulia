@@ -31,7 +31,7 @@ export default function ProjectHeaderTile({ project, tasks = [], onEdit }) {
       initial={{ y: -168, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.7, ease: EASE, delay: 0.15 }}
-      className="absolute top-0 left-[19%] right-0 h-[176px] z-30 rounded-b-[18px] overflow-hidden"
+      className="absolute top-0 inset-x-0 h-[176px] z-30 rounded-b-[18px] overflow-hidden"
       style={{ boxShadow: "0 26px 48px -18px rgba(0,0,0,0.45)" }}
     >
       <img src={photo} alt={project.title} className="absolute inset-0 h-full w-full object-cover" draggable={false} />
