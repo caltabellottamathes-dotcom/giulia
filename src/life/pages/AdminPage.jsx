@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowLeft, CircleDot, Wallet, ListChecks, Banknote, LineChart, HeartPulse, FileText, MessageSquare, Phone, Film } from "lucide-react";
+import { ArrowLeft, CircleDot, Wallet, ListChecks, Banknote, Lightbulb, HeartPulse, FileText, MessageSquare, Phone, Film } from "lucide-react";
 import AdminCard from "./AdminCard";
 import ChatStage from "@/giulia/panels/ChatStage";
 import VoiceStage from "@/giulia/panels/VoiceStage";
@@ -12,6 +12,7 @@ import ExpenseStage from "@/life/components/finance/ExpenseStage";
 import IncomeStage from "@/life/components/finance/IncomeStage";
 import ReservationStage from "@/life/components/finance/ReservationStage";
 import LastenManageList from "@/life/components/finance/LastenManageList";
+import AnalysisReportStage from "@/life/components/finance/AnalysisReportStage";
 import MattiaSlideOver from "@/giulia/panels/MattiaSlideOver";
 
 const EASE = [0.16, 1, 0.3, 1];
@@ -22,7 +23,7 @@ const TABS = [
 { key: "PORTEFEUILLES", label: "Wallets", icon: Wallet },
 { key: "LASTEN", label: "Lasten", icon: ListChecks },
 { key: "INKOMEN", label: "Inkomen", icon: Banknote },
-{ key: "FORECAST", label: "Forecast", icon: LineChart },
+{ key: "FORECAST", label: "Inzichten", icon: Lightbulb },
 { key: "HEALTHY_MONEY", label: "Healthy Money", icon: HeartPulse },
 { key: "DOCUMENTEN", label: "Documenten", icon: FileText }];
 
@@ -97,6 +98,12 @@ export default function AdminPage() {
     return () => window.removeEventListener("giulia:open-lasten", h);
   }, []);
 
+  // Bij openen van de pagina: de analyse uitvoeren + het rapport tonen (analyse-stage).
+  useEffect(() => {
+    const t = setTimeout(() => {setStage("analyse");setPanelOpen(true);}, 1150);
+    return () => clearTimeout(t);
+  }, []);
+
   const stageContent =
   stage === "chat" ? <ChatStage /> :
   stage === "voice" ? <VoiceStage /> :
@@ -106,6 +113,7 @@ export default function AdminPage() {
   stage === "income" ? <IncomeStage incomeId={incomeId} onClose={() => setPanelOpen(false)} /> :
   stage === "reservation" ? <ReservationStage onClose={() => setPanelOpen(false)} /> :
   stage === "lasten" ? <LastenManageList onClose={() => setPanelOpen(false)} /> :
+  stage === "analyse" ? <AnalysisReportStage tab={tab} onClose={() => setPanelOpen(false)} /> :
   <MediaStage />;
 
   const tabTitle = TABS.find((t) => t.key === tab)?.label || "Admin";

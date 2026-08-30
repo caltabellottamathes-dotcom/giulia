@@ -10,6 +10,8 @@ import FinanceHealthCard from "@/life/components/finance/FinanceHealthCard";
 import NewDocumentsCard from "@/life/components/finance/NewDocumentsCard";
 import RenewOverviewCard from "@/life/components/finance/RenewOverviewCard";
 import FinanceStacks from "@/life/components/finance/FinanceStacks";
+import InsightsBento from "@/life/components/finance/InsightsBento";
+import HealthyMoneyBento from "@/life/components/finance/HealthyMoneyBento";
 
 const EASE = [0.16, 1, 0.3, 1];
 const BLUE = "#b1bfc7";
@@ -142,7 +144,10 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
       ]).then(() => { loadEd(); load(); }).catch(() => {}).finally(() => setGenBusy(false));
     };
     window.addEventListener("giulia:renew-editorial", h);
-    return () => window.removeEventListener("giulia:renew-editorial", h);
+    // Stage-wijzigingen (giulia:admin-reload) verversen ook de editorial vanuit de DB.
+    const rh = () => loadEd();
+    window.addEventListener("giulia:admin-reload", rh);
+    return () => { window.removeEventListener("giulia:renew-editorial", h); window.removeEventListener("giulia:admin-reload", rh); };
   }, []);
 
   // Handlers — done/delete direct + reload; edit/open sturen naar de juiste tab.
@@ -227,7 +232,6 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
 
           <div className="ml-[80px] mt-8 space-y-2">
             <p className="font-display font-medium tracking-[-0.05em] text-[12px]" style={{ color: BLACK }}>{data ? `${fmtEuro(data.totalMoney)} beschikbaar · ${data.portfolios.length} potjes` : "Laden…"}</p>
-            <p className="font-body text-[12px] leading-[1.55] whitespace-pre-line" style={{ color: INK }}>{bodyText}</p>
             {proposal && (
               <div className="mt-3 pt-3 border-t" style={{ borderColor: GREY }}>
                 <p className="font-mono text-[10px] tracking-[0.18em] uppercase mb-1.5" style={{ color: BLUE }}><span className="font-bold">Voorstel</span> | Giulia adviseert_</p>
@@ -275,8 +279,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
           </div>
 
           <div className="pt-6 mt-6 border-t" style={{ borderColor: GREY }}>
-            <p className="font-mono text-[10px] tracking-[0.5em] uppercase" style={{ color: "#abab69" }}>{restLabel}</p>
-            <p className="font-body text-[12.5px] leading-[1.5] mt-3 whitespace-pre-line" style={{ color: "#333" }}>{rest}</p>
+            <p className="font-mono text-[10px] tracking-[0.5em] uppercase" style={{ color: "#abab69" }}>Le reste peut attendre</p>
           </div>
         </div>
       </div>
@@ -325,6 +328,10 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
               </div>
             )}
           </div>
+        ) : tab === "FORECAST" ? (
+          data ? <InsightsBento data={data} ed={ed} /> : <div className="flex-1 p-8 space-y-3">{[0,1,2,3].map((i) => <div key={i} className="h-24 rounded-2xl shimmer" />)}</div>
+        ) : tab === "HEALTHY_MONEY" ? (
+          data ? <HealthyMoneyBento data={data} /> : <div className="flex-1 p-8 space-y-3">{[0,1,2,3].map((i) => <div key={i} className="h-24 rounded-2xl shimmer" />)}</div>
         ) : (
           <div className="flex-1 min-h-0 overflow-y-auto p-6 pl-8">
             {data ? (
