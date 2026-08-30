@@ -39,8 +39,8 @@ export default function ExpenseAllocationBar() {
         <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-foreground/55">{total > 0 ? `${fmtEuro(total)} / mnd` : "—"}</p>
       </div>
 
-      {/* balk — losse ronde pillen; hover → volledige breedte + info erin */}
-      <div className="flex items-stretch w-full h-[clamp(40px,4.2vw,58px)] gap-2">
+      {/* balk — dunne ronde pillen; rust = alleen kleur, hover → volledige breedte + info erin */}
+      <div className="flex items-stretch w-full h-[clamp(14px,1.5vw,20px)] gap-1.5">
         {rows.length === 0 && <p className="text-[10px] text-foreground/40 self-center px-2">Geen lasten.</p>}
         {rows.map((s) => {
           const base = total > 0 ? (s.amount / total) * 100 : 0;
@@ -57,11 +57,11 @@ export default function ExpenseAllocationBar() {
               onMouseEnter={() => setHovered(s.id)}
               onMouseLeave={() => setHovered(null)}
             >
-              <div className="flex items-center justify-between w-full min-w-0 px-3">
-                <span className="text-[11px] font-bold truncate" style={{ textShadow: dark ? "0 1px 2px rgba(0,0,0,0.35)" : "none" }}>{s.title}</span>
-                <span className="flex items-center gap-2 shrink-0 ml-3">
-                  <span className="text-[9px] uppercase tracking-[0.14em] opacity-70 hidden md:inline">{s.wallet}</span>
-                  <span className="text-[12px] font-display font-bold tabular-nums">{fmtEuro(s.amount)}</span>
+              <div className="flex items-center justify-between w-full min-w-0 px-2" style={{ opacity: hovered === s.id ? 1 : 0 }}>
+                <span className="text-[10px] font-bold truncate" style={{ textShadow: dark ? "0 1px 2px rgba(0,0,0,0.35)" : "none" }}>{s.title}</span>
+                <span className="flex items-center gap-2 shrink-0 ml-2">
+                  <span className="text-[8px] uppercase tracking-[0.14em] opacity-70 hidden md:inline">{s.wallet}</span>
+                  <span className="text-[11px] font-display font-bold tabular-nums">{fmtEuro(s.amount)}</span>
                 </span>
               </div>
             </motion.div>

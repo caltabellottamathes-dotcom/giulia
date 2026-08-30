@@ -125,8 +125,8 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
         </div>
         <WalletsBuildingWidget />
         <MoveMeTransfer />
-        <div className="flex-1 min-h-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 lg:grid-rows-2 gap-4">
-          {wallets.map((p, i) => <WalletPhotoCard key={p.id} wallet={p} expenses={expenses} photoUrl={PHOTOS[i % PHOTOS.length]} />)}
+        <div className="flex-1 min-h-0 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 content-start">
+          {wallets.map((p, i) => <div key={p.id} className="h-[185px]"><WalletPhotoCard wallet={p} expenses={expenses} photoUrl={PHOTOS[i % PHOTOS.length]} /></div>)}
         </div>
       </div>
     );
