@@ -20,34 +20,8 @@ export default function ProjectStacks({ tab, data, onOpenProject, onEditProject,
   const pName = (id) => projects.find((p) => p.id === id)?.title || "—";
 
   if (tab === "OVERVIEW") {
-    const active = projects.filter((p) => ["in_progress", "planning", "review", "waiting", "afwerking"].includes(p.status));
-    const attention = projects.filter((p) => p.health === "attention" || p.health === "critical");
     return (
-      <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-[68px] flex flex-col gap-4 overflow-y-auto no-scrollbar">
-        <motion.div
-          initial={{ y: -44, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="relative w-full h-[176px] rounded-[18px] overflow-hidden shrink-0"
-          style={{ boxShadow: "-16px 16px 40px -16px rgba(0,0,0,0.35)" }}
-        >
-          <img src={IMAGES.focusBuild} alt="Projecten" className="absolute inset-0 h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/78 via-charcoal/28 to-charcoal/10" />
-          <div className="relative h-full flex flex-col justify-between p-5 text-ivory">
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] uppercase tracking-[0.28em] font-semibold text-ivory/80">Focus · Projecten</p>
-              <span className="text-[10px] font-mono tabular-nums text-ivory/70">{projects.length} projecten</span>
-            </div>
-            <div>
-              <h3 className="font-display font-bold uppercase tracking-[-0.03em] leading-[0.95] text-[34px]">What I'm Building.</h3>
-              <div className="flex items-center gap-6 mt-3">
-                <HeroStat label="ACTIEF" value={active.length} />
-                <HeroStat label="AANDACHT" value={attention.length} />
-                <HeroStat label="OPEN TAKEN" value={tasks.filter((t) => !isTaskDone(t)).length} />
-              </div>
-            </div>
-          </div>
-        </motion.div>
+      <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-3 flex flex-col gap-4 overflow-y-auto no-scrollbar">
         <ProjectGrid projects={projects} onOpen={onOpenProject} onEdit={onEditProject} />
       </div>
     );
@@ -56,7 +30,7 @@ export default function ProjectStacks({ tab, data, onOpenProject, onEditProject,
   if (tab === "ACTIVE") {
     const active = projects.filter((p) => ["in_progress", "planning", "review", "waiting", "afwerking"].includes(p.status));
     return (
-      <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-[68px] overflow-y-auto no-scrollbar">
+      <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-3 overflow-y-auto no-scrollbar">
         <ProjectGrid projects={active} onOpen={onOpenProject} onEdit={onEditProject} emptyLabel="Geen actieve projecten." />
       </div>
     );
@@ -67,15 +41,15 @@ export default function ProjectStacks({ tab, data, onOpenProject, onEditProject,
       .map(([pid, ts]) => ({ project: projects.find((p) => p.id === pid), tasks: ts.sort((a, b) => (isTaskDone(a) ? 1 : 0) - (isTaskDone(b) ? 1 : 0)) }))
       .filter((g) => g.project);
     return (
-      <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-[68px] overflow-y-auto no-scrollbar space-y-5">
+      <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-3 overflow-y-auto no-scrollbar space-y-5">
         {byProject.length === 0 && <p className="text-sm text-muted-foreground italic">Nog geen taken.</p>}
         {byProject.map((g) => (
           <div key={g.project.id}>
-            <div className="flex items-center gap-2 mb-2">
+            <button onClick={() => onOpenProject?.(g.project)} className="flex items-center gap-2 mb-2 text-left hover:opacity-70 transition">
               <span className="h-2.5 w-2.5 rounded-full" style={{ background: g.project.color || "hsl(var(--smoke))" }} />
               <h3 className="text-sm font-display font-semibold">{g.project.title}</h3>
               <span className="text-[10px] text-muted-foreground tabular-nums">{g.tasks.filter((t) => !isTaskDone(t)).length}/{g.tasks.length}</span>
-            </div>
+            </button>
             <div className="space-y-1.5">
               {g.tasks.map((t) => {
                 const done = isTaskDone(t);
@@ -102,13 +76,13 @@ export default function ProjectStacks({ tab, data, onOpenProject, onEditProject,
     const ms = (milestones || []).slice().sort((a, b) => (a.date || "").localeCompare(b.date || ""));
     const pName = (id) => projects.find((p) => p.id === id)?.title || "—";
     return (
-      <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-[68px] overflow-y-auto no-scrollbar space-y-2.5">
+      <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-3 overflow-y-auto no-scrollbar space-y-2.5">
         {ms.length === 0 && <p className="text-sm text-muted-foreground italic">Nog geen milestones.</p>}
         {ms.map((m) => {
           const done = m.status === "done";
           const p = projects.find((pp) => pp.id === m.project_id);
           return (
-            <div key={m.id} className="flex items-center gap-3 rounded-xl bg-foreground/[0.04] px-3 py-3">
+            <button key={m.id} onClick={() => onOpenProject?.(p)} className="flex items-center gap-3 rounded-xl bg-foreground/[0.04] px-3 py-3 w-full text-left hover:bg-foreground/[0.07] transition">
               <span className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: (p?.color) || "hsl(var(--smoke))" }}>
                 <MilestoneIcon className="h-4 w-4 text-white" />
               </span>
@@ -117,7 +91,7 @@ export default function ProjectStacks({ tab, data, onOpenProject, onEditProject,
                 <p className="text-[10px] uppercase tracking-wide text-muted-foreground mt-0.5">{pName(m.project_id)}{m.date ? ` · ${m.date}` : ""}</p>
               </div>
               <span className="text-[9px] uppercase tracking-wide text-muted-foreground shrink-0">{m.status || "open"}</span>
-            </div>
+            </button>
           );
         })}
       </div>
@@ -128,12 +102,12 @@ export default function ProjectStacks({ tab, data, onOpenProject, onEditProject,
     const dec = (decisions || []).slice().sort((a, b) => (b.date || "").localeCompare(a.date || ""));
     const pName = (id) => projects.find((p) => p.id === id)?.title || "—";
     return (
-      <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-[68px] overflow-y-auto no-scrollbar space-y-2.5">
+      <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-3 overflow-y-auto no-scrollbar space-y-2.5">
         {dec.length === 0 && <p className="text-sm text-muted-foreground italic">Nog geen beslissingen.</p>}
         {dec.map((d) => {
           const p = projects.find((pp) => pp.id === d.project_id);
           return (
-            <div key={d.id} className="flex items-start gap-3 rounded-xl bg-foreground/[0.04] px-3 py-3">
+            <button key={d.id} onClick={() => onOpenProject?.(p)} className="flex items-start gap-3 rounded-xl bg-foreground/[0.04] px-3 py-3 w-full text-left hover:bg-foreground/[0.07] transition">
               <span className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: (p?.color) || "hsl(var(--smoke))" }}>
                 <Gavel className="h-4 w-4 text-white" />
               </span>
@@ -142,7 +116,7 @@ export default function ProjectStacks({ tab, data, onOpenProject, onEditProject,
                 {d.description && <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed line-clamp-2">{d.description}</p>}
                 <p className="text-[10px] uppercase tracking-wide text-muted-foreground mt-1">{pName(d.project_id)}{d.date ? ` · ${d.date}` : ""}</p>
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
@@ -152,7 +126,7 @@ export default function ProjectStacks({ tab, data, onOpenProject, onEditProject,
   if (tab === "INSIGHTS") {
     const sorted = projects.slice().sort((a, b) => (b.progress || 0) - (a.progress || 0));
     return (
-      <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-[68px] overflow-y-auto no-scrollbar space-y-4">
+      <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-3 overflow-y-auto no-scrollbar space-y-4">
         <Tile className="p-4">
           <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Voortgang per project</p>
           <div className="space-y-3">
@@ -194,16 +168,16 @@ export default function ProjectStacks({ tab, data, onOpenProject, onEditProject,
     const projNotes = notes.filter((n) => n.project_id);
     const pName = (id) => projects.find((p) => p.id === id)?.title || "—";
     return (
-      <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-[68px] grid gap-4 lg:grid-cols-2 overflow-y-auto no-scrollbar">
+      <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-3 grid gap-4 lg:grid-cols-2 overflow-y-auto no-scrollbar">
         <Tile className="p-4">
           <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Documenten · {projDocs.length}</p>
           {projDocs.length === 0 && <p className="text-sm text-muted-foreground italic">Nog geen documenten gekoppeld.</p>}
           <div className="grid gap-2 sm:grid-cols-2">
             {projDocs.slice(0, 10).map((d) => (
-              <div key={d.id} className="rounded-xl bg-foreground/[0.04] px-3 py-2.5">
+              <button key={d.id} onClick={() => onOpenProject?.(projects.find((pp) => pp.id === d.project_id))} className="rounded-xl bg-foreground/[0.04] px-3 py-2.5 w-full text-left hover:bg-foreground/[0.07] transition">
                 <div className="flex items-center gap-2 mb-1"><FileText className="w-3.5 h-3.5 text-muted-foreground shrink-0" /><p className="text-[12px] font-display font-semibold truncate">{d.name || d.title}</p></div>
                 <p className="text-[9px] uppercase tracking-wide text-muted-foreground">{pName(d.project_id)} · {d.document_type || d.type}</p>
-              </div>
+              </button>
             ))}
           </div>
         </Tile>
@@ -212,11 +186,11 @@ export default function ProjectStacks({ tab, data, onOpenProject, onEditProject,
           {projNotes.length === 0 && <p className="text-sm text-muted-foreground italic">Nog geen notities gekoppeld.</p>}
           <div className="space-y-2">
             {projNotes.slice(0, 10).map((n) => (
-              <div key={n.id} className="rounded-xl bg-foreground/[0.04] px-3 py-2.5">
+              <button key={n.id} onClick={() => onOpenProject?.(projects.find((pp) => pp.id === n.project_id))} className="rounded-xl bg-foreground/[0.04] px-3 py-2.5 w-full text-left hover:bg-foreground/[0.07] transition">
                 <div className="flex items-center gap-2 mb-1"><StickyNote className="w-3.5 h-3.5 text-muted-foreground shrink-0" /><p className="text-[12px] font-display font-semibold truncate">{n.title}</p></div>
                 <p className="text-[10px] text-muted-foreground line-clamp-2">{n.content}</p>
                 <p className="text-[9px] uppercase tracking-wide text-muted-foreground mt-1">{pName(n.project_id)}</p>
-              </div>
+              </button>
             ))}
           </div>
         </Tile>
