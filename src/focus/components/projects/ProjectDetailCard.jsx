@@ -10,6 +10,7 @@ import DecisionsSection from "@/focus/components/projects/sections/DecisionsSect
 import FilesSection from "@/focus/components/projects/sections/FilesSection";
 import NotesSection from "@/focus/components/projects/sections/NotesSection";
 import GiuliaSection from "@/focus/components/projects/sections/GiuliaSection";
+import ProjectHeaderTile from "@/focus/components/projects/ProjectHeaderTile";
 
 const EASE = [0.16, 1, 0.3, 1];
 const BLUE = "#b1bfc7";
@@ -142,8 +143,9 @@ export default function ProjectDetailCard({ id, tab, onNavigate, onEditProject, 
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: "100%", opacity: 0 }}
       transition={{ duration: 0.55, ease: EASE, delay: enterDelay }}
-      className="absolute inset-0 rounded-bl-[20px] rounded-r-none graph-paper flex overflow-hidden shadow-[-40px_8px_64px_-18px_rgba(0,0,0,0.55)]"
+      className="absolute inset-0 rounded-bl-[20px] rounded-r-none graph-paper flex overflow-hidden pt-[200px] shadow-[-40px_8px_64px_-18px_rgba(0,0,0,0.55)]"
     >
+      {project && <ProjectHeaderTile project={project} tasks={tasks} onEdit={() => onEditProject?.(project)} />}
       {/* Editorial — left ~38% */}
       <div className="relative z-0 w-[38%] h-full flex flex-col overflow-y-auto no-scrollbar border-r" style={{ borderColor: GREY }}>
         <div className="flex-1 flex flex-col min-h-0 px-6 lg:px-8 pt-7 pb-6">
@@ -153,7 +155,7 @@ export default function ProjectDetailCard({ id, tab, onNavigate, onEditProject, 
           </div>
 
           <h2 className="font-display font-bold uppercase tracking-[-0.035em] leading-[0.92] mt-6" style={{ color: BLACK, fontSize: "clamp(30px, 2.6vw, 48px)", textShadow: "0 0 18px rgba(177,191,199,0.7), 0 0 38px rgba(177,191,199,0.4)" }}>
-            {project ? project.title : "Laden…"}<span aria-hidden className="ontwerp-dot-bounce inline-block rounded-full bg-current ml-[6px] align-baseline" style={{ color, width: "clamp(8px, 0.7vw, 13px)", height: "clamp(8px, 0.7vw, 13px)" }} />
+            {c.title1}<br />{c.title2}<span aria-hidden className="ontwerp-dot-bounce inline-block rounded-full bg-current ml-[6px] align-baseline" style={{ color, width: "clamp(8px, 0.7vw, 13px)", height: "clamp(8px, 0.7vw, 13px)" }} />
           </h2>
 
           <div className="ml-[80px] mt-8 space-y-2">
@@ -204,7 +206,7 @@ export default function ProjectDetailCard({ id, tab, onNavigate, onEditProject, 
       {/* RECHTS — bestaande project-secties per tab */}
       <div className="relative z-20 flex-1 min-w-0 h-full flex flex-col overflow-visible">
         {project ? (
-          <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-[68px] overflow-y-auto no-scrollbar">
+          <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-6 overflow-y-auto no-scrollbar">
             {tab === "OVERVIEW" && <OverviewSection {...sectionProps} />}
             {tab === "TASKS" && <TasksSection {...sectionProps} />}
             {tab === "MILESTONES" && <MilestonesSection project={project} themes={themes} />}
