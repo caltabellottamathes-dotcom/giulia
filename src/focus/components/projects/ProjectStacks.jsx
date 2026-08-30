@@ -1,8 +1,10 @@
 import React from "react";
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Check, Calendar, Milestone as MilestoneIcon, Gavel, FileText, StickyNote } from "lucide-react";
 import ProjectCard from "@/focus/components/projects/ProjectCard";
 import { isTaskDone, taskStatusMeta, projectStatusMeta } from "@/lib/projectStatus";
+import { IMAGES } from "@/lib/images";
 
 const TILE_SHADOW = "-16px 16px 40px -16px rgba(0,0,0,0.30)";
 const Tile = ({ children, className = "" }) =>
@@ -20,32 +22,32 @@ export default function ProjectStacks({ tab, data, onOpenProject, onEditProject,
   if (tab === "OVERVIEW") {
     const active = projects.filter((p) => ["in_progress", "planning", "review", "waiting", "afwerking"].includes(p.status));
     const attention = projects.filter((p) => p.health === "attention" || p.health === "critical");
-    const upcoming = tasks.filter((t) => !isTaskDone(t) && t.deadline && new Date(t.deadline) >= today).sort((a, b) => new Date(a.deadline) - new Date(b.deadline)).slice(0, 6);
-    const pName = (id) => projects.find((p) => p.id === id)?.title || "—";
     return (
       <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-[68px] flex flex-col gap-4 overflow-y-auto no-scrollbar">
-        <div className="flex gap-4">
-          <Tile className="flex-1 p-4">
-            <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Portefeuille · {projects.length} projecten</p>
-            <div className="grid grid-cols-3 gap-3">
-              <Stat label="ACTIEF" value={active.length} color="hsl(var(--life-olive))" />
-              <Stat label="AANDACHT" value={attention.length} color="hsl(var(--life-urgent))" />
-              <Stat label="OPEN TAKEN" value={tasks.filter((t) => !isTaskDone(t)).length} color="hsl(var(--life-ridge))" />
+        <motion.div
+          initial={{ y: -44, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="relative w-full h-[176px] rounded-[18px] overflow-hidden shrink-0"
+          style={{ boxShadow: "-16px 16px 40px -16px rgba(0,0,0,0.35)" }}
+        >
+          <img src={IMAGES.focusBuild} alt="Projecten" className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/78 via-charcoal/28 to-charcoal/10" />
+          <div className="relative h-full flex flex-col justify-between p-5 text-ivory">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] uppercase tracking-[0.28em] font-semibold text-ivory/80">Focus · Projecten</p>
+              <span className="text-[10px] font-mono tabular-nums text-ivory/70">{projects.length} projecten</span>
             </div>
-          </Tile>
-          <Tile className="flex-1 p-4">
-            <p className="text-[10px] uppercase tracking-[0.24em] text-muted-foreground font-semibold mb-3">Komende deadlines · {upcoming.length}</p>
-            {upcoming.length === 0 ? <p className="text-sm text-muted-foreground italic">Rustig — niets binnenkort.</p> :
-              <div className="space-y-1.5">
-                {upcoming.map((t) => (
-                  <div key={t.id} className="flex items-center justify-between gap-2 rounded-lg bg-foreground/[0.04] px-2.5 py-1.5">
-                    <span className="text-[11px] truncate min-w-0">{t.title}</span>
-                    <span className="text-[9px] uppercase tracking-wide text-muted-foreground shrink-0">{pName(t.project_id)} · {new Date(t.deadline).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}</span>
-                  </div>
-                ))}
-              </div>}
-          </Tile>
-        </div>
+            <div>
+              <h3 className="font-display font-bold uppercase tracking-[-0.03em] leading-[0.95] text-[34px]">What I'm Building.</h3>
+              <div className="flex items-center gap-6 mt-3">
+                <HeroStat label="ACTIEF" value={active.length} />
+                <HeroStat label="AANDACHT" value={attention.length} />
+                <HeroStat label="OPEN TAKEN" value={tasks.filter((t) => !isTaskDone(t)).length} />
+              </div>
+            </div>
+          </div>
+        </motion.div>
         <ProjectGrid projects={projects} onOpen={onOpenProject} onEdit={onEditProject} />
       </div>
     );
@@ -245,6 +247,15 @@ function Stat({ label, value, color }) {
     <div>
       <p className="text-[9px] uppercase tracking-[0.22em] font-semibold" style={{ color: "hsl(var(--muted-foreground))" }}>{label}</p>
       <p className="font-display font-semibold tabular-nums leading-none mt-1 text-2xl" style={{ color }}>{value}</p>
+    </div>
+  );
+}
+
+function HeroStat({ label, value }) {
+  return (
+    <div>
+      <p className="text-[9px] uppercase tracking-[0.22em] font-semibold text-ivory/65">{label}</p>
+      <p className="font-display font-bold tabular-nums leading-none mt-0.5 text-2xl text-ivory">{value}</p>
     </div>
   );
 }
