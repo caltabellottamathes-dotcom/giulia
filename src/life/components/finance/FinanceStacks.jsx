@@ -18,6 +18,7 @@ import HebbenBestedenBar from "@/life/components/finance/HebbenBestedenBar";
 import HealthyMoneyTab from "@/life/components/finance/HealthyMoneyTab";
 import ThingsHandleStrip from "@/life/components/finance/ThingsHandleStrip";
 import LastenAllocationCard from "@/life/components/finance/LastenAllocationCard";
+import LastenManageList from "@/life/components/finance/LastenManageList";
 import NewDocumentsCard from "@/life/components/finance/NewDocumentsCard";
 import MonthlyReceiptForecast from "@/life/components/finance/MonthlyReceiptForecast";
 import LastenHistoryWidget from "@/life/components/finance/LastenHistoryWidget";
@@ -138,6 +139,7 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
       <div className="h-full flex flex-col gap-4">
         <ThingsHandleStrip />
         <LastenBarsWidget expenses={expenses} portfolios={portfolios} onReload={onReload} />
+        <LastenManageList expenses={expenses} portfolios={portfolios} onReload={onReload} onDeleteExpense={onDeleteExpense} />
         <LastenAllocationCard expenses={expenses} portfolios={portfolios} />
       </div>
     );

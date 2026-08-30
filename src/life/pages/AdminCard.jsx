@@ -174,7 +174,11 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
     try {
       const res = await base44.functions.invoke("executeActiepunt", { item: it });
       toast({ title: res?.ok ? `Actie uitgevoerd · ${it.title}` : "Actie niet gelukt", variant: res?.ok ? "default" : "destructive" });
-      window.dispatchEvent(new CustomEvent("giulia:admin-reload"));
+      if (res?.ok) {
+        // alle tabs verversen: data + editorials opnieuw genereren vanuit de nieuwe stand
+        window.dispatchEvent(new CustomEvent("giulia:admin-reload"));
+        window.dispatchEvent(new CustomEvent("giulia:renew-editorial"));
+      }
       load();
     } catch (e) {
       toast({ title: "Actie niet gelukt", variant: "destructive" });
@@ -235,7 +239,7 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
 
           <div className="flex-1 min-h-8" />
 
-          <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98] mb-5" style={{ color: firstItemColor, fontSize: "clamp(24px, 1.9vw, 38px)" }}>
+          <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98] mb-5" style={{ color: BLACK, fontSize: "clamp(24px, 1.9vw, 38px)" }}>
             {h1}<br />{h2}<BounceBalls color={firstItemColor} count={3} />
           </h3>
 

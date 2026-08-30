@@ -55,6 +55,7 @@ export default function LastenBarsWidget({ expenses, portfolios, onReload }) {
     return (expenses || [])
       .filter((e) => e.frequency && e.frequency !== "once")
       .filter(dueThisMonth)
+      .filter((e) => (e.status || "open") !== "done")
       .sort((a, b) => (daysUntil(a) ?? 9999) - (daysUntil(b) ?? 9999));
   }, [expenses]);
 
@@ -121,7 +122,7 @@ export default function LastenBarsWidget({ expenses, portfolios, onReload }) {
           <span className="text-[10px] font-mono tabular-nums" style={{ color: IVORY_DIM }}>{bars.length}</span>
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar grid grid-cols-2 gap-2 content-end">
-          {bars.length === 0 && <p className="text-xs italic col-span-2" style={{ color: IVORY_DIM }}>Geen vaste lasten.</p>}
+          {bars.length === 0 && <p className="text-xs italic col-span-2" style={{ color: IVORY_DIM }}>Alles betaald deze maand.</p>}
           {bars.map((b) => {
             const isPaid = (b.status || "open") === "done";
             const isSel = selected?.id === b.id && !receiptFor;

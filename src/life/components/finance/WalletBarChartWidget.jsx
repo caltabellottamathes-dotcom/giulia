@@ -73,7 +73,8 @@ export default function WalletBarChartWidget() {
                 const doel1 = w.doel1 || w.target || 0;
                 const doel2 = w.doel2 || 0;
                 const scale = Math.max(doel1, doel2, 1);
-                const solidH = Math.max(0, Math.min((w.balance / scale) * 100, 100));
+                const noGoals = doel1 === 0 && doel2 === 0;
+                const solidH = noGoals ? 100 : Math.max(0, Math.min((w.balance / scale) * 100, 100));
                 const ghostH = Math.max(0, 100 - solidH);
                 const doel1Pct = doel1 > 0 && doel2 > doel1 ? Math.min(100, (doel1 / scale) * 100) : null;
                 const reachedDoel2 = doel2 > 0 && w.balance >= doel2;
@@ -164,7 +165,7 @@ export default function WalletBarChartWidget() {
 function WalletDetail({ wallet }) {
   const doel1 = wallet.doel1 || wallet.target || 0;
   const doel2 = wallet.doel2 || wallet.buffer || 0;
-  const pct1 = doel1 > 0 ? Math.min(100, wallet.balance / doel1 * 100) : (wallet.balance > 0 ? 100 : 0);
+  const pct1 = doel1 > 0 ? Math.min(100, wallet.balance / doel1 * 100) : 100;
   const pct2 = doel2 > 0 ? Math.min(100, wallet.balance / doel2 * 100) : (wallet.balance > 0 ? 100 : 0);
   const overDoel1 = doel1 > 0 ? Math.max(0, wallet.balance - doel1) : 0;
   const reached1 = doel1 > 0 && wallet.balance >= doel1;
@@ -182,12 +183,12 @@ function WalletDetail({ wallet }) {
         <div>
           <div className="flex items-center justify-between text-[10px] mb-1">
             <span className="uppercase tracking-[0.14em] opacity-60">Doel 1 · dekking</span>
-            <span className="font-medium">{doel1 > 0 ? fmt(doel1) : "—"}</span>
+            <span className="font-medium">{doel1 > 0 ? fmt(doel1) : "geen lasten"}</span>
           </div>
           <div className="h-1.5 w-full rounded-full bg-foreground/10 overflow-hidden">
             <div className="h-full rounded-full" style={{ width: `${pct1}%`, background: wallet.color }} />
           </div>
-          {doel1 > 0 && (reached1 ? <p className="text-[10px] opacity-80 mt-1">Doel 1 bereikt{overDoel1 > 0 ? ` · ${fmt(overDoel1)} vooruit` : ""}</p> : <p className="text-[10px] opacity-80 mt-1"><span className="font-semibold">{fmt(doel1 - wallet.balance)}</span> nog tot dekking</p>)}
+          {doel1 > 0 ? (reached1 ? <p className="text-[10px] opacity-80 mt-1">Doel 1 bereikt{overDoel1 > 0 ? ` · ${fmt(overDoel1)} vooruit` : ""}</p> : <p className="text-[10px] opacity-80 mt-1"><span className="font-semibold">{fmt(doel1 - wallet.balance)}</span> nog tot dekking</p>) : <p className="text-[10px] opacity-80 mt-1">Geen lasten · altijd dekking</p>}
         </div>
         {doel2 > 0 && (
           <div>

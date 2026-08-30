@@ -38,13 +38,13 @@ export default function WalletPhotoCard({ wallet, expenses, photoUrl }) {
         <div className="mt-auto w-full space-y-2">
           <div>
             <div className="flex items-end justify-between mb-1">
-              <p className="text-[8px] uppercase tracking-[0.16em] font-bold" style={{ color: MUTED }}>Doel 1 · Dekking</p>
+              <p className="text-[8px] uppercase tracking-[0.16em] font-bold" style={{ color: MUTED }}>{goal1 > 0 ? "Doel 1 · Dekking" : "Doel 1 · geen lasten"}</p>
               <p className="text-[13px] leading-none font-display font-bold tabular-nums">{fill1}%</p>
             </div>
             <div className="h-1.5 rounded-full bg-foreground/10 overflow-hidden">
               <div className="h-full rounded-full" style={{ width: `${fill1}%`, background: color }} />
             </div>
-            <p className="text-[8px] uppercase tracking-[0.14em] mt-1" style={{ color: MUTED }}>{fmtEuro(balance)} / {fmtEuro(goal1)}</p>
+            <p className="text-[8px] uppercase tracking-[0.14em] mt-1" style={{ color: MUTED }}>{goal1 > 0 ? `${fmtEuro(balance)} / ${fmtEuro(goal1)}` : "altijd dekking"}</p>
           </div>
           <div>
             <div className="flex items-end justify-between mb-1">
