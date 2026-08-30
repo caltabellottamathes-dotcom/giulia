@@ -31,8 +31,8 @@ export function useMattiaChat() {
   useEffect(() => {
     (async () => {
       try {
-        const list = await base44.entities.Message.filter({ channel: "in-app", role: { $in: ["user", "mattia"] } }, "-created_date", 60).catch(() => []);
-        // Alleen user- en mattia-turns behouden (giulia is Giulia's eigen draad)
+        const list = await base44.entities.Message.filter({ channel: "in-app", thread_id: "mattia" }, "-created_date", 60).catch(() => []);
+        // Alleen user- en mattia-turns behouden (Mattia's eigen draad, gescheiden van Giulia)
         const ordered = (list || []).filter((m) => m.content && (m.role === "user" || m.role === "mattia")).reverse();
         const normalized = ordered.map(norm);
         normalized.forEach((m) => seenIds.current.add(m.id));
@@ -47,7 +47,7 @@ export function useMattiaChat() {
     const unsubscribe = base44.entities.Message.subscribe((event) => {
       if (event.type !== "create") return;
       const m = event?.data;
-      if (!m || !m.content || m.channel !== "in-app" || m.role !== "mattia") return;
+      if (!m || !m.content || m.channel !== "in-app" || m.role !== "mattia" || m.thread_id !== "mattia") return;
       if (seenIds.current.has(m.id)) return;
       if (settledRef.current) return;
       seenIds.current.add(m.id);
