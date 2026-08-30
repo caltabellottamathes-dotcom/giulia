@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { isTaskDone } from "@/lib/projectStatus";
-import FinanceOverviewWidgets from "@/focus/components/projects/FinanceOverviewWidgets";
+import ProjectOverviewWidgets from "@/focus/components/projects/ProjectOverviewWidgets";
 import TasksSection from "@/focus/components/projects/sections/TasksSection";
 import MilestonesSection from "@/focus/components/projects/sections/MilestonesSection";
 import DecisionsSection from "@/focus/components/projects/sections/DecisionsSection";
@@ -13,11 +13,11 @@ import GiuliaSection from "@/focus/components/projects/sections/GiuliaSection";
 import ProjectHeaderTile from "@/focus/components/projects/ProjectHeaderTile";
 
 const EASE = [0.16, 1, 0.3, 1];
-const BLUE = "#b1bfc7";
+const BLUE = "#301728";
 const GREY = "#CCCCCC";
 const BLACK = "#000000";
 const INK = "#595c64";
-const NUM_COLORS = ["#d0d9dd", "#595c64", "#d8dab3"];
+const NUM_COLORS = ["#d8dab3", "#94925d", "#301728"];
 
 const BounceBalls = ({ color = "#000", count, size = "clamp(7px, 0.55vw, 10px)", ml = "7px" }) => {
   const n = count || 1;
@@ -130,7 +130,7 @@ export default function ProjectDetailCard({ id, tab, onNavigate, onEditProject, 
   const proposal = dyn.proposal;
   const itemsLabel = dyn.itemsLabel;
   const rest = dyn.rest;
-  const color = project?.color || NUM_COLORS[1];
+  const color = project?.color || "#301728";
   const [eyeA, ...eyeRest] = c.eyebrow.split("|");
   const eyeB = eyeRest.length ? " | " + eyeRest.join("|").trim() : "";
   const firstItemColor = items.length > 0 ? color : NUM_COLORS[0];
@@ -143,7 +143,7 @@ export default function ProjectDetailCard({ id, tab, onNavigate, onEditProject, 
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: "100%", opacity: 0 }}
       transition={{ duration: 0.55, ease: EASE, delay: enterDelay }}
-      className="absolute inset-0 rounded-bl-[20px] rounded-r-none graph-paper flex overflow-hidden pt-[200px] shadow-[-40px_8px_64px_-18px_rgba(0,0,0,0.55)]"
+      className="absolute inset-0 rounded-bl-[20px] rounded-r-none graph-paper flex overflow-hidden shadow-[-40px_8px_64px_-18px_rgba(0,0,0,0.55)]"
     >
       {project && <ProjectHeaderTile project={project} tasks={tasks} onEdit={() => onEditProject?.(project)} />}
       {/* Editorial — left ~38% */}
@@ -154,7 +154,7 @@ export default function ProjectDetailCard({ id, tab, onNavigate, onEditProject, 
             <span className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>N°1</span>
           </div>
 
-          <h2 className="font-display font-bold uppercase tracking-[-0.035em] leading-[0.92] mt-6" style={{ color: BLACK, fontSize: "clamp(30px, 2.6vw, 48px)", textShadow: "0 0 18px rgba(177,191,199,0.7), 0 0 38px rgba(177,191,199,0.4)" }}>
+          <h2 className="font-display font-bold uppercase tracking-[-0.035em] leading-[0.92] mt-6" style={{ color: BLACK, fontSize: "clamp(30px, 2.6vw, 48px)", textShadow: "0 0 18px rgba(48,23,40,0.7), 0 0 38px rgba(48,23,40,0.4)" }}>
             {c.title1}<br />{c.title2}<span aria-hidden className="ontwerp-dot-bounce inline-block rounded-full bg-current ml-[6px] align-baseline" style={{ color, width: "clamp(8px, 0.7vw, 13px)", height: "clamp(8px, 0.7vw, 13px)" }} />
           </h2>
 
@@ -198,16 +198,16 @@ export default function ProjectDetailCard({ id, tab, onNavigate, onEditProject, 
           </div>
 
           <div className="pt-6 mt-6 border-t" style={{ borderColor: GREY }}>
-            <p className="font-mono text-[10px] tracking-[0.5em] uppercase" style={{ color: "#abab69" }}>Le reste peut attendre</p>
+            <p className="font-mono text-[10px] tracking-[0.5em] uppercase" style={{ color: "#94925d" }}>Le reste peut attendre</p>
           </div>
         </div>
       </div>
 
       {/* RECHTS — bestaande project-secties per tab */}
-      <div className="relative z-20 flex-1 min-w-0 h-full flex flex-col overflow-visible">
+      <div className="relative z-20 flex-1 min-w-0 h-full flex flex-col overflow-visible pt-[200px]">
         {project ? (
           <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-6 overflow-y-auto no-scrollbar">
-            {tab === "OVERVIEW" && <FinanceOverviewWidgets />}
+            {tab === "OVERVIEW" && <ProjectOverviewWidgets project={project} tasks={tasks} themes={themes} />}
             {tab === "TASKS" && <TasksSection {...sectionProps} />}
             {tab === "MILESTONES" && <MilestonesSection project={project} themes={themes} />}
             {tab === "DECISIONS" && <DecisionsSection project={project} themes={themes} />}
