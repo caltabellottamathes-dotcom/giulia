@@ -14,6 +14,7 @@ import Home from '@/system/pages/Home';
 import Agenda from '@/focus/pages/Agenda';
 import Projects from '@/focus/pages/Projects';
 import ProjectDetail from '@/focus/pages/ProjectDetail';
+import ProjectsStudio from '@/focus/pages/ProjectsStudio';
 import Tasks from '@/focus/pages/Tasks';
 import Email from '@/focus/pages/Email';
 import WhatsApp from '@/focus/pages/WhatsApp';
@@ -114,6 +115,7 @@ const AuthenticatedApp = () => {
           <Route path="/agenda" element={<Agenda />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:id" element={<ProjectDetail />} />
+          <Route path="/projects-studio" element={<ProjectsStudio />} />
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/email" element={<Email />} />
           <Route path="/whatsapp" element={<WhatsApp />} />
