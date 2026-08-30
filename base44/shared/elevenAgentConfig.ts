@@ -61,10 +61,13 @@ export async function ensureSecret(xiKey, name, value) {
 export function applyClientTools(cfg, tools) {
   cfg.agent = cfg.agent || {};
   cfg.agent.prompt = cfg.agent.prompt || {};
-  // Inline client tools worden via `tools` meegegeven. ElevenLabs wijst een
-  // PATCH af die zowel `tools` als `tool_ids` bevat, dus wissen we tool_ids
-  // (dat dropt ook de ingebouwde end_call system-tool).
-  cfg.agent.prompt.tool_ids = [];
+  const prevTools = Array.isArray(cfg.agent.prompt.tools) ? cfg.agent.prompt.tools : [];
+  const endCallIds = new Set(
+    prevTools.filter((t) => t?.name === "end_call" || t?.type === "system").map((t) => t?.id).filter(Boolean)
+  );
+  cfg.agent.prompt.tool_ids = (Array.isArray(cfg.agent.prompt.tool_ids) ? cfg.agent.prompt.tool_ids : []).filter(
+    (id) => !endCallIds.has(id)
+  );
   cfg.agent.prompt.tools = tools.map((t) => ({
     name: t.name,
     description: t.description,
@@ -119,10 +122,6 @@ export async function cleanupOrphanTools(xiKey, agentId) {
     if (!afterRes.ok) return 0;
     const afterAgent = await afterRes.json();
     const activeIds = new Set(afterAgent.conversation_config?.agent?.prompt?.tool_ids || []);
-    // Inline-tools modus (geen tool_ids): er zijn geen aparte tool-resources te
-    // reconcileren, en blind alles verwijderen zou andere agents hun tools
-    // weggooien — dus sla de cleanup dan over.
-    if (activeIds.size === 0) return 0;
     const listRes = await fetch("https://api.elevenlabs.io/v1/convai/tools", { headers: { "xi-api-key": xiKey } });
     if (!listRes.ok) return 0;
     const lj = await listRes.json();
