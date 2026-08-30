@@ -17,6 +17,8 @@ export const IMAGES = {
   // Giulia concierge portrait — anchor image for the concierge widget
   giuliaConcierge: "https://media.base44.com/images/public/6a6cc0011ab9e3b32cfc1057/a408b643e_Gemini_Generated_Image_2gi5oq2gi5oq2gi51.png",
   giuliaFace2: "https://media.base44.com/images/public/6a6cc0011ab9e3b32cfc1057/7340e6dfa_Gemini_Generated_Image_aur0c9aur0c9aur0.png",
+  // Mattia — visual identity for the Mattia hotline windows (voice + chat)
+  mattiaPortrait: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/b398ab19f_Creating_yellow_and_green_fashio_202608302124.jpeg",
   // Branding series — surreal editorial chairs / boot motifs
   bootPhone: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/549fa0148_1000077472png_202607210017.jpg",
   leanChair: "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/a6ecb27a9_1000077473png_202607210017.jpg",

@@ -11,7 +11,7 @@ import SineLayers from "@/giulia/widgets/new/SineLayers";
 import { IMAGES } from "@/lib/images";
 
 const MATTIA_AGENT_ID = "agent_0301m14xfjxhfnh86pd8m19mdgvb";
-const VOICE_PHOTO = IMAGES.salvoPortrait;
+const VOICE_PHOTO = IMAGES.mattiaPortrait;
 const DEEP = "#94925d";    // olive
 const LIGHT = "#d8dab3";    // whipped pistachio
 const INK = "#2a2c30";

@@ -7,6 +7,8 @@ import { motion } from "framer-motion";
 import ChatMarkdown from "@/system/components/glass/ChatMarkdown";
 import { cn } from "@/lib/utils";
 import { useMediaViewer } from "@/lib/MediaViewerContext";
+import { Image } from "@/components/ui/image";
+import { IMAGES } from "@/lib/images";
 
 /**
  * MattiaChatWindow — MATTIA'S HOTLINE · chat. Full-screen rechtsschuivend
@@ -132,7 +134,9 @@ export default function MattiaChatWindow() {
 
           <div className="shrink-0 px-7 pt-7 pb-5 flex items-center justify-between">
             <div className="flex items-center gap-3 ml-12">
-              <span className="h-2.5 w-2.5 rounded-full animate-pulse-soft" style={{ background: OLIVE }} />
+              <div className="h-11 w-11 rounded-full overflow-hidden border border-ivory/15 shrink-0">
+                <Image src={IMAGES.mattiaPortrait} fittingType="fill" alt="Mattia" className="w-full h-full" />
+              </div>
               <div>
                 <p className="font-display font-semibold tracking-[0.22em] text-[13px] uppercase text-ivory leading-none">
                   MATTIA · HOTLINE
