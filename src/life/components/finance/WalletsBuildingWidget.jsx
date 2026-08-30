@@ -137,11 +137,11 @@ export default function WalletsBuildingWidget() {
         {/* foto laag boven — schuift links weg */}
         <motion.div className="absolute inset-0" animate={{ x: selectedId ? "-102%" : "0%" }} transition={{ duration: 0.55, ease: EASE }}>
           <img src={PHOTO} alt="Wallets" className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.68), rgba(0,0,0,0.12) 55%, rgba(0,0,0,0.30))" }} />
-          <div className="absolute bottom-0 inset-x-0 p-3 text-white" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.6)" }}>
-            <p className="text-[9px] uppercase tracking-[0.2em] font-bold opacity-90">Wallets.</p>
-            <p className="text-[26px] leading-none font-display font-bold tabular-nums mt-1">{fmtEuro(totalSum)}</p>
-            <p className="text-[9px] uppercase tracking-[0.14em] mt-1 opacity-70">{active.length} wallets · tik er één</p>
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.86), rgba(0,0,0,0.22) 52%, rgba(0,0,0,0.42))" }} />
+          <div className="absolute bottom-0 inset-x-0 p-4 text-white" style={{ textShadow: "0 2px 12px rgba(0,0,0,0.7)" }}>
+            <p className="text-[9px] uppercase tracking-[0.2em] font-bold opacity-90">Wallets · totaal</p>
+            <p className="text-[56px] leading-[0.92] font-display font-bold tabular-nums mt-1">{fmtEuro(totalSum)}</p>
+            <p className="text-[9px] uppercase tracking-[0.14em] mt-2 opacity-75">{active.length} wallets · tik er één</p>
           </div>
         </motion.div>
       </div>
