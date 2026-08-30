@@ -31,8 +31,8 @@ export default function ProjectHeaderTile({ project, tasks = [], onEdit }) {
       initial={{ y: -168, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.7, ease: EASE, delay: 0.15 }}
-      className="absolute top-3 inset-x-3 h-[176px] z-30 rounded-[18px] overflow-hidden"
-      style={{ boxShadow: "0 28px 56px -20px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.18)" }}
+      className="absolute top-0 inset-x-0 h-[176px] z-30 rounded-b-[18px] overflow-hidden"
+      style={{ boxShadow: "0 26px 48px -18px rgba(0,0,0,0.45)" }}
     >
       <img src={photo} alt={project.title} className="absolute inset-0 h-full w-full object-cover" draggable={false} />
       <div className="absolute inset-0 bg-gradient-to-t from-charcoal/82 via-charcoal/32 to-charcoal/12" />
