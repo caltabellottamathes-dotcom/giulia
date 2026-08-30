@@ -44,9 +44,17 @@ export default function LastenBarsWidget({ expenses, portfolios, onReload }) {
   const colorOf = (pid) => pots.find((p) => p.id === pid)?.color || "hsl(var(--smoke))";
   const nameOf = (pid) => pots.find((p) => p.id === pid)?.name || "—";
 
+  const dueThisMonth = (e) => {
+    const d = e.next_payment_date;
+    if (!d) return true;
+    const now = new Date();
+    const dd = new Date(d);
+    return dd.getMonth() === now.getMonth() && dd.getFullYear() === now.getFullYear();
+  };
   const bars = useMemo(() => {
     return (expenses || [])
       .filter((e) => e.frequency && e.frequency !== "once")
+      .filter(dueThisMonth)
       .sort((a, b) => (daysUntil(a) ?? 9999) - (daysUntil(b) ?? 9999));
   }, [expenses]);
 

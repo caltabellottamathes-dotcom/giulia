@@ -58,6 +58,7 @@ export default async function (req) {
       const calc = calcPortfolio(p, linked);
       try {
         await sr.entities.Portfolio.update(p.id, {
+          monthly_reservation_actual: calc.recommended_monthly,
           monthly_reservation_recommended: calc.recommended_monthly,
           next_expected_payment: calc.next_expected_payment,
           next_payment_date: calc.next_payment_date || undefined,

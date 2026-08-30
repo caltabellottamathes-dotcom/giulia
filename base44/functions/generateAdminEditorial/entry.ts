@@ -56,7 +56,7 @@ Geef:
 - title1, title2: twee KORTE titelregels, poëtisch/ironisch/humoristisch (max ~4 woorden per regel, hoofdletters, geen volledige zinnen, geen letterlijke beschrijving — speels en raak)
 - heading1, heading2: twee korte aandachts-headingregels (wat op dit tabblad aandacht vraagt)
 - body: DEEL 1 — SAMENVATTING VAN DE ANALYSE van het huidige tabblad (3-5 zinnen, max 90 woorden). Analyseer het thema van het tabblad (Overview = gezamenlijke analyse over alle domeinen). Beschrijf de huidige stand concreet met de getallen uit de data als cijfers. Geen uitgeschreven getallen
-- proposal: DEEL 2 — EEN TEKSTUEEL VOORSTEL komend uit de analyse om admin te verbeteren (4-7 zinnen, max 150 woorden). Denk VEEL verder dan triviaal "vul wallet X met €Y". Stel: een betaling (bv Mobiliteit) komt eraan maar er zit te weinig in de wallet — kijk naar ALLE opties om het te laten slagen: is er surplus in een andere wallet om te verplaatsen? welke reserveringen kunnen omhoog? welke lasten kunnen verschuiven? welke inkomsten staan eraan te komen? Adviseer écht financieel, met cijfers als cijfers
+- proposal: DEEL 2 — EEN TEKSTUEEL VOORSTEL komend uit de analyse om admin te verbeteren (4-7 zinnen, max 150 woorden). Denk VEEL verder dan triviaal "vul wallet X met €Y". Stel: een betaling (bv Mobiliteit) komt eraan maar er zit te weinig in de wallet — kijk naar ALLE opties om het te laten slagen: is er surplus in een andere wallet om te verplaatsen? welke reserveringen kunnen omhoog? welke lasten kunnen verschuiven? welke inkomsten staan eraan te komen? Adviseer écht financieel, met cijfers als cijfers. Herhaal NIET de actiepunten in het voorstel — het voorstel is de bredere advisering, de items zijn de concrete uitvoering
 - itemsLabel: mono-label (bv "03_actiepunten_")
 - items: 1-3 ACTIEPUNTEN — de uitvoerbare vertaling van het voorstel. Elk { n: "01", title: "korte titel", desc: "1 korte zin met bedrag/datum als cijfers", action_type, amount, from_id, to_id, expense_id }. action_type ∈ "transfer" (verplaats amount van from_id wallet naar to_id wallet), "pay" (voer expense_id uit / betaal), "reserve" (verplaats amount van from_id naar to_id om te reserveren), "none" (informatief, geen auto-actie). Gebruik de ECHTE wallet-ID's uit de data voor from_id/to_id en de echte expense-ID voor expense_id. Zonder bruikbare ID's → action_type "none"
 - restLabel: "De rest kan wachten"
@@ -130,6 +130,20 @@ export default async function (req) {
     const digest = lines.join("\n");
 
     const results = await Promise.all(TABS.map((tab) => generateTab(tab, digest)));
+    // Dedupe actiepunten over tabs heen — een actiepunt (op titel) komt maar in één tab voor.
+    const normTitle = (t) => String(t || "").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 40);
+    const seen = new Set();
+    for (let i = 0; i < TABS.length; i++) {
+      const ed = results[i];
+      if (!ed || !Array.isArray(ed.items)) continue;
+      ed.items = ed.items.filter((it) => {
+        const k = normTitle(it.title);
+        if (!k) return true;
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      });
+    }
     const now = new Date().toISOString();
     const existing = await sr.entities.AdminEditorial.list("-created_date", 50).catch(() => []);
     const out = [];

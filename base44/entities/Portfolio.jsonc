@@ -54,22 +54,28 @@
     "target_balance": {
       "type": "number",
       "default": 0,
-      "title": "Gewenst saldo / doel"
+      "title": "Doel 1 \u00b7 dekking (vast = som der lasten)"
     },
     "desired_buffer": {
       "type": "number",
       "default": 0,
-      "title": "Gewenste buffer"
+      "title": "Doel 2 \u00b7 gewenste buffer"
     },
     "monthly_reservation_actual": {
       "type": "number",
       "default": 0,
-      "title": "Werkelijke maandelijkse reservering"
+      "title": "Werkelijke maandelijkse reservering (Doel 1)"
     },
     "monthly_reservation_recommended": {
       "type": "number",
       "default": 0,
-      "title": "Aanbevolen maandelijkse reservering"
+      "title": "Aanbevolen maandelijkse reservering (Doel 1, auto)"
+    },
+    "monthly_buffer_reservation": {
+      "type": "number",
+      "default": 0,
+      "title": "Maandelijkse bijdrage aan Doel 2 (buffer)",
+      "description": "Door de gebruiker ingesteld bedrag dat per maand vanuit inkomen naar de buffer (Doel 2) gaat, onafhankelijk van de vaste lasten."
     },
     "payment_frequency": {
       "type": "string",

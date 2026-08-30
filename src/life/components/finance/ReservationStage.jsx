@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Save, SlidersHorizontal, ChevronDown, Plus } from "lucide-react";
+import { ArrowLeft, Save, ChevronDown } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { fmtEuro, FREQ_LABELS } from "@/lib/financeUtils";
 import { useEntityList } from "@/hooks/useEntity";
@@ -11,18 +11,19 @@ const defaultReservation = (e) => { const a = Number(e.expected_amount ?? e.amou
 const input = "w-full rounded-xl bg-white/10 border border-white/15 px-3 py-2 text-sm text-ivory placeholder-ivory/40 outline-none focus:border-white/30";
 const label = "text-[9px] uppercase tracking-[0.18em] text-ivory/60 font-semibold mb-1 block";
 
-/** ReservationStage — beheer alle reserveringen op één plek. Wallets zijn
- *  uitklapbaar: klik een wallet → toont de bijbehorende vaste lasten. Doel 1
- *  is vast = de som van de maandelijkse lasten in de wallet (auto-berekend,
- *  niet bewerkbaar). Doel 2 (buffer) stel je zelf in. Per last kun je de
- *  maandelijkse reservering aanpassen. "Alles opslaan" schrijft Doel 1 (berekend),
- *  Doel 2 en alle reserveringen weg. */
+/** ReservationStage — beheer reserveringen (Doel 2) los van vaste lasten.
+ *  Wallets uitklapbaar: tik → toont bijbehorende vaste lasten (alleen lezen;
+ *  het lastbedrag pas je aan in de Last-tab/expense-stage, niet hier).
+ *  Doel 1 = som der lasten (vast, auto-berekend). Doel 2 (buffer) en de
+ *  maandelijkse reservering (Doel 2-bijdrage) stel je zelf in — onafhankelijk
+ *  van de lastbedragen. "Alles opslaan" schrijft Doel 1 (berekend), Doel 2
+ *  en de reservering per wallet weg. */
 export default function ReservationStage({ onClose }) {
   const { toast } = useToast();
   const { data: portfolios } = useEntityList("Portfolio", { sort: "order", limit: 50, realtime: true });
   const { data: expenses } = useEntityList("AdminObligation", { limit: 500, realtime: true });
   const [buffers, setBuffers] = useState({});
-  const [lasten, setLasten] = useState({});
+  const [reservations, setReservations] = useState({});
   const [expanded, setExpanded] = useState(null);
   const [busy, setBusy] = useState(false);
 
@@ -33,19 +34,13 @@ export default function ReservationStage({ onClose }) {
   const doel1Of = (pid) => linkedOf(pid).reduce((s, e) => s + defaultReservation(e), 0);
 
   useEffect(() => {
-    const b = {};
-    for (const p of activeP) b[p.id] = p.desired_buffer || 0;
-    setBuffers(b);
+    const b = {}; const r = {};
+    for (const p of activeP) { b[p.id] = p.desired_buffer || 0; r[p.id] = p.monthly_buffer_reservation || 0; }
+    setBuffers(b); setReservations(r);
   }, [activeP]);
 
-  useEffect(() => {
-    const l = {};
-    for (const e of openLasten) l[e.id] = e.monthly_reservation ?? 0;
-    setLasten(l);
-  }, [openLasten]);
-
   const setB = (id, v) => setBuffers((s) => ({ ...s, [id]: v }));
-  const setL = (id, v) => setLasten((s) => ({ ...s, [id]: v }));
+  const setR = (id, v) => setReservations((s) => ({ ...s, [id]: v }));
 
   const saveAll = async () => {
     setBusy(true);
@@ -54,43 +49,20 @@ export default function ReservationStage({ onClose }) {
       for (const p of activeP) {
         const d1 = Math.round(doel1Of(p.id) * 100) / 100;
         const d2 = Number(buffers[p.id]) || 0;
-        if ((Number(p.target_balance) || 0) !== d1 || (Number(p.desired_buffer) || 0) !== d2) {
-          await base44.entities.Portfolio.update(p.id, { target_balance: d1, desired_buffer: d2 });
+        const res = Number(reservations[p.id]) || 0;
+        if ((Number(p.target_balance) || 0) !== d1 || (Number(p.desired_buffer) || 0) !== d2 || (Number(p.monthly_buffer_reservation) || 0) !== res) {
+          await base44.entities.Portfolio.update(p.id, { target_balance: d1, desired_buffer: d2, monthly_buffer_reservation: res });
           ok++;
         }
       }
-      for (const e of openLasten) {
-        const v = Number(lasten[e.id]) || 0;
-        if ((Number(e.monthly_reservation) || 0) !== v) {
-          await base44.entities.AdminObligation.update(e.id, { monthly_reservation: v });
-          ok++;
-        }
-      }
-      toast({ title: `Reserveringen opgeslagen · ${ok} wijzigingen` });
+      toast({ title: `Reserveringen opgeslagen · ${ok} wallets` });
       window.dispatchEvent(new CustomEvent("giulia:admin-reload"));
     } catch {
       toast({ title: "Opslaan mislukt", variant: "destructive" });
     } finally { setBusy(false); }
   };
 
-  const autoFill = async () => {
-    setBusy(true);
-    try {
-      let n = 0;
-      for (const e of openLasten) {
-        const def = defaultReservation(e);
-        if ((Number(e.monthly_reservation) || 0) !== def) {
-          await base44.entities.AdminObligation.update(e.id, { monthly_reservation: def });
-          n++;
-        }
-      }
-      toast({ title: `${n} lasten voorzien van standaard-reservering` });
-      window.dispatchEvent(new CustomEvent("giulia:admin-reload"));
-    } catch { toast({ title: "Auto-fill mislukt", variant: "destructive" }); }
-    finally { setBusy(false); }
-  };
-
-  const totalRes = activeP.reduce((s, p) => s + (Number(p.monthly_reservation_actual) || 0), 0);
+  const totalRes = activeP.reduce((s, p) => s + (Number(reservations[p.id]) || 0), 0);
   const totalDoel1 = activeP.reduce((s, p) => s + doel1Of(p.id), 0);
 
   return (
@@ -103,14 +75,9 @@ export default function ReservationStage({ onClose }) {
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-3 pb-4 space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[20px] font-display font-bold tracking-[-0.02em] leading-tight">Reserveringen beheren</p>
-            <p className="text-[11px] text-ivory/60">Tik een wallet om de lasten te zien. Doel 1 = som der lasten (vast). Doel 2 stel je zelf in.</p>
-          </div>
-          <button onClick={autoFill} disabled={busy} className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/15 px-3 py-2 text-[11px] font-bold disabled:opacity-50">
-            <SlidersHorizontal className="w-3.5 h-3.5" /> Auto-fill
-          </button>
+        <div>
+          <p className="text-[20px] font-display font-bold tracking-[-0.02em] leading-tight">Reserveringen beheren</p>
+          <p className="text-[11px] text-ivory/60">Tik een wallet voor de lasten. Doel 1 = som der lasten (vast). Doel 2 & reservering stel je zelf in — los van de lastbedragen.</p>
         </div>
 
         <div className="rounded-2xl bg-white/5 border border-white/10 p-3">
@@ -138,35 +105,34 @@ export default function ReservationStage({ onClose }) {
 
                 {isOpen && (
                   <div className="px-3 pb-3 space-y-3 border-t border-white/8 pt-3">
-                    {/* Doel 1 — vast, som der lasten */}
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       <div className="rounded-lg bg-white/8 px-2.5 py-2">
                         <p className="text-[8px] uppercase tracking-[0.14em] text-ivory/55">Doel 1 · dekking (vast)</p>
-                        <p className="text-[14px] font-display font-bold tabular-nums leading-none mt-1">{fmtEuro(d1)}<span className="text-[9px] text-ivory/50"> /mnd</span></p>
+                        <p className="text-[13px] font-display font-bold tabular-nums leading-none mt-1">{fmtEuro(d1)}</p>
                         <p className="text-[8px] text-ivory/45 mt-1">som van {linked.length} lasten</p>
                       </div>
                       <div>
                         <span className="text-[9px] text-ivory/50 mb-1 block">Doel 2 · buffer €</span>
                         <input type="number" step="0.01" className={input} value={buffers[p.id] || 0} onChange={(e) => setB(p.id, e.target.value)} />
-                        <p className="text-[8px] text-ivory/45 mt-1">vrije buffer die je zelf bepaalt</p>
+                      </div>
+                      <div>
+                        <span className="text-[9px] text-ivory/50 mb-1 block">Reservering / mnd €</span>
+                        <input type="number" step="0.01" className={input} value={reservations[p.id] || 0} onChange={(e) => setR(p.id, e.target.value)} />
+                        <p className="text-[8px] text-ivory/45 mt-1">Doel 2-bijdrage</p>
                       </div>
                     </div>
 
-                    {/* Linked lasten */}
                     <div>
-                      <p className="text-[9px] uppercase tracking-[0.16em] text-ivory/55 font-semibold mb-1.5">Lasten in deze wallet · {linked.length}</p>
-                      {linked.length === 0 && <p className="text-[11px] text-ivory/45 italic">Geen lasten gekoppeld aan deze wallet.</p>}
-                      <div className="space-y-1.5">
+                      <p className="text-[9px] uppercase tracking-[0.16em] text-ivory/55 font-semibold mb-1.5">Vaste lasten in deze wallet · {linked.length}</p>
+                      {linked.length === 0 && <p className="text-[11px] text-ivory/45 italic">Geen lasten gekoppeld.</p>}
+                      <div className="space-y-1">
                         {linked.map((e) => (
-                          <div key={e.id} className="flex items-center gap-2 rounded-lg bg-white/5 p-2">
-                            <div className="min-w-0 flex-1">
+                          <div key={e.id} className="flex items-center justify-between gap-2 rounded-lg bg-white/5 px-2.5 py-1.5">
+                            <div className="min-w-0">
                               <p className="text-[12px] font-display font-semibold truncate">{e.title}</p>
-                              <p className="text-[10px] text-ivory/50">{FREQ_LABELS[e.frequency] || e.frequency} · {fmtEuro(e.expected_amount || 0)}</p>
+                              <p className="text-[10px] text-ivory/50">{FREQ_LABELS[e.frequency] || e.frequency}</p>
                             </div>
-                            <div className="w-24 shrink-0">
-                              <input type="number" step="0.01" className={input} value={lasten[e.id] || 0} onChange={(ev) => setL(e.id, ev.target.value)} />
-                              <p className="text-[8px] text-ivory/45 mt-0.5 text-right">std {fmtEuro(defaultReservation(e))}</p>
-                            </div>
+                            <span className="text-[12px] font-mono tabular-nums font-bold shrink-0">{fmtEuro(e.expected_amount || 0)}</span>
                           </div>
                         ))}
                       </div>

@@ -37,9 +37,15 @@ export default async function (req) {
     if (!received.length) return Response.json({ ok: true, distributed: 0, note: "geen nieuwe ontvangen inkomsten" });
 
     const activeP = (portfolios || []).filter((p) => p.active !== false);
-    const rawDemandOf = (pid) => (expenses || [])
-      .filter((e) => e.portfolio_id === pid && e.status !== "done")
-      .reduce((s, e) => s + (Number(e.monthly_reservation) || 0), 0);
+    const rawDemandOf = (pid) => {
+      const p = activeP.find((x) => x.id === pid);
+      const lastenRes = (expenses || [])
+        .filter((e) => e.portfolio_id === pid && e.status !== "done")
+        .reduce((s, e) => s + (Number(e.monthly_reservation) || 0), 0);
+      const doel2 = Number(p?.desired_buffer) || 0;
+      const bufferRes = doel2 > 0 ? (Number(p?.monthly_buffer_reservation) || 0) : 0;
+      return lastenRes + bufferRes;
+    };
     // Doel 2-cap: enkel aanvullend tot desired_buffer reserveren; rest is vrij besteedbaar.
     const demandOf = (p) => {
       const raw = rawDemandOf(p.id);

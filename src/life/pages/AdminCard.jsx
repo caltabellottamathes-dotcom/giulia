@@ -197,6 +197,9 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
   const h2 = cleanTail(ed?.heading2 || c.heading2);
   const [eyeA, ...eyeRest] = (ed?.eyebrow || c.eyebrow).split("|");
   const eyeB = eyeRest.length ? " | " + eyeRest.join("|").trim() : "";
+  const portfolioColor = (id) => (data?.portfolios || []).find((p) => p.id === id)?.color || null;
+  const itemColor = (it) => portfolioColor(it.to_id) || portfolioColor(it.from_id) || NUM_COLORS[0];
+  const firstItemColor = items.length > 0 ? itemColor(items[0]) : NUM_COLORS[0];
 
   return (
     <motion.div
@@ -232,8 +235,8 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
 
           <div className="flex-1 min-h-8" />
 
-          <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98] mb-5" style={{ color: NUM_COLORS[0], fontSize: "clamp(24px, 1.9vw, 38px)" }}>
-            {h1}<br />{h2}<BounceBalls colors={NUM_COLORS} />
+          <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98] mb-5" style={{ color: firstItemColor, fontSize: "clamp(24px, 1.9vw, 38px)" }}>
+            {h1}<br />{h2}<BounceBalls color={firstItemColor} count={3} />
           </h3>
 
           <div className="h-px w-full" style={{ background: "#d8dab3" }} />
@@ -245,14 +248,16 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
           <div className="mt-4 ml-[80px] space-y-3">
             <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>{itemsLabel}</p>
             {items.length === 0 && <p className="font-body text-[12px]" style={{ color: INK }}>{data ? "Niets dringends." : "Laden…"}</p>}
-            {items.map((it, idx) => (
+            {items.map((it, idx) => {
+              const ic = itemColor(it);
+              return (
               <button key={it.n} onClick={() => executeItem(it)} disabled={executing === it.n} className="flex gap-3 items-end text-left w-full hover:opacity-70 transition disabled:opacity-40">
                 <span className="w-[84px] shrink-0 flex justify-end items-end gap-[5px]">
-                  <BounceBalls color={NUM_COLORS[idx % 3]} count={idx + 1} ml="0" />
-                  <span className="font-display font-bold leading-none" style={{ color: NUM_COLORS[idx % 3], fontSize: "30px" }}>{it.n}</span>
+                  <BounceBalls color={ic} count={idx + 1} ml="0" />
+                  <span className="font-display font-bold leading-none" style={{ color: ic, fontSize: "30px" }}>{it.n}</span>
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className={`font-display ${it.desc ? "font-bold text-[13px]" : "font-medium text-[12.5px] leading-[1.4]"} leading-tight`} style={{ color: NUM_COLORS[idx % 3] }}>{it.title}</p>
+                  <p className={`font-display ${it.desc ? "font-bold text-[13px]" : "font-medium text-[12.5px] leading-[1.4]"} leading-tight`} style={{ color: ic }}>{it.title}</p>
                   {it.desc && <p className="font-body text-[12px] leading-[1.4] mt-1" style={{ color: "#333" }}>{it.desc}</p>}
                   {it.action_type && it.action_type !== "none" && (
                     <span className="inline-flex items-center gap-1 mt-1.5 font-mono text-[8px] uppercase tracking-[0.18em]" style={{ color: BLUE }}>
@@ -261,7 +266,8 @@ export default function AdminCard({ tab, onNavigate, enterDelay = 0 }) {
                   )}
                 </div>
               </button>
-            ))}
+              );
+            })}
           </div>
 
           <div className="pt-6 mt-6 border-t" style={{ borderColor: GREY }}>

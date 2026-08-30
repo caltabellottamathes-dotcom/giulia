@@ -56,6 +56,7 @@ export default function WalletPhotoCard({ wallet, expenses, photoUrl }) {
             </div>
             <p className="text-[8px] uppercase tracking-[0.14em] mt-1" style={{ color: MUTED }}>Buffer {fmtEuro(buffer)}</p>
           </div>
+          {balance - goal1 > 0 && <p className="text-[8px] uppercase tracking-[0.14em] mt-2 font-bold" style={{ color }}>Spaar (gereserveerd) {fmtEuro(Math.round((balance - goal1) * 100) / 100)}</p>}
         </div>
       </button>
 
@@ -81,14 +82,13 @@ export default function WalletPhotoCard({ wallet, expenses, photoUrl }) {
         initial={false}
         animate={{ y: up ? "0%" : "100%" }}
         transition={{ duration: 0.55, ease: EASE }}
-        style={{ boxShadow: "0 -12px 30px -14px rgba(0,0,0,0.42), 0 12px 30px -14px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.18)" }}
+        style={{ background: color, boxShadow: "0 -12px 30px -14px rgba(0,0,0,0.42), 0 12px 30px -14px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.18)" }}
       >
-        <img src={photoUrl} alt={wallet.name} className="absolute inset-0 w-full h-full object-cover" draggable={false} />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/30" />
-        <div className="absolute inset-0 p-3 flex flex-col text-white" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.55)" }}>
-          <span className="h-2 w-2 rounded-full shrink-0" style={{ background: color }} />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.36), rgba(255,255,255,0.08))" }} />
+        <div className="absolute inset-0 p-3 flex flex-col text-white" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.45)" }}>
+          <span className="h-2 w-2 rounded-full shrink-0 bg-white/75" />
           <h3 className="text-[18px] leading-tight font-display font-bold tracking-[-0.02em] mt-auto">{wallet.name}</h3>
-          <p className="text-[8px] uppercase tracking-[0.2em] mt-1 opacity-70">{up ? "tik → saldo" : "tik → laatste"}</p>
+          <p className="text-[8px] uppercase tracking-[0.2em] mt-1 opacity-80">{up ? "tik → saldo" : "tik → laatste"}</p>
         </div>
       </motion.button>
     </div>
