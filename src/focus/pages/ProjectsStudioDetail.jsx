@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, LayoutGrid, ListChecks, Milestone, Gavel, FileText, StickyNote, Sparkles, MessageSquare, Phone, Film } from "lucide-react";
@@ -11,7 +11,7 @@ import ProjectEditorPanel from "@/focus/components/projects/ProjectEditorPanel";
 import MattiaSlideOver from "@/giulia/panels/MattiaSlideOver";
 
 const EASE = [0.16, 1, 0.3, 1];
-const HERO_VIDEO = "https://media.base44.com/videos/public/6a7608690d4ea2c9edc3d59b/cbb9adc9f_Mattia_into.mp4";
+const HERO_VIDEO = "https://media.base44.com/videos/public/6a7608690d4ea2c9edc3d59b/817b1ddda_FocusVid.mp4";
 
 const TABS = [
   { key: "OVERVIEW", label: "Overview", icon: LayoutGrid },
@@ -41,7 +41,15 @@ export default function ProjectsStudioDetail() {
   const [mattiaOpen, setMattiaOpen] = useState(false);
   const isStage = panelOpen;
   const [first, setFirst] = useState(true);
+  const videoRef = useRef(null);
   useEffect(() => { const t = setTimeout(() => setFirst(false), 900); return () => clearTimeout(t); }, []);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (isStage) v.pause();
+    else v.play().catch(() => {});
+  }, [isStage]);
 
   useEffect(() => {
     const h = (e) => { setStage(e.detail); setPanelOpen(true); };
@@ -67,7 +75,7 @@ export default function ProjectsStudioDetail() {
     <div className="fixed inset-x-0 top-14 bottom-0 overflow-visible z-[30]">
       <motion.div initial={{ x: "-118%" }} animate={{ x: 0 }} transition={{ duration: 0.7, ease: EASE }}
         className="hidden lg:block absolute left-0 top-[14%] bottom-0 w-[34%] overflow-hidden rounded-r-[24px] z-[5]">
-        <video src={HERO_VIDEO} autoPlay loop muted playsInline className="h-full w-full object-cover" draggable={false} />
+        <video ref={videoRef} src={HERO_VIDEO} autoPlay loop muted playsInline className="h-full w-full object-cover" draggable={false} />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/65 via-charcoal/15 to-charcoal/10" />
       </motion.div>
 
