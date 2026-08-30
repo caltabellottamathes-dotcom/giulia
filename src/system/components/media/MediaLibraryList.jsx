@@ -38,21 +38,21 @@ export default function MediaLibraryList({ filter, onPick, className, emptyHint 
   const pick = (item) => onPick?.({ name: item.filename, url: item.file_url, type: kindOfUpload(item) });
 
   return (
-    <div className={cn("h-full w-full overflow-y-auto rounded-2xl px-4 pb-6 pt-4 no-scrollbar", className)} style={GLASS}>
-      {loading && (!items || items.length === 0) && (
-        <div className="flex items-center justify-center py-10 text-ivory/80">
+    <div className={cn("h-full w-full overflow-y-auto px-4 pb-6 pt-4 no-scrollbar rounded-[4px_0px_2px_4px]", className)} style={GLASS}>
+      {loading && (!items || items.length === 0) &&
+      <div className="flex items-center justify-center py-10 text-ivory/80">
           <Loader2 className="h-5 w-5 animate-spin" />
         </div>
-      )}
-      {!loading && visible.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
+      }
+      {!loading && visible.length === 0 &&
+      <div className="flex flex-col items-center justify-center py-12 text-center">
           <p className="text-[12px] text-ivory/90 max-w-[15rem] leading-relaxed">
             {emptyHint || "Nog geen bestanden. Upload via de Media-pagina."}
           </p>
         </div>
-      )}
-      {groups.map(([folder, files]) => (
-        <div key={folder} className="mb-5">
+      }
+      {groups.map(([folder, files]) =>
+      <div key={folder} className="mb-5">
           <div className="flex items-center gap-1.5 mb-2">
             <Folder className="h-3 w-3 text-ivory/80 shrink-0" />
             <span className="text-[10px] uppercase tracking-[0.16em] font-semibold text-ivory/90 truncate">{folder}</span>
@@ -60,9 +60,9 @@ export default function MediaLibraryList({ filter, onPick, className, emptyHint 
           </div>
           <div className="space-y-1">
             {files.map((d) => {
-              const kind = kindOfUpload(d);
-              return (
-                <button key={d.id} onClick={() => pick(d)} className="flex items-center gap-2.5 min-w-0 w-full text-left rounded-lg p-1.5 hover:bg-white/12 transition-colors">
+            const kind = kindOfUpload(d);
+            return (
+              <button key={d.id} onClick={() => pick(d)} className="flex items-center gap-2.5 min-w-0 w-full text-left rounded-lg p-1.5 hover:bg-white/12 transition-colors">
                   <div className="h-7 w-7 rounded-full bg-white/12 flex items-center justify-center shrink-0">
                     <KindIcon kind={kind} className="w-3.5 h-3.5 text-ivory/85" />
                   </div>
@@ -70,12 +70,12 @@ export default function MediaLibraryList({ filter, onPick, className, emptyHint 
                     <p className="text-[12px] font-medium text-ivory/95 truncate">{d.filename || "Bestand"}</p>
                     <p className="text-[9px] uppercase tracking-wide text-ivory/80">{kind === "music" ? "audio" : kind}</p>
                   </div>
-                </button>
-              );
-            })}
+                </button>);
+
+          })}
           </div>
         </div>
-      ))}
-    </div>
-  );
+      )}
+    </div>);
+
 }
