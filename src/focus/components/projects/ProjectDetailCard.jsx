@@ -10,7 +10,6 @@ import DecisionsSection from "@/focus/components/projects/sections/DecisionsSect
 import FilesSection from "@/focus/components/projects/sections/FilesSection";
 import NotesSection from "@/focus/components/projects/sections/NotesSection";
 import GiuliaSection from "@/focus/components/projects/sections/GiuliaSection";
-import ProjectHeaderTile from "@/focus/components/projects/ProjectHeaderTile";
 
 const EASE = [0.16, 1, 0.3, 1];
 const BLUE = "#b1bfc7";
@@ -143,12 +142,11 @@ export default function ProjectDetailCard({ id, tab, onNavigate, onEditProject, 
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: "100%", opacity: 0 }}
       transition={{ duration: 0.55, ease: EASE, delay: enterDelay }}
-      className="absolute inset-0 rounded-bl-[20px] rounded-r-none graph-paper flex overflow-hidden pt-[228px] shadow-[-40px_8px_64px_-18px_rgba(0,0,0,0.55)]"
+      className="absolute inset-0 rounded-bl-[20px] rounded-r-none graph-paper flex overflow-hidden shadow-[-40px_8px_64px_-18px_rgba(0,0,0,0.55)]"
     >
-      {project && <ProjectHeaderTile project={project} tasks={tasks} onEdit={() => onEditProject?.(project)} />}
       {/* Editorial — left ~38% */}
       <div className="relative z-0 w-[38%] h-full flex flex-col overflow-y-auto no-scrollbar border-r" style={{ borderColor: GREY }}>
-        <div className="flex-1 flex flex-col min-h-0 px-6 lg:px-8 pt-4 pb-6">
+        <div className="flex-1 flex flex-col min-h-0 px-6 lg:px-8 pt-6 pb-6">
           <div className="flex items-center justify-between">
             <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}><span className="font-bold">{eyeA.trim()}</span>{eyeB}</p>
             <span className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>N°1</span>

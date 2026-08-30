@@ -9,6 +9,8 @@ import DocStage from "@/system/panels/DocStage";
 import MediaStage from "@/system/panels/MediaStage";
 import ProjectEditorPanel from "@/focus/components/projects/ProjectEditorPanel";
 import MattiaSlideOver from "@/giulia/panels/MattiaSlideOver";
+import { base44 } from "@/api/base44Client";
+import ProjectPhotoPanel from "@/focus/components/projects/ProjectPhotoPanel";
 
 const EASE = [0.16, 1, 0.3, 1];
 const HERO_VIDEO = "https://media.base44.com/videos/public/6a7608690d4ea2c9edc3d59b/cbb9adc9f_Mattia_into.mp4";
@@ -39,7 +41,19 @@ export default function ProjectsStudioDetail() {
   const [editorProject, setEditorProject] = useState(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [mattiaOpen, setMattiaOpen] = useState(false);
+  const [project, setProject] = useState(null);
   const isStage = panelOpen;
+
+  const loadProject = () => {
+    if (!id) return;
+    base44.entities.Project.get(id).then(setProject).catch(() => setProject(null));
+  };
+  useEffect(() => { loadProject(); }, [id]);
+  useEffect(() => {
+    const h = () => loadProject();
+    window.addEventListener("giulia:projects-reload", h);
+    return () => window.removeEventListener("giulia:projects-reload", h);
+  }, []);
   const [first, setFirst] = useState(true);
   useEffect(() => { const t = setTimeout(() => setFirst(false), 900); return () => clearTimeout(t); }, []);
 
@@ -108,18 +122,19 @@ export default function ProjectsStudioDetail() {
           <div className="text-[8px] uppercase tracking-[0.22em] text-white [writing-mode:vertical-rl] rotate-180">{isStage ? "MATTIA" : "GIULIA · PROJECT"}</div>
         </div>
 
-        <div className="relative flex-1 ml-[2.5%] -mt-[134px] -mb-[70px] min-w-0">
+        <div className="relative flex-1 ml-[2.5%] -mt-[78px] -mb-[70px] min-w-0">
+          {project && <ProjectPhotoPanel project={project} />}
           <AnimatePresence>
             {isStage &&
               <motion.div key={stage} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35, ease: EASE }}
-                className="absolute top-[134px] bottom-[70px] left-0 w-full lg:w-[24vw] z-10 overflow-hidden rounded-r-[20px]"
+                className="absolute top-[160px] bottom-[70px] left-0 w-full lg:w-[24vw] z-10 overflow-hidden rounded-r-[20px]"
                 style={{ background: "rgba(20,22,26,0.42)", backdropFilter: "blur(28px) saturate(1.3)", WebkitBackdropFilter: "blur(28px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 18px 48px -20px rgba(0,0,0,0.5)" }}>
                 {stageContent}
               </motion.div>
             }
           </AnimatePresence>
 
-          <motion.div animate={{ x: isStage ? "24vw" : 0 }} transition={{ duration: 0.7, ease: EASE }} className="absolute inset-0 z-20">
+          <motion.div animate={{ x: isStage ? "24vw" : 0 }} transition={{ duration: 0.7, ease: EASE }} className="absolute top-[160px] inset-x-0 bottom-0 z-20">
             <AnimatePresence initial={false}>
               <ProjectDetailCard key={tab} id={id} tab={tab} onNavigate={setTab} onEditProject={(p) => { setEditorProject(p); setEditorOpen(true); }} enterDelay={first ? 0.6 : 0} />
             </AnimatePresence>
