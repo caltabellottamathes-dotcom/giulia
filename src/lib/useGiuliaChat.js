@@ -31,7 +31,7 @@ export function useGiuliaChat() {
   useEffect(() => {
     (async () => {
       try {
-        const list = await base44.entities.Message.filter({ channel: "in-app" }, "-created_date", 60).catch(() => []);
+        const list = await base44.entities.Message.filter({ thread_id: "giulia" }, "-created_date", 60).catch(() => []);
         const ordered = (list || []).filter((m) => m.content).reverse();
         const normalized = ordered.map(norm);
         normalized.forEach((m) => seenIds.current.add(m.id));
@@ -46,7 +46,7 @@ export function useGiuliaChat() {
     const unsubscribe = base44.entities.Message.subscribe((event) => {
       if (event.type !== "create") return;
       const m = event?.data;
-      if (!m || !m.content || m.channel !== "in-app" || m.role !== "giulia") return;
+      if (!m || !m.content || m.thread_id !== "giulia" || m.role !== "giulia") return;
       if (seenIds.current.has(m.id)) return;
       if (settledRef.current) return; // invoke heeft het al toegevoegd
       seenIds.current.add(m.id);

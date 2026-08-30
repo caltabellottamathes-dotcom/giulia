@@ -55,7 +55,7 @@ export default async function (req) {
     // Save User Message (Mattia-deel van de in-app draad)
     if (persist && source === "chat") {
       await sr.entities.Message.create({
-        role: "user", content: message, channel: "in-app", status: "sent",
+        role: "user", content: message, channel: "in-app", status: "sent", thread_id: "mattia",
         attachments: attachments.map((a) => ({ url: a.url, name: a.name, type: a.type })),
       }).catch(() => null);
     }
@@ -167,9 +167,8 @@ Default language: English. If Salvo speaks another language, match his language 
     // 4. CONVERSATIE-GESCHIEDENIS (Mattia-draad)
     let contents;
     if (source === "chat") {
-      const history = await sr.entities.Message.filter({ channel: "in-app" }, "-created_date", 6).catch(() => []);
-      // Alleen user + mattia turns (niet giulia — dat is Giulia's eigen draad)
-      const ordered = (history || []).filter((m) => m.content && (m.role === "user" || m.role === "mattia")).reverse();
+      const history = await sr.entities.Message.filter({ thread_id: "mattia" }, "-created_date", 6).catch(() => []);
+      const ordered = (history || []).filter((m) => m.content).reverse();
       contents = ordered.map((m) => ({ role: m.role === "user" ? "user" : "model", parts: [{ text: String(m.content).slice(0, 1200) }] }));
       const lastTurn = contents[contents.length - 1];
       const alreadyLast = lastTurn && lastTurn.role === "user" && String(lastTurn.parts?.[0]?.text || "").includes(message.slice(0, 30));
@@ -224,7 +223,7 @@ Default language: English. If Salvo speaks another language, match his language 
 
     if (persist && source === "chat" && finalText) {
       await sr.entities.Message.create({
-        role: "mattia", content: finalText, channel: "in-app", status: "sent", agent_source: "chatWithMattia",
+        role: "mattia", content: finalText, channel: "in-app", status: "sent", agent_source: "chatWithMattia", thread_id: "mattia",
         tool_calls: executed.map((e) => ({ name: e.name, status: e.ok ? "completed" : "failed", arguments_string: JSON.stringify(e.args), results: JSON.stringify(e.result) })),
       }).catch(() => null);
     }

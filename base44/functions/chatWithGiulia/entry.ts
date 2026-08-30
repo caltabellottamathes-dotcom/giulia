@@ -86,7 +86,7 @@ export default async function (req) {
     // Save User Message
     if (persist && source === "chat") {
       await sr.entities.Message.create({
-        role: "user", content: message, channel: "in-app", status: "sent",
+        role: "user", content: message, channel: "in-app", status: "sent", thread_id: "giulia",
         attachments: attachments.map((a) => ({ url: a.url, name: a.name, type: a.type })),
       }).catch(() => null);
     }
@@ -277,7 +277,7 @@ Default language: English. If Salvo speaks another language, match his language 
     //    gewikkeld als 'inkomend signaal'.
     let contents;
     if (source === "chat") {
-      const history = await sr.entities.Message.filter({ channel: "in-app" }, "-created_date", 6).catch(() => []);
+      const history = await sr.entities.Message.filter({ thread_id: "giulia" }, "-created_date", 6).catch(() => []);
       const ordered = (history || []).filter((m) => m.content).reverse();
       contents = ordered.map((m) => ({
         role: m.role === "user" ? "user" : "model",
@@ -360,7 +360,7 @@ Default language: English. If Salvo speaks another language, match his language 
 
     if (persist && source === "chat" && finalText) {
       await sr.entities.Message.create({
-        role: "giulia", content: finalText, channel: "in-app", status: "sent", agent_source: "chatWithGiulia",
+        role: "giulia", content: finalText, channel: "in-app", status: "sent", agent_source: "chatWithGiulia", thread_id: "giulia",
         tool_calls: executed.map((e) => ({
           name: e.name,
           status: e.ok ? "completed" : "failed",
