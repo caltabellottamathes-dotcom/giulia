@@ -23,30 +23,32 @@ const tierColor = (pct) => {
   return "bg-steel/30";
 };
 
-export default function OverviewSection({ project, tasks, themes = [], onNavigate, reload }) {
+export default function OverviewSection({ project, tasks, themes = [], decisions = [], onNavigate, reload }) {
   const [emails, setEmails] = useState([]);
   const [events, setEvents] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [contacts, setContacts] = useState([]);
-  const [decisions, setDecisions] = useState([]);
   const [expanded, setExpanded] = useState(null);
   const [addOpen, setAddOpen] = useState(false);
   const [addText, setAddText] = useState("");
   const [adding, setAdding] = useState(false);
 
   const load = async () => {
-    const [e, ev, d, c, dec] = await Promise.all([
-      base44.entities.Email.list(),
-      base44.entities.Event.list(),
-      base44.entities.Document.list(),
-      base44.entities.Contact.list(),
-      base44.entities.Decision.list(),
-    ]);
-    setEmails(e.filter((x) => x.project_id === project.id));
-    setEvents(ev.filter((x) => x.project_id === project.id));
-    setDocuments(d.filter((x) => x.project_id === project.id));
-    setContacts(c.filter((x) => (x.project_ids || []).includes(project.id)));
-    setDecisions(dec.filter((x) => x.project_id === project.id));
+    if (!project?.id) return;
+    try {
+      const [e, ev, d, c] = await Promise.all([
+        base44.entities.Email.list(),
+        base44.entities.Event.list(),
+        base44.entities.Document.list(),
+        base44.entities.Contact.list(),
+      ]);
+      setEmails((e || []).filter((x) => x.project_id === project.id));
+      setEvents((ev || []).filter((x) => x.project_id === project.id));
+      setDocuments((d || []).filter((x) => x.project_id === project.id));
+      setContacts((c || []).filter((x) => (x.project_ids || []).includes(project.id)));
+    } catch {
+      // rate limit / netwerkfaal — degradeer stilzwijgend naar lege lijsten
+    }
   };
   useEffect(() => { load(); }, [project.id]);
 

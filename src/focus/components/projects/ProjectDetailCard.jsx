@@ -135,7 +135,7 @@ export default function ProjectDetailCard({ id, tab, onNavigate, onEditProject, 
   const eyeB = eyeRest.length ? " | " + eyeRest.join("|").trim() : "";
   const firstItemColor = items.length > 0 ? color : NUM_COLORS[0];
 
-  const sectionProps = { project, tasks, themes, reload: load, onNavigate: goTab };
+  const sectionProps = { project, tasks, themes, decisions, reload: load, onNavigate: goTab };
 
   return (
     <motion.div
