@@ -153,7 +153,7 @@ export default function ProjectsStudioCard({ tab, onNavigate, onEditProject, ent
     >
       {/* Editorial — left ~38% */}
       <div className="relative z-0 w-[38%] h-full flex flex-col overflow-y-auto no-scrollbar border-r" style={{ borderColor: GREY }}>
-        <div className="flex-1 flex flex-col min-h-0 px-6 lg:px-8 pt-6 pb-6">
+        <div className="flex-1 flex flex-col min-h-0 px-6 lg:px-8 pt-7 pb-6">
           <div className="flex items-center justify-between">
             <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}><span className="font-bold">{eyeA.trim()}</span>{eyeB}</p>
             <span className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>N°1</span>
