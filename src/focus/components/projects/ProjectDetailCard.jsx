@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { isTaskDone } from "@/lib/projectStatus";
-import OverviewSection from "@/focus/components/projects/sections/OverviewSection";
+import FinanceOverviewWidgets from "@/focus/components/projects/FinanceOverviewWidgets";
 import TasksSection from "@/focus/components/projects/sections/TasksSection";
 import MilestonesSection from "@/focus/components/projects/sections/MilestonesSection";
 import DecisionsSection from "@/focus/components/projects/sections/DecisionsSection";
@@ -207,7 +207,7 @@ export default function ProjectDetailCard({ id, tab, onNavigate, onEditProject, 
       <div className="relative z-20 flex-1 min-w-0 h-full flex flex-col overflow-visible">
         {project ? (
           <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-6 overflow-y-auto no-scrollbar">
-            {tab === "OVERVIEW" && <OverviewSection {...sectionProps} />}
+            {tab === "OVERVIEW" && <FinanceOverviewWidgets />}
             {tab === "TASKS" && <TasksSection {...sectionProps} />}
             {tab === "MILESTONES" && <MilestonesSection project={project} themes={themes} />}
             {tab === "DECISIONS" && <DecisionsSection project={project} themes={themes} />}
