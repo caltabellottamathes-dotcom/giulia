@@ -51,6 +51,7 @@ const GROUPS = [
     label: "Life",
     items: [
       { label: "Life Home", route: "/life" },
+      { label: "PlayTime", route: "/playtime" },
       { label: "Agenda", route: "/agenda", module: "agenda" },
       { label: "Social Life", route: "/life/social", module: "social" },
       { label: "Home Reminders", route: "/life/household", module: "household" },
