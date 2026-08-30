@@ -1,5 +1,5 @@
 import React from "react";
-import { Pencil, Trash2, FileText, Film, Music, Image as ImageIcon, Wallet, SlidersHorizontal } from "lucide-react";
+import { Pencil, Trash2, FileText, Film, Music, Image as ImageIcon, Wallet, SlidersHorizontal, ListChecks } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import HealthBadge from "@/life/components/finance/HealthBadge";
 import DistributionBar from "@/life/components/finance/DistributionBar";
@@ -18,7 +18,6 @@ import HebbenBestedenBar from "@/life/components/finance/HebbenBestedenBar";
 import HealthyMoneyTab from "@/life/components/finance/HealthyMoneyTab";
 import ThingsHandleStrip from "@/life/components/finance/ThingsHandleStrip";
 import LastenAllocationCard from "@/life/components/finance/LastenAllocationCard";
-import LastenManageList from "@/life/components/finance/LastenManageList";
 import NewDocumentsCard from "@/life/components/finance/NewDocumentsCard";
 import MonthlyReceiptForecast from "@/life/components/finance/MonthlyReceiptForecast";
 import LastenHistoryWidget from "@/life/components/finance/LastenHistoryWidget";
@@ -137,9 +136,13 @@ export default function FinanceStacks({ tab, data, onOpenPortfolio, onDoneExpens
   if (tab === "LASTEN") {
     return (
       <div className="h-full flex flex-col gap-4">
+        <div className="flex justify-end -mb-1">
+          <button onClick={() => window.dispatchEvent(new CustomEvent("giulia:open-lasten"))} className="inline-flex items-center gap-1.5 rounded-full bg-foreground/[0.06] hover:bg-foreground/[0.1] px-3.5 py-2 text-[11px] font-bold text-foreground transition">
+            <ListChecks className="w-3.5 h-3.5" /> Beheer alle lasten
+          </button>
+        </div>
         <ThingsHandleStrip />
         <LastenBarsWidget expenses={expenses} portfolios={portfolios} onReload={onReload} />
-        <LastenManageList expenses={expenses} portfolios={portfolios} onReload={onReload} onDeleteExpense={onDeleteExpense} />
         <LastenAllocationCard expenses={expenses} portfolios={portfolios} />
       </div>
     );

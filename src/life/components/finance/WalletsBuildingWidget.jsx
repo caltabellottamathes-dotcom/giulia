@@ -24,10 +24,11 @@ export default function WalletsBuildingWidget() {
   const selected = (portfolios || []).find((p) => p.id === selectedId) || null;
   const selCalc = selected ? calcPortfolio(selected, (expenses || []).filter((e) => e.portfolio_id === selected.id)) : null;
 
-  const fillOf = (p) => { const t = p.target_balance || 0; return t > 0 ? Math.min(100, Math.round(((p.current_balance || 0) / t) * 100)) : 0; };
-  const fillDoel1 = (p) => { const t = p.target_balance || 0; return t > 0 ? Math.min(100, Math.round(((p.current_balance || 0) / t) * 100)) : 0; };
+  const fillOf = (p) => { const t = p.target_balance || 0; return t > 0 ? Math.min(100, Math.round(((p.current_balance || 0) / t) * 100)) : 100; };
+  const fillDoel1 = (p) => { const t = p.target_balance || 0; return t > 0 ? Math.min(100, Math.round(((p.current_balance || 0) / t) * 100)) : 100; };
   const fillDoel2 = (p) => { const t = p.desired_buffer || 0; return t > 0 ? Math.min(100, Math.round(((p.current_balance || 0) / t) * 100)) : 0; };
   const overDoel1 = (p) => { const t = p.target_balance || 0; return t > 0 ? Math.max(0, Math.round(((p.current_balance || 0) - t) * 100) / 100) : 0; };
+  const totalSum = active.reduce((s, p) => s + (Number(p.current_balance) || 0), 0);
 
   return (
     <div className="relative w-full h-[380px] rounded-[28px] overflow-hidden" style={{ background: "#f5f5f4", border: "1px solid rgba(0,0,0,0.06)", boxShadow: "-16px 16px 40px -16px rgba(0,0,0,0.30)" }}>
@@ -90,7 +91,7 @@ export default function WalletsBuildingWidget() {
                 <div className="mt-3 space-y-2.5">
                   <div>
                     <div className="flex items-end justify-between mb-1">
-                      <p className="text-[9px] uppercase tracking-[0.16em] text-white/70">Doel 1 · dekking</p>
+                      <p className="text-[9px] uppercase tracking-[0.16em] text-white/70">{(selected.target_balance || 0) > 0 ? "Doel 1 · dekking" : "Doel 1 · geen lasten"}</p>
                       <p className="text-[14px] leading-none font-display font-bold tabular-nums">{fillDoel1(selected)}<span className="text-[10px]">%</span></p>
                     </div>
                     <div className="h-2 rounded-full bg-white/20 overflow-hidden">
@@ -115,7 +116,7 @@ export default function WalletsBuildingWidget() {
                 <div className="grid grid-cols-2 gap-1.5 mt-3">
                   <div className="rounded-lg bg-white/15 px-2 py-1.5">
                     <p className="text-[8px] uppercase tracking-[0.14em] text-white/65">Doel 1</p>
-                    <p className="text-[12px] font-display font-bold tabular-nums leading-none mt-0.5">{fmtEuro(selected.target_balance || 0)}</p>
+                    <p className="text-[12px] font-display font-bold tabular-nums leading-none mt-0.5">{(selected.target_balance || 0) > 0 ? fmtEuro(selected.target_balance || 0) : "geen lasten"}</p>
                   </div>
                   <div className="rounded-lg bg-white/15 px-2 py-1.5">
                     <p className="text-[8px] uppercase tracking-[0.14em] text-white/65">Doel 2 · buffer</p>
@@ -139,7 +140,8 @@ export default function WalletsBuildingWidget() {
           <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.68), rgba(0,0,0,0.12) 55%, rgba(0,0,0,0.30))" }} />
           <div className="absolute bottom-0 inset-x-0 p-3 text-white" style={{ textShadow: "0 1px 6px rgba(0,0,0,0.6)" }}>
             <p className="text-[9px] uppercase tracking-[0.2em] font-bold opacity-90">Wallets.</p>
-            <p className="text-[9px] uppercase tracking-[0.14em] mt-0.5 opacity-70">{active.length} wallets · tik er één</p>
+            <p className="text-[26px] leading-none font-display font-bold tabular-nums mt-1">{fmtEuro(totalSum)}</p>
+            <p className="text-[9px] uppercase tracking-[0.14em] mt-1 opacity-70">{active.length} wallets · tik er één</p>
           </div>
         </motion.div>
       </div>
