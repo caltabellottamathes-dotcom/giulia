@@ -5,6 +5,7 @@ import { AGENT_CONTEXT } from '../../shared/agentContext.ts';
 import { MATTIA_TONE } from '../../shared/mattiaPrompt.ts';
 import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
 import { linkMentionedContacts } from '../../shared/contactLinker.ts';
+import { enforceApprovalClaim } from '../../shared/approvalEnforcer.ts';
 
 /**
  * chatWithMattia — Mattia (Salvo's chaotische hoofd) stuurt GIULIA-CORE aan
@@ -13,7 +14,7 @@ import { linkMentionedContacts } from '../../shared/contactLinker.ts';
  * Message(role="mattia", channel="in-app") zodat useMattiaChat ze via de
  * realtime subscription toont. Dezelfde entity-tools als Giulia.
  */
-const MAX_STEPS = 3;
+const MAX_STEPS = 5;
 const MATTIA_KEY = "MATTIA-MATTIA_Gemini_API_Key";
 
 function sanitizeResult(r) {
@@ -139,7 +140,7 @@ export default async function (req) {
 == REGELS ==
 1. MAAK GEEN TAKEN AAN OM GATEN TE VULLEN. Check de open en afgeronde lijsten; dupliceer nooit.
 2. Externe acties (email/whatsapp/agenda) ALTIJD via create_approval, NOOIT zelf verzenden.
-3. WAT JE DOET MOET ECHT GEBEUREN: om iets te veranderen MOET je de bijbehorende functie aanroepen. Zeg pas "ik heb het aangepast" ná de functionCall.
+3. WAT JE DOET MOET ECHT GEBEUREN: om iets te veranderen MOET je de bijbehorende functie aanroepen (bv. create_approval voor een bericht-concept). Zeg NOOIT "ik heb het bij de approvals gezet" / "concept klaargezet" / "bericht klaar" als je de functie niet hebt aangeroepen en het resultaat hebt gezien — dat is een leugen. Roep create_approval aan, zie het resultaat, bevestig pas daarna.
 4. Je bent Mattia — spreek zoals hij: snel, associatief, eerlijk, droog, met humor. Geen SaaS-taal, geen instemmen om vriendelijk te zijn.
 `;
 
@@ -150,7 +151,10 @@ export default async function (req) {
       ? `\n\n== CONVERSATIE-CONTINUNITEIT ==\nJe krijgt de recente Mattia-draad mee. Blijf in het gesprek: bouw voort op wat er al gezegd is, herhaal niet.\n`
       : "";
 
-    let systemInstruction = `${MATTIA_TONE}${convoRule}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}\n\nJe bent Mattia. Spreek direct met Salvo — vlot, scherp, droog, met humor, met een eigen mening. Voer uit wat nodig is via de tools en geef daarna een menselijk antwoord in het Nederlands. To the point, niet treuzelig. Stel geen menu's voor.`;
+    let systemInstruction = `${MATTIA_TONE}${convoRule}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}\n\nJe bent Mattia. Spreek direct met Salvo — vlot, scherp, droog, met humor, met een eigen mening. Voer uit wat nodig is via de tools en geef daarna een menselijk antwoord in het Nederlands. To the point, niet treuzelig. Stel geen menu's voor.
+
+== TAAL ==
+Default language: English. If Salvo speaks another language, match his language for that reply. Never default to Dutch.`;
 
     // 3. TOOLS
     const toolsMap = {};
@@ -202,6 +206,17 @@ export default async function (req) {
         respParts.push({ functionResponse: { name, response: sanitizeResult(result) } });
       }
       contents.push({ role: "user", parts: respParts });
+    }
+
+    // 5a. APPROVAL-ENFORCEMENT — bewering zonder uitvoering opvangen.
+    if (responseText) {
+      try {
+        const enf = await enforceApprovalClaim({
+          finalText: responseText, executed, contents, toolsMap, base44,
+          keyName: MATTIA_KEY, systemInstruction,
+        });
+        if (enf && enf.responseText) responseText = enf.responseText;
+      } catch { /* ignore */ }
     }
 
     // 5. SAVE RESPONSE (role: mattia)

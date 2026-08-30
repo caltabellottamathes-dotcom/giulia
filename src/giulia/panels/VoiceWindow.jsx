@@ -16,6 +16,10 @@ const DEEP = "hsl(var(--d-giulia-deep))";    // olijf
 const LIGHT = "hsl(var(--d-giulia-light))";  // pistachio
 const IVORY = "hsl(var(--ivory))";
 
+/** stripAudioTags — verwijdert bracketed audio-effect-tags (bv. [sigh], [laughs])
+ *  uit de live voice-transcript vóór weergave. Raw tekst blijft in state. */
+const stripAudioTags = (s) => String(s || "").replace(/\[.*?\]/g, "").replace(/\s+/g, " ").trim();
+
 /**
  * VoiceWindow — #35 · P·9x16·B·SIDE · onder.
  * PhotoShell = de voice-window foto (9:16 portret, full-bleed).
@@ -201,7 +205,7 @@ function VoiceWindowInner() {
                             isUser ? "bg-charcoal text-ivory rounded-br-md" : "chat-bubble rounded-bl-md"
                           )}
                         >
-                          {m.text}
+                          {stripAudioTags(m.text)}
                         </div>
                       </div>
                     );

@@ -16,6 +16,10 @@ const DEEP = "#94925d";    // olive
 const LIGHT = "#d8dab3";    // whipped pistachio
 const INK = "#2a2c30";
 
+/** stripAudioTags — verwijdert bracketed audio-effect-tags (bv. [sigh], [laughs])
+ *  uit de live voice-transcript vóór weergave. Raw tekst blijft in state. */
+const stripAudioTags = (s) => String(s || "").replace(/\[.*?\]/g, "").replace(/\s+/g, " ").trim();
+
 /**
  * MattiaVoiceWindow — MATTIA'S HOTLINE · voice. Full-screen rechtsschuivend
  * paneel, parallel aan Giulia's VoiceWindow, in pistache/olive. Verbindt met
@@ -158,7 +162,7 @@ function MattiaVoiceWindowInner() {
                     return (
                       <div key={m.id} className={cn("flex", isUser ? "justify-end" : "justify-start")}>
                         <div className={cn("max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed", isUser ? "bg-charcoal text-ivory rounded-br-md" : "chat-bubble rounded-bl-md")}>
-                          {m.text}
+                          {stripAudioTags(m.text)}
                         </div>
                       </div>
                     );

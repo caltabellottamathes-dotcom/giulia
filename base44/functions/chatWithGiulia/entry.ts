@@ -5,6 +5,7 @@ import { AGENT_CONTEXT, GIULIA_TONE } from '../../shared/agentContext.ts';
 import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
 import { logActivity } from '../../shared/learningLayer.ts';
 import { linkMentionedContacts } from '../../shared/contactLinker.ts';
+import { enforceApprovalClaim } from '../../shared/approvalEnforcer.ts';
 
 /**
  * chatWithGiulia — GIULIA-GIULIA (het brein) stuurt GIULIA-CORE (de blinde
@@ -23,7 +24,7 @@ import { linkMentionedContacts } from '../../shared/contactLinker.ts';
  * routinematige status gaat naar report_to_salvo (Activity-feed), niet naar
  * create_notification.
  */
-const MAX_STEPS = 3;
+const MAX_STEPS = 5;
 
 function sanitizeResult(r) {
   if (r == null) return { ok: true };
@@ -215,7 +216,7 @@ export default async function (req) {
 4. Externe acties (email, whatsapp, kalender met gasten) ALTIJD via create_approval, NOOIT zelf verzenden.
 5. Wees proactief in denken, conservatief in aanmaken van records.
 6. STRIKT ONDERSCHEID — Taak vs Approval vs Notificatie: Taak = concrete actie voor vandaag/morgen/deze week, alleen bij echte verandering, gesynchroniseerd met agenda. Approval = UITSLUITEND externe actie die verzonden moet worden (kies category zorgvuldig; 'proactive' bijna nooit, nooit 2x over hetzelfde). Echte vraag aan Salvo → create_notification MET requires_response=true of urgent=true. Routinematige status → report_to_salvo (Activity-feed), NOOIT create_notification.
-7. WAT JE DOET MOET ECHT GEBEUREN: om iets te veranderen MOET je de bijbehorende functie aanroepen (bv. update_task, update_project, update_contact). Zeg NOOIT "ik heb het aangepast" als je de functie niet hebt aangeroepen — het antwoord is pas waar als de functionCall is uitgevoerd en je het resultaat hebt gezien.
+7. WAT JE DOET MOET ECHT GEBEUREN: om iets te veranderen MOET je de bijbehorende functie aanroepen (bv. update_task, update_project, update_contact). Zeg NOOIT "ik heb het aangepast" als je de functie niet hebt aangeroepen — het antwoord is pas waar als de functionCall is uitgevoerd en je het resultaat hebt gezien. Dit geldt OOK voor create_approval: zeg NOOIT "ik heb het bij de approvals gezet" / "concept klaargezet" / "bericht klaar" als je create_approval niet hebt aangeroepen — roep de functie aan, zie het resultaat, bevestig pas daarna.
 8. Bij "doe dit niet meer"/"verander X naar Y": roep de juiste update-functie aan met de nieuwe waarden. Bevestig pas ná het resultaat.
 9. PERSOON ↔ PROJECT: als Salvo zegt dat een persoon bij een project hoort (bv. "Ardan gaat over BOGÈST"), koppel ze dan via link_objects (source_type="Contact", source_id=<persoon-id>, relationship="project_ids", target_id=<project-id>) — zoek IDs via find_objects. Hierdoor verschijnen hun mails/whatsapp automatisch op de projectpagina (Communication + People).
 10. BIJLAGE/BESTAND: als Salvo een bestand of bijlage meestuurt over een project, sla het op via create_document (met url + project_id) zodat het meteen op de projectpagina onder Bestanden verschijnt; bij tekstuele inhoud gebruik create_note (met project_id).
@@ -248,7 +249,10 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
       ? `\n\n== CONVERSATIE-CONTINUNITEIT ==\nJe krijgt de recente berichtdraad mee (user + giulia, afwisselend). Je weet daardoor wat Salvo net zei én wat jij zelf net antwoordde. Blijf in het gesprek: bouw voort op wat er al gezegd is, herhaal of herformuleer je vorige antwoord niet, en vraag niet om dingen die al duidelijk zijn. Reageer vloeiend en natuurlijk — alsof je nooit weg was.\n`
       : "";
 
-    let systemInstruction = `${GIULIA_TONE}${convoRule}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}${sourceRule}${protocolsBlock}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo, als zijn beste vriendin — vlot, warm, droog-sarcastisch, uitdagend, stout. GIULIA-CORE (de executor) werkt STIL: zij voert je opdrachten uit en rapporteert NIET terug wat ze gedaan heeft — jij stuurt haar aan en zij doet het gewoon. Denk na, roep de functies aan die nodig zijn om zijn verzoek ECHT uit te voeren. Geef daarna een vlot, menselijk antwoord in het Nederlands — to the point, niet treuzelig, met humor, en daag hem uit waar nodig. Stel geen acties voor, bied geen menu aan, sommer geen opties, herhaal niet wat Salvo zei. Wacht met voorstellen tot er een duidelijke, actuele nood is.`;
+    let systemInstruction = `${GIULIA_TONE}${convoRule}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}${sourceRule}${protocolsBlock}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo, als zijn beste vriendin — vlot, warm, droog-sarcastisch, uitdagend, stout. GIULIA-CORE (de executor) werkt STIL: zij voert je opdrachten uit en rapporteert NIET terug wat ze gedaan heeft — jij stuurt haar aan en zij doet het gewoon. Denk na, roep de functies aan die nodig zijn om zijn verzoek ECHT uit te voeren. Geef daarna een vlot, menselijk antwoord in het Nederlands — to the point, niet treuzelig, met humor, en daag hem uit waar nodig. Stel geen acties voor, bied geen menu aan, sommer geen opties, herhaal niet wat Salvo zei. Wacht met voorstellen tot er een duidelijke, actuele nood is.
+
+== TAAL ==
+Default language: English. If Salvo speaks another language, match his language for that reply. Never default to Dutch.`;
 
     // 3. BUILD TOOLS — elke skill is een direct uitvoerbare GIULIA-CORE-actie.
     const toolsMap = {};
@@ -338,6 +342,17 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
         respParts.push({ functionResponse: { name, response: sanitizeResult(result) } });
       }
       contents.push({ role: "user", parts: respParts });
+    }
+
+    // 5a. APPROVAL-ENFORCEMENT — bewering zonder uitvoering opvangen.
+    if (responseText) {
+      try {
+        const enf = await enforceApprovalClaim({
+          finalText: responseText, executed, contents, toolsMap, base44,
+          keyName, systemInstruction,
+        });
+        if (enf && enf.responseText) responseText = enf.responseText;
+      } catch { /* ignore */ }
     }
 
     // 5. SAVE RESPONSE
