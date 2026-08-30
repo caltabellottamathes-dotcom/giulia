@@ -53,13 +53,13 @@ function buildDynamic(tab, data) {
   const restLabel = "The rest can wait.";
 
   if (tab === "OVERVIEW" || tab === "LASTEN") {
-    items = upcoming.slice(0, 3).map((e, i) => ({ n: pad2(i + 1), title: `${e.title} • ${e.daysUntil < 0 ? "Overdue" : e.daysUntil === 0 ? "Due today" : `Due in ${e.daysUntil}d`}`, desc: `${fmtEuro(e.amount)}${e.next_payment_date ? ` · ${e.next_payment_date}` : ""}` }));
+    items = upcoming.slice(0, 3).map((e, i) => ({ n: pad2(i + 1), title: `${e.title} • ${e.daysUntil < 0 ? "Overdue" : e.daysUntil === 0 ? "Due today" : `Due in ${e.daysUntil}d`}`, desc: `${fmtEuro(e.amount)}${e.next_payment_date ? ` · ${e.next_payment_date}` : ""}`, to_id: e.portfolio_id || "" }));
     itemsLabel = `${pad2(items.length)}_payments_due_`;
     const overdue = upcoming.filter((e) => e.daysUntil < 0).length;
     body = `TOTAL MONEY ${fmtEuro(tm)} · BESTEMD ${fmtEuro(tr)} · VRIJ ${fmtEuro(Math.max(0, dist.available))}. ${upcoming.length} betalingen binnen 30 dagen${overdue ? `, waarvan ${overdue} te laat` : ""}.`;
     rest = `${Math.max(0, expenses.length - upcoming.length)} andere lasten staan gepland en vragen geen directe actie.`;
   } else if (tab === "PORTEFEUILLES") {
-    items = potsBehind.slice(0, 3).map((p, i) => { const c = calc(p); return { n: pad2(i + 1), title: `${p.name} • Under-reserved`, desc: `Reservering ${fmtEuro(p.monthly_reservation_actual || 0)}/mnd, aanbevolen ${fmtEuro(c.recommended_monthly)}/mnd.` }; });
+    items = potsBehind.slice(0, 3).map((p, i) => { const c = calc(p); return { n: pad2(i + 1), title: `${p.name} • Under-reserved`, desc: `Reservering ${fmtEuro(p.monthly_reservation_actual || 0)}/mnd, aanbevolen ${fmtEuro(c.recommended_monthly)}/mnd.`, to_id: p.id }; });
     itemsLabel = `${pad2(items.length)}_wallets_behind_`;
     body = `${portfolios.length} wallets · TOTAL MONEY ${fmtEuro(tm)} · BESTEMD ${fmtEuro(tr)}. ${potsBehind.length} wallet(s) lopen achter op hun aanbevolen reservering.`;
     rest = `De andere ${Math.max(0, portfolios.length - potsBehind.length)} wallets zijn gezond en hoeven geen actie.`;
@@ -70,7 +70,7 @@ function buildDynamic(tab, data) {
     rest = `Alle andere inkomstenstromen zijn deze maand op tijd binnen.`;
   } else if (tab === "FORECAST") {
     const pressured = portfolios.filter((p) => ["watch", "short", "critical"].includes(p.status));
-    items = pressured.slice(0, 3).map((p, i) => ({ n: pad2(i + 1), title: `${p.name} • ${String(p.status || "").toUpperCase()}`, desc: `Saldo ${fmtEuro(p.current_balance || 0)} · volgende ${fmtEuro(p.next_expected_payment || 0)}` }));
+    items = pressured.slice(0, 3).map((p, i) => ({ n: pad2(i + 1), title: `${p.name} • ${String(p.status || "").toUpperCase()}`, desc: `Saldo ${fmtEuro(p.current_balance || 0)} · volgende ${fmtEuro(p.next_expected_payment || 0)}`, to_id: p.id }));
     itemsLabel = `${pad2(items.length)}_pressure_points_`;
     body = `Vooruitblik op ${portfolios.length} potjes. ${pressured.length} potje(s) staan onder druk voor de komende maand.`;
     rest = `De overige potjes blijven binnen hun gezonde bereik.`;

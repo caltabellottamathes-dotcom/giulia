@@ -183,11 +183,9 @@ export function monthlyDistribution(incomes, portfolios, expenses) {
   return { income, reserved, available: Math.round((income - reserved) * 100) / 100, perPortfolio };
 }
 
-/** Total money = sum of portfolio balances + available (main account). We treat available as main account cash. */
+/** Total money = sum of portfolio balances (all money actually present in the wallets). */
 export function totalMoney(portfolios, incomes, expenses) {
-  const portSum = (portfolios || []).reduce((s, p) => s + (Number(p.current_balance) || 0), 0);
-  const dist = monthlyDistribution(incomes, portfolios, expenses);
-  return Math.round((portSum + Math.max(0, dist.available)) * 100) / 100;
+  return Math.round((portfolios || []).reduce((s, p) => s + (Number(p.current_balance) || 0), 0) * 100) / 100;
 }
 
 /** Reserved = sum of portfolio balances (each has a destination). */
