@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { geminiGenerate, geminiEmbed, cosineSimilarity } from '../../shared/gemini.ts';
+import { geminiGenerate } from '../../shared/gemini.ts';
 import { calcPortfolio, monthlyDistribution } from '../../shared/financeEngine.ts';
 import { AGENT_CONTEXT } from '../../shared/agentContext.ts';
 import { MATTIA_TONE } from '../../shared/mattiaPrompt.ts';
@@ -10,12 +10,21 @@ import { enforceApprovalClaim } from '../../shared/approvalEnforcer.ts';
 /**
  * chatWithMattia — Mattia (Salvo's chaotische hoofd) stuurt GIULIA-CORE aan
  * via een native Gemini function-calling loop, parallel aan chatWithGiulia.
- * BYOK: MATTIA-MATTIA_Gemini_API_KEY. Antwoorden worden opgeslagen als
+ * BYOK: MATTIA-MATTIA_Gemini_API_Key. Antwoorden worden opgeslagen als
  * Message(role="mattia", channel="in-app") zodat useMattiaChat ze via de
  * realtime subscription toont. Dezelfde entity-tools als Giulia.
+ *
+ * SPEED: voor conversatie-chat halen we GEEN embedding op (recente geheugen
+ * volstaat — scheelt een ronde-trip) en skippen we de zware financiële
+ * gathering/computatie tenzij de message er echt over gaat. Minder queries +
+ * kleinere prompt = sneller antwoord op de gangbare, conversatie-beurt.
  */
-const MAX_STEPS = 5;
+const MAX_STEPS = 3;
 const MATTIA_KEY = "MATTIA-MATTIA_Gemini_API_Key";
+
+// Heuristiek: bevat de message een financieel/admin-keyword? Zo ja → volledige
+// financiële context laden. Zo nee → conversatie-pad (sneller, kleinere prompt).
+const FINANCE_RE = /geld|money|saldo|balance|betalen|payment|lasten|expense|inkomen|income|portefeuille|portfolio|reservering|budget|factuur|invoice|verzekering|huur|energie|rekening|finance|financ|euro|€/i;
 
 function sanitizeResult(r) {
   if (r == null) return { ok: true };
@@ -60,8 +69,10 @@ export default async function (req) {
       }).catch(() => null);
     }
 
-    // 1. DATA GATHERING
-    const [allMemories, allProjects, allContacts, openTasks, deadTasks, pendingApprovals, upcomingEvents, allPortfolios, allExpenses, allIncomes] = await Promise.all([
+    const wantsFinance = FINANCE_RE.test(message);
+
+    // 1. DATA GATHERING — kerncontext altijd; financiële bronnen alleen bij finance-vraag.
+    const base = [
       sr.entities.Memory.list("-created_date", 12).catch(() => []),
       sr.entities.Project.list("-updated_date", 20).catch(() => []),
       sr.entities.Contact.list("-updated_date", 25).catch(() => []),
@@ -69,40 +80,38 @@ export default async function (req) {
       sr.entities.Task.filter({ status: { $in: ["completed", "archived", "done"] } }, "-updated_date", 4).catch(() => []),
       sr.entities.Approval.filter({ status: "pending" }).catch(() => []),
       sr.entities.CalendarEvent.filter({ start: { $gte: new Date(Date.now() - 86400000).toISOString() } }, "start", 8).catch(() => []),
-      sr.entities.Portfolio.filter({ archived: false }, "order", 50).catch(() => []),
-      sr.entities.AdminObligation.list("-created_date", 50).catch(() => []),
-      sr.entities.Income.list("-created_date", 30).catch(() => []),
-    ]);
+    ];
+    const [allMemories, allProjects, allContacts, openTasks, deadTasks, pendingApprovals, upcomingEvents] = await Promise.all(base);
 
-    const isSimple = message.length < 140;
-    const queryEmbedding = isSimple ? null : await geminiEmbed({ text: message, keyName: "GIULIA_GIULIA_MEMORY_GEMINI_API_KEY" }).catch(() => null);
-    let memories = allMemories.slice(0, 20);
-    if (queryEmbedding) {
-      const withEmb = allMemories.filter((m) => Array.isArray(m.embedding) && m.embedding.length);
-      if (withEmb.length) {
-        const scored = withEmb.map((m) => ({ m, score: cosineSimilarity(queryEmbedding, m.embedding) })).sort((a, b) => b.score - a.score);
-        const relevant = scored.filter((s) => s.score > 0.55).slice(0, 12).map((s) => s.m);
-        if (relevant.length) {
-          const merged = [...relevant];
-          for (const r of allMemories.slice(0, 5)) if (!merged.find((x) => x.id === r.id)) merged.push(r);
-          memories = merged;
-        }
-      }
+    // Recent geheugen volstaat voor conversatie — géén embedding-ronde-trip.
+    const memories = allMemories.slice(0, 20);
+
+    let fPortfolios = [];
+    let fExpenses = [];
+    let finDist = { income: 0, reserved: 0, available: 0 };
+    let finReserved = 0;
+    let finTotal = 0;
+    let finUpcoming = [];
+    if (wantsFinance) {
+      const [allPortfolios, allExpenses, allIncomes] = await Promise.all([
+        sr.entities.Portfolio.filter({ archived: false }, "order", 50).catch(() => []),
+        sr.entities.AdminObligation.list("-created_date", 50).catch(() => []),
+        sr.entities.Income.list("-created_date", 30).catch(() => []),
+      ]);
+      fPortfolios = (allPortfolios || []).filter((p) => !p.archived);
+      fExpenses = allExpenses || [];
+      const fIncomes = allIncomes || [];
+      finDist = monthlyDistribution(fIncomes, fPortfolios, fExpenses);
+      finReserved = Math.round(fPortfolios.reduce((s, p) => s + (Number(p.current_balance) || 0), 0) * 100) / 100;
+      finTotal = Math.round((finReserved + Math.max(0, finDist.available)) * 100) / 100;
+      const FIN_DAY_MS = 86400000;
+      finUpcoming = fExpenses
+        .filter((e) => e.status !== "done" && e.next_payment_date)
+        .map((e) => ({ title: e.title, amount: e.expected_amount ?? e.amount, daysUntil: Math.round((new Date(e.next_payment_date).getTime() - Date.now()) / FIN_DAY_MS) }))
+        .filter((e) => e.daysUntil <= 30)
+        .sort((a, b) => a.daysUntil - b.daysUntil)
+        .slice(0, 8);
     }
-
-    const fPortfolios = (allPortfolios || []).filter((p) => !p.archived);
-    const fExpenses = allExpenses || [];
-    const fIncomes = allIncomes || [];
-    const finDist = monthlyDistribution(fIncomes, fPortfolios, fExpenses);
-    const finReserved = Math.round(fPortfolios.reduce((s, p) => s + (Number(p.current_balance) || 0), 0) * 100) / 100;
-    const finTotal = Math.round((finReserved + Math.max(0, finDist.available)) * 100) / 100;
-    const FIN_DAY_MS = 86400000;
-    const finUpcoming = fExpenses
-      .filter((e) => e.status !== "done" && e.next_payment_date)
-      .map((e) => ({ title: e.title, amount: e.expected_amount ?? e.amount, daysUntil: Math.round((new Date(e.next_payment_date).getTime() - Date.now()) / FIN_DAY_MS) }))
-      .filter((e) => e.daysUntil <= 30)
-      .sort((a, b) => a.daysUntil - b.daysUntil)
-      .slice(0, 8);
 
     const contextLines = [
       `== HUIDIGE STAAT VAN GIULIA OS ==`,
@@ -123,16 +132,18 @@ export default async function (req) {
       `Wachtende Goedkeuringen: ${pendingApprovals.length}`,
       `Agenda — aankomend (${upcomingEvents.length}):`,
       upcomingEvents.slice(0, 8).map(e => `- ID: ${e.id} | ${e.title} | start: ${e.start} | domain: ${e.domain || "?"}`).join("\n"),
-      ``,
-      `PERSOONLIJKE ADMIN / FINANCE:`,
-      `TOTAL MONEY €${Math.round(finTotal)} · BESTEMD €${Math.round(finReserved)} · VRIJ €${Math.round(Math.max(0, finDist.available))} · INKOMEN/mnd €${Math.round(finDist.income)} · RESERVERINGEN/mnd €${Math.round(finDist.reserved)}`,
-      `Portefeuilles (${fPortfolios.length}):`,
-      fPortfolios.map((p) => { const c = calcPortfolio(p, fExpenses.filter((e) => e.portfolio_id === p.id)); return `- ${p.name} [${p.kind}] saldo €${Math.round(p.current_balance || 0)} · volgende €${Math.round(c.next_expected_payment)} ${c.next_payment_date || ""} · status ${c.status}`; }).join("\n"),
-      `Komende betalingen (${finUpcoming.length}):`,
-      finUpcoming.map((e) => `- ${e.title} · €${Math.round(e.amount)} · ${e.daysUntil < 0 ? "te laat" : `${e.daysUntil}d`}`).join("\n"),
+      ...(wantsFinance ? [
+        ``,
+        `PERSOONLIJKE ADMIN / FINANCE:`,
+        `TOTAL MONEY €${Math.round(finTotal)} · BESTEMD €${Math.round(finReserved)} · VRIJ €${Math.round(Math.max(0, finDist.available))} · INKOMEN/mnd €${Math.round(finDist.income)} · RESERVERINGEN/mnd €${Math.round(finDist.reserved)}`,
+        `Portefeuilles (${fPortfolios.length}):`,
+        fPortfolios.map((p) => { const c = calcPortfolio(p, fExpenses.filter((e) => e.portfolio_id === p.id)); return `- ${p.name} [${p.kind}] saldo €${Math.round(p.current_balance || 0)} · volgende €${Math.round(c.next_expected_payment)} ${c.next_payment_date || ""} · status ${c.status}`; }).join("\n"),
+        `Komende betalingen (${finUpcoming.length}):`,
+        finUpcoming.map((e) => `- ${e.title} · €${Math.round(e.amount)} · ${e.daysUntil < 0 ? "te laat" : `${e.daysUntil}d`}`).join("\n"),
+      ] : []),
     ].join("\n");
 
-    // 2. SYSTEM PROMPT (Mattia's persona + profiel + regels + tools)
+    // 2. SYSTEM PROMPT (Mattia's persona + profiel + regels)
     const o = AGENT_CONTEXT.owner;
     const profile = `Naam: ${o.name} (${o.short}, ook '${o.intimate_nickname}') | Locatie: ${o.location} | Tijdzone: ${o.timezone}\n\nOperationeel manifest:\n${Object.values(AGENT_CONTEXT.operational_manifesto).join("\n")}\n\nTrust model — zonder goedkeuring: ${AGENT_CONTEXT.trust_model.without_approval.join(" ")}\nTrust model — nooit zonder goedkeuring: ${AGENT_CONTEXT.trust_model.never_without_approval.join(" ")}\n${AGENT_CONTEXT.architecture_rules.anti_zombie}`;
 
@@ -144,14 +155,11 @@ export default async function (req) {
 4. Je bent Mattia — spreek zoals hij: snel, associatief, eerlijk, droog, met humor. Geen SaaS-taal, geen instemmen om vriendelijk te zijn.
 `;
 
-    const toolDocs = GIULIA_SKILLS.map((s) => `- ${s.name}: ${s.description}`).join("\n");
-    const toolsBlock = `\n== BESCHIKBARE ACTIES (roep deze aan om iets te doen) ==\n${toolDocs}\n`;
-
     const convoRule = source === "chat"
       ? `\n\n== CONVERSATIE-CONTINUNITEIT ==\nJe krijgt de recente Mattia-draad mee. Blijf in het gesprek: bouw voort op wat er al gezegd is, herhaal niet.\n`
       : "";
 
-    let systemInstruction = `${MATTIA_TONE}${convoRule}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}\n\nJe bent Mattia. Spreek direct met Salvo — vlot, scherp, droog, met humor, met een eigen mening. Voer uit wat nodig is via de tools en geef daarna een menselijk antwoord in het Nederlands. To the point, niet treuzelig. Stel geen menu's voor.
+    let systemInstruction = `${MATTIA_TONE}${convoRule}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\nJe bent Mattia. Spreek direct met Salvo — vlot, scherp, droog, met humor, met een eigen mening. Voer uit wat nodig is via de tools en geef daarna een menselijk antwoord. To the point, niet treuzelig. Stel geen menu's voor.
 
 == TAAL ==
 Default language: English. If Salvo speaks another language, match his language for that reply. Never default to Dutch.`;
