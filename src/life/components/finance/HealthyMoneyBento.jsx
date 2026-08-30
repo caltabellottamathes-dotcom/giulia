@@ -78,12 +78,11 @@ export default function HealthyMoneyBento({ data }) {
 
   return (
     <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-[68px] flex flex-col gap-4">
-      {/* Rij 1 — FinanceHealthCard (eigen tile, vult hoogte) + indicatoren */}
-      <div className="flex-[1.15] min-h-0 flex gap-4">
-        <div className="h-full aspect-[5/4] shrink-0 overflow-hidden rounded-[18px] float-shadow">
+      <div className="flex-[1.2] min-h-0 flex gap-4">
+        <div className="h-full aspect-square shrink-0 overflow-hidden rounded-[20px]" style={{ boxShadow: SHADOW }}>
           <FinanceHealthCard />
         </div>
-        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar rounded-[18px] graph-paper p-5 float-shadow">
+        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar rounded-[18px] graph-paper p-5" style={{ boxShadow: SHADOW }}>
           <p className={LABEL + " mb-3"}>Financial health</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Ind label="Monthly income" v={fmtEuro(indicators.income)} />
@@ -99,9 +98,8 @@ export default function HealthyMoneyBento({ data }) {
         </div>
       </div>
 
-      {/* Rij 2 — affordability-check + hebben/besteden, gelijke hoogte */}
-      <div className="flex-[1.1] flex gap-4 min-h-0">
-        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar rounded-[18px] graph-paper p-5 float-shadow">
+      <div className="flex-[1.4] flex gap-4 min-h-0">
+        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar rounded-[18px] graph-paper p-5" style={{ boxShadow: SHADOW }}>
           <p className={LABEL + " mb-1"}>Kan ik dit betalen?</p>
           <p className="text-[11px] text-muted-foreground mb-2">Typ iets — Giulia toont de volledige context.</p>
           <div className="flex gap-2">
@@ -121,7 +119,7 @@ export default function HealthyMoneyBento({ data }) {
             </div>
           )}
         </div>
-        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar rounded-[18px] graph-paper p-5 float-shadow">
+        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar rounded-[18px] graph-paper p-5" style={{ boxShadow: SHADOW }}>
           <p className={LABEL + " mb-3"}>Geld hebben vs. besteden</p>
           <ReservationTreemap portfolios={portfolios} income={dist.income} />
         </div>
@@ -134,7 +132,7 @@ function Ind({ label, v, c }) {
   return (
     <div>
       <p className="text-[8px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">{label}</p>
-      <p className="text-lg font-display font-semibold tabular-nums leading-none mt-1" style={{ color: c || "hsl(var(--foreground))" }}>{v}</p>
+      <p className="text-xl font-display font-semibold tabular-nums leading-none mt-1" style={{ color: c || "hsl(var(--foreground))" }}>{v}</p>
     </div>
   );
 }

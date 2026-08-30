@@ -1,6 +1,6 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
-import WalletSineChart from "@/life/components/finance/WalletSineChart";
+import ForecastChart from "@/life/components/finance/ForecastChart";
 import LastenHistoryWidget from "@/life/components/finance/LastenHistoryWidget";
 import MonthlyBarChartForecast from "@/life/components/finance/MonthlyBarChartForecast";
 
@@ -16,9 +16,10 @@ const md = {
   li: ({ children }) => <li className="leading-[1.5]">{children}</li>,
 };
 
-/** InsightsBento — Inzichten-tabblad. Elk element is een eigen bento-tile:
- *  Giulia's inzichten, de kleurrijke saldi-ontwikkeling (per wallet een sinus),
- *  Giulia adviseert, archief (kassabon geschiedenis), uitgaven per maand. */
+/** InsightsBento — Overview-achtige bento voor het Inzichten-tabblad (voorheen
+ *  Forecast). Giulia's inzichten (grappig, opgemaakt), saldi-ontwikkeling,
+ *  en een archief om terug te kijken, evalueren en leren. Zelfde bento-regels
+ *  als Overview: flex-rijen, aspect-tiles, zwevende schaduw, uitgelijnd. */
 export default function InsightsBento({ data, ed }) {
   const { portfolios, expenses } = data;
   const active = (portfolios || []).filter((p) => !p.archived);
@@ -27,41 +28,31 @@ export default function InsightsBento({ data, ed }) {
 
   return (
     <div className="flex-1 min-h-0 pl-8 pr-6 lg:-ml-[56px] pb-6 pt-[68px] flex flex-col gap-4">
-      <div className="flex-[1.25] min-h-0 flex gap-4">
-        {/* Giulia's inzichten — eigen tile */}
+      <div className="flex-[1.3] min-h-0 flex gap-4">
         <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar rounded-[18px] graph-paper p-5" style={{ boxShadow: SHADOW }}>
           <p className={LABEL + " mb-3"}>Giulia's inzichten</p>
           {body ? <ReactMarkdown components={md}>{body}</ReactMarkdown> : <p className="text-sm text-muted-foreground italic">Nog geen inzichten — vernieuw de analyse.</p>}
+          {proposal && (
+            <div className="pt-3 mt-3 border-t border-foreground/10">
+              <p className="text-[10px] uppercase tracking-[0.2em] font-bold mb-2" style={{ color: ACCENT }}>Giulia adviseert</p>
+              <ReactMarkdown components={md}>{proposal}</ReactMarkdown>
+            </div>
+          )}
         </div>
-        {/* Saldi-ontwikkeling — kleurrijke sine-grafiek, eigen tile */}
-        <div className="flex-[1.15] min-h-0 overflow-hidden rounded-[18px] graph-paper p-4" style={{ boxShadow: SHADOW }}>
+        <div className="h-full aspect-[4/3] shrink-0 overflow-hidden rounded-[18px] graph-paper p-4" style={{ boxShadow: SHADOW }}>
           <p className={LABEL + " mb-3"}>Saldi-ontwikkeling · 12 mnd</p>
-          <div className="h-[calc(100%-28px)]"><WalletSineChart portfolios={active} expenses={expenses} months={12} /></div>
+          <div className="h-[calc(100%-28px)]"><ForecastChart portfolios={active} expenses={expenses} months={12} /></div>
         </div>
       </div>
 
-      <div className="flex-[1] flex gap-4 min-h-0">
-        {/* Giulia adviseert — eigen tile */}
-        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar rounded-[18px] graph-paper p-5" style={{ boxShadow: SHADOW }}>
-          <p className={LABEL + " mb-3"}>Giulia adviseert</p>
-          {proposal ? (
-            <ReactMarkdown components={md}>{proposal}</ReactMarkdown>
-          ) : (
-            <>
-              <p className="text-[10px] uppercase tracking-[0.2em] font-bold mb-2" style={{ color: ACCENT }}>Giulia adviseert</p>
-              <p className="text-sm text-muted-foreground italic">Nog geen voorstel — vernieuw de analyse.</p>
-            </>
-          )}
-        </div>
-        {/* Archief — eigen tile */}
+      <div className="flex-[1.5] flex gap-4 min-h-0">
         <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar rounded-[18px] graph-paper p-4" style={{ boxShadow: SHADOW }}>
           <p className={LABEL + " mb-3"}>Archief · kassabon geschiedenis</p>
           <LastenHistoryWidget portfolios={portfolios} months={8} />
         </div>
-        {/* Uitgaven per maand — eigen tile */}
         <div className="flex-1 min-h-0 overflow-hidden rounded-[18px] graph-paper p-4" style={{ boxShadow: SHADOW }}>
-          <p className={LABEL + " mb-3"}>Uitgaven per maand</p>
-          <div className="h-[calc(100%-28px)]"><MonthlyBarChartForecast portfolios={portfolios} months={6} /></div>
+          <p className={LABEL + " mb-3"}>Uitgaven per maand · terugkijken &amp; leren</p>
+          <MonthlyBarChartForecast portfolios={portfolios} months={6} />
         </div>
       </div>
     </div>
