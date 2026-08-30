@@ -4,7 +4,7 @@ import { useContextCapture } from "@/lib/ContextCaptureContext";
 import { base44 } from "@/api/base44Client";
 import { cn } from "@/lib/utils";
 import { useLocation } from "react-router-dom";
-import { Plus, Phone, MessageSquare, BrainCircuit, X, Send, Loader2 } from "lucide-react";
+import { Plus, Phone, MessageSquare, BrainCircuit, X, Send, Loader2, User } from "lucide-react";
 import QuickLauncher from "@/system/components/glass/QuickLauncher";
 import { useActiveDomain } from "@/lib/useActiveDomain";
 import { DEFAULT_BOARDS, loadCustomBoards, createCustomBoard, renameCustomBoard, deleteCustomBoard, getActiveBoard, setActiveBoard, isDefaultBoard } from "@/lib/useDashboardBoard";
@@ -17,7 +17,7 @@ const actionBtn = "h-8 w-8 flex items-center justify-center text-white hover:bg-
  * geen ronde hoeken, geen kleur-chaos. Streep bovenin als actieve indicator.
  */
 export default function WorkspaceToolbar() {
-  const { openModule, openChat, openVoice, setPendingMessage } = usePanel();
+  const { openModule, openChat, openVoice, openMattiaChat, setPendingMessage } = usePanel();
   const { active, start, stop, captured, clear } = useContextCapture();
   const location = useLocation();
   const stayCollapsed = location.pathname === "/life/personal-admin" || location.pathname === "/Pagina-Ontwerp" || location.pathname === "/life/admin";
@@ -216,6 +216,8 @@ export default function WorkspaceToolbar() {
                 )}
                 <button onClick={() => { expand(); if (stayCollapsed) window.dispatchEvent(new CustomEvent("giulia:ontwerp-stage", { detail: "voice" })); else openVoice(); }} aria-label="Bel Giulia" className={actionBtn}><Phone className="h-4 w-4" /></button>
                 <button onClick={() => { expand(); if (stayCollapsed) window.dispatchEvent(new CustomEvent("giulia:ontwerp-stage", { detail: "chat" })); else openChat(); }} aria-label="Chat met Giulia" className={actionBtn}><MessageSquare className="h-4 w-4" /></button>
+                <span aria-hidden className="mx-1 h-4 w-px shrink-0" style={{ background: "rgba(216,218,179,0.45)" }} />
+                <button onClick={() => { expand(); openMattiaChat(); }} aria-label="Mattia Hotline" title="Mattia Hotline" className={cn(actionBtn, "hover:bg-[#94925d]/25")}><User className="h-4 w-4" style={{ color: "#d8dab3" }} /></button>
           </div>
         </div>
       </div>

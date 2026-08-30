@@ -3,6 +3,8 @@ import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import ModulePanel from "@/system/panels/ModulePanel";
 import ChatWindow from "@/giulia/panels/ChatWindow";
 import VoiceWindow from "@/giulia/panels/VoiceWindow";
+import MattiaChatWindow from "@/giulia/panels/MattiaChatWindow";
+import MattiaVoiceWindow from "@/giulia/panels/MattiaVoiceWindow";
 import BrowserWindow from "@/system/components/BrowserWindow";
 import MediaFullscreenWindow from "@/system/components/MediaFullscreenWindow";
 import WorkspaceToolbar from "@/system/components/WorkspaceToolbar";
@@ -79,6 +81,10 @@ function LayoutInner() {
 
       {/* Persistent voice window — stays open across dashboard navigation */}
       <VoiceWindow />
+
+      {/* MATTIA'S HOTLINE — dedicated chat + voice windows (parallel to Giulia's) */}
+      <MattiaChatWindow />
+      <MattiaVoiceWindow />
 
       {/* Fullscreen in-app browser window */}
       <BrowserWindow />

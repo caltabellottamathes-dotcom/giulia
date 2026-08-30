@@ -11,14 +11,18 @@ export function PanelProvider({ children }) {
   const [activeModule, setActiveModule] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
   const [voiceOpen, setVoiceOpen] = useState(false);
+  const [mattiaChatOpen, setMattiaChatOpen] = useState(false);
+  const [mattiaVoiceOpen, setMattiaVoiceOpen] = useState(false);
   const [browserOpen, setBrowserOpen] = useState(false);
   const [browserMinimized, setBrowserMinimized] = useState(false);
   const [mediaFullscreen, setMediaFullscreen] = useState(false);
   const [mediaMinimized, setMediaMinimized] = useState(false);
   const [pendingMessage, setPendingMessage] = useState(null);
+  const [pendingMattiaMessage, setPendingMattiaMessage] = useState(null);
 
   // "chat" opens the dedicated chat window instead of a module panel.
   // "voice" opens the dedicated, navigation-persistent voice window.
+  // "mattiaChat"/"mattiaVoice" open Mattia's hotline windows.
   const openModule = (key) => {
     if (key === "chat") {
       setChatOpen(true);
@@ -26,6 +30,14 @@ export function PanelProvider({ children }) {
     }
     if (key === "voice") {
       setVoiceOpen(true);
+      return;
+    }
+    if (key === "mattiaChat") {
+      setMattiaChatOpen(true);
+      return;
+    }
+    if (key === "mattiaVoice") {
+      setMattiaVoiceOpen(true);
       return;
     }
     if (key === "browser") {
@@ -40,6 +52,10 @@ export function PanelProvider({ children }) {
   const closeChat = () => setChatOpen(false);
   const openVoice = () => setVoiceOpen(true);
   const closeVoice = () => setVoiceOpen(false);
+  const openMattiaChat = () => setMattiaChatOpen(true);
+  const closeMattiaChat = () => setMattiaChatOpen(false);
+  const openMattiaVoice = () => setMattiaVoiceOpen(true);
+  const closeMattiaVoice = () => setMattiaVoiceOpen(false);
   const openBrowser = () => { setBrowserOpen(true); setBrowserMinimized(false); };
   const closeBrowser = () => { setBrowserOpen(false); setBrowserMinimized(false); };
   const minimizeBrowser = () => setBrowserMinimized(true);
@@ -55,11 +71,14 @@ export function PanelProvider({ children }) {
         activeModule, openModule, closeModule,
         chatOpen, openChat, closeChat,
         voiceOpen, openVoice, closeVoice,
+        mattiaChatOpen, openMattiaChat, closeMattiaChat,
+        mattiaVoiceOpen, openMattiaVoice, closeMattiaVoice,
         browserOpen, openBrowser, closeBrowser,
         browserMinimized, minimizeBrowser, restoreBrowser,
         mediaFullscreen, openMediaFullscreen, closeMediaFullscreen,
         mediaMinimized, minimizeMedia, restoreMedia,
         pendingMessage, setPendingMessage,
+        pendingMattiaMessage, setPendingMattiaMessage,
       }}
     >
       {children}

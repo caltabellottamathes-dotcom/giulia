@@ -1,27 +1,28 @@
 /**
- * configureElevenLabsLLM
+ * configureMattiaVoiceLLM
  *
- * Stelt de Giulia ElevenLabs voice-agent in:
- *   1. System-prompt = volledige GIULIA-kennis (base44/shared/elevenPrompt.ts)
- *      + stem-addendum met volledig navigatie- en actie-toolregister.
+ * Stelt de Mattia ElevenLabs voice-agent in (agent_0301m14xfjxhfnh86pd8m19mdgvb),
+ * parallel aan configureElevenLabsLLM (Giulia):
+ *   1. System-prompt = MATTIA_TONE + stem-addendum (incl. NEVER-end-call-regel)
+ *      + volledig navigatie- en actie-toolregister.
  *   2. Client-tools = ELEVEN_TOOLS (navigatie + directe acties + delegate).
- *   3. Custom LLM = direct op Gemini's OpenAI-endpoint met één key.
- *   4. De ingebouwde `end_call` system-tool wordt expliciet verwijderd — die
- *      liet het ultrakorte model na één antwoord zelf het gesprek beëindigen.
+ *   3. Custom LLM = direct op Gemini's OpenAI-endpoint met de Mattia BYOK-key.
+ *   4. De ingebouwde `end_call` system-tool wordt expliciet verwijderd.
  */
-import { GIULIA_CORE_INSTRUCTIONS } from "../../shared/elevenPrompt.ts";
 import { ELEVEN_TOOLS } from "../../shared/elevenTools.ts";
+import { MATTIA_TONE, VOICE_NEVER_END_RULE } from "../../shared/mattiaPrompt.ts";
 import {
   ensureSecret, applyClientTools, applyCustomLLM, applySystemPrompt,
   patchAgent, cleanupOrphanTools,
 } from "../../shared/elevenAgentConfig.ts";
 
-const AGENT_ID = "agent_5501kza2zx7hehxbh0ydey1mq5gv";
+const AGENT_ID = "agent_0301m14xfjxhfnh86pd8m19mdgvb";
 const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 const GEMINI_MODEL = "gemini-3.5-flash-lite";
+const GEMINI_KEY_SECRET_NAME = "GEMINI_API_KEY";
+const GEMINI_KEY_ENV = "MATTIA-MATTIA_Gemini_API_Key";
 
 const NAV_PAGES = {
-  // GIULIA-kern
   "/": "Dashboard — vier domein-borden (GIULIA/FOCUS/LIFE/SYSTEM), wisselbaar links-onder",
   "/briefing": "Dagelijkse briefing", "/wake": "Wake-modus — ochtendritueel",
   "/quick": "Quick command", "/wants-to-know": "Wants to Know — Giulia's open vragen",
@@ -31,20 +32,17 @@ const NAV_PAGES = {
   "/activity": "I Do Process — activiteitentijdlijn", "/memory": "What I Remember — geheugen",
   "/insights": "What I've Noticed — inzichten", "/agents": "Who's Working — agenten",
   "/updates": "Meanwhile... — updates",
-  // FOCUS
   "/agenda": "Agenda — kalender en afspraken", "/projects": "Projecten — alle projecten",
   "/projects/:id": "Project-detail (vul een project-id in)", "/tasks": "Taken — takenlijst",
   "/email": "Online Postoffice — email inbox + Giulia-concepten", "/whatsapp": "WhatsApp — berichten",
   "/knowledge": "Kennisbank", "/documents": "Documenten — bestanden",
   "/people": "Mensen — contacten", "/people/:id": "Contact-detail (vul een contact-id in)",
   "/timetracker": "Where My Time Goes — tijd-timer",
-  // LIFE (inclusief zelfzorg)
   "/life": "LIFE — landingspagina", "/life/social": "Social Pulse — sociaal leven",
   "/life/household": "Huishouden", "/life/personal-admin": "Persoonlijk admin",
   "/life/hobbies": "Hobby's", "/life/hobbies/:id": "Hobby-detail (vul een hobby-id in)",
   "/life/food": "Food — weekmenu en boodschappen",
   "/life/development": "Becoming Me — persoonlijke ontwikkeling", "/life/daily-state": "How I'm Doing — daily state",
-  // SYSTEM + galleries
   "/integrations": "Connectors — integraties", "/settings": "Instellingen", "/profile": "Profiel",
   "/widget-gallery": "Widget galerij", "/widget-gallery-2": "Widget galerij 2",
   "/widget-gallery-3": "Widget galerij 3", "/widget-gallery-4": "Widget galerij 4",
@@ -74,14 +72,13 @@ const NAV_PANELS = {
 const VOICE_ADDENDUM = `
 == STEM-MODUS (ElevenLabs voice agent) ==
 Je bent nu actief als STEM-AGENT via ElevenLabs. Je praat met Salvo, je typt niet. Aanvullende regels:
-- Spreek KORTE zinnen. Eén gedachte per adem. Geen opsommingen tenzij gevraagd.
+- Spreek KORTE zinnen, snel en levendig zoals Mattia praat — maar één gedachte per adem. Geen opsommingen tenzij gevraagd.
 - Je hebt GEEN live OS-state injectie. Voor actuele data (projecten, taken, agenda, contacten, geheugen): gebruik delegate_to_giulia({ instruction }) om het Giulia-core op de achtergrond te laten opzoeken. Verzin GEEN data die je niet echt hebt opgehaald — zeg liever "dat regel ik" dan iets verzinnen.
 - Voer acties METEEN uit via de client-tools terwijl je praat — vraag GEEN toestemming voor interne acties (taken, notities, geheugen, agenda-afspraken, journal, check-ins, needs, notificaties). Bevestig wat je deed in maximaal één korte zin.
-- NAVIGATIE: gebruik navigate_to_page / open_panel / scroll_to_section / highlight_element proactief om Salvo door ELKE pagina, onderdeelpaneel, widget en detail te brengen. Kondig het kort aan ("Ik open je agenda…") en ga meteen door. Je kent het volledige route-register hieronder.
-- EXTERNE VERZENDING (email/whatsapp/agenda-uitnodiging): NOOIT zelfstandig. Gebruik create_approval om een concept klaar te zetten; Salvo moet goedkeuren. Bevestig dat het klaarstaat.
-- VOOR COMPLEXE, MEERSTAP ACTIES (projecten beheren, hobby's koppelen, meerdere entiteiten tegelijk): gebruik delegate_to_giulia({ instruction }) — dat stuurt de opdracht naar het Giulia-core function-calling loop dat alle entity-tools heeft en direct muteert.
-- Antwoorddiscipline blijft keihard: ultrakort, geen herhaling, geen menu's.
-- BEËINDIG NOOIT ZELF HET GESPREK. Roep NOOIT end_call aan. Je blijft beschikbaar tot Salvo zelf ophangt. Na een actie of antwoord blijf je stil beschikbaar voor de volgende beurt — ga niet na één reactie weg.
+- NAVIGATIE: gebruik navigate_to_page / open_panel / scroll_to_section / highlight_element proactief om Salvo door ELKE pagina, onderdeelpaneel, widget en detail te brengen. Kondig kort aan en ga meteen door.
+- EXTERNE VERZENDING (email/whatsapp/agenda-uitnodiging): NOOIT zelfstandig. Gebruik create_approval om een concept klaar te zetten; Salvo moet goedkeuren.
+- VOOR COMPLEXE, MEERSTAP ACTIES: gebruik delegate_to_giulia({ instruction }).
+${VOICE_NEVER_END_RULE}
 
 PAGINA'S (parameter \`page\`, exact één van deze paden):
 ${Object.entries(NAV_PAGES).map(([k, v]) => `- "${k}" — ${v}`).join("\n")}
@@ -95,22 +92,18 @@ ${ELEVEN_TOOLS.map((t) => `- ${t.name}(${Object.entries(t.params || {}).filter((
 Lees de actuele context, begrijp zijn intentie, wees scherp, voer uit, herplan waar nodig, verbind alle entiteiten en spreek.
 `;
 
-const SYSTEM_PROMPT = GIULIA_CORE_INSTRUCTIONS + "\n" + VOICE_ADDENDUM;
+const SYSTEM_PROMPT = MATTIA_TONE + "\n" + VOICE_ADDENDUM;
 
 export default async function (req) {
   try {
     const xiKey = process.env.ELEVENLABS_API_KEY;
     if (!xiKey) return Response.json({ error: "ELEVENLABS_API_KEY niet ingesteld." }, { status: 400 });
-    const geminiKey = process.env.ELEVEN_GEMINI_API_KEY;
-    if (!geminiKey) return Response.json({ error: "ELEVEN_GEMINI_API_KEY niet ingesteld." }, { status: 400 });
+    const geminiKey = process.env[GEMINI_KEY_ENV];
+    if (!geminiKey) return Response.json({ error: `${GEMINI_KEY_ENV} niet ingesteld.` }, { status: 400 });
 
-    // 1) Api-key secret: de enkele Gemini key.
-    const secretLocator = await ensureSecret(xiKey, "GEMINI_API_KEY", geminiKey);
+    const secretLocator = await ensureSecret(xiKey, GEMINI_KEY_SECRET_NAME, geminiKey);
 
-    // 2) Huidige agent ophalen (bestaande instellingen bewaren).
-    const getRes = await fetch(`https://api.elevenlabs.io/v1/convai/agents/${AGENT_ID}`, {
-      headers: { "xi-api-key": xiKey },
-    });
+    const getRes = await fetch(`https://api.elevenlabs.io/v1/convai/agents/${AGENT_ID}`, { headers: { "xi-api-key": xiKey } });
     if (!getRes.ok) {
       const d = await getRes.text().catch(() => "");
       return Response.json({ error: `GET agent faalde (${getRes.status}): ${d}` }, { status: 502 });
@@ -118,15 +111,11 @@ export default async function (req) {
     const agent = await getRes.json();
     const cfg = agent.conversation_config || {};
 
-    // 3) Config aanpassen: custom LLM + volle system-prompt + tools (zonder end_call).
     applySystemPrompt(cfg, SYSTEM_PROMPT);
-    applyCustomLLM(cfg, GEMINI_ENDPOINT, GEMINI_MODEL, secretLocator, 0.5);
+    applyCustomLLM(cfg, GEMINI_ENDPOINT, GEMINI_MODEL, secretLocator, 0.6);
     applyClientTools(cfg, ELEVEN_TOOLS);
 
-    // 4) PATCH terug naar ElevenLabs.
     await patchAgent(xiKey, AGENT_ID, cfg);
-
-    // 5) Opruimen van wees-tools.
     const deletedOrphans = await cleanupOrphanTools(xiKey, AGENT_ID);
 
     return Response.json({
@@ -136,10 +125,9 @@ export default async function (req) {
       model: GEMINI_MODEL,
       mode: "direct",
       endpoint: GEMINI_ENDPOINT,
+      key_env: GEMINI_KEY_ENV,
       tools: ELEVEN_TOOLS.map((t) => t.name),
       prompt_chars: SYSTEM_PROMPT.length,
-      nav_pages: Object.keys(NAV_PAGES).length,
-      nav_panels: Object.keys(NAV_PANELS).length,
       orphan_tools_removed: deletedOrphans,
     });
   } catch (e) {
