@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useMattiaChat } from "@/lib/useMattiaChat";
 import { base44 } from "@/api/base44Client";
-import { Image as ImageIcon, Paperclip, ArrowUp, Film, X } from "lucide-react";
 import { useMediaViewer } from "@/lib/MediaViewerContext";
 
 const BLUE = "#b1bfc7";
@@ -16,7 +15,7 @@ const INK = "#595c64";
  *  Foto's die je stuurt worden inline naar Gemini (vision) gestuurd én in de
  *  mediatheek opgeslagen, zodat Mattia ze kan zien én jullie er samen doorheen
  *  kunnen bladeren via de Media-knop. */
-export default function PlayTimeChat({ onToggleMedia }) {
+export default function PlayTimeChat({ onToggleMedia, onOpenMedia }) {
   const { messages, send, sending, ready } = useMattiaChat();
   const [input, setInput] = useState("");
   const [attachments, setAttachments] = useState([]);
@@ -27,6 +26,21 @@ export default function PlayTimeChat({ onToggleMedia }) {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, sending]);
+
+  // Mattia stuurt een media-URL → open de MediaStage en toon het meteen
+  const lastUrlMsgId = useRef(null);
+  useEffect(() => {
+    const last = messages[messages.length - 1];
+    if (!last || last.role === "user") return;
+    if (lastUrlMsgId.current === last.id) return;
+    const m = String(last.content || "").match(/https?:\/\/[^\s)]+\.(png|jpe?g|gif|webp|mp4|mov|webm|mkv|mp3|wav|m4a|flac|aac|ogg|pdf)(\?[^\s]*)?/i);
+    if (!m) return;
+    const url = m[0].replace(/[)\]]+$/, "");
+    const ext = url.split(".").pop().split("?")[0].toLowerCase();
+    const type = ["png","jpg","jpeg","gif","webp"].includes(ext) ? "image" : ["mp4","mov","webm","mkv"].includes(ext) ? "video" : ["mp3","wav","m4a","flac","aac","ogg"].includes(ext) ? "audio" : "doc";
+    lastUrlMsgId.current = last.id;
+    onOpenMedia?.({ name: "Mattia", url, type });
+  }, [messages, onOpenMedia]);
 
   const onPickFile = async (e) => {
     const files = Array.from(e.target.files || []);
@@ -69,11 +83,11 @@ export default function PlayTimeChat({ onToggleMedia }) {
 
       {/* Title — stays */}
       <h2 className="font-display font-bold uppercase tracking-[-0.035em] leading-[0.92] mt-6" style={{ color: BLACK, fontSize: "clamp(34px, 3vw, 54px)", textShadow: "0 0 18px rgba(177,191,199,0.7), 0 0 38px rgba(177,191,199,0.4)" }}>
-        Talk to<br />yourself.<span aria-hidden className="ontwerp-dot-bounce inline-block rounded-full bg-current ml-[6px] align-baseline" style={{ color: BLUE, width: "clamp(8px, 0.7vw, 13px)", height: "clamp(8px, 0.7vw, 13px)" }} />
+        Talk to<br />yourself<span aria-hidden className="ontwerp-dot-bounce inline-block rounded-full bg-current ml-[6px] align-baseline" style={{ color: BLUE, width: "clamp(8px, 0.7vw, 13px)", height: "clamp(8px, 0.7vw, 13px)" }} />
       </h2>
 
       {/* Conversation — editorial, geen bubbles. Mattia links / jij rechts */}
-      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto no-scrollbar mt-7 ml-[80px] mr-1 pr-2 space-y-3.5">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto no-scrollbar mt-7 ml-[80px] mr-1 pr-2 pt-5 space-y-3.5" style={{ maskImage: "linear-gradient(to bottom, transparent, #000 52px)", WebkitMaskImage: "linear-gradient(to bottom, transparent, #000 52px)" }}>
         {!ready ? (
           <p className="font-body text-[12px] italic" style={{ color: INK }}>Laden…</p>
         ) : messages.length === 0 ? (
@@ -102,16 +116,17 @@ export default function PlayTimeChat({ onToggleMedia }) {
             );
           })
         )}
-        {sending && (
-          <p className="font-body text-[12px] italic text-left" style={{ color: INK }}>
-            Mattia denkt na<span aria-hidden className="ontwerp-dot-bounce inline-block rounded-full bg-current ml-1 align-baseline" style={{ color: BLUE, width: "7px", height: "7px" }} />
-          </p>
-        )}
       </div>
 
       {/* Second part — titles stay */}
       <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98] mb-5 mt-6" style={{ color: BLACK, fontSize: "clamp(24px, 1.9vw, 38px)" }}>
-        Bel Mattia.<br />Spreek vrij.<span aria-hidden className="ontwerp-dot-bounce inline-block rounded-full bg-current ml-[6px] align-baseline" style={{ color: "#94925d", width: "clamp(8px, 0.7vw, 13px)", height: "clamp(8px, 0.7vw, 13px)" }} />
+        {sending ? (
+          <>Mattia typt<span aria-hidden className="inline-flex gap-1.5 ml-3 align-baseline">
+            {[0, 1, 2].map((i) => <span key={i} className="ontwerp-dot-bounce inline-block rounded-full bg-current" style={{ color: "#94925d", width: "clamp(8px, 0.7vw, 13px)", height: "clamp(8px, 0.7vw, 13px)", animationDelay: `${i * 0.18}s` }} />)}
+          </span></>
+        ) : (
+          <>Bel Mattia.<br />Spreek vrij.<span aria-hidden className="ontwerp-dot-bounce inline-block rounded-full bg-current ml-[6px] align-baseline" style={{ color: "#94925d", width: "clamp(8px, 0.7vw, 13px)", height: "clamp(8px, 0.7vw, 13px)" }} /></>
+        )}
       </h3>
 
       <div className="h-px w-full" style={{ background: "#d8dab3" }} />
@@ -121,26 +136,21 @@ export default function PlayTimeChat({ onToggleMedia }) {
       </div>
 
       {/* Text insertion field — replaces 1,2,3 */}
-      <div className="mt-4 ml-[80px]">
+      <div className="mt-4 ml-[80px] mr-1">
         {attachments.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-2">
             {attachments.map((a, i) => (
               <div key={i} className="flex items-center gap-1.5 rounded-md border px-2 py-1" style={{ borderColor: GREY }}>
-                {a.type === "image" ? <ImageIcon className="h-3 w-3" style={{ color: INK }} /> : <Paperclip className="h-3 w-3" style={{ color: INK }} />}
                 <span className="text-[10px] truncate max-w-[120px]" style={{ color: INK }}>{a.name}</span>
-                <button onClick={() => setAttachments((p) => p.filter((_, j) => j !== i))} style={{ color: INK }}><X className="h-3 w-3" /></button>
+                <button onClick={() => setAttachments((p) => p.filter((_, j) => j !== i))} className="text-[10px] leading-none" style={{ color: INK }}>×</button>
               </div>
             ))}
           </div>
         )}
-        <div className="flex items-end gap-2.5">
-          <button onClick={() => fileRef.current?.click()} title="Stuur een foto naar Mattia" className="h-9 w-9 shrink-0 rounded-full border flex items-center justify-center hover:bg-foreground/5 transition" style={{ borderColor: GREY, color: INK }}>
-            <Paperclip className="h-4 w-4" />
-          </button>
+        <div className="flex items-end gap-3">
+          <button onClick={() => fileRef.current?.click()} title="Stuur een foto naar Mattia" className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] pb-1.5 hover:underline transition" style={{ color: INK }}>Foto</button>
           <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={onPickFile} />
-          <button onClick={onToggleMedia} title="Open Media — samen door de mediatheek" className="h-9 w-9 shrink-0 rounded-full border flex items-center justify-center hover:bg-foreground/5 transition" style={{ borderColor: GREY, color: INK }}>
-            <Film className="h-4 w-4" />
-          </button>
+          <button onClick={onToggleMedia} title="Open Media" className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] pb-1.5 hover:underline transition" style={{ color: INK }}>Media</button>
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -150,9 +160,7 @@ export default function PlayTimeChat({ onToggleMedia }) {
             className="flex-1 min-w-0 resize-none bg-transparent border-b focus:outline-none px-1 py-1.5 font-body text-[14px] tracking-[-0.01em] max-h-32"
             style={{ borderColor: GREY, color: BLACK }}
           />
-          <button onClick={doSend} disabled={(!input.trim() && attachments.length === 0) || sending} className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center disabled:opacity-30 transition" style={{ background: BLACK, color: "#fff" }} aria-label="Verstuur">
-            <ArrowUp className="h-4 w-4" />
-          </button>
+          <button onClick={doSend} disabled={(!input.trim() && attachments.length === 0) || sending} className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] pb-1.5 hover:underline transition disabled:opacity-30" style={{ color: BLACK }}>Stuur</button>
         </div>
       </div>
 

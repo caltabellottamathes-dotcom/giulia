@@ -34,7 +34,7 @@ export default function PlayTimePage() {
       {/* Hero photo — blijft open wanneer het glas-paneel opent */}
       <motion.div initial={{ x: "-118%" }} animate={{ x: 0 }} transition={{ duration: 0.7, ease: EASE }}
         className="hidden lg:block absolute left-0 top-[14%] bottom-0 w-[34%] overflow-hidden rounded-r-[24px] z-[5]">
-        <Image src={IMAGES.mattiaPlayTime} fittingType="fill" alt="" className="absolute inset-0 w-full h-full" />
+        <Image src="https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/6910f82f6_Mattia_Me.jpeg" fittingType="fill" alt="" className="absolute inset-0 w-full h-full" />
         <div className="absolute inset-0 bg-gradient-to-t from-charcoal/65 via-charcoal/15 to-charcoal/10" />
       </motion.div>
 
@@ -89,7 +89,7 @@ export default function PlayTimePage() {
             <div className="absolute inset-0 rounded-bl-[20px] rounded-r-none graph-paper flex overflow-hidden shadow-[-40px_8px_64px_-18px_rgba(0,0,0,0.55)]">
               {/* Editorial — links */}
               <div className="relative z-0 w-[56%] h-full flex flex-col overflow-hidden border-r" style={{ borderColor: GREY }}>
-                <PlayTimeChat onToggleMedia={() => setMediaOpen((o) => !o)} />
+                <PlayTimeChat onToggleMedia={() => setMediaOpen((o) => !o)} onOpenMedia={(detail) => { if (mediaOpen) window.dispatchEvent(new CustomEvent("giulia:open-media", { detail })); else { window.__giuliaPendingMedia = detail; setMediaOpen(true); } }} />
               </div>
 
               {/* Rechts — leeg canvas waar de voice-panel bovenop zweeft */}
