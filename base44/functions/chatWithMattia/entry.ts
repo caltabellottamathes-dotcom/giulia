@@ -131,7 +131,8 @@ export default async function (req) {
       ? `\n${MATTIA_OS_RULES}\n${contextBlock}\n`
       : `\n== ACTIES ==\nJe kan via tools interne acties doen (taken/notities/agenda/geheugen) als Salvo dat vraagt; externe verzending altijd via create_approval. Vraag geen toestemming voor interne acties. Voer alleen uit als er een duidelijke actie is.\n`;
 
-    const systemInstruction = `${MATTIA_INSTRUCTIONS}${convoRule}${operationalPart}\n\nJe bent Mattia. Spreek direct met Salvo — vlot, scherp, droog, met humor, met een eigen mening. Voer uit wat nodig is via de tools en geef daarna een menselijk antwoord. To the point, niet treuzelig.`;
+    const closing = `\n\nJe bent Mattia. Spreek direct met Salvo — vlot, scherp, droog, met humor, met een eigen mening. Voer uit wat nodig is via de tools en geef daarna een menselijk antwoord. ANTWOORDEN KORT EN PUNCHY: een paar zinnen, geen muur van tekst, tenzij de sfeer duidelijk om meer detail vraagt. To the point, niet treuzelig.`;
+    const systemInstruction = `${MATTIA_INSTRUCTIONS}${convoRule}${operationalPart}${closing}`;
 
     // ── TOOLS ───────────────────────────────────────────────────────
     const toolsMap = {};
