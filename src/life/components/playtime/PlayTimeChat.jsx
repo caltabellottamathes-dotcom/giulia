@@ -73,6 +73,30 @@ export default function PlayTimeChat({ onToggleMedia, onOpenMedia }) {
     } catch { /* ignore */ }
   };
 
+  // Render berichttekst met klikbare links. Media-URLs openen in de MediaStage;
+  // andere links openen in een nieuw tabblad.
+  const renderText = (text, mine) => {
+    if (!text) return null;
+    const re = /(https?:\/\/[^\s)]+)/g;
+    const out = [];
+    let last = 0; let m; let k = 0;
+    while ((m = re.exec(text)) !== null) {
+      if (m.index > last) out.push(<span key={k++}>{text.slice(last, m.index)}</span>);
+      const url = m[0].replace(/[)\]]+$/, "");
+      const ext = url.split(".").pop().split("?")[0].toLowerCase();
+      const mediaExt = ["png","jpg","jpeg","gif","webp","mp4","mov","webm","mkv","mp3","wav","m4a","flac","aac","ogg","pdf"];
+      if (mediaExt.includes(ext)) {
+        const type = ["mp4","mov","webm","mkv"].includes(ext) ? "video" : ["mp3","wav","m4a","flac","aac","ogg"].includes(ext) ? "audio" : ext === "pdf" ? "doc" : "image";
+        out.push(<button key={k++} onClick={() => onOpenMedia?.({ name: "Mattia", url, type })} className="underline underline-offset-2 hover:opacity-70 transition break-all" style={{ color: mine ? BLACK : INK }}>{url}</button>);
+      } else {
+        out.push(<a key={k++} href={url} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:opacity-70 transition break-all" style={{ color: mine ? BLACK : INK }}>{url}</a>);
+      }
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) out.push(<span key={k++}>{text.slice(last)}</span>);
+    return out;
+  };
+
   return (
     <div className="flex-1 flex flex-col min-h-0 px-6 lg:px-8 pt-7 pb-6">
       {/* Header — N°1 */}
@@ -108,8 +132,8 @@ export default function PlayTimeChat({ onToggleMedia, onOpenMedia }) {
                   </div>
                 )}
                 {m.content && (
-                  <p className="font-body text-[12.5px] leading-[1.5] whitespace-pre-line" style={{ color: mine ? BLACK : INK, fontStyle: mine ? "normal" : "italic" }}>
-                    {m.content}
+                  <p className="font-body text-[12.5px] leading-[1.5] whitespace-pre-line" style={{ color: mine ? BLACK : INK, fontStyle: mine ? "normal" : "italic", textShadow: mine ? "0 1px 3px rgba(0,0,0,0.20)" : "none" }}>
+                    {renderText(m.content, mine)}
                   </p>
                 )}
               </div>
@@ -119,15 +143,18 @@ export default function PlayTimeChat({ onToggleMedia, onOpenMedia }) {
       </div>
 
       {/* Second part — titles stay */}
-      <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98] mb-5 mt-6" style={{ color: BLACK, fontSize: "clamp(24px, 1.9vw, 38px)" }}>
-        {sending ? (
-          <>Mattia typt<span aria-hidden className="inline-flex gap-1.5 ml-3 align-baseline">
-            {[0, 1, 2].map((i) => <span key={i} className="ontwerp-dot-bounce inline-block rounded-full bg-current" style={{ color: "#94925d", width: "clamp(8px, 0.7vw, 13px)", height: "clamp(8px, 0.7vw, 13px)", animationDelay: `${i * 0.18}s` }} />)}
-          </span></>
-        ) : (
-          <>Bel Mattia.<br />Spreek vrij.<span aria-hidden className="ontwerp-dot-bounce inline-block rounded-full bg-current ml-[6px] align-baseline" style={{ color: "#94925d", width: "clamp(8px, 0.7vw, 13px)", height: "clamp(8px, 0.7vw, 13px)" }} /></>
-        )}
-      </h3>
+      {sending ? (
+        <p className="font-body text-[13px] tracking-[-0.01em] mb-5 mt-6 flex items-center gap-2" style={{ color: INK }}>
+          Mattia typt
+          <span aria-hidden className="inline-flex gap-1.5 align-baseline">
+            {[0, 1, 2].map((i) => <span key={i} className="ontwerp-dot-bounce inline-block rounded-full bg-current" style={{ color: "#94925d", width: "7px", height: "7px", animationDelay: `${i * 0.18}s` }} />)}
+          </span>
+        </p>
+      ) : (
+        <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98] mb-5 mt-6" style={{ color: BLACK, fontSize: "clamp(24px, 1.9vw, 38px)" }}>
+          Bel Mattia.<br />Spreek vrij.<span aria-hidden className="ontwerp-dot-bounce inline-block rounded-full bg-current ml-[6px] align-baseline" style={{ color: "#94925d", width: "clamp(8px, 0.7vw, 13px)", height: "clamp(8px, 0.7vw, 13px)" }} />
+        </h3>
+      )}
 
       <div className="h-px w-full" style={{ background: "#d8dab3" }} />
       <div className="flex items-center justify-between mt-5">
