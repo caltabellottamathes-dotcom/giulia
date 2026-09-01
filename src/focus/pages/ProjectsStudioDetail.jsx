@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, LayoutGrid, ListChecks, Milestone, Gavel, FileText, StickyNote, Sparkles, MessageSquare, Phone, Film } from "lucide-react";
+import { ArrowLeft, LayoutGrid, ListChecks, Milestone, Gavel, FileText, StickyNote, Sparkles, MessageSquare, Phone, Film, Images } from "lucide-react";
 import ProjectDetailCard from "@/focus/components/projects/ProjectDetailCard";
 import ChatStage from "@/giulia/panels/ChatStage";
 import VoiceStage from "@/giulia/panels/VoiceStage";
 import DocStage from "@/system/panels/DocStage";
 import MediaStage from "@/system/panels/MediaStage";
+import MediaStageHorizontal from "@/system/panels/MediaStageHorizontal";
 import ProjectEditorPanel from "@/focus/components/projects/ProjectEditorPanel";
 import MattiaSlideOver from "@/giulia/panels/MattiaSlideOver";
 
@@ -39,6 +40,7 @@ export default function ProjectsStudioDetail() {
   const [editorProject, setEditorProject] = useState(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [mattiaOpen, setMattiaOpen] = useState(false);
+  const [bottomMediaOpen, setBottomMediaOpen] = useState(false);
   const isStage = panelOpen;
   const [first, setFirst] = useState(true);
   const videoRef = useRef(null);
@@ -112,6 +114,12 @@ export default function ProjectsStudioDetail() {
                 {isStage && stage === s.key && <span className="absolute -left-[11px] top-1/2 -translate-y-1/2 h-6 w-1 rounded-full bg-white/80" />}
               </button>
             )}
+            <div className="h-px w-6 bg-white/15 my-2 mx-auto" />
+            <button onClick={() => setBottomMediaOpen(true)} title="Media horizontaal"
+              className={`relative flex items-center justify-center w-11 h-11 rounded-2xl transition ${bottomMediaOpen ? "bg-white/15 text-white" : "text-white/70 hover:bg-white/10 hover:text-white"}`}>
+              <Images className="w-4 h-4" />
+              {bottomMediaOpen && <span className="absolute -left-[11px] top-1/2 -translate-y-1/2 h-6 w-1 rounded-full bg-white/80" />}
+            </button>
           </div>
           <div className="text-[8px] uppercase tracking-[0.22em] text-white [writing-mode:vertical-rl] rotate-180">{isStage ? "MATTIA" : "GIULIA · PROJECT"}</div>
         </div>
@@ -136,6 +144,7 @@ export default function ProjectsStudioDetail() {
       </motion.div>
 
       <ProjectEditorPanel open={editorOpen} onClose={() => setEditorOpen(false)} project={editorProject} onSaved={() => window.dispatchEvent(new CustomEvent("giulia:projects-reload"))} />
+      <MediaStageHorizontal open={bottomMediaOpen} onClose={() => setBottomMediaOpen(false)} />
       <MattiaSlideOver open={mattiaOpen} onClose={() => setMattiaOpen(false)} />
     </div>
   );

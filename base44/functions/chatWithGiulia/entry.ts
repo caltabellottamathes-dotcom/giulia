@@ -225,6 +225,7 @@ export default async function (req) {
 5. LAZY DATA: je hebt een compacte samenvatting. Voor details roep je query_tools aan (query_tasks/query_agenda/query_finance/query_people/query_memory/get_protocol) — alleen als je het echt nodig hebt, niet standaard.
 6. PERSOON↔PROJECT/BIJLAGE→PROJECT: koppel via link_objects; sla een bestand voor een project op via create_document (url+project_id).
 7. Ontbrekende info → NOOIT gokken: create_notification (kind=question, requires_response) en wachten.
+8. DELEGEER ZWAAR WERK: voor bulk-bewerkingen (sync, planning, analyse, proactivity, finance-herberekening) roep je delegate_to aan met de juiste backend-functie (manageTasks, dailyPlanning, weeklyPlanning, runProactivity, recalcWallets, …) in plaats van het zelf stap-voor-stap in de chat te doen. Je eigen redenering blijft compact; data blijft in de backend.
 `
       : "";
 
@@ -253,11 +254,17 @@ Default language: English. If Salvo speaks another language, match his language 
     // 4. CONVERSATIE-GESCHIEDENIS — Giulia herinnert het lopende gesprek.
     let contents;
     if (source === "chat") {
-      const history = await sr.entities.Message.filter({ channel: "in-app", thread_id: "giulia" }, "-created_date", 6).catch(() => []);
-      const ordered = (history || []).filter((m) => m.content).reverse();
+      // FILTER/VERKORT: alleen de laatste 2 beurten (4 berichten) voor
+      // operationeel, 1 beurt (2 berichten) voor casual praat. Elk bericht
+      // tot 600 tekens — tokenverspilling minimaliseren. Giulia delegeert
+      // zware data-opvraging aan backend-functies (query-tools / delegate_to)
+      // in plaats van alles via de geschiedenis mee te sturen.
+      const histLimit = isOperational ? 4 : 2;
+      const history = await sr.entities.Message.filter({ channel: "in-app", thread_id: "giulia" }, "-created_date", histLimit).catch(() => []);
+      const ordered = (history || []).filter((m) => m.content && String(m.content).trim()).reverse();
       contents = ordered.map((m) => ({
         role: m.role === "user" ? "user" : "model",
-        parts: [{ text: String(m.content).slice(0, 1200) }],
+        parts: [{ text: String(m.content).slice(0, 600) }],
       }));
       const lastTurn = contents[contents.length - 1];
       const alreadyLast = lastTurn && lastTurn.role === "user"
