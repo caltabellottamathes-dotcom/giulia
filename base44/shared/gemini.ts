@@ -204,16 +204,36 @@ export async function geminiChat({ prompt, contents, model, systemText, temperat
  * (geen stil null meer) zodat runGiuliaAgent en de aanroepende functie de fout
  * zichtbaar teruggeven.
  */
+// Fallback-volgorde voor generateContent: als het gekozen model uitgeput is
+// (429/404/5xx), val terug op gemma (ruime TPM, geen RPD-uitputting) en daarna
+// de flash-lite modellen. Een echte 400 (schema-fout) gooi je direct — andere
+// modellen helpen daar niet bij.
+const GEN_FALLBACK_MODELS = ["gemma-4-31b-it", "gemini-3.1-flash-lite", "gemini-3.5-flash-lite"];
+
 export async function geminiGenerate({ contents, tools, model, systemText, generationConfig, keyName }) {
   const body = {
     system_instruction: systemInstruction(systemText),
     contents,
-    ...(tools ? { tools, toolConfig: { functionCallingConfig: { mode: "AUTO" } } } : {}),
+    ...(tools && tools.length ? { tools, toolConfig: { functionCallingConfig: { mode: "AUTO" } } } : {}),
     ...(generationConfig ? { generationConfig } : {}),
   };
-  const data = model
-    ? await rawCall(model, body, keyName)
-    : await callWithFallback(body, keyName);
+  let data;
+  if (model) {
+    const ordered = [model, ...GEN_FALLBACK_MODELS.filter((m) => m !== model)];
+    let lastErr = null;
+    for (const m of ordered) {
+      try { data = await rawCall(m, body, keyName); break; }
+      catch (e) {
+        lastErr = e;
+        const msg = String((e && e.message) || "");
+        const exhausted = /HTTP (429|404|5\d\d)|API_KEY_INVALID|API key not valid/i.test(msg);
+        if (!exhausted) throw e; // echte 400 (schema) — andere modellen helpen niet
+      }
+    }
+    if (!data) throw lastErr || new Error("Alle modellen faalden");
+  } else {
+    data = await callWithFallback(body, keyName);
+  }
   return data?.candidates?.[0]?.content?.parts || null;
 }
 
