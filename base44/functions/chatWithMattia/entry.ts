@@ -164,12 +164,14 @@ export default async function (req) {
     let responseText = null;
 
     for (let step = 0; step < MAX_STEPS; step++) {
-      const parts = await geminiGenerate({ contents, tools: genTools, systemText: systemInstruction, model: "gemini-3.1-flash-lite", keyName: MATTIA_KEY });
+      const parts = await geminiGenerate({ contents, tools: genTools, systemText: systemInstruction, model: "gemma-4-31b-it", keyName: MATTIA_KEY });
       if (!parts || !parts.length) break;
       contents.push({ role: "model", parts });
       const fnCalls = parts.filter((p) => p.functionCall);
       if (!fnCalls.length) {
-        const textPart = parts.find((p) => p.text);
+        // Gemma zet soms een "denk"-tekst vóór het echte antwoord; pak de
+        // laatste tekst-part (het daadwerkelijke antwoord), niet de eerste.
+        const textPart = [...parts].reverse().find((p) => p.text);
         responseText = textPart?.text || null;
         break;
       }

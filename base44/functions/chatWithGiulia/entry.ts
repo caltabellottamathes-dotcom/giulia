@@ -318,12 +318,14 @@ Default language: English. If Salvo speaks another language, match his language 
     const keyName = isBackgroundSource ? "BACKDESK_GEMINI_API_KEY" : "GIGI_Gemini_API_Key";
 
     for (let step = 0; step < MAX_STEPS; step++) {
-      const parts = await geminiGenerate({ contents, tools: genTools, systemText: systemInstruction, model: isOperational ? "gemini-3.1-flash-lite" : "gemma-4-31b-it", keyName });
+      const parts = await geminiGenerate({ contents, tools: genTools, systemText: systemInstruction, model: "gemma-4-31b-it", keyName });
       if (!parts || !parts.length) break;
       contents.push({ role: "model", parts });
       const fnCalls = parts.filter((p) => p.functionCall);
       if (!fnCalls.length) {
-        const textPart = parts.find((p) => p.text);
+        // Gemma zet soms een "denk"-tekst vóór het echte antwoord; pak de
+        // laatste tekst-part (het daadwerkelijke antwoord), niet de eerste.
+        const textPart = [...parts].reverse().find((p) => p.text);
         responseText = textPart?.text || null;
         break;
       }
