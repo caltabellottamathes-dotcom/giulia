@@ -132,7 +132,7 @@ export default function PlayTimeChat({ onToggleMedia, onOpenMedia }) {
                   </div>
                 )}
                 {m.content && (
-                  <p className="font-body text-[12.5px] leading-[1.5] whitespace-pre-line" style={{ color: mine ? BLACK : INK, fontStyle: mine ? "normal" : "italic", textShadow: mine ? "0 1px 3px rgba(0,0,0,0.20)" : "none" }}>
+                  <p className="font-body text-[13px] leading-[1.5] whitespace-pre-line" style={{ color: mine ? BLACK : INK, fontStyle: mine ? "normal" : "italic", textShadow: mine ? "0 1px 3px rgba(0,0,0,0.20)" : "none" }}>
                     {renderText(m.content, mine)}
                   </p>
                 )}
@@ -144,7 +144,7 @@ export default function PlayTimeChat({ onToggleMedia, onOpenMedia }) {
 
       {/* Second part — titles stay */}
       {sending ? (
-        <p className="font-body text-[13px] tracking-[-0.01em] mb-5 mt-6 flex items-center gap-2" style={{ color: INK }}>
+        <p className="font-body text-[13px] tracking-[-0.01em] mb-5 mt-6 flex items-center gap-2 justify-end" style={{ color: INK }}>
           Mattia typt
           <span aria-hidden className="inline-flex gap-1.5 align-baseline">
             {[0, 1, 2].map((i) => <span key={i} className="ontwerp-dot-bounce inline-block rounded-full bg-current" style={{ color: "#94925d", width: "7px", height: "7px", animationDelay: `${i * 0.18}s` }} />)}
@@ -158,11 +158,15 @@ export default function PlayTimeChat({ onToggleMedia, onOpenMedia }) {
 
       <div className="h-px w-full" style={{ background: "#d8dab3" }} />
       <div className="flex items-center justify-between mt-5">
-        <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}><span className="font-bold">How it works</span> | now_</p>
+        <div className="flex items-center gap-3">
+          <button onClick={() => fileRef.current?.click()} title="Stuur een foto naar Mattia" className="font-mono text-[10px] uppercase tracking-[0.18em] hover:underline transition" style={{ color: INK }}>Foto</button>
+          <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={onPickFile} />
+          <button onClick={onToggleMedia} title="Open Media" className="font-mono text-[10px] uppercase tracking-[0.18em] hover:underline transition" style={{ color: INK }}>Media</button>
+        </div>
         <span className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>N°2</span>
       </div>
 
-      {/* Text insertion field — replaces 1,2,3 */}
+      {/* Text insertion field */}
       <div className="mt-4 ml-[80px] mr-1">
         {attachments.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-2">
@@ -175,9 +179,6 @@ export default function PlayTimeChat({ onToggleMedia, onOpenMedia }) {
           </div>
         )}
         <div className="flex items-end gap-3">
-          <button onClick={() => fileRef.current?.click()} title="Stuur een foto naar Mattia" className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] pb-1.5 hover:underline transition" style={{ color: INK }}>Foto</button>
-          <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={onPickFile} />
-          <button onClick={onToggleMedia} title="Open Media" className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] pb-1.5 hover:underline transition" style={{ color: INK }}>Media</button>
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}

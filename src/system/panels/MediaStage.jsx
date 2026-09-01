@@ -1,12 +1,13 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useMediaViewer } from "@/lib/MediaViewerContext";
 import { useMediaLibrary, kindOfUpload } from "@/lib/useMediaLibrary";
-import { ChevronLeft, ChevronRight, Library, ArrowLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight, Library, ArrowLeft, Camera } from "lucide-react";
 import MusicWidget from "@/life/widgets/new/MusicWidget";
 import ImageViewerPanel from "@/system/panels/viewers/ImageViewerPanel";
 import VideoPlayerPanel from "@/system/panels/viewers/VideoPlayerPanel";
 import DocViewerPanel from "@/system/panels/viewers/DocViewerPanel";
 import MediaLibraryList from "@/system/components/media/MediaLibraryList";
+import CameraCapture from "@/system/panels/CameraCapture";
 
 /** MediaStage — transparante stage. Bovenaast een knoppenbalk om te bladeren:
  *  ← terug naar de bibliotheek-lijst, ◀ ▶ vorige/volgende bestand. Zonder
@@ -15,6 +16,7 @@ import MediaLibraryList from "@/system/components/media/MediaLibraryList";
 export default function MediaStage() {
   const { media, previewMedia, closeMedia } = useMediaViewer();
   const { items } = useMediaLibrary();
+  const [camera, setCamera] = useState(false);
 
   useEffect(() => {
     if (window.__giuliaPendingMedia) {
@@ -52,6 +54,9 @@ export default function MediaStage() {
             <Library className="h-4 w-4" />
           </div>
         )}
+        <button onClick={() => setCamera((c) => !c)} className={`h-8 w-8 rounded-full border flex items-center justify-center transition ${camera ? "bg-white/25 text-ivory border-white/45" : "bg-white/10 border-white/15 text-ivory/80 hover:bg-white/15 hover:text-ivory"}`} title="Camera — foto & film" aria-label="Camera">
+          <Camera className="h-4 w-4" />
+        </button>
         <div className="flex-1 min-w-0 flex items-center gap-1.5 justify-center">
           <p className="text-[10px] uppercase tracking-[0.14em] font-semibold text-ivory/75 truncate">
             {media ? (media.name || "bestand") : `${all.length} bestanden in bibliotheek`}
@@ -66,7 +71,9 @@ export default function MediaStage() {
       </div>
 
       <div className="flex-1 min-h-0 overflow-hidden">
-        {!media ? (
+        {camera ? (
+          <CameraCapture onClose={() => setCamera(false)} />
+        ) : !media ? (
           <MediaLibraryList onPick={pick} />
         ) : media.kind === "music" ? (
           <div className="h-full p-3"><MusicWidget fill /></div>

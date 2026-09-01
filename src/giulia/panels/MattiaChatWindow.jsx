@@ -126,10 +126,8 @@ export default function MattiaChatWindow() {
 
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-charcoal/15 animate-fade-in" onClick={closeMattiaChat} />
-
-      <div className="fixed right-4 lg:right-6 bottom-4 lg:bottom-6 z-50 w-[calc(100%-2rem)] lg:w-[680px] animate-slide-up">
-        <div className="relative flex flex-col rounded-[24px] overflow-hidden graph-paper border" style={{ borderColor: GREY, height: "min(560px, 78vh)", maxHeight: "78vh", boxShadow: "0 -24px 64px -20px rgba(0,0,0,0.45)" }}>
+      <div className="fixed right-0 bottom-0 z-50 w-full lg:w-[680px] animate-slide-up">
+        <div className="relative flex flex-col rounded-t-[24px] rounded-b-none overflow-hidden graph-paper border border-b-0" style={{ borderColor: GREY, height: "min(560px, 78vh)", maxHeight: "78vh", boxShadow: "0 -28px 72px -18px rgba(0,0,0,0.55), 0 -10px 28px -10px rgba(0,0,0,0.4)" }}>
           {/* Sluiten — linksboven, tekstknop */}
           <button onClick={closeMattiaChat} className="absolute top-3 left-4 z-40 font-mono text-[10px] uppercase tracking-[0.18em] hover:underline transition" style={{ color: INK }}>Sluiten</button>
 
@@ -167,7 +165,7 @@ export default function MattiaChatWindow() {
                         </div>
                       )}
                       {m.content && (
-                        <p className="font-body text-[12.5px] leading-[1.5] whitespace-pre-line" style={{ color: mine ? BLACK : INK, fontStyle: mine ? "normal" : "italic", textShadow: mine ? "0 1px 3px rgba(0,0,0,0.20)" : "none" }}>
+                        <p className="font-body text-[13px] leading-[1.5] whitespace-pre-line" style={{ color: mine ? BLACK : INK, fontStyle: mine ? "normal" : "italic", textShadow: mine ? "0 1px 3px rgba(0,0,0,0.20)" : "none" }}>
                           {renderText(m.content, mine)}
                         </p>
                       )}
@@ -179,7 +177,7 @@ export default function MattiaChatWindow() {
 
             {/* Typing / title line — subtiele "Mattia typt" bij laden */}
             {sending ? (
-              <p className="font-body text-[13px] tracking-[-0.01em] mb-3 mt-4 flex items-center gap-2" style={{ color: INK }}>
+              <p className="font-body text-[13px] tracking-[-0.01em] mb-3 mt-4 flex items-center gap-2 justify-end" style={{ color: INK }}>
                 Mattia typt
                 <span aria-hidden className="inline-flex gap-1.5 align-baseline">
                   {[0, 1, 2].map((i) => <span key={i} className="ontwerp-dot-bounce inline-block rounded-full bg-current" style={{ color: "#94925d", width: "7px", height: "7px", animationDelay: `${i * 0.18}s` }} />)}
@@ -193,12 +191,16 @@ export default function MattiaChatWindow() {
 
             <div className="h-px w-full" style={{ background: "#d8dab3" }} />
             <div className="flex items-center justify-between mt-3">
-              <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}><span className="font-bold">How it works</span> | now_</p>
+              <div className="flex items-center gap-3">
+                <button onClick={() => fileRef.current?.click()} title="Stuur een foto naar Mattia" className="font-mono text-[10px] uppercase tracking-[0.18em] hover:underline transition" style={{ color: INK }}>Foto</button>
+                <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={onPickFile} />
+                <button onClick={() => setLibOpen(true)} title="Kies uit bibliotheek" className="font-mono text-[10px] uppercase tracking-[0.18em] hover:underline transition" style={{ color: INK }}>Media</button>
+              </div>
               <span className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>N°2</span>
             </div>
 
-            {/* Input — minimalistische tekstknoppen, geen icons */}
-            <div className="mt-3">
+            {/* Input — tekstknoppen + textarea */}
+            <div className="mt-3 ml-[40px] mr-1">
               {attachments.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-2">
                   {attachments.map((a, i) => (
@@ -210,9 +212,6 @@ export default function MattiaChatWindow() {
                 </div>
               )}
               <div className="flex items-end gap-3">
-                <button onClick={() => fileRef.current?.click()} title="Stuur een foto naar Mattia" className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] pb-1.5 hover:underline transition" style={{ color: INK }}>Foto</button>
-                <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={onPickFile} />
-                <button onClick={() => setLibOpen(true)} title="Kies uit bibliotheek" className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] pb-1.5 hover:underline transition" style={{ color: INK }}>Media</button>
                 <button onClick={openMattiaVoice} title="Bel Mattia" className="shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] pb-1.5 hover:underline transition" style={{ color: BLACK }}>Bel</button>
                 <textarea
                   value={input}
