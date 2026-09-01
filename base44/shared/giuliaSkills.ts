@@ -4,7 +4,8 @@
  * GIULIA-CORE (de leider) voert de execute() functies blind uit in de database.
  */
 import { createTaskWithApproval, navigateApp, reportToSalvo, createApproval, findDuplicate } from "./codeAgent.ts";
-import { geminiEmbed } from "./gemini.ts";
+import { geminiEmbed, cosineSimilarity } from "./gemini.ts";
+import { calcPortfolio, monthlyDistribution } from "./financeEngine.ts";
 import { remember, askQuestion } from "./learningLayer.ts";
 import { emitEvent } from "./eventEngine.ts";
 
@@ -650,6 +651,99 @@ export const GIULIA_SKILLS = [
         ).catch(() => {});
       }
       return { deleted_count: ids.length };
+    }
+  },
+  {
+    name: "query_tasks",
+    description: "Haal openstaande taken op (status todo/in_progress/waiting/delegated/today/upcoming/overdue). Optioneel project_id of limit. Gebruik dit als je specifieke taak-info nodig hebt die niet in je samenvatting staat.",
+    inputSchema: { type: "object", properties: { project_id: { type: "string" }, limit: { type: "number" } } },
+    execute: async ({ project_id, limit }, base44) => {
+      const sr = base44.asServiceRole;
+      const q = project_id
+        ? { project_id, status: { $in: ["todo", "in_progress", "waiting", "delegated", "today", "upcoming", "overdue"] } }
+        : { status: { $in: ["todo", "in_progress", "waiting", "delegated", "today", "upcoming", "overdue"] } };
+      const list = await sr.entities.Task.filter(q, "-created_date", Math.min(limit || 20, 50)).catch(() => []);
+      return { count: list.length, items: list.map((t) => ({ id: t.id, title: t.title, status: t.status, priority: t.priority, deadline: t.deadline, project_id: t.project_id })) };
+    }
+  },
+  {
+    name: "query_agenda",
+    description: "Haal aankomende agenda-afspraken op vanaf nu (standaard komende 7 dagen, optioneel days). Inclusief therapy-traject-koppeling. Gebruik dit bij specifieke agenda-vragen.",
+    inputSchema: { type: "object", properties: { days: { type: "number" } } },
+    execute: async ({ days }, base44) => {
+      const sr = base44.asServiceRole;
+      const from = new Date(Date.now() - 86400000).toISOString();
+      const list = await sr.entities.CalendarEvent.filter({ start: { $gte: from } }, "start", 50).catch(() => []);
+      const cutoff = Date.now() + (days || 7) * 86400000;
+      const items = list.filter((e) => new Date(e.start).getTime() <= cutoff).slice(0, 20);
+      return { count: items.length, items: items.map((e) => ({ id: e.id, title: e.title, start: e.start, end: e.end, location: e.location, domain: e.domain, participants: e.participants, therapy_trajectory_id: e.therapy_trajectory_id })) };
+    }
+  },
+  {
+    name: "query_finance",
+    description: "Haal het volledige finance-overzicht op: TOTAL/BESTEMD/VRIJ, maandverdeling, portefeuilles (saldo/reservering/status), komende betalingen (30d), inkomstenbronnen. Gebruik dit bij geld/lasten/inkomen/portefeuille-vragen in plaats van het uit je hoofd te weten.",
+    inputSchema: { type: "object", properties: {} },
+    execute: async (_args, base44) => {
+      const sr = base44.asServiceRole;
+      const [allPortfolios, allExpenses, allIncomes] = await Promise.all([
+        sr.entities.Portfolio.filter({ archived: false }, "order", 50).catch(() => []),
+        sr.entities.AdminObligation.list("-created_date", 50).catch(() => []),
+        sr.entities.Income.list("-created_date", 30).catch(() => []),
+      ]);
+      const fPortfolios = (allPortfolios || []).filter((p) => !p.archived);
+      const fExpenses = allExpenses || [];
+      const fIncomes = allIncomes || [];
+      const dist = monthlyDistribution(fIncomes, fPortfolios, fExpenses);
+      const reserved = Math.round(fPortfolios.reduce((s, p) => s + (Number(p.current_balance) || 0), 0) * 100) / 100;
+      const total = Math.round((reserved + Math.max(0, dist.available)) * 100) / 100;
+      const upcoming = fExpenses
+        .filter((e) => e.status !== "done" && e.next_payment_date)
+        .map((e) => ({ title: e.title, amount: e.expected_amount ?? e.amount, daysUntil: Math.round((new Date(e.next_payment_date).getTime() - Date.now()) / 86400000) }))
+        .filter((e) => e.daysUntil <= 30)
+        .sort((a, b) => a.daysUntil - b.daysUntil)
+        .slice(0, 8);
+      return {
+        total: Math.round(total), reserved: Math.round(reserved), free: Math.round(Math.max(0, dist.available)),
+        income_monthly: Math.round(dist.income), reserved_monthly: Math.round(dist.reserved),
+        portfolios: fPortfolios.map((p) => { const c = calcPortfolio(p, fExpenses.filter((e) => e.portfolio_id === p.id)); return { id: p.id, name: p.name, kind: p.kind, balance: Math.round(p.current_balance || 0), reservation: Math.round(p.monthly_reservation_actual || 0), recommended: Math.round(c.recommended_monthly), next: Math.round(c.next_expected_payment), next_date: c.next_payment_date, status: c.status }; }),
+        upcoming_payments: upcoming.map((e) => ({ title: e.title, amount: Math.round(e.amount), days_until: e.daysUntil })),
+        income_sources: fIncomes.map((i) => ({ description: i.description || i.category, amount: i.amount, frequency: i.frequency, status: i.status })),
+      };
+    }
+  },
+  {
+    name: "query_people",
+    description: "Haal recente contacten op (naam/bedrijf/rol/laatst contact/notities/relatie-domein). Optioneel limit. Gebruik dit bij vragen over personen of relaties.",
+    inputSchema: { type: "object", properties: { limit: { type: "number" } } },
+    execute: async ({ limit }, base44) => {
+      const list = await base44.asServiceRole.entities.Contact.list("-updated_date", Math.min(limit || 25, 60)).catch(() => []);
+      return { count: list.length, items: list.map((c) => ({ id: c.id, name: c.name, company: c.company, role: c.role, last_contact: c.last_contact_date, notes: String(c.notes || "").slice(0, 100), relationship_domain: c.relationship_domain })) };
+    }
+  },
+  {
+    name: "query_memory",
+    description: "Semantische zoekopdracht in Giulia's geheugen — geeft de meest relevante herinneringen voor een query. Gebruik dit om context uit het verleden op te halen in plaats van het uit je hoofd te weten.",
+    inputSchema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] },
+    execute: async ({ query }, base44) => {
+      const sr = base44.asServiceRole;
+      const all = await sr.entities.Memory.list("-created_date", 40).catch(() => []);
+      if (!all.length) return { items: [] };
+      const emb = await geminiEmbed({ text: query, keyName: "GIULIA_GIULIA_MEMORY_GEMINI_API_KEY" }).catch(() => null);
+      if (!emb) return { items: all.slice(0, 8).map((m) => ({ id: m.id, content: String(m.content).slice(0, 200) })) };
+      const scored = all.filter((m) => Array.isArray(m.embedding) && m.embedding.length).map((m) => ({ m, s: cosineSimilarity(emb, m.embedding) })).sort((a, b) => b.s - a.s);
+      const top = scored.filter((x) => x.s > 0.5).slice(0, 8).map((x) => x.m);
+      return { items: top.map((m) => ({ id: m.id, content: String(m.content).slice(0, 220), score: Math.round((scored.find((x) => x.m.id === m.id) || { s: 0 }).s * 100) / 100 })) };
+    }
+  },
+  {
+    name: "get_protocol",
+    description: "Haal het volledige operationele protocol op (referentie-document). Gebruik dit ALLEEN als je specifieke protocol-regels nodig hebt voor een complexe beslissing — niet voor dagelijkse chat.",
+    inputSchema: { type: "object", properties: {} },
+    execute: async (_args, base44) => {
+      const docs = await base44.asServiceRole.entities.Document.filter({ document_type: "reference" }).catch(() => []);
+      if (!docs || !docs.length) return { found: false };
+      const d = docs[0];
+      return { found: true, name: d.name || d.title, content: String(d.content || "").slice(0, 3000) };
     }
   },
 ];

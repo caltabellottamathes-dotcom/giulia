@@ -49,11 +49,13 @@ const KEY_POOLS = {
   chat: [
     "GIGI_Gemini_API_Key",
     "GIULIA_GIULIA_CHAT_GEMINI_API_KEY",
+    "Giulia_Eleven_Client_Tool",
     "GIULIA_GIULIA_GEMINI_API_KEY",
     "RESERVE_GEMINI_API_KEY",
   ],
   giulia_giulia: [
     "GIGI_Gemini_API_Key",
+    "Giulia_Eleven_Client_Tool",
     "GIULIA_GIULIA_GEMINI_API_KEY",
     "GIULIA_GIULIA_DELEGATION_GEMINI_API_KEY",
     "GIULIA_GIULIA_MEMORY_GEMINI_API_KEY",
@@ -316,12 +318,10 @@ export function pickChatModel({ message = "", hasTools = false, hasAttachments =
   const len = (message || "").length;
   const isShort = len < 160;
   // Vision → beste kwaliteit op flash-lite 3.5.
-  if (hasAttachments) return "gemini-3.5-flash-lite";
+  // Vision → gemma (multimodaal). 3.5-flash-lite vandaag uitgeput → niet routeren.
+  if (hasAttachments) return "gemma-4-31b-it";
   // Operationeel (tools nodig) → flash-lite (beter in tool-redenering, grotere context).
-  if (isOperational || hasTools) {
-    if (len > 600) return "gemini-3.5-flash-lite";
-    return "gemini-3.1-flash-lite";
-  }
+  if (isOperational || hasTools) return "gemini-3.1-flash-lite";
   // Casual: kort → gemma (snel, ruime TPM), langer → flash-lite voor kwaliteit.
   if (isShort) return "gemma-4-31b-it";
   return "gemini-3.1-flash-lite";

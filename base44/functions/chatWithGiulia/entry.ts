@@ -101,7 +101,6 @@ export default async function (req) {
       pendingApprovals,
       recentActivity,
       pendingNotifications,
-      protocolDocs,
       upcomingEvents,
       activeTherapy,
       allPortfolios,
@@ -118,7 +117,6 @@ export default async function (req) {
       sr.entities.Approval.filter({ status: "pending" }).catch(() => []),
       sr.entities.Activity.list("-created_date", 3).catch(() => []),
       sr.entities.Notification.filter({ status: "unread" }).catch(() => []),
-      sr.entities.Document.filter({ document_type: "reference" }).catch(() => []),
       sr.entities.CalendarEvent.filter({ start: { $gte: new Date(Date.now() - 86400000).toISOString() } }, "start", 8).catch(() => []),
       sr.entities.TherapyTrajectory.filter({ status: "active" }).catch(() => []),
       sr.entities.Portfolio.filter({ archived: false }, "order", 50).catch(() => []),
@@ -163,45 +161,24 @@ export default async function (req) {
       .sort((a, b) => a.daysUntil - b.daysUntil)
       .slice(0, 8);
 
-    // Format Context for LLM
+    // Compacte samenvatting — de volledige OS-state is LAZY beschikbaar via de
+    // query_* tools (query_tasks/query_agenda/query_finance/query_people/
+    // query_memory/get_protocol). Dit houdt de prompt klein → snelle antwoorden.
     const contextLines = [
-      `== HUIDIGE STAAT VAN GIULIA OS ==`,
-      `Geheugen: ${memories.length ? memories.map(m => `- ${String(m.content).slice(0, 140)}`).join("\n") : "Leeg"}`,
-      ``,
-      `Recente Projecten (${allProjects.length}):`,
-      allProjects.slice(0, 20).map(p => `- ID: ${p.id} | ${p.title} | Status: ${p.status} | Voortgang: ${p.progress}%${p.next_milestone ? ` | next: ${p.next_milestone}` : ""}`).join("\n"),
-      ``,
-      `Recente Contacten / Personen (${allContacts.length}):`,
-      allContacts.slice(0, 25).map(c => `- ${c.name}${c.company ? ` (${c.company})` : ""}${c.role ? ` · ${c.role}` : ""}${c.last_contact_date ? ` · laatste contact: ${new Date(c.last_contact_date).toLocaleDateString("nl-NL")}` : ""}${c.notes ? ` · ${String(c.notes).slice(0, 80)}` : ""}`).join("\n"),
-      ``,
-      `Openstaande Taken (Totaal: ${openTasks.length}):`,
-      `[Er lopen nu ${openTasks.length} taken. Verzin niets nieuws als het niet hoeft.]`,
-      openTasks.slice(0, 12).map(t => `- ID: ${t.id} | ${t.title} | Status: ${t.status}`).join("\n"),
-      ``,
-      `RECENT VERWIJDERD OF AFGEROND (ANTI-ZOMBIE LIJST):`,
-      `[MAAK DEZE NOOIT OPNIEUW AAN!]`,
-      deadTasks.slice(0, 8).map(t => `- ID: ${t.id} | ${t.title} | Status: ${t.status}`).join("\n"),
-      ``,
-      `Wachtende Goedkeuringen voor externe acties: ${pendingApprovals.length}`,
-      `Ongelezen notificaties (vragen/opmerkingen aan Salvo): ${pendingNotifications.length}`,
-      `Recente systeem activiteit:`,
-      recentActivity.slice(0, 3).map(a => `- ${String(a.description).slice(0, 120)}`).join("\n"),
-      ``,
-      `AGENDA — aankomende afspraken (${upcomingEvents.length}):`,
-      `[Gebruik deze IDs als Salvo een afspraak noemt of er iets aan koppelt.]`,
-      upcomingEvents.slice(0, 12).map(e => `- ID: ${e.id} | ${e.title} | start: ${e.start} | domain: ${e.domain || "?"} | therapy_trajectory_id: ${e.therapy_trajectory_id || "—"}`).join("\n"),
-      ``,
-      `THERAPIE-/BEGELEIDINGSTRAJECTEN (actief, ${activeTherapy.length}):`,
-      activeTherapy.map(t => `- ID: ${t.id} | ${t.title} | type: ${t.type} | therapeut: ${t.therapist_name || "—"} | next: ${t.next_appointment || "—"}`).join("\n"),
-      ``,
-      `PERSOONLIJKE ADMIN / FINANCE:`,
-      `TOTAL MONEY €${Math.round(finTotal)} · BESTEMD €${Math.round(finReserved)} · VRIJ €${Math.round(Math.max(0, finDist.available))} · INKOMEN/mnd €${Math.round(finDist.income)} · RESERVERINGEN/mnd €${Math.round(finDist.reserved)}`,
-      `Portefeuilles (${fPortfolios.length}):`,
-      fPortfolios.map((p) => { const c = calcPortfolio(p, fExpenses.filter((e) => e.portfolio_id === p.id)); return `- ${p.name} [${p.kind}] saldo €${Math.round(p.current_balance || 0)} · reservering €${Math.round(p.monthly_reservation_actual || 0)}/mnd (aanbevolen €${Math.round(c.recommended_monthly)}) · volgende €${Math.round(c.next_expected_payment)} ${c.next_payment_date || ""} · status ${c.status}`; }).join("\n"),
-      `Komende betalingen (${finUpcoming.length}):`,
-      finUpcoming.map((e) => `- ${e.title} · €${Math.round(e.amount)} · ${e.daysUntil < 0 ? "te laat" : `${e.daysUntil}d`}`).join("\n"),
-      `Inkomstenbronnen (${fIncomes.length}):`,
-      fIncomes.map((i) => `- ${i.description || i.category || "Inkomen"} · €${i.amount} · ${i.frequency || "monthly"} · ${i.status}`).join("\n")
+      `== HUIDIGE STAAT (samenvatting — details via query-tools) ==`,
+      `Geheugen (top ${memories.length}): ${memories.length ? memories.map(m => `${String(m.content).slice(0, 90)}`).join("  |  ") : "leeg"}`,
+      `Projecten (${allProjects.length}): ${allProjects.slice(0, 10).map(p => `${p.title}(${p.status},${p.progress}%)`).join(" · ")}`,
+      `Open taken (${openTasks.length}): ${openTasks.slice(0, 8).map(t => `${t.title}[${t.status}]`).join(" · ")}`,
+      `Recent afgerond/verwijderd (NIET heraanmaken): ${deadTasks.slice(0, 5).map(t => t.title).join(" · ") || "geen"}`,
+      `Agenda (${upcomingEvents.length}): ${upcomingEvents.slice(0, 6).map(e => `${e.title}@${String(e.start).slice(0, 16)}`).join(" · ")}`,
+      `Therapie (${activeTherapy.length}): ${activeTherapy.map(t => `${t.title}[${t.type}]`).join(" · ") || "geen"}`,
+      `Goedkeuringen: ${pendingApprovals.length} wachtend · Notificaties: ${pendingNotifications.length} ongelezen`,
+      `Recente activiteit: ${recentActivity.slice(0, 2).map(a => String(a.description).slice(0, 80)).join(" · ") || "niets"}`,
+      `Contacten: ${allContacts.length} recent (details via query_people)`,
+      `FINANCE: TOTAL €${Math.round(finTotal)} · BESTEMD €${Math.round(finReserved)} · VRIJ €${Math.round(Math.max(0, finDist.available))} · INKOMEN/mnd €${Math.round(finDist.income)} · RESERV/mnd €${Math.round(finDist.reserved)}`,
+      `Portefeuilles: ${fPortfolios.slice(0, 8).map(p => `${p.name} €${Math.round(p.current_balance || 0)}[${p.status}]`).join(" · ")}`,
+      `Komende betalingen (30d): ${finUpcoming.slice(0, 5).map(e => `${e.title}€${Math.round(e.amount)}${e.daysUntil < 0 ? "!" : `${e.daysUntil}d`}`).join(" · ") || "geen"}`,
+      `Inkomsten: ${fIncomes.slice(0, 5).map(i => `${i.description || i.category}€${i.amount}[${i.status}]`).join(" · ") || "geen"}`,
     ].join("\n");
 
     // 2. THE SYSTEM PROMPT (The Personality & Rules)
@@ -209,23 +186,14 @@ export default async function (req) {
     const profile = `Naam: ${o.name} (${o.short}, ook '${o.intimate_nickname}') | Locatie: ${o.location} | Tijdzone: ${o.timezone}\n\nOperationeel manifest:\n${Object.values(AGENT_CONTEXT.operational_manifesto).join("\n")}\n\nTrust model — zonder goedkeuring: ${AGENT_CONTEXT.trust_model.without_approval.join(" ")}\nTrust model — nooit zonder goedkeuring: ${AGENT_CONTEXT.trust_model.never_without_approval.join(" ")}\n\n${AGENT_CONTEXT.architecture_rules.roles}\n${AGENT_CONTEXT.architecture_rules.anti_zombie}`;
 
     const rules = `
-== ANTI-ZOMBIE & HYGIËNE REGELS (CRITIEK) ==
-1. MAAK GEEN TAKEN AAN OM GATEN TE VULLEN. Er lopen al tientallen taken.
-2. Controleer ALTIJD de 'RECENT VERWIJDERD' lijst. NOOIT dupliceren of her-aanmaken.
-3. Soft Deletes: "Verwijder taak X" → update_task met status='archived'.
-4. Externe acties (email, whatsapp, kalender met gasten) ALTIJD via create_approval, NOOIT zelf verzenden.
-5. Wees proactief in denken, conservatief in aanmaken van records.
-6. STRIKT ONDERSCHEID — Taak vs Approval vs Notificatie: Taak = concrete actie voor vandaag/morgen/deze week, alleen bij echte verandering, gesynchroniseerd met agenda. Approval = UITSLUITEND externe actie die verzonden moet worden (kies category zorgvuldig; 'proactive' bijna nooit, nooit 2x over hetzelfde). Echte vraag aan Salvo → create_notification MET requires_response=true of urgent=true. Routinematige status → report_to_salvo (Activity-feed), NOOIT create_notification.
-7. WAT JE DOET MOET ECHT GEBEUREN: om iets te veranderen MOET je de bijbehorende functie aanroepen (bv. update_task, update_project, update_contact). Zeg NOOIT "ik heb het aangepast" als je de functie niet hebt aangeroepen — het antwoord is pas waar als de functionCall is uitgevoerd en je het resultaat hebt gezien. Dit geldt OOK voor create_approval: zeg NOOIT "ik heb het bij de approvals gezet" / "concept klaargezet" / "bericht klaar" als je create_approval niet hebt aangeroepen — roep de functie aan, zie het resultaat, bevestig pas daarna.
-8. Bij "doe dit niet meer"/"verander X naar Y": roep de juiste update-functie aan met de nieuwe waarden. Bevestig pas ná het resultaat.
-9. PERSOON ↔ PROJECT: als Salvo zegt dat een persoon bij een project hoort (bv. "Ardan gaat over BOGÈST"), koppel ze dan via link_objects (source_type="Contact", source_id=<persoon-id>, relationship="project_ids", target_id=<project-id>) — zoek IDs via find_objects. Hierdoor verschijnen hun mails/whatsapp automatisch op de projectpagina (Communication + People).
-10. BIJLAGE/BESTAND: als Salvo een bestand of bijlage meestuurt over een project, sla het op via create_document (met url + project_id) zodat het meteen op de projectpagina onder Bestanden verschijnt; bij tekstuele inhoud gebruik create_note (met project_id).
-
-== INTAKE-BESLISBOOM (Domein 4) ==
-Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Insight / Notification / Approval.
-- Semantische koppeling aan Project/Contact: alleen bij >85% zekerheid; 50-85% via create_notification (kind='question'); <50% loslaten.
-- Duplicaten: create_task/create_project/create_contact controleren zelf op ≥85% titel-gelijkenis — bij duplicate:true meld dit kort en maak niets nieuws aan.
-- Ontbrekende essentiële info: NOOIT gokken — eerst create_notification met kind='question', requires_response=true, en wachten.
+== REGELS (kern) ==
+1. ANTI-ZOMBIE: maak geen taken/projecten aan om gaten te vullen; check open + recent-afgeronde lijsten (zie samenvatting). Duplicaten worden door create_*-tools zelf gedetecteerd.
+2. WAT JE DOET MOET ECHT GEBEUREN: roep de functie aan en bevestig pas ná het resultaat. Zeg NOOIT "ik heb het aangepast/klaargezet/verzonden" als je de functie niet aanriep. Geldt ook voor create_approval.
+3. EXTERNE ACTIES (email/whatsapp/agenda met gasten) ALTIJD via create_approval, NOOIT zelf verzenden. Category zorgvuldig kiezen; 'proactive' bijna nooit.
+4. ONDERSCHEID: Taak=concrete actie vandaag/deze week. Approval=externe verzending. Echte vraag aan Salvo → create_notification (requires_response/urgent). Routinematige status → report_to_salvo, NIET create_notification.
+5. LAZY DATA: je hebt een compacte samenvatting. Voor details roep je query_tools aan (query_tasks/query_agenda/query_finance/query_people/query_memory/get_protocol) — alleen als je het echt nodig hebt, niet standaard.
+6. PERSOON↔PROJECT/BIJLAGE→PROJECT: koppel via link_objects; sla een bestand voor een project op via create_document (url+project_id).
+7. Ontbrekende info → NOOIT gokken: create_notification (kind=question, requires_response) en wachten.
 `;
 
     const toolDocs = GIULIA_SKILLS.map(
@@ -238,18 +206,14 @@ Classificeer elk signaal: Task / Event / Project / Idea / Memory / Contact / Ins
       ? `\n\n== ACHTERGRONDBRON (geen live chat) ==\nDit signaal komt niet direct van Salvo in de chat (bron: ${source}). Verwerk het autonoom: neem cross-domain acties en koppel herkende objecten aan elkaar (link_objects, bv. taak→project, event→therapie-traject via link_event_to_therapy), plan en leg follow-ups vast. Routinematige status ('sync gelukt', 'X mails verwerkt', 'opstart') hoort in report_to_salvo (Activity-feed), NOOIT in create_notification. Alleen create_notification bij een echte vraag die Salvo zelf moet beantwoorden.\n`
       : "";
 
-    const protocolsText = (protocolDocs && protocolDocs.length)
-      ? protocolDocs.slice(0, 1).map((d) => `=== ${d.name || d.title || "Protocol"} ===\n${String(d.content || "").slice(0, 1500)}`).join("\n\n")
-      : "";
-    const protocolsBlock = protocolsText
-      ? `\n== VOLLEDIG OPERATIONEEL PROTOCOL (bron van waarheid — volg dit strikt) ==\n${protocolsText}\n`
-      : "";
+    // Protocol-document is LAZY: niet meer standaard in de prompt (sloeg ~1.5K
+    // tokens). Giulia haalt het via get_protocol op als ze het nodig heeft.
 
     const convoRule = source === "chat"
       ? `\n\n== CONVERSATIE-CONTINUNITEIT ==\nJe krijgt de recente berichtdraad mee (user + giulia, afwisselend). Je weet daardoor wat Salvo net zei én wat jij zelf net antwoordde. Blijf in het gesprek: bouw voort op wat er al gezegd is, herhaal of herformuleer je vorige antwoord niet, en vraag niet om dingen die al duidelijk zijn. Reageer vloeiend en natuurlijk — alsof je nooit weg was.\n`
       : "";
 
-    let systemInstruction = `${GIULIA_TONE}${convoRule}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}${sourceRule}${protocolsBlock}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo, als zijn beste vriendin — vlot, warm, droog-sarcastisch, uitdagend, stout. GIULIA-CORE (de executor) werkt STIL: zij voert je opdrachten uit en rapporteert NIET terug wat ze gedaan heeft — jij stuurt haar aan en zij doet het gewoon. Denk na, roep de functies aan die nodig zijn om zijn verzoek ECHT uit te voeren. Geef daarna een vlot, menselijk antwoord in het Nederlands — to the point, niet treuzelig, met humor, en daag hem uit waar nodig. Stel geen acties voor, bied geen menu aan, sommer geen opties, herhaal niet wat Salvo zei. Wacht met voorstellen tot er een duidelijke, actuele nood is.
+    let systemInstruction = `${GIULIA_TONE}${convoRule}\n\n${profile}\n\n${contextLines}\n\n${rules}\n\n${toolsBlock}${sourceRule}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo, als zijn beste vriendin — vlot, warm, droog-sarcastisch, uitdagend, stout. GIULIA-CORE (de executor) werkt STIL: zij voert je opdrachten uit en rapporteert NIET terug wat ze gedaan heeft — jij stuurt haar aan en zij doet het gewoon. Denk na, roep de functies aan die nodig zijn om zijn verzoek ECHT uit te voeren. Voor details die niet in je samenvatting staan, roep je een query-tool aan. Geef daarna een vlot, menselijk antwoord in het Nederlands — to the point, niet treuzelig, met humor, en daag hem uit waar nodig. Stel geen acties voor, bied geen menu aan, sommer geen opties, herhaal niet wat Salvo zei. Wacht met voorstellen tot er een duidelijke, actuele nood is.
 
 == TAAL ==
 Default language: English. If Salvo speaks another language, match his language for that reply. Never default to Dutch.`;
