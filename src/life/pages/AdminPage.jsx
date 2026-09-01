@@ -191,10 +191,8 @@ export default function AdminPage() {
           <AnimatePresence>
             {isStage &&
             <motion.div key={stage} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35, ease: EASE }}
-            className={`absolute top-[134px] bottom-[70px] left-0 w-full lg:w-[24vw] z-10 overflow-hidden ${stage === "media" ? "rounded-l-[20px] rounded-r-none" : "rounded-r-[20px] rounded-l-none"}`}
-            style={stage === "media"
-              ? { background: "rgba(30,32,24,0.26)", backdropFilter: "blur(28px) saturate(1.3)", WebkitBackdropFilter: "blur(28px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.14)", boxShadow: "0 18px 48px -20px rgba(0,0,0,0.4)" }
-              : { background: "rgba(20,22,26,0.42)", backdropFilter: "blur(28px) saturate(1.3)", WebkitBackdropFilter: "blur(28px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 18px 48px -20px rgba(0,0,0,0.5)" }}>
+            className="absolute top-[134px] bottom-[70px] left-0 w-full lg:w-[24vw] z-10 overflow-hidden rounded-l-[20px] rounded-r-none"
+            style={{ background: "rgba(30,32,24,0.22)", backdropFilter: "blur(28px) saturate(1.3)", WebkitBackdropFilter: "blur(28px) saturate(1.3)", border: "1px solid rgba(216,218,179,0.16)", boxShadow: "0 18px 48px -20px rgba(0,0,0,0.36)" }}>
                 {(stage === "doc" || stage === "media") &&
               <button onClick={() => setPanelOpen(false)} className="absolute top-4 left-4 z-40 h-9 w-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory transition-colors hidden" aria-label="Terug">
                     <ArrowLeft className="h-4 w-4" />
