@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, forwardRef, useImperativeHandle } from "react";
 import { useMediaLibrary } from "@/lib/useMediaLibrary";
-import { Camera, Video, Square, X, SwitchCamera, Check } from "lucide-react";
+import { Camera, Video, X, Check } from "lucide-react";
 
 const FOLDER = "PlayTime";
 
-/** CameraCapture — webcam/camera in de MediaStage. Maak foto's of film video's;
- *  opnames worden geüpload én opgeslagen in de map "PlayTime" (Upload-entity),
- *  waarna ze direct in de mediatheek verschijnen. */
-export default function CameraCapture({ onClose }) {
+/** CameraCapture — webcam/camera in de MediaStage (tab "Camera").
+ *  Maak foto's of film video's; opnames worden geüpload én opgeslagen in de
+ *  map "PlayTime" (Upload-entity) en verschijnen direct in de mediatheek.
+ *  Exposeert een imperative API (capturePhoto / startRecord / stopRecord) zodat
+ *  Mattia de camera via playtime:media-command kan bedienen. */
+const CameraCapture = forwardRef(function CameraCapture({ onClose }, ref) {
   const { upload } = useMediaLibrary();
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -50,7 +52,7 @@ export default function CameraCapture({ onClose }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const takePhoto = async () => {
+  const takePhoto = useCallback(async () => {
     const v = videoRef.current;
     if (!v || !ready || busy) return;
     setBusy(true); setFlash(true);
@@ -67,15 +69,11 @@ export default function CameraCapture({ onClose }) {
       }
       setBusy(false);
     }, "image/jpeg", 0.92);
-  };
+  }, [ready, busy, upload]);
 
-  const toggleRecord = () => {
-    if (recording) {
-      try { recorderRef.current?.stop(); } catch { /* ignore */ }
-      return;
-    }
+  const startRecord = useCallback(() => {
     const stream = streamRef.current;
-    if (!stream) return;
+    if (!stream || recording) return;
     chunksRef.current = [];
     const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
     let rec;
@@ -98,13 +96,20 @@ export default function CameraCapture({ onClose }) {
     recorderRef.current = rec;
     setRecording(true); setSeconds(0);
     timerRef.current = setInterval(() => setSeconds((s) => s + 1), 1000);
-  };
+  }, [recording, upload]);
 
+  const stopRecord = useCallback(() => {
+    try { if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop(); } catch { /* ignore */ }
+  }, []);
+
+  // Imperatief — Mattia (via playtime:media-command → MediaStage ref)
+  useImperativeHandle(ref, () => ({ capturePhoto: takePhoto, startRecord, stopRecord }), [takePhoto, startRecord, stopRecord]);
+
+  const toggleRecord = recording ? stopRecord : startRecord;
   const mmss = (s) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
   return (
     <div className="relative h-full w-full bg-black flex flex-col">
-      {/* Live preview */}
       <div className="relative flex-1 min-h-0 overflow-hidden">
         <video ref={videoRef} playsInline muted className="h-full w-full object-cover" style={{ transform: "scaleX(-1)" }} />
         {flash && <div className="absolute inset-0 bg-white animate-fade-in" />}
@@ -118,9 +123,7 @@ export default function CameraCapture({ onClose }) {
         )}
       </div>
 
-      {/* Controls */}
       <div className="shrink-0 flex items-center justify-between gap-2 px-4 py-3 bg-black/40 border-t border-white/10">
-        {/* Mode toggle */}
         <div className="flex items-center gap-1 rounded-full bg-white/10 p-1 border border-white/15">
           <button onClick={() => setMode("photo")} className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] transition ${mode === "photo" ? "bg-white/25 text-ivory" : "text-ivory/65 hover:text-ivory"}`}>
             <Camera className="h-3.5 w-3.5" /> Foto
@@ -130,7 +133,6 @@ export default function CameraCapture({ onClose }) {
           </button>
         </div>
 
-        {/* Shutter */}
         <button
           onClick={mode === "photo" ? takePhoto : toggleRecord}
           disabled={!ready || busy}
@@ -146,7 +148,6 @@ export default function CameraCapture({ onClose }) {
           )}
         </button>
 
-        {/* Right cluster */}
         <div className="flex items-center gap-2">
           {saved > 0 && (
             <span className="flex items-center gap-1 text-[10px] text-ivory/70 font-mono">
@@ -160,4 +161,6 @@ export default function CameraCapture({ onClose }) {
       </div>
     </div>
   );
-}
+});
+
+export default CameraCapture;

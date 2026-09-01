@@ -90,6 +90,11 @@ export function useMattiaChat() {
         setMessages((prev) => [...prev, { id: `m-${Date.now()}`, role: "assistant", content: res.response, tool_calls: res.actions_executed || [], attachments: [] }]);
         setSending(false);
         bumpRefresh();
+        if (Array.isArray(res.media_commands)) {
+          res.media_commands.forEach((cmd) => {
+            try { window.dispatchEvent(new CustomEvent("playtime:media-command", { detail: cmd })); } catch { /* ignore */ }
+          });
+        }
       }
     } catch {
       // invoke faalde of timeout — de subscription herstelt het antwoord;

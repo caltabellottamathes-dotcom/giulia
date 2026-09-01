@@ -1,10 +1,11 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { geminiGenerate, pickChatModel } from '../../shared/gemini.ts';
 import { calcPortfolio, monthlyDistribution } from '../../shared/financeEngine.ts';
-import { MATTIA_BUDDY, MATTIA_NAUGHTY, MATTIA_PLAYTIME, MATTIA_OS_RULES } from '../../shared/mattiaInstructions.ts';
+import { MATTIA_BUDDY, MATTIA_NAUGHTY, MATTIA_PLAYTIME, MATTIA_OS_RULES, MATTIA_MEDIA_RULES } from '../../shared/mattiaInstructions.ts';
 import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
 import { linkMentionedContacts } from '../../shared/contactLinker.ts';
 import { buildImageParts } from '../../shared/imageParts.ts';
+import { MATTIA_MEDIA_SKILLS } from '../../shared/mattiaMediaSkills.ts';
 
 /**
  * chatWithMattia — Mattia chat, BYOK (MATTIA-MATTIA_Gemini_API_Key), géén
@@ -23,7 +24,7 @@ const MAX_STEPS = 2;
 const MATTIA_KEY = "MattiaTime_Gemini_API_Key";
 
 const FINANCE_RE = /geld|money|saldo|balance|betalen|payment|lasten|expense|inkomen|income|portefeuille|portfolio|reservering|budget|factuur|invoice|verzekering|huur|energie|rekening|finance|financ|euro|€/i;
-const OPERATIONAL_RE = /taak|task|project|agenda|afspraak|meeting|contact|persoon|notitie|note\b|idee|idea|geheugen|memory|herinner|remind|plan|planning|verzet|verplaats|opschuiven|deadline|milestone|beslissing|decision|kennis|knowledge|document|bestand|file|upload|bijlage|attachment|email|whatsapp|mail|verstuur|send|reserveer|reserve|boek|book|rekening/i;
+const OPERATIONAL_RE = /taak|task|project|agenda|afspraak|meeting|contact|persoon|notitie|note\b|idee|idea|geheugen|memory|herinner|remind|plan|planning|verzet|verplaats|opschuiven|deadline|milestone|beslissing|decision|kennis|knowledge|document|bestand|file|upload|bijlage|attachment|email|whatsapp|mail|verstuur|send|reserveer|reserve|boek|book|rekening|camera|webcam|foto|film|opname|mediatheek|bibliotheek|mediastage/i;
 
 // ── PERSONA-CODEWORD-GATING ──────────────────────────────────────
 // "playtime" = codewoord voor de volledige Playtime-extensie.
@@ -138,7 +139,7 @@ export default async function (req) {
       ? `\n== CONVERSATIE-CONTINUNITEIT ==\nJe krijgt de recente Mattia-draad mee. Blijf in het gesprek; herhaal niet.\n`
       : "";
     const operationalPart = isOperational
-      ? `\n${MATTIA_OS_RULES}\n${contextBlock}\n`
+      ? `\n${MATTIA_OS_RULES}\n${MATTIA_MEDIA_RULES}\n${contextBlock}\n`
       : `\n== ACTIES ==\nJe kan via tools interne acties doen (taken/notities/agenda/geheugen) als Salvo dat vraagt; externe verzending altijd via create_approval. Vraag geen toestemming voor interne acties. Voer alleen uit als er een duidelijke actie is.\n`;
 
     const personaLayers = [MATTIA_BUDDY, convoRule, operationalPart];
@@ -151,7 +152,7 @@ export default async function (req) {
     // Tools alleen meesturen bij operationele berichten — anders moet het model
     // 40+ functies evalueren voor een simpele casual/naughty reply (traag).
     const toolsMap = {};
-    for (const s of GIULIA_SKILLS) {
+    for (const s of [...GIULIA_SKILLS, ...MATTIA_MEDIA_SKILLS]) {
       toolsMap[s.name] = { description: s.description, inputSchema: s.inputSchema, execute: (args) => s.execute(args, base44) };
     }
     const functionDeclarations = Object.entries(toolsMap).map(([name, t]) => ({ name, description: t.description || "", parameters: t.inputSchema || { type: "object", properties: {} } }));
@@ -183,6 +184,7 @@ export default async function (req) {
     }
 
     const executed = [];
+    const mediaCommands = [];
     let responseText = null;
     // Model-router: kiest automatisch het optimale model per bericht.
     const chosenModel = pickChatModel({
@@ -210,6 +212,7 @@ export default async function (req) {
         let result;
         try { result = t ? await t.execute(args) : { error: "unknown tool" }; }
         catch (e) { result = { error: String((e && e.message) || e) }; }
+        if (result && result.media_command) mediaCommands.push(result.media_command);
         executed.push({ name, args, ok: !(result && result.error), result: sanitizeResult(result) });
         respParts.push({ functionResponse: { name, response: sanitizeResult(result) } });
       }
@@ -230,7 +233,7 @@ export default async function (req) {
       try { await linkMentionedContacts(sr, message); } catch { /* ignore */ }
     }
 
-    return Response.json({ ok: true, response: finalText, actions_executed: executed });
+    return Response.json({ ok: true, response: finalText, actions_executed: executed, media_commands: mediaCommands });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

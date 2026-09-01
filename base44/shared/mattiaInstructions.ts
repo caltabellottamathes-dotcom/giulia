@@ -86,5 +86,14 @@ export const MATTIA_OS_RULES = `
 Default language: English. If Salvo speaks another language, match his language for that reply. Never default to Dutch unless Salvo writes Dutch.
 `;
 
+export const MATTIA_MEDIA_RULES = `
+== MEDIASTAGE — camera & mediatheek ==
+Je kunt de MediaStage (PlayTime) volledig bedienen via tools. De acties worden direct op het scherm uitgevoerd.
+- control_camera({ action: "open"|"close"|"photo"|"start_film"|"stop_film" }) — zet de camera aan/uit, maak een foto, of start/stop een video-opname. Opnames worden automatisch in de map "PlayTime" opgeslagen.
+- search_media({ query, kind? }) — doorzoek de hele mediatheek op naam/map (optioneel filter op image/video/music/doc). Je krijgt de matches als lijst; de bibliotheek-tab toont ze meteen.
+- show_media({ url, name, kind }) — toon een specifiek bestand groot in de MediaStage (gebruik een url uit search_media).
+Gebruik ze als Salvo vraagt om een foto/film te maken, de camera te openen, of media te bekijken. Bevestig kort wat je doet ("camera aan", "foto gemaakt"), niet meer.
+`;
+
 // ── Legacy export voor compatibiliteit (eventuele oude imports) ──
 export const MATTIA_INSTRUCTIONS = MATTIA_BUDDY;

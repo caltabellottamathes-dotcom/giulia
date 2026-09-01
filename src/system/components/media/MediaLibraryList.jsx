@@ -17,12 +17,19 @@ const GLASS = { background: "transparent" };
  * map, in een glazen kaart met afgeronde hoeken + blur voor contrast op de
  * witte tekst. Tik op een bestand roept onPick(file) aan.
  */
-export default function MediaLibraryList({ filter, onPick, className, emptyHint }) {
+export default function MediaLibraryList({ filter, query, onPick, className, emptyHint }) {
   const { items, loading } = useMediaLibrary();
 
   const visible = useMemo(
-    () => (items || []).filter((i) => !filter || kindOfUpload(i) === filter),
-    [items, filter]
+    () => (items || []).filter((i) => {
+      if (filter && kindOfUpload(i) !== filter) return false;
+      if (query) {
+        const q = query.toLowerCase();
+        if (!((i.filename || "").toLowerCase().includes(q) || (i.folder || "").toLowerCase().includes(q))) return false;
+      }
+      return true;
+    }),
+    [items, filter, query]
   );
 
   const groups = useMemo(() => {
