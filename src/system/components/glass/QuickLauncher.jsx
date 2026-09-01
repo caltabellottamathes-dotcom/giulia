@@ -71,7 +71,7 @@ const GROUPS = [
       { label: "Knowledge Base", route: "/knowledge", module: "knowledge" },
       { label: "Image Library", route: "/beeldbank" },
       { label: "Ingestion", route: "/ingest" },
-      { label: "Media Player", route: "/media" },
+      { label: "FILES", route: "/media" },
       { label: "Browser", module: "browser" },
       { label: "Integrations", route: "/integrations" },
       { label: "Settings", route: "/settings" },
