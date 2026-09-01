@@ -29,6 +29,32 @@ function systemInstruction(extra) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// ── Gemma TPM-throttle ────────────────────────────────────────────────────
+// Houd een schuif 60s-venster bij van geschatte input-tokens voor gemma-calls.
+// Als we dreigen over de 16K tokens/min limiet te gaan, wacht dan tot er
+// genoeg ruimte vrijkomt — zodat we vlot onder de limiet blijven i.p.v. 429's
+// te verzamelen. Alleen gemma (flash-lite heeft eigen, ruimere limieten).
+const GEMMA_TPM_CAP = 15000;
+const gemmaWindow = []; // { t, tokens }
+function estimateInputTokens(body) { return Math.ceil(JSON.stringify(body).length / 4); }
+async function throttleGemma(inputTokens) {
+  const now = Date.now();
+  while (gemmaWindow.length && now - gemmaWindow[0].t > 60000) gemmaWindow.shift();
+  const used = gemmaWindow.reduce((s, e) => s + e.tokens, 0);
+  if (used + inputTokens > GEMMA_TPM_CAP) {
+    const overflow = used + inputTokens - GEMMA_TPM_CAP;
+    let acc = 0, wait = 0;
+    for (const e of gemmaWindow) {
+      acc += e.tokens;
+      if (acc >= overflow) { wait = (e.t + 60000) - now; break; }
+    }
+    if (wait > 0) await sleep(Math.min(wait, 60000));
+    const now2 = Date.now();
+    while (gemmaWindow.length && now2 - gemmaWindow[0].t > 60000) gemmaWindow.shift();
+  }
+  gemmaWindow.push({ t: Date.now(), tokens: inputTokens });
+}
+
 // Rol-gebaseerde sleutelpools — elke rol heeft zijn eigen Gemini-sleutel;
 // bij quota/429/403/5xx schakelt hij automatisch door naar de werkende legacy-
 // sleutel en daarna naar RESERVE_GEMINI_API_KEY (de universele reserve met
@@ -48,8 +74,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const KEY_POOLS = {
   chat: [
     "GIGI_Gemini_API_Key",
-    "GIULIA_GIULIA_CHAT_GEMINI_API_KEY",
     "Giulia_Eleven_Client_Tool",
+    "GIULIA_GIULIA_CHAT_GEMINI_API_KEY",
     "GIULIA_GIULIA_GEMINI_API_KEY",
     "RESERVE_GEMINI_API_KEY",
   ],
@@ -69,6 +95,7 @@ const KEY_POOLS = {
     "MattiaTime_Gemini_API_Key",
     "MATTIA-MATTIA_Gemini_API_Key",
     "GIULIA-MATTIA_Gemini_API_Key",
+    "PlayTime_Gemini_API_Key",
     "RESERVE_GEMINI_API_KEY",
   ],
   playtime: [
@@ -115,6 +142,7 @@ async function rawCallOne(model, body, keyName) {
 
 async function rawCall(model, body, keyName) {
   const primary = keyName || DEFAULT_KEY_NAME;
+  if (model.startsWith("gemma")) await throttleGemma(estimateInputTokens(body));
   // Probeer eerst de eigen sleutel, daarna de rest van de pool (legacy +
   // RESERVE altijd als laatste vangnet), bij 429/403/5xx automatisch doorsturend.
   const pool = poolFor(primary);

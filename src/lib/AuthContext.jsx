@@ -18,25 +18,9 @@ export const AuthProvider = ({ children }) => {
     checkAppState();
   }, []);
 
-  // Bij sluiten van de app → token wissen, zodat de volgende keer eerst ingelogd moet worden.
-  // Een eigen hard-redirect (inloggen, OTP-verificatie, wachtwoord resetten) vuurt
-  // dezelfde "beforeunload" af als het echt sluiten van het tabblad — de vlag
-  // gezet door markInternalNavigation() zorgt dat we die redirects niet als
-  // "sluiten" behandelen en het net verkregen token niet meteen wissen.
-  useEffect(() => {
-    const onUnload = () => {
-      try {
-        if (sessionStorage.getItem("giulia_internal_nav") === "1") {
-          sessionStorage.removeItem("giulia_internal_nav");
-          return;
-        }
-      } catch { /* ignore */ }
-      try { localStorage.removeItem("base44_access_token"); } catch { /* ignore */ }
-    };
-    window.addEventListener("beforeunload", onUnload);
-    return () => window.removeEventListener("beforeunload", onUnload);
-  }, []);
-
+  // Token persists in localStorage — inloggen alleen nodig na een harde reset
+  // (storage wissen) of expliciete logout. Vroeger werd het token bij elke
+  // beforeunload gewist, waardoor je bij elke reload opnieuw moest inloggen.
   const checkAppState = async () => {
     try {
       setIsLoadingPublicSettings(true);

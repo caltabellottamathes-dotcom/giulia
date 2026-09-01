@@ -31,22 +31,13 @@ export default function Login() {
     return () => mql.removeEventListener("change", onChange);
   }, []);
 
-  // Forceer onmiddellijke, unmuted autoplay — browsers blokkeren dit vaak,
-  // dus blijven we het proberen tot het lukt.
+  // Gemute autoplay — betrouwbaar in elke browser (unmuted autoplay wordt
+  // geblokkeerd). Video is decoratieve achtergrond, geen geluid nodig.
   useEffect(() => {
     const vid = videoRef.current;
     if (!vid) return;
-    vid.muted = false;
-    vid.volume = 1;
-    const p = vid.play();
-    if (p && typeof p.catch === "function") {
-      p.catch(() => {
-        const retry = () => { vid.muted = false; vid.play().catch(() => {}); };
-        retry();
-        setTimeout(retry, 200);
-        setTimeout(retry, 800);
-      });
-    }
+    vid.muted = true;
+    vid.play().catch(() => {});
   }, [isDesktop]);
 
   const handleSubmit = async (e) => {
@@ -74,6 +65,7 @@ export default function Login() {
           src={isDesktop ? LOGIN_VIDEO_DESKTOP : LOGIN_VIDEO_MOBILE}
           autoPlay
           loop
+          muted
           playsInline
           preload="auto"
           className="h-full w-full object-cover"
