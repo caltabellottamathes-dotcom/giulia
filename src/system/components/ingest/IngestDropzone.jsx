@@ -3,13 +3,15 @@ import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import GlassPanel from "@/system/components/glass/GlassPanel";
 import GlassButton from "@/system/components/glass/GlassButton";
-import { Upload, FileText, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Upload, FileText, Image as ImageIcon, Loader2, FolderOpen } from "lucide-react";
+import LibraryPicker from "@/system/components/files/LibraryPicker";
 
 export default function IngestDropzone({ onSubmitted }) {
   const [mode, setMode] = useState("file");
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [libOpen, setLibOpen] = useState(false);
   const fileRef = useRef(null);
 
   const start = async (sourceType, payload) => {
@@ -41,6 +43,18 @@ export default function IngestDropzone({ onSubmitted }) {
 
   const onDrop = (e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) handleFile(f); };
 
+  const onPickLibrary = async ({ url, name, kind }) => {
+    const sourceType = kind === "image" ? "image" : kind === "doc" ? "pdf" : "structured";
+    setBusy(true);
+    try {
+      const rec = await base44.entities.IngestionSource.create({ source_type: sourceType, original_filename: name, file_url: url, status: "received" });
+      await base44.functions.invoke("ingestSource", { source_id: rec.id }).catch(() => null);
+      onSubmitted(rec);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <div className="max-w-2xl mx-auto space-y-5">
       <div className="flex gap-2 justify-center">
@@ -62,6 +76,11 @@ export default function IngestDropzone({ onSubmitted }) {
             <p className="font-display font-medium text-foreground/90">{busy ? "Bezig met uploaden…" : "Sleep een bestand hierheen"}</p>
             <p className="text-xs text-muted-foreground mt-1">PDF of afbeelding · GIULIA begrijpt de inhoud</p>
           </div>
+          <div className="mt-4 flex justify-center">
+            <GlassButton variant="glass" size="sm" onClick={() => setLibOpen(true)} disabled={busy}>
+              <FolderOpen className="w-3.5 h-3.5 mr-1.5" /> Kies uit bibliotheek
+            </GlassButton>
+          </div>
         </GlassPanel>
       ) : (
         <GlassPanel level={2} className="p-6 space-y-4">
@@ -79,6 +98,7 @@ export default function IngestDropzone({ onSubmitted }) {
           </div>
         </GlassPanel>
       )}
+      <LibraryPicker open={libOpen} onClose={() => setLibOpen(false)} onPick={onPickLibrary} />
     </div>
   );
 }

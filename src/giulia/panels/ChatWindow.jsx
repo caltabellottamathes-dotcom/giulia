@@ -2,12 +2,13 @@ import React, { useRef, useState, useEffect } from "react";
 import { useGiuliaChat } from "@/lib/useGiuliaChat";
 import { usePanel } from "@/lib/PanelContext";
 import { base44 } from "@/api/base44Client";
-import { X, ArrowUp, Phone, Paperclip, Image as ImageIcon, Film, Music, FileText } from "lucide-react";
+import { X, ArrowUp, Phone, Paperclip, Image as ImageIcon, Film, Music, FileText, FolderOpen } from "lucide-react";
 import { motion } from "framer-motion";
 import ChatMarkdown from "@/system/components/glass/ChatMarkdown";
 import { useActiveDomain } from "@/lib/useActiveDomain";
 import { cn } from "@/lib/utils";
 import { useMediaViewer } from "@/lib/MediaViewerContext";
+import LibraryPicker from "@/system/components/files/LibraryPicker";
 
 /**
  * ChatWindow — GIULIA-GIULIA's conversation panel. Praat met het brein
@@ -45,6 +46,7 @@ export default function ChatWindow() {
   const scrollRef = useRef(null);
   const fileRef = useRef(null);
   const [attachments, setAttachments] = useState([]);
+  const [libOpen, setLibOpen] = useState(false);
   const { openMedia } = useMediaViewer();
   const { accent, bubbleText } = useActiveDomain();
 
@@ -113,6 +115,10 @@ export default function ChatWindow() {
       } catch { /* ignore */ }
     }
     if (uploaded.length) setAttachments((prev) => [...prev, ...uploaded]);
+  };
+
+  const onPickLibrary = ({ url, name, kind }) => {
+    setAttachments((prev) => [...prev, { url, name, type: kind === "music" ? "audio" : kind }]);
   };
 
   if (!chatOpen) return null;
@@ -212,6 +218,14 @@ export default function ChatWindow() {
                 <Paperclip className="h-4 w-4" />
               </button>
               <input ref={fileRef} type="file" multiple className="hidden" onChange={onPickFile} />
+              <button
+                onClick={() => setLibOpen(true)}
+                className="h-12 w-12 shrink-0 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory hover:bg-ivory/15 transition-colors"
+                aria-label="Kies uit bibliotheek"
+                title="Kies uit bibliotheek"
+              >
+                <FolderOpen className="h-4 w-4" />
+              </button>
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -233,6 +247,7 @@ export default function ChatWindow() {
           </div>
         </div>
       </div>
+      <LibraryPicker open={libOpen} onClose={() => setLibOpen(false)} onPick={onPickLibrary} />
     </>
   );
 }

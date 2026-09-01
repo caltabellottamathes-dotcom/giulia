@@ -6,11 +6,12 @@ import { buildVoiceClientTools } from "@/lib/voiceClientTools";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import { Image } from "@/components/ui/image";
-import { Film, Upload } from "lucide-react";
+import { Film, Upload, FolderOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { IMAGES } from "@/lib/images";
 import SineLayers from "@/giulia/widgets/new/SineLayers";
 import { useAudio } from "@/lib/useAudio";
+import LibraryPicker from "@/system/components/files/LibraryPicker";
 
 const MATTIA_AGENT_ID = "agent_0301m14xfjxhfnh86pd8m19mdgvb";
 const VOICE_PHOTO = IMAGES.mattiaPlayTime;
@@ -37,6 +38,7 @@ export default function PlayTimeVoicePanel({ onToggleMedia }) {
   const [transcript, setTranscript] = useState([]);
   const processedRef = useRef(new Set());
   const [uploading, setUploading] = useState(false);
+  const [libOpen, setLibOpen] = useState(false);
 
   const clientTools = useMemo(() => buildVoiceClientTools({ navigate, openModule }), [navigate, openModule]);
   const { startSession, endSession, status, isSpeaking, getOutputVolume } = useConversation({
@@ -99,6 +101,10 @@ export default function PlayTimeVoicePanel({ onToggleMedia }) {
     } finally {
       setUploading(false);
     }
+  };
+
+  const onPickLibrary = ({ url, name, kind }) => {
+    window.dispatchEvent(new CustomEvent("giulia:open-media", { detail: { name, url, type: kind, kind } }));
   };
 
   const statusLabel = connecting ? "Verbinden…" : connected ? (isSpeaking ? "Spreekt" : "Luistert") : "Tik om te bellen";
@@ -171,18 +177,27 @@ export default function PlayTimeVoicePanel({ onToggleMedia }) {
         </div>
 
         {/* Upload bar — verzend naar Mattia */}
-        <div className="shrink-0 pt-2">
+        <div className="shrink-0 pt-2 flex gap-2">
           <input ref={fileRef} type="file" onChange={onUpload} className="hidden" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt" />
           <button
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
-            className="w-full h-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center gap-2 text-ivory/80 hover:bg-ivory/15 hover:text-ivory transition disabled:opacity-40"
+            className="flex-1 h-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center gap-2 text-ivory/80 hover:bg-ivory/15 hover:text-ivory transition disabled:opacity-40"
           >
             <Upload className="h-4 w-4" />
-            <span className="text-[12px] font-medium tracking-wide">{uploading ? "Uploaden…" : "Verzend naar Mattia"}</span>
+            <span className="text-[12px] font-medium tracking-wide">{uploading ? "Uploaden…" : "Verzend"}</span>
+          </button>
+          <button
+            onClick={() => setLibOpen(true)}
+            className="h-9 px-3 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center gap-2 text-ivory/80 hover:bg-ivory/15 hover:text-ivory transition"
+            title="Kies uit bibliotheek"
+          >
+            <FolderOpen className="h-4 w-4" />
+            <span className="text-[12px] font-medium tracking-wide">Bibliotheek</span>
           </button>
         </div>
       </div>
+      <LibraryPicker open={libOpen} onClose={() => setLibOpen(false)} onPick={onPickLibrary} />
     </div>
   );
 }
