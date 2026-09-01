@@ -6,6 +6,7 @@ import { Image } from "@/components/ui/image";
 import { IMAGES } from "@/lib/images";
 import MediaStage from "@/system/panels/MediaStage";
 import PlayTimeVoicePanel from "@/life/components/playtime/PlayTimeVoicePanel";
+import PlayTimeChat from "@/life/components/playtime/PlayTimeChat";
 
 const EASE = [0.16, 1, 0.3, 1];
 const BLUE = "#b1bfc7";
@@ -87,44 +88,8 @@ export default function PlayTimePage() {
           <motion.div animate={{ x: mediaOpen ? "24vw" : 0 }} transition={{ duration: 0.7, ease: EASE }} className="absolute inset-0 z-20">
             <div className="absolute inset-0 rounded-bl-[20px] rounded-r-none graph-paper flex overflow-hidden shadow-[-40px_8px_64px_-18px_rgba(0,0,0,0.55)]">
               {/* Editorial — links */}
-              <div className="relative z-0 w-[56%] h-full flex flex-col overflow-y-auto no-scrollbar border-r" style={{ borderColor: GREY }}>
-                <div className="flex-1 flex flex-col min-h-0 px-6 lg:px-8 pt-7 pb-6">
-                  <div className="flex items-center justify-between">
-                    <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}><span className="font-bold">PlayTime</span> | mattia_voice_</p>
-                    <span className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>N°1</span>
-                  </div>
-
-                  <h2 className="font-display font-bold uppercase tracking-[-0.035em] leading-[0.92] mt-6" style={{ color: BLACK, fontSize: "clamp(34px, 3vw, 54px)", textShadow: "0 0 18px rgba(177,191,199,0.7), 0 0 38px rgba(177,191,199,0.4)" }}>
-                    Talk to<br />yourself.<span aria-hidden className="ontwerp-dot-bounce inline-block rounded-full bg-current ml-[6px] align-baseline" style={{ color: BLUE, width: "clamp(8px, 0.7vw, 13px)", height: "clamp(8px, 0.7vw, 13px)" }} />
-                  </h2>
-
-                  <div className="ml-[80px] mt-8 space-y-2">
-                    <p className="font-display font-medium tracking-[-0.05em] text-[12px]" style={{ color: BLACK }}>Bel Mattia. Denk hardop. Flirt, lach, dwaal af.</p>
-                    <p className="font-body text-[12px] leading-[1.55]" style={{ color: INK }}>Dit is je speeltuin. Geen agenda, geen taken, geen optimalisatie — alleen jij en je eigen hoofd, met Mattia aan de lijn.</p>
-                  </div>
-
-                  <div className="flex-1 min-h-8" />
-
-                  <h3 className="font-display font-bold tracking-[-0.025em] leading-[0.98] mb-5" style={{ color: BLACK, fontSize: "clamp(24px, 1.9vw, 38px)" }}>
-                    Bel Mattia.<br />Spreek vrij.<span aria-hidden className="ontwerp-dot-bounce inline-block rounded-full bg-current ml-[6px] align-baseline" style={{ color: "#94925d", width: "clamp(8px, 0.7vw, 13px)", height: "clamp(8px, 0.7vw, 13px)" }} />
-                  </h3>
-
-                  <div className="h-px w-full" style={{ background: "#d8dab3" }} />
-                  <div className="flex items-center justify-between mt-5">
-                    <p className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}><span className="font-bold">How it works</span> | now_</p>
-                    <span className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>N°2</span>
-                  </div>
-
-                  <div className="mt-4 ml-[80px] space-y-3">
-                    <p className="font-body text-[12px] leading-[1.55]" style={{ color: INK }}>1. Tik de bloem rechts om Mattia te bellen.</p>
-                    <p className="font-body text-[12px] leading-[1.55]" style={{ color: INK }}>2. Upload iets (foto, doc) om het in het gesprek te delen.</p>
-                    <p className="font-body text-[12px] leading-[1.55]" style={{ color: INK }}>3. Open Media om dingen te tonen of toe te voegen.</p>
-                  </div>
-
-                  <div className="pt-6 mt-6 border-t" style={{ borderColor: GREY }}>
-                    <p className="font-mono text-[10px] tracking-[0.5em] uppercase" style={{ color: "#abab69" }}>No agenda. Just play.</p>
-                  </div>
-                </div>
+              <div className="relative z-0 w-[56%] h-full flex flex-col overflow-hidden border-r" style={{ borderColor: GREY }}>
+                <PlayTimeChat onToggleMedia={() => setMediaOpen((o) => !o)} />
               </div>
 
               {/* Rechts — leeg canvas waar de voice-panel bovenop zweeft */}

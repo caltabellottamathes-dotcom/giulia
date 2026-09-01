@@ -4,6 +4,7 @@ import { calcPortfolio, monthlyDistribution } from '../../shared/financeEngine.t
 import { MATTIA_BUDDY, MATTIA_NAUGHTY, MATTIA_PLAYTIME, MATTIA_OS_RULES } from '../../shared/mattiaInstructions.ts';
 import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
 import { linkMentionedContacts } from '../../shared/contactLinker.ts';
+import { buildImageParts } from '../../shared/imageParts.ts';
 
 /**
  * chatWithMattia — Mattia chat, BYOK (MATTIA-MATTIA_Gemini_API_Key), géén
@@ -170,6 +171,15 @@ export default async function (req) {
       }
     } else {
       contents = [{ role: "user", parts: [{ text: `Inkomend signaal (bron: ${source}):\n"""${message.slice(0, 3000)}"""` }] }];
+    }
+
+    // Beeldbijlagen → inline aan de laatste user-beurt (Gemini vision, BYOK).
+    // Mattia ontvangt en ziet de foto; Gemma kan hem analyseren.
+    const imgParts = await buildImageParts(attachments);
+    if (imgParts.length) {
+      const last = contents[contents.length - 1];
+      if (last && last.role === "user") last.parts = [...last.parts, ...imgParts];
+      else contents.push({ role: "user", parts: imgParts });
     }
 
     const executed = [];

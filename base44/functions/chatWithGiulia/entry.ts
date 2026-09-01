@@ -5,6 +5,7 @@ import { AGENT_CONTEXT, GIULIA_TONE } from '../../shared/agentContext.ts';
 import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
 import { linkMentionedContacts } from '../../shared/contactLinker.ts';
 import { enforceApprovalClaim } from '../../shared/approvalEnforcer.ts';
+import { buildImageParts } from '../../shared/imageParts.ts';
 
 /**
  * chatWithGiulia — GIULIA-GIULIA (het brein) stuurt GIULIA-CORE (de blinde
@@ -44,26 +45,8 @@ function sanitizeResult(r) {
   return out;
 }
 
-async function buildImageParts(attachments) {
-  const parts = [];
-  for (const a of attachments) {
-    if (!a || a.type !== "image" || !a.url) continue;
-    try {
-      const ext = (a.name || "").split(".").pop().toLowerCase();
-      const mime = ext === "png" ? "image/png" : ext === "gif" ? "image/gif" : ext === "webp" ? "image/webp" : "image/jpeg";
-      const buf = await fetch(a.url).then((r) => r.arrayBuffer());
-      if (!buf || buf.byteLength > 12 * 1024 * 1024) continue;
-      const bytes = new Uint8Array(buf);
-      let bin = "";
-      const chunk = 0x8000;
-      for (let i = 0; i < bytes.length; i += chunk) {
-        bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
-      }
-      parts.push({ inlineData: { mimeType: mime, data: btoa(bin) } });
-    } catch { /* ignore */ }
-  }
-  return parts;
-}
+// buildImageParts — geëxtraheerd naar base44/shared/imageParts.ts
+// (gedeeld door chatWithGiulia en chatWithMattia).
 
 export default async function (req) {
   try {
