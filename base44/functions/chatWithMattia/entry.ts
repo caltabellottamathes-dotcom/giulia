@@ -135,12 +135,14 @@ export default async function (req) {
     const systemInstruction = `${MATTIA_INSTRUCTIONS}${convoRule}${operationalPart}${closing}`;
 
     // ── TOOLS ───────────────────────────────────────────────────────
+    // Tools alleen meesturen bij operationele berichten — anders moet het model
+    // 40+ functies evalueren voor een simpele casual/naughty reply (traag).
     const toolsMap = {};
     for (const s of GIULIA_SKILLS) {
       toolsMap[s.name] = { description: s.description, inputSchema: s.inputSchema, execute: (args) => s.execute(args, base44) };
     }
     const functionDeclarations = Object.entries(toolsMap).map(([name, t]) => ({ name, description: t.description || "", parameters: t.inputSchema || { type: "object", properties: {} } }));
-    const genTools = [{ functionDeclarations }];
+    const genTools = isOperational ? [{ functionDeclarations }] : [];
 
     // ── CONVERSATIE-GESCHIEDENIS (Mattia-draad) ──────────────────────
     let contents;
@@ -161,10 +163,8 @@ export default async function (req) {
     const executed = [];
     let responseText = null;
 
-    const genConfig = { thinkingConfig: { thinkingBudget: 0 } };
-
     for (let step = 0; step < MAX_STEPS; step++) {
-      const parts = await geminiGenerate({ contents, tools: genTools, systemText: systemInstruction, generationConfig: genConfig, keyName: MATTIA_KEY });
+      const parts = await geminiGenerate({ contents, tools: genTools, systemText: systemInstruction, keyName: MATTIA_KEY });
       if (!parts || !parts.length) break;
       contents.push({ role: "model", parts });
       const fnCalls = parts.filter((p) => p.functionCall);
