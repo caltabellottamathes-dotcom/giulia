@@ -425,10 +425,10 @@ Use navigation tools proactively when they help.
 
 Available navigation concepts include:
 
-* `navigate_to_page`
-* `open_panel`
-* `scroll_to_section`
-* `highlight_element`
+* navigate_to_page
+* open_panel
+* scroll_to_section
+* highlight_element
 
 If the user says:
 

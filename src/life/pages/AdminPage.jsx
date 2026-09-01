@@ -38,7 +38,7 @@ const STAGE_TABS = [
 
 // Relevante pagina's buiten Admin die verbonden zijn of meest nodig op deze pagina.
 const RELATED = [
-{ label: "Documents", to: "/documents" },
+{ label: "Files", to: "/media" },
 { label: "Agenda", to: "/agenda" },
 { label: "People", to: "/people" },
 { label: "Approvals", to: "/approvals" }];

@@ -56,7 +56,7 @@ export default function FilesPage() {
     stage === "doc" ? <DocStage /> :
     <MediaStage />;
 
-  const tabTitle = "FILES";
+  const tabTitle = "Files";
 
   return (
     <div className="fixed inset-x-0 top-14 bottom-0 overflow-visible z-[30]">
@@ -112,7 +112,7 @@ export default function FilesPage() {
               </button>
             )}
           </div>
-          <div className="text-[8px] uppercase tracking-[0.22em] text-white [writing-mode:vertical-rl] rotate-180">{isStage ? "GIULIA" : "FILES"}</div>
+          <div className="text-[8px] uppercase tracking-[0.22em] text-white [writing-mode:vertical-rl] rotate-180">{isStage ? "GIULIA" : "Files"}</div>
         </div>
 
         {/* Inhoud-wrapper — stage verschijnt links, witte kaart blijft staan */}

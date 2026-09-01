@@ -145,7 +145,7 @@ export const GIULIA_SKILLS = [
   },
   {
     name: "navigate",
-    description: "Navigeer Salvo's app in real time. 'route' opent een pagina (/tasks, /email, /agenda, /projects, /projects/<id>, /people, /approvals, /whatsapp, /knowledge, /insights, /memory, /documents, /life/food, /self/therapy, …). 'panel' opent een schuif-paneel (agenda, tasks, email, whatsapp, projects, people, approvals, memory, insights, activity, food, household, …). 'section' scrollt naar een element-id; 'element' highlight het kort. Je mag meerdere tegelijk zetten.",
+    description: "Navigeer Salvo's app in real time. 'route' opent een pagina (/tasks, /email, /agenda, /projects, /projects/<id>, /people, /approvals, /whatsapp, /knowledge, /insights, /memory, /media, /life/food, /self/therapy, …). 'panel' opent een schuif-paneel (agenda, tasks, email, whatsapp, projects, people, approvals, memory, insights, activity, food, household, …). 'section' scrollt naar een element-id; 'element' highlight het kort. Je mag meerdere tegelijk zetten.",
     inputSchema: { type: "object", properties: { route: { type: "string" }, panel: { type: "string" }, section: { type: "string" }, element: { type: "string" }, label: { type: "string" } } },
     execute: async ({ route, panel, section, element, label }, base44) => {
       const params = {};
@@ -174,8 +174,30 @@ export const GIULIA_SKILLS = [
     description: "Sla een document (referentie, contract, notitie) op voor Salvo of als resultaat van een goedgekeurde 'document_create' approval.",
     inputSchema: { type: "object", properties: { name: { type: "string" }, document_type: { type: "string", enum: ["reference", "contract", "invoice", "notes", "other"] }, content: { type: "string" }, url: { type: "string", description: "Bestands-URL (bv. bijlage)" }, project_id: { type: "string" } }, required: ["name"] },
     execute: async (args, base44) => {
-      const d = await base44.asServiceRole.entities.Document.create({ ...args, status: "giulia" }).catch(() => null);
-      return d ? { id: d.id, name: d.name } : { error: "create failed" };
+      const sr = base44.asServiceRole;
+      const d = await sr.entities.Document.create({ ...args, status: "giulia" }).catch(() => null);
+      // Bij een bestands-URL: ook opslaan in de FILES-bibliotheek (en bij een
+      // project in de projectmap "Projects/<id>"), zodat het op de projectpagina
+      // én in Files verschijnt.
+      if (args.url) {
+        try {
+          const ext = (args.name || args.url).toLowerCase();
+          const kind = /\.(png|jpe?g|gif|webp)$/.test(ext) ? "image"
+            : /\.(mp4|mov|webm|mkv)$/.test(ext) ? "video"
+            : /\.(mp3|wav|m4a|flac|aac|ogg)$/.test(ext) ? "music" : "doc";
+          await sr.entities.Upload.create({
+            file_url: args.url,
+            filename: args.name || "document",
+            uploaded_for: "media",
+            document_type: kind === "image" ? "image" : "other",
+            note: kind,
+            status: "new",
+            folder: args.project_id ? `Projects/${args.project_id}` : "",
+            ...(args.project_id ? { project_id: args.project_id } : {}),
+          });
+        } catch { /* ignore */ }
+      }
+      return d ? { id: d.id, name: args.name } : { error: "create failed" };
     }
   },
   {

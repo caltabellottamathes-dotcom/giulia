@@ -6,7 +6,10 @@ import { onRefresh } from "@/lib/refreshBus";
 /**
  * useMediaLibrary — beheert geüploade media (foto / video / audio / pdf) in de
  * Upload-entity. Items worden getagd met `uploaded_for: "media"` en optioneel
- * een `folder`. Het type wordt afgeleid via kindOfFile en in `note` opgeslagen.
+ * een `folder` en `project_id`. Het type wordt afgeleid via kindOfFile en in
+ * `note` opgeslagen. Bestanden gekoppeld aan een project krijgen folder
+ * "Projects/<projectId>" zodat ze in de FILES-bibliotheek onder het project
+ * verschijnen én op de projectpagina.
  */
 const TAG = "media";
 
@@ -33,10 +36,9 @@ export function useMediaLibrary() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
-  // Update-knop (refreshBus) → mediatheek wereldwijd opnieuw laden
   useEffect(() => onRefresh(load), [load]);
 
-  const upload = useCallback(async (file, folder) => {
+  const upload = useCallback(async (file, folder, project_id) => {
     if (!file) return null;
     setUploading((n) => n + 1);
     try {
@@ -50,6 +52,7 @@ export function useMediaLibrary() {
         note: kind,
         status: "new",
         folder: folder || "",
+        ...(project_id ? { project_id } : {}),
       });
       setItems((a) => [rec, ...(a || [])]);
       return rec;
@@ -67,6 +70,14 @@ export function useMediaLibrary() {
     } catch { /* negeer */ }
   }, []);
 
+  const removeMany = useCallback(async (ids) => {
+    if (!ids || !ids.length) return;
+    try {
+      await base44.entities.Upload.deleteMany({ id: { $in: ids } });
+      setItems((a) => (a || []).filter((x) => !ids.includes(x.id)));
+    } catch { /* negeer */ }
+  }, []);
+
   const rename = useCallback(async (id, filename) => {
     try {
       const rec = await base44.entities.Upload.update(id, { filename });
@@ -81,5 +92,13 @@ export function useMediaLibrary() {
     } catch { /* negeer */ }
   }, []);
 
-  return { items, loading, uploading, upload, remove, rename, setFolder, reload: load };
+  /** Verplaats een bestand naar een project-map: zet zowel project_id als folder. */
+  const setProjectFile = useCallback(async (id, projectId, folder) => {
+    try {
+      const rec = await base44.entities.Upload.update(id, { project_id: projectId, folder: folder || "" });
+      setItems((a) => (a || []).map((x) => (x.id === id ? { ...x, ...rec } : x)));
+    } catch { /* negeer */ }
+  }, []);
+
+  return { items, loading, uploading, upload, remove, removeMany, rename, setFolder, setProjectFile, reload: load };
 }
