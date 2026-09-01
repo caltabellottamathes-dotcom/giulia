@@ -13,9 +13,9 @@
  */
 import { secrets } from "base44:runtime";
 
-// gemini-3.5-flash-lite primair (meeste credits + hoogste rate-limits);
-// gemini-3.1-flash-lite als gelijkwaardige fallback bij 404/429.
-const MODELS = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite"];
+// gemini-3.1-flash-lite primair (3.5-flash-lite is momenteel overloaded/503);
+// 3.5 als gelijkwaardige fallback bij 404/429/5xx.
+const MODELS = ["gemini-3.1-flash-lite", "gemini-3.5-flash-lite"];
 
 export const GIULIA_PERSONA =
   "You are Giulia, a Personal Operating System. You combine conversation, memory, and planning into one coherent system. " +
@@ -47,11 +47,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // De chat (GIULIA-GIULIA met Salvo) krijgt een eigen hoofd-sleutel + 2 reserves.
 const KEY_POOLS = {
   chat: [
+    "GIGI_Gemini_API_Key",
     "GIULIA_GIULIA_CHAT_GEMINI_API_KEY",
     "GIULIA_GIULIA_GEMINI_API_KEY",
     "RESERVE_GEMINI_API_KEY",
   ],
   giulia_giulia: [
+    "GIGI_Gemini_API_Key",
     "GIULIA_GIULIA_GEMINI_API_KEY",
     "GIULIA_GIULIA_DELEGATION_GEMINI_API_KEY",
     "GIULIA_GIULIA_MEMORY_GEMINI_API_KEY",
@@ -61,14 +63,28 @@ const KEY_POOLS = {
     "BACKDESK_GEMINI_API_KEY",
     "GIULIA_API_KEY",
   ],
+  mattia: [
+    "MattiaTime_Gemini_API_Key",
+    "MATTIA-MATTIA_Gemini_API_Key",
+    "GIULIA-MATTIA_Gemini_API_Key",
+    "RESERVE_GEMINI_API_KEY",
+  ],
+  playtime: [
+    "PlayTime_Gemini_API_Key",
+    "RESERVE_GEMINI_API_KEY",
+  ],
   backdesk: ["BACKDESK_GEMINI_API_KEY", "GIULIA_API_KEY", "RESERVE_GEMINI_API_KEY"],
   update: ["UPDATE_GEMINI_API_KEY", "RESERVE_GEMINI_API_KEY"],
   memory: ["GIULIA_GIULIA_MEMORY_GEMINI_API_KEY", "GIULIA_GIULIA_GEMINI_API_KEY", "RESERVE_GEMINI_API_KEY"],
   default: ["Gemini_Flash_API_Key", "GIULIA_API_KEY", "RESERVE_GEMINI_API_KEY"],
 };
 const KEY_ROLE = {
+  GIGI_Gemini_API_Key: "chat",
   GIULIA_GIULIA_CHAT_GEMINI_API_KEY: "chat",
   GIULIA_GIULIA_GEMINI_API_KEY: "giulia_giulia",
+  MattiaTime_Gemini_API_Key: "mattia",
+  "MATTIA-MATTIA_Gemini_API_Key": "mattia",
+  PlayTime_Gemini_API_Key: "playtime",
   BACKDESK_GEMINI_API_KEY: "backdesk",
   UPDATE_GEMINI_API_KEY: "update",
   GIULIA_GIULIA_MEMORY_GEMINI_API_KEY: "memory",
@@ -134,7 +150,7 @@ async function callWithFallback(body, keyName) {
     } catch (e) {
       lastErr = e;
       // 429 / 404 op dit model → probeer de volgende; andere fouten → gooi direct.
-      if (!/HTTP 4(29|04)/.test(String(e.message))) throw e;
+      if (!/HTTP (4(29|04)|5\d\d)/.test(String(e.message))) throw e;
     }
   }
   throw lastErr || new Error("Alle Gemini-modellen faalden");
@@ -190,8 +206,7 @@ export async function geminiGenerate({ contents, tools, model, systemText, gener
   const body = {
     system_instruction: systemInstruction(systemText),
     contents,
-    ...(tools ? { tools } : {}),
-    toolConfig: { functionCallingConfig: { mode: "AUTO" } },
+    ...(tools ? { tools, toolConfig: { functionCallingConfig: { mode: "AUTO" } } } : {}),
     ...(generationConfig ? { generationConfig } : {}),
   };
   const data = model

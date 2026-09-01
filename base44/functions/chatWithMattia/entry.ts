@@ -19,7 +19,7 @@ import { linkMentionedContacts } from '../../shared/contactLinker.ts';
  * we de relevante context. Géén approval-enforcer-ronde. MAX_STEPS=2.
  */
 const MAX_STEPS = 2;
-const MATTIA_KEY = "MATTIA-MATTIA_Gemini_API_Key";
+const MATTIA_KEY = "MattiaTime_Gemini_API_Key";
 
 const FINANCE_RE = /geld|money|saldo|balance|betalen|payment|lasten|expense|inkomen|income|portefeuille|portfolio|reservering|budget|factuur|invoice|verzekering|huur|energie|rekening|finance|financ|euro|€/i;
 const OPERATIONAL_RE = /taak|task|project|agenda|afspraak|meeting|contact|persoon|notitie|note\b|idee|idea|geheugen|memory|herinner|remind|plan|planning|verzet|verplaats|opschuiven|deadline|milestone|beslissing|decision|kennis|knowledge|document|bestand|file|upload|bijlage|attachment|email|whatsapp|mail|verstuur|send|reserveer|reserve|boek|book|rekening/i;
@@ -164,7 +164,7 @@ export default async function (req) {
     let responseText = null;
 
     for (let step = 0; step < MAX_STEPS; step++) {
-      const parts = await geminiGenerate({ contents, tools: genTools, systemText: systemInstruction, model: "gemini-3.6-flash", keyName: MATTIA_KEY });
+      const parts = await geminiGenerate({ contents, tools: genTools, systemText: systemInstruction, model: "gemini-3.1-flash-lite", keyName: MATTIA_KEY });
       if (!parts || !parts.length) break;
       contents.push({ role: "model", parts });
       const fnCalls = parts.filter((p) => p.functionCall);

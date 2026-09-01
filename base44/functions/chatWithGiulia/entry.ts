@@ -315,10 +315,10 @@ Default language: English. If Salvo speaks another language, match his language 
     }
     const executed = [];
     let responseText = null;
-    const keyName = isBackgroundSource ? "BACKDESK_GEMINI_API_KEY" : "GIULIA_GIULIA_CHAT_GEMINI_API_KEY";
+    const keyName = isBackgroundSource ? "BACKDESK_GEMINI_API_KEY" : "GIGI_Gemini_API_Key";
 
     for (let step = 0; step < MAX_STEPS; step++) {
-      const parts = await geminiGenerate({ contents, tools: genTools, systemText: systemInstruction, keyName });
+      const parts = await geminiGenerate({ contents, tools: genTools, systemText: systemInstruction, model: isOperational ? "gemini-3.1-flash-lite" : "gemma-4-31b-it", keyName });
       if (!parts || !parts.length) break;
       contents.push({ role: "model", parts });
       const fnCalls = parts.filter((p) => p.functionCall);
