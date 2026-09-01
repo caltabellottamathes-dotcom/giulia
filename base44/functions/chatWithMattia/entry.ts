@@ -7,20 +7,22 @@ import { linkMentionedContacts } from '../../shared/contactLinker.ts';
 
 /**
  * chatWithMattia — Mattia chat, BYOK (MATTIA-MATTIA_Gemini_API_Key), géén
- * integration-credits. Persona/instructies komen uit mattia.jsonc via
+ * integration-credits. Persona/instructies uit mattia.jsonc via
  * mattiaInstructions.ts (Naughty/Playtime + Playtime-context als uitvoerbare
- * instructie) — NIET uit mattiaPrompt.ts. Antwoorden opgeslagen als
- * Message(role="mattia", channel="in-app", thread_id="mattia") zodat
- * useMattiaChat ze via realtime subscription toont.
+ * instructie). Antwoorden opgeslagen als Message(role="mattia",
+ * channel="in-app", thread_id="mattia") voor useMattiaChat.
  *
- * SPEED: géén approval-enforcer (die deed er elke beurt een extra LLM-ronde
- * doorheen — de echte reden dat Mattia traag was), MAX_STEPS=2, lichtere
- * context-gathering (geen embedding-ronde, alleen finance bij finance-vraag).
+ * SPEED: slimme context-gating. Pure conversatie / Naughty-praat krijgt
+ * GEEN OS-context (geen 6 entity-queries, geen context-blok) → alleen
+ * persona + geschiedenis → 1 snelle Gemini-call. Alleen als het bericht
+ * operationeel is (taken/projecten/agenda/finance/people/documenten) laden
+ * we de relevante context. Géén approval-enforcer-ronde. MAX_STEPS=2.
  */
 const MAX_STEPS = 2;
 const MATTIA_KEY = "MATTIA-MATTIA_Gemini_API_Key";
 
 const FINANCE_RE = /geld|money|saldo|balance|betalen|payment|lasten|expense|inkomen|income|portefeuille|portfolio|reservering|budget|factuur|invoice|verzekering|huur|energie|rekening|finance|financ|euro|€/i;
+const OPERATIONAL_RE = /taak|task|project|agenda|afspraak|meeting|contact|persoon|notitie|note\b|idee|idea|geheugen|memory|herinner|remind|plan|planning|verzet|verplaats|opschuiven|deadline|milestone|beslissing|decision|kennis|knowledge|document|bestand|file|upload|bijlage|attachment|email|whatsapp|mail|verstuur|send|reserveer|reserve|boek|book|rekening/i;
 
 function sanitizeResult(r) {
   if (r == null) return { ok: true };
@@ -57,7 +59,6 @@ export default async function (req) {
 
     const sr = base44.asServiceRole;
 
-    // Save User Message (Mattia-draad)
     if (persist && source === "chat") {
       await sr.entities.Message.create({
         role: "user", content: message, channel: "in-app", status: "sent", thread_id: "mattia",
@@ -65,64 +66,74 @@ export default async function (req) {
       }).catch(() => null);
     }
 
+    // ── CONTEXT-GATING ──────────────────────────────────────────────
+    // Pure conversatie / Naughty-praat: GEEN OS-context (snel). Operationeel:
+    // laad relevante context. Finance: extra finance-blok.
     const wantsFinance = FINANCE_RE.test(message);
+    const isOperational = wantsFinance || OPERATIONAL_RE.test(message);
 
-    // 1. DATA GATHERING — lichter: alleen kerncontext, finance alleen bij finance-vraag.
-    const [memories, allProjects, allContacts, openTasks, pendingApprovals, upcomingEvents] = await Promise.all([
-      sr.entities.Memory.list("-created_date", 8).catch(() => []),
-      sr.entities.Project.list("-updated_date", 10).catch(() => []),
-      sr.entities.Contact.list("-updated_date", 12).catch(() => []),
-      sr.entities.Task.filter({ status: { $in: ["todo", "in_progress", "waiting", "delegated", "today", "upcoming", "overdue"] } }, "-created_date", 6).catch(() => []),
-      sr.entities.Approval.filter({ status: "pending" }).catch(() => []),
-      sr.entities.CalendarEvent.filter({ start: { $gte: new Date(Date.now() - 86400000).toISOString() } }, "start", 4).catch(() => []),
-    ]);
-
-    let financeBlock = "";
-    if (wantsFinance) {
-      const [allPortfolios, allExpenses, allIncomes] = await Promise.all([
-        sr.entities.Portfolio.filter({ archived: false }, "order", 50).catch(() => []),
-        sr.entities.AdminObligation.list("-created_date", 50).catch(() => []),
-        sr.entities.Income.list("-created_date", 30).catch(() => []),
+    let contextBlock = "";
+    if (isOperational) {
+      const [memories, allProjects, allContacts, openTasks, pendingApprovals, upcomingEvents] = await Promise.all([
+        sr.entities.Memory.list("-created_date", 6).catch(() => []),
+        sr.entities.Project.list("-updated_date", 8).catch(() => []),
+        sr.entities.Contact.list("-updated_date", 10).catch(() => []),
+        sr.entities.Task.filter({ status: { $in: ["todo", "in_progress", "waiting", "delegated", "today", "upcoming", "overdue"] } }, "-created_date", 6).catch(() => []),
+        sr.entities.Approval.filter({ status: "pending" }).catch(() => []),
+        sr.entities.CalendarEvent.filter({ start: { $gte: new Date(Date.now() - 86400000).toISOString() } }, "start", 4).catch(() => []),
       ]);
-      const fPortfolios = (allPortfolios || []).filter((p) => !p.archived);
-      const fExpenses = allExpenses || [];
-      const fIncomes = allIncomes || [];
-      const finDist = monthlyDistribution(fIncomes, fPortfolios, fExpenses);
-      const finReserved = Math.round(fPortfolios.reduce((s, p) => s + (Number(p.current_balance) || 0), 0) * 100) / 100;
-      const finTotal = Math.round((finReserved + Math.max(0, finDist.available)) * 100) / 100;
-      const finUpcoming = fExpenses
-        .filter((e) => e.status !== "done" && e.next_payment_date)
-        .map((e) => ({ title: e.title, amount: e.expected_amount ?? e.amount, daysUntil: Math.round((new Date(e.next_payment_date).getTime() - Date.now()) / 86400000) }))
-        .filter((e) => e.daysUntil <= 30)
-        .sort((a, b) => a.daysUntil - b.daysUntil)
-        .slice(0, 6);
-      financeBlock = [
-        ``,
-        `PERSOONLIJKE ADMIN / FINANCE:`,
-        `TOTAL €${Math.round(finTotal)} · BESTEMD €${Math.round(finReserved)} · VRIJ €${Math.round(Math.max(0, finDist.available))} · INKOMEN/mnd €${Math.round(finDist.income)} · RESERVERINGEN/mnd €${Math.round(finDist.reserved)}`,
-        `Portefeuilles: ${fPortfolios.map((p) => `${p.name} [${p.kind}] €${Math.round(p.current_balance || 0)}`).join(" · ")}`,
-        `Komende betalingen: ${finUpcoming.map((e) => `${e.title} €${Math.round(e.amount)} (${e.daysUntil < 0 ? "te laat" : `${e.daysUntil}d`})`).join(" · ") || "geen"}`,
-      ].join("\n");
+
+      let financeBlock = "";
+      if (wantsFinance) {
+        const [allPortfolios, allExpenses, allIncomes] = await Promise.all([
+          sr.entities.Portfolio.filter({ archived: false }, "order", 50).catch(() => []),
+          sr.entities.AdminObligation.list("-created_date", 50).catch(() => []),
+          sr.entities.Income.list("-created_date", 30).catch(() => []),
+        ]);
+        const fPortfolios = (allPortfolios || []).filter((p) => !p.archived);
+        const fExpenses = allExpenses || [];
+        const fIncomes = allIncomes || [];
+        const finDist = monthlyDistribution(fIncomes, fPortfolios, fExpenses);
+        const finReserved = Math.round(fPortfolios.reduce((s, p) => s + (Number(p.current_balance) || 0), 0) * 100) / 100;
+        const finTotal = Math.round((finReserved + Math.max(0, finDist.available)) * 100) / 100;
+        const finUpcoming = fExpenses
+          .filter((e) => e.status !== "done" && e.next_payment_date)
+          .map((e) => ({ title: e.title, amount: e.expected_amount ?? e.amount, daysUntil: Math.round((new Date(e.next_payment_date).getTime() - Date.now()) / 86400000) }))
+          .filter((e) => e.daysUntil <= 30)
+          .sort((a, b) => a.daysUntil - b.daysUntil)
+          .slice(0, 6);
+        financeBlock = [
+          `\nPERSOONLIJKE ADMIN / FINANCE:`,
+          `TOTAL €${Math.round(finTotal)} · BESTEMD €${Math.round(finReserved)} · VRIJ €${Math.round(Math.max(0, finDist.available))} · INKOMEN/mnd €${Math.round(finDist.income)} · RESERVERINGEN/mnd €${Math.round(finDist.reserved)}`,
+          `Portefeuilles: ${fPortfolios.map((p) => `${p.name} [${p.kind}] €${Math.round(p.current_balance || 0)}`).join(" · ")}`,
+          `Komende betalingen: ${finUpcoming.map((e) => `${e.title} €${Math.round(e.amount)} (${e.daysUntil < 0 ? "te laat" : `${e.daysUntil}d`})`).join(" · ") || "geen"}`,
+        ].join("\n");
+      }
+
+      contextBlock = [
+        `\n== HUIDIGE STAAT (kort) ==`,
+        `Geheugen: ${memories.length ? memories.map(m => `- ${String(m.content).slice(0, 100)}`).join("\n") : "leeg"}`,
+        `Projecten: ${allProjects.slice(0, 8).map(p => `${p.title} (${p.status}, ${p.progress}%)`).join(" · ") || "geen"}`,
+        `Open taken: ${openTasks.map(t => `${t.title} [${t.status}]`).join(" · ") || "geen"}`,
+        `Agenda: ${upcomingEvents.map(e => `${e.title} @ ${e.start}`).join(" · ") || "niets"}`,
+        `Wachtende goedkeuringen: ${pendingApprovals.length}`,
+        financeBlock,
+      ].filter(Boolean).join("\n");
     }
 
-    const contextLines = [
-      `== HUIDIGE STAAT (kort) ==`,
-      `Geheugen: ${memories.length ? memories.map(m => `- ${String(m.content).slice(0, 100)}`).join("\n") : "leeg"}`,
-      `Projecten: ${allProjects.slice(0, 8).map(p => `${p.title} (${p.status}, ${p.progress}%)`).join(" · ") || "geen"}`,
-      `Open taken: ${openTasks.map(t => `${t.title} [${t.status}]`).join(" · ") || "geen"}`,
-      `Agenda: ${upcomingEvents.map(e => `${e.title} @ ${e.start}`).join(" · ") || "niets"}`,
-      `Wachtende goedkeuringen: ${pendingApprovals.length}`,
-      financeBlock,
-    ].filter(Boolean).join("\n");
-
-    // 2. SYSTEM PROMPT — persona + Playtime (uitvoerbaar) + OS-regels + context.
+    // ── SYSTEM PROMPT ───────────────────────────────────────────────
     const convoRule = source === "chat"
       ? `\n== CONVERSATIE-CONTINUNITEIT ==\nJe krijgt de recente Mattia-draad mee. Blijf in het gesprek; herhaal niet.\n`
       : "";
+    // OS-regels + context alleen bij operationele berichten; anders compacte
+    // hint (persona blijft altijd, want dat IS Mattia).
+    const operationalPart = isOperational
+      ? `\n${MATTIA_OS_RULES}\n${contextBlock}\n`
+      : `\n== ACTIES ==\nJe kan via tools interne acties doen (taken/notities/agenda/geheugen) als Salvo dat vraagt; externe verzending altijd via create_approval. Vraag geen toestemming voor interne acties. Voer alleen uit als er een duidelijke actie is.\n`;
 
-    const systemInstruction = `${MATTIA_INSTRUCTIONS}${convoRule}\n${MATTIA_OS_RULES}\n\n${contextLines}\n\nJe bent Mattia. Spreek direct met Salvo — vlot, scherp, droog, met humor, met een eigen mening. Voer uit wat nodig is via de tools en geef daarna een menselijk antwoord. To the point, niet treuzelig.`;
+    const systemInstruction = `${MATTIA_INSTRUCTIONS}${convoRule}${operationalPart}\n\nJe bent Mattia. Spreek direct met Salvo — vlot, scherp, droog, met humor, met een eigen mening. Voer uit wat nodig is via de tools en geef daarna een menselijk antwoord. To the point, niet treuzelig.`;
 
-    // 3. TOOLS
+    // ── TOOLS ───────────────────────────────────────────────────────
     const toolsMap = {};
     for (const s of GIULIA_SKILLS) {
       toolsMap[s.name] = { description: s.description, inputSchema: s.inputSchema, execute: (args) => s.execute(args, base44) };
@@ -130,12 +141,12 @@ export default async function (req) {
     const functionDeclarations = Object.entries(toolsMap).map(([name, t]) => ({ name, description: t.description || "", parameters: t.inputSchema || { type: "object", properties: {} } }));
     const genTools = [{ functionDeclarations }];
 
-    // 4. CONVERSATIE-GESCHIEDENIS (Mattia-draad)
+    // ── CONVERSATIE-GESCHIEDENIS (Mattia-draad) ──────────────────────
     let contents;
     if (source === "chat") {
       const history = await sr.entities.Message.filter({ channel: "in-app", thread_id: "mattia" }, "-created_date", 6).catch(() => []);
       const ordered = (history || []).filter((m) => m.content && (m.role === "user" || m.role === "mattia")).reverse();
-      contents = ordered.map((m) => ({ role: m.role === "user" ? "user" : "model", parts: [{ text: String(m.content).slice(0, 1200) }] }));
+      contents = ordered.map((m) => ({ role: m.role === "user" ? "user" : "model", parts: [{ text: String(m.content).slice(0, 1000) }] }));
       const lastTurn = contents[contents.length - 1];
       const alreadyLast = lastTurn && lastTurn.role === "user" && String(lastTurn.parts?.[0]?.text || "").includes(message.slice(0, 30));
       if (!alreadyLast) {
@@ -173,7 +184,7 @@ export default async function (req) {
       contents.push({ role: "user", parts: respParts });
     }
 
-    // 5. SAVE RESPONSE (role: mattia) — géén extra approval-enforcer-ronde (speed).
+    // ── SAVE RESPONSE (role: mattia) — géén approval-enforcer-ronde ──
     const finalText = responseText || (executed.length ? "Geregeld." : "Mattia is even stil — probeer het zo weer.");
 
     if (persist && source === "chat" && finalText) {
