@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { geminiGenerate } from '../../shared/gemini.ts';
 import { calcPortfolio, monthlyDistribution } from '../../shared/financeEngine.ts';
-import { MATTIA_INSTRUCTIONS, MATTIA_OS_RULES } from '../../shared/mattiaInstructions.ts';
+import { MATTIA_BUDDY, MATTIA_NAUGHTY, MATTIA_PLAYTIME, MATTIA_OS_RULES } from '../../shared/mattiaInstructions.ts';
 import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
 import { linkMentionedContacts } from '../../shared/contactLinker.ts';
 
@@ -23,6 +23,12 @@ const MATTIA_KEY = "MattiaTime_Gemini_API_Key";
 
 const FINANCE_RE = /geld|money|saldo|balance|betalen|payment|lasten|expense|inkomen|income|portefeuille|portfolio|reservering|budget|factuur|invoice|verzekering|huur|energie|rekening|finance|financ|euro|€/i;
 const OPERATIONAL_RE = /taak|task|project|agenda|afspraak|meeting|contact|persoon|notitie|note\b|idee|idea|geheugen|memory|herinner|remind|plan|planning|verzet|verplaats|opschuiven|deadline|milestone|beslissing|decision|kennis|knowledge|document|bestand|file|upload|bijlage|attachment|email|whatsapp|mail|verstuur|send|reserveer|reserve|boek|book|rekening/i;
+
+// ── PERSONA-CODEWORD-GATING ──────────────────────────────────────
+// "playtime" = codewoord voor de volledige Playtime-extensie.
+// Lichte seksuele kanteling (zonder codewoord) opent de Naughty-laag.
+const PLAYTIME_RE = /\bplaytime\b/i;
+const NAUGHTY_RE = /\b(horny|hard|cock|dick|cunt|kut|neuken|zuigen|suck|fuck|wank|stroking|touching|naakt|naked|komen|come|klaar|cum|rimmen|ass|kont|hole|aroused|turned on|opgewonden|zelden)\b/i;
 
 function sanitizeResult(r) {
   if (r == null) return { ok: true };
@@ -121,18 +127,24 @@ export default async function (req) {
       ].filter(Boolean).join("\n");
     }
 
-    // ── SYSTEM PROMPT ───────────────────────────────────────────────
+    // ── SYSTEM PROMPT (persona-codeword-gating) ─────────────────────
+    // Buddy-kern altijd. Naughty-laag bij seksuele kanteling of codewoord.
+    // Playtime-extensie alleen na codewoord "playtime".
+    const wantsPlaytime = PLAYTIME_RE.test(message);
+    const wantsNaughty = wantsPlaytime || NAUGHTY_RE.test(message);
+
     const convoRule = source === "chat"
       ? `\n== CONVERSATIE-CONTINUNITEIT ==\nJe krijgt de recente Mattia-draad mee. Blijf in het gesprek; herhaal niet.\n`
       : "";
-    // OS-regels + context alleen bij operationele berichten; anders compacte
-    // hint (persona blijft altijd, want dat IS Mattia).
     const operationalPart = isOperational
       ? `\n${MATTIA_OS_RULES}\n${contextBlock}\n`
       : `\n== ACTIES ==\nJe kan via tools interne acties doen (taken/notities/agenda/geheugen) als Salvo dat vraagt; externe verzending altijd via create_approval. Vraag geen toestemming voor interne acties. Voer alleen uit als er een duidelijke actie is.\n`;
 
+    const personaLayers = [MATTIA_BUDDY, convoRule, operationalPart];
+    if (wantsNaughty) personaLayers.push(MATTIA_NAUGHTY);
+    if (wantsPlaytime) personaLayers.push(MATTIA_PLAYTIME);
     const closing = `\n\nJe bent Mattia. Spreek direct met Salvo — vlot, scherp, droog, met humor, met een eigen mening. Voer uit wat nodig is via de tools en geef daarna een menselijk antwoord. ANTWOORDEN KORT EN PUNCHY: een paar zinnen, geen muur van tekst, tenzij de sfeer duidelijk om meer detail vraagt. To the point, niet treuzelig.`;
-    const systemInstruction = `${MATTIA_INSTRUCTIONS}${convoRule}${operationalPart}${closing}`;
+    const systemInstruction = personaLayers.join("\n") + closing;
 
     // ── TOOLS ───────────────────────────────────────────────────────
     // Tools alleen meesturen bij operationele berichten — anders moet het model
