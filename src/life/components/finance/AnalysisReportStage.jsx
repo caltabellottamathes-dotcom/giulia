@@ -15,7 +15,7 @@ const md = {
   h2: ({ children }) => <h4 className="text-[10px] uppercase tracking-[0.18em] font-bold text-ivory/65 mt-4 mb-1.5">{children}</h4>,
   h3: ({ children }) => <h4 className="text-[10px] uppercase tracking-[0.18em] font-bold text-ivory/65 mt-4 mb-1.5">{children}</h4>,
   ul: ({ children }) => <ul className="list-disc pl-4 space-y-1 text-[13px] text-ivory/85 mb-2">{children}</ul>,
-  li: ({ children }) => <li className="leading-[1.5]">{children}</li>,
+  li: ({ children }) => <li className="leading-[1.5]">{children}</li>
 };
 
 /** AnalysisReportStage — Giulia's gestructureerd analyse-rapport per tab, in
@@ -56,7 +56,7 @@ export default function AnalysisReportStage({ tab, onClose }) {
         }
       }
     })();
-    return () => { cancelled = true; };
+    return () => {cancelled = true;};
   }, [tab]);
 
   useEffect(() => {
@@ -87,53 +87,53 @@ export default function AnalysisReportStage({ tab, onClose }) {
         </button>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-4 pb-5">
-        {busy && !ed ? (
-          <div className="h-full flex flex-col items-center justify-center gap-3 py-24">
+      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-4 pb-5 opacity-100">
+        {busy && !ed ?
+        <div className="h-full flex flex-col items-center justify-center gap-3 py-24">
             <div className="h-8 w-8 border-2 border-ivory/20 border-t-ivory rounded-full animate-spin" />
             <p className="text-[10px] uppercase tracking-[0.2em] text-ivory/60">Giulia analyseert…</p>
-          </div>
-        ) : ed ? (
-          <div className="space-y-3">
+          </div> :
+        ed ?
+        <div className="space-y-3">
             <p className="font-mono text-[9px] tracking-[0.2em] uppercase" style={{ color: ACCENT }}>{ed.eyebrow || "Analyse"}</p>
             <h2 className="font-display font-bold uppercase tracking-[-0.03em] leading-[0.95] text-[24px]">{ed.title1}<br />{ed.title2}</h2>
             <div className="h-px w-10" style={{ background: ACCENT }} />
 
             {ed.body && <div className="pt-1"><ReactMarkdown components={md}>{ed.body}</ReactMarkdown></div>}
 
-            {ed.proposal && (
-              <div className="pt-3 mt-1 border-t border-white/12">
+            {ed.proposal &&
+          <div className="pt-3 mt-1 border-t border-white/12">
                 <p className="font-mono text-[9px] tracking-[0.2em] uppercase mb-2" style={{ color: ACCENT }}>Giulia adviseert</p>
                 <ReactMarkdown components={md}>{ed.proposal}</ReactMarkdown>
               </div>
-            )}
+          }
 
-            {items.length > 0 && (
-              <div className="pt-3 mt-1 border-t border-white/12 space-y-3">
+            {items.length > 0 &&
+          <div className="pt-3 mt-1 border-t border-white/12 space-y-3">
                 <p className="font-mono text-[9px] tracking-[0.2em] uppercase" style={{ color: ACCENT }}>{ed.items_label || "Actiepunten"}</p>
                 {items.map((it, idx) => {
-                  const ic = itemColor(it);
-                  return (
-                    <div key={it.n || idx} className="flex gap-3 items-start">
+              const ic = itemColor(it);
+              return (
+                <div key={it.n || idx} className="flex gap-3 items-start">
                       <span className="font-display font-bold leading-none shrink-0" style={{ color: ic, fontSize: "22px" }}>{it.n || pad2(idx + 1)}</span>
                       <div className="min-w-0">
                         <p className="text-[13px] font-semibold leading-tight" style={{ color: ic }}>{it.title}</p>
                         {it.desc && <p className="text-[12px] text-ivory/70 leading-[1.5] mt-1">{it.desc}</p>}
                       </div>
-                    </div>
-                  );
-                })}
+                    </div>);
+
+            })}
               </div>
-            )}
+          }
 
             <div className="pt-4 mt-2 border-t border-white/12">
               <p className="font-mono text-[10px] tracking-[0.4em] uppercase" style={{ color: "#abab69" }}>Le reste peut attendre</p>
             </div>
-          </div>
-        ) : (
-          <p className="text-[12px] text-ivory/50 italic py-10 text-center">Nog geen analyse.</p>
-        )}
+          </div> :
+
+        <p className="text-[12px] text-ivory/50 italic py-10 text-center">Nog geen analyse.</p>
+        }
       </div>
-    </div>
-  );
+    </div>);
+
 }
