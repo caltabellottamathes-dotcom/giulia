@@ -1,41 +1,31 @@
 import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
+import { useGiuliaChat } from "@/lib/useGiuliaChat";
 import { IMAGES } from "@/lib/images";
 import { cn } from "@/lib/utils";
 import { useActiveDomain } from "@/lib/useActiveDomain";
-import { Send, AlertCircle, RefreshCw } from "lucide-react";
+import { Send, RefreshCw } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 const GIULIA_AVATAR = IMAGES.giuliaConcierge;
 
 /**
- * ChatInterface — the real Giulia chat. Sends to the chatWithGiulia backend
- * function, persists every message to the Message entity (channel "in-app"),
- * renders Giulia with her portrait and the user with initials. Reused by the
+ * ChatInterface — Giulia chat via useGiuliaChat (→ chatWithGiulia backend,
+ * BYOK Gemini). Eén gedeeld gesprek (thread "giulia"), realtime antwoord,
+ * géén dubbele persist (chatWithGiulia slaat zelf op). Reused by the
  * full-screen Chat page and the Giulia concierge widget.
+ *
+ * Let op: threadId prop wordt genegeerd — useGiuliaChat gebruikt altijd
+ * thread "giulia" (zelfde gesprek als /chat en de chat-panelen).
  */
-export default function ChatInterface({ threadId = "in-app-main", suggestions = [], className }) {
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function ChatInterface({ suggestions = [], className }) {
+  const { messages, send, sending, ready } = useGiuliaChat();
   const [input, setInput] = useState("");
-  const [thinking, setThinking] = useState(false);
-  const [error, setError] = useState(null);
   const [initials, setInitials] = useState("SC");
   const { accent, bubbleText } = useActiveDomain();
   const scrollRef = useRef(null);
-  const lastInput = useRef("");
 
   useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const recs = await base44.entities.Message.filter({ channel: "in-app", thread_id: threadId });
-        if (mounted) setMessages([...recs].sort((a, b) => new Date(a.created_date || 0) - new Date(b.created_date || 0)));
-      } catch {
-        /* ignore */
-      }
-      if (mounted) setLoading(false);
-    })();
     base44.auth.me().then((u) => {
       if (u?.full_name) {
         const parts = u.full_name.split(" ").filter(Boolean);
@@ -43,48 +33,26 @@ export default function ChatInterface({ threadId = "in-app-main", suggestions = 
         if (inits) setInitials(inits.toUpperCase());
       }
     }).catch(() => {});
-    return () => { mounted = false; };
-  }, [threadId]);
+  }, []);
 
   const scrollToBottom = () => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  useEffect(() => { scrollToBottom(); }, [messages, thinking]);
+  useEffect(() => { scrollToBottom(); }, [messages, sending]);
 
-  const send = async (text) => {
+  const submit = async (text) => {
     const content = (text ?? input).trim();
-    if (!content || thinking) return;
-    lastInput.current = content;
+    if (!content || sending) return;
     setInput("");
-    setError(null);
-    const userMsg = { role: "user", content, thread_id: threadId, channel: "in-app", status: "sent" };
-    let userRec = null;
-    try { userRec = await base44.entities.Message.create(userMsg); } catch {}
-    setMessages((prev) => [...prev, userRec ? { ...userRec } : { id: "u" + Date.now(), ...userMsg }]);
-    setThinking(true);
-    try {
-      const res = await base44.functions.invoke("chatWithGiulia", { message: content });
-      const data = res?.data ?? res ?? {};
-      const reply = data.response || "(geen antwoord)";
-      const gMsg = { role: "giulia", content: reply, thread_id: threadId, channel: "in-app", status: "sent" };
-      let gRec = null;
-      try { gRec = await base44.entities.Message.create(gMsg); } catch {}
-      setMessages((prev) => [...prev, gRec ? { ...gRec } : { id: "g" + Date.now(), ...gMsg }]);
-    } catch (e) {
-      setError("Giulia reageert niet. Probeer het opnieuw.");
-    } finally {
-      setThinking(false);
-    }
+    try { await send(content); } catch { /* hook toont de fout in het gesprek */ }
   };
-
-  const retry = () => { setError(null); send(lastInput.current); };
 
   return (
     <div className={cn("flex flex-col h-full min-h-0", className)}>
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-1 space-y-3">
-        {loading ? (
+        {!ready ? (
           <div className="space-y-3 p-2">
             {[0, 1, 2].map((i) => <div key={i} className="h-8 rounded-lg shimmer" style={{ width: `${60 + i * 10}%` }} />)}
           </div>
-        ) : messages.length === 0 && !thinking ? (
+        ) : messages.length === 0 && !sending ? (
           <div className="flex flex-col items-center text-center py-6 px-3">
             <img src={GIULIA_AVATAR} alt="Giulia" className="h-12 w-12 rounded-full object-cover mb-3 border border-foreground/10" />
             <p className="text-sm font-semibold text-foreground mb-1">Hier is Giulia</p>
@@ -94,7 +62,7 @@ export default function ChatInterface({ threadId = "in-app-main", suggestions = 
           messages.map((m) => <Bubble key={m.id} m={m} initials={initials} accent={accent} bubbleText={bubbleText} />)
         )}
 
-        {thinking && (
+        {sending && (
           <div className="flex items-center gap-2 text-foreground/50 text-xs ml-1">
             <img src={GIULIA_AVATAR} alt="" className="h-6 w-6 rounded-full object-cover" />
             <span className="flex gap-1">
@@ -106,18 +74,10 @@ export default function ChatInterface({ threadId = "in-app-main", suggestions = 
         )}
       </div>
 
-      {error && (
-        <div className="flex items-center gap-2 px-3 py-2 mb-2 rounded-xl bg-destructive/10 text-destructive text-xs">
-          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-          <span className="flex-1">{error}</span>
-          <button onClick={retry} className="inline-flex items-center gap-1 font-semibold hover:underline"><RefreshCw className="h-3 w-3" /> Opnieuw</button>
-        </div>
-      )}
-
-      {messages.length === 0 && !loading && suggestions.length > 0 && (
+      {messages.length === 0 && ready && suggestions.length > 0 && (
         <div className="flex flex-wrap gap-1.5 pb-2">
           {suggestions.map((s) => (
-            <button key={s} onClick={() => send(s)} className="rounded-full bg-foreground/5 border border-foreground/10 px-2.5 py-1 text-[11px] text-foreground/70 hover:text-foreground hover:bg-foreground/10 transition">
+            <button key={s} onClick={() => submit(s)} className="rounded-full bg-foreground/5 border border-foreground/10 px-2.5 py-1 text-[11px] text-foreground/70 hover:text-foreground hover:bg-foreground/10 transition">
               {s}
             </button>
           ))}
@@ -128,12 +88,12 @@ export default function ChatInterface({ threadId = "in-app-main", suggestions = 
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") send(); }}
+          onKeyDown={(e) => { if (e.key === "Enter") submit(); }}
           placeholder="Vraag Giulia anything…"
           className="flex-1 min-w-0 rounded-2xl bg-foreground/5 border border-foreground/10 px-3.5 py-2.5 text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-olive/40"
         />
-        <button onClick={() => send()} disabled={!input.trim() || thinking} className="h-10 w-10 rounded-2xl bg-charcoal text-ivory flex items-center justify-center hover:scale-105 transition disabled:opacity-40 disabled:hover:scale-100 shrink-0" aria-label="Verstuur">
-          {thinking ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+        <button onClick={() => submit()} disabled={!input.trim() || sending} className="h-10 w-10 rounded-2xl bg-charcoal text-ivory flex items-center justify-center hover:scale-105 transition disabled:opacity-40 disabled:hover:scale-100 shrink-0" aria-label="Verstuur">
+          {sending ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
         </button>
       </div>
     </div>
