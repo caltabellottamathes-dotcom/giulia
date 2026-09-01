@@ -302,6 +302,31 @@ export async function geminiEmbed({ text, keyName }) {
 }
 
 
+/**
+ * pickChatModel — lichte router die op basis van bericht-complexiteit het
+ * optimale model kiest. Doel: gemma pakt de bulk (snelle, ruime TPM, geen
+ * RPD-uitputting), flash-lite pakt tool-redenering, 3.5-flash-lite pakt
+ * vision/zeer complex.
+ *
+ *   casual kort, geen tools, niet operationeel → gemma-4-31b-it
+ *   operationeel met tools / multi-step        → gemini-3.1-flash-lite
+ *   vision (bijlagen) of zeer complex          → gemini-3.5-flash-lite
+ */
+export function pickChatModel({ message = "", hasTools = false, hasAttachments = false, isOperational = false }) {
+  const len = (message || "").length;
+  const isShort = len < 160;
+  // Vision → beste kwaliteit op flash-lite 3.5.
+  if (hasAttachments) return "gemini-3.5-flash-lite";
+  // Operationeel (tools nodig) → flash-lite (beter in tool-redenering, grotere context).
+  if (isOperational || hasTools) {
+    if (len > 600) return "gemini-3.5-flash-lite";
+    return "gemini-3.1-flash-lite";
+  }
+  // Casual: kort → gemma (snel, ruime TPM), langer → flash-lite voor kwaliteit.
+  if (isShort) return "gemma-4-31b-it";
+  return "gemini-3.1-flash-lite";
+}
+
 /** cosineSimilarity — vergelijkt twee vectoren (0 = ongerelateerd, 1 = identiek). */
 export function cosineSimilarity(a, b) {
   if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length || !a.length) return 0;

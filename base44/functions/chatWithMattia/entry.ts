@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { geminiGenerate } from '../../shared/gemini.ts';
+import { geminiGenerate, pickChatModel } from '../../shared/gemini.ts';
 import { calcPortfolio, monthlyDistribution } from '../../shared/financeEngine.ts';
 import { MATTIA_BUDDY, MATTIA_NAUGHTY, MATTIA_PLAYTIME, MATTIA_OS_RULES } from '../../shared/mattiaInstructions.ts';
 import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
@@ -174,9 +174,14 @@ export default async function (req) {
 
     const executed = [];
     let responseText = null;
+    // Model-router: kiest automatisch het optimale model per bericht.
+    const chosenModel = pickChatModel({
+      message, hasTools: genTools.length > 0,
+      hasAttachments: attachments.length > 0, isOperational,
+    });
 
     for (let step = 0; step < MAX_STEPS; step++) {
-      const parts = await geminiGenerate({ contents, tools: genTools, systemText: systemInstruction, model: "gemma-4-31b-it", keyName: MATTIA_KEY });
+      const parts = await geminiGenerate({ contents, tools: genTools, systemText: systemInstruction, model: chosenModel, keyName: MATTIA_KEY });
       if (!parts || !parts.length) break;
       contents.push({ role: "model", parts });
       const fnCalls = parts.filter((p) => p.functionCall);

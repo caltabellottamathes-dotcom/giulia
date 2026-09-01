@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { geminiGenerate, geminiEmbed, cosineSimilarity } from '../../shared/gemini.ts';
+import { geminiGenerate, geminiEmbed, cosineSimilarity, pickChatModel } from '../../shared/gemini.ts';
 import { calcPortfolio, monthlyDistribution } from '../../shared/financeEngine.ts';
 import { AGENT_CONTEXT, GIULIA_TONE } from '../../shared/agentContext.ts';
 import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
@@ -316,9 +316,16 @@ Default language: English. If Salvo speaks another language, match his language 
     const executed = [];
     let responseText = null;
     const keyName = isBackgroundSource ? "BACKDESK_GEMINI_API_KEY" : "GIGI_Gemini_API_Key";
+    // Model-router: kiest automatisch het optimale model per bericht.
+    const GIULIA_OPERATIONAL_RE = /taak|task|project|agenda|afspraak|meeting|contact|persoon|notitie|note\b|idee|idea|geheugen|memory|herinner|remind|plan|planning|verzet|verplaats|opschuiven|deadline|milestone|beslissing|decision|kennis|knowledge|document|bestand|file|upload|bijlage|attachment|email|whatsapp|mail|verstuur|send|reserveer|reserve|boek|book|rekening|geld|money|saldo|balance|betalen|payment|lasten|expense|inkomen|income|portefeuille|portfolio|reservering|budget|finance|financ|euro|€/i;
+    const chosenModel = pickChatModel({
+      message, hasTools: false,
+      hasAttachments: attachments.length > 0,
+      isOperational: GIULIA_OPERATIONAL_RE.test(message),
+    });
 
     for (let step = 0; step < MAX_STEPS; step++) {
-      const parts = await geminiGenerate({ contents, tools: genTools, systemText: systemInstruction, model: "gemma-4-31b-it", keyName });
+      const parts = await geminiGenerate({ contents, tools: genTools, systemText: systemInstruction, model: chosenModel, keyName });
       if (!parts || !parts.length) break;
       contents.push({ role: "model", parts });
       const fnCalls = parts.filter((p) => p.functionCall);
