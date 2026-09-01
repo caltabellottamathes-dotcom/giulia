@@ -81,8 +81,8 @@ export default function MediaStage() {
     <div className="h-full w-full flex flex-col overflow-hidden">
       <div className="shrink-0 flex items-center gap-2 px-3 py-2.5 border-b border-white/10 bg-white/[0.03]">
         <div className="flex items-center gap-1 rounded-full bg-white/8 p-0.5 border border-white/12">
-          <button onClick={() => setTab("library")} className={tabBtn(tab === "library")}><Library className="h-3.5 w-3.5" /> Bibliotheek</button>
           <button onClick={() => { setTab("camera"); closeMedia(); }} className={tabBtn(tab === "camera")}><Camera className="h-3.5 w-3.5" /> Camera</button>
+          <button onClick={() => setTab("library")} className={tabBtn(tab === "library")}><Library className="h-3.5 w-3.5" /> Bibliotheek</button>
         </div>
         <div className="flex-1 min-w-0 flex items-center gap-1.5 justify-center">
           <p className="text-[10px] uppercase tracking-[0.14em] font-semibold text-ivory/75 truncate">

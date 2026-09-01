@@ -24,7 +24,7 @@ const MAX_STEPS = 2;
 const MATTIA_KEY = "MattiaTime_Gemini_API_Key";
 
 const FINANCE_RE = /geld|money|saldo|balance|betalen|payment|lasten|expense|inkomen|income|portefeuille|portfolio|reservering|budget|factuur|invoice|verzekering|huur|energie|rekening|finance|financ|euro|€/i;
-const OPERATIONAL_RE = /taak|task|project|agenda|afspraak|meeting|contact|persoon|notitie|note\b|idee|idea|geheugen|memory|herinner|remind|plan|planning|verzet|verplaats|opschuiven|deadline|milestone|beslissing|decision|kennis|knowledge|document|bestand|file|upload|bijlage|attachment|email|whatsapp|mail|verstuur|send|reserveer|reserve|boek|book|rekening|camera|webcam|foto|film|opname|mediatheek|bibliotheek|mediastage/i;
+const OPERATIONAL_RE = /taak|task|project|agenda|afspraak|meeting|contact|persoon|notitie|note\b|idee|idea|geheugen|memory|herinner|remind|plan|planning|verzet|verplaats|opschuiven|deadline|milestone|beslissing|decision|kennis|knowledge|document|bestand|file|upload|bijlage|attachment|email|whatsapp|mail|verstuur|send|reserveer|reserve|boek|book|rekening|camera|webcam|foto|film|opname|mediatheek|bibliotheek|mediastage|media\b|delegeer|delegate|giulia/i;
 
 // ── PERSONA-CODEWORD-GATING ──────────────────────────────────────
 // "playtime" = codewoord voor de volledige Playtime-extensie.
