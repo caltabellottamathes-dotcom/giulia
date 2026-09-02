@@ -12,12 +12,6 @@
       "type": "object",
       "title": "Auto Approve Rules",
       "description": "JSON trust-layer: per-category rules that Giulia may execute autonomously, plus a fail_safe default."
-    },
-    "mattia_opening_level": {
-      "type": "number",
-      "default": 0,
-      "title": "Mattia Opening Level",
-      "description": "Verborgen meting (0-10) hoe ver de gebruiker zich heeft geopend in de spiegel-chat met Mattia. Mattia leest dit om zijn toon zacht aan te passen; wordt nooit als score getoond."
     }
   },
   "required": [

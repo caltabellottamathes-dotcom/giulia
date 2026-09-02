@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { geminiGenerate, pickChatModel } from '../../shared/gemini.ts';
 import { calcPortfolio, monthlyDistribution } from '../../shared/financeEngine.ts';
-import { MATTIA_BUDDY, MATTIA_NAUGHTY, MATTIA_PLAYTIME, MATTIA_OS_RULES, MATTIA_MEDIA_RULES, MATTIA_LEVELS_MIRROR } from '../../shared/mattiaInstructions.ts';
+import { MATTIA_BUDDY, MATTIA_NAUGHTY, MATTIA_PLAYTIME, MATTIA_OS_RULES, MATTIA_MEDIA_RULES } from '../../shared/mattiaInstructions.ts';
 import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
 import { linkMentionedContacts } from '../../shared/contactLinker.ts';
 import { buildImageParts } from '../../shared/imageParts.ts';
@@ -31,16 +31,6 @@ const OPERATIONAL_RE = /taak|task|project|agenda|afspraak|meeting|contact|persoo
 // Lichte seksuele kanteling (zonder codewoord) opent de Naughty-laag.
 const PLAYTIME_RE = /\bplaytime\b/i;
 const NAUGHTY_RE = /\b(horny|hard|cock|dick|cunt|kut|neuken|zuigen|suck|fuck|wank|stroking|touching|naakt|naked|komen|come|klaar|cum|rimmen|ass|kont|hole|aroused|turned on|opgewonden|zelden)\b/i;
-
-const REFLECTIVE_RE = /\b(spiegel|mirror|ik voel|wie ben ik|waarom ben ik|ik voel me|diep|bang|eenzaam|trots|schaamte|schuld|eerlijk|kwetsbaar|verloren|thuis|alleen|moeder|mama|papa|verdriet|blij|rust|chaos|ik mis|ik wil|ik haat|ik hou van|jij bent mij|ik was jij|mezelf|ware zelf|ik schaam me|ik ben bang|ik voel me leeg|opgewonden|eenzaam|wat wil ik|wie wil ik zijn)\b/i;
-
-function levelHint(level) {
-  const l = Math.max(0, Math.min(10, Number(level) || 0));
-  if (l >= 8) return `\n\n== OPENING (ver geopend) ==\nSalvo heeft zich ver geopend. Wees vrij, zacht, dichtbij — de spiegel mag helder, de waarheid warm, de chaos erbij. Geen beschermende afstand meer.`;
-  if (l >= 4) return `\n\n== OPENING (bezig) ==\nSalvo opent zich. Leun iets meer in — meer vrijheid, meer echt, de spiegel iets scherper. Nog steeds met zorg.`;
-  if (l >= 1) return `\n\n== OPENING (begint) ==\nSalvo begint net te openen. Nodig zacht uit, forceer niets. De structuur houdt hem; jij mag wat zachter worden.`;
-  return `\n\n== OPENING (start) ==\nNog weinig opening. Blijf dichtbij, laagdrempelig, no pressure. De spiegel is er, draai hem nog niet volop zijn kant op.`;
-}
 
 function sanitizeResult(r) {
   if (r == null) return { ok: true };
@@ -76,18 +66,6 @@ export default async function (req) {
     if (!message && !file_urls.length) return Response.json({ error: "No message provided" }, { status: 400 });
 
     const sr = base44.asServiceRole;
-
-    // ── OPENING LEVEL (verborgen, 0-10) ──────────────────────────────
-    // Mattia leest hoe ver Salvo zich heeft geopend om zijn toon zacht aan
-    // te passen. Best-effort; bij falen default 0. Nóóit als score tonen.
-    let openingLevel = 0;
-    try {
-      const uid = req.user?.id;
-      if (uid) {
-        const me = await sr.entities.User.get(uid).catch(() => null);
-        openingLevel = Math.max(0, Math.min(10, Number(me?.mattia_opening_level) || 0));
-      }
-    } catch { /* ignore — default level 0 */ }
 
     if (persist && source === "chat") {
       await sr.entities.Message.create({
@@ -164,7 +142,7 @@ export default async function (req) {
       ? `\n${MATTIA_OS_RULES}\n${MATTIA_MEDIA_RULES}\n${contextBlock}\n`
       : `\n== ACTIES ==\nJe kan via tools interne acties doen (taken/notities/agenda/geheugen) als Salvo dat vraagt; externe verzending altijd via create_approval. Vraag geen toestemming voor interne acties. Voer alleen uit als er een duidelijke actie is.\n`;
 
-    const personaLayers = [MATTIA_BUDDY, MATTIA_LEVELS_MIRROR, levelHint(openingLevel), convoRule, operationalPart];
+    const personaLayers = [MATTIA_BUDDY, convoRule, operationalPart];
     if (wantsNaughty) personaLayers.push(MATTIA_NAUGHTY);
     if (wantsPlaytime) personaLayers.push(MATTIA_PLAYTIME);
     const closing = `\n\nJe bent Mattia. Spreek direct met Salvo — vlot, scherp, droog, met humor, met een eigen mening. Voer uit wat nodig is via de tools en geef daarna een menselijk antwoord. ANTWOORDEN ALS WHATSAPP: één tot drie korte zinnen max, vaak minder — echt heen-en-weer gechat, geen monoloog, geen opsomming, geen muur van tekst. Schrijf in spreektaal: korte zinnen, spreekritme, onderbreek jezelf, alledaagse woorden, geen puntkomma's of literaire opmaak. Vraag soms iets terug, laat het gesprek ademen. To the point, niet treuzelig.`;
@@ -278,20 +256,6 @@ export default async function (req) {
     if (source === "chat") {
       linkMentionedContacts(sr, message).catch(() => null);
     }
-
-    // ── OPENING LEVEL bump (fire-and-forget) ─────────────────────────
-    // Bij een reflectief signaal of Playtime/Naughty-kanteling stijgt het
-    // verborgen niveau zacht (max 10). Nóóit tonen, nóóit als score.
-    try {
-      const uid = req.user?.id;
-      if (uid && persist !== false) {
-        const reflective = REFLECTIVE_RE.test(message) || wantsPlaytime || wantsNaughty;
-        if (reflective) {
-          const newLevel = Math.min(10, openingLevel + 1);
-          if (newLevel > openingLevel) sr.entities.User.update(uid, { mattia_opening_level: newLevel }).catch(() => null);
-        }
-      }
-    } catch { /* ignore */ }
 
     return Response.json({ ok: true, response: finalText, actions_executed: executed, media_commands: mediaCommands });
   } catch (error) {

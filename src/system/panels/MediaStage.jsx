@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useMediaViewer } from "@/lib/MediaViewerContext";
 import { useMediaLibrary, kindOfUpload } from "@/lib/useMediaLibrary";
-import { ChevronLeft, ChevronRight, Library, ArrowLeft, Camera, MessageCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Library, ArrowLeft, Camera } from "lucide-react";
 import MusicWidget from "@/life/widgets/new/MusicWidget";
 import ImageViewerPanel from "@/system/panels/viewers/ImageViewerPanel";
 import VideoPlayerPanel from "@/system/panels/viewers/VideoPlayerPanel";
 import DocViewerPanel from "@/system/panels/viewers/DocViewerPanel";
 import MediaLibraryList from "@/system/components/media/MediaLibraryList";
 import CameraCapture from "@/system/panels/CameraCapture";
-import MattiaTab from "@/system/components/media/MattiaTab";
 
 /** MediaStage — transparante stage met twee tabs: Bibliotheek & Camera.
  *  Luistert naar playtime:media-command (Mattia) om de camera te openen,
@@ -84,11 +83,10 @@ export default function MediaStage() {
         <div className="flex items-center gap-1 rounded-full bg-white/8 p-0.5 border border-white/12">
           <button onClick={() => { setTab("camera"); closeMedia(); }} className={tabBtn(tab === "camera")}><Camera className="h-3.5 w-3.5" /> Camera</button>
           <button onClick={() => setTab("library")} className={tabBtn(tab === "library")}><Library className="h-3.5 w-3.5" /> Bibliotheek</button>
-          <button onClick={() => { setTab("mattia"); closeMedia(); }} className={tabBtn(tab === "mattia")}><MessageCircle className="h-3.5 w-3.5" /> Mattia</button>
         </div>
         <div className="flex-1 min-w-0 flex items-center gap-1.5 justify-center">
           <p className="text-[10px] uppercase tracking-[0.14em] font-semibold text-ivory/75 truncate">
-            {tab === "camera" ? "Camera · foto & film" : tab === "mattia" ? "Mattia · spiegel" : media ? (media.name || "bestand") : `${all.length} bestanden in bibliotheek`}
+            {tab === "camera" ? "Camera · foto & film" : media ? (media.name || "bestand") : `${all.length} bestanden in bibliotheek`}
           </p>
         </div>
         {tab === "library" && media && (
@@ -109,9 +107,7 @@ export default function MediaStage() {
       </div>
 
       <div className="flex-1 min-h-0 overflow-hidden">
-        {tab === "mattia" ? (
-          <MattiaTab />
-        ) : tab === "camera" ? (
+        {tab === "camera" ? (
           <CameraCapture ref={cameraRef} onClose={() => setTab("library")} />
         ) : !media ? (
           <MediaLibraryList onPick={pick} filter={libraryFilter} query={libraryQuery} />
