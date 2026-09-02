@@ -131,17 +131,22 @@ export const MATTIA_MEDIA_SKILLS = [
       };
       let res;
       try {
+        const base = (process.env.BRIDGE_URL || "").replace(/\/$/, "");
+        const token = process.env.BRIDGE_TOKEN || "";
+        const url = base ? `${base}/sd/txt2img` : "http://127.0.0.1:7860/sdapi/v1/txt2img";
+        const headers = { "Content-Type": "application/json" };
+        if (base && token) headers["Authorization"] = `Bearer ${token}`;
         const ctrl = new AbortController();
-        const timer = setTimeout(() => ctrl.abort(), 60000);
-        res = await fetch("http://127.0.0.1:7860/sdapi/v1/txt2img", {
+        const timer = setTimeout(() => ctrl.abort(), 90000);
+        res = await fetch(url, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify(body),
           signal: ctrl.signal,
         });
         clearTimeout(timer);
       } catch (e) {
-        return { error: `SD API onbereikbaar (127.0.0.1:7860): ${String((e && e.message) || e)}` };
+        return { error: `SD API onbereikbaar via bridge: ${String((e && e.message) || e)}` };
       }
       if (!res.ok) return { error: `SD API ${res.status}: ${(await res.text().catch(() => "")).slice(0, 300)}` };
       const data = await res.json().catch(() => null);

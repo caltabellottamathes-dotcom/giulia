@@ -167,5 +167,26 @@ app.post('/chat/completions', async (req, res) => {
   }
 });
 
+// ── Stable Diffusion proxy ──────────────────────────────────────────────
+// De Base44-backend kan 127.0.0.1 niet bereiken. Deze route ontvangt de
+// txt2img-aanvraag via de publieke BRIDGE_URL (met Bearer BRIDGE_TOKEN) en
+// stuurt hem 1:1 door naar de LOKALE SD WebUI op 127.0.0.1:7860. Werkt alleen
+// als deze bridge op dezelfde machine draait als SD (of SD lokaal bereikbaar
+// is vanaf hier).
+app.post('/sd/txt2img', auth, async (req, res) => {
+  try {
+    const r = await fetch('http://127.0.0.1:7860/sdapi/v1/txt2img', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body || {}),
+    });
+    res.status(r.status);
+    res.set('Content-Type', r.headers.get('content-type') || 'application/json');
+    res.send(await r.text());
+  } catch (e) {
+    res.status(502).json({ error: 'SD relay failed', detail: e.message });
+  }
+});
+
 const port = process.env.PORT || 8080;
 app.listen(port, () => console.log('giulia-email-bridge listening on ' + port));
