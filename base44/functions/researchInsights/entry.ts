@@ -21,6 +21,7 @@ export default async function (req) {
       prompt,
       systemText: "Je spreekt en denkt in het Nederlands. Wees concreet en beknopt.",
       temperature: 0.5,
+      keyName: "BACKDESK_GEMINI_API_KEY",
     });
 
     const arr = Array.isArray(res?.insights) ? res.insights : [];

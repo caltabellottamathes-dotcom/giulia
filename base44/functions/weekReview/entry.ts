@@ -101,6 +101,7 @@ ${weeklyDataPayload}`;
       model: "gemini-3.5-flash-lite",
       systemText: "You are the cognitive review engine for GIULIA OS. Analyze weekly productivity data and extract permanent planning rules. Output strict JSON only.",
       temperature: 0.4,
+      keyName: "BACKDESK_GEMINI_API_KEY",
     });
 
     // ── STAP 3: Database Updates (Memory & Insight wegschrijven) ──────

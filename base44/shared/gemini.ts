@@ -102,7 +102,7 @@ const KEY_POOLS = {
     "PlayTime_Gemini_API_Key",
     "RESERVE_GEMINI_API_KEY",
   ],
-  backdesk: ["BACKDESK_GEMINI_API_KEY", "GIULIA_API_KEY", "RESERVE_GEMINI_API_KEY"],
+  backdesk: ["BACKDESK_GEMINI_API_KEY", "MattiaTime_Gemini_API_Key", "MATTIA-MATTIA_Gemini_API_Key", "GIULIA-MATTIA_Gemini_API_Key", "PlayTime_Gemini_API_Key", "GIULIA_API_KEY", "RESERVE_GEMINI_API_KEY"],
   update: ["UPDATE_GEMINI_API_KEY", "RESERVE_GEMINI_API_KEY"],
   memory: ["GIULIA_GIULIA_MEMORY_GEMINI_API_KEY", "GIULIA_GIULIA_GEMINI_API_KEY", "RESERVE_GEMINI_API_KEY"],
   default: ["Gemini_Flash_API_Key", "GIULIA_API_KEY", "RESERVE_GEMINI_API_KEY"],
@@ -124,6 +124,24 @@ function poolFor(keyName) {
 }
 const DEFAULT_KEY_NAME = "RESERVE_GEMINI_API_KEY";
 
+// rotatedKeyOrder — round-robin: begin de pool op een willekeurige sleutel
+// (RESERVE altijd als laatste vangnet) zodat de RPD-last zich spreidt over
+// alle beschikbare sleutels i.p.v. altijd de primaire als eerste te verzadigen.
+function rotatedKeyOrder(primary) {
+  const pool = poolFor(primary);
+  let ordered = pool.includes(primary) ? [...pool] : [primary, ...pool];
+  const idx = ordered.indexOf(primary);
+  if (idx > 0) ordered = [...ordered.slice(idx), ...ordered.slice(0, idx)];
+  const shuffled = ordered.filter((k) => k !== "RESERVE_GEMINI_API_KEY");
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  const out = primary && !shuffled.includes(primary) ? [primary, ...shuffled] : shuffled;
+  if (!out.includes("RESERVE_GEMINI_API_KEY")) out.push("RESERVE_GEMINI_API_KEY");
+  return out;
+}
+
 async function rawCallOne(model, body, keyName) {
   const key = secrets.get(keyName);
   if (!key) throw Object.assign(new Error(`${keyName} niet ingesteld`), { status: 0 });
@@ -143,11 +161,10 @@ async function rawCallOne(model, body, keyName) {
 async function rawCall(model, body, keyName) {
   const primary = keyName || DEFAULT_KEY_NAME;
   if (model.startsWith("gemma")) await throttleGemma(estimateInputTokens(body));
-  // Probeer eerst de eigen sleutel, daarna de rest van de pool (legacy +
-  // RESERVE altijd als laatste vangnet), bij 429/403/5xx automatisch doorsturend.
-  const pool = poolFor(primary);
-  const ordered = [primary, ...pool.filter((k) => k !== primary)];
-  if (!ordered.includes("RESERVE_GEMINI_API_KEY")) ordered.push("RESERVE_GEMINI_API_KEY");
+  // Willekeurige rotatie over de hele pool (RESERVE als laatste vangnet) —
+  // verdeelt de RPD-last zodat een call meteen op een werkende sleutel landt
+  // i.p.v. altijd een opgebruikte primaire sleutel als eerste te proberen.
+  const ordered = rotatedKeyOrder(primary);
   let lastErr = null;
   for (const k of ordered) {
     try {
@@ -326,9 +343,7 @@ async function rawEmbedOne(text, keyName) {
 
 async function rawEmbed(text, keyName) {
   const primary = keyName || "GIULIA_GIULIA_MEMORY_GEMINI_API_KEY";
-  const pool = poolFor(primary);
-  const ordered = [primary, ...pool.filter((k) => k !== primary)];
-  if (!ordered.includes("RESERVE_GEMINI_API_KEY")) ordered.push("RESERVE_GEMINI_API_KEY");
+  const ordered = rotatedKeyOrder(primary);
   let lastErr = null;
   for (const k of ordered) {
     try { return await rawEmbedOne(text, k); }
