@@ -131,11 +131,15 @@ export const MATTIA_MEDIA_SKILLS = [
       };
       let res;
       try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 60000);
         res = await fetch("http://127.0.0.1:7860/sdapi/v1/txt2img", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
+          signal: ctrl.signal,
         });
+        clearTimeout(timer);
       } catch (e) {
         return { error: `SD API onbereikbaar (127.0.0.1:7860): ${String((e && e.message) || e)}` };
       }
