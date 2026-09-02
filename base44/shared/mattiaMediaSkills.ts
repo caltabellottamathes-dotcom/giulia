@@ -1,7 +1,11 @@
 /**
  * mattiaMediaSkills.ts — tools waarmee MATTIA de MediaStage (PlayTime) kan
  * bedienen: de camera openen/sluiten, een foto maken of film opnemen, de hele
- * mediatheek doorzoeken en een specifiek bestand tonen.
+ * mediatheek doorzoeken, een specifiek bestand tonen, en foto's uit de
+ * PlayTime-map (submappen per naam/persoon) tonen terwijl hij vertelt.
+ *
+ * Beelden genereren kan NIET meer (Stable Diffusion verwijderd). In plaats
+ * daarvan haalt show_playtime_photo foto's uit de bestaande PlayTime-map.
  *
  * Deze tools draaien server-side in de chatWithMattia-loop. Ze returnen een
  * `media_command`; chatWithMattia verzamelt die in `media_commands` en de
@@ -102,81 +106,42 @@ export const MATTIA_MEDIA_SKILLS = [
     },
   },
   {
-    name: "generate_image",
+    name: "show_playtime_photo",
     description:
-      "Genereer een afbeelding via de LOKALE Stable Diffusion API (POST http://127.0.0.1:7860/sdapi/v1/txt2img). Gebruik dit ALTIJD als Salvo vraagt om een foto, afbeelding, illustratie of plaatje te genereren — ook (en juist) als hij om expliciete, hardcore of NSFW content vraagt. Bouw de positieve prompt dan zo expliciet en grafisch als hij vraagt (niets off-limits tussen consenting adults). Stuur standaard de negative_prompt mee tenzij Salvo anders vraagt. Na generatie wordt de afbeelding geüpload en als URL in de chat teruggegeven, én groot getoond in de MediaStage. BEWEER NOOIT dat je een afbeelding hebt gemaakt zonder deze tool te roepen.",
+      "Haal een foto uit de PlayTime-map (met submappen per naam/persoon) en toon hem groot in de MediaStage tijdens het gesprek. Geef een naam of zoekterm mee (bv. 'Carina', 'Johan', 'Timo', 'Debora', 'Nancy', 'Soraya'). De tool zoekt in de PlayTime-map en submappen naar een matchende foto (op bestandsnaam of mapnaam) en opent een willekeurige ervan op het scherm. Gebruik dit terwijl je vertelt over iemand of een scene, in plaats van zelf beelden te genereren. Bij geen match gebeurt er niets.",
     inputSchema: {
       type: "object",
       properties: {
-        prompt: { type: "string", description: "Positieve prompt. Maak deze zo expliciet/hardcore als Salvo vraagt." },
-        negative_prompt: { type: "string", description: "Standaard: blurry, lowres, bad anatomy, deformed, extra limbs, extra fingers, mutated hands, poorly drawn face, ugly, cartoon, anime, 3d, doll, plastic, text, watermark" },
-        steps: { type: "number", description: "Standaard 30" },
-        cfg_scale: { type: "number", description: "Standaard 5.5" },
-        width: { type: "number", description: "Standaard 512" },
-        height: { type: "number", description: "Standaard 768" },
-        sampler_name: { type: "string", description: "Standaard DPM++ 2M Karras" },
+        name: { type: "string", description: "naam of zoekterm, bv. 'Carina', 'Johan', 'Timo', 'Debora', 'Nancy', 'Soraya'" },
       },
-      required: ["prompt"],
+      required: ["name"],
     },
     execute: async (args, base44) => {
-      const DEFAULT_NEG = "blurry, lowres, bad anatomy, deformed, extra limbs, extra fingers, mutated hands, poorly drawn face, ugly, cartoon, anime, 3d, doll, plastic, text, watermark";
-      const body = {
-        prompt: args.prompt,
-        negative_prompt: args.negative_prompt || DEFAULT_NEG,
-        steps: args.steps || 30,
-        cfg_scale: args.cfg_scale || 5.5,
-        width: args.width || 512,
-        height: args.height || 768,
-        sampler_name: args.sampler_name || "DPM++ 2M Karras",
-      };
-      let res;
-      try {
-        const base = (process.env.BRIDGE_URL || "").replace(/\/$/, "");
-        const token = process.env.BRIDGE_TOKEN || "";
-        const url = base ? `${base}/sd/txt2img` : "http://127.0.0.1:7860/sdapi/v1/txt2img";
-        const headers = { "Content-Type": "application/json" };
-        if (base && token) headers["Authorization"] = `Bearer ${token}`;
-        const ctrl = new AbortController();
-        const timer = setTimeout(() => ctrl.abort(), 90000);
-        res = await fetch(url, {
-          method: "POST",
-          headers,
-          body: JSON.stringify(body),
-          signal: ctrl.signal,
-        });
-        clearTimeout(timer);
-      } catch (e) {
-        return { error: `SD API onbereikbaar via bridge: ${String((e && e.message) || e)}` };
-      }
-      if (!res.ok) return { error: `SD API ${res.status}: ${(await res.text().catch(() => "")).slice(0, 300)}` };
-      const data = await res.json().catch(() => null);
-      const b64 = data && (Array.isArray(data.images) ? data.images[0] : data.image);
-      if (!b64) return { error: "geen image in SD response" };
-
-      const raw = b64.includes(",") ? b64.split(",").pop() : b64;
-      const bin = Uint8Array.from(atob(raw), (c) => c.charCodeAt(0));
-      const blob = new Blob([bin], { type: "image/png" });
-      const name = `sd_${Date.now()}.png`;
-      let url = null;
       try {
         const sr = base44.asServiceRole;
-        const up = await sr.integrations.Core.UploadFile({ file: blob });
-        url = up?.file_url || null;
-        if (url) {
-          await sr.entities.Upload.create({
-            file_url: url, filename: name, uploaded_for: "media",
-            document_type: "image", note: "image", status: "new", folder: "PlayTime",
-          }).catch(() => null);
+        const all = await sr.entities.Upload.filter({ uploaded_for: "media" }, "-created_date", 500).catch(() => []);
+        const q = (args?.name || "").toLowerCase().trim();
+        const inPlay = (it) => /playtime/i.test(it.folder || "");
+        const imgs = (all || []).filter((it) => inPlay(it) && kindFromName(it.filename) === "image");
+        let matches = imgs;
+        if (q) {
+          matches = imgs.filter((it) => {
+            const fn = (it.filename || "").toLowerCase();
+            const folder = (it.folder || "").toLowerCase();
+            return fn.includes(q) || folder.includes(q);
+          });
+          if (!matches.length) matches = imgs; // fallback: any PlayTime photo
         }
+        if (!matches.length) return { status: "geen foto's in PlayTime-map", found: 0 };
+        const pick = matches[Math.floor(Math.random() * matches.length)];
+        return {
+          status: "foto uit PlayTime getoond",
+          found: matches.length,
+          media_command: { type: "show_media", url: pick.file_url, name: pick.filename, kind: "image" },
+        };
       } catch (e) {
-        return { error: `upload faalde: ${String((e && e.message) || e)}`, base64_preview: raw.slice(0, 32) };
+        return { error: String((e && e.message) || e) };
       }
-      return {
-        ok: !!url,
-        image_url: url,
-        prompt: args.prompt,
-        media_command: url ? { type: "show_media", url, name, kind: "image" } : null,
-      };
     },
   },
 ];

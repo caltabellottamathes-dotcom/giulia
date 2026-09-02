@@ -174,7 +174,7 @@ export default async function (req) {
     const toolsMap = { ...opToolsMap, ...mediaToolsMap };
     const activeSkills = isOperational
       ? { ...opToolsMap, ...mediaToolsMap }
-      : (wantsMedia ? { ...mediaToolsMap } : {});
+      : (wantsMedia || wantsNaughty || wantsPlaytime ? { ...mediaToolsMap } : {});
     const functionDeclarations = Object.entries(activeSkills).map(([name, t]) => ({ name, description: t.description || "", parameters: t.inputSchema || { type: "object", properties: {} } }));
     const genTools = functionDeclarations.length ? [{ functionDeclarations }] : [];
 

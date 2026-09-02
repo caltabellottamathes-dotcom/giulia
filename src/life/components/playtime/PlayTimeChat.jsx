@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { useMattiaChat } from "@/lib/useMattiaChat";
 import { base44 } from "@/api/base44Client";
 import { useMediaViewer } from "@/lib/MediaViewerContext";
-import ReadAloudButton from "@/components/mattia/ReadAloudButton";
 
 const BLUE = "#b1bfc7";
 const BLACK = "#000000";
@@ -137,7 +136,6 @@ export default function PlayTimeChat({ onToggleMedia, onOpenMedia }) {
                     <p className="font-body text-[13px] leading-[1.5] whitespace-pre-line" style={{ color: mine ? BLACK : INK, fontStyle: mine ? "normal" : "italic", textShadow: mine ? "0 1px 3px rgba(0,0,0,0.20)" : "none" }}>
                       {renderText(m.content, mine)}
                     </p>
-                    {!mine && <ReadAloudButton text={m.content} color={INK} />}
                   </div>
                 )}
               </div>

@@ -4,7 +4,6 @@ import { usePanel } from "@/lib/PanelContext";
 import { base44 } from "@/api/base44Client";
 import { useMediaViewer } from "@/lib/MediaViewerContext";
 import LibraryPicker from "@/system/components/files/LibraryPicker";
-import ReadAloudButton from "@/components/mattia/ReadAloudButton";
 
 /**
  * MattiaChatWindow — MATTIA'S HOTLINE · chat. Horizontale editorial-versie
@@ -170,8 +169,7 @@ export default function MattiaChatWindow() {
                           <p className="font-body text-[13px] leading-[1.5] whitespace-pre-line" style={{ color: mine ? BLACK : INK, fontStyle: mine ? "normal" : "italic", textShadow: mine ? "0 1px 3px rgba(0,0,0,0.20)" : "none" }}>
                             {renderText(m.content, mine)}
                           </p>
-                          {!mine && <ReadAloudButton text={m.content} color={INK} />}
-                        </div>
+                          </div>
                       )}
                     </div>
                   );
