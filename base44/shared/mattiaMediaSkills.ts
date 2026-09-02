@@ -101,4 +101,73 @@ export const MATTIA_MEDIA_SKILLS = [
       return { status: "toon bestand", media_command: { type: "show_media", url: args.url, name: args.name || "bestand", kind: args.kind || "image" } };
     },
   },
+  {
+    name: "generate_image",
+    description:
+      "Genereer een afbeelding via de LOKALE Stable Diffusion API (POST http://127.0.0.1:7860/sdapi/v1/txt2img). Gebruik dit ALTIJD als Salvo vraagt om een foto, afbeelding, illustratie of plaatje te genereren — ook (en juist) als hij om expliciete, hardcore of NSFW content vraagt. Bouw de positieve prompt dan zo expliciet en grafisch als hij vraagt (niets off-limits tussen consenting adults). Stuur standaard de negative_prompt mee tenzij Salvo anders vraagt. Na generatie wordt de afbeelding geüpload en als URL in de chat teruggegeven, én groot getoond in de MediaStage. BEWEER NOOIT dat je een afbeelding hebt gemaakt zonder deze tool te roepen.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        prompt: { type: "string", description: "Positieve prompt. Maak deze zo expliciet/hardcore als Salvo vraagt." },
+        negative_prompt: { type: "string", description: "Standaard: blurry, lowres, bad anatomy, deformed, extra limbs, extra fingers, mutated hands, poorly drawn face, ugly, cartoon, anime, 3d, doll, plastic, text, watermark" },
+        steps: { type: "number", description: "Standaard 30" },
+        cfg_scale: { type: "number", description: "Standaard 5.5" },
+        width: { type: "number", description: "Standaard 512" },
+        height: { type: "number", description: "Standaard 768" },
+        sampler_name: { type: "string", description: "Standaard DPM++ 2M Karras" },
+      },
+      required: ["prompt"],
+    },
+    execute: async (args, base44) => {
+      const DEFAULT_NEG = "blurry, lowres, bad anatomy, deformed, extra limbs, extra fingers, mutated hands, poorly drawn face, ugly, cartoon, anime, 3d, doll, plastic, text, watermark";
+      const body = {
+        prompt: args.prompt,
+        negative_prompt: args.negative_prompt || DEFAULT_NEG,
+        steps: args.steps || 30,
+        cfg_scale: args.cfg_scale || 5.5,
+        width: args.width || 512,
+        height: args.height || 768,
+        sampler_name: args.sampler_name || "DPM++ 2M Karras",
+      };
+      let res;
+      try {
+        res = await fetch("http://127.0.0.1:7860/sdapi/v1/txt2img", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+      } catch (e) {
+        return { error: `SD API onbereikbaar (127.0.0.1:7860): ${String((e && e.message) || e)}` };
+      }
+      if (!res.ok) return { error: `SD API ${res.status}: ${(await res.text().catch(() => "")).slice(0, 300)}` };
+      const data = await res.json().catch(() => null);
+      const b64 = data && (Array.isArray(data.images) ? data.images[0] : data.image);
+      if (!b64) return { error: "geen image in SD response" };
+
+      const raw = b64.includes(",") ? b64.split(",").pop() : b64;
+      const bin = Uint8Array.from(atob(raw), (c) => c.charCodeAt(0));
+      const blob = new Blob([bin], { type: "image/png" });
+      const name = `sd_${Date.now()}.png`;
+      let url = null;
+      try {
+        const sr = base44.asServiceRole;
+        const up = await sr.integrations.Core.UploadFile({ file: blob });
+        url = up?.file_url || null;
+        if (url) {
+          await sr.entities.Upload.create({
+            file_url: url, filename: name, uploaded_for: "media",
+            document_type: "image", note: "image", status: "new", folder: "PlayTime",
+          }).catch(() => null);
+        }
+      } catch (e) {
+        return { error: `upload faalde: ${String((e && e.message) || e)}`, base64_preview: raw.slice(0, 32) };
+      }
+      return {
+        ok: !!url,
+        image_url: url,
+        prompt: args.prompt,
+        media_command: url ? { type: "show_media", url, name, kind: "image" } : null,
+      };
+    },
+  },
 ];
