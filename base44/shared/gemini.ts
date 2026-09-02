@@ -377,11 +377,10 @@ export async function geminiEmbed({ text, keyName }) {
  *   vision (bijlagen) of zeer complex          → gemini-3.5-flash-lite
  */
 export function pickChatModel({ message = "", hasTools = false, hasAttachments = false, isOperational = false }) {
-  // SPEED: casual tekst direct op gemini-3.1-flash-lite — betrouwbaar en snel,
-  // géén 404-fallback-ronde (gemma-4-31b-it is vaak onbeschikbaar en kost elke
-  // casual beurt een mislukte call). Vision (bijlagen) houdt gemma als eerste
-  // poging met flash-lite fallback.
-  if (hasAttachments) return "gemma-4-31b-it";
+  // SPEED: alles op gemini-3.1-flash-lite — snel, betrouwbaar, multimodaal
+  // (vision-capable). Géén gemma-4-31b-it meer (vaak onbeschikbaar → 404 kost
+  // elke bijlage-beurt een verspilde round-trip). Eén model = consistente
+  // latency, geen fallback-ronde.
   return "gemini-3.1-flash-lite";
 }
 

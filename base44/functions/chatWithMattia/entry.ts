@@ -249,8 +249,12 @@ export default async function (req) {
       }).catch(() => null);
     }
 
+    // SPEED: contact-linking is een niet-kritieke side-effect (laadt alle
+    // contacten/projecten + mogelijke LLM-disambiguatie bij een past-tense
+    // signaal). Fire-and-forget → blijft buiten de kritieke pad, reactie
+    // returned direct.
     if (source === "chat") {
-      try { await linkMentionedContacts(sr, message); } catch { /* ignore */ }
+      linkMentionedContacts(sr, message).catch(() => null);
     }
 
     return Response.json({ ok: true, response: finalText, actions_executed: executed, media_commands: mediaCommands });
