@@ -151,12 +151,22 @@ export default async function (req) {
     // ── TOOLS ───────────────────────────────────────────────────────
     // Tools alleen meesturen bij operationele berichten — anders moet het model
     // 40+ functies evalueren voor een simpele casual/naughty reply (traag).
-    const toolsMap = {};
-    for (const s of [...GIULIA_SKILLS, ...MATTIA_MEDIA_SKILLS]) {
-      toolsMap[s.name] = { description: s.description, inputSchema: s.inputSchema, execute: (args) => s.execute(args, base44) };
+    // Media-skills (incl. generate_image) ALTijd beschikbaar — Mattia mag
+    // autonoom beelden verzinnen. GIULIA-skills (zware OS-acties) alleen bij
+    // operationele berichten, anders evalueert het model 40+ functies voor
+    // een casual reply.
+    const mediaToolsMap = {};
+    for (const s of MATTIA_MEDIA_SKILLS) {
+      mediaToolsMap[s.name] = { description: s.description, inputSchema: s.inputSchema, execute: (args) => s.execute(args, base44) };
     }
-    const functionDeclarations = Object.entries(toolsMap).map(([name, t]) => ({ name, description: t.description || "", parameters: t.inputSchema || { type: "object", properties: {} } }));
-    const genTools = isOperational ? [{ functionDeclarations }] : [];
+    const opToolsMap = {};
+    for (const s of GIULIA_SKILLS) {
+      opToolsMap[s.name] = { description: s.description, inputSchema: s.inputSchema, execute: (args) => s.execute(args, base44) };
+    }
+    const toolsMap = { ...opToolsMap, ...mediaToolsMap };
+    const activeSkills = isOperational ? { ...opToolsMap, ...mediaToolsMap } : { ...mediaToolsMap };
+    const functionDeclarations = Object.entries(activeSkills).map(([name, t]) => ({ name, description: t.description || "", parameters: t.inputSchema || { type: "object", properties: {} } }));
+    const genTools = functionDeclarations.length ? [{ functionDeclarations }] : [];
 
     // ── CONVERSATIE-GESCHIEDENIS (Mattia-draad) ──────────────────────
     let contents;
