@@ -145,7 +145,7 @@ export default async function (req) {
     const personaLayers = [MATTIA_BUDDY, convoRule, operationalPart];
     if (wantsNaughty) personaLayers.push(MATTIA_NAUGHTY);
     if (wantsPlaytime) personaLayers.push(MATTIA_PLAYTIME);
-    const closing = `\n\nJe bent Mattia. Spreek direct met Salvo — vlot, scherp, droog, met humor, met een eigen mening. Voer uit wat nodig is via de tools en geef daarna een menselijk antwoord. ANTWOORDEN KORT EN PUNCHY: een paar zinnen, geen muur van tekst, tenzij de sfeer duidelijk om meer detail vraagt. To the point, niet treuzelig.`;
+    const closing = `\n\nJe bent Mattia. Spreek direct met Salvo — vlot, scherp, droog, met humor, met een eigen mening. Voer uit wat nodig is via de tools en geef daarna een menselijk antwoord. ANTWOORDEN IN SPREEKTAAL: schrijf zoals je praat, niet als geschreven tekst — korte zinnen, spreekritme, onderbreek jezelf, alledaagse woorden, geen puntkomma's of literaire opmaak. KORT EN PUNCHY: een paar zinnen, geen muur van tekst, tenzij de sfeer duidelijk om meer detail vraagt. To the point, niet treuzelig.`;
     const systemInstruction = personaLayers.join("\n") + closing;
 
     // ── TOOLS ───────────────────────────────────────────────────────
