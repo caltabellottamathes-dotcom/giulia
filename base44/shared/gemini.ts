@@ -378,15 +378,11 @@ export async function geminiEmbed({ text, keyName }) {
  *   vision (bijlagen) of zeer complex          → gemini-3.5-flash-lite
  */
 export function pickChatModel({ message = "", hasTools = false, hasAttachments = false, isOperational = false }) {
-  const len = (message || "").length;
-  const isShort = len < 160;
-  // Vision → beste kwaliteit op flash-lite 3.5.
-  // Vision → gemma (multimodaal). 3.5-flash-lite vandaag uitgeput → niet routeren.
+  // SPEED: casual tekst direct op gemini-3.1-flash-lite — betrouwbaar en snel,
+  // géén 404-fallback-ronde (gemma-4-31b-it is vaak onbeschikbaar en kost elke
+  // casual beurt een mislukte call). Vision (bijlagen) houdt gemma als eerste
+  // poging met flash-lite fallback.
   if (hasAttachments) return "gemma-4-31b-it";
-  // Operationeel (tools nodig) → flash-lite (beter in tool-redenering, grotere context).
-  if (isOperational || hasTools) return "gemini-3.1-flash-lite";
-  // Casual: kort → gemma (snel, ruime TPM), langer → flash-lite voor kwaliteit.
-  if (isShort) return "gemma-4-31b-it";
   return "gemini-3.1-flash-lite";
 }
 

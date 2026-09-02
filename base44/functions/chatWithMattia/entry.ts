@@ -155,16 +155,26 @@ export default async function (req) {
     // autonoom beelden verzinnen. GIULIA-skills (zware OS-acties) alleen bij
     // operationele berichten, anders evalueert het model 40+ functies voor
     // een casual reply.
+    // SPEED: pure casual chat (géén operationele/melding) → géén tools
+    // meesturen. Het model hoeft dan geen functies te evalueren en geeft één
+    // snelle tekst-call. Media-skills alleen als het bericht visueel is;
+    // GIULIA-skills (40+) alleen bij operationele berichten.
+    const MEDIA_RE = /foto|afbeelding|plaatje|image\b|teken|draw|schilder|genereer|generate|film|video|opname|camera|webcam|mediatheek|bibliotheek|\bmedia\b|nsfw|hardcore|illustratie/i;
+    const wantsMedia = MEDIA_RE.test(message);
     const mediaToolsMap = {};
     for (const s of MATTIA_MEDIA_SKILLS) {
       mediaToolsMap[s.name] = { description: s.description, inputSchema: s.inputSchema, execute: (args) => s.execute(args, base44) };
     }
     const opToolsMap = {};
-    for (const s of GIULIA_SKILLS) {
-      opToolsMap[s.name] = { description: s.description, inputSchema: s.inputSchema, execute: (args) => s.execute(args, base44) };
+    if (isOperational) {
+      for (const s of GIULIA_SKILLS) {
+        opToolsMap[s.name] = { description: s.description, inputSchema: s.inputSchema, execute: (args) => s.execute(args, base44) };
+      }
     }
     const toolsMap = { ...opToolsMap, ...mediaToolsMap };
-    const activeSkills = isOperational ? { ...opToolsMap, ...mediaToolsMap } : { ...mediaToolsMap };
+    const activeSkills = isOperational
+      ? { ...opToolsMap, ...mediaToolsMap }
+      : (wantsMedia ? { ...mediaToolsMap } : {});
     const functionDeclarations = Object.entries(activeSkills).map(([name, t]) => ({ name, description: t.description || "", parameters: t.inputSchema || { type: "object", properties: {} } }));
     const genTools = functionDeclarations.length ? [{ functionDeclarations }] : [];
 
