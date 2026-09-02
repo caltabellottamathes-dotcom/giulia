@@ -61,13 +61,12 @@ export async function ensureSecret(xiKey, name, value) {
 export function applyClientTools(cfg, tools) {
   cfg.agent = cfg.agent || {};
   cfg.agent.prompt = cfg.agent.prompt || {};
-  const prevTools = Array.isArray(cfg.agent.prompt.tools) ? cfg.agent.prompt.tools : [];
-  const endCallIds = new Set(
-    prevTools.filter((t) => t?.name === "end_call" || t?.type === "system").map((t) => t?.id).filter(Boolean)
-  );
-  cfg.agent.prompt.tool_ids = (Array.isArray(cfg.agent.prompt.tool_ids) ? cfg.agent.prompt.tool_ids : []).filter(
-    (id) => !endCallIds.has(id)
-  );
+  // We provide the tools inline. ElevenLabs rejects a PATCH that specifies
+  // both `tools` and `tool_ids`, so drop any referenced tool IDs (including
+  // the built-in end_call). After the PATCH, ElevenLabs populates tool_ids
+  // internally from the inline definitions; cleanupOrphanTools reads the
+  // post-PATCH state and removes stale managed tools.
+  delete cfg.agent.prompt.tool_ids;
   cfg.agent.prompt.tools = tools.map((t) => ({
     name: t.name,
     description: t.description,

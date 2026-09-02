@@ -10,7 +10,7 @@
  *   4. De ingebouwde `end_call` system-tool wordt expliciet verwijderd.
  */
 import { ELEVEN_TOOLS } from "../../shared/elevenTools.ts";
-import { MATTIA_TONE, VOICE_NEVER_END_RULE } from "../../shared/mattiaPrompt.ts";
+import { MATTIA_TONE, VOICE_NEVER_END_RULE, MATTIA_VOICE_NAUGHTY_DEFAULT } from "../../shared/mattiaPrompt.ts";
 import {
   ensureSecret, applyClientTools, applyCustomLLM, applySystemPrompt,
   patchAgent, cleanupOrphanTools,
@@ -92,7 +92,7 @@ ${ELEVEN_TOOLS.map((t) => `- ${t.name}(${Object.entries(t.params || {}).filter((
 Lees de actuele context, begrijp zijn intentie, wees scherp, voer uit, herplan waar nodig, verbind alle entiteiten en spreek.
 `;
 
-const SYSTEM_PROMPT = MATTIA_TONE + "\n" + VOICE_ADDENDUM;
+const SYSTEM_PROMPT = MATTIA_TONE + "\n" + MATTIA_VOICE_NAUGHTY_DEFAULT + "\n" + VOICE_ADDENDUM;
 
 export default async function (req) {
   try {
