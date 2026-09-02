@@ -128,16 +128,15 @@ const DEFAULT_KEY_NAME = "RESERVE_GEMINI_API_KEY";
 // (RESERVE altijd als laatste vangnet) zodat de RPD-last zich spreidt over
 // alle beschikbare sleutels i.p.v. altijd de primaire als eerste te verzadigen.
 function rotatedKeyOrder(primary) {
+  // Primary eerst (snelste pad), daarna de overige pool-keys geschud zodat
+  // de RPD-last zich spreidt zodra de primary op is; RESERVE als laatste vangnet.
   const pool = poolFor(primary);
-  let ordered = pool.includes(primary) ? [...pool] : [primary, ...pool];
-  const idx = ordered.indexOf(primary);
-  if (idx > 0) ordered = [...ordered.slice(idx), ...ordered.slice(0, idx)];
-  const shuffled = ordered.filter((k) => k !== "RESERVE_GEMINI_API_KEY");
-  for (let i = shuffled.length - 1; i > 0; i--) {
+  const rest = pool.filter((k) => k !== primary && k !== "RESERVE_GEMINI_API_KEY");
+  for (let i = rest.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    [rest[i], rest[j]] = [rest[j], rest[i]];
   }
-  const out = primary && !shuffled.includes(primary) ? [primary, ...shuffled] : shuffled;
+  const out = primary ? [primary, ...rest] : rest;
   if (!out.includes("RESERVE_GEMINI_API_KEY")) out.push("RESERVE_GEMINI_API_KEY");
   return out;
 }
@@ -253,7 +252,7 @@ export async function geminiChat({ prompt, contents, model, systemText, temperat
 // (429/404/5xx), val terug op gemma (ruime TPM, geen RPD-uitputting) en daarna
 // de flash-lite modellen. Een echte 400 (schema-fout) gooi je direct — andere
 // modellen helpen daar niet bij.
-const GEN_FALLBACK_MODELS = ["gemma-4-31b-it", "gemini-3.1-flash-lite", "gemini-3.5-flash-lite"];
+const GEN_FALLBACK_MODELS = ["gemini-3.1-flash-lite", "gemini-3.5-flash-lite"];
 
 export async function geminiGenerate({ contents, tools, model, systemText, generationConfig, keyName }) {
   const body = {
