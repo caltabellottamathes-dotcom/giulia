@@ -1,14 +1,14 @@
-import { geminiDecide } from "./gemini.ts";
-import { remember } from "./learningLayer.ts";
+import { geminiDecide, geminiEmbed } from "./gemini.ts";
 
 /**
  * mattiaBridge.ts — de brug tussen Mattia en Giulia.
  *
  * shareMattiaHighlights: na elke Mattia-conversatie worden blijvende,
  * voor Giulia relevante momenten (plannen, beslissingen, mensen, gevoelens)
- * geëxtrheerd en opgeslagen in Giulia's gedeelde geheugen — zodat Giulia
+ * geëxtraheerd en opgeslagen in Giulia's gedeelde geheugen — zodat Giulia
  * weet wat er in de gesprekken met Mattia speelt (semantic memory + context).
- * Fire-and-forget: mag nooit de chat zelf vertragen.
+ * Wordt AWAITED door chatWithMattia: een fire-and-forget-aanroep wordt
+ * afgebroken zodra het chat-antwoord terugkeert.
  */
 export async function shareMattiaHighlights(base44, { userText, mattiaText }) {
   try {
@@ -32,15 +32,20 @@ export async function shareMattiaHighlights(base44, { userText, mattiaText }) {
     });
     if (!res || !res.worth_saving || !Array.isArray(res.notes) || !res.notes.length) return { saved: 0 };
 
+    const sr = base44.asServiceRole;
     let saved = 0;
     for (const note of res.notes.slice(0, 3)) {
       const text = String(note).trim();
       if (!text) continue;
-      const m = await remember(base44, {
-        content: `[Uit gesprek met Mattia] ${text}`,
+      const content = `[Uit gesprek met Mattia] ${text}`.slice(0, 2000);
+      const embedding = await geminiEmbed({ text: content, keyName: "GIULIA_GIULIA_MEMORY_GEMINI_API_KEY" }).catch(() => null);
+      const m = await sr.entities.Memory.create({
+        content,
         category: "Conversation-derived",
-        source: "MATTIA-BRIDGE",
-      });
+        source: "mattia_bridge",
+        confidence: 0.7,
+        ...(embedding ? { embedding } : {}),
+      }).catch(() => null);
       if (m) saved++;
     }
     return { saved };

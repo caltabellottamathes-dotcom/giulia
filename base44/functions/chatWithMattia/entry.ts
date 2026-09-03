@@ -257,9 +257,10 @@ export default async function (req) {
     if (source === "chat") {
       linkMentionedContacts(sr, message).catch(() => null);
       // MATTIA → GIULIA BRUG: blijvende momenten uit dit gesprek worden
-      // fire-and-forget opgeslagen in Giulia's gedeelde geheugen.
+      // opgeslagen in Giulia's gedeelde geheugen. AWAITED — fire-and-forget
+      // wordt afgebroken zodra het chat-antwoord terugkeert.
       if (persist && finalText) {
-        shareMattiaHighlights(base44, { userText: message, mattiaText: finalText }).catch(() => null);
+        await shareMattiaHighlights(base44, { userText: message, mattiaText: finalText }).catch(() => null);
       }
     }
 
