@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
-import PageHero from "@/system/components/glass/PageHero";
+import GiuliaAdminShell from "@/giulia/components/admin/GiuliaAdminShell";
 import { IMAGES } from "@/lib/images";
-import { HelpCircle, Sparkles, Loader2, Check } from "lucide-react";
+import { Sparkles, Loader2, Check } from "lucide-react";
 
 const PRIORITY = {
   now: { label: "Nu", accent: "hsl(var(--urgent))" },
@@ -11,9 +11,10 @@ const PRIORITY = {
   useful: { label: "Nuttig", accent: "hsl(var(--olive))" },
   curious: { label: "Nieuwsgierig", accent: "hsl(var(--blue-grey))" },
 };
+const pad2 = (n) => String(n).padStart(2, "0");
 
-/** WantsToKnow — Giulia's nieuwsgierigheidslaag. Eén vraag tegelijk,
- *  beantwoord of overgeslagen, Giulia leert van elk antwoord. */
+/** WantsToKnow — Giulia's nieuwsgierigheidslaag in het Admin LIFE-ontwerp.
+ *  Eén vraag tegelijk, beantwoord of overgeslagen, Giulia leert van elk antwoord. */
 export default function WantsToKnow() {
   const [open, setOpen] = useState([]);
   const [answered, setAnswered] = useState([]);
@@ -63,10 +64,28 @@ export default function WantsToKnow() {
   const current = open[0];
   const rest = open.slice(1);
 
-  return (
-    <div className="animate-fade-up">
-      <PageHero page="wantstoknow" image={IMAGES.wWantsToKnow} icon={HelpCircle} eyebrow="GIULIA WANTS TO KNOW" title="Wants to Know!" subtitle="Giulia's nieuwsgierigheidslaag — continu op zoek naar ontbrekende context" />
+  const top = open.slice(0, 3).map((q, i) => ({
+    n: pad2(i + 1),
+    title: q.title || "Vraag",
+    desc: `${PRIORITY[q.priority]?.label || "Nuttig"} · ${q.domain || "algemeen"}`,
+  }));
 
+  return (
+    <GiuliaAdminShell
+      pageKey="wants-to-know"
+      eyebrow="GIULIA → WANTS TO KNOW"
+      title="Wants to Know"
+      related={[{ label: "Insights", to: "/insights" }, { label: "Memory", to: "/memory" }, { label: "Chat", to: "/chat" }]}
+      hero={IMAGES.wWantsToKnow}
+      card={{
+        eyebrow: "Giulia wants to know | wtk_",
+        title1: "Giulia wants", title2: "to know.",
+        metaLine: `${open.length} ${open.length === 1 ? "mysterie" : "mysteries"} open`,
+        heading1: "Open", heading2: "questions",
+        itemsLabel: `${pad2(top.length)}_open_mysteries_`,
+        items: top,
+      }}
+    >
       <div className="max-w-3xl mx-auto px-1">
         <div className="flex items-center justify-between mb-6 gap-4">
           <div>
@@ -146,6 +165,6 @@ export default function WantsToKnow() {
           </div>
         )}
       </div>
-    </div>
+    </GiuliaAdminShell>
   );
 }

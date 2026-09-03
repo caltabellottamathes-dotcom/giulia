@@ -1,18 +1,30 @@
 import React from "react";
-import PageHero from "@/system/components/glass/PageHero";
+import GiuliaAdminShell from "@/giulia/components/admin/GiuliaAdminShell";
 import SocialFeed from "@/life/components/SocialFeed";
-import { Sparkles } from "lucide-react";
+import { IMAGES } from "@/lib/images";
 
 /**
- * Updates — "Achter de schermen" / "Wat er nieuw is" as its own space, off
- * the home dashboard. Placeholder for Salvo's future concept; for now it
- * just hosts the SocialFeed of completed actions.
+ * Updates — "Achter de schermen" / "Wat er nieuw is" in het Admin
+ * LIFE-pagina-ontwerp. Host de SocialFeed van afgeronde acties.
  */
 export default function Updates() {
   return (
-    <div className="space-y-5 animate-fade-up">
-      <PageHero page="updates" icon={Sparkles} eyebrow="Giulia" title="Meanwhile..." subtitle="Achter de schermen — recent afgeronde acties" />
+    <GiuliaAdminShell
+      pageKey="updates"
+      eyebrow="GIULIA → MEANWHILE"
+      title="Meanwhile"
+      related={[{ label: "Activity", to: "/activity" }, { label: "Memory", to: "/memory" }, { label: "Approvals", to: "/approvals" }]}
+      hero={IMAGES.salvoReadingBeach}
+      card={{
+        eyebrow: "Meanwhile | updates_",
+        title1: "Behind the,", title2: "scenes.",
+        metaLine: "Wat Giulia ondertussen zelf afrondt",
+        heading1: "Recently", heading2: "finished",
+        itemsLabel: "00_meanwhile_",
+        items: [],
+      }}
+    >
       <SocialFeed />
-    </div>
+    </GiuliaAdminShell>
   );
 }

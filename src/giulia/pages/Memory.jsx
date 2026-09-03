@@ -3,12 +3,14 @@ import { cn } from "@/lib/utils";
 import GlassPanel from "@/system/components/glass/GlassPanel";
 import GlassButton from "@/system/components/glass/GlassButton";
 import FloatingPanel from "@/system/components/glass/FloatingPanel";
-import PageHero from "@/system/components/glass/PageHero";
+import GiuliaAdminShell from "@/giulia/components/admin/GiuliaAdminShell";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
+import { IMAGES } from "@/lib/images";
 import { Brain, Plus, Edit3, Trash2, Sparkles } from "lucide-react";
 
 const categories = ["All", "User preferences", "People", "Projects", "Routines", "Important information", "Conversation-derived"];
+const pad2 = (n) => String(n).padStart(2, "0");
 
 export default function Memory() {
   const [category, setCategory] = useState("All");
@@ -41,58 +43,68 @@ export default function Memory() {
     reload();
   };
 
-  return (
-    <div className="space-y-6 animate-fade-up">
-      <PageHero
-        page="memory"
-        icon={Brain}
-        eyebrow="Giulia"
-        title="What I Remember."
-        subtitle="Wat Giulia over je onthoudt"
-        actions={
-          <GlassButton variant="primary" size="md" onClick={() => setShowNew(true)}>
-            <Plus className="h-4 w-4" /> Nieuwe herinnering
-          </GlassButton>
-        }
-      />
+  const top = memories.slice(0, 3).map((m, i) => ({
+    n: pad2(i + 1),
+    title: String(m.content || "").slice(0, 70),
+    desc: m.category || "Geheugen",
+  }));
 
-      <GlassPanel level={3} className="p-5">
-        <div className="flex items-start gap-3">
+  return (
+    <GiuliaAdminShell
+      pageKey="memory"
+      eyebrow="GIULIA → MEMORY"
+      title="What I Remember"
+      related={[{ label: "Activity", to: "/activity" }, { label: "Insights", to: "/insights" }, { label: "Chat", to: "/chat" }]}
+      hero={IMAGES.giuliaFace2}
+      card={{
+        eyebrow: "What I remember | memory_",
+        title1: "What Giulia", title2: "knows about you.",
+        metaLine: `Giulia onthoudt ${memories.length} dingen over je`,
+        heading1: "Fresh in", heading2: "memory",
+        itemsLabel: `${pad2(top.length)}_fresh_memories_`,
+        items: top,
+      }}
+    >
+      <div className="space-y-5">
+        <div className="flex items-center justify-between gap-3">
           <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-olive/30 to-blue-grey/20 flex items-center justify-center shrink-0">
             <Brain className="h-4 w-4 text-foreground/70" />
           </div>
-          <p className="text-sm">
-            <span className="font-semibold">Giulia onthoudt {memories.length} dingen over je.</span> Deze kennis wordt gebruikt om je beter te helpen. Je kunt alles bekijken, bewerken of verwijderen.
+          <p className="text-sm flex-1">
+            Deze kennis wordt gebruikt om je beter te helpen. Je kunt alles bekijken, bewerken of verwijderen.
           </p>
+          <GlassButton variant="primary" size="sm" onClick={() => setShowNew(true)} className="shrink-0">
+            <Plus className="h-4 w-4" /> Nieuw
+          </GlassButton>
         </div>
-      </GlassPanel>
 
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        {categories.map((cat) => (
-          <button key={cat} onClick={() => setCategory(cat)} className={cn("px-3 py-1.5 text-xs rounded-full whitespace-nowrap transition-all", category === cat ? "bg-foreground text-background font-medium" : "glass-1 text-muted-foreground hover:text-foreground")}>
-            {cat === "All" ? "Alles" : cat}
-          </button>
-        ))}
-      </div>
+        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          {categories.map((cat) => (
+            <button key={cat} onClick={() => setCategory(cat)} className={cn("px-3 py-1.5 text-xs rounded-full whitespace-nowrap transition-all", category === cat ? "bg-foreground text-background font-medium" : "glass-1 text-muted-foreground hover:text-foreground")}>
+              {cat === "All" ? "Alles" : cat}
+            </button>
+          ))}
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {loading && [0, 1].map((i) => <div key={i} className="h-32 rounded-2xl shimmer" />)}
-        {!loading && filtered.map((mem) => (
-          <GlassPanel key={mem.id} level={2} className="p-5">
-            <div className="flex items-start justify-between mb-3">
-              <span className="text-[10px] uppercase tracking-wider text-olive">{mem.category}</span>
-              <div className="flex gap-1">
-                <button onClick={() => { setEditing(mem); setEditContent(mem.content); }} className="p-1.5 rounded-lg hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-colors"><Edit3 className="h-3.5 w-3.5" /></button>
-                <button onClick={() => remove(mem.id)} className="p-1.5 rounded-lg hover:bg-foreground/5 text-muted-foreground hover:text-destructive transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {loading && [0, 1].map((i) => <div key={i} className="h-32 rounded-2xl shimmer" />)}
+          {!loading && filtered.map((mem) => (
+            <GlassPanel key={mem.id} level={2} className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <span className="text-[10px] uppercase tracking-wider text-olive">{mem.category}</span>
+                <div className="flex gap-1">
+                  <button onClick={() => { setEditing(mem); setEditContent(mem.content); }} className="p-1.5 rounded-lg hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-colors"><Edit3 className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => remove(mem.id)} className="p-1.5 rounded-lg hover:bg-foreground/5 text-muted-foreground hover:text-destructive transition-colors"><Trash2 className="h-3.5 w-3.5" /></button>
+                </div>
               </div>
-            </div>
-            <p className="text-sm leading-relaxed mb-3">{mem.content}</p>
-            <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-3 border-t border-border/40">
-              <span>Bron: {mem.source || "—"}</span>
-              <div className="flex items-center gap-1.5"><Sparkles className="h-3 w-3" /><span>{Math.round((mem.confidence || 0.5) * 100)}% zeker</span></div>
-            </div>
-          </GlassPanel>
-        ))}
+              <p className="text-sm leading-relaxed mb-3">{mem.content}</p>
+              <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-3 border-t border-border/40">
+                <span>Bron: {mem.source || "—"}</span>
+                <div className="flex items-center gap-1.5"><Sparkles className="h-3 w-3" /><span>{Math.round((mem.confidence || 0.5) * 100)}% zeker</span></div>
+              </div>
+            </GlassPanel>
+          ))}
+        </div>
       </div>
 
       <FloatingPanel open={!!editing} onClose={() => setEditing(null)} position="right">
@@ -133,6 +145,6 @@ export default function Memory() {
           </div>
         </div>
       </FloatingPanel>
-    </div>
+    </GiuliaAdminShell>
   );
 }

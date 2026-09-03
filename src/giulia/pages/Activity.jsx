@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import GlassPanel from "@/system/components/glass/GlassPanel";
-import PageHero from "@/system/components/glass/PageHero";
+import GiuliaAdminShell from "@/giulia/components/admin/GiuliaAdminShell";
 import { base44 } from "@/api/base44Client";
+import { IMAGES } from "@/lib/images";
 import {
   Mail, Calendar, FileText, MessageCircle, CheckSquare, BookOpen,
   Trash2, Activity as ActivityIcon, Sparkles,
@@ -20,8 +21,9 @@ const SRC_META = {
 };
 const metaFor = (src) =>
   SRC_META[(src || "").toLowerCase()] || { label: src || "Overig", icon: ActivityIcon, color: "hsl(var(--smoke))" };
+const pad2 = (n) => String(n).padStart(2, "0");
 
-/** Activity — per-agent tabs bovenaan i.p.v. eindeloos scrollende gestapelde groepen. */
+/** Activity — per-agent tabs bovenaan, in het Admin LIFE-pagina-ontwerp. */
 export default function Activity() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -58,90 +60,110 @@ export default function Activity() {
   const groupKeys = Object.keys(groups).sort((a, b) => groups[b].length - groups[a].length);
   const visible = tab === "all" ? sorted : (groups[tab] || []);
 
+  const top = sorted.slice(0, 3).map((it, i) => ({
+    n: pad2(i + 1),
+    title: it.description || "Actie",
+    desc: `${metaFor(it.source).label} · ${new Date(it.timestamp || it.created_date).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}`,
+  }));
+
   return (
-    <div className="space-y-5 animate-fade-up">
-      <PageHero page="activity" icon={ActivityIcon} eyebrow="Giulia" title="I Do Process!" subtitle="Wat Giulia voor je heeft gedaan — per agent" />
+    <GiuliaAdminShell
+      pageKey="activity"
+      eyebrow="GIULIA → ACTIVITY"
+      title="I Do Process"
+      related={[{ label: "Approvals", to: "/approvals" }, { label: "Memory", to: "/memory" }, { label: "Agents", to: "/agents" }]}
+      hero={IMAGES.lifeExtraNow}
+      card={{
+        eyebrow: "I do process | activity_",
+        title1: "Everything I did,", title2: "I did for you.",
+        metaLine: `${sorted.length} acties gelogd · ${groupKeys.length} bronnen`,
+        heading1: "Recently", heading2: "done",
+        itemsLabel: `${pad2(top.length)}_recently_done_`,
+        items: top,
+      }}
+    >
+      <div className="space-y-5">
+        {loading && (
+          <GlassPanel level={2} className="p-6 space-y-2">
+            {[0, 1, 2].map((i) => <div key={i} className="h-12 rounded-lg shimmer" />)}
+          </GlassPanel>
+        )}
 
-      {loading && (
-        <GlassPanel level={2} className="p-6 space-y-2">
-          {[0, 1, 2].map((i) => <div key={i} className="h-12 rounded-lg shimmer" />)}
-        </GlassPanel>
-      )}
+        {!loading && sorted.length === 0 && (
+          <GlassPanel level={2} className="p-6">
+            <p className="text-sm text-muted-foreground text-center py-8">Nog geen activiteit — Giulia werkt autonoom verder.</p>
+          </GlassPanel>
+        )}
 
-      {!loading && sorted.length === 0 && (
-        <GlassPanel level={2} className="p-6">
-          <p className="text-sm text-muted-foreground text-center py-8">Nog geen activiteit — Giulia werkt autonoom verder.</p>
-        </GlassPanel>
-      )}
-
-      {!loading && sorted.length > 0 && (
-        <>
-          <div className="flex items-center gap-2 overflow-x-auto pb-1">
-            <button
-              onClick={() => setTab("all")}
-              className={cn(
-                "px-3 py-1.5 text-xs rounded-full whitespace-nowrap transition-all flex items-center gap-2",
-                tab === "all" ? "bg-foreground text-background font-medium" : "glass-1 text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Alles
-              <span className={cn("px-1.5 py-0.5 rounded-full text-[9px]", tab === "all" ? "bg-background/20" : "bg-foreground/10")}>{sorted.length}</span>
-            </button>
-            {groupKeys.map((k) => {
-              const meta = metaFor(k);
-              return (
-                <button
-                  key={k}
-                  onClick={() => setTab(k)}
-                  className={cn(
-                    "px-3 py-1.5 text-xs rounded-full whitespace-nowrap transition-all flex items-center gap-2",
-                    tab === k ? "text-white font-medium" : "glass-1 text-muted-foreground hover:text-foreground"
-                  )}
-                  style={tab === k ? { background: meta.color } : undefined}
-                >
-                  <meta.icon className="h-3 w-3" />
-                  {meta.label}
-                  <span className={cn("px-1.5 py-0.5 rounded-full text-[9px]", tab === k ? "bg-white/20" : "bg-foreground/10")}>{groups[k].length}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="rounded-2xl border border-border/40 overflow-hidden bg-background/40">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border/40">
-              <span className="text-sm font-semibold">{tab === "all" ? "Alle activiteit" : metaFor(tab).label}</span>
-              {tab !== "all" && (
-                <button
-                  onClick={() => clearCategory(tab)}
-                  className="text-[11px] text-muted-foreground hover:text-destructive inline-flex items-center gap-1.5 transition-colors"
-                >
-                  <Trash2 className="h-3 w-3" /> Wis categorie
-                </button>
-              )}
-            </div>
-            <div className="divide-y divide-border/30 max-h-[560px] overflow-y-auto">
-              {visible.map((it) => (
-                <div key={it.id} className="group flex items-start gap-3 px-4 py-2.5 hover:bg-foreground/[0.02] transition-colors">
-                  <span className="h-2 w-2 rounded-full shrink-0 mt-1.5" style={{ background: metaFor(it.source).color }} />
-                  <div className="flex-1 min-w-0 pt-0.5">
-                    <p className="text-sm leading-snug">{it.description}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
-                      {metaFor(it.source).label} · {new Date(it.timestamp || it.created_date).toLocaleString("nl-NL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                    </p>
-                  </div>
+        {!loading && sorted.length > 0 && (
+          <>
+            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+              <button
+                onClick={() => setTab("all")}
+                className={cn(
+                  "px-3 py-1.5 text-xs rounded-full whitespace-nowrap transition-all flex items-center gap-2",
+                  tab === "all" ? "bg-foreground text-background font-medium" : "glass-1 text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Alles
+                <span className={cn("px-1.5 py-0.5 rounded-full text-[9px]", tab === "all" ? "bg-background/20" : "bg-foreground/10")}>{sorted.length}</span>
+              </button>
+              {groupKeys.map((k) => {
+                const meta = metaFor(k);
+                return (
                   <button
-                    onClick={() => remove(it.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive shrink-0 mt-0.5"
-                    aria-label="Verwijder activiteit"
+                    key={k}
+                    onClick={() => setTab(k)}
+                    className={cn(
+                      "px-3 py-1.5 text-xs rounded-full whitespace-nowrap transition-all flex items-center gap-2",
+                      tab === k ? "text-white font-medium" : "glass-1 text-muted-foreground hover:text-foreground"
+                    )}
+                    style={tab === k ? { background: meta.color } : undefined}
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <meta.icon className="h-3 w-3" />
+                    {meta.label}
+                    <span className={cn("px-1.5 py-0.5 rounded-full text-[9px]", tab === k ? "bg-white/20" : "bg-foreground/10")}>{groups[k].length}</span>
                   </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
-          </div>
-        </>
-      )}
-    </div>
+
+            <div className="rounded-2xl border border-border/40 overflow-hidden bg-background/40">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border/40">
+                <span className="text-sm font-semibold">{tab === "all" ? "Alle activiteit" : metaFor(tab).label}</span>
+                {tab !== "all" && (
+                  <button
+                    onClick={() => clearCategory(tab)}
+                    className="text-[11px] text-muted-foreground hover:text-destructive inline-flex items-center gap-1.5 transition-colors"
+                  >
+                    <Trash2 className="h-3 w-3" /> Wis categorie
+                  </button>
+                )}
+              </div>
+              <div className="divide-y divide-border/30">
+                {visible.map((it) => (
+                  <div key={it.id} className="group flex items-start gap-3 px-4 py-2.5 hover:bg-foreground/[0.02] transition-colors">
+                    <span className="h-2 w-2 rounded-full shrink-0 mt-1.5" style={{ background: metaFor(it.source).color }} />
+                    <div className="flex-1 min-w-0 pt-0.5">
+                      <p className="text-sm leading-snug">{it.description}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {metaFor(it.source).label} · {new Date(it.timestamp || it.created_date).toLocaleString("nl-NL", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => remove(it.id)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive shrink-0 mt-0.5"
+                      aria-label="Verwijder activiteit"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </GiuliaAdminShell>
   );
 }

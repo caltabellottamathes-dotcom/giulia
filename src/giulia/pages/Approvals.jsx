@@ -4,10 +4,11 @@ import GlassPanel from "@/system/components/glass/GlassPanel";
 import GlassButton from "@/system/components/glass/GlassButton";
 import StatusBadge from "@/system/components/glass/StatusBadge";
 import FloatingPanel from "@/system/components/glass/FloatingPanel";
-import PageHero from "@/system/components/glass/PageHero";
+import GiuliaAdminShell from "@/giulia/components/admin/GiuliaAdminShell";
 import { useEntityList } from "@/hooks/useEntity";
 import { useToast } from "@/components/ui/use-toast";
 import { base44 } from "@/api/base44Client";
+import { IMAGES } from "@/lib/images";
 import { haptic } from "@/lib/nativeBridge";
 import {
   Check, X, Edit3, MessageCircle, FileText,
@@ -24,6 +25,7 @@ const categoryMeta = {
 };
 const statuses = ["pending", "approved", "executed", "edited", "already_done", "rejected", "discarded", "all"];
 const statusLabel = { pending: "Wachtend", approved: "Goedgekeurd", executed: "Uitgevoerd", edited: "Bewerkt", already_done: "Al gebeurd", rejected: "Verworpen", discarded: "Verworpen (oud)", all: "Alles" };
+const pad2 = (n) => String(n).padStart(2, "0");
 
 export default function Approvals() {
   const [category, setCategory] = useState("All");
@@ -80,140 +82,155 @@ export default function Approvals() {
     reload();
   };
 
+  const pendingNow = approvals.filter((a) => a.status === "pending");
+  const items = pendingNow.slice(0, 3).map((a, i) => ({
+    n: pad2(i + 1),
+    title: a.description || a.title || "Actie",
+    desc: `${a.category || "intern"} · ${a.type || "actie"}`,
+  }));
+
   return (
-    <div className="space-y-6 animate-fade-up">
-      <PageHero
-        page="approvals"
-        icon={ClipboardCheck}
-        eyebrow="Controle"
-        title="Waiting on You."
-        subtitle="Enkel externe acties die op jouw ja wachten"
-      />
+    <GiuliaAdminShell
+      pageKey="approvals"
+      eyebrow="GIULIA → APPROVALS"
+      title="Waiting on You"
+      related={[{ label: "Activity", to: "/activity" }, { label: "Agents", to: "/agents" }, { label: "Chat", to: "/chat" }]}
+      hero={IMAGES.wWaitingOnYou}
+      card={{
+        eyebrow: "Waiting on you | approvals_",
+        title1: "Giulia waits,", title2: "for your yes.",
+        metaLine: `${pendingNow.length} acties wachten · ${approvals.length} totaal`,
+        heading1: "Decisions", heading2: "to make",
+        itemsLabel: `${pad2(items.length)}_awaiting_you_`,
+        items,
+      }}
+    >
+      <div className="space-y-5">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: "Wachtend", count: pendingNow.length },
+            { label: "Goedgekeurd", count: approvals.filter((a) => a.status === "approved").length },
+            { label: "Verwerpen", count: approvals.filter((a) => a.status === "discarded").length },
+            { label: "Bewerkt", count: approvals.filter((a) => a.status === "edited").length },
+          ].map((stat) => (
+            <GlassPanel key={stat.label} level={1} className="p-4">
+              <p className="text-2xl font-display font-semibold">{stat.count}</p>
+              <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
+            </GlassPanel>
+          ))}
+        </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[
-          { label: "Wachtend", count: approvals.filter((a) => a.status === "pending").length },
-          { label: "Goedgekeurd", count: approvals.filter((a) => a.status === "approved").length },
-          { label: "Verwerpen", count: approvals.filter((a) => a.status === "discarded").length },
-          { label: "Bewerkt", count: approvals.filter((a) => a.status === "edited").length },
-        ].map((stat) => (
-          <GlassPanel key={stat.label} level={1} className="p-4">
-            <p className="text-2xl font-display font-semibold">{stat.count}</p>
-            <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
-          </GlassPanel>
-        ))}
-      </div>
-
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        {statuses.map((s) => (
-          <button
-            key={s}
-            onClick={() => setStatus(s)}
-            className={cn(
-              "px-3 py-1.5 text-xs rounded-full whitespace-nowrap transition-all",
-              status === s ? "bg-olive text-ivory font-medium" : "glass-1 text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {statusLabel[s]}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        {categories.map((cat) => {
-          const meta = categoryMeta[cat];
-          const count = cat === "All" ? approvals.length : approvals.filter((a) => a.category === cat).length;
-          return (
+        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          {statuses.map((s) => (
             <button
-              key={cat}
-              onClick={() => setCategory(cat)}
+              key={s}
+              onClick={() => setStatus(s)}
               className={cn(
-                "px-3 py-1.5 text-xs rounded-full whitespace-nowrap transition-all flex items-center gap-2",
-                category === cat ? "text-white font-medium" : "glass-1 text-muted-foreground hover:text-foreground"
+                "px-3 py-1.5 text-xs rounded-full whitespace-nowrap transition-all",
+                status === s ? "bg-olive text-ivory font-medium" : "glass-1 text-muted-foreground hover:text-foreground"
               )}
-              style={category === cat ? { background: meta ? meta.color : "hsl(var(--foreground))" } : undefined}
             >
-              {meta && <meta.icon className="h-3 w-3" />}
-              {cat === "All" ? "Alles" : meta?.label || cat}
-              {count > 0 && <span className={cn("px-1.5 py-0.5 rounded-full text-[9px]", category === cat ? "bg-white/20" : "bg-foreground/10")}>{count}</span>}
+              {statusLabel[s]}
             </button>
-          );
-        })}
-      </div>
+          ))}
+        </div>
 
-      <div className="space-y-3">
-        {loading && [0, 1].map((i) => <div key={i} className="h-32 rounded-2xl shimmer" />)}
-        {!loading && pending.map((approval) => {
-          const meta = categoryMeta[approval.category] || categoryMeta.intern;
-          const Icon = meta.icon;
-          const isMessage = approval.type === "email" || approval.type === "whatsapp";
-          return (
-            <GlassPanel
-              key={approval.id}
-              level={2}
-              className="p-5 cursor-pointer"
-              style={{ borderLeft: `3px solid ${meta.color}` }}
-              onClick={() => { setSelected(approval); setEditText(approval.content || approval.proposed_action || ""); }}
-            >
-              <div className="flex items-start gap-4">
-                <div className="h-10 w-10 rounded-xl glass-1 flex items-center justify-center shrink-0">
-                  <Icon className="h-5 w-5" style={{ color: meta.color }} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <StatusBadge variant="muted" style={{ color: meta.color, borderColor: meta.color }}>{meta.label}</StatusBadge>
-                    <StatusBadge variant="muted">{statusLabel[approval.status] || approval.status}</StatusBadge>
-                    {approval.type && <StatusBadge variant="muted">{approval.type}</StatusBadge>}
-                    {approval.assignee && (
-                      <StatusBadge variant={approval.assignee === "giulia" ? "waiting" : "active"}>
-                        {approval.assignee === "giulia" ? "Voor Giulia" : "Voor jou"}
-                      </StatusBadge>
+        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          {categories.map((cat) => {
+            const meta = categoryMeta[cat];
+            const count = cat === "All" ? approvals.length : approvals.filter((a) => a.category === cat).length;
+            return (
+              <button
+                key={cat}
+                onClick={() => setCategory(cat)}
+                className={cn(
+                  "px-3 py-1.5 text-xs rounded-full whitespace-nowrap transition-all flex items-center gap-2",
+                  category === cat ? "text-white font-medium" : "glass-1 text-muted-foreground hover:text-foreground"
+                )}
+                style={category === cat ? { background: meta ? meta.color : "hsl(var(--foreground))" } : undefined}
+              >
+                {meta && <meta.icon className="h-3 w-3" />}
+                {cat === "All" ? "Alles" : meta?.label || cat}
+                {count > 0 && <span className={cn("px-1.5 py-0.5 rounded-full text-[9px]", category === cat ? "bg-white/20" : "bg-foreground/10")}>{count}</span>}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="space-y-3">
+          {loading && [0, 1].map((i) => <div key={i} className="h-32 rounded-2xl shimmer" />)}
+          {!loading && pending.map((approval) => {
+            const meta = categoryMeta[approval.category] || categoryMeta.intern;
+            const Icon = meta.icon;
+            const isMessage = approval.type === "email" || approval.type === "whatsapp";
+            return (
+              <GlassPanel
+                key={approval.id}
+                level={2}
+                className="p-5 cursor-pointer"
+                style={{ borderLeft: `3px solid ${meta.color}` }}
+                onClick={() => { setSelected(approval); setEditText(approval.content || approval.proposed_action || ""); }}
+              >
+                <div className="flex items-start gap-4">
+                  <div className="h-10 w-10 rounded-xl glass-1 flex items-center justify-center shrink-0">
+                    <Icon className="h-5 w-5" style={{ color: meta.color }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <StatusBadge variant="muted" style={{ color: meta.color, borderColor: meta.color }}>{meta.label}</StatusBadge>
+                      <StatusBadge variant="muted">{statusLabel[approval.status] || approval.status}</StatusBadge>
+                      {approval.type && <StatusBadge variant="muted">{approval.type}</StatusBadge>}
+                      {approval.assignee && (
+                        <StatusBadge variant={approval.assignee === "giulia" ? "waiting" : "active"}>
+                          {approval.assignee === "giulia" ? "Voor Giulia" : "Voor jou"}
+                        </StatusBadge>
+                      )}
+                    </div>
+                    <h3 className="text-sm font-display font-semibold">{approval.description}</h3>
+                    {approval.context && (
+                      <div className="glass-1 rounded-lg p-3 mt-3">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <Sparkles className="h-3 w-3 text-olive" />
+                          <p className="text-[10px] uppercase tracking-wider text-olive">Waarom</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{approval.context}</p>
+                      </div>
+                    )}
+                    {approval.content && (
+                      <div className="glass-1 rounded-lg p-3 mt-3">
+                        <p className="text-[10px] uppercase tracking-wider text-olive mb-1">
+                          {isMessage ? "Voorgesteld bericht" : "Details"}
+                        </p>
+                        <p className="whitespace-pre-wrap text-xs text-muted-foreground">{approval.content}</p>
+                      </div>
+                    )}
+                    {approval.project_id && projTitle(approval.project_id) && (
+                      <p className="text-[10px] text-olive mt-2">Gekoppeld: {projTitle(approval.project_id)}</p>
                     )}
                   </div>
-                  <h3 className="text-sm font-display font-semibold">{approval.description}</h3>
-                  {approval.context && (
-                    <div className="glass-1 rounded-lg p-3 mt-3">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <Sparkles className="h-3 w-3 text-olive" />
-                        <p className="text-[10px] uppercase tracking-wider text-olive">Waarom</p>
-                      </div>
-                      <p className="text-xs text-muted-foreground">{approval.context}</p>
-                    </div>
-                  )}
-                  {approval.content && (
-                    <div className="glass-1 rounded-lg p-3 mt-3">
-                      <p className="text-[10px] uppercase tracking-wider text-olive mb-1">
-                        {isMessage ? "Voorgesteld bericht" : "Details"}
-                      </p>
-                      <p className="whitespace-pre-wrap text-xs text-muted-foreground">{approval.content}</p>
-                    </div>
-                  )}
-                  {approval.project_id && projTitle(approval.project_id) && (
-                    <p className="text-[10px] text-olive mt-2">Gekoppeld: {projTitle(approval.project_id)}</p>
-                  )}
                 </div>
-              </div>
-              {approval.status === "pending" && (
-                <div className="flex gap-2 mt-4 pt-4 border-t border-border/40" onClick={(e) => e.stopPropagation()}>
-                  <GlassButton variant="primary" size="sm" onClick={() => decide(approval, "approve")}><Check className="h-4 w-4" /> Goedkeuren</GlassButton>
-                  <GlassButton variant="outline" size="sm" onClick={() => { setSelected(approval); setEditText(approval.content || approval.proposed_action || ""); }}><Edit3 className="h-4 w-4" /> Bewerk</GlassButton>
-                  <GlassButton variant="outline" size="sm" onClick={() => decide(approval, "already_done")}><CheckCheck className="h-4 w-4" /> Al gebeurd</GlassButton>
-                  <GlassButton variant="ghost" size="sm" onClick={() => decide(approval, "reject")}><X className="h-4 w-4" /> Verwerpen</GlassButton>
-                </div>
-              )}
-            </GlassPanel>
-          );
-        })}
+                {approval.status === "pending" && (
+                  <div className="flex gap-2 mt-4 pt-4 border-t border-border/40" onClick={(e) => e.stopPropagation()}>
+                    <GlassButton variant="primary" size="sm" onClick={() => decide(approval, "approve")}><Check className="h-4 w-4" /> Goedkeuren</GlassButton>
+                    <GlassButton variant="outline" size="sm" onClick={() => { setSelected(approval); setEditText(approval.content || approval.proposed_action || ""); }}><Edit3 className="h-4 w-4" /> Bewerk</GlassButton>
+                    <GlassButton variant="outline" size="sm" onClick={() => decide(approval, "already_done")}><CheckCheck className="h-4 w-4" /> Al gebeurd</GlassButton>
+                    <GlassButton variant="ghost" size="sm" onClick={() => decide(approval, "reject")}><X className="h-4 w-4" /> Verwerpen</GlassButton>
+                  </div>
+                )}
+              </GlassPanel>
+            );
+          })}
 
-        {!loading && pending.length === 0 && (
-          <GlassPanel level={2} className="p-12 text-center">
-            <ClipboardCheck className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">
-              {status === "pending" ? "Geen acties wachten op goedkeuring" : `Niets met status "${statusLabel[status]}"`}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">Giulia werkt autonoom verder</p>
-          </GlassPanel>
-        )}
+          {!loading && pending.length === 0 && (
+            <GlassPanel level={2} className="p-12 text-center">
+              <ClipboardCheck className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">
+                {status === "pending" ? "Geen acties wachten op goedkeuring" : `Niets met status "${statusLabel[status]}"`}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">Giulia werkt autonoom verder</p>
+            </GlassPanel>
+          )}
+        </div>
       </div>
 
       <FloatingPanel open={!!selected} onClose={() => setSelected(null)} position="right">
@@ -241,6 +258,6 @@ export default function Approvals() {
           </div>
         )}
       </FloatingPanel>
-    </div>
+    </GiuliaAdminShell>
   );
 }
