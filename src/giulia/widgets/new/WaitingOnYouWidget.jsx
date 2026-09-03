@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { GlassPhotoLayeredWidget, WidgetHeader, CountUp, URGENT } from "@/system/widgets/primitives";
-import { usePanel } from "@/lib/PanelContext";
+import { useNavigate } from "react-router-dom";
 import { useEntityList } from "@/hooks/useEntity";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/37aed6798_Waiting_on_You.jpeg";
@@ -33,7 +33,7 @@ function threeWordSummary(a) {
 }
 
 export default function WaitingOnYouWidget() {
-  const { openModule } = usePanel();
+  const navigate = useNavigate();
   const { data: approvals, loading } = useEntityList("Approval", { filter: { status: "pending" }, realtime: true });
 
   const sorted = [...(approvals || [])].sort((a, b) => {
@@ -54,7 +54,7 @@ export default function WaitingOnYouWidget() {
         overhang={0}
         domain="giulia"
         radius="large"
-        onClick={() => openModule("approvals")}
+        onClick={() => navigate("/approvals")}
         photoOverlay="bg-gradient-to-t from-black/45 via-black/12 to-transparent"
       >
         {/* ghost-getal — enorm, asymmetrisch, half achter foto + half achter tekst */}
@@ -82,7 +82,7 @@ export default function WaitingOnYouWidget() {
               return (
                 <motion.button
                   key={a.id}
-                  onClick={(e) => { e.stopPropagation(); openModule("approvals"); }}
+                  onClick={(e) => { e.stopPropagation(); navigate("/approvals"); }}
                   initial={{ opacity: 0, x: 8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.08, duration: 0.4 }}

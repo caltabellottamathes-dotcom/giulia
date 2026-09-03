@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { GlassPhotoLayeredWidget, WidgetHeader } from "@/system/widgets/primitives";
-import { usePanel } from "@/lib/PanelContext";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/425b14eed_WaKe.jpeg";
@@ -15,7 +15,7 @@ const URGENT = "hsl(var(--d-giulia-urgent))";
  *  tot de wekker afgaat. Wektijd uit MorningSettings (fallback 07:00). */
 
 export default function GoodMorningWidget() {
-  const { openModule } = usePanel();
+  const navigate = useNavigate();
   const [alarm, setAlarm] = useState("07:00");
   const [now, setNow] = useState(new Date());
   const [enabled, setEnabled] = useState(false);
@@ -59,7 +59,7 @@ export default function GoodMorningWidget() {
         overhang={0}
         domain="giulia"
         radius="large"
-        onClick={() => openModule("goodmorning")}
+        onClick={() => navigate("/wake")}
         photoOverlay="bg-gradient-to-t from-black/35 via-black/10 to-transparent"
         photoChildren={
           <div className="absolute inset-0 flex items-center justify-center">

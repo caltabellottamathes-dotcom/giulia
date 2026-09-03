@@ -42,6 +42,33 @@ export default async function (req) {
     const dayTime = (timeBlocks || []).filter((b) => b.start && new Date(b.start) >= dayStart && new Date(b.start) <= dayEnd && b.status !== "cancelled");
     const openThreads = (threads || []).slice(0, 5);
 
+    // ── CHAT-MOMENTEN (Mattia + Giulia) → logboek ───────────────────
+    const [mattiaMsgs, giuliaMsgs] = await Promise.all([
+      sr.entities.Message.filter({ channel: "in-app", thread_id: "mattia" }, "-created_date", 120).catch(() => []),
+      sr.entities.Message.filter({ channel: "in-app", thread_id: "giulia" }, "-created_date", 120).catch(() => []),
+    ]);
+    const dayMattia = todays(mattiaMsgs).filter((m) => m.role === "user" || m.role === "mattia");
+    const dayGiulia = todays(giuliaMsgs).filter((m) => m.role === "user" || m.role === "giulia");
+    let chatMoments = [];
+    if (dayMattia.length + dayGiulia.length > 0) {
+      const transcript = [...dayGiulia, ...dayMattia]
+        .sort((a, b) => new Date(a.created_date) - new Date(b.created_date))
+        .slice(-40)
+        .map((m) => `${m.role === "user" ? "Salvo" : m.role === "mattia" ? "Mattia" : "Giulia"}: ${String(m.content).slice(0, 300)}`)
+        .join("\n");
+      const chatRes = await geminiDecide({
+        model: "gemini-3.1-flash-lite",
+        prompt:
+          `Uit deze chatfragmenten van vandaag (Giulia = de butler, Mattia = Salvo's alter-ego) haal je de 3-6 BELANGRIJKSTE momenten: ` +
+          `beslissingen, gemaakte plannen of afspraken, inzichten, en emotioneel belangrijke momenten. Per moment max 15 woorden, neutraal geformuleerd, geen expliciete inhoud. ` +
+          `Fragmenten:\n"""\n${transcript}\n"""\n\n` +
+          `Antwoord UITSLUITEND als JSON: {"moments": ["...", "...']} — of {"moments": []} als er niets noemenswaardigs is.`,
+        schema: { type: "object", properties: { moments: { type: "array", items: { type: "string" } } }, required: ["moments"] },
+        keyName: "BACKDESK_GEMINI_API_KEY",
+      }).catch(() => null);
+      chatMoments = (chatRes?.moments || []).slice(0, 6);
+    }
+
     const ctx = [
       `Check-ins vandaag: ${dayCheckIns.length} (laatste state: ${dayCheckIns[0]?.state || "—"}, energie ${dayCheckIns[0]?.energy ?? "—"}%, capaciteit ${dayCheckIns[0]?.capacity ?? "—"}%)`,
       `Agenda: ${dayEvents.length} afspraak${dayEvents.length !== 1 ? "en" : ""}${dayEvents.map((e) => `\n  - ${e.title} (${new Date(e.start).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })})`).join("")}`,
@@ -49,6 +76,7 @@ export default async function (req) {
       `Persoonlijke tijd: ${dayTime.reduce((s, b) => s + (b.duration_min || 0), 0)} min (${dayTime.filter((b) => b.is_protected).length} beschermd)`,
       `Openstaande threads: ${openThreads.length} — ${openThreads.map((t) => t.title).join(", ") || "geen"}`,
       `Belangrijkste behoefte vandaag: ${dayCheckIns.find((c) => c.needs?.length)?.needs?.[0] || "—"}`,
+      `Chats vandaag: ${dayGiulia.length} Giulia-berichten, ${dayMattia.length} Mattia-berichten${chatMoments.length ? `\n  Belangrijkste chat-momenten:\n  - ${chatMoments.join("\n  - ")}` : ""}`,
     ].join("\n");
 
     const res = await geminiDecide({
@@ -61,10 +89,13 @@ export default async function (req) {
     });
 
     const summary = res?.summary || `Vandaag: ${dayEvents.length} afspraken, ${dayRoutines.length} routines voltooid.`;
+    const contentBody = chatMoments.length
+      ? `${summary}\n\nBelangrijkste momenten uit je chats van vandaag:\n${chatMoments.map((m) => `- ${m}`).join("\n")}`
+      : summary;
 
     const entry = await sr.entities.JournalEntry.create({
-      title, type: "reflection", content: summary, date: now.toISOString(),
-      tags: ["giulia", "dagbeeld", now.toISOString().split("T")[0]], is_highlight: false, agent_source: "buildDailyJournal",
+      title, type: "reflection", content: contentBody, date: now.toISOString(),
+      tags: ["giulia", "dagbeeld", now.toISOString().split("T")[0]], is_highlight: chatMoments.length > 0, agent_source: "buildDailyJournal",
     }).catch(() => null);
 
     await notify(base44, {
@@ -82,6 +113,7 @@ export default async function (req) {
       check_ins: dayCheckIns.length, events: dayEvents.length, routines: dayRoutines.length,
       personal_time_min: dayTime.reduce((s, b) => s + (b.duration_min || 0), 0),
       open_thread: res?.open_thread || null,
+      mattia_messages: dayMattia.length, giulia_messages: dayGiulia.length, chat_moments: chatMoments.length,
     });
   } catch (error) {
     return Response.json({ ok: false, error: error.message }, { status: 500 });

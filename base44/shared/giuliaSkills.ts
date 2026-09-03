@@ -171,6 +171,20 @@ export const GIULIA_SKILLS = [
     }
   },
   {
+    name: "talk_to_mattia",
+    description: "Praat met Mattia (Salvo's alter-ego, zijn chaotische hoofd) en krijg zijn antwoord terug. Gebruik dit als Salvo expliciet om Mattia vraagt ('wat vindt Mattia hiervan?') of als je Mattia's eerlijke, chaotische perspectief op iets wilt. Je krijgt zijn letterlijke antwoord terug — verwerk dat in je eigen reply. Belangrijke dingen uit Mattia-gesprekken komen automatisch in je geheugen terecht.",
+    inputSchema: { type: "object", properties: { message: { type: "string", description: "De vraag of opdracht aan Mattia" } }, required: ["message"] },
+    execute: async ({ message }, base44) => {
+      try {
+        const res = await base44.functions.invoke("chatWithMattia", { message: String(message || "").slice(0, 2000), source: "giulia", persist: false });
+        const d = res?.data || res;
+        return { response: d?.response || "", ok: !!d?.ok };
+      } catch (e) {
+        return { error: String((e && e.message) || e) };
+      }
+    }
+  },
+  {
     name: "create_document",
     description: "Sla een document (referentie, contract, notitie) op voor Salvo of als resultaat van een goedgekeurde 'document_create' approval.",
     inputSchema: { type: "object", properties: { name: { type: "string" }, document_type: { type: "string", enum: ["reference", "contract", "invoice", "notes", "other"] }, content: { type: "string" }, url: { type: "string", description: "Bestands-URL (bv. bijlage)" }, project_id: { type: "string" } }, required: ["name"] },

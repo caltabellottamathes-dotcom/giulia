@@ -3,7 +3,7 @@ import WidgetShell from "../../system/widgets/WidgetShell";
 import BrandPhoto from "../../system/widgets/BrandPhoto";
 import Ring from "../../system/widgets/Ring";
 import CountUp from "../../system/widgets/CountUp";
-import { usePanel } from "@/lib/PanelContext";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
 import { Play, RotateCw, Check } from "lucide-react";
@@ -16,7 +16,7 @@ const DURATION = 3200; // ms to reach 100%
  * all agents are active and have done their thing. Tap → agents paneel.
  */
 export default function AgentActivityWidget() {
-  const { openModule } = usePanel();
+  const navigate = useNavigate();
   const [progress, setProgress] = useState(0);
   const [running, setRunning] = useState(false);
   const timer = useRef(null);
@@ -41,7 +41,7 @@ export default function AgentActivityWidget() {
   const done = progress >= 100 && !running;
 
   return (
-    <WidgetShell size="2x2" radius="large" interactive onClick={() => openModule("agents")} className="min-h-[340px]">
+    <WidgetShell size="2x2" radius="large" interactive onClick={() => navigate("/agents")} className="min-h-[340px]">
       <div className="flex flex-col h-full">
         <BrandPhoto
           src={IMAGES.feetChair}

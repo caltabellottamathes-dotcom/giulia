@@ -71,7 +71,7 @@ function ConciergeInner() {
       {/* foto als grote shell */}
       <img src={PHOTO} alt="Giulia's Hotline" className="absolute inset-0 w-full h-full object-cover" />
       {/* klik op de foto opent het voice-paneel */}
-      <button type="button" onClick={() => openModule("voice")} aria-label="Open voice-paneel" className="absolute inset-0 z-0 cursor-pointer" />
+      <button type="button" onClick={() => navigate("/voice")} aria-label="Open voice-pagina" className="absolute inset-0 z-0 cursor-pointer" />
 
       {/* bovenaan in de foto: beweegde header + titel */}
       <div className="absolute top-0 inset-x-0 px-4 pt-4 pb-8 bg-gradient-to-b from-black/45 to-transparent flex items-start justify-between" style={{ color: IVORY }}>

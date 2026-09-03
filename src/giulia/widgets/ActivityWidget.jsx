@@ -1,7 +1,7 @@
 import React from "react";
 import WidgetShell from "../../system/widgets/WidgetShell";
 import BrandPhoto from "../../system/widgets/BrandPhoto";
-import { usePanel } from "@/lib/PanelContext";
+import { useNavigate } from "react-router-dom";
 import { useEntityList } from "@/hooks/useEntity";
 import { base44 } from "@/api/base44Client";
 import { IMAGES } from "@/lib/images";
@@ -12,7 +12,7 @@ const ORDER = ["focus", "life", "self", "giulia"];
 
 /** ActivityWidget — versmolten stream: groepeert de unified Activity-feed per domein. */
 export default function ActivityWidget() {
-  const { openModule } = usePanel();
+  const navigate = useNavigate();
   const { data: items, loading, reload } = useEntityList("Activity", { sort: "-created_date" });
 
   const groups = {};
@@ -22,7 +22,7 @@ export default function ActivityWidget() {
   const clearDomain = async (k) => { const ids = groups[k].map((g) => g.id); try { await base44.entities.Activity.deleteMany({ id: { $in: ids } }); reload(); } catch {} };
 
   return (
-    <WidgetShell size="2x1" radius="medium" interactive onClick={() => openModule("activity")} className="min-h-[200px]">
+    <WidgetShell size="2x1" radius="medium" interactive onClick={() => navigate("/activity")} className="min-h-[200px]">
       <div className="flex flex-col h-full">
         <BrandPhoto src={IMAGES.topDownWalk} className="h-20 -mb-8 rounded-b-[20px] shadow-[0_14px_24px_-12px_rgba(0,0,0,0.3)] relative z-10" overlay="bg-gradient-to-t from-charcoal/85 to-charcoal/30">
           <div className="absolute inset-0 px-5 flex items-end justify-between pb-2">

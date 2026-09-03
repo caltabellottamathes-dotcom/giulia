@@ -6,6 +6,7 @@ import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
 import { linkMentionedContacts } from '../../shared/contactLinker.ts';
 import { buildImageParts } from '../../shared/imageParts.ts';
 import { MATTIA_MEDIA_SKILLS } from '../../shared/mattiaMediaSkills.ts';
+import { shareMattiaHighlights } from '../../shared/mattiaBridge.ts';
 
 /**
  * chatWithMattia — Mattia chat, BYOK (MATTIA-MATTIA_Gemini_API_Key), géén
@@ -255,6 +256,11 @@ export default async function (req) {
     // returned direct.
     if (source === "chat") {
       linkMentionedContacts(sr, message).catch(() => null);
+      // MATTIA → GIULIA BRUG: blijvende momenten uit dit gesprek worden
+      // fire-and-forget opgeslagen in Giulia's gedeelde geheugen.
+      if (persist && finalText) {
+        shareMattiaHighlights(base44, { userText: message, mattiaText: finalText }).catch(() => null);
+      }
     }
 
     return Response.json({ ok: true, response: finalText, actions_executed: executed, media_commands: mediaCommands });

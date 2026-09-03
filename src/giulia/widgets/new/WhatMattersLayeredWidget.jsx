@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { PhotoGlassLayeredWidget, WidgetHeader, CheckList, URGENT } from "@/system/widgets/primitives";
 import { layeredContentPad } from "@/system/widgets/primitives/shellCode";
 import { useAgendaChecklist } from "@/life/components/CheckableShell";
-import { usePanel } from "@/lib/PanelContext";
+import { useNavigate } from "react-router-dom";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/02f6f6d0e_Matters.jpeg";
 const PISTACHIO = "hsl(var(--giulia-pistachio))"; // 2e accentkleur (GIULIA)
@@ -60,7 +60,7 @@ function PlanningBars({ items }) {
  *  "A plan for today!" + datum/tijd + live staafgrafiek; glas-card links met
  *  de afvinkbare agenda-checklist (done → bijbehorende staaf groeit). */
 export default function WhatMattersLayeredWidget() {
-  const { openModule } = usePanel();
+  const navigate = useNavigate();
   const { items: rawItems, total, closed, close, reopen } = useAgendaChecklist();
   const [states, setStates] = useState({});
   const cycle = (i) => setStates((s) => {
@@ -97,7 +97,7 @@ export default function WhatMattersLayeredWidget() {
         overhang={0}
         domain="giulia"
         radius="large"
-        onClick={() => openModule("jedag")}
+        onClick={() => navigate("/briefing")}
         overlay="bg-gradient-to-t from-black/45 via-black/22 to-black/12"
         photoChildren={
           <div className="absolute inset-0 flex flex-col gap-1.5" style={layeredContentPad("right", 0.667)} onClick={(e) => e.stopPropagation()}>

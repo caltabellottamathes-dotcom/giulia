@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { PhotoGlassLayeredWidget, WidgetHeader, CountUp } from "@/system/widgets/primitives";
-import { usePanel } from "@/lib/PanelContext";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/5f19aeb8d_Noticed_.jpeg";
@@ -22,7 +22,7 @@ const GROUPS = [
 ];
 
 export default function WhatIveNoticedWidget() {
-  const { openModule } = usePanel();
+  const navigate = useNavigate();
   const [counts, setCounts] = useState({ observaties: 0, self: 0, journal: 0 });
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export default function WhatIveNoticedWidget() {
         overhang={0}
         domain="giulia"
         radius="large"
-        onClick={() => openModule("insights")}
+        onClick={() => navigate("/insights")}
         overlay="bg-gradient-to-t from-black/30 via-black/12 to-transparent"
         photoChildren={
           <div className="absolute" style={{ left: "50%", top: "43%", transform: "translate(-50%,-50%)" }}>
@@ -84,7 +84,7 @@ export default function WhatIveNoticedWidget() {
         <WidgetHeader type="energy" label="WHAT I'VE NOTICED." />
         <div className="flex justify-between gap-1 mt-1.5">
           {GROUPS.map((g) => (
-            <button key={g.key} onClick={(e) => { e.stopPropagation(); openModule("insights"); }} className="flex items-center gap-1.5 text-left hover:opacity-80 transition">
+            <button key={g.key} onClick={(e) => { e.stopPropagation(); navigate("/insights"); }} className="flex items-center gap-1.5 text-left hover:opacity-80 transition">
               <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: g.color }} />
               <div className="flex flex-col leading-none">
                 <span className="text-[7.5px] uppercase tracking-[0.16em] opacity-50">{g.label}</span>

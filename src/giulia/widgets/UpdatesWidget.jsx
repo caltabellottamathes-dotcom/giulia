@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import WidgetShell from "../../system/widgets/WidgetShell";
-import { usePanel } from "@/lib/PanelContext";
+import { useNavigate } from "react-router-dom";
 import { Check, Sparkles } from "lucide-react";
 import { fetchUnifiedCompleted, DOMAIN_META } from "@/lib/unifiedStream";
 
@@ -9,7 +9,7 @@ import { fetchUnifiedCompleted, DOMAIN_META } from "@/lib/unifiedStream";
  * routines (Self), sociale plannen + huishouden (Life) en doelen (Self).
  */
 export default function UpdatesWidget() {
-  const { openModule } = usePanel();
+  const navigate = useNavigate();
   const [completed, setCompleted] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -22,7 +22,7 @@ export default function UpdatesWidget() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <WidgetShell size="1x2" radius="medium" interactive onClick={() => openModule("updates")} className="min-h-[176px]">
+    <WidgetShell size="1x2" radius="medium" interactive onClick={() => navigate("/updates")} className="min-h-[176px]">
       <div className="p-5 flex flex-col h-full">
         <div className="flex items-center justify-between mb-2">
           <p className="text-[10px] uppercase tracking-[0.26em] font-semibold text-current/60">Achter de schermen · alles</p>

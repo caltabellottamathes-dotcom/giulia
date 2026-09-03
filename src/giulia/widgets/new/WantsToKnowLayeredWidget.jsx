@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { PhotoGlassLayeredWidget, WidgetHeader } from "@/system/widgets/primitives";
-import { usePanel } from "@/lib/PanelContext";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 
 const PHOTO = "https://media.base44.com/images/public/6a7608690d4ea2c9edc3d59b/ac89b8e63_WTK.jpeg";
@@ -23,7 +23,7 @@ const GROUPS = [
 ];
 
 export default function WantsToKnowLayeredWidget() {
-  const { openModule } = usePanel();
+  const navigate = useNavigate();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -54,7 +54,7 @@ export default function WantsToKnowLayeredWidget() {
         overhang={0}
         domain="giulia"
         radius="large"
-        onClick={() => openModule("wantstoknow")}
+        onClick={() => navigate("/wants-to-know")}
         overlay="bg-gradient-to-t from-black/55 via-black/25 to-black/5"
       >
         <WidgetHeader type="pulse" label="WANTS TO KNOW!" />
@@ -67,7 +67,7 @@ export default function WantsToKnowLayeredWidget() {
             return (
               <motion.button
                 key={g.key}
-                onClick={(e) => { e.stopPropagation(); openModule("wantstoknow"); }}
+                onClick={(e) => { e.stopPropagation(); navigate("/wants-to-know"); }}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.08, duration: 0.4 }}
