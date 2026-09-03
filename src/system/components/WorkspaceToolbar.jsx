@@ -6,10 +6,9 @@ import { cn } from "@/lib/utils";
 import { useLocation } from "react-router-dom";
 import { Plus, Phone, MessageSquare, BrainCircuit, X, Send, Loader2, User } from "lucide-react";
 import QuickLauncher from "@/system/components/glass/QuickLauncher";
-import { useActiveDomain } from "@/lib/useActiveDomain";
 import { DEFAULT_BOARDS, loadCustomBoards, createCustomBoard, renameCustomBoard, deleteCustomBoard, getActiveBoard, setActiveBoard, isDefaultBoard } from "@/lib/useDashboardBoard";
 
-const actionBtn = "h-8 w-8 flex items-center justify-center text-white hover:bg-white/15 hover:text-white transition-colors shrink-0 rounded-lg";
+const actionBtn = "h-8 w-8 flex items-center justify-center text-foreground hover:bg-foreground/10 hover:text-foreground transition-colors shrink-0 rounded-none";
 
 /**
  * WorkspaceToolbar — minimalistische volledig-brede werkbalk onderaan.
@@ -115,7 +114,6 @@ export default function WorkspaceToolbar() {
 
   const all = [...DEFAULT_BOARDS, ...custom];
 
-  const { accent } = useActiveDomain(board);
 
   return (
     <>
@@ -135,16 +133,12 @@ export default function WorkspaceToolbar() {
         onMouseLeave={() => scheduleCollapse(8000)}
       >
         <div
-          className="relative flex items-center h-11 rounded-full overflow-hidden w-full"
+          className="relative flex items-center h-11 rounded-none overflow-hidden w-full"
           style={{
-            background: "rgba(120,122,128,0.10)",
-            backdropFilter: "blur(30px) saturate(1.4)",
-            WebkitBackdropFilter: "blur(30px) saturate(1.4)",
-            border: "1px solid rgba(255,255,255,0.14)",
-            boxShadow: "0 18px 40px -16px rgba(0,0,0,0.40), inset 0 1px 0 0 rgba(255,255,255,0.18)",
+            background: "hsl(var(--card))",
+            border: "1px solid hsl(var(--foreground))",
           }}
         >
-          <div className="pointer-events-none absolute inset-0" style={{ background: accent, opacity: 0.06 }} />
           {expanded ? (
             <>
               {/* Dashboard tabs (left) */}
@@ -173,7 +167,7 @@ export default function WorkspaceToolbar() {
                         title={customBoard ? "Dubbelklik om te hernoemen" : b.label}
                         className={cn(
                           "px-2.5 lg:px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] whitespace-nowrap transition-colors",
-                          on ? (onPaginaOntwerp ? "text-white" : "text-foreground") : (onPaginaOntwerp ? "text-white/70 hover:text-white" : "text-foreground/55 hover:text-foreground/85")
+                          on ? "text-foreground border-b-2 border-accent" : "text-foreground/55 hover:text-foreground/85"
                         )}
                       >
                         {b.label}
@@ -216,15 +210,15 @@ export default function WorkspaceToolbar() {
                 )}
                 <button onClick={() => { expand(); if (stayCollapsed) window.dispatchEvent(new CustomEvent("giulia:ontwerp-stage", { detail: "voice" })); else openVoice(); }} aria-label="Bel Giulia" className={actionBtn}><Phone className="h-4 w-4" /></button>
                 <button onClick={() => { expand(); if (stayCollapsed) window.dispatchEvent(new CustomEvent("giulia:ontwerp-stage", { detail: "chat" })); else openChat(); }} aria-label="Chat met Giulia" className={actionBtn}><MessageSquare className="h-4 w-4" /></button>
-                <span aria-hidden className="mx-1 h-4 w-px shrink-0" style={{ background: "rgba(216,218,179,0.45)" }} />
-                <button onClick={() => { expand(); openMattiaChat(); }} aria-label="Mattia Hotline" title="Mattia Hotline" className={cn(actionBtn, "hover:bg-[#94925d]/25")}><User className="h-4 w-4" style={{ color: "#d8dab3" }} /></button>
+                <span aria-hidden className="mx-1 h-4 w-px shrink-0" style={{ background: "rgba(0,0,0,0.2)" }} />
+                <button onClick={() => { expand(); openMattiaChat(); }} aria-label="Mattia Hotline" title="Mattia Hotline" className={cn(actionBtn, "hover:bg-accent/10")}><User className="h-4 w-4" style={{ color: "hsl(var(--accent))" }} /></button>
           </div>
         </div>
       </div>
 
       {/* Context-capture popup */}
       {(active || captured) && (
-        <div data-no-capture className="fixed z-40 right-4 lg:right-8 bottom-20 w-[calc(100%-2rem)] lg:w-[360px] bg-charcoal/40 backdrop-blur-2xl border border-white/15 p-4 space-y-3 animate-slide-up text-ivory rounded-2xl">
+        <div data-no-capture className="fixed z-40 right-4 lg:right-8 bottom-20 w-[calc(100%-2rem)] lg:w-[360px] bg-charcoal border border-foreground/60 p-4 space-y-3 animate-slide-up text-ivory rounded-none">
           {active && !captured ? (
             <>
               <div className="flex items-center justify-between">
@@ -254,18 +248,15 @@ export default function WorkspaceToolbar() {
         onClick={() => setLauncherOpen(true)}
         aria-label="QuickLauncher"
         className={cn(
-          "fixed bottom-4 lg:bottom-6 z-30 h-11 w-11 rounded-full flex items-center justify-center hover:scale-105 transition-transform",
+          "fixed bottom-4 lg:bottom-6 z-30 h-11 w-11 rounded-none flex items-center justify-center hover:scale-105 transition-transform",
           onPaginaOntwerp ? "left-4 lg:left-6" : "right-4 lg:right-6"
         )}
         style={{
-          background: "rgba(120,122,128,0.10)",
-          backdropFilter: "blur(30px) saturate(1.4)",
-          WebkitBackdropFilter: "blur(30px) saturate(1.4)",
-          border: "1px solid rgba(255,255,255,0.14)",
-          boxShadow: "0 18px 40px -16px rgba(0,0,0,0.40), inset 0 1px 0 0 rgba(255,255,255,0.18)",
+          background: "hsl(var(--card))",
+          border: "1px solid hsl(var(--foreground))",
         }}
       >
-        <Plus className="h-4 w-4 text-white" />
+        <Plus className="h-4 w-4 text-foreground" />
       </button>
 
       <QuickLauncher open={launcherOpen} onClose={() => setLauncherOpen(false)} side={onPaginaOntwerp ? "left" : "right"} />

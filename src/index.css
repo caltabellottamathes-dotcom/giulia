@@ -1,117 +1,116 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 60 7% 95%;
-    --foreground: 60 12% 16%;
-    --card: 60 10% 97%;
-    --card-foreground: 60 12% 16%;
-    --popover: 60 10% 97%;
-    --popover-foreground: 60 12% 16%;
-    --primary: 60 12% 16%;
-    --primary-foreground: 60 7% 95%;
-    --secondary: 214 32% 91%;
-    --secondary-foreground: 60 12% 16%;
-    --muted: 51 15% 90%;
-    --muted-foreground: 58 12% 38%;
-    --accent: 58 23% 47%;
-    --accent-foreground: 60 7% 95%;
-    --destructive: 10 30% 50%;
-    --destructive-foreground: 60 7% 95%;
-    --border: 51 14% 82%;
-    --input: 51 14% 80%;
-    --ring: 60 12% 20%;
-    --radius: 0.75rem;
+    --background: 40 6% 96%;
+    --foreground: 0 0% 8%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 8%;
+    --primary: 0 0% 8%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 40 8% 90%;
+    --secondary-foreground: 0 0% 8%;
+    --muted: 40 10% 91%;
+    --muted-foreground: 0 0% 38%;
+    --accent: 353 94% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 353 94% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 10%;
+    --input: 0 0% 12%;
+    --ring: 353 94% 45%;
+    --radius: 0.25rem;
 
-    --font-heading: 'Space Grotesk', sans-serif;
-    --font-body: 'Space Grotesk', sans-serif;
-    --font-display: 'Space Grotesk', sans-serif;
+    --font-heading: 'Inter', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-display: 'Inter', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
-    /* GIULIA editorial palette — Metal / Clay Creek / Dark Sand / Blue Ridge Sky / Ancient Marble / Storm */
-    --ivory: 60 7% 95%;
-    --warm-white: 60 10% 97%;
-    --stone: 51 17% 85%;
-    --beige: 51 15% 88%;
-    --sand: 58 23% 47%;
-    --olive: 60 14% 46%;
-    --olive-muted: 60 10% 46%;
-    --blue-grey: 203 16% 74%;
-    --charcoal: 60 12% 16%;
-    --smoke: 58 10% 52%;
-    --ridge: 204 18% 73%;
-    --ridge-deep: 204 22% 50%;
-    --storm: 60 6% 94%;
+    /* ── KLASSIEK ZÜRICH — papier / inkt / signaalrood / grijstinten.
+       Eén rood accent (#E30613-achtig); alles wat kleur was wordt inkt of grijs. */
+    --ivory: 0 0% 97%;
+    --warm-white: 0 0% 100%;
+    --stone: 0 0% 88%;
+    --beige: 0 0% 92%;
+    --sand: 0 0% 32%;
+    --olive: 353 94% 45%;
+    --olive-muted: 0 0% 40%;
+    --blue-grey: 0 0% 68%;
+    --charcoal: 0 0% 9%;
+    --smoke: 0 0% 42%;
+    --ridge: 0 0% 70%;
+    --ridge-deep: 0 0% 45%;
+    --storm: 0 0% 96%;
 
-    /* Brand palette accents — powder blue, steel slate, linen sand */
-    --powder: 202 34% 74%;
-    --steel: 204 4% 52%;
-    --linen: 72 8% 87%;
-    --life-ridge: 203 16% 74%;
-    --life-dew: 197 17% 84%;
-    --life-pistachio: 63 34% 78%;
-    --life-olive: 58 23% 47%;
-    --life-urgent: 65 72% 59%;
-    --urgent: 65 72% 59%;
+    /* Brand accents — powders worden grijstinten, accent wordt rood */
+    --powder: 0 0% 78%;
+    --steel: 0 0% 42%;
+    --linen: 0 0% 90%;
+    --life-ridge: 0 0% 70%;
+    --life-dew: 0 0% 80%;
+    --life-pistachio: 0 0% 86%;
+    --life-olive: 0 0% 30%;
+    --life-urgent: 353 94% 45%;
+    --urgent: 353 94% 45%;
 
-    /* GIULIA — EARTH OLIVE #595f34, Olive #94925d, Whipped Pistachio #d8dab3, Urgent #d5e24a */
-    --giulia-coral: 68 30% 29%;
-    --earth-olive: 68 29% 29%;
-    --giulia-dust: 58 23% 47%;
-    --giulia-pistachio: 63 34% 78%;
-    --giulia-urgent: 65 72% 59%;
+    /* GIULIA tokens — inkt / grijs / papier; urgent = rood */
+    --giulia-coral: 0 0% 9%;
+    --earth-olive: 0 0% 9%;
+    --giulia-dust: 0 0% 42%;
+    --giulia-pistachio: 0 0% 86%;
+    --giulia-urgent: 353 94% 45%;
 
-    /* FINALE DOMEIN-KLEUREN — per domein deep/mid/light/urgent.
-       Urgent (#d5e24a) verschijnt alleen wanneer iets urgent wordt. */
-    --d-giulia-deep: 58 23% 47%;
-    --d-giulia-mid: 58 23% 47%;
-    --d-giulia-light: 63 34% 78%;
-    --d-giulia-urgent: 65 72% 59%;
-    --d-focus-deep: 319 35% 14%;
-    --d-focus-light: 63 34% 78%;
-    --d-focus-urgent: 65 72% 59%;
-    --d-life-deep: 203 16% 74%;
-    --d-life-mid: 198 17% 84%;
-    --d-life-light: 63 34% 78%;
-    --d-life-urgent: 65 72% 59%;
-    --d-system-deep: 60 12% 16%;
-    --d-system-mid: 58 10% 52%;
-    --d-system-light: 51 17% 85%;
-    --d-system-urgent: 65 72% 59%;
+    /* FINALE DOMEIN-KLEUREN — inkt per domein; rood alleen bij urgentie */
+    --d-giulia-deep: 0 0% 9%;
+    --d-giulia-mid: 0 0% 30%;
+    --d-giulia-light: 0 0% 86%;
+    --d-giulia-urgent: 353 94% 45%;
+    --d-focus-deep: 0 0% 9%;
+    --d-focus-light: 0 0% 86%;
+    --d-focus-urgent: 353 94% 45%;
+    --d-life-deep: 0 0% 9%;
+    --d-life-mid: 0 0% 30%;
+    --d-life-light: 0 0% 86%;
+    --d-life-urgent: 353 94% 45%;
+    --d-system-deep: 0 0% 9%;
+    --d-system-mid: 0 0% 30%;
+    --d-system-light: 0 0% 86%;
+    --d-system-urgent: 353 94% 45%;
 
-    /* SELF layer — dark plum primary (#301728) + sage accent (#d2d3b1) + urgent yellow (#d5e24a) */
-    --self-primary: 203 16% 74%;
-    --self-primary-light: 203 12% 85%;
-    --self-primary-soft: 203 18% 44%;
-    --self-accent: 61 28% 76%;
-    --self-accent-deep: 61 22% 50%;
-    --self-accent-soft: 61 18% 88%;
-    --self-urgent: 65 72% 59%;
+    /* SELF layer — inkt primair + rood accent */
+    --self-primary: 0 0% 9%;
+    --self-primary-light: 0 0% 30%;
+    --self-primary-soft: 0 0% 45%;
+    --self-accent: 353 94% 45%;
+    --self-accent-deep: 353 80% 38%;
+    --self-accent-soft: 353 40% 90%;
+    --self-urgent: 353 94% 45%;
 
-    /* LIFE layer — lichtblauw hoofdaccent + warme zand-contrast.
-       SELF later — burgundy + warm wit + warm grijs. */
-    --life-blue: 319 35% 14%;
-    --life-blue-soft: 319 28% 20%;
-    --life-blue-deep: 319 20% 28%;
-    --life-sand: 63 35% 78%;
-    --life-sand-deep: 63 28% 42%;
-    --self-burgundy: 342 41% 39%;
-    --self-white: 30 27% 96%;
-    --self-grey: 27 9% 77%;
+    /* LIFE layer — inkt + papier-zand */
+    --life-blue: 0 0% 9%;
+    --life-blue-soft: 0 0% 20%;
+    --life-blue-deep: 0 0% 9%;
+    --life-sand: 0 0% 86%;
+    --life-sand-deep: 0 0% 35%;
+    --self-burgundy: 353 94% 45%;
+    --self-white: 0 0% 98%;
+    --self-grey: 0 0% 75%;
 
-    /* Slick staging palette — metal / marble / storm / clay / sky (externe site staging) */
-    --slick-metal: 60 12% 16%;
-    --slick-marble: 220 8% 70%;
-    --slick-storm: 60 7% 95%;
-    --slick-clay: 58 15% 46%;
-    --slick-sky: 203 16% 74%;
+    /* Slick staging palette — metaal=inkt, marmer=grijs, clay=rood */
+    --slick-metal: 0 0% 9%;
+    --slick-marble: 0 0% 70%;
+    --slick-storm: 0 0% 96%;
+    --slick-clay: 353 94% 45%;
+    --slick-sky: 0 0% 80%;
 
-    --glass-bg: 51 14% 88%;
-    --glass-border: 60 12% 97%;
-    --bloom-blue: 75% 0.12 230;
+    --glass-bg: 0 0% 9%;
+    --glass-border: 0 0% 9%;
+    --bloom-blue: 0% 0 0;
   }
 }
 
@@ -124,139 +123,121 @@
     @apply bg-background text-foreground font-body antialiased;
     font-feature-settings: "ss01", "cv01";
     background-image:
-      linear-gradient(to right, hsl(var(--foreground) / 0.04) 1px, transparent 1px),
-      linear-gradient(to bottom, hsl(var(--foreground) / 0.04) 1px, transparent 1px),
-      linear-gradient(to right, hsl(var(--foreground) / 0.075) 1px, transparent 1px),
-      linear-gradient(to bottom, hsl(var(--foreground) / 0.075) 1px, transparent 1px);
+      linear-gradient(to right, hsl(var(--foreground) / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--foreground) / 0.05) 1px, transparent 1px),
+      linear-gradient(to right, hsl(var(--foreground) / 0.09) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--foreground) / 0.09) 1px, transparent 1px);
     background-size: 24px 24px, 24px 24px, 96px 96px, 96px 96px;
   }
 
   ::selection {
-    background: hsl(var(--olive) / 0.25);
+    background: hsl(var(--accent) / 0.18);
+    color: hsl(var(--foreground));
   }
 }
 
 @layer components {
-  /* Glass system — soft mouse-gray, highly transparent, heavy blur.
-     Light text/icons inherit on the translucent card classes. */
+  /* ── KLASSIEK ZÜRICH — vlak inkt-paneel: geen blur, geen schaduw,
+     harde 1px lijn, scherpe hoeken, papier-wit schrift. ──────────────── */
   .glass {
-    background: rgba(120, 122, 128, 0.10);
-    backdrop-filter: blur(48px) saturate(1.4);
-    -webkit-backdrop-filter: blur(48px) saturate(1.4);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.18), 0 12px 36px -16px rgba(0, 0, 0, 0.18);
+    background: hsl(var(--charcoal));
+    border: 1px solid hsl(var(--charcoal));
+    border-radius: 0 !important;
+    color: hsl(var(--ivory));
   }
 
   .glass-1 {
-    background: rgba(120, 122, 128, 0.08);
-    backdrop-filter: blur(44px) saturate(1.4);
-    -webkit-backdrop-filter: blur(44px) saturate(1.4);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.16);
+    background: hsl(var(--charcoal));
+    border: 1px solid hsl(var(--charcoal));
+    border-radius: 0 !important;
+    color: hsl(var(--ivory));
   }
 
   .glass-2 {
-    background: rgba(120, 122, 128, 0.12);
-    backdrop-filter: blur(52px) saturate(1.4);
-    -webkit-backdrop-filter: blur(52px) saturate(1.4);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.22), 0 18px 48px -20px rgba(0, 0, 0, 0.20);
+    background: hsl(var(--charcoal));
+    border: 1px solid hsl(var(--charcoal));
+    border-radius: 0 !important;
+    color: hsl(var(--ivory));
   }
 
   .glass-3 {
-    background: rgba(120, 122, 128, 0.14);
-    backdrop-filter: blur(56px) saturate(1.4);
-    -webkit-backdrop-filter: blur(56px) saturate(1.4);
-    border: 1px solid rgba(255, 255, 255, 0.20);
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.26), 0 24px 60px -22px rgba(0, 0, 0, 0.22);
+    background: hsl(var(--charcoal));
+    border: 1px solid hsl(var(--charcoal));
+    border-radius: 0 !important;
+    color: hsl(var(--ivory));
   }
 
   .glass-4 {
-    background: rgba(120, 122, 128, 0.16);
-    backdrop-filter: blur(60px) saturate(1.4);
-    -webkit-backdrop-filter: blur(60px) saturate(1.4);
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.30), 0 30px 72px -24px rgba(0, 0, 0, 0.24);
+    background: hsl(var(--charcoal));
+    border: 1px solid hsl(var(--charcoal));
+    border-radius: 0 !important;
+    color: hsl(var(--ivory));
   }
 
-  /* Translucent content card — gray glass, light inherited text */
+  /* Vlakke inkt-inhoudskaart — licht schrift geërfd */
   .glass-card {
-    background: rgba(120, 122, 128, 0.14);
-    backdrop-filter: blur(56px) saturate(1.4);
-    -webkit-backdrop-filter: blur(56px) saturate(1.4);
-    border: 1px solid rgba(255, 255, 255, 0.20);
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.26), 0 24px 56px -22px rgba(0, 0, 0, 0.20);
-    color: rgba(255, 255, 255, 0.92);
+    background: hsl(var(--charcoal));
+    border: 1px solid hsl(var(--charcoal));
+    border-radius: 0 !important;
+    color: hsl(var(--ivory));
   }
 
   .glass-card-2 {
-    background: rgba(120, 122, 128, 0.10);
-    backdrop-filter: blur(52px) saturate(1.4);
-    -webkit-backdrop-filter: blur(52px) saturate(1.4);
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.20);
-    color: rgba(255, 255, 255, 0.92);
+    background: hsl(var(--charcoal));
+    border: 1px solid hsl(var(--charcoal));
+    border-radius: 0 !important;
+    color: hsl(var(--ivory));
   }
 
+  /* Zürich kent geen zwevende schaduwen — de regel doet niets meer */
   .float-shadow {
-    box-shadow:
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.30),
-      0 32px 72px -24px rgba(0, 0, 0, 0.28),
-      0 12px 30px -12px rgba(0, 0, 0, 0.16);
+    box-shadow: none;
   }
 
   .glass-dark {
-    background: rgba(40, 42, 46, 0.45);
-    backdrop-filter: blur(48px) saturate(1.5);
-    -webkit-backdrop-filter: blur(48px) saturate(1.5);
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.22);
-    color: rgba(255, 255, 255, 0.92);
+    background: hsl(var(--charcoal));
+    border: 1px solid hsl(var(--charcoal));
+    border-radius: 0 !important;
+    color: hsl(var(--ivory));
   }
 
   .glass-button {
-    background: rgba(120, 122, 128, 0.14);
-    backdrop-filter: blur(40px);
-    -webkit-backdrop-filter: blur(40px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    background: transparent;
+    border: 1px solid hsl(var(--ivory) / 0.35);
+    border-radius: 0 !important;
+    transition: all 0.15s ease-out;
   }
 
   .glass-button:hover {
-    background: rgba(120, 122, 128, 0.22);
-    border-color: rgba(255, 255, 255, 0.30);
+    background: hsl(var(--ivory) / 0.12);
+    border-color: hsl(var(--ivory) / 0.6);
   }
 
-  /* Refraction material — the universal GIULIA glass.
-     Cool light tint + heavy blur + high saturate so colours from the
-     photo bleed through; thin light edge + dual shadow give physical
-     thickness; radial "light smear" from top-left simulates refraction. */
+  /* Zürich-paneel — vlak inkt met één rode signaalregel boven als handtekening */
   .refraction-panel {
     position: relative;
     overflow: hidden;
-    background: rgba(120, 122, 128, 0.10);
-    backdrop-filter: blur(56px) saturate(1.6);
-    -webkit-backdrop-filter: blur(56px) saturate(1.6);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    border-radius: 32px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.22);
-    color: rgba(255, 255, 255, 0.92);
+    background: hsl(var(--charcoal));
+    border: 1px solid hsl(var(--charcoal));
+    border-radius: 0 !important;
+    color: hsl(var(--ivory));
   }
 
   .refraction-panel::before {
     content: "";
     position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.15), transparent 70%);
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: hsl(var(--accent));
     pointer-events: none;
   }
 
-  /* Chat bubble — sits inside the refraction card, lifts subtly off it */
+  /* Chat-regel — iets lichtere inkt op het inkt-paneel, scherpe hoeken */
   .chat-bubble {
-    background: rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(14px) saturate(1.2);
-    -webkit-backdrop-filter: blur(14px) saturate(1.2);
-    border-radius: 20px;
+    background: hsl(0 0% 16%);
+    border-radius: 0;
     letter-spacing: -0.01em;
   }
 
@@ -265,8 +246,7 @@
     background-position: center;
   }
 
-  /* Ruitjespapier / schrijfpapier —zelfde achtergrond als het dashboard,
-     voor bento-kaarten met een lichte witte achtergrond. */
+  /* Ruitjespapier / schrijfpapier — papierwit met zwarte haarlijnen */
   .graph-paper {
     background-color: hsl(var(--warm-white));
     background-image:
@@ -401,7 +381,7 @@
 
   /* ── Gauge 1 — storage-style fill ring (Experiment) ─────────────────── */
   .sg-section {
-    --sg-arc: hsl(var(--olive));
+    --sg-arc: hsl(var(--accent));
     --sg-track: hsl(var(--foreground) / 0.12);
     --sg-card: hsl(var(--card));
     --sg-ink: hsl(var(--foreground));
@@ -475,17 +455,15 @@
   }
 }
 
-/* GlassAgenda scope — exacte tokens van het GlassAgenda-repo, los van het OS */
+/* GlassAgenda scope — Zürich tokens binnen deze scope */
 .glass-scope {
-  --marble: 51 17% 85%;
-  --storm: 60 7% 95%;
-  --olive: 63 35% 78%;
-  --plum: 319 35% 14%;
-  --selfbg: 47 30% 93%;
-  --selfpanel: 48 45% 97%;
-  /* Tailwind's marble/metal/sky classes resolve via --slick-* vars; override
-     marble to GlassAgenda's warm beige within this scope only. */
-  --slick-marble: 51 17% 85%;
+  --marble: 0 0% 88%;
+  --storm: 0 0% 96%;
+  --olive: 353 94% 45%;
+  --plum: 0 0% 9%;
+  --selfbg: 40 6% 96%;
+  --selfpanel: 0 0% 98%;
+  --slick-marble: 0 0% 88%;
 }
 
 @keyframes shimmer {
@@ -527,7 +505,7 @@
 @keyframes eq-bar { 0%, 100% { transform: scaleY(0.22); } 50% { transform: scaleY(1); } }
 .eq-bar { transform-origin: bottom; animation: eq-bar 1s ease-in-out infinite; }
 
-/* Ambient Bloom — small floating, drifting #b2bfc7 element, bottom-left */
+/* Ambient Bloom — legacy element (niet meer gerenderd in de Layout) */
 .ambient-bloom {
   position: fixed;
   left: 3%;
@@ -556,7 +534,7 @@
 
 /* Voice highlight — tijdelijke markering door de ElevenLabs agent */
 .voice-highlight {
-  outline: 3px solid hsl(var(--olive));
+  outline: 3px solid hsl(var(--accent));
   outline-offset: 4px;
   border-radius: 12px;
   transition: outline-color 0.3s ease, outline-offset 0.3s ease;
@@ -564,7 +542,11 @@
 
 /* Beeldbank modus — klik elke foto om hem te wisselen */
 body.beeldbank-active img { cursor: pointer !important; }
-body.beeldbank-active img:hover { outline: 2px solid hsl(var(--olive)); outline-offset: 2px; }
+body.beeldbank-active img:hover { outline: 2px solid hsl(var(--accent)); outline-offset: 2px; }
+
+/* Swiss signature — rode underline sweep */
+@keyframes swiss-underline { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.swiss-underline { transform-origin: left center; animation: swiss-underline 0.18s ease-out both; }
 
 /* Scrollbar — verborgen door het hele OS, scrollen blijft werken */
 * { scrollbar-width: none; -ms-overflow-style: none; }

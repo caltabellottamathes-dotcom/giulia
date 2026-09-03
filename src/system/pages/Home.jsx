@@ -9,7 +9,6 @@ import { IMAGES } from "@/lib/images";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { GlassSurfaceProvider } from "@/lib/GlassSurfaceContext";
-import { useActiveDomain } from "@/lib/useActiveDomain";
 import { Plus, Sparkles, RefreshCw } from "lucide-react";
 import AddWidgetPicker from "@/system/panels/AddWidgetPicker";
 import WidgetCell from "@/system/widgets/WidgetCell";
@@ -49,13 +48,9 @@ export default function Home() {
   const [ready, setReady] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { widgets, loading, addWidget, removeWidget, patchWidget, reload, isCustom } = useDashboardBoard(activeBoard, ready);
-  const { accent: boardAccent } = useActiveDomain(activeBoard);
   const pillStyle = {
-    border: "1px solid rgba(255,255,255,0.14)",
-    background: `color-mix(in srgb, ${boardAccent} 6%, rgba(120,122,128,0.10))`,
-    backdropFilter: "blur(30px) saturate(1.4)",
-    WebkitBackdropFilter: "blur(30px) saturate(1.4)",
-    boxShadow: "0 18px 40px -16px rgba(0,0,0,0.40), inset 0 1px 0 0 rgba(255,255,255,0.18)",
+    border: "1px solid hsl(var(--foreground))",
+    background: "hsl(var(--card))",
   };
   const reloadRef = useRef(null);
   reloadRef.current = reload;
@@ -269,17 +264,16 @@ export default function Home() {
       </div>
 
       {/* Photo — transforms when a panel opens */}
-      <div ref={photoRef} className={cn("hidden lg:block fixed z-0 overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[left,right,top]", panelOpen ? "left-[16%] right-[12%] top-[40vh] bottom-0 rounded-[28px]" : "left-[42%] right-0 top-0 bottom-0 rounded-l-[32px]")}>
+      <div ref={photoRef} className={cn("hidden lg:block fixed z-0 overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[left,right,top]", panelOpen ? "left-[16%] right-[12%] top-[40vh] bottom-0" : "left-[42%] right-0 top-0 bottom-0")}>
         <img src={bgImage} alt="" className="h-full w-full object-cover" draggable={false} />
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 via-charcoal/10 to-transparent" />
       </div>
-      <div className={cn("lg:hidden fixed top-[26vh] left-3 right-3 h-[40vh] overflow-hidden z-0 rounded-[28px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-[0_24px_60px_-24px_rgba(0,0,0,0.35)]", panelOpen ? "opacity-0 translate-y-6 pointer-events-none" : "opacity-100")}>
+      <div className={cn("lg:hidden fixed top-[26vh] left-3 right-3 h-[40vh] overflow-hidden z-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]", panelOpen ? "opacity-0 translate-y-6 pointer-events-none" : "opacity-100")}>
         <img src={bgImage} alt="" className="h-full w-full object-cover" draggable={false} />
-        <div className="absolute inset-0 bg-gradient-to-b from-charcoal/5 via-transparent to-charcoal/35" />
+
       </div>
-      <div className={cn("lg:hidden fixed left-0 bottom-0 z-0 w-full h-[40vh] overflow-hidden rounded-t-[28px] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]", panelOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6 pointer-events-none")}>
+      <div className={cn("lg:hidden fixed left-0 bottom-0 z-0 w-full h-[40vh] overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]", panelOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6 pointer-events-none")}>
         <img src={bgImage} alt="" className="h-full w-full object-cover" draggable={false} />
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/35 to-transparent" />
+
       </div>
 
       {/* Panel name + function links */}

@@ -15,7 +15,6 @@ import { PanelProvider, usePanel } from "@/lib/PanelContext";
 import { ContextCaptureProvider } from "@/lib/ContextCaptureContext";
 import ContextCaptureLayer from "@/system/components/context/ContextCaptureLayer";
 import { GiuliaVoiceProvider } from "@/lib/GiuliaVoiceContext";
-import AmbientBloom from "@/system/components/glass/AmbientBloom";
 import TauriFocusSync from "@/system/components/native/TauriFocusSync";
 import { GiuliaAgentProvider } from "@/lib/GiuliaAgentContext";
 import { useAgentNavigation } from "@/lib/useAgentNavigation";
@@ -47,22 +46,23 @@ function LayoutInner() {
 
   return (
     <div className="min-h-screen relative">
-      <AmbientBloom />
       <TauriFocusSync />
       {/* Full-width workspace — navigation lives in the bottom plus-button menu */}
       <div className="flex flex-col h-screen relative overflow-hidden">
         {/* Header */}
-        <header className="sticky top-0 z-20 h-14 shrink-0 flex items-center px-5 lg:px-10 bg-transparent opacity-100">
+        <header className="sticky top-0 z-20 h-14 shrink-0 flex items-center justify-between px-5 lg:px-10 border-b border-foreground bg-background">
           <button
             onClick={() => navigate("/")}
-            className="flex items-center gap-2 shrink-0 pr-1 group"
+            className="flex items-center gap-2.5 shrink-0 group"
             aria-label="Naar dashboard">
-            
-            <span className="h-2.5 w-2.5 rounded-sm bg-charcoal transition-transform group-hover:scale-110" />
-            <span className="font-display font-semibold tracking-[0.22em] text-[13px] uppercase group-hover:text-foreground transition-colors">
+            <span className="h-3 w-3 bg-accent" />
+            <span className="font-heading font-bold tracking-[0.26em] text-[13px] uppercase">
               Giulia
             </span>
           </button>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/60 tabular-nums">
+            {new Date().toLocaleDateString("nl-NL", { weekday: "short", day: "numeric", month: "short" })}
+          </p>
         </header>
 
         {/* Workspace content */}
