@@ -5,7 +5,7 @@ import { MATTIA_BUDDY, MATTIA_NAUGHTY, MATTIA_PLAYTIME, MATTIA_OS_RULES, MATTIA_
 import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
 import { linkMentionedContacts } from '../../shared/contactLinker.ts';
 import { buildImageParts } from '../../shared/imageParts.ts';
-import { MATTIA_MEDIA_SKILLS } from '../../shared/mattiaMediaSkills.ts';
+import { MATTIA_MEDIA_SKILLS, categorizePlaytimePhotos } from '../../shared/mattiaMediaSkills.ts';
 import { shareMattiaHighlights } from '../../shared/mattiaBridge.ts';
 
 /**
@@ -150,18 +150,11 @@ export default async function (req) {
     const systemInstruction = personaLayers.join("\n") + closing;
 
     // ── TOOLS ───────────────────────────────────────────────────────
-    // Tools alleen meesturen bij operationele berichten — anders moet het model
-    // 40+ functies evalueren voor een simpele casual/naughty reply (traag).
-    // Media-skills (incl. generate_image) ALTijd beschikbaar — Mattia mag
-    // autonoom beelden verzinnen. GIULIA-skills (zware OS-acties) alleen bij
-    // operationele berichten, anders evalueert het model 40+ functies voor
-    // een casual reply.
-    // SPEED: pure casual chat (géén operationele/melding) → géén tools
-    // meesturen. Het model hoeft dan geen functies te evalueren en geeft één
-    // snelle tekst-call. Media-skills alleen als het bericht visueel is;
+    // Media-tools (camera, bibliotheek, show_playtime_photo) zijn er maar een
+    // handvol — ALTijd meesturen, ook bij casual/naughty berichten. Zo is de
+    // foto-tool elke beurt een échte functie-declaratie en typt het model hem
+    // nooit meer als tekst (show_playtime_photo({...}) in de reply). De zware
     // GIULIA-skills (40+) alleen bij operationele berichten.
-    const MEDIA_RE = /foto|afbeelding|plaatje|image\b|teken|draw|schilder|genereer|generate|film|video|opname|camera|webcam|mediatheek|bibliotheek|\bmedia\b|nsfw|hardcore|illustratie/i;
-    const wantsMedia = MEDIA_RE.test(message);
     const mediaToolsMap = {};
     for (const s of MATTIA_MEDIA_SKILLS) {
       mediaToolsMap[s.name] = { description: s.description, inputSchema: s.inputSchema, execute: (args) => s.execute(args, base44) };
@@ -175,7 +168,7 @@ export default async function (req) {
     const toolsMap = { ...opToolsMap, ...mediaToolsMap };
     const activeSkills = isOperational
       ? { ...opToolsMap, ...mediaToolsMap }
-      : (wantsMedia || wantsNaughty || wantsPlaytime ? { ...mediaToolsMap } : {});
+      : { ...mediaToolsMap };
     const functionDeclarations = Object.entries(activeSkills).map(([name, t]) => ({ name, description: t.description || "", parameters: t.inputSchema || { type: "object", properties: {} } }));
     const genTools = functionDeclarations.length ? [{ functionDeclarations }] : [];
 
@@ -203,6 +196,13 @@ export default async function (req) {
       if (last && last.role === "user") last.parts = [...last.parts, ...imgParts];
       else contents.push({ role: "user", parts: imgParts });
     }
+
+    // ── FOTO-CATEGORISATIE (parallel aan de chat-generatie) ─────────
+    // Foto's die Salvo meestuurt worden automatisch in de juiste PlayTime-
+    // onderwerpmap gezet (map wordt aangemaakt indien nodig) en genummerd.
+    const categorizePromise = attachments.length
+      ? categorizePlaytimePhotos(base44, attachments).catch(() => [])
+      : Promise.resolve([]);
 
     const executed = [];
     const mediaCommands = [];
@@ -240,6 +240,30 @@ export default async function (req) {
       contents.push({ role: "user", parts: respParts });
     }
 
+    // ── VANGNET: letterlijke tool-aanroep als tekst ──────────────────
+    // Soms typt het model de aanroep (bv. show_playtime_photo({ name: "Juan" }))
+    // in het antwoord in plaats van hem écht te callen. Voer die aanroep
+    // alsnog uit en haal hem uit de tekst.
+    if (responseText) {
+      const inlineRe = /`?show_playtime_photo\(\s*\{([^}]*)\}\s*\)`?/gi;
+      const pendingCalls = [];
+      const cleaned = responseText.replace(inlineRe, (whole, inner) => {
+        const nameM = inner.match(/name\s*:\s*["']([^"']+)["']/i);
+        const numM = inner.match(/number\s*:\s*(\d+)/i);
+        if (nameM) pendingCalls.push({ name: nameM[1], ...(numM ? { number: Number(numM[1]) } : {}) });
+        return "";
+      });
+      for (const call of pendingCalls) {
+        const t = toolsMap["show_playtime_photo"];
+        let result;
+        try { result = await t.execute(call); }
+        catch (e) { result = { error: String((e && e.message) || e) }; }
+        if (result && result.media_command) mediaCommands.push(result.media_command);
+        executed.push({ name: "show_playtime_photo", args: call, ok: !(result && result.error), result: sanitizeResult(result) });
+      }
+      if (pendingCalls.length) responseText = cleaned.trim() || null;
+    }
+
     // ── SAVE RESPONSE (role: mattia) — géén approval-enforcer-ronde ──
     const finalText = responseText || (executed.length ? "Geregeld." : "Mattia is even stil — probeer het zo weer.");
 
@@ -264,7 +288,9 @@ export default async function (req) {
       }
     }
 
-    return Response.json({ ok: true, response: finalText, actions_executed: executed, media_commands: mediaCommands });
+    const categorized = await categorizePromise;
+
+    return Response.json({ ok: true, response: finalText, actions_executed: executed, media_commands: mediaCommands, photo_categorization: categorized });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

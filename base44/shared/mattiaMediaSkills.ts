@@ -12,6 +12,9 @@
  * frontend (useMattiaChat) stuurt ze als `playtime:media-command`-event naar
  * de MediaStage, die de actie op het scherm uitvoert.
  */
+import { geminiGenerate } from './gemini.ts';
+import { buildImageParts } from './imageParts.ts';
+
 const IMG_EXTS = ["png", "jpg", "jpeg", "gif", "webp"];
 const VID_EXTS = ["mp4", "mov", "webm", "mkv"];
 const AUD_EXTS = ["mp3", "wav", "m4a", "flac", "aac", "ogg"];
@@ -159,3 +162,64 @@ export const MATTIA_MEDIA_SKILLS = [
     },
   },
 ];
+
+// ── FOTO-CATEGORISATIE ───────────────────────────────────────────────
+// Foto's die Salvo naar Mattia stuurt worden automatisch gesorteerd in de
+// juiste PlayTime-onderwerpmap (Fat, Juan, Me, Pussy, Cock, Piss, Fist — of
+// een nieuw onderwerp met eigen map), genummerd op volgorde, zodat
+// show_playtime_photo ze daarna altijd kan terugvinden.
+const PLAYTIME_SUBJECTS = ["Fat", "Juan", "Me", "Pussy", "Cock", "Piss", "Fist"];
+const PT_KEY = "PlayTime_Gemini_API_Key";
+const REFUSAL_WORDS = /^(i|i'm|im|sorry|as|it|the|this|my|cannot|can't)$/i;
+
+async function ensureFolder(sr, path, parentPath) {
+  const found = await sr.entities.Folder.filter({ path }, "-created_date", 1).catch(() => []);
+  if ((found || []).length) return;
+  await sr.entities.Folder.create({ name: path.split("/").pop(), path, parent_path: parentPath, order: 0 }).catch(() => null);
+}
+
+export async function categorizePlaytimePhotos(base44, attachments) {
+  const sr = base44.asServiceRole;
+  const imgs = (attachments || []).filter((a) => a && a.type === "image" && a.url);
+  const results = [];
+  for (const att of imgs) {
+    try {
+      // 1. Upload-record zoeken (of aanmaken als de afzender dat niet deed)
+      const rec = await sr.entities.Upload.filter({ file_url: att.url }, "-created_date", 3).catch(() => []);
+      let up = (rec || [])[0];
+      if (!up) {
+        up = await sr.entities.Upload.create({ file_url: att.url, filename: att.name || "foto.jpg", uploaded_for: "media", document_type: "image", note: "playtime", status: "new", folder: "PlayTime" }).catch(() => null);
+      }
+      if (!up) { results.push({ url: att.url, status: "geen upload-record" }); continue; }
+
+      // 2. Onderwerp bepalen — vision-call met de foto zelf
+      let subject = null;
+      const parts = await buildImageParts([att]).catch(() => []);
+      if (parts.length) {
+        const genParts = await geminiGenerate({
+          contents: [{ role: "user", parts: [...parts, { text: `In welke PlayTime-map hoort deze foto? Kies uit: ${PLAYTIME_SUBJECTS.join(", ")}. Past er geen bij, verzin dan één kort nieuw onderwerp (Engels, 1 woord). Antwoord ALLEEN met dat ene woord, niets anders.` }] }],
+          keyName: PT_KEY,
+        }).catch(() => null);
+        const txt = (genParts || []).map((p) => p.text || "").join("").trim();
+        const word = (txt.split(/\s+/)[0] || "").replace(/[^a-zA-Z]/g, "");
+        if (word && !REFUSAL_WORDS.test(word)) subject = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      }
+      if (!subject) subject = "Me"; // vangnet
+
+      // 3. PlayTime-root + onderwerpmap aanmaken indien nodig
+      await ensureFolder(sr, "PlayTime", "");
+      await ensureFolder(sr, `PlayTime/${subject}`, "PlayTime");
+
+      // 4. Genummerd wegzetten in de onderwerpmap
+      const existing = await sr.entities.Upload.filter({ folder: `PlayTime/${subject}` }, "-created_date", 500).catch(() => []);
+      const n = (existing || []).length + 1;
+      const ext = (up.filename || "foto.jpg").split(".").pop().toLowerCase() || "jpg";
+      const filename = `${subject} ${n}.${ext}`;
+      await sr.entities.Upload.update(up.id, { folder: `PlayTime/${subject}`, filename, categorized: true }).catch(() => null);
+      results.push({ url: att.url, subject, folder: `PlayTime/${subject}`, filename });
+    } catch {
+      results.push({ url: att.url, status: "categorisatie mislukt" });
+    }
+  }
+  return results;
+}
