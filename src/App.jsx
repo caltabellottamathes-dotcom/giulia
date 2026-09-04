@@ -43,6 +43,7 @@ import Agents from '@/giulia/pages/Agents';
 import QuickCommand from '@/system/pages/QuickCommand';
 import Updates from '@/giulia/pages/Updates';
 import Briefing from '@/giulia/pages/Briefing';
+import MattiaMobile from '@/giulia/pages/MattiaMobile';
 import LifeGallery from '@/life/pages/LifeGallery';
 
 import WakeMode from '@/life/pages/WakeMode';
@@ -174,6 +175,7 @@ const AuthenticatedApp = () => {
         <Route path="/life-gallery" element={<LifeGallery />} />
         <Route path="/quick" element={<QuickCommand />} />
         <Route path="/briefing" element={<Briefing />} />
+        <Route path="/mattia-mobile" element={<MattiaMobile />} />
         <Route path="/wake" element={<WakeMode />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />

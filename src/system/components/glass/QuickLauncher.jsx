@@ -25,6 +25,7 @@ const GROUPS = [
     label: "Giulia",
     items: [
       { label: "Chat", route: "/chat", module: "chat" },
+      { label: "Mattia Chat", route: "/mattia-mobile" },
       { label: "Questions for You", route: "/wants-to-know", module: "wantstoknow" },
       { label: "Approvals", route: "/approvals", module: "approvals" },
       { label: "Daily Briefing", route: "/briefing" },
