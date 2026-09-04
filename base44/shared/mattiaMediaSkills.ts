@@ -111,7 +111,7 @@ export const MATTIA_MEDIA_SKILLS = [
   {
     name: "show_playtime_photo",
     description:
-      "Haal een foto uit de PlayTime-map en toon hem groot in de MediaStage (de stage opent automatisch). De PlayTime-map bevat submappen per onderwerp — Fat, Juan, Me, Pussy, Cock, Piss, Fist — elk met foto's genummerd 1 t/m 20. Geef het onderwerp mee als 'name', en optioneel 'number' (1-20) voor die specifieke genummerde foto. De tool zoekt in de matchende submap (of op bestandsnaam) en opent de foto op het scherm. Gebruik dit terwijl je een onderwerp of scene beschrijft, in plaats van zelf beelden te genereren. Bij geen match gebeurt er niets; praat gewoon door.",
+      "Haal een foto uit de PlayTime-map en toon hem groot in de MediaStage (de stage opent automatisch). De PlayTime-map bevat submappen per onderwerp — Fat, Juan, Me, Pussy, Cock, Piss, Fist — elk met foto's genummerd 1 t/m 20. Geef het onderwerp mee als 'name', en optioneel 'number' (1-20) voor die specifieke genummerde foto. De tool zoekt in de matchende submap (of op bestandsnaam) en opent de foto op het scherm. Gebruik dit terwijl je een onderwerp of scene beschrijft, in plaats van zelf beelden te genereren. Past het onderwerp niet precies, dan kiest de tool gewoon een willekeurige PlayTime-foto.",
     inputSchema: {
       type: "object",
       properties: {
@@ -126,9 +126,17 @@ export const MATTIA_MEDIA_SKILLS = [
         const all = await sr.entities.Upload.filter({ uploaded_for: "media" }, "-created_date", 500).catch(() => []);
         const q = (args?.name || "").toLowerCase().trim();
         const num = args?.number != null ? String(args.number).replace(/\D/g, "") : "";
-        // Alleen foto's die in de PlayTime-map (incl. submappen) staan
+        // Alleen bestanden die in de PlayTime-map (incl. submappen) staan.
+        // Bestanden zonder bekende extensie (bv. 'Ass_up') tellen als foto;
+        // films en muziek vallen af.
         const inPlay = (it) => /^playtime(\/|$)/i.test(it.folder || "");
-        const imgs = (all || []).filter((it) => inPlay(it) && kindFromName(it.filename) === "image");
+        const kindOf = (it) => {
+          let k = kindFromName(it.filename || "");
+          if (k === "doc") k = kindFromName(String(it.file_url || "").split("?")[0].split("/").pop());
+          return k;
+        };
+        const imgs = (all || []).filter((it) => inPlay(it) && kindOf(it) !== "video" && kindOf(it) !== "music");
+        if (!imgs.length) return { status: "geen foto gevonden in PlayTime-map", found: 0 };
         // Onderwerp-match: submap direct onder PlayTime, of bestandsnaam
         const subjectPool = q
           ? imgs.filter((it) => {
@@ -137,16 +145,16 @@ export const MATTIA_MEDIA_SKILLS = [
               return seg === q || seg.includes(q) || fn.includes(q);
             })
           : imgs;
-        if (!subjectPool.length) return { status: "geen foto gevonden in PlayTime-map", found: 0 };
-        // Genummerde foto (1-20): match het nummer als los token in de bestandsnaam
-        let pool = subjectPool;
+        // Geen onderwerp-match → willekeurige PlayTime-foto (de foto opent sowieso)
+        let pool = subjectPool.length ? subjectPool : imgs;
+        // Genummerde foto: match het nummer als los token in de bestandsnaam;
+        // nummer niet gevonden → willekeurig uit dezelfde pool
         if (num) {
-          const numPool = subjectPool.filter((it) => {
+          const numPool = pool.filter((it) => {
             const base = (it.filename || "").toLowerCase().replace(/\.[^.]+$/, "");
             return new RegExp(`(^|[^0-9])${num}([^0-9]|$)`).test(base);
           });
-          if (!numPool.length) return { status: `geen foto nummer ${num} gevonden`, found: 0 };
-          pool = numPool;
+          if (numPool.length) pool = numPool;
         }
         const pick = pool[Math.floor(Math.random() * pool.length)];
         return {
