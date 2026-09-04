@@ -92,6 +92,17 @@ export function useMediaLibrary() {
     } catch { /* negeer */ }
   }, []);
 
+  /** Verplaats meerdere bestanden in één keer naar een map. */
+  const moveMany = useCallback(async (ids, folder) => {
+    if (!ids || !ids.length) return;
+    try {
+      for (let i = 0; i < ids.length; i += 100) {
+        await base44.entities.Upload.bulkUpdate(ids.slice(i, i + 100).map((id) => ({ id, folder: folder || "" })));
+      }
+      setItems((a) => (a || []).map((x) => (ids.includes(x.id) ? { ...x, folder: folder || "" } : x)));
+    } catch { /* negeer */ }
+  }, []);
+
   /** Verplaats een bestand naar een project-map: zet zowel project_id als folder. */
   const setProjectFile = useCallback(async (id, projectId, folder) => {
     try {
@@ -100,5 +111,5 @@ export function useMediaLibrary() {
     } catch { /* negeer */ }
   }, []);
 
-  return { items, loading, uploading, upload, remove, removeMany, rename, setFolder, setProjectFile, reload: load };
+  return { items, loading, uploading, upload, remove, removeMany, rename, setFolder, moveMany, setProjectFile, reload: load };
 }

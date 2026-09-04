@@ -1,0 +1,42 @@
+{
+  "name": "Folder",
+  "type": "object",
+  "title": "Folder",
+  "description": "Map in de FILES-bibliotheek. Volledig pad in 'path' (bv. 'Fotografie/2026/Rome'), 'parent_path' is de bovenliggende map ('' = hoofdniveau). Bestanden (Upload) verwijzen via hun 'folder'-veld naar het volledige pad.",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Naam"
+    },
+    "path": {
+      "type": "string",
+      "title": "Volledig pad"
+    },
+    "parent_path": {
+      "type": "string",
+      "default": "",
+      "title": "Pad van bovenliggende map"
+    },
+    "order": {
+      "type": "number",
+      "default": 0,
+      "title": "Volgorde"
+    }
+  },
+  "required": [
+    "name",
+    "path"
+  ],
+  "rls": {
+    "create": true,
+    "read": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "created_by_id": "{{user.id}}"
+    },
+    "delete": {
+      "created_by_id": "{{user.id}}"
+    }
+  }
+}
