@@ -108,11 +108,12 @@ export const MATTIA_MEDIA_SKILLS = [
   {
     name: "show_playtime_photo",
     description:
-      "Haal een foto uit de PlayTime-map (met submappen per naam/persoon) en toon hem groot in de MediaStage tijdens het gesprek. Geef een naam of zoekterm mee (bv. 'Carina', 'Johan', 'Timo', 'Debora', 'Nancy', 'Soraya'). De tool zoekt in de PlayTime-map en submappen naar een matchende foto (op bestandsnaam of mapnaam) en opent een willekeurige ervan op het scherm. Gebruik dit terwijl je vertelt over iemand of een scene, in plaats van zelf beelden te genereren. Bij geen match gebeurt er niets.",
+      "Haal een foto uit de PlayTime-map en toon hem groot in de MediaStage (de stage opent automatisch). De PlayTime-map bevat submappen per onderwerp — Fat, Juan, Me, Pussy, Cock, Piss, Fist — elk met foto's genummerd 1 t/m 20. Geef het onderwerp mee als 'name', en optioneel 'number' (1-20) voor die specifieke genummerde foto. De tool zoekt in de matchende submap (of op bestandsnaam) en opent de foto op het scherm. Gebruik dit terwijl je een onderwerp of scene beschrijft, in plaats van zelf beelden te genereren. Bij geen match gebeurt er niets; praat gewoon door.",
     inputSchema: {
       type: "object",
       properties: {
-        name: { type: "string", description: "naam of zoekterm, bv. 'Carina', 'Johan', 'Timo', 'Debora', 'Nancy', 'Soraya'" },
+        name: { type: "string", description: "onderwerp/submap: 'Fat', 'Juan', 'Me', 'Pussy', 'Cock', 'Piss', 'Fist'" },
+        number: { type: "number", description: "optioneel: genummerde foto 1-20 uit die submap" },
       },
       required: ["name"],
     },
@@ -121,22 +122,35 @@ export const MATTIA_MEDIA_SKILLS = [
         const sr = base44.asServiceRole;
         const all = await sr.entities.Upload.filter({ uploaded_for: "media" }, "-created_date", 500).catch(() => []);
         const q = (args?.name || "").toLowerCase().trim();
-        const inPlay = (it) => /playtime/i.test(it.folder || "");
+        const num = args?.number != null ? String(args.number).replace(/\D/g, "") : "";
+        // Alleen foto's die in de PlayTime-map (incl. submappen) staan
+        const inPlay = (it) => /^playtime(\/|$)/i.test(it.folder || "");
         const imgs = (all || []).filter((it) => inPlay(it) && kindFromName(it.filename) === "image");
-        let matches = imgs;
-        if (q) {
-          matches = imgs.filter((it) => {
-            const fn = (it.filename || "").toLowerCase();
-            const folder = (it.folder || "").toLowerCase();
-            return fn.includes(q) || folder.includes(q);
+        // Onderwerp-match: submap direct onder PlayTime, of bestandsnaam
+        const subjectPool = q
+          ? imgs.filter((it) => {
+              const seg = ((it.folder || "").split("/")[1] || "").toLowerCase();
+              const fn = (it.filename || "").toLowerCase();
+              return seg === q || seg.includes(q) || fn.includes(q);
+            })
+          : imgs;
+        if (!subjectPool.length) return { status: "geen foto gevonden in PlayTime-map", found: 0 };
+        // Genummerde foto (1-20): match het nummer als los token in de bestandsnaam
+        let pool = subjectPool;
+        if (num) {
+          const numPool = subjectPool.filter((it) => {
+            const base = (it.filename || "").toLowerCase().replace(/\.[^.]+$/, "");
+            return new RegExp(`(^|[^0-9])${num}([^0-9]|$)`).test(base);
           });
-          if (!matches.length) matches = imgs; // fallback: any PlayTime photo
+          if (!numPool.length) return { status: `geen foto nummer ${num} gevonden`, found: 0 };
+          pool = numPool;
         }
-        if (!matches.length) return { status: "geen foto's in PlayTime-map", found: 0 };
-        const pick = matches[Math.floor(Math.random() * matches.length)];
+        const pick = pool[Math.floor(Math.random() * pool.length)];
         return {
-          status: "foto uit PlayTime getoond",
-          found: matches.length,
+          status: `foto getoond: ${pick.filename}`,
+          found: pool.length,
+          photo: pick.filename,
+          folder: pick.folder || "",
           media_command: { type: "show_media", url: pick.file_url, name: pick.filename, kind: "image" },
         };
       } catch (e) {

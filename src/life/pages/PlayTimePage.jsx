@@ -29,6 +29,21 @@ export default function PlayTimePage() {
   const [first, setFirst] = useState(true);
   useEffect(() => { const t = setTimeout(() => setFirst(false), 900); return () => clearTimeout(t); }, []);
 
+  // Mattia stuurt een foto (show_media-commando) → MediaStage opent automatisch
+  // en toont meteen de foto die hij koos. Staat de stage al open, dan handelt
+  // MediaStage het commando zelf live af.
+  useEffect(() => {
+    const h = (e) => {
+      const cmd = e.detail;
+      if (!cmd || cmd.type !== "show_media" || !cmd.url) return;
+      if (mediaOpen) return;
+      window.__giuliaPendingMedia = { name: cmd.name || "bestand", url: cmd.url, type: cmd.kind || "image" };
+      setMediaOpen(true);
+    };
+    window.addEventListener("playtime:media-command", h);
+    return () => window.removeEventListener("playtime:media-command", h);
+  }, [mediaOpen]);
+
   return (
     <div className="fixed inset-x-0 top-14 bottom-0 overflow-visible z-[30]">
       {/* Hero photo — blijft open wanneer het glas-paneel opent */}
