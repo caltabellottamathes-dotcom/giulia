@@ -86,6 +86,20 @@ export default function MattiaChatWindow() {
 
   const onPickLibrary = ({ url, name, kind }) => setAttachments((prev) => [...prev, { url, name, type: kind === "music" ? "audio" : kind }]);
 
+  // Mattia toont een foto (show_playtime_photo / show_media) → open de
+  // fullscreen viewer meteen — dit venster hangt in de Layout, dus dit
+  // werkt op elke pagina waar je met Mattia chat.
+  useEffect(() => {
+    if (!mattiaChatOpen) return;
+    const h = (e) => {
+      const cmd = e.detail;
+      if (!cmd || cmd.type !== "show_media" || !cmd.url) return;
+      openMedia({ name: cmd.name || "Mattia", url: cmd.url, type: cmd.kind || "image" });
+    };
+    window.addEventListener("playtime:media-command", h);
+    return () => window.removeEventListener("playtime:media-command", h);
+  }, [mattiaChatOpen, openMedia]);
+
   // Mattia stuurt een media-URL → open de viewer meteen
   const lastUrlMsgId = useRef(null);
   useEffect(() => {

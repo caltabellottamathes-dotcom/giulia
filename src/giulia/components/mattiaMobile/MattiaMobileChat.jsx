@@ -10,12 +10,24 @@ const BLUE = "#b1bfc7";
 export default function MattiaMobileChat() {
   const { messages, send, sending } = useMattiaChat();
   const [text, setText] = useState("");
+  const [photo, setPhoto] = useState(null);
   const scrollRef = useRef(null);
 
   useEffect(() => {
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [messages.length, sending]);
+  }, [messages.length, sending, photo]);
+
+  // Mattia toont een foto (show_playtime_photo / show_media) → inline tonen
+  useEffect(() => {
+    const h = (e) => {
+      const cmd = e.detail;
+      if (!cmd || cmd.type !== "show_media" || !cmd.url) return;
+      setPhoto({ url: cmd.url, name: cmd.name || "Mattia" });
+    };
+    window.addEventListener("playtime:media-command", h);
+    return () => window.removeEventListener("playtime:media-command", h);
+  }, []);
 
   const submit = () => {
     if (!text.trim() || sending) return;
@@ -46,6 +58,13 @@ export default function MattiaMobileChat() {
             )}
           </motion.div>
         ))}
+        {photo && (
+          <div className="flex flex-col">
+            <p className="font-mono text-[9px] tracking-[0.18em] uppercase mb-1" style={{ color: BLUE }}>Mattia</p>
+            <img src={photo.url} alt={photo.name} className="max-w-[86%] max-h-[52vh] w-auto rounded-2xl object-contain border border-charcoal/15" />
+            <p className="font-mono text-[9px] tracking-[0.14em] uppercase mt-1.5" style={{ color: BLUE }}>{photo.name}</p>
+          </div>
+        )}
         {sending && (
           <p className="font-mono text-[10px] tracking-[0.18em] uppercase flex items-center justify-end gap-1.5" style={{ color: BLUE }}>
             Mattia typt
