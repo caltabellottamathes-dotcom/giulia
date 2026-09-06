@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Image } from "@/components/ui/image";
 import PlaytimePhotoViewer from "@/system/components/playtime/PlaytimePhotoViewer";
+import { proxiedMedia } from "@/lib/mediaProxy";
 
 const BLACK = "#000000";
 const GREY = "#CCCCCC";
@@ -250,7 +251,7 @@ export default function PlaytimeCategoryBrowser({ images, categories, loading, o
             <div key={it.id} draggable onDragStart={() => setDragId(it.id)} onDragEnd={() => setDragId(null)}
               className="relative rounded-md overflow-hidden border cursor-grab active:cursor-grabbing" style={{ borderColor: GREY }}>
               {isVideoItem(it) ? (
-                <video src={it.image_url + "#t=0.1"} muted loop playsInline preload="auto" onClick={() => setViewIdx(i)}
+                <video src={proxiedMedia(it.image_url) + "#t=0.1"} muted loop playsInline preload="metadata" onClick={() => setViewIdx(i)}
                   title="Klik om groot te bekijken" className="w-full h-44 object-cover cursor-pointer bg-black" />
               ) : (
                 <button type="button" onClick={() => setViewIdx(i)} title="Klik om groot te bekijken" className="block w-full">
@@ -303,7 +304,7 @@ export default function PlaytimeCategoryBrowser({ images, categories, loading, o
                 <span className="w-10 h-10 shrink-0 rounded-md overflow-hidden border" style={{ borderColor: GREY }}>
                   {inTree[0] ? (
                     isVideoItem(inTree[0])
-                      ? <video src={inTree[0].image_url + "#t=0.1"} muted playsInline preload="metadata" className="w-10 h-10 object-cover bg-black" />
+                      ? <video src={proxiedMedia(inTree[0].image_url) + "#t=0.1"} muted playsInline preload="metadata" className="w-10 h-10 object-cover bg-black" />
                       : <Image src={inTree[0].image_url} fittingType="fill" alt={p} className="w-10 h-10" />
                   ) : <span className="block w-10 h-10" style={{ background: "#eeeeee" }} />}
                 </span>

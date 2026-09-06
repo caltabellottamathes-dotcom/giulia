@@ -3,6 +3,7 @@ import { Maximize2, Video } from "lucide-react";
 import { useMediaViewer, isDriveUrl } from "@/lib/MediaViewerContext";
 import { usePanel } from "@/lib/PanelContext";
 import ViewerEmpty from "@/system/panels/viewers/ViewerEmpty";
+import { proxiedMedia } from "@/lib/mediaProxy";
 
 /** VideoPlayerPanel — video speelt automatisch, vult de stage op eigen
  *  verhouding (geen zwarte vulling) met afgeronde hoeken en een kleine marge.
@@ -24,7 +25,7 @@ export default function VideoPlayerPanel() {
   }
   return (
     <div onClick={openMediaFullscreen} className="w-full h-full flex items-center justify-center cursor-zoom-in bg-transparent p-4" role="button" tabIndex={0} aria-label="Vergroten">
-      <video src={media.url} autoPlay muted loop playsInline preload="auto" className="max-w-full max-h-full object-contain rounded-[18px] shadow-[0_20px_44px_-20px_rgba(0,0,0,0.35)]" />
+      <video src={proxiedMedia(media.url)} autoPlay muted loop playsInline preload="auto" className="max-w-full max-h-full object-contain rounded-[18px] shadow-[0_20px_44px_-20px_rgba(0,0,0,0.35)]" />
     </div>
   );
 }

@@ -194,6 +194,9 @@ const Image = React.forwardRef(
 
     const imageProps = {
       ...props,
+      // Externe CDN's (twimg, redgifs) blokkeren elk verzoek met Referer —
+      // zónder referer laden alle foto's gewoon.
+      referrerPolicy: "no-referrer",
       onError: () => setImgSrc(FALLBACK_IMAGE_URL),
     }
 

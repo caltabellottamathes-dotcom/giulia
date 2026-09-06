@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { proxiedMedia } from "@/lib/mediaProxy";
 
 const VID_EXTS = ["mp4", "mov", "webm", "m4v", "mkv"];
 // kind-veld is leidend (reddit/twitter-video's hebben niet altijd een extensie)
@@ -40,7 +41,7 @@ export default function PlaytimePhotoViewer({ items, index, onIndex, onClose, on
             className="w-10 h-10 shrink-0 rounded-full border border-white/25 text-white text-[18px] leading-none flex items-center justify-center hover:bg-white/10 transition">‹</button>
         )}
         {isVideoItem(it) ? (
-          <video src={it.image_url} controls autoPlay muted loop playsInline className="max-w-[82vw] max-h-[74vh] rounded-md border border-white/15 bg-black" />
+          <video src={proxiedMedia(it.image_url)} controls autoPlay muted loop playsInline className="max-w-[82vw] max-h-[74vh] rounded-md border border-white/15 bg-black" />
         ) : (
           <img src={it.image_url} alt={it.category}
             className="max-w-[82vw] max-h-[74vh] object-contain rounded-md border border-white/15 select-none" />

@@ -7,6 +7,7 @@ import { useMediaViewer, isDriveUrl } from "@/lib/MediaViewerContext";
 import { useMediaLibrary, kindOfUpload } from "@/lib/useMediaLibrary";
 import { useLocalMedia } from "@/lib/useLocalMedia";
 import { cn } from "@/lib/utils";
+import { proxiedMedia } from "@/lib/mediaProxy";
 import MusicViewerStage from "@/system/components/media/MusicViewerStage";
 import PdfViewer from "@/system/panels/viewers/PdfViewer";
 
@@ -329,7 +330,7 @@ export default function MediaFullscreenWindow() {
         {kind === "video" && (
           <video
             ref={mediaRef}
-            src={media.url}
+            src={proxiedMedia(media.url)}
             autoPlay
             preload="auto"
             controls

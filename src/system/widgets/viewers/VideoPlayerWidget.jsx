@@ -3,6 +3,7 @@ import WidgetShell from "@/system/widgets/WidgetShell";
 import WidgetHeader from "@/system/widgets/WidgetHeader";
 import { usePanel } from "@/lib/PanelContext";
 import { useMediaViewer } from "@/lib/MediaViewerContext";
+import { proxiedMedia } from "@/lib/mediaProxy";
 import { Video, Play } from "lucide-react";
 
 export default function VideoPlayerWidget() {
@@ -16,7 +17,7 @@ export default function VideoPlayerWidget() {
         <div className="flex-1 min-h-0 rounded-xl overflow-hidden flex items-center justify-center bg-black/25 relative">
           {mine ? (
             <>
-              <video src={mine.url} className="w-full h-full object-cover" muted playsInline preload="metadata" />
+              <video src={proxiedMedia(mine.url)} className="w-full h-full object-cover" muted playsInline preload="metadata" />
               <span className="absolute inset-0 flex items-center justify-center">
                 <span className="h-9 w-9 rounded-full bg-ivory/90 text-charcoal flex items-center justify-center"><Play className="h-4 w-4 translate-x-0.5" /></span>
               </span>
