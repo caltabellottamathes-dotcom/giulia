@@ -15,6 +15,11 @@
       "title": "Image URL",
       "description": "Directe link naar de afbeelding."
     },
+    "photo_url": {
+      "type": "string",
+      "title": "Foto-pagina URL",
+      "description": "De losse ImageFap-fotopagina \u2014 hiermee lost get_playtime_image een verse full-afbeelding op, omdat de CDN-links token-gebonden zijn en verlopen."
+    },
     "gallery_url": {
       "type": "string",
       "format": "uri",
