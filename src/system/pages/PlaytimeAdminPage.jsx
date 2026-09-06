@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Image } from "@/components/ui/image";
+import PlaytimeCategoryBrowser from "@/system/components/playtime/PlaytimeCategoryBrowser";
 
 const BLUE = "#b1bfc7";
 const BLACK = "#000000";
@@ -14,35 +14,28 @@ const EXAMPLE_CATEGORIES = [
 ];
 
 /** PlaytimeAdminPage — beheer de gescrapte Playtime-collectie: galerij-URL's
- *  + categorie toevoegen, de scraper draaien, en per categorie zien hoeveel
- *  foto's er opgeslagen zijn. */
+ *  + categorie toevoegen, de scraper draaien, en per categorie/galerij alle
+ *  foto's zien en verwijderen. */
 export default function PlaytimeAdminPage() {
   const [galleryUrl, setGalleryUrl] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
-  const [rows, setRows] = useState([]);
+  const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const loadCounts = async () => {
+  const load = async () => {
     try {
       const list = await base44.entities.PlaytimeImages.list("-created_date", 1000);
-      const byCat = {};
-      for (const it of list || []) {
-        const c = it.category || "onbekend";
-        if (!byCat[c]) byCat[c] = { category: c, count: 0, latest: null };
-        byCat[c].count++;
-        if (!byCat[c].latest) byCat[c].latest = it;
-      }
-      setRows(Object.values(byCat).sort((a, b) => b.count - a.count));
+      setImages(list || []);
     } catch {
-      /* tabel blijft leeg */
+      /* lijst blijft leeg */
     }
     setLoading(false);
   };
 
-  useEffect(() => { loadCounts(); }, []);
+  useEffect(() => { load(); }, []);
 
   const scrape = async () => {
     if (!galleryUrl.trim() || !category.trim() || busy) return;
@@ -56,12 +49,15 @@ export default function PlaytimeAdminPage() {
       });
       const d = res?.data || res;
       setResult(d?.error ? d : { ...d, ok: d?.ok !== false });
-      await loadCounts();
+      await load();
     } catch (e) {
       setResult({ error: String((e && e.message) || e) });
     }
     setBusy(false);
   };
+
+  const cats = [...new Set(images.map((i) => (i.category || "").toLowerCase()).filter(Boolean))].sort();
+  const datalist = [...cats, ...EXAMPLE_CATEGORIES.filter((c) => !cats.includes(c))];
 
   const inputCls = "w-full bg-transparent border-b focus:outline-none px-1 py-1.5 font-body text-[14px] text-black placeholder:text-black/35";
   const labelCls = "block font-mono text-[9px] uppercase tracking-[0.18em] mb-1";
@@ -74,7 +70,7 @@ export default function PlaytimeAdminPage() {
           Galerijen &amp; foto's
         </h1>
         <p className="font-body text-[13px] leading-[1.5] mt-2 max-w-xl" style={{ color: INK }}>
-          Voeg een galerij-URL plus categorie toe — de scraper haalt alle foto's eruit en tagt ze. Mattia kan ze daarna per categorie opvragen in de chat.{" "}
+          Voeg een galerij-URL plus categorie toe — de scraper haalt alle foto's eruit en tagt ze. Klik daarna een categorie aan om elke foto te zien en te verwijderen, of wis een hele galerij. Mattia haalt ze in de chat per categorie op.{" "}
           <Link to="/playtime" className="underline underline-offset-4 decoration-black/20 hover:decoration-black/60" style={{ color: INK }}>Terug naar Playtime</Link>
         </p>
 
@@ -90,7 +86,7 @@ export default function PlaytimeAdminPage() {
               <div>
                 <label className={labelCls} style={{ color: INK }}>Categorie</label>
                 <input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="hairy, gaping, arab…" list="pt-cats" className={inputCls} style={{ borderColor: GREY }} />
-                <datalist id="pt-cats">{EXAMPLE_CATEGORIES.map((c) => <option key={c} value={c} />)}</datalist>
+                <datalist id="pt-cats">{datalist.map((c) => <option key={c} value={c} />)}</datalist>
               </div>
               <div>
                 <label className={labelCls} style={{ color: INK }}>Beschrijving (optioneel)</label>
@@ -115,30 +111,14 @@ export default function PlaytimeAdminPage() {
             </div>
           </div>
 
-          {/* Categorie-tellingen */}
+          {/* Categorieën + galerijen */}
           <div className="rounded-2xl border p-6" style={{ borderColor: GREY, background: "rgba(255,255,255,0.65)" }}>
             <div className="flex items-center justify-between">
               <h2 className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>Categorieën</h2>
-              <button onClick={loadCounts} className="font-mono text-[10px] uppercase tracking-[0.18em] hover:underline transition" style={{ color: INK }}>Verversen</button>
+              <button onClick={load} className="font-mono text-[10px] uppercase tracking-[0.18em] hover:underline transition" style={{ color: INK }}>Verversen</button>
             </div>
             <div className="mt-4">
-              {loading ? (
-                <p className="font-body text-[12px] italic" style={{ color: INK }}>Laden…</p>
-              ) : rows.length === 0 ? (
-                <p className="font-body text-[12px] leading-[1.5]" style={{ color: INK }}>Nog geen foto's opgeslagen. Scrap je eerste galerij links.</p>
-              ) : (
-                rows.map((r) => (
-                  <div key={r.category} className="flex items-center gap-3 py-2 border-b" style={{ borderColor: GREY }}>
-                    {r.latest && (
-                      <div className="w-10 h-10 shrink-0 rounded-md overflow-hidden border" style={{ borderColor: GREY }}>
-                        <Image src={r.latest.image_url} fittingType="fill" alt={r.category} className="w-10 h-10" />
-                      </div>
-                    )}
-                    <span className="font-body text-[13px] lowercase" style={{ color: BLACK }}>{r.category}</span>
-                    <span className="ml-auto font-mono text-[11px]" style={{ color: INK }}>{r.count}</span>
-                  </div>
-                ))
-              )}
+              <PlaytimeCategoryBrowser images={images} loading={loading} onRefresh={load} />
             </div>
           </div>
         </div>

@@ -2,10 +2,10 @@
  * mattiaMediaSkills.ts — tools waarmee MATTIA de MediaStage (PlayTime) kan
  * bedienen: de camera openen/sluiten, een foto maken of film opnemen, de hele
  * mediatheek doorzoeken, een specifiek bestand tonen, en foto's uit de
- * PlayTime-map (submappen per naam/persoon) tonen terwijl hij vertelt.
+ * gescrapte Playtime-collectie tonen terwijl hij vertelt.
  *
  * Beelden genereren kan NIET meer (Stable Diffusion verwijderd). In plaats
- * daarvan haalt show_playtime_photo foto's uit de bestaande PlayTime-map.
+ * daarvan haalt get_playtime_image foto's uit de gescrapte Playtime-collectie.
  *
  * Deze tools draaien server-side in de chatWithMattia-loop. Ze returnen een
  * `media_command`; chatWithMattia verzamelt die in `media_commands` en de
@@ -110,74 +110,13 @@ export const MATTIA_MEDIA_SKILLS = [
     },
   },
   {
-    name: "show_playtime_photo",
-    description:
-      "Haal een foto uit de PlayTime-map en toon hem groot in de MediaStage (de stage opent automatisch). De PlayTime-map bevat submappen per onderwerp — Fat, Juan, Me, Pussy, Cock, Piss, Fist — elk met foto's genummerd 1 t/m 20. Geef het onderwerp mee als 'name', en optioneel 'number' (1-20) voor die specifieke genummerde foto. De tool zoekt in de matchende submap (of op bestandsnaam) en opent de foto op het scherm. Gebruik dit terwijl je een onderwerp of scene beschrijft, in plaats van zelf beelden te genereren. Past het onderwerp niet precies, dan kiest de tool gewoon een willekeurige PlayTime-foto.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        name: { type: "string", description: "onderwerp/submap: 'Fat', 'Juan', 'Me', 'Pussy', 'Cock', 'Piss', 'Fist'" },
-        number: { type: "number", description: "optioneel: genummerde foto 1-20 uit die submap" },
-      },
-      required: ["name"],
-    },
-    execute: async (args, base44) => {
-      try {
-        const sr = base44.asServiceRole;
-        const all = await sr.entities.Upload.filter({ uploaded_for: "media" }, "-created_date", 500).catch(() => []);
-        const q = (args?.name || "").toLowerCase().trim();
-        const num = args?.number != null ? String(args.number).replace(/\D/g, "") : "";
-        // Alleen bestanden die in de PlayTime-map (incl. submappen) staan.
-        // Bestanden zonder bekende extensie (bv. 'Ass_up') tellen als foto;
-        // films en muziek vallen af.
-        const inPlay = (it) => /^playtime(\/|$)/i.test(it.folder || "");
-        const kindOf = (it) => {
-          let k = kindFromName(it.filename || "");
-          if (k === "doc") k = kindFromName(String(it.file_url || "").split("?")[0].split("/").pop());
-          return k;
-        };
-        const imgs = (all || []).filter((it) => inPlay(it) && kindOf(it) !== "video" && kindOf(it) !== "music");
-        if (!imgs.length) return { status: "geen foto gevonden in PlayTime-map", found: 0 };
-        // Onderwerp-match: submap direct onder PlayTime, of bestandsnaam
-        const subjectPool = q
-          ? imgs.filter((it) => {
-              const seg = ((it.folder || "").split("/")[1] || "").toLowerCase();
-              const fn = (it.filename || "").toLowerCase();
-              return seg === q || seg.includes(q) || fn.includes(q);
-            })
-          : imgs;
-        // Geen onderwerp-match → willekeurige PlayTime-foto (de foto opent sowieso)
-        let pool = subjectPool.length ? subjectPool : imgs;
-        // Genummerde foto: match het nummer als los token in de bestandsnaam;
-        // nummer niet gevonden → willekeurig uit dezelfde pool
-        if (num) {
-          const numPool = pool.filter((it) => {
-            const base = (it.filename || "").toLowerCase().replace(/\.[^.]+$/, "");
-            return new RegExp(`(^|[^0-9])${num}([^0-9]|$)`).test(base);
-          });
-          if (numPool.length) pool = numPool;
-        }
-        const pick = pool[Math.floor(Math.random() * pool.length)];
-        return {
-          status: `foto getoond: ${pick.filename}`,
-          found: pool.length,
-          photo: pick.filename,
-          folder: pick.folder || "",
-          media_command: { type: "show_media", url: pick.file_url, name: pick.filename, kind: "image" },
-        };
-      } catch (e) {
-        return { error: String((e && e.message) || e) };
-      }
-    },
-  },
-  {
     name: "get_playtime_image",
     description:
-      "Haal één willekeurige foto uit de gescrapte Playtime-collectie op basis van categorie. Beschikbare categorieën zijn o.a.: hairy, gaping, piss, somno, arab, bbw, fisting, gay, incest, selfsuck, cruising, public, fat, ftm, breeding — plus elke andere categorie die in de collectie zit. De foto wordt direct groot getoond op het scherm (de stage opent automatisch) én je krijgt de image_url terug — noem die ook kort in je antwoord zodat de link klikbaar is. Is er voor de categorie niets, dan krijg je een duidelijke melding; zeg dat eerlijk tegen Salvo.",
+      "Haal één willekeurige foto uit de gescrapte Playtime-collectie op basis van categorie. De categorieën staan dynamisch in de collectie — inclusief elke categorie die Salvo via de Media Admin toevoegt; gebruik list_playtime_categories om te zien wat er allemaal is. De foto wordt automatisch groot in de MediaStage getoond én je krijgt de image_url terug. NEEM DIE URL LETTERLIJK OP IN JE ANTWOORD — gewoon de link in je tekst — zodat de foto in de chat zelf als afbeelding rendert. Gebruik dit zowel automatisch (als een foto past bij waar het gesprek over gaat: gewoon tonen en doorpraten) als wanneer Salvo expliciet om een foto of categorie vraagt. Bestaat de categorie niet, dan krijg je de beschikbare categorieën terug; zeg eerlijk wat er is.",
     inputSchema: {
       type: "object",
       properties: {
-        category: { type: "string", description: "categorie: hairy, gaping, piss, somno, arab, bbw, fisting, gay, incest, selfsuck, cruising, public, fat, ftm, breeding, …" },
+        category: { type: "string", description: "categorie uit de collectie — zie list_playtime_categories voor alles wat er is" },
       },
       required: ["category"],
     },
@@ -186,17 +125,21 @@ export const MATTIA_MEDIA_SKILLS = [
         const sr = base44.asServiceRole;
         const q = String(args?.category || "").trim().toLowerCase();
         if (!q) return { error: "categorie vereist" };
-        let matches = await sr.entities.PlaytimeImages.filter({ category: q }, "-created_date", 200).catch(() => []);
-        // Vangnet: geen exacte match → recentste 200 checken op kleine letters
-        if (!matches || !matches.length) {
-          const recent = await sr.entities.PlaytimeImages.list("-created_date", 200).catch(() => []);
-          matches = (recent || []).filter((it) => String(it.category || "").toLowerCase() === q);
+        const all = await sr.entities.PlaytimeImages.list("-created_date", 1000).catch(() => []);
+        const byCat = {};
+        for (const it of all || []) {
+          const c = String(it.category || "").toLowerCase();
+          if (!c) continue;
+          (byCat[c] = byCat[c] || []).push(it);
         }
+        const matches = byCat[q] || [];
         if (!matches.length) {
+          const available = Object.keys(byCat).sort();
           return {
             status: `geen foto's beschikbaar voor categorie '${q}'`,
             found: 0,
-            message: `Er staat nog geen Playtime-foto met categorie '${q}' in de collectie. Zeg dat tegen Salvo en stel voor een galerij met die categorie toe te voegen via de Media Admin.`,
+            available_categories: available,
+            message: `Er staat nog geen Playtime-foto met categorie '${q}' in de collectie. Beschikbaar: ${available.join(", ") || "nog niets"}. Zeg dat eerlijk tegen Salvo en stel voor die categorie via de Media Admin toe te voegen.`,
           };
         }
         const pick = matches[Math.floor(Math.random() * matches.length)];
@@ -228,13 +171,32 @@ export const MATTIA_MEDIA_SKILLS = [
       }
     },
   },
+  {
+    name: "list_playtime_categories",
+    description:
+      "Bekijk welke foto-categorieën er in de Playtime-collectie zitten en hoeveel foto's elke categorie bevat — inclusief categorieën die Salvo net via de Media Admin heeft toegevoegd. Gebruik dit als Salvo vraagt wat er is, of als je wilt weten welke categorieën je kunt laten zien.",
+    inputSchema: { type: "object", properties: {} },
+    execute: async (args, base44) => {
+      try {
+        const all = await base44.asServiceRole.entities.PlaytimeImages.list("-created_date", 1000).catch(() => []);
+        const counts = {};
+        for (const it of all || []) {
+          const c = String(it.category || "").toLowerCase();
+          if (c) counts[c] = (counts[c] || 0) + 1;
+        }
+        const items = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([c, n]) => `${c}: ${n} foto's`);
+        return { status: "ok", categories: items.length, items };
+      } catch (e) {
+        return { error: String((e && e.message) || e) };
+      }
+    },
+  },
 ];
 
 // ── FOTO-CATEGORISATIE ───────────────────────────────────────────────
 // Foto's die Salvo naar Mattia stuurt worden automatisch gesorteerd in de
-// juiste PlayTime-onderwerpmap (Fat, Juan, Me, Pussy, Cock, Piss, Fist — of
-// een nieuw onderwerp met eigen map), genummerd op volgorde, zodat
-// show_playtime_photo ze daarna altijd kan terugvinden.
+// juiste PlayTime-onderwerpmap, genummerd op volgorde — zo blijft de
+// mediatheek georganiseerd en doorzoekbaar via search_media.
 const PLAYTIME_SUBJECTS = ["Fat", "Juan", "Me", "Pussy", "Cock", "Piss", "Fist"];
 const PT_KEY = "PlayTime_Gemini_API_Key";
 const REFUSAL_WORDS = /^(i|i'm|im|sorry|as|it|the|this|my|cannot|can't)$/i;

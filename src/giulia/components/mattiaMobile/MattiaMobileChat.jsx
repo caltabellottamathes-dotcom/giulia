@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import { useMattiaChat } from "@/lib/useMattiaChat";
+import ChatMessageText from "@/components/mattia/ChatMessageText";
 
 const BLUE = "#b1bfc7";
 
@@ -11,6 +12,7 @@ export default function MattiaMobileChat() {
   const { messages, send, sending } = useMattiaChat();
   const [text, setText] = useState("");
   const [photo, setPhoto] = useState(null);
+  const [zoom, setZoom] = useState(null);
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -53,7 +55,9 @@ export default function MattiaMobileChat() {
             ) : (
               <>
                 <p className="font-mono text-[9px] tracking-[0.18em] uppercase mb-1" style={{ color: BLUE }}>Mattia</p>
-                <p className="max-w-[86%] font-body text-[16px] leading-[1.45] text-black whitespace-pre-wrap">{m.content}</p>
+                <p className="max-w-[86%] font-body text-[16px] leading-[1.45] text-black whitespace-pre-wrap">
+                  <ChatMessageText text={m.content} linkColor="#301728" onOpenMedia={(d) => setZoom(d)} />
+                </p>
               </>
             )}
           </motion.div>
@@ -74,6 +78,12 @@ export default function MattiaMobileChat() {
           </p>
         )}
       </div>
+
+      {zoom && (
+        <div className="fixed inset-0 z-[80] bg-black/90 flex items-center justify-center p-4" onClick={() => setZoom(null)}>
+          <img src={zoom.url} alt={zoom.name || "Mattia"} className="max-w-full max-h-full object-contain" />
+        </div>
+      )}
 
       <div className="shrink-0 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] border-t" style={{ borderColor: "#CCCCCC" }}>
         <div className="flex items-end gap-2.5">

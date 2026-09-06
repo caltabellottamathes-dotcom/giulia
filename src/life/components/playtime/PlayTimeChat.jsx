@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useMattiaChat } from "@/lib/useMattiaChat";
 import { base44 } from "@/api/base44Client";
 import { useMediaViewer } from "@/lib/MediaViewerContext";
+import ChatMessageText from "@/components/mattia/ChatMessageText";
 
 const BLUE = "#b1bfc7";
 const BLACK = "#000000";
@@ -73,30 +74,6 @@ export default function PlayTimeChat({ onToggleMedia, onOpenMedia }) {
     } catch { /* ignore */ }
   };
 
-  // Render berichttekst met klikbare links. Media-URLs openen in de MediaStage;
-  // andere links openen in een nieuw tabblad.
-  const renderText = (text, mine) => {
-    if (!text) return null;
-    const re = /(https?:\/\/[^\s)]+)/g;
-    const out = [];
-    let last = 0; let m; let k = 0;
-    while ((m = re.exec(text)) !== null) {
-      if (m.index > last) out.push(<span key={k++}>{text.slice(last, m.index)}</span>);
-      const url = m[0].replace(/[)\]]+$/, "");
-      const ext = url.split(".").pop().split("?")[0].toLowerCase();
-      const mediaExt = ["png","jpg","jpeg","gif","webp","mp4","mov","webm","mkv","mp3","wav","m4a","flac","aac","ogg","pdf"];
-      if (mediaExt.includes(ext)) {
-        const type = ["mp4","mov","webm","mkv"].includes(ext) ? "video" : ["mp3","wav","m4a","flac","aac","ogg"].includes(ext) ? "audio" : ext === "pdf" ? "doc" : "image";
-        out.push(<button key={k++} onClick={() => onOpenMedia?.({ name: "Mattia", url, type })} className="underline underline-offset-2 hover:opacity-70 transition break-all" style={{ color: mine ? BLACK : INK }}>{url}</button>);
-      } else {
-        out.push(<a key={k++} href={url} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:opacity-70 transition break-all" style={{ color: mine ? BLACK : INK }}>{url}</a>);
-      }
-      last = m.index + m[0].length;
-    }
-    if (last < text.length) out.push(<span key={k++}>{text.slice(last)}</span>);
-    return out;
-  };
-
   return (
     <div className="flex-1 flex flex-col min-h-0 px-6 lg:px-8 pt-7 pb-6">
       {/* Header — N°1 */}
@@ -134,7 +111,7 @@ export default function PlayTimeChat({ onToggleMedia, onOpenMedia }) {
                 {m.content && (
                   <div>
                     <p className="font-body text-[13px] leading-[1.5] whitespace-pre-line" style={{ color: mine ? BLACK : INK, fontStyle: mine ? "normal" : "italic", textShadow: mine ? "0 1px 3px rgba(0,0,0,0.20)" : "none" }}>
-                      {renderText(m.content, mine)}
+                      <ChatMessageText text={m.content} linkColor={mine ? BLACK : INK} onOpenMedia={onOpenMedia} />
                     </p>
                   </div>
                 )}

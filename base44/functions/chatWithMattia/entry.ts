@@ -150,10 +150,10 @@ export default async function (req) {
     const systemInstruction = personaLayers.join("\n") + closing;
 
     // ── TOOLS ───────────────────────────────────────────────────────
-    // Media-tools (camera, bibliotheek, show_playtime_photo) zijn er maar een
+    // Media-tools (camera, bibliotheek, get_playtime_image) zijn er maar een
     // handvol — ALTijd meesturen, ook bij casual/naughty berichten. Zo is de
     // foto-tool elke beurt een échte functie-declaratie en typt het model hem
-    // nooit meer als tekst (show_playtime_photo({...}) in de reply). De zware
+    // nooit meer als tekst (get_playtime_image({...}) in de reply). De zware
     // GIULIA-skills (40+) alleen bij operationele berichten.
     const mediaToolsMap = {};
     for (const s of MATTIA_MEDIA_SKILLS) {
@@ -245,21 +245,20 @@ export default async function (req) {
     // in het antwoord in plaats van hem écht te callen. Voer die aanroep
     // alsnog uit en haal hem uit de tekst.
     if (responseText) {
-      const inlineRe = /`?show_playtime_photo\(\s*\{([^}]*)\}\s*\)`?/gi;
+      const inlineRe = /`?get_playtime_image\(\s*\{([^}]*)\}\s*\)`?/gi;
       const pendingCalls = [];
       const cleaned = responseText.replace(inlineRe, (whole, inner) => {
-        const nameM = inner.match(/name\s*:\s*["']([^"']+)["']/i);
-        const numM = inner.match(/number\s*:\s*(\d+)/i);
-        if (nameM) pendingCalls.push({ name: nameM[1], ...(numM ? { number: Number(numM[1]) } : {}) });
+        const catM = inner.match(/category\s*:\s*["']([^"']+)["']/i);
+        if (catM) pendingCalls.push({ category: catM[1] });
         return "";
       });
       for (const call of pendingCalls) {
-        const t = toolsMap["show_playtime_photo"];
+        const t = toolsMap["get_playtime_image"];
         let result;
         try { result = await t.execute(call); }
         catch (e) { result = { error: String((e && e.message) || e) }; }
         if (result && result.media_command) mediaCommands.push(result.media_command);
-        executed.push({ name: "show_playtime_photo", args: call, ok: !(result && result.error), result: sanitizeResult(result) });
+        executed.push({ name: "get_playtime_image", args: call, ok: !(result && result.error), result: sanitizeResult(result) });
       }
       if (pendingCalls.length) responseText = cleaned.trim() || null;
     }
