@@ -80,7 +80,7 @@ export default function PlaytimeAdminPage() {
       setSrcResult(d?.error ? d : { ...d, ok: true });
       await load();
     } catch (e) {
-      setSrcResult({ error: String((e && e.message) || e) });
+      setSrcResult({ error: e?.response?.data?.error || e?.data?.error || e?.response?.data?.message || String((e && e.message) || e) });
     }
     setSrcBusy(null);
   };
@@ -88,6 +88,10 @@ export default function PlaytimeAdminPage() {
   const scrapeTwitter = async () => {
     const u = twUser.trim();
     if (!u || !twCategory.trim() || srcBusy) return;
+    if (!/^@?[A-Za-z0-9_.]{1,20}$/.test(u)) {
+      setSrcResult({ error: "X-scraping werkt alleen met een @gebruiker (bv. @naam) — een zoekterm of een naam met spaties vindt de API niet." });
+      return;
+    }
     setSrcBusy("twitter");
     setSrcResult(null);
     try {
@@ -98,7 +102,7 @@ export default function PlaytimeAdminPage() {
       setSrcResult(d?.error ? d : { ...d, ok: true });
       await load();
     } catch (e) {
-      setSrcResult({ error: String((e && e.message) || e) });
+      setSrcResult({ error: e?.response?.data?.error || e?.data?.error || e?.response?.data?.message || String((e && e.message) || e) });
     }
     setSrcBusy(null);
   };

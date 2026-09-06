@@ -119,7 +119,11 @@ export default async function (req) {
     const json = await apiRes.json().catch(() => null);
     const tweets = normalizeTweets(json).slice(0, limit);
     if (!tweets.length) {
-      return Response.json({ error: `Geen tweets terug van Scrape Creators voor @${username}.` }, { status: 502 });
+      const apiNote = json?.error || json?.message
+        || (json?.data && typeof json.data === "object" && !Array.isArray(json.data) ? json.data.error || json.data.message : "");
+      return Response.json({
+        error: `Geen tweets gevonden voor @${username}${apiNote ? ` (API: ${String(apiNote).slice(0, 150)})` : ""}. Check dat de @gebruiker precies klopt — een niet-bestaande, privé of afgesloten account geeft leeg terug. Zoeken op zoektermen kan niet, alleen @gebruikers.`,
+      }, { status: 502 });
     }
 
     // Bestaande URL's — geen duplicaten
