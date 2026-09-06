@@ -71,7 +71,7 @@ function normalizeTweets(json) {
 }
 
 function mediaListOf(t) {
-  return t?.media || t?.extendedEntities?.media || t?.extended_entities?.media
+  return t?.media || t?.extendedEntities?.media || t?.entities?.media || t?.extended_entities?.media
     || t?.legacy?.extended_entities?.media || t?.tweet?.legacy?.extended_entities?.media
     || t?.tweet?.extended_entities?.media || [];
 }
@@ -81,7 +81,8 @@ function tweetIdOf(t) {
 }
 function handleOf(t, fallback) {
   return t?.author?.userName || t?.author?.handle || t?.author?.screen_name
-    || t?.core?.user_results?.result?.legacy?.screen_name || t?.legacy?.user?.screen_name || fallback;
+    || t?.core?.user_results?.result?.legacy?.screen_name || t?.user?.screen_name
+    || t?.legacy?.user?.screen_name || fallback;
 }
 function textOf(t) {
   return t?.text || t?.legacy?.full_text || t?.tweet?.legacy?.full_text || t?.tweet?.text || "";
