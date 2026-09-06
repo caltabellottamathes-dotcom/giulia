@@ -11,6 +11,8 @@ const RED = "#b03a2e";
 
 const VID_EXTS = ["mp4", "mov", "webm", "m4v", "mkv"];
 const isVideoUrl = (u) => VID_EXTS.includes(String(u || "").split(".").pop().split("?")[0].toLowerCase());
+// kind-veld is leidend (reddit/twitter-video's hebben niet altijd een extensie)
+const isVideoItem = (it) => it?.kind === "video" || isVideoUrl(it?.image_url);
 
 /** PlaytimeCategoryBrowser — categorieën (incl. subcategorieën via
  *  'parent/sub') en galerijen van de Playtime-collectie. Klik een categorie →
@@ -181,9 +183,9 @@ export default function PlaytimeCategoryBrowser({ images, categories, loading, o
           {items.map((it, i) => (
             <div key={it.id} draggable onDragStart={() => setDragId(it.id)} onDragEnd={() => setDragId(null)}
               className="relative rounded-md overflow-hidden border cursor-grab active:cursor-grabbing" style={{ borderColor: GREY }}>
-              {isVideoUrl(it.image_url) ? (
-                <video src={it.image_url} muted loop playsInline preload="metadata" onClick={() => setViewIdx(i)}
-                  title="Klik om groot te bekijken" className="w-full h-44 object-cover cursor-pointer" />
+              {isVideoItem(it) ? (
+                <video src={it.image_url + "#t=0.1"} muted loop playsInline preload="auto" onClick={() => setViewIdx(i)}
+                  title="Klik om groot te bekijken" className="w-full h-44 object-cover cursor-pointer bg-black" />
               ) : (
                 <button type="button" onClick={() => setViewIdx(i)} title="Klik om groot te bekijken" className="block w-full">
                   <Image src={it.image_url} fittingType="fill" alt={it.category} className="w-full h-44" />
@@ -233,7 +235,11 @@ export default function PlaytimeCategoryBrowser({ images, categories, loading, o
             <div className="flex items-center gap-3">
               <button onClick={() => setSelCat(p)} className="flex items-center gap-3 flex-1 min-w-0 text-left">
                 <span className="w-10 h-10 shrink-0 rounded-md overflow-hidden border" style={{ borderColor: GREY }}>
-                  {inTree[0] ? <Image src={inTree[0].image_url} fittingType="fill" alt={p} className="w-10 h-10" /> : <span className="block w-10 h-10" style={{ background: "#eeeeee" }} />}
+                  {inTree[0] ? (
+                    isVideoItem(inTree[0])
+                      ? <video src={inTree[0].image_url + "#t=0.1"} muted playsInline preload="metadata" className="w-10 h-10 object-cover bg-black" />
+                      : <Image src={inTree[0].image_url} fittingType="fill" alt={p} className="w-10 h-10" />
+                  ) : <span className="block w-10 h-10" style={{ background: "#eeeeee" }} />}
                 </span>
                 <span className="font-body text-[13px] lowercase" style={{ color: BLACK }}>{p}</span>
               </button>

@@ -122,7 +122,7 @@ export default async function (req) {
       const apiNote = json?.error || json?.message
         || (json?.data && typeof json.data === "object" && !Array.isArray(json.data) ? json.data.error || json.data.message : "");
       return Response.json({
-        error: `Geen tweets gevonden voor @${username}${apiNote ? ` (API: ${String(apiNote).slice(0, 150)})` : ""}. Check dat de @gebruiker precies klopt — een niet-bestaande, privé of afgesloten account geeft leeg terug. Zoeken op zoektermen kan niet, alleen @gebruikers.`,
+        error: `Geen tweets gevonden voor @${username}${apiNote ? ` (API: ${String(apiNote).slice(0, 150)})` : ""}. Check dat de @gebruiker precies klopt — een niet-bestaande, privé, afgesloten of leeftijdsbeperkte (18+) account is voor deze API onzichtbaar. Zoeken op zoektermen kan niet, alleen @gebruikers.`,
       }, { status: 502 });
     }
 
