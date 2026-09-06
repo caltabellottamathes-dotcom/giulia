@@ -171,19 +171,55 @@ app.post('/chat/completions', async (req, res) => {
 // De Base44-backend draait in een datacenter; sites zoals de X-mirror
 // (twstalker.com) blokkeren datacenter-IP's met een Cloudflare-controle.
 // Deze route haalt een URL op vanaf het IP waar de bridge draait (thuis).
-// POST { url } -> { status, body }   (zelfde Bearer BRIDGE_TOKEN-auth)
+// Cloudflare blokkeert daarnaast op TLS/HTTP2-vingerafdruk — Node-fetch
+// (undici) valt daar altijd doorheen, dus proberen we eerst curl met
+// volledige browser-headers (+ cookie-jar), en vallen we terug op fetch.
+// POST { url } -> { status, body, client }   (zelfde Bearer BRIDGE_TOKEN-auth)
+const { execFile } = require('child_process');
+const execFileP = (cmd, args) => new Promise((resolve) => {
+  execFile(cmd, args, { timeout: 45000, maxBuffer: 20 * 1024 * 1024, windowsHide: true }, (err, stdout) => {
+    if (err && !stdout) return resolve(null);
+    resolve(stdout);
+  });
+});
+const JAR_PATH = require('path').join(__dirname, 'cookies.txt');
+
 app.post('/fetch', auth, async (req, res) => {
   try {
     const url = String((req.body && req.body.url) || '');
     if (!/^https?:\/\//i.test(url)) return res.status(400).json({ error: 'url required' });
+    const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+
+    // 1) curl — browser-achtige fingerprint (Windows: schannel-TLS, Linux: OpenSSL)
+    const out = await execFileP('curl', [
+      '-s', '-L', '--max-time', '40', '--compressed',
+      '-b', JAR_PATH, '-c', JAR_PATH,
+      '-w', '\n__HTTP__%{http_code}',
+      '-A', UA,
+      '-H', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      '-H', 'Accept-Language: en-US,en;q=0.9',
+      '-H', 'Sec-Fetch-Dest: document',
+      '-H', 'Sec-Fetch-Mode: navigate',
+      '-H', 'Sec-Fetch-Site: none',
+      '-H', 'Upgrade-Insecure-Requests: 1',
+      url,
+    ]);
+    if (out) {
+      const m = out.match(/\n__HTTP__(\d{3})\s*$/);
+      const code = m ? Number(m[1]) : 0;
+      const body = m ? out.slice(0, m.index) : out;
+      if (body) return res.json({ status: code || 200, body: body, client: 'curl' });
+    }
+
+    // 2) terugval op Node-fetch
     const r = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'User-Agent': UA,
         Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.9',
       },
     });
-    res.json({ status: r.status, body: await r.text() });
+    res.json({ status: r.status, body: await r.text(), client: 'node' });
   } catch (e) {
     res.status(502).json({ error: 'fetch relay failed', detail: e.message });
   }
