@@ -140,7 +140,7 @@ export default async function (req) {
         }
         mediaBlock = [
           `Playtime-foto's: ${Object.keys(ptCounts).sort().map((c) => (ptCounts[c] ? `${c} (${ptCounts[c]})` : `${c} (leeg)`)).join(", ") || "nog geen"}`,
-          `Foto-tools: get_playtime_image({ category }) — subcategorieën via 'parent/sub' (een parent matcht ook z'n subcategorieën). search_imagefap({ query }) — zoekt LIVE op imagefap.com als het er niet in zit. NEEM de teruggegeven image_url ALTIJD letterlijk op in je antwoord — antwoord nooit zonder de link.`,
+          `Foto-tool: get_playtime_image({ category }) — subcategorieën via 'parent/sub' (een parent matcht ook z'n subcategorieën). Dit is de enige fotobron: uitsluitend de gescrapte collectie, live zoeken kan NIET. NEEM de teruggegeven image_url ALTIJD letterlijk op in je antwoord — antwoord nooit zonder de link.`,
         ].join("\n");
       }
       contextBlock = [
@@ -272,23 +272,21 @@ export default async function (req) {
     // in het antwoord in plaats van hem écht te callen. Voer die aanroep
     // alsnog uit en haal hem uit de tekst.
     if (responseText) {
-      const inlineRe = /`?(?:get_playtime_image|search_imagefap)\(\s*\{([^}]*)\}\s*\)`?/gi;
+      const inlineRe = /`?get_playtime_image\(\s*\{([^}]*)\}\s*\)`?/gi;
       const pendingCalls = [];
       const cleaned = responseText.replace(inlineRe, (whole, inner) => {
         const catM = inner.match(/category\s*:\s*["']([^"']+)["']/i);
-        const qM = inner.match(/query\s*:\s*["']([^"']+)["']/i);
-        if (catM) pendingCalls.push({ tool: "get_playtime_image", args: { category: catM[1] } });
-        else if (qM) pendingCalls.push({ tool: "search_imagefap", args: { query: qM[1] } });
+        if (catM) pendingCalls.push({ category: catM[1] });
         return "";
       });
       for (const call of pendingCalls) {
-        const t = toolsMap[call.tool];
+        const t = toolsMap["get_playtime_image"];
         let result;
-        try { result = await t.execute(call.args); }
+        try { result = await t.execute(call); }
         catch (e) { result = { error: String((e && e.message) || e) }; }
         if (result && result.media_command) mediaCommands.push(result.media_command);
         if (result && result.image_url) shownUrls.push(result.image_url);
-        executed.push({ name: call.tool, args: call.args, ok: !(result && result.error), result: sanitizeResult(result) });
+        executed.push({ name: "get_playtime_image", args: call, ok: !(result && result.error), result: sanitizeResult(result) });
       }
       if (pendingCalls.length) responseText = cleaned.trim() || null;
     }

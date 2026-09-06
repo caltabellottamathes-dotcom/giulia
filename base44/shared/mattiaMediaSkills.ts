@@ -14,7 +14,7 @@
  */
 import { geminiGenerate } from './gemini.ts';
 import { buildImageParts } from './imageParts.ts';
-import { ifapFetchText, ifapFullUrl, ifapGalleryRefs, ifapPhotoRefs, ifapSearchUrl } from './imagefap.ts';
+import { ifapFetchText, ifapFullUrl } from './imagefap.ts';
 
 const IMG_EXTS = ["png", "jpg", "jpeg", "gif", "webp"];
 const VID_EXTS = ["mp4", "mov", "webm", "mkv"];
@@ -149,7 +149,7 @@ export const MATTIA_MEDIA_SKILLS = [
             status: `geen foto's beschikbaar voor categorie '${q}'`,
             found: 0,
             available_categories: available,
-            message: `Er staat nog geen Playtime-foto met categorie '${q}' in de collectie. Beschikbaar: ${available.join(", ") || "nog niets"}. Zeg dat eerlijk tegen Salvo, kies een bestaande categorie, of gebruik search_imagefap om live op imagefap.com te zoeken.`,
+            message: `Er staat nog geen Playtime-foto met categorie '${q}' in de collectie. Beschikbaar: ${available.join(", ") || "nog niets"}. Zeg dat eerlijk tegen Salvo en kies een bestaande categorie — wil hij iets nieuws, dan kan hij de galerij via de Media Admin laten scrapen.`,
           };
         }
         const pick = matches[Math.floor(Math.random() * matches.length)];
@@ -203,63 +203,6 @@ export const MATTIA_MEDIA_SKILLS = [
         }
         const items = Object.keys(counts).sort().map((c) => (counts[c] ? `${c}: ${counts[c]} foto's` : `${c}: leeg`));
         return { status: "ok", categories: items.length, items };
-      } catch (e) {
-        return { error: String((e && e.message) || e) };
-      }
-    },
-  },
-  {
-    name: "search_imagefap",
-    description:
-      "Zoek LIVE door heel imagefap.com naar foto's die niet in de Playtime-collectie zitten. Werkt op elke zoekterm: een fetish, een scène, een type vrouw/man — alles. Je krijgt de image_url terug — NEEM DIE URL LETTERLIJK OP IN JE ANTWOORD — de foto opent automatisch groot in de MediaStage én rendert dan als afbeelding in de chat. De foto wordt onder 'search/<term>' opgeslagen zodat hij later weer beschikbaar is. Gebruik dit als Salvo om iets vraagt dat niet in de categorieën zit, of als hij zelf om zoeken vraagt.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        query: { type: "string", description: "zoekterm, bv. 'hairy bbw pissing'" },
-      },
-      required: ["query"],
-    },
-    execute: async (args, base44) => {
-      const q = String(args?.query || "").trim();
-      if (!q) return { error: "query vereist" };
-      try {
-        const sr = base44.asServiceRole;
-        // 1. Zoekresultatenpagina → galerij-links
-        const searchHtml = await ifapFetchText(ifapSearchUrl(q), 15000);
-        const galleries = [...ifapGalleryRefs(searchHtml).values()].slice(0, 5);
-        if (!galleries.length) {
-          return { status: `niets gevonden voor '${q}'`, found: 0, message: `Geen galerijen gevonden op imagefap.com voor '${q}'. Probeer een andere term.` };
-        }
-        // 2. Per galerij (max 3 pogingen) één willekeurige foto volledig ophalen
-        const shortlist = galleries.sort(() => Math.random() - 0.5).slice(0, 3);
-        let url = null, photoUrl = null, galleryUrl = null;
-        for (const g of shortlist) {
-          try {
-            const gHtml = await ifapFetchText(g, 15000);
-            const photos = [...ifapPhotoRefs(gHtml).values()];
-            if (!photos.length) continue;
-            const photo = photos[Math.floor(Math.random() * photos.length)];
-            const pHtml = await ifapFetchText(photo, 12000);
-            const pid = (String(photo).match(/photo\/(\d{1,15})/i) || [])[1] || null;
-            const full = ifapFullUrl(pHtml, pid);
-            if (full) { url = full; photoUrl = photo; galleryUrl = g; break; }
-          } catch { /* volgende galerij */ }
-        }
-        if (!url) {
-          return { status: `zoeken mislukt voor '${q}'`, found: 0, message: `Kon geen foto ophalen van imagefap.com voor '${q}'.` };
-        }
-        const cat = `search/${q.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30)}`;
-        await sr.entities.PlaytimeImages.create({
-          category: cat, image_url: url, photo_url: photoUrl, gallery_url: galleryUrl,
-          description: q, created_at: new Date().toISOString(),
-        }).catch(() => null);
-        return {
-          status: `foto gevonden op imagefap: ${q}`,
-          found: 1,
-          category: cat,
-          image_url: url,
-          media_command: { type: "show_media", url, name: q, kind: "image" },
-        };
       } catch (e) {
         return { error: String((e && e.message) || e) };
       }

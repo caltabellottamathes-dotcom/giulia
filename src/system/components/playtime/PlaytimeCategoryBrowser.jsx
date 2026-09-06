@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Image } from "@/components/ui/image";
+import PlaytimePhotoViewer from "@/system/components/playtime/PlaytimePhotoViewer";
 
 const BLACK = "#000000";
 const GREY = "#CCCCCC";
@@ -18,6 +19,7 @@ export default function PlaytimeCategoryBrowser({ images, categories, loading, o
   const [busy, setBusy] = useState(false);
   const [newSub, setNewSub] = useState("");
   const [dragId, setDragId] = useState(null);
+  const [viewIdx, setViewIdx] = useState(null);
 
   // Alle bekende categorie-paden: uit foto's én expliciete categorie-records
   const allCats = useMemo(() => {
@@ -166,29 +168,40 @@ export default function PlaytimeCategoryBrowser({ images, categories, loading, o
         </div>
 
         <div className="flex justify-between items-center gap-3 border-b pb-2 mt-2" style={{ borderColor: GREY }}>
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em]" style={{ color: BLUE }}>Klik = origineel · × = verwijderen · slepen = verplaatsen</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.18em]" style={{ color: BLUE }}>Klik = groot bekijken · ← → = bladeren · × = verwijderen · slepen = verplaatsen</span>
           <button onClick={() => delCategory(selCat)} disabled={busy} className="font-mono text-[10px] uppercase tracking-[0.18em] hover:underline transition disabled:opacity-30" style={{ color: RED }}>
             {parent ? "Wis alles (incl. foto's)" : "Verwijder categorie + subs"}
           </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 mt-4">
-          {items.map((it) => (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+          {items.map((it, i) => (
             <div key={it.id} draggable onDragStart={() => setDragId(it.id)} onDragEnd={() => setDragId(null)}
               className="relative rounded-md overflow-hidden border cursor-grab active:cursor-grabbing" style={{ borderColor: GREY }}>
-              <a href={it.image_url} target="_blank" rel="noreferrer" className="block" title={it.image_url}>
-                <Image src={it.image_url} fittingType="fill" alt={it.category} className="w-full h-24" />
-              </a>
+              <button type="button" onClick={() => setViewIdx(i)} title="Klik om groot te bekijken" className="block w-full">
+                <Image src={it.image_url} fittingType="fill" alt={it.category} className="w-full h-44" />
+              </button>
               <button onClick={() => delPhoto(it.id)} disabled={busy} title="Verwijder deze foto"
-                className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white text-[11px] leading-none flex items-center justify-center hover:bg-black/90 transition">×</button>
+                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 text-white text-[12px] leading-none flex items-center justify-center hover:bg-black/90 transition">×</button>
             </div>
           ))}
           {!items.length && (
-            <p className="col-span-3 font-body text-[12px] italic" style={{ color: INK }}>
+            <p className="col-span-2 md:col-span-3 font-body text-[12px] italic" style={{ color: INK }}>
               Geen foto's direct in {selCat}{subs.length ? " — sleep ze naar een subcategorie-chip hierboven" : ""}.
             </p>
           )}
         </div>
+
+        {viewIdx != null && items.length > 0 && (
+          <PlaytimePhotoViewer
+            items={items}
+            index={Math.min(viewIdx, items.length - 1)}
+            onIndex={setViewIdx}
+            onClose={() => setViewIdx(null)}
+            onDelete={(id) => delPhoto(id)}
+            busy={busy}
+          />
+        )}
       </div>
     );
   }
