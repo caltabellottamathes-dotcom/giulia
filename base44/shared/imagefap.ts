@@ -49,3 +49,20 @@ export function ifapFullUrl(html: string, photoId?: string | null): string | nul
   }
   return all[0] || null;
 }
+
+/** Galerij-referenties (id → galerij-URL) uit een zoekresultaat- of
+ *  overzichtspagina. Dekt zowel /gallery/<id>-links als gallery.php?gid=. */
+export function ifapGalleryRefs(html: string) {
+  const refs = new Map();
+  let m;
+  const re1 = /imagefap\.com\/gallery\/(\d{1,15})/gi;
+  while ((m = re1.exec(html)) !== null) refs.set(m[1], `https://www.imagefap.com/gallery/${m[1]}`);
+  const re2 = /gallery\.php\?[^"'\s<>]*gid=(\d{1,15})/gi;
+  while ((m = re2.exec(html)) !== null) refs.set(m[1], `https://www.imagefap.com/gallery/${m[1]}`);
+  return refs;
+}
+
+/** Zoek-URL voor de galerij-zoekpagina van imagefap.com. */
+export function ifapSearchUrl(q: string) {
+  return `https://www.imagefap.com/gallery.php?search=${encodeURIComponent(q)}`;
+}

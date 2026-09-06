@@ -1,0 +1,28 @@
+{
+  "name": "PlaytimeCategory",
+  "type": "object",
+  "title": "PlaytimeCategory",
+  "description": "Categorie-/subcategorie-structuur van de Playtime-collectie. 'name' is het volledige pad (bv. 'hairy' of 'hairy/blond'), 'parent' het pad van de bovenliggende categorie ('' = hoofdniveau). Ook lege categorie\u00ebn bestaan hier \u2014 Mattia ziet ze via list_playtime_categories en get_playtime_image.",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Volledig pad",
+      "description": "Kleine letters, bv. 'hairy' of 'search/hairy-bbw'."
+    },
+    "parent": {
+      "type": "string",
+      "default": "",
+      "title": "Pad van bovenliggende categorie",
+      "description": "Leeg voor hoofdcategorie\u00ebn."
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}

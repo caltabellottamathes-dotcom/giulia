@@ -23,12 +23,17 @@ export default function PlaytimeAdminPage() {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
   const [images, setImages] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
     try {
-      const list = await base44.entities.PlaytimeImages.list("-created_date", 1000);
+      const [list, cats] = await Promise.all([
+        base44.entities.PlaytimeImages.list("-created_date", 1000).catch(() => []),
+        base44.entities.PlaytimeCategory.list("-created_date", 200).catch(() => []),
+      ]);
       setImages(list || []);
+      setCategories(cats || []);
     } catch {
       /* lijst blijft leeg */
     }
@@ -70,7 +75,7 @@ export default function PlaytimeAdminPage() {
           Galerijen &amp; foto's
         </h1>
         <p className="font-body text-[13px] leading-[1.5] mt-2 max-w-xl" style={{ color: INK }}>
-          Voeg een galerij-URL plus categorie toe — de scraper haalt alle foto's eruit en tagt ze. Klik daarna een categorie aan om elke foto te zien en te verwijderen, of wis een hele galerij. Mattia haalt ze in de chat per categorie op.{" "}
+          Voeg een galerij-URL plus categorie toe — de scraper haalt alle foto's eruit en tagt ze. Maak subcategorieën aan en sleep foto's erin voor gerichtere resultaten; Mattia ziet en gebruikt alle (sub)categorieën in de chat.{" "}
           <Link to="/playtime" className="underline underline-offset-4 decoration-black/20 hover:decoration-black/60" style={{ color: INK }}>Terug naar Playtime</Link>
         </p>
 
@@ -118,7 +123,7 @@ export default function PlaytimeAdminPage() {
               <button onClick={load} className="font-mono text-[10px] uppercase tracking-[0.18em] hover:underline transition" style={{ color: INK }}>Verversen</button>
             </div>
             <div className="mt-4">
-              <PlaytimeCategoryBrowser images={images} loading={loading} onRefresh={load} />
+              <PlaytimeCategoryBrowser images={images} categories={categories} loading={loading} onRefresh={load} />
             </div>
           </div>
         </div>

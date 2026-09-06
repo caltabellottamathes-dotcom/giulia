@@ -21,11 +21,12 @@ import { shareMattiaHighlights } from '../../shared/mattiaBridge.ts';
  * operationeel is (taken/projecten/agenda/finance/people/documenten) laden
  * we de relevante context. Géén approval-enforcer-ronde. MAX_STEPS=2.
  */
-const MAX_STEPS = 2;
+const MAX_STEPS = 4;
 const MATTIA_KEY = "MattiaTime_Gemini_API_Key";
 
 const FINANCE_RE = /geld|money|saldo|balance|betalen|payment|lasten|expense|inkomen|income|portefeuille|portfolio|reservering|budget|factuur|invoice|verzekering|huur|energie|rekening|finance|financ|euro|€/i;
 const OPERATIONAL_RE = /taak|task|project|agenda|afspraak|meeting|contact|persoon|notitie|note\b|idee|idea|geheugen|memory|herinner|remind|plan|planning|verzet|verplaats|opschuiven|deadline|milestone|beslissing|decision|kennis|knowledge|document|bestand|file|upload|bijlage|attachment|email|whatsapp|mail|verstuur|send|reserveer|reserve|boek|book|rekening|camera|webcam|foto|film|opname|mediatheek|bibliotheek|mediastage|media\b|delegeer|delegate|giulia|afbeelding|plaatje|illustratie|teken|draw|schilder|genereer|generate|stable diffusion|\bsd\b|nsfw|image\b/i;
+const MEDIA_RE = /\b(playtime|fot|photo|pic|plaatj|afbeeld|image|picture|categor|galer|gallery|mediatheek|mediastage|nsfw)/i;
 
 // ── PERSONA-CODEWORD-GATING ──────────────────────────────────────
 // "playtime" = codewoord voor de volledige Playtime-extensie.
@@ -79,7 +80,8 @@ export default async function (req) {
     // Pure conversatie / Naughty-praat: GEEN OS-context (snel). Operationeel:
     // laad relevante context. Finance: extra finance-blok.
     const wantsFinance = FINANCE_RE.test(message);
-    const isOperational = wantsFinance || OPERATIONAL_RE.test(message);
+    const wantsMedia = MEDIA_RE.test(message);
+    const isOperational = wantsFinance || wantsMedia || OPERATIONAL_RE.test(message);
 
     let contextBlock = "";
     if (isOperational) {
@@ -119,6 +121,28 @@ export default async function (req) {
         ].join("\n");
       }
 
+      // Media-context: de actuele categorieën (incl. subcategorieën) zodat
+      // Mattia precies weet wat er is en welke tool hij moet aanroepen.
+      let mediaBlock = "";
+      if (wantsMedia) {
+        const [ptImgs, ptCats] = await Promise.all([
+          sr.entities.PlaytimeImages.list("-created_date", 1000).catch(() => []),
+          sr.entities.PlaytimeCategory.list("-created_date", 200).catch(() => []),
+        ]);
+        const ptCounts = {};
+        for (const it of ptImgs || []) {
+          const c = String(it.category || "").toLowerCase();
+          if (c) ptCounts[c] = (ptCounts[c] || 0) + 1;
+        }
+        for (const rec of ptCats || []) {
+          const n = String(rec.name || "").toLowerCase();
+          if (n && !(n in ptCounts)) ptCounts[n] = 0;
+        }
+        mediaBlock = [
+          `Playtime-foto's: ${Object.keys(ptCounts).sort().map((c) => (ptCounts[c] ? `${c} (${ptCounts[c]})` : `${c} (leeg)`)).join(", ") || "nog geen"}`,
+          `Foto-tools: get_playtime_image({ category }) — subcategorieën via 'parent/sub' (een parent matcht ook z'n subcategorieën). search_imagefap({ query }) — zoekt LIVE op imagefap.com als het er niet in zit. NEEM de teruggegeven image_url ALTIJD letterlijk op in je antwoord — antwoord nooit zonder de link.`,
+        ].join("\n");
+      }
       contextBlock = [
         `\n== HUIDIGE STAAT (kort) ==`,
         `Geheugen: ${memories.length ? memories.map(m => `- ${String(m.content).slice(0, 100)}`).join("\n") : "leeg"}`,
@@ -127,6 +151,7 @@ export default async function (req) {
         `Agenda: ${upcomingEvents.map(e => `${e.title} @ ${e.start}`).join(" · ") || "niets"}`,
         `Wachtende goedkeuringen: ${pendingApprovals.length}`,
         financeBlock,
+        mediaBlock,
       ].filter(Boolean).join("\n");
     }
 
@@ -146,7 +171,7 @@ export default async function (req) {
     const personaLayers = [MATTIA_BUDDY, convoRule, operationalPart];
     if (wantsNaughty) personaLayers.push(MATTIA_NAUGHTY);
     if (wantsPlaytime) personaLayers.push(MATTIA_PLAYTIME);
-    const closing = `\n\nJe bent Mattia. Spreek direct met Salvo — vlot, scherp, droog, met humor, met een eigen mening. Voer uit wat nodig is via de tools en geef daarna een menselijk antwoord. ANTWOORDEN ALS WHATSAPP: één tot drie korte zinnen max, vaak minder — echt heen-en-weer gechat, geen monoloog, geen opsomming, geen muur van tekst. Schrijf in spreektaal: korte zinnen, spreekritme, onderbreek jezelf, alledaagse woorden, geen puntkomma's of literaire opmaak. Vraag soms iets terug, laat het gesprek ademen. To the point, niet treuzelig.`;
+    const closing = `\n\nJe bent Mattia. Spreek direct met Salvo — vlot, scherp, droog, met humor, met een eigen mening. Voer uit wat nodig is via de tools en geef daarna een menselijk antwoord. ANTWOORDEN ALS WHATSAPP: één tot drie korte zinnen max, vaak minder — echt heen-en-weer gechat, geen monoloog, geen opsomming, geen muur van tekst. Schrijf in spreektaal: korte zinnen, spreekritme, onderbreek jezelf, alledaagse woorden, geen puntkomma's of literaire opmaak. Vraag soms iets terug, laat het gesprek ademen. To the point, niet treuzelig. Antwoord NOOIT met alleen "Geregeld." — zeker niet na een foto-tool: geef dan altijd een echte korte zin mét de image_url letterlijk erin.`;
     const systemInstruction = personaLayers.join("\n") + closing;
 
     // ── TOOLS ───────────────────────────────────────────────────────
@@ -206,6 +231,7 @@ export default async function (req) {
 
     const executed = [];
     const mediaCommands = [];
+    const shownUrls = [];
     let responseText = null;
     // Model-router: kiest automatisch het optimale model per bericht.
     const chosenModel = pickChatModel({
@@ -234,6 +260,7 @@ export default async function (req) {
         try { result = t ? await t.execute(args) : { error: "unknown tool" }; }
         catch (e) { result = { error: String((e && e.message) || e) }; }
         if (result && result.media_command) mediaCommands.push(result.media_command);
+        if (result && result.image_url) shownUrls.push(result.image_url);
         executed.push({ name, args, ok: !(result && result.error), result: sanitizeResult(result) });
         respParts.push({ functionResponse: { name, response: sanitizeResult(result) } });
       }
@@ -245,26 +272,36 @@ export default async function (req) {
     // in het antwoord in plaats van hem écht te callen. Voer die aanroep
     // alsnog uit en haal hem uit de tekst.
     if (responseText) {
-      const inlineRe = /`?get_playtime_image\(\s*\{([^}]*)\}\s*\)`?/gi;
+      const inlineRe = /`?(?:get_playtime_image|search_imagefap)\(\s*\{([^}]*)\}\s*\)`?/gi;
       const pendingCalls = [];
       const cleaned = responseText.replace(inlineRe, (whole, inner) => {
         const catM = inner.match(/category\s*:\s*["']([^"']+)["']/i);
-        if (catM) pendingCalls.push({ category: catM[1] });
+        const qM = inner.match(/query\s*:\s*["']([^"']+)["']/i);
+        if (catM) pendingCalls.push({ tool: "get_playtime_image", args: { category: catM[1] } });
+        else if (qM) pendingCalls.push({ tool: "search_imagefap", args: { query: qM[1] } });
         return "";
       });
       for (const call of pendingCalls) {
-        const t = toolsMap["get_playtime_image"];
+        const t = toolsMap[call.tool];
         let result;
-        try { result = await t.execute(call); }
+        try { result = await t.execute(call.args); }
         catch (e) { result = { error: String((e && e.message) || e) }; }
         if (result && result.media_command) mediaCommands.push(result.media_command);
-        executed.push({ name: "get_playtime_image", args: call, ok: !(result && result.error), result: sanitizeResult(result) });
+        if (result && result.image_url) shownUrls.push(result.image_url);
+        executed.push({ name: call.tool, args: call.args, ok: !(result && result.error), result: sanitizeResult(result) });
       }
       if (pendingCalls.length) responseText = cleaned.trim() || null;
     }
 
     // ── SAVE RESPONSE (role: mattia) — géén approval-enforcer-ronde ──
-    const finalText = responseText || (executed.length ? "Geregeld." : "Mattia is even stil — probeer het zo weer.");
+    let finalText = responseText || (executed.length ? "Geregeld." : "Mattia is even stil — probeer het zo weer.");
+
+    // GARANTIE: elke foto die een tool heeft getoond staat ook écht in het
+    // chat-antwoord — de URL letterlijk in de tekst, zodat de frontend hem
+    // als klikbare thumbnail rendert. Altijd, ook als het model 'm vergat.
+    for (const u of shownUrls) {
+      if (!finalText.includes(u)) finalText = `${finalText}\n${u}`;
+    }
 
     if (persist && source === "chat" && finalText) {
       await sr.entities.Message.create({
