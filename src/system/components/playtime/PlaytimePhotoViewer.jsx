@@ -1,5 +1,8 @@
 import React, { useEffect } from "react";
 
+const VID_EXTS = ["mp4", "mov", "webm", "m4v", "mkv"];
+const isVideo = (u) => VID_EXTS.includes(String(u || "").split("?")[0].split(".").pop().toLowerCase());
+
 /** PlaytimePhotoViewer — fullscreen lightbox om door de foto's van een
  *  categorie te bladeren: ‹ › of ← → om te navigeren, Esc of buitenklik
  *  sluit, "Verwijderen" wist de getoonde foto. Sluitknop linksboven. */
@@ -35,8 +38,12 @@ export default function PlaytimePhotoViewer({ items, index, onIndex, onClose, on
           <button onClick={() => onIndex(index - 1)} title="Vorige (←)"
             className="w-10 h-10 shrink-0 rounded-full border border-white/25 text-white text-[18px] leading-none flex items-center justify-center hover:bg-white/10 transition">‹</button>
         )}
-        <img src={it.image_url} alt={it.category}
-          className="max-w-[82vw] max-h-[74vh] object-contain rounded-md border border-white/15 select-none" />
+        {isVideo(it.image_url) ? (
+          <video src={it.image_url} controls autoPlay loop className="max-w-[82vw] max-h-[74vh] rounded-md border border-white/15" />
+        ) : (
+          <img src={it.image_url} alt={it.category}
+            className="max-w-[82vw] max-h-[74vh] object-contain rounded-md border border-white/15 select-none" />
+        )}
         {index < items.length - 1 && (
           <button onClick={() => onIndex(index + 1)} title="Volgende (→)"
             className="w-10 h-10 shrink-0 rounded-full border border-white/25 text-white text-[18px] leading-none flex items-center justify-center hover:bg-white/10 transition">›</button>

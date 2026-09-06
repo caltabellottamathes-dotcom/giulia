@@ -15,7 +15,7 @@ export default function ChatMessageText({ text, linkColor, onOpenMedia }) {
   let last = 0; let m; let k = 0;
   while ((m = re.exec(text)) !== null) {
     if (m.index > last) out.push(<span key={k++}>{text.slice(last, m.index)}</span>);
-    const url = m[0].replace(/[)\]>]+$/, "");
+    const url = m[0].replace(/[)\]>"'.,;:!?]+$/, "");
     const ext = url.split(".").pop().split("?")[0].toLowerCase();
     if (IMG_EXT.includes(ext)) {
       out.push(

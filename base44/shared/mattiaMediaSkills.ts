@@ -28,6 +28,11 @@ function kindFromName(name) {
   return "doc";
 }
 
+function isVideoUrl(u) {
+  const ext = String(u || "").split(".").pop().split("?")[0].toLowerCase();
+  return VID_EXTS.includes(ext);
+}
+
 export const MATTIA_MEDIA_SKILLS = [
   {
     name: "control_camera",
@@ -112,7 +117,7 @@ export const MATTIA_MEDIA_SKILLS = [
   {
     name: "get_playtime_image",
     description:
-      "Haal één willekeurige foto uit de gescrapte Playtime-collectie op basis van categorie. De categorieën staan dynamisch in de collectie — inclusief elke categorie die Salvo via de Media Admin toevoegt; gebruik list_playtime_categories om te zien wat er allemaal is. De foto wordt automatisch groot in de MediaStage getoond én je krijgt de image_url terug. NEEM DIE URL LETTERLIJK OP IN JE ANTWOORD — gewoon de link in je tekst — zodat de foto in de chat zelf als afbeelding rendert. Gebruik dit zowel automatisch (als een foto past bij waar het gesprek over gaat: gewoon tonen en doorpraten) als wanneer Salvo expliciet om een foto of categorie vraagt. Bestaat de categorie niet, dan krijg je de beschikbare categorieën terug; zeg eerlijk wat er is.",
+      "Haal één willekeurige foto of video uit de gescrapte Playtime-collectie op basis van categorie. De categorieën staan dynamisch in de collectie — inclusief elke categorie die Salvo via de Media Admin toevoegt; gebruik list_playtime_categories om te zien wat er allemaal is. De media wordt automatisch groot in de MediaStage getoond én je krijgt de url terug. NEEM DIE URL LETTERLIJK OP IN JE ANTWOORD — gewoon de link in je tekst — zodat de foto in de chat zelf als afbeelding rendert (een video als klikbare link die de MediaStage-videospeler opent). Gebruik dit zowel automatisch (als media past bij waar het gesprek over gaat: gewoon tonen en doorpraten) als wanneer Salvo expliciet om een foto, video of categorie vraagt. Bestaat de categorie niet, dan krijg je de beschikbare categorieën terug; zeg eerlijk wat er is.",
     inputSchema: {
       type: "object",
       properties: {
@@ -154,9 +159,10 @@ export const MATTIA_MEDIA_SKILLS = [
         }
         const pick = matches[Math.floor(Math.random() * matches.length)];
         let url = pick.image_url;
+        const kind = pick.kind === "video" || isVideoUrl(url) ? "video" : "image";
         // CDN-links zijn token-gebonden en verlopen — via de fotopagina een
-        // verse full-URL oplossen en het record bijwerken.
-        if (pick.photo_url) {
+        // verse full-URL oplossen en het record bijwerken (alleen foto's).
+        if (kind === "image" && pick.photo_url) {
           try {
             const html = await ifapFetchText(pick.photo_url, 10000);
             const idm = String(pick.photo_url).match(/photo\/(\d{1,15})/i) || String(pick.photo_url).match(/pid=(\d{1,15})/i);
@@ -170,11 +176,12 @@ export const MATTIA_MEDIA_SKILLS = [
           }
         }
         return {
-          status: `foto getoond: ${pick.category}`,
+          status: `${kind === "video" ? "video" : "foto"} getoond: ${pick.category}`,
           found: matches.length,
           category: pick.category,
           image_url: url,
-          media_command: { type: "show_media", url, name: pick.category, kind: "image" },
+          kind,
+          media_command: { type: "show_media", url, name: pick.category, kind },
         };
       } catch (e) {
         return { error: String((e && e.message) || e) };

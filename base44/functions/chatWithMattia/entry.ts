@@ -139,8 +139,8 @@ export default async function (req) {
           if (n && !(n in ptCounts)) ptCounts[n] = 0;
         }
         mediaBlock = [
-          `Playtime-foto's: ${Object.keys(ptCounts).sort().map((c) => (ptCounts[c] ? `${c} (${ptCounts[c]})` : `${c} (leeg)`)).join(", ") || "nog geen"}`,
-          `Foto-tool: get_playtime_image({ category }) — subcategorieën via 'parent/sub' (een parent matcht ook z'n subcategorieën). Dit is de enige fotobron: uitsluitend de gescrapte collectie, live zoeken kan NIET. NEEM de teruggegeven image_url ALTIJD letterlijk op in je antwoord — antwoord nooit zonder de link.`,
+          `Playtime-media: ${Object.keys(ptCounts).sort().map((c) => (ptCounts[c] ? `${c} (${ptCounts[c]})` : `${c} (leeg)`)).join(", ") || "nog geen"}`,
+          `Media-tool: get_playtime_image({ category }) — subcategorieën via 'parent/sub' (een parent matcht ook z'n subcategorieën). Dit is de enige mediabron: uitsluitend de gescrapte collectie (foto's én video's), live zoeken kan NIET. NEEM de teruggegeven url ALTIJD letterlijk op in je antwoord — antwoord nooit zonder de link.`,
         ].join("\n");
       }
       contextBlock = [

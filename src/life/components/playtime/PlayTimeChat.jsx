@@ -36,7 +36,7 @@ export default function PlayTimeChat({ onToggleMedia, onOpenMedia }) {
     if (lastUrlMsgId.current === last.id) return;
     const m = String(last.content || "").match(/https?:\/\/[^\s)]+\.(png|jpe?g|gif|webp|mp4|mov|webm|mkv|mp3|wav|m4a|flac|aac|ogg|pdf)(\?[^\s]*)?/i);
     if (!m) return;
-    const url = m[0].replace(/[)\]]+$/, "");
+    const url = m[0].replace(/[)\]>"'.,;:!?]+$/, "");
     const ext = url.split(".").pop().split("?")[0].toLowerCase();
     const type = ["png","jpg","jpeg","gif","webp"].includes(ext) ? "image" : ["mp4","mov","webm","mkv"].includes(ext) ? "video" : ["mp3","wav","m4a","flac","aac","ogg"].includes(ext) ? "audio" : "doc";
     lastUrlMsgId.current = last.id;

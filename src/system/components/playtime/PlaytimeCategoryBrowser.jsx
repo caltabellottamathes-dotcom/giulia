@@ -9,6 +9,9 @@ const INK = "#595c64";
 const BLUE = "#b1bfc7";
 const RED = "#b03a2e";
 
+const VID_EXTS = ["mp4", "mov", "webm", "m4v", "mkv"];
+const isVideoUrl = (u) => VID_EXTS.includes(String(u || "").split(".").pop().split("?")[0].toLowerCase());
+
 /** PlaytimeCategoryBrowser — categorieën (incl. subcategorieën via
  *  'parent/sub') en galerijen van de Playtime-collectie. Klik een categorie →
  *  foto's zien en verwijderen. Sleep foto's naar een subcategorie-chip om ze
@@ -178,10 +181,15 @@ export default function PlaytimeCategoryBrowser({ images, categories, loading, o
           {items.map((it, i) => (
             <div key={it.id} draggable onDragStart={() => setDragId(it.id)} onDragEnd={() => setDragId(null)}
               className="relative rounded-md overflow-hidden border cursor-grab active:cursor-grabbing" style={{ borderColor: GREY }}>
-              <button type="button" onClick={() => setViewIdx(i)} title="Klik om groot te bekijken" className="block w-full">
-                <Image src={it.image_url} fittingType="fill" alt={it.category} className="w-full h-44" />
-              </button>
-              <button onClick={() => delPhoto(it.id)} disabled={busy} title="Verwijder deze foto"
+              {isVideoUrl(it.image_url) ? (
+                <video src={it.image_url} muted loop playsInline preload="metadata" onClick={() => setViewIdx(i)}
+                  title="Klik om groot te bekijken" className="w-full h-44 object-cover cursor-pointer" />
+              ) : (
+                <button type="button" onClick={() => setViewIdx(i)} title="Klik om groot te bekijken" className="block w-full">
+                  <Image src={it.image_url} fittingType="fill" alt={it.category} className="w-full h-44" />
+                </button>
+              )}
+              <button onClick={() => delPhoto(it.id)} disabled={busy} title="Verwijder deze media"
                 className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 text-white text-[12px] leading-none flex items-center justify-center hover:bg-black/90 transition">×</button>
             </div>
           ))}

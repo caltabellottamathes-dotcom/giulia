@@ -2,7 +2,7 @@
   "name": "PlaytimeImages",
   "type": "object",
   "title": "PlaytimeImages",
-  "description": "Gescrapte Playtime-foto's per categorie (hairy, gaping, piss, somno, arab, bbw, fisting, gay, incest, selfsuck, cruising, public, fat, ftm, breeding, \u2026). Gevuld door scrape_imagefap_gallery; Mattia haalt ze op via get_playtime_image.",
+  "description": "Gescrapte Playtime-media per categorie (hairy, gaping, piss, somno, arab, bbw, fisting, gay, incest, selfsuck, cruising, public, fat, ftm, breeding, \u2026). Gevuld door scrape_imagefap_gallery en scrape_reddit_media; Mattia haalt ze op via get_playtime_image \u2014 foto's \u00e9n video's.",
   "properties": {
     "category": {
       "type": "string",
@@ -12,8 +12,22 @@
     "image_url": {
       "type": "string",
       "format": "uri",
-      "title": "Image URL",
-      "description": "Directe link naar de afbeelding."
+      "title": "Media URL",
+      "description": "Directe link naar de afbeelding of video."
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "image",
+        "video"
+      ],
+      "title": "Soort media",
+      "description": "image of video (reddit-video's)."
+    },
+    "source": {
+      "type": "string",
+      "title": "Bron",
+      "description": "Herkomst: 'reddit' of leeg (legacy = gescrapte imagefap-galerij)."
     },
     "photo_url": {
       "type": "string",
@@ -24,12 +38,12 @@
       "type": "string",
       "format": "uri",
       "title": "Gallery URL",
-      "description": "De ImageFap-galerij waar deze foto vandaan komt."
+      "description": "De galerij (imagefap) of post (reddit) waar deze media vandaan komt."
     },
     "description": {
       "type": "string",
       "title": "Beschrijving",
-      "description": "Optionele beschrijving van de galerij/foto."
+      "description": "Optionele beschrijving van de galerij/post/foto."
     },
     "created_at": {
       "type": "string",
