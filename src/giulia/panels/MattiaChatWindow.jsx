@@ -2,7 +2,6 @@ import React, { useRef, useState, useEffect } from "react";
 import { useMattiaChat } from "@/lib/useMattiaChat";
 import { usePanel } from "@/lib/PanelContext";
 import { base44 } from "@/api/base44Client";
-import { useMediaViewer } from "@/lib/MediaViewerContext";
 import LibraryPicker from "@/system/components/files/LibraryPicker";
 import ChatMessageText from "@/components/mattia/ChatMessageText";
 
@@ -26,7 +25,7 @@ export default function MattiaChatWindow() {
   const scrollRef = useRef(null);
   const fileRef = useRef(null);
   const [libOpen, setLibOpen] = useState(false);
-  const { openMedia } = useMediaViewer();
+  const [zoom, setZoom] = useState(null);
 
   useEffect(() => {
     if (mattiaChatOpen) {
@@ -87,34 +86,6 @@ export default function MattiaChatWindow() {
 
   const onPickLibrary = ({ url, name, kind }) => setAttachments((prev) => [...prev, { url, name, type: kind === "music" ? "audio" : kind }]);
 
-  // Mattia toont een foto (show_playtime_photo / show_media) → open de
-  // fullscreen viewer meteen — dit venster hangt in de Layout, dus dit
-  // werkt op elke pagina waar je met Mattia chat.
-  useEffect(() => {
-    if (!mattiaChatOpen) return;
-    const h = (e) => {
-      const cmd = e.detail;
-      if (!cmd || cmd.type !== "show_media" || !cmd.url) return;
-      openMedia({ name: cmd.name || "Mattia", url: cmd.url, type: cmd.kind || "image" });
-    };
-    window.addEventListener("playtime:media-command", h);
-    return () => window.removeEventListener("playtime:media-command", h);
-  }, [mattiaChatOpen, openMedia]);
-
-  // Mattia stuurt een media-URL → open de viewer meteen
-  const lastUrlMsgId = useRef(null);
-  useEffect(() => {
-    const last = messages[messages.length - 1];
-    if (!last || last.role === "user" || lastUrlMsgId.current === last.id) return;
-    const m = String(last.content || "").match(/https?:\/\/[^\s)]+\.(png|jpe?g|gif|webp|mp4|mov|webm|mkv|mp3|wav|m4a|flac|aac|ogg|pdf)(\?[^\s]*)?/i);
-    if (!m) return;
-    const url = m[0].replace(/[)\]>"'.,;:!?]+$/, "");
-    const ext = url.split(".").pop().split("?")[0].toLowerCase();
-    const type = ["mp4","mov","webm","mkv"].includes(ext) ? "video" : ["mp3","wav","m4a","flac","aac","ogg"].includes(ext) ? "audio" : ext === "pdf" ? "doc" : "image";
-    lastUrlMsgId.current = last.id;
-    openMedia({ name: "Mattia", url, type });
-  }, [messages, openMedia]);
-
   if (!mattiaChatOpen) return null;
 
   return (
@@ -151,7 +122,7 @@ export default function MattiaChatWindow() {
                       {imgs.length > 0 && (
                         <div className={`flex gap-2 mb-1.5 ${mine ? "justify-end" : "justify-start"}`}>
                           {imgs.map((a, i) => (
-                            <button key={i} onClick={() => openMedia({ name: a.name, url: a.url, type: "image" })} className="block">
+                            <button key={i} onClick={() => setZoom({ name: a.name, url: a.url, type: "image" })} className="block">
                               <img src={a.url} alt={a.name} className="h-16 w-24 object-cover rounded-md border" style={{ borderColor: GREY }} />
                             </button>
                           ))}
@@ -160,7 +131,7 @@ export default function MattiaChatWindow() {
                       {m.content && (
                         <div>
                           <p className="font-body text-[13px] leading-[1.5] whitespace-pre-line" style={{ color: mine ? BLACK : INK, fontStyle: mine ? "normal" : "italic", textShadow: mine ? "0 1px 3px rgba(0,0,0,0.20)" : "none" }}>
-                            <ChatMessageText text={m.content} linkColor={mine ? BLACK : INK} onOpenMedia={openMedia} />
+                            <ChatMessageText text={m.content} linkColor={mine ? BLACK : INK} onOpenMedia={(d) => setZoom(d)} />
                           </p>
                           </div>
                       )}
@@ -223,6 +194,16 @@ export default function MattiaChatWindow() {
           </div>
         </div>
       </div>
+
+      {zoom && (
+        <div className="fixed inset-0 z-[90] bg-black/90 flex items-center justify-center p-6" onClick={() => setZoom(null)}>
+          {zoom.type === "video" ? (
+            <video src={zoom.url} controls autoPlay className="max-w-full max-h-full rounded-md" onClick={(e) => e.stopPropagation()} />
+          ) : (
+            <img src={zoom.url} alt={zoom.name || "Mattia"} className="max-w-full max-h-full object-contain rounded-md" />
+          )}
+        </div>
+      )}
 
       <LibraryPicker open={libOpen} onClose={() => setLibOpen(false)} onPick={onPickLibrary} />
     </>

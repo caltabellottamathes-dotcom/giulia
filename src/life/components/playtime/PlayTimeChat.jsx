@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useMattiaChat } from "@/lib/useMattiaChat";
 import { base44 } from "@/api/base44Client";
-import { useMediaViewer } from "@/lib/MediaViewerContext";
 import ChatMessageText from "@/components/mattia/ChatMessageText";
 
 const BLUE = "#b1bfc7";
@@ -22,26 +21,10 @@ export default function PlayTimeChat({ onToggleMedia, onOpenMedia }) {
   const [attachments, setAttachments] = useState([]);
   const scrollRef = useRef(null);
   const fileRef = useRef(null);
-  const { openMedia } = useMediaViewer();
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, sending]);
-
-  // Mattia stuurt een media-URL → open de MediaStage en toon het meteen
-  const lastUrlMsgId = useRef(null);
-  useEffect(() => {
-    const last = messages[messages.length - 1];
-    if (!last || last.role === "user") return;
-    if (lastUrlMsgId.current === last.id) return;
-    const m = String(last.content || "").match(/https?:\/\/[^\s)]+\.(png|jpe?g|gif|webp|mp4|mov|webm|mkv|mp3|wav|m4a|flac|aac|ogg|pdf)(\?[^\s]*)?/i);
-    if (!m) return;
-    const url = m[0].replace(/[)\]>"'.,;:!?]+$/, "");
-    const ext = url.split(".").pop().split("?")[0].toLowerCase();
-    const type = ["png","jpg","jpeg","gif","webp"].includes(ext) ? "image" : ["mp4","mov","webm","mkv"].includes(ext) ? "video" : ["mp3","wav","m4a","flac","aac","ogg"].includes(ext) ? "audio" : "doc";
-    lastUrlMsgId.current = last.id;
-    onOpenMedia?.({ name: "Mattia", url, type });
-  }, [messages, onOpenMedia]);
 
   const onPickFile = async (e) => {
     const files = Array.from(e.target.files || []);
@@ -102,7 +85,7 @@ export default function PlayTimeChat({ onToggleMedia, onOpenMedia }) {
                 {imgs.length > 0 && (
                   <div className={`flex gap-2 mb-1.5 ${mine ? "justify-end" : "justify-start"}`}>
                     {imgs.map((a, i) => (
-                      <button key={i} onClick={() => openMedia({ name: a.name, url: a.url, type: "image" })} className="block">
+                      <button key={i} onClick={() => onOpenMedia?.({ name: a.name, url: a.url, type: "image" })} className="block">
                         <img src={a.url} alt={a.name} className="h-20 w-28 object-cover rounded-md border" style={{ borderColor: GREY }} />
                       </button>
                     ))}

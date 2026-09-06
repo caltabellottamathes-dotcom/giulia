@@ -17,7 +17,9 @@ export default function ChatMessageText({ text, linkColor, onOpenMedia }) {
     if (m.index > last) out.push(<span key={k++}>{text.slice(last, m.index)}</span>);
     const url = m[0].replace(/[)\]>"'.,;:!?]+$/, "");
     const ext = url.split(".").pop().split("?")[0].toLowerCase();
-    if (IMG_EXT.includes(ext)) {
+    const isImage = IMG_EXT.includes(ext) || /format=(jpe?g|png|webp|gif)/i.test(url);
+    const isVideo = VID_EXT.includes(ext);
+    if (isImage) {
       out.push(
         <span key={k++} className="mt-1.5 mb-0.5 block">
           <button
@@ -30,8 +32,8 @@ export default function ChatMessageText({ text, linkColor, onOpenMedia }) {
           </button>
         </span>
       );
-    } else if (VID_EXT.includes(ext) || AUD_EXT.includes(ext) || ext === "pdf") {
-      const type = VID_EXT.includes(ext) ? "video" : AUD_EXT.includes(ext) ? "audio" : "doc";
+    } else if (isVideo || AUD_EXT.includes(ext) || ext === "pdf") {
+      const type = isVideo ? "video" : AUD_EXT.includes(ext) ? "audio" : "doc";
       out.push(
         <button key={k++} type="button" onClick={() => onOpenMedia?.({ name: "Mattia", url, type })}
           className="underline underline-offset-2 hover:opacity-70 transition break-all" style={{ color: linkColor }}>

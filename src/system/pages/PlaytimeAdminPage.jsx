@@ -22,6 +22,11 @@ export default function PlaytimeAdminPage() {
   const [description, setDescription] = useState("");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
+  const [subreddit, setSubreddit] = useState("");
+  const [subSort, setSubSort] = useState("hot");
+  const [twQuery, setTwQuery] = useState("");
+  const [srcBusy, setSrcBusy] = useState(null);
+  const [srcResult, setSrcResult] = useState(null);
   const [images, setImages] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -59,6 +64,42 @@ export default function PlaytimeAdminPage() {
       setResult({ error: String((e && e.message) || e) });
     }
     setBusy(false);
+  };
+
+  const scrapeReddit = async () => {
+    if (!subreddit.trim() || !category.trim() || srcBusy) return;
+    setSrcBusy("reddit");
+    setSrcResult(null);
+    try {
+      const res = await base44.functions.invoke("scrape_reddit_media", {
+        subreddit: subreddit.trim(), category: category.trim().toLowerCase(), sort: subSort,
+      });
+      const d = res?.data || res;
+      setSrcResult(d?.error ? d : { ...d, ok: true });
+      await load();
+    } catch (e) {
+      setSrcResult({ error: String((e && e.message) || e) });
+    }
+    setSrcBusy(null);
+  };
+
+  const scrapeTwitter = async () => {
+    const q = twQuery.trim();
+    if (!q || !category.trim() || srcBusy) return;
+    setSrcBusy("twitter");
+    setSrcResult(null);
+    try {
+      const payload = { category: category.trim().toLowerCase() };
+      if (q.startsWith("@")) payload.username = q.replace(/^@/, "");
+      else payload.query = q;
+      const res = await base44.functions.invoke("scrape_twitter_media", payload);
+      const d = res?.data || res;
+      setSrcResult(d?.error ? d : { ...d, ok: true });
+      await load();
+    } catch (e) {
+      setSrcResult({ error: String((e && e.message) || e) });
+    }
+    setSrcBusy(null);
   };
 
   const cats = [...new Set(images.map((i) => (i.category || "").toLowerCase()).filter(Boolean))].sort();
@@ -126,6 +167,53 @@ export default function PlaytimeAdminPage() {
               <PlaytimeCategoryBrowser images={images} categories={categories} loading={loading} onRefresh={load} />
             </div>
           </div>
+        </div>
+
+        {/* Reddit & Twitter — third-party scrapers */}
+        <div className="mt-6 rounded-2xl border p-6" style={{ borderColor: GREY, background: "rgba(255,255,255,0.65)" }}>
+          <h2 className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>Reddit &amp; Twitter scrapen</h2>
+          <p className="font-body text-[12px] leading-[1.5] mt-2" style={{ color: INK }}>
+            Haal foto's én video's uit een subreddit of van X. Ze worden opgeslagen onder de categorie hierboven.
+          </p>
+          <div className="mt-5 grid md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <div>
+                <label className={labelCls} style={{ color: INK }}>Subreddit (zonder r/)</label>
+                <input value={subreddit} onChange={(e) => setSubreddit(e.target.value)} placeholder="bv. hairyarmpits" className={inputCls} style={{ borderColor: GREY }} />
+              </div>
+              <div className="flex items-end gap-3">
+                <div>
+                  <label className={labelCls} style={{ color: INK }}>Sortering</label>
+                  <select value={subSort} onChange={(e) => setSubSort(e.target.value)} className="bg-transparent border-b focus:outline-none px-1 py-1.5 font-body text-[14px] text-black" style={{ borderColor: GREY }}>
+                    <option value="hot">hot</option>
+                    <option value="new">new</option>
+                    <option value="top">top</option>
+                  </select>
+                </div>
+                <button onClick={scrapeReddit} disabled={!subreddit.trim() || !category.trim() || !!srcBusy} className="font-mono text-[10px] uppercase tracking-[0.18em] hover:underline transition disabled:opacity-30" style={{ color: BLACK }}>
+                  {srcBusy === "reddit" ? "Scrapen…" : "Scrape subreddit"}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className={labelCls} style={{ color: INK }}>Zoekterm of @gebruiker (X)</label>
+                <input value={twQuery} onChange={(e) => setTwQuery(e.target.value)} placeholder="bv. hairy men of @gebruiker" className={inputCls} style={{ borderColor: GREY }} />
+              </div>
+              <div>
+                <button onClick={scrapeTwitter} disabled={!twQuery.trim() || !category.trim() || !!srcBusy} className="font-mono text-[10px] uppercase tracking-[0.18em] hover:underline transition disabled:opacity-30" style={{ color: BLACK }}>
+                  {srcBusy === "twitter" ? "Scrapen…" : "Scrape X"}
+                </button>
+              </div>
+            </div>
+          </div>
+          {srcResult && !srcBusy && (
+            <p className="font-body text-[12px] leading-[1.5] mt-4" style={{ color: srcResult.error ? "#b03a2e" : "#3d6b35" }}>
+              {srcResult.error
+                ? srcResult.error
+                : `Klaar: ${srcResult.added} toegevoegd · ${srcResult.skipped_duplicates || 0} duplicaten overgeslagen · ${srcResult.images || 0} foto('s) · ${srcResult.videos || 0} video('s).`}
+            </p>
+          )}
         </div>
       </div>
     </div>

@@ -40,9 +40,6 @@ export default function MediaStage() {
         setLibraryFilter(cmd.kind || null);
         setLibraryQuery(cmd.query || "");
         setTab("library"); closeMedia();
-      } else if (cmd.type === "show_media") {
-        setTab("library");
-        previewMedia({ name: cmd.name || "bestand", url: cmd.url, type: cmd.kind || "image" });
       }
     };
     window.addEventListener("playtime:media-command", h);
