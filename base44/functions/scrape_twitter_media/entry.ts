@@ -5,12 +5,14 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.46';
  * en slaat de directe media-URL's (foto's en video's) op in de
  * PlaytimeImages-collectie met source="twitter".
  *
- * Twee routes, automatisch na elkaar:
+ * Drie routes, automatisch na elkaar:
  *   1. Scrape Creators API (SCRAPECREATORS_API_KEY) — werkt voor gewone accounts.
- *   2. X-mirror (twstalker.com) via de lokale bridge (BRIDGE_URL + BRIDGE_TOKEN) —
- *      de mirror ziet ook leeftijdsbeperkte (18+) en 'onzichtbare' accounts. De
- *      bridge haalt de pagina's op vanaf het thuis-IP zodat Cloudflare ze doorlaat.
- *      Alleen de media in de posts (foto's/video's) wordt opgeslagen, geen tweets.
+ *   2. SocialData API (SOCIALDATA_API_KEY) — haalt ook leeftijdsbeperkte (18+)
+ *      en 'onzichtbare' accounts op; betaald per resultaat, geen bridge nodig.
+ *   3. X-mirror (twstalker.com) via de bridge (BRIDGE_URL + BRIDGE_TOKEN) —
+ *      werkt alléén als de bridge op een thuis-IP draait; datacenter-IP's
+ *      (Render e.d.) blokkeert Cloudflare hard. Alleen de media in de posts
+ *      (foto's/video's) wordt opgeslagen, geen tweets.
  * Input: username (@handle), category, limit (optioneel, default 100).
  * Zoeken op trefwoord ondersteunt geen van beide routes — alleen @gebruiker.
  */
@@ -75,7 +77,7 @@ function mediaListOf(t) {
 }
 
 function tweetIdOf(t) {
-  return t?.id || t?.rest_id || t?.legacy?.id_str || t?.tweet?.rest_id || t?.tweet?.legacy?.id_str || null;
+  return t?.id || t?.rest_id || t?.id_str || t?.legacy?.id_str || t?.tweet?.rest_id || t?.tweet?.legacy?.id_str || null;
 }
 function handleOf(t, fallback) {
   return t?.author?.userName || t?.author?.handle || t?.author?.screen_name
@@ -85,7 +87,76 @@ function textOf(t) {
   return t?.text || t?.legacy?.full_text || t?.tweet?.legacy?.full_text || t?.tweet?.text || "";
 }
 
-// ── Route 2: X-mirror (twstalker) via de lokale bridge ────────────────────
+// Media-records uit een array tweets — gedeeld door Scrape Creators en
+// SocialData: foto's als grootste variant, video's als ~720p mp4.
+function recordsFromTweets(tweets, category, seen, handle) {
+  const records = [];
+  let found = 0;
+  let skipped = 0;
+  for (const t of tweets) {
+    const media = mediaListOf(t);
+    const author = handleOf(t, handle);
+    const id = tweetIdOf(t);
+    const postUrl = id ? "https://x.com/" + author + "/status/" + id : null;
+    for (const m of media) {
+      const type = String(m?.type || "").toLowerCase();
+      let url = null;
+      let kind = "image";
+      if (type === "photo") {
+        url = largePhoto(m?.url || m?.media_url_https || m?.preview_image_url || m?.media_url);
+      } else {
+        // video of gif — pak de beste mp4, anders de preview als foto
+        url = bestMp4(m) || decodeUrl(m?.url || "");
+        kind = VID_EXT.includes(extOf(url)) ? "video" : null;
+        if (!kind) url = m?.preview_image_url || m?.media_url_https ? largePhoto(m?.preview_image_url || m?.media_url_https) : null;
+      }
+      if (!url) continue;
+      const clean = decodeUrl(url);
+      if (!/^https?:\/\//.test(clean)) continue;
+      found++;
+      if (seen.has(clean)) { skipped++; continue; }
+      seen.add(clean);
+      records.push({
+        category,
+        image_url: clean,
+        gallery_url: postUrl || undefined,
+        description: String(textOf(t)).slice(0, 300),
+        source: "twitter",
+        kind,
+        created_at: new Date().toISOString(),
+      });
+    }
+  }
+  return { records: records, found: found, skipped: skipped };
+}
+
+// ── Route 2: SocialData API — leeftijdsbeperkte (18+) accounts ────────────
+async function scrapeViaSocialData(username, category, seen, limit) {
+  const key = process.env.SOCIALDATA_API_KEY;
+  if (!key) {
+    return { error: "voeg de secret SOCIALDATA_API_KEY toe — maak een account op socialdata.tools (proeftegoed, geen creditcard) en plak de API-key in de app-secrets" };
+  }
+  const H = { Authorization: "Bearer " + key, Accept: "application/json" };
+  const pr = await fetch("https://api.socialdata.tools/twitter/user/" + encodeURIComponent(username), { headers: H }).catch(() => null);
+  if (!pr) return { error: "socialdata.tools onbereikbaar" };
+  if (pr.status === 401) return { error: "socialdata API-key ongeldig" };
+  if (pr.status === 402) return { error: "saldo bij socialdata.tools is op" };
+  if (pr.status === 404) return { error: "@" + username + " niet gevonden bij socialdata.tools" };
+  const profile = await pr.json().catch(() => null);
+  const uid = profile?.id_str || profile?.id;
+  if (!uid) return { error: "socialdata.tools gaf geen profiel terug voor @" + username };
+  const tr = await fetch("https://api.socialdata.tools/twitter/user/" + uid + "/tweets", { headers: H }).catch(() => null);
+  if (!tr || !tr.ok) return { error: "socialdata.tools fout bij tweets ophalen (HTTP " + (tr ? tr.status : "onbereikbaar") + ")" };
+  const tj = await tr.json().catch(() => null);
+  const tweets = (Array.isArray(tj) ? tj : (tj?.tweets || [])).filter(Boolean).slice(0, limit);
+  const out = recordsFromTweets(tweets, category, seen, username);
+  if (!out.records.length) {
+    return { error: out.found ? "de media van @" + username + " stond er al in — niets nieuws toegevoegd" : "geen media gevonden in de laatste " + tweets.length + " posts van @" + username + " bij socialdata.tools" };
+  }
+  return { records: out.records, found: out.found, posts: tweets.length, skipped_duplicates: out.skipped };
+}
+
+// ── Route 3: X-mirror (twstalker) via de bridge ──────────────────────────
 
 async function bridgeFetch(url) {
   const bridge = String(process.env.BRIDGE_URL || "").replace(/\/$/, "");
@@ -257,43 +328,10 @@ export default async function (req) {
       scNote = "geen SCRAPECREATORS_API_KEY ingesteld";
     }
 
-    const records = [];
-    let found = 0;
-    let skipped = 0;
-    for (const t of tweets) {
-      const media = mediaListOf(t);
-      const handle = handleOf(t, username);
-      const id = tweetIdOf(t);
-      const postUrl = id ? "https://x.com/" + handle + "/status/" + id : null;
-      for (const m of media) {
-        const type = String(m?.type || "").toLowerCase();
-        let url = null;
-        let kind = "image";
-        if (type === "photo") {
-          url = largePhoto(m?.url || m?.media_url_https || m?.preview_image_url || m?.media_url);
-        } else {
-          // video of gif — pak de beste mp4, anders de preview als foto
-          url = bestMp4(m) || decodeUrl(m?.url || "");
-          kind = VID_EXT.includes(extOf(url)) ? "video" : null;
-          if (!kind) url = m?.preview_image_url || m?.media_url_https ? largePhoto(m?.preview_image_url || m?.media_url_https) : null;
-        }
-        if (!url) continue;
-        const clean = decodeUrl(url);
-        if (!/^https?:\/\//.test(clean)) continue;
-        found++;
-        if (seen.has(clean)) { skipped++; continue; }
-        seen.add(clean);
-        records.push({
-          category,
-          image_url: clean,
-          gallery_url: postUrl || undefined,
-          description: String(textOf(t)).slice(0, 300),
-          source: "twitter",
-          kind,
-          created_at: new Date().toISOString(),
-        });
-      }
-    }
+    const out = recordsFromTweets(tweets, category, seen, username);
+    const records = out.records;
+    const found = out.found;
+    const skipped = out.skipped;
 
     if (records.length) {
       let added = 0;
@@ -316,11 +354,36 @@ export default async function (req) {
       });
     }
 
-    // ── Route 2: X-mirror via de bridge — 18+/leeftijdsbeperkte accounts ──
+    // ── Route 2: SocialData — 18+/leeftijdsbeperkte accounts ──────────────
+    const sd = await scrapeViaSocialData(username, category, seen, limit);
+    if (sd.records?.length) {
+      let sdAdded = 0;
+      for (let i = 0; i < sd.records.length; i += 100) {
+        const chunk = sd.records.slice(i, i + 100);
+        const created = await base44.asServiceRole.entities.PlaytimeImages.bulkCreate(chunk).catch(() => null);
+        sdAdded += Array.isArray(created) ? created.length : chunk.length;
+      }
+      return Response.json({
+        ok: true,
+        via: "socialdata",
+        username: "@" + username,
+        category,
+        posts: sd.posts,
+        found: sd.found,
+        added: sdAdded,
+        skipped_duplicates: sd.skipped_duplicates || 0,
+        images: sd.records.filter((r) => r.kind === "image").length,
+        videos: sd.records.filter((r) => r.kind === "video").length,
+      });
+    }
+
+    // ── Route 3: X-mirror via de bridge — laatste redmiddel ────────────────
     const mirror = await scrapeViaMirror(username, category, seen, limit);
     if (mirror.error) {
       return Response.json({
-        error: String(mirror.error) + (scNote ? " (Scrape Creators gaf: " + scNote + ")" : ""),
+        error: "SocialData gaf niets" + (sd.error ? " — " + sd.error : "")
+          + ", en de X-mirror is geblokkeerd: " + String(mirror.error)
+          + (scNote ? " (Scrape Creators gaf: " + scNote + ")" : ""),
       }, { status: 502 });
     }
     let mAdded = 0;
