@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "express": "^4.19.2",
+    "playwright": "^1.49.1",
     "imapflow": "^1.0.182",
     "mailparser": "^3.7.1",
     "nodemailer": "^6.9.14"

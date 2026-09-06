@@ -26,10 +26,14 @@ function largePhoto(u) {
   return String(u || "").replace(/([?&])name=\w+/, "$1name=large");
 }
 
-// Beste mp4-variant uit een video/gif-media-object (GraphQL en genormaliseerd)
+// Beste mp4-variant uit een video/gif-media-object (GraphQL en genormaliseerd).
+// Voorkeur voor ~720p (bitrate <= 2,6 Mbps): scherp genoeg op het scherm en
+// laadt in de MediaStage een paar keer sneller dan de zwaarste 1080p-variant.
 function bestMp4(m) {
   const variants = m?.variants || m?.videoVariants || m?.video_info?.variants || [];
+  const CAP = 2600000;
   let best = null;
+  let overall = null;
   for (const v of variants) {
     const src = decodeUrl(v?.src || v?.url || v?.content_url || "");
     if (!src) continue;
@@ -37,9 +41,10 @@ function bestMp4(m) {
     const isMp4 = /\.mp4(\?|$)/i.test(src) || ctype.includes("mp4");
     if (!isMp4) continue;
     const br = Number(v?.bitrate || v?.bit_rate || 0);
-    if (!best || br > best.br) best = { url: src, br };
+    if (!overall || br > overall.br) overall = { url: src, br };
+    if (br > 0 && br <= CAP && (!best || br > best.br)) best = { url: src, br };
   }
-  return best?.url || null;
+  return (best || overall)?.url || null;
 }
 
 // Genormaliseerde lijst of ruwe GraphQL-timeline -> platte tweet-array
@@ -131,15 +136,18 @@ function mediaFromPostBlock(html) {
   }
   // Video — "Download Video"-links naar video-s.twimg.com mp4, hoogste resolutie
   const vidRe = /https:\/\/video[^"'\s<>]+\.mp4[^"'\s<>]*/g;
-  let bestVid = null;
+  let bestVid = null;   // hoogste tot ~720p — laadt vlot in de MediaStage
+  let anyVid = null;    // terugval als alleen groter (of onbekend) beschikbaar is
   let vm;
   while ((vm = vidRe.exec(html)) !== null) {
     const v = decodeUrl(vm[0]);
     const dim = v.match(/(\d{2,5})x(\d{2,5})/);
     const px = dim ? Number(dim[1]) * Number(dim[2]) : 0;
-    if (!bestVid || px > bestVid.px) bestVid = { url: v, px: px };
+    if (!anyVid || px > anyVid.px) anyVid = { url: v, px: px };
+    if (px > 0 && px <= 1280 * 720 && (!bestVid || px > bestVid.px)) bestVid = { url: v, px: px };
   }
-  if (bestVid) out.push({ url: bestVid.url, kind: "video", desc: desc });
+  const pick = bestVid || anyVid;
+  if (pick) out.push({ url: pick.url, kind: "video", desc: desc });
   return out;
 }
 
@@ -148,7 +156,7 @@ async function scrapeViaMirror(username, category, seen, limit) {
   if (profile.error) return profile;
   const body = profile.body || "";
   if (profile.status === 403 || profile.status === 503 || body.indexOf("Just a moment") !== -1) {
-    return { error: "De X-mirror blokkeert dit verkeer met een Cloudflare-controle. Start de bridge op je eigen computer (opnieuw) en probeer het nog eens — vanaf je thuis-IP laat de mirror het normaal door." };
+    return { error: "De X-mirror blokkeert alles wat niet op een echte browser lijkt — ook curl vanaf je thuis-IP. Installeer eenmalig een echte browser in de bridge-map: 'npm i playwright' (alleen als je geen Chrome/Edge hebt: 'npx playwright install chromium'), herstart de bridge en probeer opnieuw." };
   }
   if (profile.status === 404 || body.indexOf("images/error.png") !== -1 || body.toLowerCase().indexOf("user not found") !== -1) {
     return { error: "@" + username + " niet gevonden op de X-mirror — de account bestaat niet, is privé of afgesloten." };

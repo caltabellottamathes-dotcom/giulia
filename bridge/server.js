@@ -184,13 +184,51 @@ const execFileP = (cmd, args) => new Promise((resolve) => {
 });
 const JAR_PATH = require('path').join(__dirname, 'cookies.txt');
 
+// ── Playwright: echte Chromium-browser (optioneel) ──────────────────────
+// Cloudflare blokkeert óók curl op TLS-vingerafdruk ("Attention Required").
+// Een echte Chromium vanaf het thuis-IP passeert dezelfde controle als je
+// eigen browser en lost een "Just a moment"-check vanzelf op (JS draait).
+// Eénmalig in de bridge-map:   npm i playwright
+// Alleen zonder Chrome/Edge:  npx playwright install chromium
+let _pwCtx = null;
+async function pwFetch(url) {
+  const { chromium } = require('playwright');
+  if (!_pwCtx) {
+    const profileDir = require('path').join(__dirname, 'pw-profile');
+    const args = ['--disable-blink-features=AutomationControlled'];
+    for (const opts of [{ channel: 'chrome' }, { channel: 'msedge' }, {}]) {
+      try {
+        _pwCtx = await chromium.launchPersistentContext(profileDir, { headless: true, args, ...opts });
+        break;
+      } catch { _pwCtx = null; }
+    }
+    if (!_pwCtx) throw new Error('geen bruikbare browser — playwright geïnstalleerd en chromium gedownload?');
+    _pwCtx.on('close', () => { _pwCtx = null; });
+  }
+  const page = await _pwCtx.newPage();
+  try {
+    const resp = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
+    try {
+      // Wacht max 20s tot een eventuele Cloudflare-check klaar is
+      await page.waitForFunction(
+        () => !/just a moment|attention required|verifying/i.test(document.title),
+        { timeout: 20000 }
+      );
+    } catch { /* geen challenge, of de titel verandert niet */ }
+    const body = await page.content();
+    return { status: (resp && resp.status()) || 200, body };
+  } finally {
+    await page.close().catch(() => {});
+  }
+}
+
 app.post('/fetch', auth, async (req, res) => {
   try {
     const url = String((req.body && req.body.url) || '');
     if (!/^https?:\/\//i.test(url)) return res.status(400).json({ error: 'url required' });
     const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
-    // 1) curl — browser-achtige fingerprint (Windows: schannel-TLS, Linux: OpenSSL)
+    // 1) curl — browser-achtige headers (Windows: schannel-TLS, Linux: OpenSSL)
     const out = await execFileP('curl', [
       '-s', '-L', '--max-time', '40', '--compressed',
       '-b', JAR_PATH, '-c', JAR_PATH,
@@ -208,10 +246,21 @@ app.post('/fetch', auth, async (req, res) => {
       const m = out.match(/\n__HTTP__(\d{3})\s*$/);
       const code = m ? Number(m[1]) : 0;
       const body = m ? out.slice(0, m.index) : out;
-      if (body) return res.json({ status: code || 200, body: body, client: 'curl' });
+      if (body && code === 200 && !/just a moment|attention required|verifying your browser/i.test(body)) {
+        return res.json({ status: 200, body, client: 'curl' });
+      }
     }
 
-    // 2) terugval op Node-fetch
+    // 2) echte browser (playwright) — komt door Cloudflare heen
+    try {
+      const b = await pwFetch(url);
+      return res.json({ status: b.status, body: b.body, client: 'browser' });
+    } catch (e) {
+      if (!/Cannot find module/.test(String((e && e.message) || e))) _pwCtx = null;
+      /* playwright ontbreekt of faalde → terugval hieronder */
+    }
+
+    // 3) terugval op Node-fetch
     const r = await fetch(url, {
       headers: {
         'User-Agent': UA,

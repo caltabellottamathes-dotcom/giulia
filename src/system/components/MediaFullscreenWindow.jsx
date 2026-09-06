@@ -333,6 +333,7 @@ export default function MediaFullscreenWindow() {
             autoPlay
             preload="auto"
             controls
+            playsInline
             onPlay={onPlay}
             onPause={onPause}
             onEnded={onEnded}
