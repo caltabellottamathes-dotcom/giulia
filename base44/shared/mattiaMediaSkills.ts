@@ -14,6 +14,7 @@
  */
 import { geminiGenerate } from './gemini.ts';
 import { buildImageParts } from './imageParts.ts';
+import { ifapFetchText, ifapFullUrl } from './imagefap.ts';
 
 const IMG_EXTS = ["png", "jpg", "jpeg", "gif", "webp"];
 const VID_EXTS = ["mp4", "mov", "webm", "mkv"];
@@ -163,6 +164,64 @@ export const MATTIA_MEDIA_SKILLS = [
           photo: pick.filename,
           folder: pick.folder || "",
           media_command: { type: "show_media", url: pick.file_url, name: pick.filename, kind: "image" },
+        };
+      } catch (e) {
+        return { error: String((e && e.message) || e) };
+      }
+    },
+  },
+  {
+    name: "get_playtime_image",
+    description:
+      "Haal één willekeurige foto uit de gescrapte Playtime-collectie op basis van categorie. Beschikbare categorieën zijn o.a.: hairy, gaping, piss, somno, arab, bbw, fisting, gay, incest, selfsuck, cruising, public, fat, ftm, breeding — plus elke andere categorie die in de collectie zit. De foto wordt direct groot getoond op het scherm (de stage opent automatisch) én je krijgt de image_url terug — noem die ook kort in je antwoord zodat de link klikbaar is. Is er voor de categorie niets, dan krijg je een duidelijke melding; zeg dat eerlijk tegen Salvo.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        category: { type: "string", description: "categorie: hairy, gaping, piss, somno, arab, bbw, fisting, gay, incest, selfsuck, cruising, public, fat, ftm, breeding, …" },
+      },
+      required: ["category"],
+    },
+    execute: async (args, base44) => {
+      try {
+        const sr = base44.asServiceRole;
+        const q = String(args?.category || "").trim().toLowerCase();
+        if (!q) return { error: "categorie vereist" };
+        let matches = await sr.entities.PlaytimeImages.filter({ category: q }, "-created_date", 200).catch(() => []);
+        // Vangnet: geen exacte match → recentste 200 checken op kleine letters
+        if (!matches || !matches.length) {
+          const recent = await sr.entities.PlaytimeImages.list("-created_date", 200).catch(() => []);
+          matches = (recent || []).filter((it) => String(it.category || "").toLowerCase() === q);
+        }
+        if (!matches.length) {
+          return {
+            status: `geen foto's beschikbaar voor categorie '${q}'`,
+            found: 0,
+            message: `Er staat nog geen Playtime-foto met categorie '${q}' in de collectie. Zeg dat tegen Salvo en stel voor een galerij met die categorie toe te voegen via de Media Admin.`,
+          };
+        }
+        const pick = matches[Math.floor(Math.random() * matches.length)];
+        let url = pick.image_url;
+        // CDN-links zijn token-gebonden en verlopen — via de fotopagina een
+        // verse full-URL oplossen en het record bijwerken.
+        if (pick.photo_url) {
+          try {
+            const html = await ifapFetchText(pick.photo_url, 10000);
+            const idm = String(pick.photo_url).match(/photo\/(\d{1,15})/i) || String(pick.photo_url).match(/pid=(\d{1,15})/i);
+            const fresh = ifapFullUrl(html, idm && idm[1]);
+            if (fresh) {
+              url = fresh;
+              sr.entities.PlaytimeImages.update(pick.id, { image_url: fresh }).catch(() => null);
+            }
+          } catch {
+            /* val terug op de opgeslagen url */
+          }
+        }
+        return {
+          status: `foto getoond: ${pick.category}`,
+          found: matches.length,
+          category: pick.category,
+          image_url: url,
+          media_command: { type: "show_media", url, name: pick.category, kind: "image" },
         };
       } catch (e) {
         return { error: String((e && e.message) || e) };

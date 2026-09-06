@@ -18,6 +18,7 @@ const RELATED = [
   { label: "Mattia Chat", to: "/chat" },
   { label: "Memory", to: "/memory" },
   { label: "Approvals", to: "/approvals" },
+  { label: "Media Admin", to: "/playtime-admin" },
 ];
 
 /** PlayTimePage — de /playtime pagina. Eén functie: MattiaVoice. Lay-out

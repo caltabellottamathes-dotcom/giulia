@@ -1,0 +1,46 @@
+{
+  "name": "PlaytimeImages",
+  "type": "object",
+  "title": "PlaytimeImages",
+  "description": "Gescrapte Playtime-foto's per categorie (hairy, gaping, piss, somno, arab, bbw, fisting, gay, incest, selfsuck, cruising, public, fat, ftm, breeding, \u2026). Gevuld door scrape_imagefap_gallery; Mattia haalt ze op via get_playtime_image.",
+  "properties": {
+    "category": {
+      "type": "string",
+      "title": "Categorie",
+      "description": "Kleine letters, bv. hairy, gaping, piss, somno, arab, bbw, fisting, gay, incest, selfsuck, cruising, public, fat, ftm, breeding."
+    },
+    "image_url": {
+      "type": "string",
+      "format": "uri",
+      "title": "Image URL",
+      "description": "Directe link naar de afbeelding."
+    },
+    "gallery_url": {
+      "type": "string",
+      "format": "uri",
+      "title": "Gallery URL",
+      "description": "De ImageFap-galerij waar deze foto vandaan komt."
+    },
+    "description": {
+      "type": "string",
+      "title": "Beschrijving",
+      "description": "Optionele beschrijving van de galerij/foto."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Aangemaakt op",
+      "description": "Moment van het scrapen."
+    }
+  },
+  "required": [
+    "category",
+    "image_url"
+  ],
+  "rls": {
+    "create": true,
+    "read": true,
+    "update": true,
+    "delete": true
+  }
+}
