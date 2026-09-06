@@ -178,7 +178,7 @@ export default function PlaytimeAdminPage() {
         <div className="mt-6 rounded-2xl border p-6" style={{ borderColor: GREY, background: "rgba(255,255,255,0.65)" }}>
           <h2 className="font-mono text-[10px] tracking-[0.18em] uppercase" style={{ color: BLUE }}>Reddit &amp; Twitter scrapen</h2>
           <p className="font-body text-[12px] leading-[1.5] mt-2" style={{ color: INK }}>
-            Haal foto's én video's uit een subreddit of van een X-gebruiker — de Reddit-scraper loopt automatisch alle beschikbare pagina's door.
+            Haal foto's én video's uit een subreddit of van een X-gebruiker — de Reddit-scraper loopt automatisch alle beschikbare pagina's door. Voor leeftijdsbeperkte (18+) X-accounts valt de scraper automatisch terug op een mirror die via je lokale bridge loopt — alleen de media in de posts wordt opgeslagen, geen tweets.
           </p>
           <div className="mt-5 grid md:grid-cols-2 gap-8">
             <div className="space-y-4">

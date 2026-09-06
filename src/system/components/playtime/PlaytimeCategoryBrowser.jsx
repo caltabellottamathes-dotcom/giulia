@@ -114,6 +114,46 @@ export default function PlaytimeCategoryBrowser({ images, categories, loading, o
     });
   };
 
+  // Hele categorie (incl. subcategorieën en foto's) ónder een andere categorie hangen
+  const nestCat = async (path, parent) => {
+    const seg = path.split("/");
+    const newPath = parent ? `${parent}/${seg[seg.length - 1]}` : seg[seg.length - 1];
+    if (busy || newPath === path) return;
+    setBusy(true);
+    const cat = (it) => String(it.category || "").toLowerCase();
+    const imgMoves = (images || [])
+      .filter((it) => cat(it) === path || cat(it).startsWith(path + "/"))
+      .map((it) => ({ id: it.id, category: newPath + cat(it).slice(path.length) }));
+    if (imgMoves.length) await base44.entities.PlaytimeImages.bulkUpdate(imgMoves).catch(() => {});
+    const catMoves = (categories || [])
+      .filter((rec) => { const n = String(rec.name || "").toLowerCase(); return n === path || n.startsWith(path + "/"); })
+      .map((rec) => {
+        const nn = newPath + String(rec.name || "").toLowerCase().slice(path.length);
+        return { id: rec.id, name: nn, parent: nn.includes("/") ? nn.split("/").slice(0, -1).join("/") : "" };
+      });
+    if (catMoves.length) await base44.entities.PlaytimeCategory.bulkUpdate(catMoves).catch(() => {});
+    setSelCat(newPath);
+    await onRefresh();
+    setBusy(false);
+  };
+
+  // Categorie (incl. subcategorieën en foto's) samenvoegen met een andere categorie
+  const mergeCat = async (path, target) => {
+    if (busy || !target || target === path || target.startsWith(path + "/")) return;
+    setBusy(true);
+    const cat = (it) => String(it.category || "").toLowerCase();
+    const imgMoves = (images || [])
+      .filter((it) => cat(it) === path || cat(it).startsWith(path + "/"))
+      .map((it) => ({ id: it.id, category: target + cat(it).slice(path.length) }));
+    if (imgMoves.length) await base44.entities.PlaytimeImages.bulkUpdate(imgMoves).catch(() => {});
+    for (const p of descendantsOf(path)) {
+      await base44.entities.PlaytimeCategory.deleteMany({ name: p }).catch(() => {});
+    }
+    setSelCat(target);
+    await onRefresh();
+    setBusy(false);
+  };
+
   const dropOn = (cat) => (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -170,6 +210,32 @@ export default function PlaytimeCategoryBrowser({ images, categories, loading, o
               className="w-full bg-transparent border-b font-body text-[12px] text-black placeholder:text-black/35 focus:outline-none" style={{ borderColor: GREY }} />
           </div>
           <button onClick={addSub} disabled={busy || !newSub.trim()} className="font-mono text-[10px] uppercase tracking-[0.18em] hover:underline transition disabled:opacity-30 pb-1" style={{ color: BLACK }}>Aanmaken</button>
+        </div>
+
+        <div className="flex flex-wrap items-end gap-6 border-b pb-3 mt-3" style={{ borderColor: GREY }}>
+          {(() => {
+            const targets = allCats.filter((c) => c !== selCat && !c.startsWith(selCat + "/"));
+            const selCls = "bg-transparent border-b font-body text-[12px] text-black focus:outline-none max-w-full";
+            return targets.length > 0 || parent ? (
+              <>
+                <div>
+                  <label className="block font-mono text-[9px] uppercase tracking-[0.18em] mb-1" style={{ color: INK }}>Categorie onder een andere hangen</label>
+                  <select value="" disabled={busy} onChange={(e) => { const v = e.target.value; e.target.value = ""; if (v) nestCat(selCat, v === "__hoofd__" ? "" : v); }} className={selCls} style={{ borderColor: GREY }}>
+                    <option value="">— kies bovenliggende categorie —</option>
+                    {targets.map((c) => <option key={c} value={c}>{c}</option>)}
+                    {parent && <option value="__hoofd__">— naar hoofdniveau —</option>}
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-mono text-[9px] uppercase tracking-[0.18em] mb-1" style={{ color: INK }}>Samenvoegen met categorie</label>
+                  <select value="" disabled={busy} onChange={(e) => { const v = e.target.value; e.target.value = ""; if (v) mergeCat(selCat, v); }} className={selCls} style={{ borderColor: GREY }}>
+                    <option value="">— kies doelcategorie —</option>
+                    {targets.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+              </>
+            ) : null;
+          })()}
         </div>
 
         <div className="flex justify-between items-center gap-3 border-b pb-2 mt-2" style={{ borderColor: GREY }}>

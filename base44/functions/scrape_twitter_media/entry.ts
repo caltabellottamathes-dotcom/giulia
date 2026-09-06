@@ -1,15 +1,18 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.46';
 
 /**
- * scrape_twitter_media — haalt de media-tweets van een X/Twitter-gebruiker
- * op via de Scrape Creators API (zelfde API-key als de Reddit-scraper;
- * TwitterAPI.io is vervallen omdat die volledig betalend is). Slaat de
- * directe media-URL's (foto's én video's) op in de bestaande
+ * scrape_twitter_media — haalt de media uit de posts van een X/Twitter-gebruiker
+ * en slaat de directe media-URL's (foto's en video's) op in de
  * PlaytimeImages-collectie met source="twitter".
- * Input: username (@handle), category, limit (optioneel, default 100).
- * Zoeken op trefwoord ondersteunt deze API niet — alleen @gebruiker.
  *
- * Benodigde secret: SCRAPECREATORS_API_KEY (app.scrapecreators.com).
+ * Twee routes, automatisch na elkaar:
+ *   1. Scrape Creators API (SCRAPECREATORS_API_KEY) — werkt voor gewone accounts.
+ *   2. X-mirror (twstalker.com) via de lokale bridge (BRIDGE_URL + BRIDGE_TOKEN) —
+ *      de mirror ziet ook leeftijdsbeperkte (18+) en 'onzichtbare' accounts. De
+ *      bridge haalt de pagina's op vanaf het thuis-IP zodat Cloudflare ze doorlaat.
+ *      Alleen de media in de posts (foto's/video's) wordt opgeslagen, geen tweets.
+ * Input: username (@handle), category, limit (optioneel, default 100).
+ * Zoeken op trefwoord ondersteunt geen van beide routes — alleen @gebruiker.
  */
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 const VID_EXT = ["mp4", "mov", "webm", "m4v", "mkv"];
@@ -39,7 +42,7 @@ function bestMp4(m) {
   return best?.url || null;
 }
 
-// Genormaliseerde lijst óf ruwe GraphQL-timeline → platte tweet-array
+// Genormaliseerde lijst of ruwe GraphQL-timeline -> platte tweet-array
 function normalizeTweets(json) {
   if (Array.isArray(json?.tweets)) return json.tweets.filter(Boolean);
   if (Array.isArray(json?.data?.tweets)) return json.data.tweets.filter(Boolean);
@@ -77,6 +80,130 @@ function textOf(t) {
   return t?.text || t?.legacy?.full_text || t?.tweet?.legacy?.full_text || t?.tweet?.text || "";
 }
 
+// ── Route 2: X-mirror (twstalker) via de lokale bridge ────────────────────
+
+async function bridgeFetch(url) {
+  const bridge = String(process.env.BRIDGE_URL || "").replace(/\/$/, "");
+  const token = process.env.BRIDGE_TOKEN;
+  if (!bridge || !token) {
+    return { error: "De X-mirror-route loopt via je lokale bridge (BRIDGE_URL/BRIDGE_TOKEN) en die is niet ingesteld in de app-secrets." };
+  }
+  try {
+    const r = await fetch(bridge + "/fetch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      body: JSON.stringify({ url: url }),
+    });
+    const d = await r.json().catch(() => null);
+    if (r.status === 404) {
+      return { error: "De bridge draait nog een oude versie zonder de nieuwe fetch-route — herstart de bridge met de nieuwste server.js." };
+    }
+    if (!r.ok || !d || typeof d.body !== "string") {
+      return { error: "Bridge-fout (HTTP " + r.status + ")" + (d && d.error ? ": " + String(d.error).slice(0, 120) : "") };
+    }
+    return { status: d.status, body: d.body };
+  } catch (e) {
+    return { error: "Bridge onbereikbaar — draait de bridge op je computer? (" + String((e && e.message) || e).slice(0, 100) + ")" };
+  }
+}
+
+const stripTags = (s) => String(s || "")
+  .replace(/<[^>]*>/g, " ")
+  .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, " ")
+  .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&")
+  .replace(/\s+/g, " ").trim();
+
+// Media (foto's + video's) uit het hoofdpost-blok van een twstalker-statuspagina
+function mediaFromPostBlock(html) {
+  const out = [];
+  const textM = html.match(/class="activity-descp"[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/);
+  const desc = stripTags(textM ? textM[1] : "").slice(0, 300);
+  // Foto's — data-image="https://pbs.twimg.com/media/XXX.jpg" (originele grootte)
+  const imgRe = /data-image="([^"]+)"/g;
+  const imgUrlSet = new Set();
+  let im;
+  while ((im = imgRe.exec(html)) !== null) {
+    const u = decodeUrl(im[1]);
+    if (u.indexOf("pbs.twimg.com/media/") !== -1) imgUrlSet.add(u.split("?")[0]);
+  }
+  for (const u of imgUrlSet) {
+    out.push({ url: u, kind: "image", desc: desc });
+  }
+  // Video — "Download Video"-links naar video-s.twimg.com mp4, hoogste resolutie
+  const vidRe = /https:\/\/video[^"'\s<>]+\.mp4[^"'\s<>]*/g;
+  let bestVid = null;
+  let vm;
+  while ((vm = vidRe.exec(html)) !== null) {
+    const v = decodeUrl(vm[0]);
+    const dim = v.match(/(\d{2,5})x(\d{2,5})/);
+    const px = dim ? Number(dim[1]) * Number(dim[2]) : 0;
+    if (!bestVid || px > bestVid.px) bestVid = { url: v, px: px };
+  }
+  if (bestVid) out.push({ url: bestVid.url, kind: "video", desc: desc });
+  return out;
+}
+
+async function scrapeViaMirror(username, category, seen, limit) {
+  const profile = await bridgeFetch("https://twstalker.com/" + encodeURIComponent(username));
+  if (profile.error) return profile;
+  const body = profile.body || "";
+  if (profile.status === 403 || profile.status === 503 || body.indexOf("Just a moment") !== -1) {
+    return { error: "De X-mirror blokkeert dit verkeer met een Cloudflare-controle. Start de bridge op je eigen computer (opnieuw) en probeer het nog eens — vanaf je thuis-IP laat de mirror het normaal door." };
+  }
+  if (profile.status === 404 || body.indexOf("images/error.png") !== -1 || body.toLowerCase().indexOf("user not found") !== -1) {
+    return { error: "@" + username + " niet gevonden op de X-mirror — de account bestaat niet, is privé of afgesloten." };
+  }
+  // Status-links op de profiel-tijdlijn (ook retweets linken naar de originele auteur)
+  const postRe = /\/([A-Za-z0-9_]{1,20})\/status\/(\d{5,25})/g;
+  const seenIds = new Set();
+  const posts = [];
+  let pm;
+  while ((pm = postRe.exec(body)) !== null) {
+    if (!seenIds.has(pm[2])) {
+      seenIds.add(pm[2]);
+      posts.push({ handle: pm[1], id: pm[2] });
+    }
+    if (posts.length >= Math.min(limit, 15)) break;
+  }
+  if (!posts.length) {
+    return { error: "Geen posts gevonden voor @" + username + " op de X-mirror." };
+  }
+  // Per post de statuspagina halen — hoofdpost = eerste activity-posts-blok
+  let found = 0;
+  const records = [];
+  let idx = 0;
+  while (idx < posts.length) {
+    const batch = posts.slice(idx, idx + 4);
+    const results = await Promise.all(batch.map((p) => bridgeFetch("https://twstalker.com/" + p.handle + "/status/" + p.id)));
+    for (let j = 0; j < results.length; j++) {
+      const r = results[j];
+      if (r.error || r.status !== 200 || !r.body) continue;
+      const block = r.body.split('class="activity-posts"')[1] || "";
+      const media = mediaFromPostBlock(block);
+      for (const m of media) {
+        found++;
+        if (seen.has(m.url)) continue;
+        seen.add(m.url);
+        records.push({
+          category,
+          image_url: m.url,
+          gallery_url: "https://x.com/" + batch[j].handle + "/status/" + batch[j].id,
+          description: m.desc,
+          source: "twitter",
+          kind: m.kind,
+          created_at: new Date().toISOString(),
+        });
+      }
+    }
+    idx = idx + 4;
+  }
+  if (!records.length) {
+    if (found) return { error: "De media van @" + username + " stond er al in — niets nieuws toegevoegd." };
+    return { error: "Geen media (foto's/video's) gevonden in de laatste " + posts.length + " posts van @" + username + "." };
+  }
+  return { records: records, found: found, posts: posts.length, skipped_duplicates: found - records.length };
+}
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -88,47 +215,39 @@ export default async function (req) {
     const username = String(body.username || "").trim().replace(/^@/, "");
     const limit = Math.min(Math.max(parseInt(body.limit, 10) || 100, 1), 100);
     if (!category) return Response.json({ error: "categorie vereist" }, { status: 400 });
-    if (!username) {
+    if (!username || !/^@?[A-Za-z0-9_.]{1,20}$/.test(username)) {
       return Response.json({
-        error: "Alleen @gebruiker-scrapes zijn mogelijk op X — zoeken op trefwoord ondersteunt deze API niet. Vul een @gebruiker in.",
+        error: "Alleen @gebruiker-scrapes zijn mogelijk op X — zoeken op trefwoord ondersteunt de bron niet. Vul een @gebruiker in.",
       }, { status: 400 });
     }
 
-    const key = process.env.SCRAPECREATORS_API_KEY;
-    if (!key) {
-      return Response.json({
-        error: "SCRAPECREATORS_API_KEY is niet ingesteld. Maak gratis een account op app.scrapecreators.com (100 gratis credits) en voeg de API-key toe aan de app-secrets.",
-      }, { status: 400 });
-    }
-
-    // Tweets ophalen via Scrape Creators (Twitter user-tweets)
-    const apiRes = await fetch(
-      `https://api.scrapecreators.com/v1/twitter/user-tweets?handle=${encodeURIComponent(username)}&trim=true`,
-      { headers: { "x-api-key": key, Accept: "application/json", "User-Agent": UA } },
-    );
-    if (!apiRes.ok) {
-      const reason = apiRes.status === 401 ? "Scrape Creators API-key ongeldig"
-        : apiRes.status === 402 ? "Geen credits meer bij Scrape Creators"
-        : apiRes.status === 429 ? "Scrape Creators rate-limit bereikt"
-        : apiRes.status === 404 ? `@${username} bestaat niet of is privé`
-        : `Scrape Creators fout (HTTP ${apiRes.status})`;
-      let detail = "";
-      try { detail = (await apiRes.text()).slice(0, 200); } catch { /* ignore */ }
-      return Response.json({ error: `${reason}${detail ? `: ${detail}` : ""}` }, { status: 502 });
-    }
-    const json = await apiRes.json().catch(() => null);
-    const tweets = normalizeTweets(json).slice(0, limit);
-    if (!tweets.length) {
-      const apiNote = json?.error || json?.message
-        || (json?.data && typeof json.data === "object" && !Array.isArray(json.data) ? json.data.error || json.data.message : "");
-      return Response.json({
-        error: `Geen tweets gevonden voor @${username}${apiNote ? ` (API: ${String(apiNote).slice(0, 150)})` : ""}. Check dat de @gebruiker precies klopt — een niet-bestaande, privé, afgesloten of leeftijdsbeperkte (18+) account is voor deze API onzichtbaar. Zoeken op zoektermen kan niet, alleen @gebruikers.`,
-      }, { status: 502 });
-    }
-
-    // Bestaande URL's — geen duplicaten
+    // Bestaande URL's — geen duplicaten (voor beide routes)
     const existing = await base44.asServiceRole.entities.PlaytimeImages.list("-created_date", 1000).catch(() => []);
     const seen = new Set((existing || []).map((r) => r.image_url));
+
+    // ── Route 1: Scrape Creators — gewone accounts ───────────────────────
+    const key = process.env.SCRAPECREATORS_API_KEY;
+    let scNote = "";
+    let tweets = [];
+    if (key) {
+      try {
+        const apiRes = await fetch(
+          "https://api.scrapecreators.com/v1/twitter/user-tweets?handle=" + encodeURIComponent(username) + "&trim=true",
+          { headers: { "x-api-key": key, Accept: "application/json", "User-Agent": UA } },
+        );
+        if (apiRes.ok) {
+          const json = await apiRes.json().catch(() => null);
+          tweets = normalizeTweets(json).slice(0, limit);
+        } else if (apiRes.status === 401) scNote = "API-key ongeldig";
+        else if (apiRes.status === 402) scNote = "geen credits meer bij Scrape Creators";
+        else if (apiRes.status === 429) scNote = "rate-limit bereikt bij Scrape Creators";
+        // 404/5xx = meestal leeftijdsbeperkt of onzichtbaar voor de API -> stille doorval naar de mirror
+      } catch (e) {
+        scNote = String((e && e.message) || e).slice(0, 100);
+      }
+    } else {
+      scNote = "geen SCRAPECREATORS_API_KEY ingesteld";
+    }
 
     const records = [];
     let found = 0;
@@ -137,7 +256,7 @@ export default async function (req) {
       const media = mediaListOf(t);
       const handle = handleOf(t, username);
       const id = tweetIdOf(t);
-      const postUrl = id ? `https://x.com/${handle}/status/${id}` : null;
+      const postUrl = id ? "https://x.com/" + handle + "/status/" + id : null;
       for (const m of media) {
         const type = String(m?.type || "").toLowerCase();
         let url = null;
@@ -168,23 +287,51 @@ export default async function (req) {
       }
     }
 
-    let added = 0;
-    for (let i = 0; i < records.length; i += 100) {
-      const chunk = records.slice(i, i + 100);
-      const created = await base44.asServiceRole.entities.PlaytimeImages.bulkCreate(chunk).catch(() => null);
-      added += Array.isArray(created) ? created.length : chunk.length;
+    if (records.length) {
+      let added = 0;
+      for (let i = 0; i < records.length; i += 100) {
+        const chunk = records.slice(i, i + 100);
+        const created = await base44.asServiceRole.entities.PlaytimeImages.bulkCreate(chunk).catch(() => null);
+        added += Array.isArray(created) ? created.length : chunk.length;
+      }
+      return Response.json({
+        ok: true,
+        via: "scrape-creators",
+        username: "@" + username,
+        category,
+        tweets: tweets.length,
+        found,
+        added,
+        skipped_duplicates: skipped,
+        images: records.filter((r) => r.kind === "image").length,
+        videos: records.filter((r) => r.kind === "video").length,
+      });
     }
 
+    // ── Route 2: X-mirror via de bridge — 18+/leeftijdsbeperkte accounts ──
+    const mirror = await scrapeViaMirror(username, category, seen, limit);
+    if (mirror.error) {
+      return Response.json({
+        error: String(mirror.error) + (scNote ? " (Scrape Creators gaf: " + scNote + ")" : ""),
+      }, { status: 502 });
+    }
+    let mAdded = 0;
+    for (let i = 0; i < mirror.records.length; i += 100) {
+      const chunk = mirror.records.slice(i, i + 100);
+      const created = await base44.asServiceRole.entities.PlaytimeImages.bulkCreate(chunk).catch(() => null);
+      mAdded += Array.isArray(created) ? created.length : chunk.length;
+    }
     return Response.json({
       ok: true,
-      username: `@${username}`,
+      via: "x-mirror",
+      username: "@" + username,
       category,
-      tweets: tweets.length,
-      found,
-      added,
-      skipped_duplicates: skipped,
-      images: records.filter((r) => r.kind === "image").length,
-      videos: records.filter((r) => r.kind === "video").length,
+      posts: mirror.posts,
+      found: mirror.found,
+      added: mAdded,
+      skipped_duplicates: mirror.skipped_duplicates || 0,
+      images: mirror.records.filter((r) => r.kind === "image").length,
+      videos: mirror.records.filter((r) => r.kind === "video").length,
     });
   } catch (error) {
     return Response.json({ error: String((error && error.message) || error) }, { status: 500 });
