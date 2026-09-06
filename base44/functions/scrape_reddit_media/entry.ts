@@ -116,7 +116,7 @@ export default async function (req) {
     const body = await req.json().catch(() => ({}));
     const subreddit = String(body.subreddit || "").trim().replace(/^\/?r\//i, "").replace(/[^A-Za-z0-9_+-]/g, "");
     const category = String(body.category || "").trim().toLowerCase();
-    const limit = Math.min(Math.max(parseInt(body.limit, 10) || 25, 1), 100);
+    const limit = Math.min(Math.max(parseInt(body.limit, 10) || 100, 1), 200);
     const sort = SORTS.includes(body.sort) ? body.sort : "hot";
     if (!subreddit || !category) return Response.json({ error: "subreddit en categorie vereist" }, { status: 400 });
 
@@ -127,26 +127,38 @@ export default async function (req) {
       }, { status: 400 });
     }
 
-    // Posts ophalen via Scrape Creators (third-party Reddit-API)
-    const apiRes = await fetch(
-      `https://api.scrapecreators.com/v1/reddit/subreddit?subreddit=${encodeURIComponent(subreddit)}&sort=${sort}&trim=true`,
-      { headers: { "x-api-key": key, Accept: "application/json", "User-Agent": UA } },
-    );
-    if (!apiRes.ok) {
-      const reason = apiRes.status === 401 ? "Scrape Creators API-key ongeldig"
-        : apiRes.status === 402 ? "Geen credits meer bij Scrape Creators"
-        : apiRes.status === 429 ? "Scrape Creators rate-limit bereikt"
-        : `Scrape Creators fout (HTTP ${apiRes.status})`;
-      let detail = "";
-      try { detail = (await apiRes.text()).slice(0, 200); } catch { /* ignore */ }
-      return Response.json({ error: `${reason}${detail ? `: ${detail}` : ""}` }, { status: 502 });
+    // Posts ophalen via Scrape Creators — pagineren met de 'after'-cursor
+    // tot er niks meer komt of de limiet bereikt is (max. 8 pagina's à ~25
+    // posts). Zo haalt één scrape het maximale uit de subreddit.
+    const MAX_PAGES = 8;
+    const posts = [];
+    let pages = 0;
+    let after = null;
+    for (let page = 0; page < MAX_PAGES; page++) {
+      let url = `https://api.scrapecreators.com/v1/reddit/subreddit?subreddit=${encodeURIComponent(subreddit)}&sort=${sort}&trim=true`;
+      if (after) url += `&after=${encodeURIComponent(after)}`;
+      const apiRes = await fetch(url, { headers: { "x-api-key": key, Accept: "application/json", "User-Agent": UA } });
+      if (!apiRes.ok) {
+        if (page > 0) break; // eerdere pagina's zijn binnen — partial resultaat
+        const reason = apiRes.status === 401 ? "Scrape Creators API-key ongeldig"
+          : apiRes.status === 402 ? "Geen credits meer bij Scrape Creators"
+          : apiRes.status === 429 ? "Scrape Creators rate-limit bereikt"
+          : `Scrape Creators fout (HTTP ${apiRes.status})`;
+        let detail = "";
+        try { detail = (await apiRes.text()).slice(0, 200); } catch { /* ignore */ }
+        return Response.json({ error: `${reason}${detail ? `: ${detail}` : ""}` }, { status: 502 });
+      }
+      const json = await apiRes.json().catch(() => null);
+      const batch = normalizePosts(json);
+      pages++;
+      posts.push(...batch);
+      after = json?.data?.after || json?.after || json?.cursor || null;
+      if (!batch.length || !after || posts.length >= limit) break;
     }
-    const json = await apiRes.json().catch(() => null);
-    let posts = normalizePosts(json);
     if (!posts.length) {
       return Response.json({ error: `Geen posts terug van Scrape Creators voor r/${subreddit} (${sort}).` }, { status: 502 });
     }
-    posts = posts.slice(0, limit);
+    if (posts.length > limit) posts.length = limit;
 
     // Bestaande URL's — geen duplicaten
     const existing = await base44.asServiceRole.entities.PlaytimeImages.list("-created_date", 1000).catch(() => []);
@@ -194,6 +206,7 @@ export default async function (req) {
       subreddit,
       sort,
       category,
+      pages,
       posts: posts.length,
       found,
       added,

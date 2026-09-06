@@ -98,8 +98,12 @@ export default function PlayTimePage() {
             </div>
           </motion.div>
 
-          {/* Zwevende Mattia voice-panel — naast het editorial */}
-          <PlayTimeVoicePanel onToggleMedia={() => setMediaOpen((o) => !o)} />
+          {/* Zwevende Mattia voice-panel — blijft op z'n plek wanneer de
+              MediaStage opent: de tegenschuiving heft de -24vw van het
+              glas-paneel op. */}
+          <motion.div animate={{ x: mediaOpen ? "24vw" : 0 }} transition={{ duration: 0.7, ease: EASE }} className="absolute inset-0 z-40 pointer-events-none">
+            <PlayTimeVoicePanel onToggleMedia={() => setMediaOpen((o) => !o)} />
+          </motion.div>
         </div>
       </motion.div>
     </div>

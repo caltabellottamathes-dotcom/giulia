@@ -110,7 +110,7 @@ export default function PlayTimeVoicePanel({ onToggleMedia }) {
   const statusLabel = connecting ? "Verbinden…" : connected ? (isSpeaking ? "Spreekt" : "Luistert") : "Tik om te bellen";
 
   return (
-    <div className="absolute right-[2.5%] top-[8%] bottom-[8%] w-[34%] z-40 animate-slide-right rounded-[28px] overflow-hidden shadow-[0_32px_72px_-24px_rgba(0,0,0,0.5)]">
+    <div className="absolute right-[2.5%] top-[8%] bottom-[8%] w-[34%] z-40 pointer-events-auto animate-slide-right rounded-[28px] overflow-hidden shadow-[0_32px_72px_-24px_rgba(0,0,0,0.5)]">
       {/* Foto-achtergrond */}
       <Image src={VOICE_PHOTO} fittingType="fill" alt="" className="absolute inset-0 w-full h-full" draggable={false} />
       <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/25 to-black/30" />
