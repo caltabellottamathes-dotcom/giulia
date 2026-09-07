@@ -36,6 +36,11 @@ export default function MediaStage() {
         if (cmd.action === "open") setTab("camera");
         else if (cmd.action === "close") setTab("library");
         else if (["photo", "start_film", "stop_film"].includes(cmd.action)) { setTab("camera"); setCameraAction(cmd.action); }
+      } else if (cmd.type === "show_media") {
+        // Mattia toont een bestand (foto/video uit de Playtime-collectie) —
+        // meteen in de stage zetten zodat het direct zichtbaar is.
+        previewMedia({ name: cmd.name || "Mattia", url: cmd.url, type: cmd.kind || "image" });
+        setTab("library");
       } else if (cmd.type === "show_library") {
         setLibraryFilter(cmd.kind || null);
         setLibraryQuery(cmd.query || "");

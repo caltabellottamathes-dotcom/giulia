@@ -30,6 +30,22 @@ export default function PlayTimePage() {
   const [first, setFirst] = useState(true);
   useEffect(() => { const t = setTimeout(() => setFirst(false), 900); return () => clearTimeout(t); }, []);
 
+  // Mattia toont media (foto/video) → MediaStage schuift meteen open.
+  // De stage zelf is alleen gemount als hij al open is, dus deze listener
+  // vangt show_media af terwijl hij dicht zit: media bewaren (pending),
+  // stage openen — MediaStage pikt de pending media bij het mounten op.
+  useEffect(() => {
+    const h = (e) => {
+      const c = e.detail;
+      if (c?.type !== "show_media" || !c.url) return;
+      if (mediaOpen) return; // stage staat al open → MediaStage handelt het zelf af
+      window.__giuliaPendingMedia = { name: c.name || "Mattia", url: c.url, type: c.kind || "image" };
+      setMediaOpen(true);
+    };
+    window.addEventListener("playtime:media-command", h);
+    return () => window.removeEventListener("playtime:media-command", h);
+  }, [mediaOpen]);
+
   return (
     <div className="fixed inset-x-0 top-14 bottom-0 overflow-visible z-[30]">
       {/* Hero photo — blijft open wanneer het glas-paneel opent */}
