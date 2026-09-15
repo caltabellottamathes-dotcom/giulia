@@ -215,7 +215,7 @@ const Image = React.forwardRef(
     if (!parsed) {
       const isErrorUrl = imgSrc === FALLBACK_IMAGE_URL
       return (
-        <img ref={ref} src={imgSrc} {...imageProps} data-error-image={isErrorUrl || undefined} />
+        <img ref={ref} src={imgSrc} loading="lazy" decoding="async" {...imageProps} data-error-image={isErrorUrl || undefined} />
       )
     }
 

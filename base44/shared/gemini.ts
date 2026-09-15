@@ -318,6 +318,24 @@ export async function geminiResearch({ prompt, systemText, temperature = 0.5, ke
   } catch { return null; }
 }
 
+/**
+ * geminiWebSearch — antwoord mét Google-Search-grounding (actuele webcontext)
+ * als gewone tekst terug (geen JSON-parsing). Voor Mattia's search_web-tool:
+ * elke vraag die actuele kennis of internet nodig heeft, ChatGPT-achtig.
+ */
+export async function geminiWebSearch({ prompt, systemText, temperature = 0.4, keyName }) {
+  const body = {
+    system_instruction: systemInstruction(systemText),
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+    tools: [{ google_search: {} }],
+    generationConfig: { temperature },
+  };
+  try {
+    const data = await callWithFallback(body, keyName);
+    return (data?.candidates?.[0]?.content?.parts || []).map((p) => p.text || "").join("").trim() || null;
+  } catch { return null; }
+}
+
 // ── Geheugen-embeddings ────────────────────────────────────────────────────
 // text-embedding-004 zet geheugentekst om in een vector, zodat we bij het
 // laden van context kunnen zoeken op BETEKENIS ("wanneer heeft Salvo iets

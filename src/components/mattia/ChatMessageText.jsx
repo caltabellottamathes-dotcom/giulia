@@ -44,7 +44,7 @@ export default function ChatMessageText({ text, linkColor, onOpenMedia }) {
             className="block rounded-md overflow-hidden border hover:opacity-85 transition"
             style={{ borderColor: "rgba(0,0,0,0.15)" }}
           >
-            <video src={proxiedMedia(url)} muted loop playsInline autoPlay preload="auto"
+            <video src={proxiedMedia(url) + "#t=0.1"} muted playsInline preload="metadata"
               className="w-40 h-28 object-cover bg-black" />
           </button>
         </span>

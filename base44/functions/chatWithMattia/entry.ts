@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { geminiGenerate, pickChatModel } from '../../shared/gemini.ts';
+import { geminiGenerate, pickChatModel, geminiWebSearch } from '../../shared/gemini.ts';
 import { calcPortfolio, monthlyDistribution } from '../../shared/financeEngine.ts';
 import { MATTIA_BUDDY, MATTIA_NAUGHTY, MATTIA_PLAYTIME, MATTIA_OS_RULES, MATTIA_MEDIA_RULES } from '../../shared/mattiaInstructions.ts';
 import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
@@ -190,10 +190,34 @@ export default async function (req) {
         opToolsMap[s.name] = { description: s.description, inputSchema: s.inputSchema, execute: (args) => s.execute(args, base44) };
       }
     }
-    const toolsMap = { ...opToolsMap, ...mediaToolsMap };
+    // KENNIS-TOOL: search_web — actuele internet-informatie (ChatGPT-achtig).
+    // Altijd actief, ook bij casual berichten: Mattia is een volwaardige
+    // assistent, niet alleen een media- en OS-muis.
+    const knowledgeToolsMap = {
+      search_web: {
+        description: "Zoek actuele informatie op het internet en beantwoord een vraag met feiten van het web. Gebruik dit voor ELKE vraag die actuele kennis nodig heeft (nieuws, weer, koersen, prijzen, sportuitslagen, recente gebeurtenissen, release-datas) of waarvan je het antwoord niet zeker weet. Vermeld niet dat je hebt gezocht — geef gewoon het antwoord.",
+        inputSchema: {
+          type: "object",
+          properties: { question: { type: "string", description: "de vraag om op het internet te beantwoorden" } },
+          required: ["question"],
+        },
+        execute: async (args) => {
+          const q = String(args?.question || "").trim();
+          if (!q) return { error: "question vereist" };
+          const answer = await geminiWebSearch({
+            prompt: `Zoek actuele informatie op het web en beantwoord deze vraag kort en feitelijk, met concrete details, getallen en data: ${q}`,
+            systemText: "Je bent een onderzoeksassistent. Antwoord kort en feitelijk — maximaal 10 zinnen — met concrete feiten, getallen en data uit je zoekresultaten. Antwoord in de taal van de vraag.",
+            keyName: MATTIA_KEY,
+          });
+          if (!answer) return { error: "web-zoekopdracht mislukt — beantwoord het uit eigen kennis en zeg dat je het niet kon verifiëren" };
+          return { status: "web-antwoord gevonden", answer: answer.slice(0, 1500) };
+        },
+      },
+    };
+    const toolsMap = { ...opToolsMap, ...mediaToolsMap, ...knowledgeToolsMap };
     const activeSkills = isOperational
-      ? { ...opToolsMap, ...mediaToolsMap }
-      : { ...mediaToolsMap };
+      ? { ...opToolsMap, ...mediaToolsMap, ...knowledgeToolsMap }
+      : { ...mediaToolsMap, ...knowledgeToolsMap };
     const functionDeclarations = Object.entries(activeSkills).map(([name, t]) => ({ name, description: t.description || "", parameters: t.inputSchema || { type: "object", properties: {} } }));
     const genTools = functionDeclarations.length ? [{ functionDeclarations }] : [];
 
@@ -261,8 +285,11 @@ export default async function (req) {
         catch (e) { result = { error: String((e && e.message) || e) }; }
         if (result && result.media_command) mediaCommands.push(result.media_command);
         if (result && result.image_url) shownUrls.push(result.image_url);
-        executed.push({ name, args, ok: !(result && result.error), result: sanitizeResult(result) });
-        respParts.push({ functionResponse: { name, response: sanitizeResult(result) } });
+        // search_web: volledige antwoordtekst teruggeven aan het model (geen
+        // 300-tekens afkapking) zodat Mattia het web-antwoord écht kan gebruiken.
+        const fnResponse = name === "search_web" ? result : sanitizeResult(result);
+        executed.push({ name, args, ok: !(result && result.error), result: fnResponse });
+        respParts.push({ functionResponse: { name, response: fnResponse } });
       }
       contents.push({ role: "user", parts: respParts });
     }
