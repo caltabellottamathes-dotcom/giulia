@@ -55,7 +55,7 @@ export function timeAwarenessBlock(now = new Date()) {
     "== TIJDBEWUSTZIJN ==",
     `Het is nu: ${loc.toLocaleDateString("nl-NL", { timeZone: "UTC", weekday: "long", day: "numeric", month: "long", year: "numeric" })}, ${loc.toLocaleTimeString("nl-NL", { timeZone: "UTC", hour: "2-digit", minute: "2-digit" })} (Europe/Amsterdam).`,
     `Vandaag = ${dayName(0)} · gisteren = ${dayName(-1)} · eergisteren = ${dayName(-2)}.`,
-    "Elk bericht in de draad heeft een tijdstempel. CHECK dat vóór je antwoord: is het laatste bericht van lang geleden (uren of dagen geleden), ga dan NIET verder alsof jullie net aan het praten waren — merk het kort op, vat samen waar jullie stonden en behandel het als een nieuw begin.",
+    "Elk bericht in de draad heeft tussen haakjes een verzend-moment ('(verzonden wo 16 sep, 01:21)'). Dat is METADATA, geen onderdeel van de tekst: neem die tijdstempels NOOIT letterlijk over in je eigen antwoord, citeer ze niet en begin er nooit een zin mee. CHECK het vóór je antwoord: is het laatste bericht van lang geleden (uren of dagen), ga dan NIET verder alsof jullie net aan het praten waren — merk het kort op, vat samen waar jullie stonden en behandel het als een nieuw begin.",
     "Verwijst Salvo naar een eerder gesprek (gisteren, eergisteren, vorige week, 'wat zei ik over X') en het staat niet in de draad? Gebruik dan search_chat_history om het terug te vinden — raad nooit.",
   ].join("\n");
 }
@@ -87,7 +87,7 @@ export async function loadTimestampedHistory(sr, { threadId, limit = 20, maxChar
     .reverse();
   return ordered.map((m) => ({
     role: m.role === "user" ? "user" : "model",
-    text: `[${formatStamp(m.created_date)}] ${String(m.content).slice(0, maxChars)}`,
+    text: `(verzonden ${formatStamp(m.created_date)}) ${String(m.content).slice(0, maxChars)}`,
   }));
 }
 

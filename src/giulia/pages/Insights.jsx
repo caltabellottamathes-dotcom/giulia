@@ -6,7 +6,7 @@ import { Telescope, Sparkles, Check, Archive, Trash2, Eye, Clock, TrendingUp, Al
 import { cn } from "@/lib/utils";
 import GiuliaAdminShell from "@/giulia/components/admin/GiuliaAdminShell";
 import SelfInsightsPanel from "@/life/panels/SelfInsightsPanel";
-import JournalPanel from "@/life/panels/JournalPanel";
+import JournalSection from "@/giulia/components/insights/JournalSection";
 import RoutinesPanel from "@/life/panels/RoutinesPanel";
 import { IMAGES } from "@/lib/images";
 
@@ -108,11 +108,7 @@ export default function Insights() {
             <SelfInsightsPanel />
           </div>
         )}
-        {tab === "journal" && (
-          <div className="rounded-[28px] bg-charcoal p-6 text-ivory">
-            <JournalPanel />
-          </div>
-        )}
+        {tab === "journal" && <JournalSection />}
         {tab === "routines" && (
           <div className="rounded-[28px] bg-charcoal p-6 text-ivory">
             <RoutinesPanel />

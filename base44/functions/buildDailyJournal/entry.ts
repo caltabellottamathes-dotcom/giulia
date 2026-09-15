@@ -107,7 +107,7 @@ export default async function (req) {
     await notify(base44, {
       title: "Je dagbeeld staat klaar",
       message: `Ik heb een samenvatting van je dag geschreven. ${res?.open_thread ? "Eén open draad: " + res.open_thread : "Lees hem in je Journal."}`,
-      kind: "info", requires_response: false, related_route: "/self/journal", agent_source: "buildDailyJournal", push: true,
+      kind: "info", requires_response: false, related_route: "/insights?tab=journal", agent_source: "buildDailyJournal", push: true,
     });
     await emitEvent(base44, {
       event_type: "JOURNAL_ENTRY_CREATED", object_type: "JournalEntry", object_id: entry?.id || null,
