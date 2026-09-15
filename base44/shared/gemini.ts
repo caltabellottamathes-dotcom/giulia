@@ -17,6 +17,32 @@ import { secrets } from "base44:runtime";
 // 3.5 als gelijkwaardige fallback bij 404/429/5xx.
 const MODELS = ["gemini-3.1-flash-lite", "gemini-3.5-flash-lite"];
 
+// GEMMA 4 — eigen quota-pool, los van de flash-lite RPD-limieten. Voor zoveel
+// mogelijk BYOK-verkeer: achtergrond-AI (geminiDecide/geminiChat) loopt
+// Gemma-4-first. 31b is de primaire keus maar geeft bij Google op dit moment
+// onregelmatig HTTP 500; 26b-a4b (zelfde familie, werkt stabiel) vangt direct
+// op. Beide lekken hun redeneer-proces als platte tekst, BEHALVE in
+// response_schema-JSON-modus — daarom krijgen alle Gemma-tekstcalls een
+// {antwoord}-schema mee. Server-storing (5xx) zet een model 10 min in de
+// cooldown zodat hij niet elke call opnieuw 30s kost.
+const GEMMA4_MODELS = ["gemma-4-31b-it", "gemma-4-26b-a4b-it"];
+const GEMMA_FIRST = [...GEMMA4_MODELS, ...MODELS];
+const modelCooldowns = {};
+function cooled(model) { const until = modelCooldowns[model]; return !!until && until > Date.now(); }
+function markCooled(model) { modelCooldowns[model] = Date.now() + 10 * 60000; }
+
+// Gemma-tekstantwoord uitsluitend via JSON-modus: { "antwoord": "..." }.
+const GEMMA_ANSWER_SCHEMA = { type: "OBJECT", properties: { antwoord: { type: "STRING" } }, required: ["antwoord"] };
+function extractGemmaAnswer(data) {
+  const text = (data?.candidates?.[0]?.content?.parts || []).map((p) => p.text || "").join("");
+  const m = text.match(/\{[\s\S]*\}/);
+  if (!m) return null;
+  try {
+    const obj = JSON.parse(m[0]);
+    return typeof obj.antwoord === "string" && obj.antwoord.trim() ? obj.antwoord : null;
+  } catch { return null; }
+}
+
 export const GIULIA_PERSONA =
   "You are Giulia, a Personal Operating System. You combine conversation, memory, and planning into one coherent system. " +
   "You actively turn unstructured chaos into concrete actions. Speak directly, humanly, and concisely. Never use generic SaaS enthusiasm. " +
@@ -187,19 +213,27 @@ async function rawCall(model, body, keyName) {
   catch (e) { throw lastErr || e; }
 }
 
-/** Probeekt elk model tot er één slaagt; gooit anders de laatste fout. */
-async function callWithFallback(body, keyName) {
+/** Probeekt elk model tot er één slaagt; gooit anders de laatste fout.
+ *  Gemma-modellen in de cooldown (server-storing) worden overgeslagen en
+ *  een 400 op een Gemma-model betekent een feature-gap (JSON/tools/prompt-
+ *  vorm die het model niet snapt) → volgende model; een 400 op Gemini is
+ *  een echte schema-fout → direct gooien. */
+async function callWithFallback(body, keyName, models = MODELS) {
   let lastErr = null;
-  for (const model of MODELS) {
+  for (const model of models) {
+    if (model.startsWith("gemma") && cooled(model)) continue;
     try {
       return await rawCall(model, body, keyName);
     } catch (e) {
       lastErr = e;
-      // 429 / 404 op dit model → probeer de volgende; andere fouten → gooi direct.
-      if (!/HTTP (4(29|04)|5\d\d)/.test(String(e.message))) throw e;
+      const msg = String((e && e.message) || "");
+      if (model.startsWith("gemma") && (e && e.status) >= 500) markCooled(model);
+      if (/HTTP (4(29|04)|5\d\d)/.test(msg)) continue;
+      if (model.startsWith("gemma") && /HTTP 400/.test(msg)) continue;
+      throw e;
     }
   }
-  throw lastErr || new Error("Alle Gemini-modellen faalden");
+  throw lastErr || new Error("Alle modellen faalden");
 }
 
 /**
@@ -218,27 +252,65 @@ export async function geminiDecide({ prompt, schema, model, systemText, temperat
     },
   };
   try {
+    // GEMMA-4-FIRST (BYOK): gestructureerde beslissingen draaien zoveel
+    // mogelijk op de Gemma 4-quota. JSON-modus houdt Gemma's denktekst uit
+    // het antwoord; flash-lite blijft als vangnet achteraan.
     const data = model
       ? await rawCall(model, body, keyName)
-      : await callWithFallback(body, keyName);
+      : await callWithFallback(body, keyName, GEMMA_FIRST);
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
     if (!text) return null;
     try { return JSON.parse(text); } catch { return null; }
   } catch { return null; }
 }
 
-/** geminiChat — free-form text reply (no schema). Returns text or null. */
+/** geminiChat — free-form text reply (no schema). Returns text or null.
+ *  Zonder expliciet model: Gemma 4 eerst (eigen quota-pool). Gemma krijgt
+ *  een {antwoord}-JSON-schema mee zodat zijn redeneer-proces niet in het
+ *  antwoord lekt; slaagt dat niet, dan volgen de flash-lite modellen. */
 export async function geminiChat({ prompt, contents, model, systemText, temperature = 0.6, keyName }) {
-  const body = {
-    system_instruction: systemInstruction(systemText),
-    contents: contents || [{ role: "user", parts: [{ text: prompt }] }],
-    generationConfig: { temperature },
-  };
+  const turns = contents || [{ role: "user", parts: [{ text: prompt }] }];
   try {
-    const data = model
-      ? await rawCall(model, body, keyName)
-      : await callWithFallback(body, keyName);
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+    if (model) {
+      const body = {
+        system_instruction: systemInstruction(systemText),
+        contents: turns,
+        generationConfig: { temperature },
+      };
+      const data = await rawCall(model, body, keyName);
+      return data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+    }
+    let lastErr = null;
+    for (const m of GEMMA_FIRST) {
+      const isGemma = m.startsWith("gemma");
+      if (isGemma && cooled(m)) continue;
+      const body = isGemma
+        ? {
+            system_instruction: systemInstruction((systemText ? systemText + "\n\n" : "") + 'Geef je volledige antwoord uitsluitend als JSON met één veld "antwoord".'),
+            contents: turns,
+            generationConfig: { temperature, response_mime_type: "application/json", response_schema: GEMMA_ANSWER_SCHEMA },
+          }
+        : {
+            system_instruction: systemInstruction(systemText),
+            contents: turns,
+            generationConfig: { temperature },
+          };
+      try {
+        const data = await rawCall(m, body, keyName);
+        if (!isGemma) return data?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+        const answer = extractGemmaAnswer(data);
+        if (answer) return answer;
+        lastErr = new Error(`gemma ${m}: json-antwoord onbruikbaar`);
+      } catch (e) {
+        lastErr = e;
+        const msg = String((e && e.message) || "");
+        if (isGemma && (e && e.status) >= 500) markCooled(m);
+        if (/HTTP (4(29|04)|5\d\d)/.test(msg)) continue;
+        if (isGemma && /HTTP 400/.test(msg)) continue;
+        throw e;
+      }
+    }
+    return null;
   } catch { return null; }
 }
 
@@ -249,10 +321,11 @@ export async function geminiChat({ prompt, contents, model, systemText, temperat
  * zichtbaar teruggeven.
  */
 // Fallback-volgorde voor generateContent: als het gekozen model uitgeput is
-// (429/404/5xx), val terug op gemma (ruime TPM, geen RPD-uitputting) en daarna
-// de flash-lite modellen. Een echte 400 (schema-fout) gooi je direct — andere
-// modellen helpen daar niet bij.
-const GEN_FALLBACK_MODELS = ["gemini-3.1-flash-lite", "gemini-3.5-flash-lite"];
+// (429/404/5xx), val terug op 3.5-flash-lite en daarna de Gemma 4-modellen
+// (eigen quota-pool) zodat de chat bij Gemini-quota-uitputting nog altijd
+// antwoordt. Een echte 400 (schema-fout) gooi je direct — andere modellen
+// helpen daar niet bij.
+const GEN_FALLBACK_MODELS = ["gemini-3.5-flash-lite", ...GEMMA4_MODELS];
 
 export async function geminiGenerate({ contents, tools, model, systemText, generationConfig, keyName }) {
   const body = {
@@ -266,12 +339,15 @@ export async function geminiGenerate({ contents, tools, model, systemText, gener
     const ordered = [model, ...GEN_FALLBACK_MODELS.filter((m) => m !== model)];
     let lastErr = null;
     for (const m of ordered) {
+      if (m.startsWith("gemma") && cooled(m)) continue;
       try { data = await rawCall(m, body, keyName); break; }
       catch (e) {
         lastErr = e;
         const msg = String((e && e.message) || "");
+        if (m.startsWith("gemma") && (e && e.status) >= 500) markCooled(m);
         const exhausted = /HTTP (429|404|5\d\d)|API_KEY_INVALID|API key not valid/i.test(msg);
-        if (!exhausted) throw e; // echte 400 (schema) — andere modellen helpen niet
+        const gemmaGap = m.startsWith("gemma") && /HTTP 400/.test(msg);
+        if (!exhausted && !gemmaGap) throw e; // echte 400 (schema) — andere modellen helpen niet
       }
     }
     if (!data) throw lastErr || new Error("Alle modellen faalden");
