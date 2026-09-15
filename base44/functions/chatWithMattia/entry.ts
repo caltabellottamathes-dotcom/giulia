@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { geminiGenerate, pickChatModel, geminiWebSearch } from '../../shared/gemini.ts';
+import { geminiGenerate, pickChatModel } from '../../shared/gemini.ts';
+import { searchWeb } from '../../shared/webSearch.ts';
 import { calcPortfolio, monthlyDistribution } from '../../shared/financeEngine.ts';
 import { MATTIA_BUDDY, MATTIA_NAUGHTY, MATTIA_PLAYTIME, MATTIA_OS_RULES, MATTIA_MEDIA_RULES } from '../../shared/mattiaInstructions.ts';
 import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
@@ -204,13 +205,13 @@ export default async function (req) {
         execute: async (args) => {
           const q = String(args?.question || "").trim();
           if (!q) return { error: "question vereist" };
-          const answer = await geminiWebSearch({
-            prompt: `Zoek actuele informatie op het web en beantwoord deze vraag kort en feitelijk, met concrete details, getallen en data: ${q}`,
-            systemText: "Je bent een onderzoeksassistent. Antwoord kort en feitelijk — maximaal 10 zinnen — met concrete feiten, getallen en data uit je zoekresultaten. Antwoord in de taal van de vraag.",
-            keyName: MATTIA_KEY,
-          });
-          if (!answer) return { error: "web-zoekopdracht mislukt — beantwoord het uit eigen kennis en zeg dat je het niet kon verifiëren" };
-          return { status: "web-antwoord gevonden", answer: answer.slice(0, 1500) };
+          const res = await searchWeb(q);
+          if (!res) return { error: "web-zoekopdracht mislukt — beantwoord het uit eigen kennis en zeg dat je het niet kon verifiëren" };
+          return {
+            status: `web-resultaten gevonden (${res.engine})`,
+            instruction: "Gebruik deze zoekresultaten (titel, url, snippet) om de vraag te beantwoorden. Baseer je op de snippets; noem de bronnen niet uitgebreid, hooguit één relevante site. Antwoord in de taal van de vraag.",
+            results: res.results,
+          };
         },
       },
     };
