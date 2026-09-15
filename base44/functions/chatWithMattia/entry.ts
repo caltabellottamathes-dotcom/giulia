@@ -8,6 +8,7 @@ import { linkMentionedContacts } from '../../shared/contactLinker.ts';
 import { buildImageParts } from '../../shared/imageParts.ts';
 import { MATTIA_MEDIA_SKILLS, categorizePlaytimePhotos } from '../../shared/mattiaMediaSkills.ts';
 import { shareMattiaHighlights } from '../../shared/mattiaBridge.ts';
+import { timeAwarenessBlock, loadTimestampedHistory, makeChatHistorySearchTool } from '../../shared/chatHistory.ts';
 
 /**
  * chatWithMattia — Mattia chat, BYOK (MATTIA-MATTIA_Gemini_API_Key), géén
@@ -126,23 +127,10 @@ export default async function (req) {
       // Mattia precies weet wat er is en welke tool hij moet aanroepen.
       let mediaBlock = "";
       if (wantsMedia) {
-        const [ptImgs, ptCats] = await Promise.all([
-          sr.entities.PlaytimeImages.list("-created_date", 1000).catch(() => []),
-          sr.entities.PlaytimeCategory.list("-created_date", 200).catch(() => []),
-        ]);
-        const ptCounts = {};
-        for (const it of ptImgs || []) {
-          const c = String(it.category || "").toLowerCase();
-          if (c) ptCounts[c] = (ptCounts[c] || 0) + 1;
-        }
-        for (const rec of ptCats || []) {
-          const n = String(rec.name || "").toLowerCase();
-          if (n && !(n in ptCounts)) ptCounts[n] = 0;
-        }
-        mediaBlock = [
-          `Playtime-media: ${Object.keys(ptCounts).sort().map((c) => (ptCounts[c] ? `${c} (${ptCounts[c]})` : `${c} (leeg)`)).join(", ") || "nog geen"}`,
-          `Media-tool: get_playtime_image({ category }) — subcategorieën via 'parent/sub' (een parent matcht ook z'n subcategorieën). Dit is de enige mediabron: uitsluitend de gescrapte collectie (foto's én video's), live zoeken kan NIET. NEEM de teruggegeven url ALTIJD letterlijk op in je antwoord — antwoord nooit zonder de link.`,
-        ].join("\n");
+        // NEUTRAAL: géén categorielijst met aantallen meer in de prompt — die
+        // stond er zo specifiek in dat het model ongevraagd foto's ging
+        // versturen. Wat er is, vraagt hij via list_playtime_categories op.
+        mediaBlock = "Playtime-collectie beschikbaar (foto's + video's per categorie; subcategorieën via 'parent/sub'). Enige mediabron: get_playtime_image({ category }) — alléén op expliciete aanvraag van Salvo, nóóit ongevraagd.";
       }
       contextBlock = [
         `\n== HUIDIGE STAAT (kort) ==`,
@@ -169,7 +157,7 @@ export default async function (req) {
       ? `\n${MATTIA_OS_RULES}\n${MATTIA_MEDIA_RULES}\n${contextBlock}\n`
       : `\n== ACTIES ==\nJe kan via tools interne acties doen (taken/notities/agenda/geheugen) als Salvo dat vraagt; externe verzending altijd via create_approval. Vraag geen toestemming voor interne acties. Voer alleen uit als er een duidelijke actie is.\n`;
 
-    const personaLayers = [MATTIA_BUDDY, convoRule, operationalPart];
+    const personaLayers = [MATTIA_BUDDY, timeAwarenessBlock(), convoRule, operationalPart];
     if (wantsNaughty) personaLayers.push(MATTIA_NAUGHTY);
     if (wantsPlaytime) personaLayers.push(MATTIA_PLAYTIME);
     const closing = `\n\nJe bent Mattia. Spreek direct met Salvo — vlot, scherp, droog, met humor, met een eigen mening. Voer uit wat nodig is via de tools en geef daarna een menselijk antwoord. ANTWOORDEN ALS WHATSAPP: één tot drie korte zinnen max, vaak minder — echt heen-en-weer gechat, geen monoloog, geen opsomming, geen muur van tekst. Schrijf in spreektaal: korte zinnen, spreekritme, onderbreek jezelf, alledaagse woorden, geen puntkomma's of literaire opmaak. Vraag soms iets terug, laat het gesprek ademen. To the point, niet treuzelig. Antwoord NOOIT met alleen "Geregeld." — zeker niet na een foto-tool: geef dan altijd een echte korte zin mét de image_url letterlijk erin.`;
@@ -195,6 +183,24 @@ export default async function (req) {
     // Altijd actief, ook bij casual berichten: Mattia is een volwaardige
     // assistent, niet alleen een media- en OS-muis.
     const knowledgeToolsMap = {
+      // ECHTE agent-naar-agent communicatie: Mattia kan Giulia ALTIJD bereiken
+      // (delegate_to is alleen bij operationele berichten actief).
+      talk_to_giulia: {
+        description: "Stel een vraag of geef een opdracht aan Giulia (de butler/executor van het OS) en krijg haar letterlijke antwoord terug. Gebruik dit voor alles wat Giulia beter kan — agenda, taken, projecten, finance, communicatie — of als Salvo om Giulia vraagt. Zeg erbij dat je het aan haar doorgegeven hebt.",
+        inputSchema: {
+          type: "object",
+          properties: { message: { type: "string", description: "De vraag of opdracht aan Giulia" } },
+          required: ["message"],
+        },
+        execute: async (args) => {
+          try {
+            const res = await base44.functions.invoke("chatWithGiulia", { message: String(args?.message || "").slice(0, 2000), source: "mattia", persist: false });
+            const d = res?.data || res;
+            return { response: d?.response || "", ok: !!d?.ok };
+          } catch (e) { return { error: String((e && e.message) || e) }; }
+        },
+      },
+      search_chat_history: makeChatHistorySearchTool(base44, { threadId: "mattia", agentName: "Mattia" }),
       search_web: {
         description: "Zoek actuele informatie op het internet en beantwoord een vraag met feiten van het web. Gebruik dit voor ELKE vraag die actuele kennis nodig heeft (nieuws, weer, koersen, prijzen, sportuitslagen, recente gebeurtenissen, release-datas) of waarvan je het antwoord niet zeker weet. Vermeld niet dat je hebt gezocht — geef gewoon het antwoord.",
         inputSchema: {
@@ -225,9 +231,10 @@ export default async function (req) {
     // ── CONVERSATIE-GESCHIEDENIS (Mattia-draad) ──────────────────────
     let contents;
     if (source === "chat") {
-      const history = await sr.entities.Message.filter({ channel: "in-app", thread_id: "mattia" }, "-created_date", 6).catch(() => []);
-      const ordered = (history || []).filter((m) => m.content && (m.role === "user" || m.role === "mattia")).reverse();
-      contents = ordered.map((m) => ({ role: m.role === "user" ? "user" : "model", parts: [{ text: String(m.content).slice(0, 1000) }] }));
+      // MEER GEHEUGEN: 24 berichten ipv 6, elk met tijdstempel zodat Mattia ziet
+      // hoe oud het gesprek is en niet verder kletst alsof het 3 min geleden was.
+      const ordered = await loadTimestampedHistory(sr, { threadId: "mattia", limit: 24, maxChars: 600, roles: ["user", "mattia"] });
+      contents = ordered.map((m) => ({ role: m.role, parts: [{ text: m.text }] }));
       const lastTurn = contents[contents.length - 1];
       const alreadyLast = lastTurn && lastTurn.role === "user" && String(lastTurn.parts?.[0]?.text || "").includes(message.slice(0, 30));
       if (!alreadyLast) {

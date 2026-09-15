@@ -82,6 +82,7 @@ const PanelDesign = React.lazy(() => import('@/system/pages/PanelDesign'));
 const QuestionsPanelPage = React.lazy(() => import('@/system/pages/QuestionsPanelPage'));
 const Ingest = React.lazy(() => import('@/system/pages/Ingest'));
 const PlaytimeAdminPage = React.lazy(() => import('@/system/pages/PlaytimeAdminPage'));
+const JournalPage = React.lazy(() => import('@/self/pages/JournalPage'));
 
 
 const AuthenticatedApp = () => {
@@ -176,6 +177,7 @@ const AuthenticatedApp = () => {
           <Route path="/life/admin" element={<AdminPage />} />
           <Route path="/playtime" element={<PlayTimePage />} />
           <Route path="/playtime-admin" element={<PlaytimeAdminPage />} />
+          <Route path="/self/journal" element={<JournalPage />} />
           <Route path="/shell-collection" element={<ShellCollection />} />
           <Route path="/panel-design" element={<PanelDesign />} />
           <Route path="/questions-panel" element={<QuestionsPanelPage />} />

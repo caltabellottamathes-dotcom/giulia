@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { geminiDecide, GIULIA_PERSONA } from '../../shared/gemini.ts';
+import { amsterdamDayWindow } from '../../shared/chatHistory.ts';
 import { emitEvent } from '../../shared/eventEngine.ts';
 import { notify } from '../../shared/notify.ts';
 
@@ -13,20 +14,25 @@ export default async function (req) {
     const base44 = createClientFromRequest(req);
     const sr = base44.asServiceRole;
     const now = new Date();
-    const dayStart = new Date(now); dayStart.setHours(0, 0, 0, 0);
-    const dayEnd = new Date(now); dayEnd.setHours(23, 59, 59, 999);
-    const title = `Dagbeeld ${now.toLocaleDateString("nl-NL", { day: "numeric", month: "long" })}`;
+    // Amsterdam-dagvenster: de runtime draait in UTC, waardoor late avond- en
+    // nachtchats buiten het dagvenster (of in de verkeerde dag) vielen en de
+    // journal 'leeg' leek terwijl er wél geleefd en gechat werd.
+    const win = amsterdamDayWindow(now);
+    const dayStart = win.start;
+    const dayEnd = win.end;
+    const title = `Dagbeeld ${win.dateLabel}`;
 
     const existing = await sr.entities.JournalEntry.filter({}, "-date", 50).catch(() => []);
     const dup = (existing || []).find((e) => e.title === title && e.agent_source === "buildDailyJournal");
     if (dup) return Response.json({ ok: true, skipped: "already_built_today", journal_id: dup.id });
 
-    const [checkIns, events, threads, routines, timeBlocks] = await Promise.all([
+    const [checkIns, events, threads, routines, timeBlocks, dayActivity] = await Promise.all([
       sr.entities.SelfCheckIn.filter({}, "-timestamp", 30).catch(() => []),
       sr.entities.CalendarEvent.filter({ status: "confirmed" }, "-start", 30).catch(() => []),
       sr.entities.Thread.filter({ status: "open" }, "-created_date", 20).catch(() => []),
       sr.entities.SelfRoutine.list("-created_date", 50).catch(() => []),
       sr.entities.PersonalTimeBlock.filter({}, "-start", 50).catch(() => []),
+      sr.entities.Activity.filter({}, "-created_date", 60).catch(() => []),
     ]);
 
     const todays = (arr = []) => (arr || []).filter((x) => {
@@ -40,6 +46,7 @@ export default async function (req) {
     const dayEvents = todays(events);
     const dayRoutines = (routines || []).filter((r) => r.status === "completed" && r.last_done && new Date(r.last_done) >= dayStart && new Date(r.last_done) <= dayEnd);
     const dayTime = (timeBlocks || []).filter((b) => b.start && new Date(b.start) >= dayStart && new Date(b.start) <= dayEnd && b.status !== "cancelled");
+    const dayActs = todays(dayActivity).slice(0, 8);
     const openThreads = (threads || []).slice(0, 5);
 
     // ── CHAT-MOMENTEN (Mattia + Giulia) → logboek ───────────────────
@@ -57,7 +64,6 @@ export default async function (req) {
         .map((m) => `${m.role === "user" ? "Salvo" : m.role === "mattia" ? "Mattia" : "Giulia"}: ${String(m.content).slice(0, 300)}`)
         .join("\n");
       const chatRes = await geminiDecide({
-        model: "gemini-3.1-flash-lite",
         prompt:
           `Uit deze chatfragmenten van vandaag (Giulia = de butler, Mattia = Salvo's alter-ego) haal je de 3-6 BELANGRIJKSTE momenten: ` +
           `beslissingen, gemaakte plannen of afspraken, inzichten, en emotioneel belangrijke momenten. Per moment max 15 woorden, neutraal geformuleerd, geen expliciete inhoud. ` +
@@ -75,12 +81,12 @@ export default async function (req) {
       `Voltooide routines: ${dayRoutines.length} — ${dayRoutines.map((r) => r.title).join(", ") || "geen"}`,
       `Persoonlijke tijd: ${dayTime.reduce((s, b) => s + (b.duration_min || 0), 0)} min (${dayTime.filter((b) => b.is_protected).length} beschermd)`,
       `Openstaande threads: ${openThreads.length} — ${openThreads.map((t) => t.title).join(", ") || "geen"}`,
+      `OS-activiteit vandaag: ${dayActs.map((a) => String(a.description || "").slice(0, 90)).join(" · ") || "geen"}`,
       `Belangrijkste behoefte vandaag: ${dayCheckIns.find((c) => c.needs?.length)?.needs?.[0] || "—"}`,
       `Chats vandaag: ${dayGiulia.length} Giulia-berichten, ${dayMattia.length} Mattia-berichten${chatMoments.length ? `\n  Belangrijkste chat-momenten:\n  - ${chatMoments.join("\n  - ")}` : ""}`,
     ].join("\n");
 
     const res = await geminiDecide({
-      model: "gemini-3.5-flash-lite",
       prompt: `Je bent Giulia. Schrijf een korte, eerlijke reflectieve samenvatting van Salvo's dag (max 120 woorden, 2-3 alinea's). Droog, direct, geen performatief enthousiasme. Noem wat speelde en één observatie of open draad. Context:\n${ctx}\n\nAntwoord UITSLUITEND als JSON: {"summary": "...", "open_thread": "..."}`,
       schema: { type: "object", properties: { summary: { type: "string" }, open_thread: { type: "string" } }, required: ["summary"] },
       systemText: GIULIA_PERSONA,

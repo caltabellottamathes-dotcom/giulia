@@ -6,6 +6,7 @@ import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
 import { linkMentionedContacts } from '../../shared/contactLinker.ts';
 import { enforceApprovalClaim } from '../../shared/approvalEnforcer.ts';
 import { buildImageParts } from '../../shared/imageParts.ts';
+import { timeAwarenessBlock, loadTimestampedHistory, makeChatHistorySearchTool } from '../../shared/chatHistory.ts';
 
 /**
  * chatWithGiulia — GIULIA-GIULIA (het brein) stuurt GIULIA-CORE (de blinde
@@ -97,6 +98,8 @@ export default async function (req) {
         execute: (args) => s.execute(args, base44),
       };
     }
+    // Gesprekengeheugen: ook bij casual praat beschikbaar (zie casual-tak).
+    toolsMap["search_chat_history"] = makeChatHistorySearchTool(base44, { threadId: "giulia", agentName: "Giulia" });
 
     if (isOperational) {
       // 1. DATA GATHERING (alleen bij operationele berichten / achtergrondbron)
@@ -193,8 +196,18 @@ export default async function (req) {
       genTools = [{ functionDeclarations }];
       maxSteps = 3;
     } else {
-      // Casual: compacte persona + actuele tijd. Geen context, geen tools.
+      // Casual: compacte persona + actuele tijd. Geen context-dump; alleen de
+      // geheugen-zoektool zodat vragen over gisteren/eergisteren ook casual
+      // te beantwoorden zijn (maxSteps=2: toolronde + antwoord).
       profile = `Naam: ${o.name} (${o.short}) | Locatie: ${o.location} | Nu: ${nowStr}`;
+      genTools = [{
+        functionDeclarations: [{
+          name: "search_chat_history",
+          description: toolsMap["search_chat_history"].description || "",
+          parameters: toolsMap["search_chat_history"].inputSchema || { type: "object", properties: {} },
+        }],
+      }];
+      maxSteps = 2;
     }
 
     // 2. REGELS + TOOLS-BLOCK (alleen zinvol bij operationeel)
@@ -212,7 +225,7 @@ export default async function (req) {
 `
       : "";
 
-    const toolDocs = GIULIA_SKILLS.map((s) => `- ${s.name}: ${s.description}`).join("\n");
+    const toolDocs = [...GIULIA_SKILLS.map((s) => `- ${s.name}: ${s.description}`), `- search_chat_history: ${toolsMap["search_chat_history"].description}`].join("\n");
     const toolsBlock = isOperational
       ? `\n== BESCHIKBARE ACTIES (roep deze aan om iets te doen — je MOET de functie aanroepen, niet alleen beweren) ==\n${toolDocs}\n`
       : "";
@@ -229,7 +242,7 @@ export default async function (req) {
       ? "GIULIA-CORE (de executor) werkt STIL: zij voert je opdrachten uit en rapporteert NIET terug wat ze gedaan heeft — jij stuurt haar aan en zij doet het gewoon. Denk na, roep de functies aan die nodig zijn om zijn verzoek ECHT uit te voeren. Voor details die niet in je samenvatting staan, roep je een query-tool aan."
       : "Geen tools nodig — dit is gewoon praten. Antwoord direct, menselijk, zonder acties uit te voeren.";
 
-    const systemInstruction = `${GIULIA_TONE}${convoRule}\n\n${profile}\n\n${contextLines ? contextLines + "\n\n" : ""}${rules}${toolsBlock}${sourceRule}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo, als zijn beste vriendin — vlot, warm, droog-sarcastisch, uitdagend, stout. ${operationalClosing} Geef daarna een vlot, menselijk antwoord in het Nederlands — to the point, niet treuzelig, met humor, en daag hem uit waar nodig. Stel geen acties voor, bied geen menu aan, sommer geen opties, herhaal niet wat Salvo zei. Wacht met voorstellen tot er een duidelijke, actuele nood is.
+    const systemInstruction = `${GIULIA_TONE}${timeAwarenessBlock()}\n\n${convoRule}\n\n${profile}\n\n${contextLines ? contextLines + "\n\n" : ""}${rules}${toolsBlock}${sourceRule}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo, als zijn beste vriendin — vlot, warm, droog-sarcastisch, uitdagend, stout. ${operationalClosing} Geef daarna een vlot, menselijk antwoord in het Nederlands — to the point, niet treuzelig, met humor, en daag hem uit waar nodig. Stel geen acties voor, bied geen menu aan, sommer geen opties, herhaal niet wat Salvo zei. Wacht met voorstellen tot er een duidelijke, actuele nood is.
 
 == TAAL ==
 Default language: English. If Salvo speaks another language, match his language for that reply. Never default to Dutch.`;
@@ -242,13 +255,10 @@ Default language: English. If Salvo speaks another language, match his language 
       // tot 600 tekens — tokenverspilling minimaliseren. Giulia delegeert
       // zware data-opvraging aan backend-functies (query-tools / delegate_to)
       // in plaats van alles via de geschiedenis mee te sturen.
-      const histLimit = isOperational ? 4 : 2;
-      const history = await sr.entities.Message.filter({ channel: "in-app", thread_id: "giulia" }, "-created_date", histLimit).catch(() => []);
-      const ordered = (history || []).filter((m) => m.content && String(m.content).trim()).reverse();
-      contents = ordered.map((m) => ({
-        role: m.role === "user" ? "user" : "model",
-        parts: [{ text: String(m.content).slice(0, 600) }],
-      }));
+      // MEER GEHEUGEN + tijdstempels: operational 12, casual 8 beurten terug.
+      const histLimit = isOperational ? 12 : 8;
+      const ordered = await loadTimestampedHistory(sr, { threadId: "giulia", limit: histLimit, maxChars: 600, roles: ["user", "giulia"] });
+      contents = ordered.map((m) => ({ role: m.role, parts: [{ text: m.text }] }));
       const lastTurn = contents[contents.length - 1];
       const alreadyLast = lastTurn && lastTurn.role === "user"
         && String(lastTurn.parts?.[0]?.text || "").includes(message.slice(0, 30));

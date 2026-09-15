@@ -16,7 +16,6 @@ export async function shareMattiaHighlights(base44, { userText, mattiaText }) {
     if (convo.trim().length < 20) return { saved: 0 };
 
     const res = await geminiDecide({
-      model: "gemini-3.1-flash-lite",
       prompt:
         `Je bent een geheugen-extractor voor GIULIA OS. Analyseer deze uitwisseling tussen Salvo en zijn alter-ego Mattia. ` +
         `Haal ALLEEN blijvende, voor Giulia relevante informatie eruit: plannen/afspraken, beslissingen, nieuwe feiten of voorkeuren, genoemde mensen, en belangrijke gevoelens of moeilijke momenten (neutraal geformuleerd). ` +
