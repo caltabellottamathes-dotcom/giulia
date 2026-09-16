@@ -6,7 +6,7 @@ import { buildVoiceClientTools } from "@/lib/voiceClientTools";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import { Image } from "@/components/ui/image";
-import { Film, Upload, FolderOpen } from "lucide-react";
+import { Film, Upload, FolderOpen, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { IMAGES } from "@/lib/images";
 import SineLayers from "@/giulia/widgets/new/SineLayers";
@@ -26,7 +26,7 @@ const stripAudioTags = (s) => String(s || "").replace(/\[.*?\]/g, "").replace(/\
  *  gradient, status-header boven, glazen paneel onder met audio-reactieve
  *  bloom + transcript. Extra: upload om iets naar Mattia te verzenden (opslaan
  *  in mediatheek + tonen in MediaStage) en een Media-knop. */
-export default function PlayTimeVoicePanel({ onToggleMedia }) {
+export default function PlayTimeVoicePanel({ onToggleMedia, mobile, onClose }) {
   const { openModule } = usePanel();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -110,7 +110,14 @@ export default function PlayTimeVoicePanel({ onToggleMedia }) {
   const statusLabel = connecting ? "Verbinden…" : connected ? (isSpeaking ? "Spreekt" : "Luistert") : "Tik om te bellen";
 
   return (
-    <div className="absolute right-[2.5%] top-[8%] bottom-[8%] w-[34%] z-40 pointer-events-auto animate-slide-right rounded-[28px] overflow-hidden shadow-[0_32px_72px_-24px_rgba(0,0,0,0.5)]">
+    <div
+      className={cn(
+        "pointer-events-auto animate-slide-right rounded-[28px] overflow-hidden shadow-[0_32px_72px_-24px_rgba(0,0,0,0.5)]",
+        // Mobiel: full-cover overlay over de hele Playtime-ruit; anders de
+        // zwevende desktop-kaart rechts.
+        mobile ? "absolute inset-0 w-full z-50" : "absolute right-[2.5%] top-[8%] bottom-[8%] w-[34%] z-40"
+      )}
+    >
       {/* Foto-achtergrond */}
       <Image src={VOICE_PHOTO} fittingType="fill" alt="" className="absolute inset-0 w-full h-full" draggable={false} />
       <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/25 to-black/30" />
@@ -122,7 +129,12 @@ export default function PlayTimeVoicePanel({ onToggleMedia }) {
           <p className="font-display font-semibold tracking-[0.22em] text-[12px] uppercase text-ivory leading-none">MATTIA · PLAYTIME</p>
           <p className="text-[11px] text-ivory/60 mt-1.5 tracking-wide truncate">{statusLabel}</p>
         </div>
-        <button onClick={onToggleMedia} title="Media tonen" className="h-9 w-9 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory hover:bg-ivory/15 transition">
+        {onClose && (
+          <button onClick={onClose} aria-label="Sluiten" title="Sluiten" className="h-9 w-9 shrink-0 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory hover:bg-ivory/15 transition">
+            <X className="h-4 w-4" />
+          </button>
+        )}
+        <button onClick={onToggleMedia} title="Media tonen" className="h-9 w-9 shrink-0 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory hover:bg-ivory/15 transition">
           <Film className="h-4 w-4" />
         </button>
       </div>

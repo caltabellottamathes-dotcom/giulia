@@ -9,7 +9,8 @@ import QuickLauncher from "@/system/components/glass/QuickLauncher";
 import { useActiveDomain } from "@/lib/useActiveDomain";
 import { DEFAULT_BOARDS, loadCustomBoards, createCustomBoard, renameCustomBoard, deleteCustomBoard, getActiveBoard, setActiveBoard, isDefaultBoard } from "@/lib/useDashboardBoard";
 
-const actionBtn = "h-8 w-8 flex items-center justify-center text-white hover:bg-white/15 hover:text-white transition-colors shrink-0 rounded-lg";
+// Mobiel: grotere tik-doelen (36px) voor vingers; desktop blijft 32px.
+const actionBtn = "h-9 w-9 sm:h-8 sm:w-8 flex items-center justify-center text-white hover:bg-white/15 hover:text-white transition-colors shrink-0 rounded-lg";
 
 /**
  * WorkspaceToolbar — minimalistische volledig-brede werkbalk onderaan.
@@ -127,7 +128,7 @@ export default function WorkspaceToolbar() {
           (huidig dashboard + bellen + chat). Uitgeklapt: volledige werkbalk. */}
       <div
         className={cn(
-          "fixed bottom-4 left-4 lg:bottom-6 lg:left-6 z-30 flex items-center transition-[width,transform] duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+          "fixed bottom-[calc(1rem_+_var(--safe-bottom))] left-4 lg:bottom-6 lg:left-6 z-30 flex items-center transition-[width,transform] duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
           expanded ? "w-[calc(100vw-5.5rem)] lg:w-[calc(100vw-7.5rem)]" : "w-[224px]",
           onPaginaOntwerp && "hidden"
         )}
@@ -254,7 +255,7 @@ export default function WorkspaceToolbar() {
         onClick={() => setLauncherOpen(true)}
         aria-label="QuickLauncher"
         className={cn(
-          "fixed bottom-4 lg:bottom-6 z-30 h-11 w-11 rounded-full flex items-center justify-center hover:scale-105 transition-transform",
+          "fixed bottom-[calc(1rem_+_var(--safe-bottom))] lg:bottom-6 z-30 h-11 w-11 rounded-full flex items-center justify-center hover:scale-105 transition-transform",
           onPaginaOntwerp ? "left-4 lg:left-6" : "right-4 lg:right-6"
         )}
         style={{

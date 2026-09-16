@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Film } from "lucide-react";
+import { ArrowLeft, Film, Phone } from "lucide-react";
 import { Image } from "@/components/ui/image";
 import { IMAGES } from "@/lib/images";
 import MediaStage from "@/system/panels/MediaStage";
@@ -28,6 +28,16 @@ const RELATED = [
 export default function PlayTimePage() {
   const [mediaOpen, setMediaOpen] = useState(false);
   const [first, setFirst] = useState(true);
+  // Mobiel (<1024): géén ±24vw-verschuivingen (schuiven content van een
+  // telefoon het scherm af). De MediaStage wordt dan een full-cover overlay
+  // en de voice-panel een overlay via de zwevende Bel-knop.
+  const [isDesktop, setIsDesktop] = useState(() => typeof window !== "undefined" && window.innerWidth >= 1024);
+  const [voiceMobile, setVoiceMobile] = useState(false);
+  useEffect(() => {
+    const on = () => setIsDesktop(window.innerWidth >= 1024);
+    window.addEventListener("resize", on);
+    return () => window.removeEventListener("resize", on);
+  }, []);
   useEffect(() => { const t = setTimeout(() => setFirst(false), 900); return () => clearTimeout(t); }, []);
 
   // Mattia toont media (foto/video) → MediaStage schuift meteen open.
@@ -70,7 +80,7 @@ export default function PlayTimePage() {
       }
 
       {/* Glazen paneel — schuift naar links wanneer Media actief is */}
-      <motion.div initial={{ x: "118%" }} animate={{ x: mediaOpen ? "-24vw" : 0 }} transition={{ duration: 0.7, ease: EASE, delay: first ? 0.15 : 0 }}
+      <motion.div initial={{ x: "118%" }} animate={{ x: mediaOpen && isDesktop ? "-24vw" : 0 }} transition={{ duration: 0.7, ease: EASE, delay: first ? 0.15 : 0 }}
         className="absolute right-0 top-[78px] bottom-[94px] w-full lg:w-[76%] glass-2 rounded-l-[32px] rounded-r-none shadow-[0_64px_150px_-34px_rgba(0,0,0,0.55),-36px_0_80px_-28px_rgba(0,0,0,0.42)] flex z-[15]"
         style={{ backdropFilter: "blur(16px) saturate(1.25)", WebkitBackdropFilter: "blur(16px) saturate(1.25)" }}>
         {/* Linker glas-strook — media-toggle */}
@@ -94,32 +104,46 @@ export default function PlayTimePage() {
           <AnimatePresence>
             {mediaOpen &&
               <motion.div key="media" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35, ease: EASE }}
-                className="absolute top-[134px] bottom-[70px] left-0 w-full lg:w-[24vw] z-10 overflow-hidden rounded-r-[20px]"
+                className="absolute top-[134px] bottom-[70px] left-0 w-full lg:w-[24vw] z-30 lg:z-10 overflow-hidden rounded-r-[20px]"
                 style={{ background: "rgba(20,22,26,0.42)", backdropFilter: "blur(28px) saturate(1.3)", WebkitBackdropFilter: "blur(28px) saturate(1.3)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 18px 48px -20px rgba(0,0,0,0.5)" }}>
                 <MediaStage />
+                {/* Mobiel: de stage ligt over het editorial — eigen sluitknop */}
+                <button onClick={() => setMediaOpen(false)} className="lg:hidden absolute bottom-3 right-3 z-40 h-10 px-4 rounded-full glass-2 flex items-center text-ivory text-[11px] font-semibold uppercase tracking-[0.14em]">Sluiten</button>
               </motion.div>
             }
           </AnimatePresence>
 
           {/* Editorial card — schuift mee wanneer Media opent */}
-          <motion.div animate={{ x: mediaOpen ? "24vw" : 0 }} transition={{ duration: 0.7, ease: EASE }} className="absolute inset-0 z-20">
+          <motion.div animate={{ x: mediaOpen && isDesktop ? "24vw" : 0 }} transition={{ duration: 0.7, ease: EASE }} className="absolute inset-0 z-20">
             <div className="absolute inset-0 rounded-bl-[20px] rounded-r-none graph-paper flex overflow-hidden shadow-[-40px_8px_64px_-18px_rgba(0,0,0,0.55)]">
               {/* Editorial — links */}
-              <div className="relative z-0 w-[56%] h-full flex flex-col overflow-hidden border-r" style={{ borderColor: GREY }}>
+              <div className="relative z-0 w-full lg:w-[56%] h-full flex flex-col overflow-hidden border-r-0 lg:border-r" style={{ borderColor: GREY }}>
                 <PlayTimeChat onToggleMedia={() => setMediaOpen((o) => !o)} onOpenMedia={(detail) => { if (mediaOpen) window.dispatchEvent(new CustomEvent("giulia:open-media", { detail })); else { window.__giuliaPendingMedia = detail; setMediaOpen(true); } }} />
               </div>
 
               {/* Rechts — leeg canvas waar de voice-panel bovenop zweeft */}
-              <div className="relative z-10 flex-1 min-w-0 h-full" />
+              <div className="relative z-10 flex-1 min-w-0 h-full hidden lg:block" />
             </div>
           </motion.div>
 
           {/* Zwevende Mattia voice-panel — blijft op z'n plek wanneer de
               MediaStage opent: de tegenschuiving heft de -24vw van het
               glas-paneel op. */}
-          <motion.div animate={{ x: mediaOpen ? "24vw" : 0 }} transition={{ duration: 0.7, ease: EASE }} className="absolute inset-0 z-40 pointer-events-none">
-            <PlayTimeVoicePanel onToggleMedia={() => setMediaOpen((o) => !o)} />
+          <motion.div animate={{ x: mediaOpen && isDesktop ? "24vw" : 0 }} transition={{ duration: 0.7, ease: EASE }} className="absolute inset-0 z-40 pointer-events-none">
+            {isDesktop && <PlayTimeVoicePanel onToggleMedia={() => setMediaOpen((o) => !o)} />}
           </motion.div>
+
+          {/* Mobiel — bellen via zwevende knop; voice-panel als overlay */}
+          {!isDesktop && !mediaOpen && (
+            <button onClick={() => setVoiceMobile(true)} className="absolute right-5 bottom-20 z-40 h-12 px-5 rounded-full glass-2 flex items-center gap-2 text-ivory text-[12px] font-semibold uppercase tracking-[0.14em] shadow-[0_18px_40px_-16px_rgba(0,0,0,0.4)]">
+              <Phone className="h-4 w-4" /> Bel Mattia
+            </button>
+          )}
+          {!isDesktop && voiceMobile && (
+            <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: EASE }} className="absolute inset-0 z-50">
+              <PlayTimeVoicePanel mobile onClose={() => setVoiceMobile(false)} onToggleMedia={() => { setVoiceMobile(false); setMediaOpen((o) => !o); }} />
+            </motion.div>
+          )}
         </div>
       </motion.div>
     </div>

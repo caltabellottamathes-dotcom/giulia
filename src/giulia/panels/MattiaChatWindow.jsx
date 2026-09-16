@@ -4,6 +4,7 @@ import { usePanel } from "@/lib/PanelContext";
 import { base44 } from "@/api/base44Client";
 import LibraryPicker from "@/system/components/files/LibraryPicker";
 import ChatMessageText from "@/components/mattia/ChatMessageText";
+import { proxiedMedia } from "@/lib/mediaProxy";
 
 /**
  * MattiaChatWindow — MATTIA'S HOTLINE · chat. Horizontale editorial-versie
@@ -198,7 +199,12 @@ export default function MattiaChatWindow() {
       {zoom && (
         <div className="fixed inset-0 z-[90] bg-black/90 flex items-center justify-center p-6" onClick={() => setZoom(null)}>
           {zoom.type === "video" ? (
-            <video src={zoom.url} controls autoPlay className="max-w-full max-h-full rounded-md" onClick={(e) => e.stopPropagation()} />
+            <video src={proxiedMedia(zoom.url)} controls autoPlay playsInline className="max-w-full max-h-full rounded-md" onClick={(e) => e.stopPropagation()} />
+          ) : zoom.type === "audio" ? (
+            <div className="w-full max-w-md bg-white/5 rounded-xl p-5" onClick={(e) => e.stopPropagation()}>
+              <p className="text-sm mb-3 truncate" style={{ color: "#fff" }}>{zoom.name || "Audio"}</p>
+              <audio src={zoom.url} controls autoPlay className="w-full" />
+            </div>
           ) : (
             <img src={zoom.url} alt={zoom.name || "Mattia"} className="max-w-full max-h-full object-contain rounded-md" />
           )}

@@ -224,9 +224,13 @@ export default function MediaFullscreenWindow() {
   if (!mediaFullscreen || !media) return null;
 
   // ── Afmetingen ──
-  const maxWindowW = Math.min(vw - 32, 1400);
-  const windowW = Math.max(320, Math.min(ratio && boxH ? ratio * boxH : 720, maxWindowW));
-  const MAX_MIN_W = 360, MAX_MIN_H = 240;
+  // Mobiel: volledig full-bleed (geen marge, geen bottom-6) zodat foto/video
+  // echt het hele scherm vullen. Desktop: gekwalificeerde breedte/marges.
+  const isMobile = vw < 640;
+  const effBoxH = isMobile ? vh : boxH;
+  const maxWindowW = isMobile ? vw : Math.min(vw - 32, 1400);
+  const windowW = Math.max(320, Math.min(ratio && effBoxH ? ratio * effBoxH : 720, maxWindowW));
+  const MAX_MIN_W = Math.min(360, vw - 32), MAX_MIN_H = 240;
   let minW, minH;
   if (ratio >= 1) { minW = Math.min(MAX_MIN_W, MAX_MIN_H * ratio); minH = minW / ratio; }
   else { minH = Math.min(MAX_MIN_H, MAX_MIN_W / ratio); minW = minH * ratio; }
@@ -366,7 +370,7 @@ export default function MediaFullscreenWindow() {
 
   // Externe vorige/volgende-knop voor pdf — buiten de viewer, linksonder
   const pdfNav = !mediaMinimized && kind === "doc" && isPdf && !drive && ratioReady && (
-    <div className="fixed z-[57] flex items-center gap-1 rounded-full glass-2 px-2 py-1.5" style={{ right: windowW + 8, bottom: 72 }}>
+    <div className="fixed z-[57] flex items-center gap-1 rounded-full glass-2 px-2 py-1.5" style={{ right: isMobile ? 8 : windowW + 8, bottom: isMobile ? 16 : 72 }}>
       <button onClick={() => setPdfPage((p) => Math.max(1, p - 1))} disabled={pdfPage <= 1} className="h-8 w-8 rounded-full flex items-center justify-center text-foreground/80 hover:bg-foreground/10 disabled:opacity-30 transition"><ChevronLeft className="h-4 w-4" /></button>
       <span className="font-mono text-[11px] text-foreground/70 px-1 min-w-[56px] text-center">{pdfPage} / {pdfPages || "—"}</span>
       <button onClick={() => setPdfPage((p) => Math.min(pdfPages || 1, p + 1))} disabled={pdfPage >= pdfPages} className="h-8 w-8 rounded-full flex items-center justify-center text-foreground/80 hover:bg-foreground/10 disabled:opacity-30 transition"><ChevronRight className="h-4 w-4" /></button>
@@ -411,7 +415,7 @@ export default function MediaFullscreenWindow() {
         </div>
       ) : ratioReady && boxH > 0 ? (
         <div
-          className="fixed right-0 top-0 bottom-6 z-[56] animate-slide-right transition-transform duration-[430ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+          className={cn("fixed right-0 top-0 z-[56] animate-slide-right transition-transform duration-[430ms] ease-[cubic-bezier(0.16,1,0.3,1)]", isMobile ? "bottom-0" : "bottom-6")}
           style={{ width: windowW, transform: closing ? "translateX(100%)" : undefined }}
         >
           {renderShell(false)}

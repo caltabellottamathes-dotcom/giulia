@@ -112,12 +112,29 @@
     --glass-bg: 51 14% 88%;
     --glass-border: 60 12% 97%;
     --bloom-blue: 75% 0.12 230;
+    /* Mobile — safe-area (iPhone-homebalk e.d.) voor fixed onderbalken */
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Mobiel: geen 300ms dubbel-tik vertraging / dubbel-tik-zoom op controls */
+  button, a, [role="button"] {
+    touch-action: manipulation;
+  }
+
+  /* Mobiel: media breekt nooit de layout — nooit breder dan de container */
+  img, video, canvas, iframe {
+    max-width: 100%;
   }
 
   body {

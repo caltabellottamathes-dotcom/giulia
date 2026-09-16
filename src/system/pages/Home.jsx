@@ -69,13 +69,17 @@ export default function Home() {
   const [resetKey, setResetKey] = useState(0);
   const [startupDone, setStartupDone] = useState(() => sessionStorage.getItem("giulia_startup_done") === "1");
   const [fitH, setFitH] = useState(0);
+  // fitHeight/scale zijn PUUR desktop (masonry past dan in één beeld). Op
+  // mobiel moet het dashboard gewoon op 100% scrollen — de scale-fit kromp
+  // de hele grid op een telefoon tot ~20% (onleesbaar).
+  const [isDesktopView, setIsDesktopView] = useState(() => typeof window !== "undefined" && window.innerWidth >= 1024);
   const [howDoingOpen, setHowDoingOpen] = useState(false);
   const { toast } = useToast();
 
   // Desktop: masonry past in één beeld (geen scroll) — fitHeight laat
   // MasonryGrid zich afschalen tot de viewport-hoogte.
   useEffect(() => {
-    const calc = () => setFitH(window.innerHeight - 180);
+    const calc = () => { setFitH(window.innerHeight - 180); setIsDesktopView(window.innerWidth >= 1024); };
     calc();
     window.addEventListener("resize", calc);
     return () => window.removeEventListener("resize", calc);
@@ -330,7 +334,7 @@ export default function Home() {
               ))}
             </div>
           ) : visible.length > 0 ? (
-            <MasonryGrid key={activeBoard + resetKey} className="max-w-[1280px] xl:max-w-[1500px] min-h-[52vh]" gap={24} spans={cells.map((c) => c.span)} scale={0.8} columnTiers={[[0, 1], [640, 6], [1024, 12], [1280, 25]]} fitHeight={fitH}>
+            <MasonryGrid key={activeBoard + resetKey} className="max-w-[1280px] xl:max-w-[1500px] min-h-[52vh]" gap={24} spans={cells.map((c) => c.span)} scale={isDesktopView ? 0.8 : 1} columnTiers={[[0, 1], [640, 2], [1024, 12], [1280, 25]]} fitHeight={isDesktopView ? fitH : null}>
               {cells.map((c) => c.node)}
             </MasonryGrid>
           ) : (
