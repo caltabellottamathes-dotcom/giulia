@@ -82,13 +82,25 @@ export async function createApproval(base44, type, title, content, context, assi
     // op titel. Een approval die al pending/goedgekeurd/uitgevoerd/
     // already_done is blokkeert een nieuwe — alleen rejected/discarded
     // laat ruimte om opnieuw voor te stellen.
-    const dupBase = m.thread_id
-      ? { type, thread_id: m.thread_id }
-      : m.target
-      ? { type, target: String(m.target) }
-      : { type, title: title || type };
-    const existing = await sr.entities.Approval.filter(dupBase).catch(() => []);
-    if (existing && existing.length) {
+    // Dedup — voorkom tientallen approvals over hetzelfde onderwerp én
+    // voorkom dat een al-afgehandelde zaak opnieuw wordt aangeboden.
+    // Laag 1: thread_id (per gesprek/mail). Laag 2: target (per ontvanger).
+    // Laag 3: titel-gelijkenis ≥80% (alléén voor bericht-concepten — de
+    // achtergrond-cycli herschreven dezelfde BOGÈST-mail steeds met een
+    // nét andere titel). Een approval die al pending/goedgekeurd/
+    // uitgevoerd/already_done is blokkeert een nieuwe — alleen
+    // rejected/discarded laat ruimte om opnieuw voor te stellen.
+    const allOfType = await sr.entities.Approval.filter({ type }, "-created_date", 100).catch(() => []);
+    let existing = m.thread_id ? allOfType.filter((a) => a.thread_id === m.thread_id) : [];
+    if (!existing.length && m.target) {
+      existing = allOfType.filter((a) => String(a.target || "") === String(m.target));
+    }
+    if (!existing.length && (type === "email" || type === "whatsapp")) {
+      existing = allOfType.filter(
+        (a) => titleSimilarity(a.title || a.description || "", title || "") >= 0.8
+      );
+    }
+    if (existing.length) {
       // Al uitgevoerd/goedgekeurd/afgehandeld → niet opnieuw aanbieden.
       const done = existing.find((a) => ["approved", "executed", "already_done"].includes(a.status));
       if (done) return done;

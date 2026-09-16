@@ -113,8 +113,11 @@ export default async function (req) {
       const rawApprovalExecute = toolsMap["create_approval"].execute;
       toolsMap["create_approval"] = {
         ...toolsMap["create_approval"],
-        description: `${toolsMap["create_approval"].description} NOOT: bericht-concepten (email/whatsapp) zijn NIET toegestaan in dit achtergrondproces.`,
+        description: `${toolsMap["create_approval"].description} NOOT: bericht-concepten (email/whatsapp) én proactieve voorstellen (category='proactive') zijn NIET toegestaan in dit achtergrondproces.`,
         execute: async (args, b44) => {
+          if (String(args?.category || "").toLowerCase() === "proactive") {
+            return { skipped: true, note: "Proactieve voorstellen zijn uitgeschakeld — Salvo vraagt zelf om suggesties als hij ze wil. Signaleer iets bijzonders via report_to_salvo." };
+          }
           const kind = String(args?.type || args?.action_type || "").toLowerCase();
           if (["email", "whatsapp", "email_send", "whatsapp_send"].includes(kind)) {
             return { skipped: true, note: "Automatische e-mail/WhatsApp-concepten zijn uitgeschakeld — Salvo vraagt zelf om een antwoord via de chat of de 'genereer antwoord'-knop. Stel geen bericht voor; signaleer alleen wat er speelt (report_to_salvo)." };
