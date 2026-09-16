@@ -24,6 +24,13 @@ const categoryMeta = {
   proactive: { label: "Proactief", color: "hsl(var(--ridge))", icon: Sparkles },
 };
 const statuses = ["pending", "approved", "executed", "edited", "already_done", "rejected", "discarded", "all"];
+const effectLabel = (a) => ({
+  email: "Verstuurd als e-mail",
+  whatsapp: "Verstuurd via WhatsApp",
+  calendar: "Afspraak in je agenda",
+  task: "Taak toegevoegd",
+  file: "Bestand opgeslagen",
+}[a.type] || "Uitgevoerd");
 const statusLabel = { pending: "Wachtend", approved: "Goedgekeurd", executed: "Uitgevoerd", edited: "Bewerkt", already_done: "Al gebeurd", rejected: "Verworpen", discarded: "Verworpen (oud)", all: "Alles" };
 const pad2 = (n) => String(n).padStart(2, "0");
 
@@ -187,6 +194,15 @@ export default function Approvals() {
                       )}
                     </div>
                     <h3 className="text-sm font-display font-semibold">{approval.description}</h3>
+                    <div className="flex items-center gap-2 flex-wrap text-[11px] text-muted-foreground mt-1">
+                      {approval.target && (
+                        <span><span className="text-olive font-medium">Aan:</span> {approval.target}</span>
+                      )}
+                      <span>Na goedkeuring: {effectLabel(approval)}{approval.target && (approval.type === "email" || approval.type === "whatsapp") ? ` aan ${approval.target}` : ""}</span>
+                      {approval.created_date && (
+                        <span>{new Date(approval.created_date).toLocaleDateString("nl-NL", { day: "numeric", month: "short" })}</span>
+                      )}
+                    </div>
                     {approval.context && (
                       <div className="glass-1 rounded-lg p-3 mt-3">
                         <div className="flex items-center gap-1.5 mb-1">
