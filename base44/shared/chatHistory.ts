@@ -44,6 +44,17 @@ export function amsterdamDayWindow(now = new Date()) {
   };
 }
 
+/**
+ * Journal-venster: gisteren 22:00 Amsterdam → nu. De journal draait om 22:00;
+ * met een kale dagvenster vallen avond-chats (22:00–24:00) túszen twee
+ * dagbeelden in en verdwijnen ze uit álle dagbeelden — dit venster sluit
+ * dat gat (en dekt meteen de late nacht-chats van de vorige avond).
+ */
+export function amsterdamJournalWindow(now = new Date()) {
+  const win = amsterdamDayWindow(now);
+  return { ...win, start: new Date(win.start.getTime() - 2 * 3600000) };
+}
+
 /** Systeem-promptblok: actuele tijd + dagnamen + gap-awareness regel. */
 export function timeAwarenessBlock(now = new Date()) {
   const off = amsterdamOffsetMs(now);

@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { geminiDecide, GIULIA_PERSONA } from '../../shared/gemini.ts';
-import { amsterdamDayWindow } from '../../shared/chatHistory.ts';
+import { amsterdamJournalWindow } from '../../shared/chatHistory.ts';
 import { emitEvent } from '../../shared/eventEngine.ts';
 import { notify } from '../../shared/notify.ts';
 
@@ -14,10 +14,10 @@ export default async function (req) {
     const base44 = createClientFromRequest(req);
     const sr = base44.asServiceRole;
     const now = new Date();
-    // Amsterdam-dagvenster: de runtime draait in UTC, waardoor late avond- en
-    // nachtchats buiten het dagvenster (of in de verkeerde dag) vielen en de
-    // journal 'leeg' leek terwijl er wél geleefd en gechat werd.
-    const win = amsterdamDayWindow(now);
+    // Journal-venster: gisteren 22:00 Amsterdam → nu. De runtime draait in UTC,
+    // en met een kale dagvenster vielen late avond-chats (22:00–24:00) tussen
+    // twee dagbeelden in — ze kwamen in géén enkel dagbeeld terecht.
+    const win = amsterdamJournalWindow(now);
     const dayStart = win.start;
     const dayEnd = win.end;
     const title = `Dagbeeld ${win.dateLabel}`;
