@@ -117,7 +117,7 @@ export const MATTIA_MEDIA_SKILLS = [
   {
     name: "get_playtime_image",
     description:
-      "Haal één willekeurige foto of video uit de gescrapte Playtime-collectie op basis van categorie. De categorieën staan dynamisch in de collectie — inclusief elke categorie die Salvo via de Media Admin toevoegt; gebruik list_playtime_categories om te zien wat er allemaal is. De media rendert direct als thumbnail in de chat (Salvo opent hem zelf door erop te klikken) én je krijgt de url terug. NEEM DIE URL LETTERLIJK OP IN JE ANTWOORD — gewoon de link in je tekst — zodat de foto in de chat zelf als afbeelding rendert (een video als klikbare link die de videospeler opent). Gebruik dit alléén wanneer Salvo expliciet om een foto, video of categorie vraagt — stuur nóóit ongevraagd media. Bestaat de categorie niet, dan krijg je de beschikbare categorieën terug; zeg eerlijk wat er is.",
+    "Haal één willekeurige foto of video uit de gescrapte Playtime-collectie op basis van categorie. De categorieën staan dynamisch in de collectie — inclusief elke categorie die Salvo via de Media Admin toevoegt; gebruik list_playtime_categories om te zien wat er allemaal is. De media rendert direct als thumbnail in de chat (Salvo opent hem zelf door erop te klikken) én je krijgt de url terug. NEEM DIE URL LETTERLIJK OP IN JE ANTWOORD — gewoon de link in je tekst — zodat de foto in de chat zelf als afbeelding rendert (een video als klikbare link die de videospeler opent). Gebruik dit alléén wanneer Salvo expliciet om een foto, video of categorie vraagt — stuur nóóit ongevraagd media. Bestaat de categorie niet, dan krijg je de beschikbare categorieën terug; zeg eerlijk wat er is — VERZIN DAN NOOIT ZELF een foto- of video-URL: een link die niet uit dit tool-resultaat komt is nep en laat bij Salvo een leeg bestand zien.",
     inputSchema: {
       type: "object",
       properties: {
@@ -154,7 +154,7 @@ export const MATTIA_MEDIA_SKILLS = [
             status: `geen foto's beschikbaar voor categorie '${q}'`,
             found: 0,
             available_categories: available,
-            message: `Er staat nog geen Playtime-foto met categorie '${q}' in de collectie. Beschikbaar: ${available.join(", ") || "nog niets"}. Zeg dat eerlijk tegen Salvo en kies een bestaande categorie — wil hij iets nieuws, dan kan hij de galerij via de Media Admin laten scrapen.`,
+            message: `Er staat nog geen Playtime-foto met categorie '${q}' in de collectie. Beschikbaar: ${available.join(", ") || "nog niets"}. Zeg dat eerlijk tegen Salvo en kies een bestaande categorie — wil hij iets nieuws, dan kan hij de galerij via de Media Admin laten scrapen. VERZIN NOOIT een url: stuur GEEN enkele foto- of video-link in je antwoord, want dit resultaat bevat er geen.`,
           };
         }
         const pick = matches[Math.floor(Math.random() * matches.length)];

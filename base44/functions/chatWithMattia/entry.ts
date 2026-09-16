@@ -160,7 +160,7 @@ export default async function (req) {
     const personaLayers = [MATTIA_BUDDY, timeAwarenessBlock(), convoRule, operationalPart];
     if (wantsNaughty) personaLayers.push(MATTIA_NAUGHTY);
     if (wantsPlaytime) personaLayers.push(MATTIA_PLAYTIME);
-    const closing = `\n\nJe bent Mattia. Spreek direct met Salvo — vlot, scherp, droog, met humor, met een eigen mening. Voer uit wat nodig is via de tools en geef daarna een menselijk antwoord. ANTWOORDEN ALS WHATSAPP: één tot drie korte zinnen max, vaak minder — echt heen-en-weer gechat, geen monoloog, geen opsomming, geen muur van tekst. Schrijf in spreektaal: korte zinnen, spreekritme, onderbreek jezelf, alledaagse woorden, geen puntkomma's of literaire opmaak. Vraag soms iets terug, laat het gesprek ademen. To the point, niet treuzelig. Antwoord NOOIT met alleen "Geregeld." — zeker niet na een foto-tool: geef dan altijd een echte korte zin mét de image_url letterlijk erin.`;
+    const closing = `\n\nJe bent Mattia. Spreek direct met Salvo — vlot, scherp, droog, met humor, met een eigen mening. Voer uit wat nodig is via de tools en geef daarna een menselijk antwoord. ANTWOORDEN ALS WHATSAPP: één tot drie korte zinnen max, vaak minder — echt heen-en-weer gechat, geen monoloog, geen opsomming, geen muur van tekst. Schrijf in spreektaal: korte zinnen, spreekritme, onderbreek jezelf, alledaagse woorden, geen puntkomma's of literaire opmaak. Vraag soms iets terug, laat het gesprek ademen. To the point, niet treuzelig. Antwoord NOOIT met alleen "Geregeld." — zeker niet na een foto-tool: geef dan altijd een echte korte zin mét de image_url letterlijk erin. Stuur NOOIT een foto- of video-link die niet letterlijk uit een tool-resultaat komt: als een tool niks (of 'geen foto's beschikbaar') teruggeeft, zeg dat dan gewoon eerlijk — een link verzinnen is FOUT en levert Salvo lege bestanden op.`;
     // De tijdstempels staan NIET in de berichttekst (het model kopieerde ze
     // letterlijk mee in z'n antwoord) maar als compacte tijdlijn onderaan de
     // systeem-prompt — puur als metadata.
@@ -332,6 +332,21 @@ export default async function (req) {
 
     // ── SAVE RESPONSE (role: mattia) — géén approval-enforcer-ronde ──
     let finalText = responseText || (executed.length ? "Geregeld." : "Mattia is even stil — probeer het zo weer.");
+
+    // VANGNET 2: gehallucineerde media-URL's. Als een categorie leeg was,
+    // verzon het model zélf links (playtime-media.local/…, cdn-media.com/…)
+    // → Salvo kreeg lege bestanden. Alleen URL's die ÉCHT uit een tool kwamen
+    // (shownUrls) mogen in het antwoord; alle andere media-achtige links
+    // verdwijnen uit de tekst.
+    if (finalText) {
+      finalText = finalText.replace(/https?:\/\/[^\s)\]]+/g, (raw) => {
+        const clean = raw.replace(/[)\]>"'.,;:!?]+$/, "");
+        const isShown = shownUrls.some((s) => clean === s || clean.includes(s) || s.includes(clean));
+        const looksMedia = /\.(png|jpe?g|gif|webp|mp4|mov|webm|mkv)(\?|#|$)/i.test(clean)
+          || /(twimg\.com|redgifs\.com|redd\.it|imagefap|cdn-media\.com|playtime-media)/i.test(clean);
+        return isShown || !looksMedia ? raw : "";
+      }).replace(/[ \t]{2,}/g, " ").trim();
+    }
 
     // GARANTIE: elke foto die een tool heeft getoond staat ook écht in het
     // chat-antwoord — de URL letterlijk in de tekst, zodat de frontend hem
