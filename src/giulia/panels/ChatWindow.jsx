@@ -220,7 +220,7 @@ export default function ChatWindow() {
               <input ref={fileRef} type="file" multiple className="hidden" onChange={onPickFile} />
               <button
                 onClick={() => setLibOpen(true)}
-                className="h-12 w-12 shrink-0 rounded-full bg-ivory/10 border border-ivory/15 flex items-center justify-center text-ivory/70 hover:text-ivory hover:bg-ivory/15 transition-colors"
+                className="h-12 w-12 shrink-0 rounded-full bg-ivory/10 border border-ivory/15 hidden sm:flex items-center justify-center text-ivory/70 hover:text-ivory hover:bg-ivory/15 transition-colors"
                 aria-label="Kies uit bibliotheek"
                 title="Kies uit bibliotheek"
               >

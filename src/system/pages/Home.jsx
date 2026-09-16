@@ -14,6 +14,7 @@ import { Plus, Sparkles, RefreshCw } from "lucide-react";
 import AddWidgetPicker from "@/system/panels/AddWidgetPicker";
 import WidgetCell from "@/system/widgets/WidgetCell";
 import MasonryGrid from "@/system/widgets/MasonryGrid";
+import MobileBoardSwitcher from "@/system/components/mobile/MobileBoardSwitcher";
 import HowDoingCheckInOverlay from "@/life/widgets/new/HowDoingCheckInOverlay";
 
 import StartupSequence from "@/system/components/StartupSequence";
@@ -111,6 +112,13 @@ export default function Home() {
     setActiveBoard(nb.id);
     setActiveBoardState(nb.id);
     window.dispatchEvent(new CustomEvent("giulia:board-change", { detail: nb.id }));
+  };
+  // Mobiel: wissel board via de compacte board-kiezer onder de groet.
+  const selectMobileBoard = (id) => {
+    if (id === activeBoard) return;
+    setActiveBoard(id);
+    setActiveBoardState(id);
+    window.dispatchEvent(new CustomEvent("giulia:board-change", { detail: id }));
   };
   useEffect(() => {
     const el = swipeRef.current;
@@ -321,6 +329,11 @@ export default function Home() {
             </h1>
           </div>
         </header>
+
+        {/* Board-kiezer — alleen mobiel; desktop wisselt via toolbar + swipe. */}
+        <div className="lg:hidden px-5 pb-5">
+          <MobileBoardSwitcher boards={[...DEFAULT_BOARDS, ...loadCustomBoards()]} active={activeBoard} onSelect={selectMobileBoard} />
+        </div>
 
         <div className="px-5 lg:px-10 pb-10 lg:pb-0">
           {showLoading ? (
