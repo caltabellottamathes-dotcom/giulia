@@ -104,6 +104,25 @@ export default async function (req) {
     // sync, workflows) krijgen géén geheugen-tool — anders slaat elke
     // systeemstart z'n eigen statusfragment in het geheugen op.
     if (isBackgroundSource) delete toolsMap["create_memory"];
+    // BERICHT-CONCEPT-GATING: Giulia maakt NOOIT automatisch een e-mail- of
+    // WhatsApp-concept — alléén als Salvo er expliciet om vraagt (chat/voice
+    // of de "genereer antwoord"-knop). Achtergrondbronnen (opstart,
+    // communicatie-cyclus, sociale workflows) krijgen een create_approval die
+    // bericht-concepten weigert; alle andere approvals blijven werken.
+    if (isBackgroundSource && toolsMap["create_approval"]) {
+      const rawApprovalExecute = toolsMap["create_approval"].execute;
+      toolsMap["create_approval"] = {
+        ...toolsMap["create_approval"],
+        description: `${toolsMap["create_approval"].description} NOOT: bericht-concepten (email/whatsapp) zijn NIET toegestaan in dit achtergrondproces.`,
+        execute: async (args, b44) => {
+          const kind = String(args?.type || args?.action_type || "").toLowerCase();
+          if (["email", "whatsapp", "email_send", "whatsapp_send"].includes(kind)) {
+            return { skipped: true, note: "Automatische e-mail/WhatsApp-concepten zijn uitgeschakeld — Salvo vraagt zelf om een antwoord via de chat of de 'genereer antwoord'-knop. Stel geen bericht voor; signaleer alleen wat er speelt (report_to_salvo)." };
+          }
+          return rawApprovalExecute(args, b44);
+        },
+      };
+    }
 
     if (isOperational) {
       // 1. DATA GATHERING (alleen bij operationele berichten / achtergrondbron)
@@ -235,7 +254,7 @@ export default async function (req) {
       : "";
 
     const sourceRule = isBackgroundSource
-      ? `\n\n== ACHTERGRONDBRON (geen live chat) ==\nDit signaal komt niet direct van Salvo in de chat (bron: ${source}). Verwerk het autonoom: neem cross-domain acties en koppel herkende objecten aan elkaar (link_objects, bv. taak→project, event→therapie-traject via link_event_to_therapy), plan en leg follow-ups vast. Routinematige status ('sync gelukt', 'X mails verwerkt', 'opstart') hoort in report_to_salvo (Activity-feed), NOOIT in create_notification. Alleen create_notification bij een echte vraag die Salvo zelf moet beantwoorden.\n`
+      ? `\n\n== ACHTERGRONDBRON (geen live chat) ==\nDit signaal komt niet direct van Salvo in de chat (bron: ${source}). Verwerk het autonoom: neem cross-domain acties en koppel herkende objecten aan elkaar (link_objects, bv. taak→project, event→therapie-traject via link_event_to_therapy), plan en leg follow-ups vast. Routinematige status ('sync gelukt', 'X mails verwerkt', 'opstart') hoort in report_to_salvo (Activity-feed), NOOIT in create_notification. Alleen create_notification bij een echte vraag die Salvo zelf moet beantwoorden. E-mail- of WhatsApp-ANTWOORDEN stel je NOOIT voor — bericht-concepten maak je alléén op expliciet verzoek van Salvo zelf (chat/voice of de 'genereer antwoord'-knop); signaleer belangrijk alleen via report_to_salvo.\n`
       : "";
 
     const convoRule = source === "chat"
