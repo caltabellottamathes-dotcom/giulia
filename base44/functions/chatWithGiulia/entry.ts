@@ -6,7 +6,7 @@ import { GIULIA_SKILLS } from '../../shared/giuliaSkills.ts';
 import { linkMentionedContacts } from '../../shared/contactLinker.ts';
 import { enforceApprovalClaim } from '../../shared/approvalEnforcer.ts';
 import { buildImageParts } from '../../shared/imageParts.ts';
-import { timeAwarenessBlock, loadTimestampedHistory, makeChatHistorySearchTool } from '../../shared/chatHistory.ts';
+import { timeAwarenessBlock, loadTimestampedHistory, buildThreadIndex, makeChatHistorySearchTool } from '../../shared/chatHistory.ts';
 
 /**
  * chatWithGiulia — GIULIA-GIULIA (het brein) stuurt GIULIA-CORE (de blinde
@@ -242,7 +242,7 @@ export default async function (req) {
       ? "GIULIA-CORE (de executor) werkt STIL: zij voert je opdrachten uit en rapporteert NIET terug wat ze gedaan heeft — jij stuurt haar aan en zij doet het gewoon. Denk na, roep de functies aan die nodig zijn om zijn verzoek ECHT uit te voeren. Voor details die niet in je samenvatting staan, roep je een query-tool aan."
       : "Geen tools nodig — dit is gewoon praten. Antwoord direct, menselijk, zonder acties uit te voeren.";
 
-    const systemInstruction = `${GIULIA_TONE}${timeAwarenessBlock()}\n\n${convoRule}\n\n${profile}\n\n${contextLines ? contextLines + "\n\n" : ""}${rules}${toolsBlock}${sourceRule}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo, als zijn beste vriendin — vlot, warm, droog-sarcastisch, uitdagend, stout. ${operationalClosing} Geef daarna een vlot, menselijk antwoord in het Nederlands — to the point, niet treuzelig, met humor, en daag hem uit waar nodig. Stel geen acties voor, bied geen menu aan, sommer geen opties, herhaal niet wat Salvo zei. Wacht met voorstellen tot er een duidelijke, actuele nood is.
+    let systemInstruction = `${GIULIA_TONE}${timeAwarenessBlock()}\n\n${convoRule}\n\n${profile}\n\n${contextLines ? contextLines + "\n\n" : ""}${rules}${toolsBlock}${sourceRule}\n\nJe bent GIULIA-GIULIA. Je spreekt direct met Salvo, als zijn beste vriendin — vlot, warm, droog-sarcastisch, uitdagend, stout. ${operationalClosing} Geef daarna een vlot, menselijk antwoord in het Nederlands — to the point, niet treuzelig, met humor, en daag hem uit waar nodig. Stel geen acties voor, bied geen menu aan, sommer geen opties, herhaal niet wat Salvo zei. Wacht met voorstellen tot er een duidelijke, actuele nood is.
 
 == TAAL ==
 Default language: English. If Salvo speaks another language, match his language for that reply. Never default to Dutch.`;
@@ -255,10 +255,12 @@ Default language: English. If Salvo speaks another language, match his language 
       // tot 600 tekens — tokenverspilling minimaliseren. Giulia delegeert
       // zware data-opvraging aan backend-functies (query-tools / delegate_to)
       // in plaats van alles via de geschiedenis mee te sturen.
-      // MEER GEHEUGEN + tijdstempels: operational 12, casual 8 beurten terug.
+      // MEER GEHEUGEN: operational 12, casual 8 beurten terug. Tijdstempels
+      // als aparte tijdlijn in de systeem-prompt, niet in de berichttekst.
       const histLimit = isOperational ? 12 : 8;
       const ordered = await loadTimestampedHistory(sr, { threadId: "giulia", limit: histLimit, maxChars: 600, roles: ["user", "giulia"] });
       contents = ordered.map((m) => ({ role: m.role, parts: [{ text: m.text }] }));
+      systemInstruction += "\n\n" + buildThreadIndex(ordered);
       const lastTurn = contents[contents.length - 1];
       const alreadyLast = lastTurn && lastTurn.role === "user"
         && String(lastTurn.parts?.[0]?.text || "").includes(message.slice(0, 30));

@@ -8,7 +8,7 @@ import { linkMentionedContacts } from '../../shared/contactLinker.ts';
 import { buildImageParts } from '../../shared/imageParts.ts';
 import { MATTIA_MEDIA_SKILLS, categorizePlaytimePhotos } from '../../shared/mattiaMediaSkills.ts';
 import { shareMattiaHighlights } from '../../shared/mattiaBridge.ts';
-import { timeAwarenessBlock, loadTimestampedHistory, makeChatHistorySearchTool } from '../../shared/chatHistory.ts';
+import { timeAwarenessBlock, loadTimestampedHistory, buildThreadIndex, makeChatHistorySearchTool } from '../../shared/chatHistory.ts';
 
 /**
  * chatWithMattia — Mattia chat, BYOK (MATTIA-MATTIA_Gemini_API_Key), géén
@@ -161,7 +161,10 @@ export default async function (req) {
     if (wantsNaughty) personaLayers.push(MATTIA_NAUGHTY);
     if (wantsPlaytime) personaLayers.push(MATTIA_PLAYTIME);
     const closing = `\n\nJe bent Mattia. Spreek direct met Salvo — vlot, scherp, droog, met humor, met een eigen mening. Voer uit wat nodig is via de tools en geef daarna een menselijk antwoord. ANTWOORDEN ALS WHATSAPP: één tot drie korte zinnen max, vaak minder — echt heen-en-weer gechat, geen monoloog, geen opsomming, geen muur van tekst. Schrijf in spreektaal: korte zinnen, spreekritme, onderbreek jezelf, alledaagse woorden, geen puntkomma's of literaire opmaak. Vraag soms iets terug, laat het gesprek ademen. To the point, niet treuzelig. Antwoord NOOIT met alleen "Geregeld." — zeker niet na een foto-tool: geef dan altijd een echte korte zin mét de image_url letterlijk erin.`;
-    const systemInstruction = personaLayers.join("\n") + closing;
+    // De tijdstempels staan NIET in de berichttekst (het model kopieerde ze
+    // letterlijk mee in z'n antwoord) maar als compacte tijdlijn onderaan de
+    // systeem-prompt — puur als metadata.
+    let systemInstruction = personaLayers.join("\n") + closing;
 
     // ── TOOLS ───────────────────────────────────────────────────────
     // Media-tools (camera, bibliotheek, get_playtime_image) zijn er maar een
@@ -231,10 +234,11 @@ export default async function (req) {
     // ── CONVERSATIE-GESCHIEDENIS (Mattia-draad) ──────────────────────
     let contents;
     if (source === "chat") {
-      // MEER GEHEUGEN: 24 berichten ipv 6, elk met tijdstempel zodat Mattia ziet
-      // hoe oud het gesprek is en niet verder kletst alsof het 3 min geleden was.
+      // MEER GEHEUGEN: 24 berichten ipv 6. De tijdstempels gaan als aparte
+      // tijdlijn in de systeem-prompt, niet in de berichttekst zelf.
       const ordered = await loadTimestampedHistory(sr, { threadId: "mattia", limit: 24, maxChars: 600, roles: ["user", "mattia"] });
       contents = ordered.map((m) => ({ role: m.role, parts: [{ text: m.text }] }));
+      systemInstruction += "\n\n" + buildThreadIndex(ordered);
       const lastTurn = contents[contents.length - 1];
       const alreadyLast = lastTurn && lastTurn.role === "user" && String(lastTurn.parts?.[0]?.text || "").includes(message.slice(0, 30));
       if (!alreadyLast) {

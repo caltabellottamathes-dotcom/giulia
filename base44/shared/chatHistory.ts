@@ -55,7 +55,7 @@ export function timeAwarenessBlock(now = new Date()) {
     "== TIJDBEWUSTZIJN ==",
     `Het is nu: ${loc.toLocaleDateString("nl-NL", { timeZone: "UTC", weekday: "long", day: "numeric", month: "long", year: "numeric" })}, ${loc.toLocaleTimeString("nl-NL", { timeZone: "UTC", hour: "2-digit", minute: "2-digit" })} (Europe/Amsterdam).`,
     `Vandaag = ${dayName(0)} · gisteren = ${dayName(-1)} · eergisteren = ${dayName(-2)}.`,
-    "Elk bericht in de draad heeft tussen haakjes een verzend-moment ('(verzonden wo 16 sep, 01:21)'). Dat is METADATA, geen onderdeel van de tekst: neem die tijdstempels NOOIT letterlijk over in je eigen antwoord, citeer ze niet en begin er nooit een zin mee. CHECK het vóór je antwoord: is het laatste bericht van lang geleden (uren of dagen), ga dan NIET verder alsof jullie net aan het praten waren — merk het kort op, vat samen waar jullie stonden en behandel het als een nieuw begin.",
+    "Elke oudere beurt in de draad heeft een tijdstempel in de DRAAD-TIJDLIJN onderaan deze systeem-instructie. Die tijdlijn is METADATA: neem de tijdstempels NOOIT letterlijk over in je antwoord, citeer ze niet, begin er nooit een zin mee. Gebruik ze alléén om te CHECKEN hoe oud het gesprek is: is het laatste bericht van lang geleden (uren of dagen), ga dan NIET verder alsof jullie net aan het praten waren — merk het kort op, vat samen waar jullie stonden en behandel het als een nieuw begin.",
     "Verwijst Salvo naar een eerder gesprek (gisteren, eergisteren, vorige week, 'wat zei ik over X') en het staat niet in de draad? Gebruik dan search_chat_history om het terug te vinden — raad nooit.",
   ].join("\n");
 }
@@ -85,10 +85,29 @@ export async function loadTimestampedHistory(sr, { threadId, limit = 20, maxChar
     .filter((m) => m.content && String(m.content).trim())
     .filter((m) => !roles || roles.includes(m.role))
     .reverse();
+  // text = kale berichttekst ZONDER tijdstempel (het model kopieerde de
+  // stamp letterlijk mee in zijn antwoord); de tijd zit in stamp/index.
   return ordered.map((m) => ({
     role: m.role === "user" ? "user" : "model",
-    text: `(verzonden ${formatStamp(m.created_date)}) ${String(m.content).slice(0, maxChars)}`,
+    who: m.role === "user" ? "Salvo" : m.role,
+    text: String(m.content).slice(0, maxChars),
+    stamp: formatStamp(m.created_date),
   }));
+}
+
+/**
+ * Compacte tijdlijn van de draad voor de systeem-prompt — metadata-only:
+ * tijdstip + korte excerpt per beurt, oud → nieuw. De berichtteksten zelf
+ * blijven zonder stamps in `contents` zodat het model ze niet napraat.
+ */
+export function buildThreadIndex(items, { maxItems = 12, maxChars = 70 } = {}) {
+  const rows = (items || []).slice(-maxItems).map((m, i) => {
+    const excerpt = String(m.text || "").replace(/\s+/g, " ").trim();
+    const short = excerpt.slice(0, maxChars);
+    return `${i + 1}. ${m.stamp || "onbekend"} · ${m.who || (m.role === "user" ? "Salvo" : "agent")}: ${short}${excerpt.length > maxChars ? "…" : ""}`;
+  });
+  if (!rows.length) return "";
+  return ["== DRAAD-TIJDLIJN (metadata — NOOIT overnemen of citeren in je antwoord) ==", ...rows].join("\n");
 }
 
 /**
