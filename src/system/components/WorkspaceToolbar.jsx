@@ -120,14 +120,14 @@ export default function WorkspaceToolbar() {
   return (
     <>
       {/* bottom hover-reveal zone */}
-      <div className="fixed bottom-0 inset-x-0 h-10 z-20 hidden lg:block" onMouseEnter={expand} />
+      <div className="fixed bottom-0 inset-x-0 h-10 z-20" onMouseEnter={expand} />
 
       {/* the bar — volledig glasmorfisch, schuift vloeiend in/uit.
           Ingeklapt: compacte balk links met de belangrijkste items
           (huidig dashboard + bellen + chat). Uitgeklapt: volledige werkbalk. */}
       <div
         className={cn(
-          "fixed bottom-4 left-4 lg:bottom-6 lg:left-6 z-30 hidden lg:flex items-center transition-[width,transform] duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+          "fixed bottom-4 left-4 lg:bottom-6 lg:left-6 z-30 flex items-center transition-[width,transform] duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
           expanded ? "w-[calc(100vw-5.5rem)] lg:w-[calc(100vw-7.5rem)]" : "w-[224px]",
           onPaginaOntwerp && "hidden"
         )}
@@ -254,7 +254,7 @@ export default function WorkspaceToolbar() {
         onClick={() => setLauncherOpen(true)}
         aria-label="QuickLauncher"
         className={cn(
-          "fixed bottom-4 lg:bottom-6 z-30 h-11 w-11 rounded-full hidden lg:flex items-center justify-center hover:scale-105 transition-transform",
+          "fixed bottom-4 lg:bottom-6 z-30 h-11 w-11 rounded-full flex items-center justify-center hover:scale-105 transition-transform",
           onPaginaOntwerp ? "left-4 lg:left-6" : "right-4 lg:right-6"
         )}
         style={{

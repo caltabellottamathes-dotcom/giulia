@@ -20,7 +20,6 @@ import TauriFocusSync from "@/system/components/native/TauriFocusSync";
 import { GiuliaAgentProvider } from "@/lib/GiuliaAgentContext";
 import { useAgentNavigation } from "@/lib/useAgentNavigation";
 import GiuliaBubble from "@/system/components/glass/GiuliaBubble";
-import MobileTabBar from "@/system/components/mobile/MobileTabBar";
 
 export default function Layout() {
   return (
@@ -53,7 +52,7 @@ function LayoutInner() {
       {/* Full-width workspace — navigation lives in the bottom plus-button menu */}
       <div className="flex flex-col h-screen relative overflow-hidden">
         {/* Header */}
-        <header className="sticky top-0 z-20 h-14 shrink-0 flex items-center px-5 lg:px-10 bg-transparent opacity-100" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+        <header className="sticky top-0 z-20 h-14 shrink-0 flex items-center px-5 lg:px-10 bg-transparent opacity-100">
           <button
             onClick={() => navigate("/")}
             className="flex items-center gap-2 shrink-0 pr-1 group"
@@ -93,11 +92,8 @@ function LayoutInner() {
       {/* Fullscreen media viewer — adjustable size & ratio */}
       <MediaFullscreenWindow />
 
-      {/* Permanent glass interaction bar — bottom-right (desktop) */}
+      {/* Permanent glass interaction bar — bottom-right */}
       <WorkspaceToolbar />
-
-      {/* Mobiele navigatie — de enige bottom-ui op <lg */}
-      <MobileTabBar />
 
       {/* Click-to-remember — capture context from any element, anywhere */}
       <ContextCaptureLayer />

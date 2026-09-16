@@ -219,7 +219,7 @@ export default function ModulePanel() {
           {/* 2. GlassShellPanel */}
           <div className="flex-1 -mt-10 rounded-t-[28px] glass-3 flex flex-col min-h-0 overflow-hidden">
             {/* HEADER */}
-            <div className="px-5 lg:px-9 pt-7 pb-4 shrink-0">
+            <div className="px-7 lg:px-9 pt-7 pb-4 shrink-0">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <p className="text-[10px] uppercase tracking-[0.28em] text-ivory/55 font-medium mb-1.5">Snelle context</p>
@@ -266,24 +266,24 @@ export default function ModulePanel() {
               )}
             </div>
 
-            <div className="mx-5 lg:mx-9 h-px bg-storm/10 shrink-0" />
+            <div className="mx-7 lg:mx-9 h-px bg-storm/10 shrink-0" />
 
             {/* Help-strip (universele info over de Body-inhoud) */}
             {helpOpen && TAB_HELP[bodyModule] && (
-              <div className="mx-5 lg:mx-9 mb-3 shrink-0 rounded-2xl border border-storm/10 bg-marble/5 px-4 py-3">
+              <div className="mx-7 lg:mx-9 mb-3 shrink-0 rounded-2xl border border-storm/10 bg-marble/5 px-4 py-3">
                 <p className="text-storm/70 text-xs leading-relaxed">{TAB_HELP[bodyModule]}</p>
               </div>
             )}
 
             {/* BODY — vaste hoogte tussen header en footer */}
-            <div className={`flex-1 min-h-0 px-5 lg:px-9 pt-3 ${Preview ? "overflow-hidden" : "overflow-y-auto pb-8"}`}>
+            <div className={`flex-1 min-h-0 px-7 lg:px-9 pt-3 ${Preview ? "overflow-hidden" : "overflow-y-auto pb-8"}`}>
               {Preview ? <Preview key={bodyModule} onOpen={openSpace} onFooter={setFooter} /> : <ActiveComponent />}
             </div>
 
             {/* FOOTER — kleine contextfooter (uit de preview) of minimale merk-regel */}
             <div className="shrink-0">
-              <div className="mx-5 lg:mx-9 h-px bg-storm/10" />
-              <div className="px-5 lg:px-9 py-3 min-h-[2.75rem] flex items-center gap-3">
+              <div className="mx-7 lg:mx-9 h-px bg-storm/10" />
+              <div className="px-7 lg:px-9 py-3 min-h-[2.75rem] flex items-center gap-3">
                 {footer ? (
                   <div className="w-full flex items-center gap-3">{footer}</div>
                 ) : (
