@@ -54,6 +54,26 @@ function sanitizeResult(r) {
   return out;
 }
 
+// ── VANGNET 2: gehallucineerde media-URL's ──────────────────────────
+// Het model verzon soms zélf media-links (playtime-media.local/…,
+// cdn-media.com/…) als een categorie leeg was of zonder de tool te callen
+// → Salvo kreeg lege bestanden. Alleen URL's die ÉCHT uit een tool kwamen
+// (shownUrls) mogen blijven; alle andere media-achtige links worden eruit
+// gestript.
+function stripFakeMedia(text, shownUrls) {
+  if (!text) return { text: null, stripped: false };
+  let stripped = false;
+  const out = String(text).replace(/https?:\/\/[^\s)\]]+/g, (raw) => {
+    const clean = raw.replace(/[)\]>"'.,;:!?]+$/, "");
+    const isShown = (shownUrls || []).some((s) => clean === s || clean.includes(s) || s.includes(clean));
+    const looksMedia = /\.(png|jpe?g|gif|webp|mp4|mov|webm|mkv)(\?|#|$)/i.test(clean)
+      || /(twimg\.com|redgifs\.com|redd\.it|imagefap|cdn-media\.com|playtime-media)/i.test(clean);
+    if (!isShown && looksMedia) { stripped = true; return ""; }
+    return raw;
+  }).replace(/[ \t]{2,}/g, " ").trim();
+  return { text: out || null, stripped };
+}
+
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);
@@ -330,23 +350,46 @@ export default async function (req) {
       if (pendingCalls.length) responseText = cleaned.trim() || null;
     }
 
+    // ── VANGNET 2 + CORRECTIE-RONDE ─────────────────────────────────
+    // Strip verzonnen media-URL's uit het antwoord. Stond er een nep-link in
+    // terwijl géén tool media leverde, dan draait één correctie-ronde die de
+    // échte tool-aanroep afdwingt — anders blijft er een antwoord zonder
+    // media over.
+    let stripRes = stripFakeMedia(responseText, shownUrls);
+    responseText = stripRes.text;
+    if (stripRes.stripped && !shownUrls.length) {
+      contents.push({ role: "user", parts: [{ text: "De media-link die je stuurde bestaat niet — je hebt géén tool aangeroepen. Roep NU get_playtime_image aan met een bestaande categorie (of list_playtime_categories als je niet weet wat er is) en geef daarna een kort antwoord mét de echte image_url uit het tool-resultaat." }] });
+      for (let step = 0; step < 2; step++) {
+        const parts = await geminiGenerate({ contents, tools: genTools, systemText: systemInstruction, model: chosenModel, keyName: MATTIA_KEY });
+        if (!parts || !parts.length) break;
+        contents.push({ role: "model", parts });
+        const fnCalls = parts.filter((p) => p.functionCall);
+        if (!fnCalls.length) {
+          const textPart = [...parts].reverse().find((p) => p.text);
+          if (textPart?.text) responseText = textPart.text;
+          break;
+        }
+        const respParts = [];
+        for (const p of fnCalls) {
+          const name = p.functionCall.name;
+          const args = p.functionCall.args || {};
+          const t = toolsMap[name];
+          let result;
+          try { result = t ? await t.execute(args) : { error: "unknown tool" }; }
+          catch (e) { result = { error: String((e && e.message) || e) }; }
+          if (result && result.media_command) mediaCommands.push(result.media_command);
+          if (result && result.image_url) shownUrls.push(result.image_url);
+          executed.push({ name, args, ok: !(result && result.error), result: sanitizeResult(result) });
+          respParts.push({ functionResponse: { name, response: sanitizeResult(result) } });
+        }
+        contents.push({ role: "user", parts: respParts });
+      }
+      stripRes = stripFakeMedia(responseText, shownUrls);
+      responseText = stripRes.text;
+    }
+
     // ── SAVE RESPONSE (role: mattia) — géén approval-enforcer-ronde ──
     let finalText = responseText || (executed.length ? "Geregeld." : "Mattia is even stil — probeer het zo weer.");
-
-    // VANGNET 2: gehallucineerde media-URL's. Als een categorie leeg was,
-    // verzon het model zélf links (playtime-media.local/…, cdn-media.com/…)
-    // → Salvo kreeg lege bestanden. Alleen URL's die ÉCHT uit een tool kwamen
-    // (shownUrls) mogen in het antwoord; alle andere media-achtige links
-    // verdwijnen uit de tekst.
-    if (finalText) {
-      finalText = finalText.replace(/https?:\/\/[^\s)\]]+/g, (raw) => {
-        const clean = raw.replace(/[)\]>"'.,;:!?]+$/, "");
-        const isShown = shownUrls.some((s) => clean === s || clean.includes(s) || s.includes(clean));
-        const looksMedia = /\.(png|jpe?g|gif|webp|mp4|mov|webm|mkv)(\?|#|$)/i.test(clean)
-          || /(twimg\.com|redgifs\.com|redd\.it|imagefap|cdn-media\.com|playtime-media)/i.test(clean);
-        return isShown || !looksMedia ? raw : "";
-      }).replace(/[ \t]{2,}/g, " ").trim();
-    }
 
     // GARANTIE: elke foto die een tool heeft getoond staat ook écht in het
     // chat-antwoord — de URL letterlijk in de tekst, zodat de frontend hem
