@@ -116,7 +116,7 @@ export const GIULIA_SKILLS = [
   },
   {
     name: "create_memory",
-    description: "Sla een blijvende herinnering of contextueel feit op in Giulia's geheugen.",
+    description: "Sla een blijvende herinnering op in Giulia's geheugen. ALLEEN voor wat over een week nog relevant is: voorkeuren, mensen, beslissingen, plannen, belangrijke momenten. NOOIT voor systeemstatus, opstarts, syncs, routinematige acties of vluchtige details van het moment — dat is ruis.",
     inputSchema: { type: "object", properties: { content: { type: "string" }, category: { type: "string" } }, required: ["content"] },
     execute: async (args, base44) => {
       const m = await remember(base44, { content: args.content, category: args.category, source: "GIULIA-CORE" });

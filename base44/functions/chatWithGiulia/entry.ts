@@ -100,6 +100,10 @@ export default async function (req) {
     }
     // Gesprekengeheugen: ook bij casual praat beschikbaar (zie casual-tak).
     toolsMap["search_chat_history"] = makeChatHistorySearchTool(base44, { threadId: "giulia", agentName: "Giulia" });
+    // Systeemstatus is nooit het bewaren waard: achtergrondbronnen (opstart,
+    // sync, workflows) krijgen géén geheugen-tool — anders slaat elke
+    // systeemstart z'n eigen statusfragment in het geheugen op.
+    if (isBackgroundSource) delete toolsMap["create_memory"];
 
     if (isOperational) {
       // 1. DATA GATHERING (alleen bij operationele berichten / achtergrondbron)
